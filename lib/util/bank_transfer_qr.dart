@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 class BankTransferQr {
   static void showBankTransferSnackbar(
-      RunDetailAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
+      RunAdminAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
     if (eventAggregate.kennel.bankBic != null) {
       String paymentReference = '';
       if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
@@ -44,7 +44,7 @@ class BankTransferQr {
     }
   }
 
-  static void showBankTransferQrCode(BuildContext context, RunDetailAggregate eventAggregate, bool member, {String remitString, num remitAmount, String packMemberNameForDisplay}) {
+  static void showBankTransferQrCode(BuildContext context, RunAdminAggregate eventAggregate, bool member, {String remitString, num remitAmount, String packMemberNameForDisplay}) {
     if (eventAggregate.kennel.bankBic != null) {
       num amount = eventAggregate.extensions.memberPrice;
 

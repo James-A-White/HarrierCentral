@@ -165,6 +165,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       widget.futureRun.extensions.distToEvent,
       widget.futureRun.paymentUrl,
       true,
+      widget.futureRun.extensions.isMapAndDistanceValid,
       isMember: widget.futureRun.extensions.isMember,
       isPaid: widget.futureRun.extensions.isPaid,
       rsvpState: widget.futureRun.extensions.rsvpState,
@@ -665,37 +666,61 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       padding: const EdgeInsets.all(20.0),
       child: Center(
         // Map
-        child: FlutterMap(
-          options: MapOptions(
-            center: lat_lng.LatLng(widget.futureRun.event.narrowEventLatitude + .0, widget.futureRun.event.narrowEventLongitude + .0),
-            zoom: 15.0,
-            minZoom: 1.0,
-            maxZoom: 18.0,
-          ),
-          layers: <LayerOptions>[
-            TileLayerOptions(
-                urlTemplate:
-                    //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                //subdomains: ['a', 'b', 'c']),
-                subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-            MarkerLayerOptions(
-              markers: <Marker>[
-                Marker(
-                  width: 120.0,
-                  height: 120.0,
-                  point: lat_lng.LatLng(widget.futureRun.event.narrowEventLatitude + .0, widget.futureRun.event.narrowEventLongitude + .0),
-                  builder: (BuildContext ctx) => GestureDetector(
-                    onTap: () => _launchMaps(widget.futureRun.event),
-                    child: Container(
-                      padding: const EdgeInsets.only(bottom: 58.0),
-                      child: Image.asset('images/icons/map_pin_foot.png'),
-                      //child: FlutterLogo(colors: Colors.purple),
-                    ),
-                  ),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: <Widget>[
+            FlutterMap(
+              options: MapOptions(
+                center: lat_lng.LatLng(
+                  widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
+                  widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
                 ),
+                zoom: 15.0,
+                minZoom: 1.0,
+                maxZoom: 18.0,
+              ),
+              layers: <LayerOptions>[
+                TileLayerOptions(
+                    urlTemplate:
+                        //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                    //subdomains: ['a', 'b', 'c']),
+                    subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+                MarkerLayerOptions(
+                  markers: <Marker>[
+                    if (widget.futureRun.extensions.isMapAndDistanceValid) ...<Marker>[
+                      Marker(
+                        width: 120.0,
+                        height: 120.0,
+                        point: lat_lng.LatLng(
+                          widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
+                          widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
+                        ),
+                        builder: (BuildContext ctx) => GestureDetector(
+                          onTap: () => _launchMaps(widget.futureRun),
+                          child: Container(
+                            padding: const EdgeInsets.only(bottom: 58.0),
+                            child: Image.asset('images/icons/map_pin_foot.png'),
+                            //child: FlutterLogo(colors: Colors.purple),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                )
               ],
-            )
+            ),
+            if (!widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
+              Container(color: Colors.black54),
+              Container(
+                margin: const EdgeInsets.only(bottom: 60.0),
+                child: Text(
+                  'No location provided',
+                  textAlign: TextAlign.center,
+                  style: largeTitleStyle,
+                ),
+              ),
+            ]
           ],
         ),
       ),
@@ -1114,40 +1139,40 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   //   );
   // }
 
-  Future<void> _launchMaps(EventModel event) async {
+  Future<void> _launchMaps(RunDetailsAggregate rda) async {
     String latStr = '';
     String lonStr = '';
     String address = '';
     String url = '';
 
-    if (event.narrowEventLatitude != null) {
-      latStr = event.narrowEventLatitude.toString();
+    if (rda.extensions.latitude != null) {
+      latStr = rda.extensions.latitude.toString();
     }
 
-    if (event.narrowEventLongitude != null) {
-      lonStr = event.narrowEventLongitude.toString();
+    if (rda.extensions.longitude != null) {
+      lonStr = rda.extensions.longitude.toString();
     }
 
-    if (event.locationStreet != null) {
-      address = address + event.locationStreet + ' ';
+    if (rda.event.locationStreet != null) {
+      address = address + rda.event.locationStreet + ' ';
     }
 
-    if (event.locationCity != null) {
-      address = address + event.locationCity + ' ';
+    if (rda.event.locationCity != null) {
+      address = address + rda.event.locationCity + ' ';
     }
 
-    if (event.locationPostCode != null) {
-      address = address + event.locationPostCode + ' ';
+    if (rda.event.locationPostCode != null) {
+      address = address + rda.event.locationPostCode + ' ';
     }
 
-    if (event.locationCountry != null) {
-      address = address + event.locationCountry + ' ';
+    if (rda.event.locationCountry != null) {
+      address = address + rda.event.locationCountry + ' ';
     }
 
     address = address.trim();
 
     if ((address.isEmpty) && (latStr.isEmpty || lonStr.isEmpty)) {
-      address = event.locationOneLineDesc;
+      address = rda.event.locationOneLineDesc;
     }
 
     if ((address != null) && (address.isNotEmpty)) {

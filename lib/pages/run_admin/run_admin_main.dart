@@ -1,8 +1,8 @@
 import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
 
-class RunDetailAggregate {
-  RunDetailAggregate({
+class RunAdminAggregate {
+  RunAdminAggregate({
     this.event,
     this.extensions,
     this.kennel,
@@ -22,6 +22,9 @@ class RunDetailQueryExtensions {
     this.curCode,
     this.memberPrice,
     this.nonMemberPrice,
+    this.latitude,
+    this.longitude,
+    this.isMapAndDistanceValid,
   });
 
   final int appAccessFlags;
@@ -34,18 +37,25 @@ class RunDetailQueryExtensions {
   String paymentUrl;
   num distToEvent;
   int distancePreference;
+  num latitude;
+  num longitude;
+  bool isMapAndDistanceValid;
 
   bool isLoading = false;
 
   static RunDetailQueryExtensions fromMap(Map<String, dynamic> map) {
     final RunDetailQueryExtensions item = RunDetailQueryExtensions(
-        appAccessFlags: map['appAccessFlags'],
-        mismanagementRoles: map['mismanagementRoles'],
-        digAfterDec: map['digAfterDec'],
-        curSym: map['curSym'],
-        curCode: map['curCode'],
-        memberPrice: map['memberPrice'],
-        nonMemberPrice: map['nonMemberPrice']);
+      appAccessFlags: map['appAccessFlags'],
+      mismanagementRoles: map['mismanagementRoles'],
+      digAfterDec: map['digAfterDec'],
+      curSym: map['curSym'],
+      curCode: map['curCode'],
+      memberPrice: map['memberPrice'],
+      nonMemberPrice: map['nonMemberPrice'],
+      latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
+      longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
+      isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
+    );
     return item;
   }
 
@@ -58,22 +68,20 @@ class RunDetailQueryExtensions {
   }
 }
 
-class RunDetailPage extends StatefulWidget {
-  //final FutureRunScopedModel futureRunsModel;
-
-  const RunDetailPage({Key key, this.eventId}) : super(key: key);
+class RunAdminPage extends StatefulWidget {
+  const RunAdminPage({Key key, this.eventId}) : super(key: key);
 
   final String eventId;
 
   @override
-  RunDetailPageState createState() => RunDetailPageState();
+  RunAdminPageState createState() => RunAdminPageState();
 }
 
-class RunDetailPageState extends State<RunDetailPage> {
+class RunAdminPageState extends State<RunAdminPage> {
   bool _isLoading = true;
   int _isBetaTester = 0;
 
-  RunDetailAggregate _eventAggregate;
+  RunAdminAggregate _eventAggregate;
 
   @override
   void initState() {
@@ -86,7 +94,7 @@ class RunDetailPageState extends State<RunDetailPage> {
 
   void _getRunDetails(String eventId) {
     G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId).then((bool result) {
-      CommonQueries.getEventFromLocalCache(widget.eventId, _userId).then((RunDetailAggregate rd) {
+      CommonQueries.getEventAdminInfoFromLocalCache(widget.eventId, _userId).then((RunAdminAggregate rd) {
         _eventAggregate = rd;
         setState(() {
           _isLoading = false;
@@ -142,8 +150,17 @@ class RunDetailPageState extends State<RunDetailPage> {
                       topMargin: 35.0,
                       bottomMargin: 5.0,
                     ),
-                    RunDetails(_eventAggregate.event, _eventAggregate.kennel, _eventAggregate.extensions.digAfterDec, _eventAggregate.extensions.curSym,
-                        _eventAggregate.extensions.distancePreference, _eventAggregate.extensions.distToEvent, _eventAggregate.extensions.paymentUrl, false),
+                    RunDetails(
+                      _eventAggregate.event,
+                      _eventAggregate.kennel,
+                      _eventAggregate.extensions.digAfterDec,
+                      _eventAggregate.extensions.curSym,
+                      _eventAggregate.extensions.distancePreference,
+                      _eventAggregate.extensions.distToEvent,
+                      _eventAggregate.extensions.paymentUrl,
+                      false,
+                      _eventAggregate.extensions.isMapAndDistanceValid,
+                    ),
                   ],
                 ),
               ),
@@ -470,7 +487,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                       context,
                       MaterialPageRoute<dynamic>(
                           builder: (BuildContext context) => EditRunDetailsPage(_eventAggregate, (String eventId) async {
-                                _eventAggregate = await CommonQueries.getEventFromLocalCache(eventId, _userId);
+                                _eventAggregate = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, _userId);
                                 _isLoading = false;
                                 return _eventAggregate;
                               }))).then((void dummy) {

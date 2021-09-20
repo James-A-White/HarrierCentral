@@ -76,7 +76,7 @@ class CheckInPackModel {
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({@required this.eventAggregate});
 
-  final RunDetailAggregate eventAggregate;
+  final RunAdminAggregate eventAggregate;
 
   @override
   State<CheckInPackPage> createState() {

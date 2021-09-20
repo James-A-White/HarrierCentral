@@ -261,7 +261,9 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                           textAlign: TextAlign.left,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                  if ((widget.futureRun.extensions.distToEvent >= 0 && G0<AppModel>().hasLocationPermissions)) ...<Widget>[
+                                  if ((widget.futureRun.extensions.latitude != null && widget.futureRun.extensions.isMapAndDistanceValid) &&
+                                      ((widget.futureRun.extensions.distToEvent ?? -1.0) >= 0) &&
+                                      (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
                                     Text(
                                       Utilities.getDistance(widget.futureRun.extensions.distToEvent, context,
                                               isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0) +

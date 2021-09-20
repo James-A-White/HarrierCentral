@@ -87,8 +87,8 @@ class Utilities {
       const LocationOptions locationOptions = LocationOptions(accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50);
       G0<AppModel>().geoLocationStream = geolocator.getPositionStream(locationOptions).listen((Position position) {
         if (position != null) {
-          G0<DeviceInfo>().deviceLat = position.latitude;
-          G0<DeviceInfo>().deviceLon = position.longitude;
+          G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
+          G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
         }
         print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
       });

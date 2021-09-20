@@ -29,8 +29,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  void forceRefreshFromTableExternal() {
-    refreshFromTable(true);
+  Future<void> forceRefreshFromTableExternal() async {
+    await refreshFromTable(true);
   }
 
   Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
@@ -61,17 +61,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       }
     }
 
-    G0<TableModel>()
-        .syncUserDataService
-        .updateFromBackend(
-            SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
-            //| SyncUserDataService.flagPaymentsTable,
-            false)
-        .then((bool result) {
-      refreshFromTable(true);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Events user data synchronized $resultStr');
-    });
+    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(
+        SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
+        //| SyncUserDataService.flagPaymentsTable,
+        false);
+
+    await refreshFromTable(true);
+    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    print('Events user data synchronized $resultStr');
   }
 
   @override
@@ -79,8 +76,12 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
     searchController.text = '';
     searchText = '';
-    refreshFromTable(true);
-    // _refreshFromBackend().then((void dummy) {});
+
+    _refreshFromBackend().then((void dummy) {
+      refreshFromTable(true).then((void dummy) {
+        setState(() {});
+      });
+    });
     super.initState();
   }
 
@@ -97,10 +98,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               Checkbox(
                 value: searchAllRuns,
                 onChanged: (bool value) {
-                  //allRuns = null;
                   searchAllRuns = !searchAllRuns;
-                  setState(() {});
-                  refreshFromTable(true);
+                  refreshFromTable(true).then((void dummy) {
+                    setState(() {});
+                  });
                 },
               ),
               Padding(
@@ -165,92 +166,104 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  void refreshFromTable(bool forceRefresh) {
+  Future<void> refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
 
       IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
-      QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
-        IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
-        allRuns = <RunDetailsAggregate>[];
-        for (int i = 0; i < results.length; i++) {
-          locator
-              .distanceBetween(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
-                  IveCoreUtilities.unInt(results[i]['narrowEventLatitude']), IveCoreUtilities.unInt(results[i]['narrowEventLongitude']))
-              .then((num dist) {
-            final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
-            final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
-            extensionsItem.distToEvent = dist;
+      final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns);
 
-            String paymentLinkUrl = '';
+      IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
+      allRuns = <RunDetailsAggregate>[];
+      for (int i = 0; i < results.length; i++) {
+        final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
+        final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
 
-            if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-              paymentLinkUrl = eventItem.eventPaymentUrl;
-            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
-                ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-              paymentLinkUrl = kennelItem.kennelPaymentUrl;
-            }
-
-            final num julianNow = results[i]['nowJulian'];
-            final num eventJulian = results[i]['eventJulian'];
-
-            print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
-
-            num meters = 0;
-            final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
-
-            switch (userDistPrefs) {
-              case hasherPref_0:
-                meters = 0;
-                break;
-              case hasherPref_10:
-                meters = 10000;
-                break;
-              case hasherPref_25:
-                meters = 25000;
-                break;
-              case hasherPref_50:
-                meters = 50000;
-                break;
-              case hasherPref_75:
-                meters = 75000;
-                break;
-              case hasherPref_100:
-                meters = 100000;
-                break;
-              case hasherPref_150:
-                meters = 150000;
-                break;
-              case hasherPref_200:
-                meters = 200000;
-                break;
-              default:
-                meters = 50000;
-                break;
-            }
-
-            // if the user has set their preferences to miles or
-            // the user has set their preferences to "auto" and the
-            // distance preference associated with the kennel is miles
-            // then convert our range for runs from meters to miles.
-            if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
-              meters = meters * MILES_TO_METERS / 1000;
-            }
-
-            if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
-              final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-              allRuns.add(item);
-            }
-            if (i == results.length - 1) {
-              IveCoreUtilities.logTiming('Filter start', G0<AppModel>().appStartTime);
-              filterRuns();
-              setState(() {});
-              IveCoreUtilities.logTiming('Filter end', G0<AppModel>().appStartTime);
-            }
-          });
+        num dist;
+        if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
+          dist = await locator.distanceBetween(
+            G0<DeviceInfo>().deviceLat,
+            G0<DeviceInfo>().deviceLon,
+            results[i]['latitude'] + .0,
+            results[i]['longitude'] + .0,
+          );
+        } else {
+          dist = await locator.distanceBetween(
+            G0<DeviceInfo>().deviceLat,
+            G0<DeviceInfo>().deviceLon,
+            kennelItem.kennelLatitude + .0,
+            kennelItem.kennelLongitude + .0,
+          );
         }
-      });
+
+        final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
+        extensionsItem.distToEvent = dist;
+
+        String paymentLinkUrl = '';
+
+        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
+          paymentLinkUrl = eventItem.eventPaymentUrl;
+        } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+          paymentLinkUrl = kennelItem.kennelPaymentUrl;
+        }
+
+        final num julianNow = results[i]['nowJulian'];
+        final num eventJulian = results[i]['eventJulian'];
+
+        print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+
+        num meters = 0;
+        final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
+
+        switch (userDistPrefs) {
+          case hasherPref_0:
+            meters = 0;
+            break;
+          case hasherPref_10:
+            meters = 10000;
+            break;
+          case hasherPref_25:
+            meters = 25000;
+            break;
+          case hasherPref_50:
+            meters = 50000;
+            break;
+          case hasherPref_75:
+            meters = 75000;
+            break;
+          case hasherPref_100:
+            meters = 100000;
+            break;
+          case hasherPref_150:
+            meters = 150000;
+            break;
+          case hasherPref_200:
+            meters = 200000;
+            break;
+          default:
+            meters = 50000;
+            break;
+        }
+
+        // if the user has set their preferences to miles or
+        // the user has set their preferences to "auto" and the
+        // distance preference associated with the kennel is miles
+        // then convert our range for runs from meters to miles.
+        if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
+          meters = meters * MILES_TO_METERS / 1000;
+        }
+
+        if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
+          final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+          allRuns.add(item);
+        }
+        if (i == results.length - 1) {
+          IveCoreUtilities.logTiming('Filter start', G0<AppModel>().appStartTime);
+          filterRuns();
+          setState(() {});
+          IveCoreUtilities.logTiming('Filter end', G0<AppModel>().appStartTime);
+        }
+      }
     }
   }
 
@@ -331,7 +344,18 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                         Navigator.push<dynamic>(
                           this.context,
                           MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => RunDetailsPage(futureRun: filteredRuns[index]),
+                            builder: (BuildContext context) => RunDetailsPage(
+                              futureRun: filteredRuns[index],
+                              refreshPage: () async {
+                                // WARNING!!!!  We need to return the filtered run based
+                                // on it's ID and not the index
+
+                                //await _refreshFromBackend(clearLocalTables: false);
+                                await refreshFromTable(true);
+                                //filterRuns();
+                                return filteredRuns[index];
+                              },
+                            ),
                           ),
                         ).then((void dummy) {
                           _refreshFromBackend(clearLocalTables: false).then((void dummy) {

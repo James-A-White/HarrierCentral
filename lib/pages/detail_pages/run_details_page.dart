@@ -9,17 +9,31 @@ import 'package:harrier_central/imports.dart';
 // import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 // import 'package:harrier_central/database/query_runs.dart';
 
-class RunDetailsPage extends StatelessWidget {
-  const RunDetailsPage({Key key, @required this.futureRun}) : super(key: key);
+class RunDetailsPage extends StatefulWidget {
+  const RunDetailsPage({Key key, @required this.futureRun, this.refreshPage}) : super(key: key);
 
   final RunDetailsAggregate futureRun;
+  final Function refreshPage;
+
+  @override
+  RunDetailsPageState createState() => RunDetailsPageState();
+}
+
+class RunDetailsPageState extends State<RunDetailsPage> {
+  RunDetailsAggregate _futureRun;
+
+  @override
+  void initState() {
+    _futureRun = widget.futureRun;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           actions: <Widget>[
-            (futureRun.extensions.appAccessFlags ?? 0) == 0
+            (_futureRun.extensions.appAccessFlags ?? 0) == 0
                 ? Container()
                 : IconButton(
                     icon: const Icon(FontAwesome.gear, color: Colors.white),
@@ -27,9 +41,19 @@ class RunDetailsPage extends StatelessWidget {
                       Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => RunDetailPage(eventId: futureRun.event.eventId),
+                          builder: (BuildContext context) => RunAdminPage(
+                            eventId: _futureRun.event.eventId,
+                          ),
                         ),
-                      ); //_select(choices[0]);
+                      ).then((void dummy) {
+                        if (widget.refreshPage != null) {
+                          widget.refreshPage().then((RunDetailsAggregate rda) {
+                            setState(() {
+                              _futureRun = rda;
+                            });
+                          });
+                        }
+                      }); //_select(choices[0]);
                     },
                   ),
           ],
@@ -42,6 +66,6 @@ class RunDetailsPage extends StatelessWidget {
             ),
           ),
         ),
-        body: RunTabs(futureRun: futureRun));
+        body: RunTabs(futureRun: _futureRun));
   }
 }

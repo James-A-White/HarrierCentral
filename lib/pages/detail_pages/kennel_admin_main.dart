@@ -65,10 +65,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           .then((List<Map<String, dynamic>> results) {
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {
-          locator
-              .distanceBetween(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
-                  IveCoreUtilities.unInt(results[i]['narrowEventLatitude']), IveCoreUtilities.unInt(results[i]['narrowEventLongitude']))
-              .then((num dist) {
+          locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['latitude'] + .0, results[i]['longitude'] + .0).then((num dist) {
             final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
             final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
             final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);

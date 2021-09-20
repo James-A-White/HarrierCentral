@@ -58,8 +58,8 @@ class CommonQueries {
 
           SELECT e.${G0<TableModel>().eventsTableHelper.colEventId},
           e.${G0<TableModel>().eventsTableHelper.colEventName},
-          e.${G0<TableModel>().eventsTableHelper.colNarrowEventLatitude} as lat,
-          e.${G0<TableModel>().eventsTableHelper.colNarrowEventLongitude} as lon,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else e.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as lat,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLongitude} else e.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as lon,
           e.${G0<TableModel>().eventsTableHelper.colEventImage} as eventImage,
           e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
           k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
@@ -80,37 +80,38 @@ class CommonQueries {
 
       if (queryResults.isNotEmpty) {
         for (int i = 0; i < queryResults.length; i++) {
-          final num dist =
-              await locator.distanceBetween(G0<DeviceInfo>().deviceLat + 0.0, G0<DeviceInfo>().deviceLon + 0.0, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+          if (queryResults[i]['lat'] != null) {
+            final num dist = await locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
 
-          if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
-            continue;
-          }
-
-          final AreWeAtRunResult result = AreWeAtRunResult();
-
-          result.eventId = queryResults[i]['eventId'];
-          result.eventName = queryResults[i]['eventName'];
-          result.eventImage = queryResults[i]['eventImage'];
-          result.kennelLogo = queryResults[i]['kennelLogo'];
-          result.eventNumber = queryResults[i]['eventNumber'];
-          result.kennelShortName = queryResults[i]['kennelShortName'];
-          result.distanceInMeters = dist;
-          result.attendenceState = queryResults[i]['attendenceState'];
-          result.selected = false;
-
-          // NOTE: Event images can either be full URLs or they can be partial URLs in the case
-          // when events have been uploaded directly to the DB using the HcWeb application.
-          // For partial URLs we need to append the root URL. The Root URL is stored in the
-          // Server settings table and copied into the string prefs on app startup.
-          if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
-            final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-            if ((s != null) && (s.isNotEmpty)) {
-              result.eventImage = s + result.eventImage;
+            if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
+              continue;
             }
-          }
 
-          resultList.add(result);
+            final AreWeAtRunResult result = AreWeAtRunResult();
+
+            result.eventId = queryResults[i]['eventId'];
+            result.eventName = queryResults[i]['eventName'];
+            result.eventImage = queryResults[i]['eventImage'];
+            result.kennelLogo = queryResults[i]['kennelLogo'];
+            result.eventNumber = queryResults[i]['eventNumber'];
+            result.kennelShortName = queryResults[i]['kennelShortName'];
+            result.distanceInMeters = dist;
+            result.attendenceState = queryResults[i]['attendenceState'];
+            result.selected = false;
+
+            // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+            // when events have been uploaded directly to the DB using the HcWeb application.
+            // For partial URLs we need to append the root URL. The Root URL is stored in the
+            // Server settings table and copied into the string prefs on app startup.
+            if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
+              final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+              if ((s != null) && (s.isNotEmpty)) {
+                result.eventImage = s + result.eventImage;
+              }
+            }
+
+            resultList.add(result);
+          }
         }
       }
     } catch (e) {
@@ -142,8 +143,8 @@ class CommonQueries {
     return result;
   }
 
-  static Future<RunDetailAggregate> getNewEvent(String kennelId, String userId, DateTime eventStart) async {
-    RunDetailAggregate runDetailAggregate;
+  static Future<RunAdminAggregate> getNewEvent(String kennelId, String userId, DateTime eventStart) async {
+    RunAdminAggregate runDetailAggregate;
     try {
       const String dollarSign = r'$^';
       final String sql = '''
@@ -178,8 +179,8 @@ class CommonQueries {
         final EventModel eventItem = EventModel(
           eventStartDatetime: eventStart,
           kennelId: kennel.kennelId,
-          narrowEventLatitude: G0<DeviceInfo>().deviceLat + .0,
-          narrowEventLongitude: G0<DeviceInfo>().deviceLon + .0,
+          hcLatitude: G0<DeviceInfo>().deviceLat,
+          hcLongitude: G0<DeviceInfo>().deviceLon,
           isVisible: 1,
           isCountedRun: 1,
           isPromotedEvent: 0,
@@ -201,7 +202,7 @@ class CommonQueries {
         extensions.paymentUrl = paymentLinkUrl;
         extensions.distToEvent = 0;
 
-        runDetailAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+        runDetailAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
       }
     } catch (e) {
       print(e);
@@ -210,14 +211,16 @@ class CommonQueries {
     return runDetailAggregate;
   }
 
-  static Future<RunDetailAggregate> getEventFromLocalCache(String eventId, String userId) async {
-    RunDetailAggregate runDetailAggregate;
+  static Future<RunAdminAggregate> getEventAdminInfoFromLocalCache(String eventId, String userId) async {
+    RunAdminAggregate runAdminAggregate;
     try {
       const String dollarSign = r'$^';
       final String sql = '''
-
           SELECT e.*,
           k.*,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else e.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as latitude,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLongitude} else e.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as longitude,
+          case when ((e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND e.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND e.${G0<TableModel>().eventsTableHelper.colFbLatitude} IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencyCode},c.${G0<TableModel>().countriesTableHelper.colCurrencyCode},"USD") as curCode,
@@ -232,28 +235,37 @@ class CommonQueries {
           hashers h  
           WHERE e.eventId = "$eventId"
           AND hkm.userId = "$userId"
-          AND h.hasherId = "$userId"
-          
+          AND h.hasherId = "$userId" 
           ''';
 
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
 
       final Geolocator locator = Geolocator();
 
-      final num dist = await locator.distanceBetween(
-        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat),
-        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
-        IveCoreUtilities.unInt(results[0]['narrowEventLatitude']),
-        IveCoreUtilities.unInt(
-          results[0]['narrowEventLongitude'],
-        ),
-      );
-
       if (results.isNotEmpty) {
         final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
         final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
         final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
         String paymentLinkUrl = '';
+
+        num dist;
+
+        if (extensions.latitude != null) {
+          dist = await locator.distanceBetween(
+            G0<DeviceInfo>().deviceLat,
+            G0<DeviceInfo>().deviceLon,
+            extensions.latitude,
+            extensions.longitude,
+          );
+        } else {
+          dist = await locator.distanceBetween(
+            G0<DeviceInfo>().deviceLat,
+            G0<DeviceInfo>().deviceLon,
+            kennel.kennelLatitude,
+            kennel.kennelLongitude,
+          );
+        }
+        extensions.distToEvent = dist;
 
         if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
           paymentLinkUrl = eventItem.eventPaymentUrl;
@@ -262,15 +274,13 @@ class CommonQueries {
         }
 
         extensions.paymentUrl = paymentLinkUrl;
-        extensions.distToEvent = dist;
-        //extensions.distancePreference = results[0]['distancePreference'];
 
-        runDetailAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+        runAdminAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
       }
     } catch (e) {
       print(e);
     }
 
-    return runDetailAggregate;
+    return runAdminAggregate;
   }
 }

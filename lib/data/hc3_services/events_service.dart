@@ -14,8 +14,10 @@ class EventModel implements BaseModel {
       this.eventGeographicScope,
       this.eventNumber,
       this.eventName,
-      this.narrowEventLatitude,
-      this.narrowEventLongitude,
+      this.hcLatitude,
+      this.hcLongitude,
+      this.fbLatitude,
+      this.fbLongitude,
       this.eventPriceForMembers,
       this.eventPriceForNonMembers,
       this.eventFacebookId,
@@ -44,6 +46,7 @@ class EventModel implements BaseModel {
       this.useFbLatLon,
       this.useFbLocation,
       this.useFbRunDetails,
+      this.useFbImage,
       this.removed,
       this.updatedAt});
 
@@ -60,8 +63,10 @@ class EventModel implements BaseModel {
   final int eventGeographicScope;
   final int eventNumber;
   final String eventName;
-  final num narrowEventLatitude;
-  final num narrowEventLongitude;
+  final num hcLatitude;
+  final num hcLongitude;
+  final num fbLatitude;
+  final num fbLongitude;
   final num eventPriceForMembers;
   final num eventPriceForNonMembers;
   final String eventFacebookId;
@@ -90,6 +95,7 @@ class EventModel implements BaseModel {
   final int useFbLocation;
   final int useFbLatLon;
   final int useFbRunDetails;
+  final int useFbImage;
 
   final int removed;
   final DateTime updatedAt;
@@ -127,8 +133,10 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colEventGeographicScope = 'eventGeographicScope';
   final String colEventNumber = 'eventNumber';
   final String colEventName = 'eventName';
-  final String colNarrowEventLatitude = 'narrowEventLatitude';
-  final String colNarrowEventLongitude = 'narrowEventLongitude';
+  final String colHcLatitude = 'hcLatitude';
+  final String colHcLongitude = 'hcLongitude';
+  final String colFbLatitude = 'fbLatitude';
+  final String colFbLongitude = 'fbLongitude';
   final String colEventPriceForMembers = 'eventPriceForMembers';
   final String colEventPriceForNonMembers = 'eventPriceForNonMembers';
   final String colEventFacebookId = 'eventFacebookId';
@@ -158,6 +166,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colUseFbLocation = 'useFbLocation';
   final String colUseFbLatLon = 'useFbLatLon';
   final String colUseFbRunDetails = 'useFbRunDetails';
+  final String colUseFbImage = 'useFbImage';
 
   @override
   Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
@@ -175,8 +184,10 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colEventGeographicScope INT,
             $colEventNumber INT,
             $colEventName TEXT,
-            $colNarrowEventLatitude NUM,
-            $colNarrowEventLongitude NUM,
+            $colHcLatitude NUM,
+            $colHcLongitude NUM,
+            $colFbLatitude NUM,
+            $colFbLongitude NUM,
             $colEventPriceForMembers NUM,
             $colEventPriceForNonMembers NUM,
             $colEventFacebookId TEXT,
@@ -205,6 +216,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colUseFbLatLon INT,
             $colUseFbLocation INT,
             $colUseFbRunDetails INT,
+            $colUseFbImage INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -278,6 +290,7 @@ class EventsService extends BaseService {
     num lon,
     int useFbLatLon,
     int useFbRunDetails,
+    int useFbImage,
     int useFbLocation,
     String eventDescription,
     num eventPriceForMembers,
@@ -285,6 +298,7 @@ class EventsService extends BaseService {
     num eventPriceForExtras,
     String extrasDescription,
     String locationOneLineDesc,
+    String eventImageUrl,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return '';
@@ -325,6 +339,10 @@ class EventsService extends BaseService {
       bodyMap.addAll(<String, String>{'usersCanEditRunAttendence': usersCanEditRunAttendence.toString()});
     }
 
+    if (eventImageUrl != null) {
+      bodyMap.addAll(<String, String>{'coverPhotoUrl': eventImageUrl});
+    }
+
     if (absoluteEventNumber != null) {
       bodyMap.addAll(<String, String>{'absoluteEventNumber': absoluteEventNumber.toString()});
     }
@@ -359,6 +377,10 @@ class EventsService extends BaseService {
 
     if (useFbRunDetails != null) {
       bodyMap.addAll(<String, String>{'useFbRunDetails': useFbRunDetails.toString()});
+    }
+
+    if (useFbImage != null) {
+      bodyMap.addAll(<String, String>{'useFbImage': useFbImage.toString()});
     }
 
     if (useFbLocation != null) {

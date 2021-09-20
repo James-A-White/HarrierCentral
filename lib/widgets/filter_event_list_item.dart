@@ -16,7 +16,7 @@ class FilterEventListItem extends StatelessWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => RunDetailPage(eventId: event['eventId']),
+            builder: (BuildContext context) => RunAdminPage(eventId: event['eventId']),
           ),
         ).then((void dummy) {
           updateEvent(eventFilterType_refreshOnly);

@@ -32,7 +32,8 @@ class RunDetails extends StatelessWidget {
     this.distancePreference,
     this.distToEvent,
     this.paymentLinkUrl,
-    this.showPaymentOptions, {
+    this.showPaymentOptions,
+    this.isMapAndDistanceValid, {
     this.isMember = 0,
     this.isPaid = 0,
     this.rsvpState = 0,
@@ -44,6 +45,7 @@ class RunDetails extends StatelessWidget {
   final int digitsAfterDecimal;
   final String currencySymbol;
   final int distancePreference;
+  final bool isMapAndDistanceValid;
   final num distToEvent;
   final String paymentLinkUrl;
   final bool showPaymentOptions;
@@ -432,7 +434,7 @@ class RunDetails extends StatelessWidget {
                           ],
                         ),
                       ),
-                G0<AppModel>().hasLocationPermissions
+                (G0<AppModel>().hasLocationPermissions) && isMapAndDistanceValid
                     ? Container(
                         //height: spaceBetweenRows,
                         child: Row(

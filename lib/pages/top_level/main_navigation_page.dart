@@ -190,7 +190,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   Future<void> _checkInAtEvent(String eventId, String userId) async {
     await G0<TableModel>().hasherEventMapService.joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value);
     if (futureRunsListPageKey?.currentState != null) {
-      futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+      await futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
     }
   }
 

@@ -223,7 +223,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                 mapController.move(
                     ((homeKennelLat != null) && (homeKennelLon != null))
                         ? LatLng(homeKennelLat + .0, homeKennelLon + .0)
-                        : LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
+                        : LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
                     mapController.zoom);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
@@ -237,7 +237,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
               } else {
                 mapCenterOption = centerOnCurrentLocation.value;
                 setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
-                mapController.move(LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0), mapController.zoom);
+                mapController.move(LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon), mapController.zoom);
 
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
@@ -287,12 +287,10 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
     if (results.isNotEmpty) {
       final num dist = await locator.distanceBetween(
-        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat),
-        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
-        IveCoreUtilities.unInt(results[0]['narrowEventLatitude']),
-        IveCoreUtilities.unInt(
-          results[0]['narrowEventLongitude'],
-        ),
+        G0<DeviceInfo>().deviceLat,
+        G0<DeviceInfo>().deviceLon,
+        results[0]['latitude'] + .0,
+        results[0]['longitude'] + .0,
       );
       final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
@@ -326,8 +324,11 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             evt.${G0<TableModel>().eventsTableHelper.colEventId} as eventId,
             evt.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
             evt.${G0<TableModel>().eventsTableHelper.colIsCountedRun} as isCountedRun,
-            evt.${G0<TableModel>().eventsTableHelper.colNarrowEventLatitude} as lat,
-            evt.${G0<TableModel>().eventsTableHelper.colNarrowEventLongitude} as lon,
+            
+            case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as lat,
+            case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as lon,
+            case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
+            
             evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
             evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} as eventGeographicScope,
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
@@ -362,27 +363,29 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       runLocationMarkers = <Marker>[];
       if ((results != null) && (results.isNotEmpty)) {
         for (int i = 0; i < results.length; i++) {
-          final num lat = results[i]['lat'];
-          final num lon = results[i]['lon'];
-
-          if ((lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
-            final DateTime dt = DateTime.parse(results[i]['eventStartDatetime'].substring(0, 19));
-            final RunDetailsAggregate item = RunDetailsAggregate(
-                event: EventModel(
-                  narrowEventLatitude: lat,
-                  narrowEventLongitude: lon,
-                  eventStartDatetime: dt,
-                  eventId: results[i]['eventId'],
-                  isCountedRun: results[i]['isCountedRun'],
-                  eventGeographicScope: results[i]['eventGeographicScope'],
-                ),
-                extensions: RunDetailsQueryExtensions(
-                    rsvpState: results[i]['rsvpState'],
-                    attendenceState: results[i]['attendenceState'],
-                    isHare: results[i]['isHare'],
-                    searchText: results[i]['searchText'] + RunDetailsQueryExtensions.getSearchDateString(dt)),
-                kennel: KennelsModel(kennelPinColor: results[i]['kennelPinColor']));
-            allRuns.add(item);
+          final num lat = results[i]['lat'] == null ? null : results[i]['lat'] + .0;
+          final num lon = results[i]['lon'] == null ? null : results[i]['lon'] + .0;
+          if ((lat != null) && (lon != null)) {
+            if ((lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
+              final DateTime dt = DateTime.parse(results[i]['eventStartDatetime'].substring(0, 19));
+              final RunDetailsAggregate item = RunDetailsAggregate(
+                  event: EventModel(
+                    eventStartDatetime: dt,
+                    eventId: results[i]['eventId'],
+                    isCountedRun: results[i]['isCountedRun'],
+                    eventGeographicScope: results[i]['eventGeographicScope'],
+                  ),
+                  extensions: RunDetailsQueryExtensions(
+                      latitude: lat,
+                      longitude: lon,
+                      isMapAndDistanceValid: results[i]['isMapAndDistanceValid'] == 1,
+                      rsvpState: results[i]['rsvpState'],
+                      attendenceState: results[i]['attendenceState'],
+                      isHare: results[i]['isHare'],
+                      searchText: results[i]['searchText'] + RunDetailsQueryExtensions.getSearchDateString(dt)),
+                  kennel: KennelsModel(kennelPinColor: results[i]['kennelPinColor']));
+              allRuns.add(item);
+            }
           }
         }
       }
@@ -400,7 +403,10 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     for (int i = 0; i < filteredRuns.length; i++) {
       final RunDetailsAggregate run = filteredRuns[i];
 
-      final LatLng ll = LatLng(run.event.narrowEventLatitude + .0, run.event.narrowEventLongitude + .0);
+      final LatLng ll = LatLng(
+        run.extensions.latitude,
+        run.extensions.longitude,
+      );
       final DateTime dt = run.event.eventStartDatetime;
 
       final Marker marker = Marker(
@@ -451,35 +457,37 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       final String homeKennelId = getStringPref(StringPrefsEnum.homeKennelId);
       if ((results != null) && (results.isNotEmpty)) {
         for (int i = 0; i < results.length; i++) {
-          final num lat = results[i]['lat'];
-          final num lon = results[i]['lon'];
+          final num lat = results[i]['lat'] == null ? null : results[i]['lat'] + .0;
+          final num lon = results[i]['lon'] == null ? null : results[i]['lon'] + .0;
 
-          if (results[i]['kennelId'] == homeKennelId) {
-            homeKennelLat = lat;
-            homeKennelLon = lon;
+          if ((lat != null) && (lon != null)) {
+            if (results[i]['kennelId'] == homeKennelId) {
+              homeKennelLat = lat;
+              homeKennelLon = lon;
 
-            setNumPref(NumPrefsEnum.homeKennelLat, homeKennelLat);
-            setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
+              setNumPref(NumPrefsEnum.homeKennelLat, homeKennelLat);
+              setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
 
-            if ((mapCenterOption == centerOnHomeKennel.value) && (homeKennelLat != null) && (homeKennelLon != null)) {
-              mapController.move(LatLng(homeKennelLat + .0, homeKennelLon + .0), mapController.zoom);
+              if ((mapCenterOption == centerOnHomeKennel.value) && (homeKennelLat != null) && (homeKennelLon != null)) {
+                mapController.move(LatLng(homeKennelLat + .0, homeKennelLon + .0), mapController.zoom);
+              }
             }
-          }
 
-          if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
-            final LatLng ll = LatLng(lat + .0, lon + .0);
-            final Marker marker = Marker(
-                width: 120.0,
-                height: 120.0,
-                anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)),
-                point: ll,
-                builder: (BuildContext ctx) => buildKennelMarker(
-                      results[i]['logo'],
-                      results[i]['shortName'],
-                      results[i]['kennelId'],
-                    ));
+            if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
+              final LatLng ll = LatLng(lat + .0, lon + .0);
+              final Marker marker = Marker(
+                  width: 120.0,
+                  height: 120.0,
+                  anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)),
+                  point: ll,
+                  builder: (BuildContext ctx) => buildKennelMarker(
+                        results[i]['logo'],
+                        results[i]['shortName'],
+                        results[i]['kennelId'],
+                      ));
 
-            kennelMarkers.add(marker);
+              kennelMarkers.add(marker);
+            }
           }
         }
       }
@@ -531,8 +539,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
         if (results.isNotEmpty) {
-          final num dist = await locator.distanceBetween(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
-              IveCoreUtilities.unInt(results[0]['cityLat']), IveCoreUtilities.unInt(results[0]['cityLon']));
+          final num dist = await locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
 
           final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
           final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
@@ -629,7 +636,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                     center: (widget.kennel?.kennelLatitude != null)
                         ? LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
                         : ((mapCenterOption == centerOnCurrentLocation.value) || (homeKennelLat == null) || (homeKennelLon == null))
-                            ? LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0)
+                            ? LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon)
                             : LatLng(homeKennelLat + .0, homeKennelLon + .0),
                     zoom: 10.0,
                     minZoom: 1.0,

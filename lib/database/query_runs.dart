@@ -19,6 +19,9 @@ class RunDetailsQueryExtensions {
     this.emailAlertPreference,
     this.distanceUnitsPref,
     this.searchText,
+    this.latitude,
+    this.longitude,
+    this.isMapAndDistanceValid,
   });
 
   final num daysUntilEvent;
@@ -37,6 +40,9 @@ class RunDetailsQueryExtensions {
   int distanceUnitsPref;
   //int userPrefs;
   String searchText;
+  num latitude;
+  num longitude;
+  bool isMapAndDistanceValid;
 
   static String getSearchDateString(DateTime eventStartDateTime) {
     final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
@@ -120,6 +126,9 @@ class RunDetailsQueryExtensions {
       emailAlertPreference: map['emailAlertPreference'],
       distanceUnitsPref: _distanceUnitsPref ?? map['distanceUnitsPref'],
       searchText: map['searchText'] + getSearchDateString(eventStartDateTime),
+      latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
+      longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
+      isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
     );
     return item;
   }
@@ -146,8 +155,10 @@ class QueryRuns {
   // it is important to have the beginning and end of the search field have a space
   // character to ensure that searches run properly.
 
+  num dummyVariableToSuppressWarning = 0;
+
   static String searchField = '''
-               " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventName},"")
+               "~ " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventName},"")
             || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},"") 
             || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelName},"")   
             || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventDescription},"")
@@ -182,16 +193,9 @@ class QueryRuns {
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
               end 
-            || " "
+            || " ~"
           as searchText
           ''';
-
-  //   this.addOption("0", "<none>");
-  // this.addOption("1", "Local");
-  // this.addOption("2", "Regional");
-  // this.addOption("3", "National");
-  // this.addOption("4", "Continental");
-  // this.addOption("5", "Worldwide");
 
   static List<RunDetailsAggregate> doFilter(String searchText, List<RunDetailsAggregate> allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
@@ -265,6 +269,11 @@ class QueryRuns {
         SELECT  
           evt.*,
           k.*,
+
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as latitude,
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as longitude,
+          case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
+
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
           0 as rsvpState,
@@ -292,6 +301,11 @@ class QueryRuns {
         SELECT  
           evt.*,
           k.*,
+
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as latitude,
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as longitude,
+          case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
+
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,

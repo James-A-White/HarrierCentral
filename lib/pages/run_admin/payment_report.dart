@@ -57,7 +57,7 @@ class PaymentQueryExtensions {
 class PaymentReportPage extends StatefulWidget {
   const PaymentReportPage({Key key, @required this.eventAggregate}) : super(key: key);
 
-  final RunDetailAggregate eventAggregate;
+  final RunAdminAggregate eventAggregate;
 
   @override
   PaymentReportState createState() => PaymentReportState();

@@ -6,7 +6,7 @@ class PaymentSnackBar extends SnackBar {
 
   final BuildContext context;
   final CheckInPackModel packMember;
-  final RunDetailAggregate eventAggregate;
+  final RunAdminAggregate eventAggregate;
   final Function onRsvpCallback;
   final Function onPaidCallback;
 

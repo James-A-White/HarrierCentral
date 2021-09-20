@@ -5,7 +5,7 @@ import 'package:date_time_picker/date_time_picker.dart';
 class EditRunDetailsPage extends StatefulWidget {
   const EditRunDetailsPage(this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
 
-  final RunDetailAggregate eventAggregate;
+  final RunAdminAggregate eventAggregate;
   final Function getUpdatedEventAggregate;
 
   @override
@@ -18,7 +18,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   TabController _tabController;
   bool _isUpdating = false;
 
-  RunDetailAggregate _eventAggregate;
+  RunAdminAggregate _eventAggregate;
 
   LatLng _mapCenter;
 
@@ -58,7 +58,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   Future<File> _imageFromCamera;
   Future<File> _imageFromGallery;
   SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
-  SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
+  //SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
 
   @override
   void dispose() {
@@ -224,7 +224,11 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   void initState() {
     super.initState();
     _eventAggregate = widget.eventAggregate;
-    _mapCenter = LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0);
+
+    _mapCenter = LatLng(
+      _eventAggregate.extensions.latitude ?? _eventAggregate.kennel.kennelLatitude,
+      _eventAggregate.extensions.longitude ?? _eventAggregate.kennel.kennelLongitude,
+    );
     _initTabs();
 
     _setTextFields();
@@ -270,9 +274,6 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       FocusScope.of(context).unfocus();
     });
   }
-
-  // Color left = Colors.white;
-  // Color right = Colors.white;
 
   void _initTabs() {
     if (_tabs.isEmpty) {
@@ -683,40 +684,78 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
         future: _imageFromGallery,
         builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
           if (snapshot.hasData) {
-            return Column(children: <Widget>[
-              const SizedBox(height: 20),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(20.0),
-                  child: Image.file(snapshot.data, fit: BoxFit.scaleDown),
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(height: 20),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.all(20.0),
+                    child: Image.file(snapshot.data, fit: BoxFit.scaleDown),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                child: Text('Use this image', style: buttonLabelStyleMedium),
-                onPressed: () {
-                  //_getImageFromCameraOrGallery(ImageSource.gallery);
-                },
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  _isUpdating
-                      ? Container(
-                          height: 70.0,
-                          width: 70.0,
-                          child: HcCircularProgressIndicator(key: UniqueKey()),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                    ),
+                    child: Text('Use this image', style: buttonLabelStyleMedium),
+                    onPressed: () {
+                      if (_eventAggregate?.event?.eventId != null) {
+                        final String fileName = _upload(snapshot.data, _eventAggregate.event.eventId);
+
+                        final EventsService nSvc = EventsService();
+                        nSvc
+                            .addEditEvent(
+                          eventId: _eventAggregate.event.eventId,
+                          eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
+                          useFbImage: 0,
                         )
-                      : ElevatedButton(
-                          child: Text('Select from gallery', style: buttonLabelStyleMedium),
-                          onPressed: () {
-                            _getImageFromCameraOrGallery(ImageSource.gallery);
-                          },
-                        ),
-                  if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                    ElevatedButton(
-                      child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                            .then((String eventId) async {
+                          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                          setState(() {
+                            _isUpdating = false;
+
+                            final SnackBar snackBar = SnackBar(
+                              duration: const Duration(seconds: 3),
+                              content: const Text(
+                                'Event image has been updated',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                              ),
+                              backgroundColor: Colors.blue.shade700,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          });
+                        });
+                      }
+                    },
+                  ),
+                ),
+                //const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                    ),
+                    child: Text('Select again from gallery', style: buttonLabelStyleMedium),
+                    onPressed: () {
+                      _getImageFromCameraOrGallery(ImageSource.gallery);
+                    },
+                  ),
+                ),
+                if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                      ),
+                      child: Text('Use image from Facebook', style: buttonLabelStyleMedium),
                       onPressed: () {
                         setState(() {
                           _isUpdating = true;
@@ -724,7 +763,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                           nSvc
                               .addEditEvent(
                             eventId: _eventAggregate.event.eventId,
-                            useFbLatLon: 1,
+                            useFbImage: 1,
                           )
                               .then((String eventId) async {
                             _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
@@ -733,7 +772,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                               final SnackBar snackBar = SnackBar(
                                 duration: const Duration(seconds: 3),
                                 content: const Text(
-                                  'Location is being synced from Facebook',
+                                  'Image is being synced from Facebook',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
                                 ),
@@ -745,38 +784,48 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                         });
                       },
                     ),
-                  ]
+                  ),
                 ],
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                child: Text('Use original image', style: buttonLabelStyleMedium),
-                onPressed: () {
-                  setState(() {
-                    _imageFromGallery = Future<File>.value(null);
-                  });
-                },
-              ),
-              const SizedBox(height: 40),
-            ]);
+                //const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                    ),
+                    child: Text('Use original image', style: buttonLabelStyleMedium),
+                    onPressed: () {
+                      setState(() {
+                        _imageFromGallery = Future<File>.value(null);
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            );
           } else {
             return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.center,
+              // crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 if (_eventAggregate?.event?.eventImage != null) ...<Widget>[
                   Container(
                     margin: const EdgeInsets.all(20.0),
+                    height: 500,
                     child: Column(
+                      //mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        CachedNetworkImage(
-                          imageUrl: _eventAggregate.event.eventImage,
-                          // errorWidget:
-                          //     (BuildContext context, String url, Exception error) =>
-                          //         const  Icon(Icons.error),
+                        Expanded(
+                          child: CachedNetworkImage(
+                            imageUrl: _eventAggregate.event.eventImage,
+                            // errorWidget:
+                            //     (BuildContext context, String url, Exception error) =>
+                            //         const  Icon(Icons.error),
+                          ),
                         ),
                         const SizedBox(height: 20),
-                        Row(
+                        Column(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
                             _isUpdating
@@ -785,42 +834,55 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                     width: 70.0,
                                     child: HcCircularProgressIndicator(key: UniqueKey()),
                                   )
-                                : ElevatedButton(
-                                    child: Text('Select from gallery', style: buttonLabelStyleMedium),
-                                    onPressed: () {
-                                      _getImageFromCameraOrGallery(ImageSource.gallery);
-                                    },
+                                : Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                                      ),
+                                      child: Text('Select from gallery', style: buttonLabelStyleMedium),
+                                      onPressed: () {
+                                        _getImageFromCameraOrGallery(ImageSource.gallery);
+                                      },
+                                    ),
                                   ),
                             if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                              ElevatedButton(
-                                child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                                onPressed: () {
-                                  setState(() {
-                                    _isUpdating = true;
-                                    final EventsService nSvc = EventsService();
-                                    nSvc
-                                        .addEditEvent(
-                                      eventId: _eventAggregate.event.eventId,
-                                      useFbLatLon: 1,
-                                    )
-                                        .then((String eventId) async {
-                                      _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                                      setState(() {
-                                        _isUpdating = false;
-                                        final SnackBar snackBar = SnackBar(
-                                          duration: const Duration(seconds: 3),
-                                          content: const Text(
-                                            'Location is being synced from Facebook',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                          ),
-                                          backgroundColor: Colors.blue.shade700,
-                                        );
-                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              const SizedBox(height: 10),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                                  ),
+                                  child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                                  onPressed: () {
+                                    setState(() {
+                                      _isUpdating = true;
+                                      final EventsService nSvc = EventsService();
+                                      nSvc
+                                          .addEditEvent(
+                                        eventId: _eventAggregate.event.eventId,
+                                        useFbImage: 1,
+                                      )
+                                          .then((String eventId) async {
+                                        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                        setState(() {
+                                          _isUpdating = false;
+                                          final SnackBar snackBar = SnackBar(
+                                            duration: const Duration(seconds: 3),
+                                            content: const Text(
+                                              'Image is being synced from Facebook',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                            ),
+                                            backgroundColor: Colors.blue.shade700,
+                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        });
                                       });
                                     });
-                                  });
-                                },
+                                  },
+                                ),
                               ),
                             ],
                           ],
@@ -834,6 +896,26 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             );
           }
         });
+  }
+
+  String _upload(File imageFile, String eventId) {
+    final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
+    final String fileName = 'eventImage_' + eventId + '_$datetime.jpg';
+    final Uri uri = Uri.parse(
+        'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D');
+
+    final Request request = Request('PUT', uri);
+
+    final Map<String, String> headers = <String, String>{'content-type': 'image/jpeg', 'x-ms-blob-type': 'BlockBlob'};
+
+    request.headers.addAll(headers);
+
+    request.bodyBytes = imageFile.readAsBytesSync();
+    request.send().then((StreamedResponse response) {
+      print('Avatar thumbnail upload response = ${response.statusCode}');
+    });
+
+    return fileName;
   }
 
   void _getImageFromCameraOrGallery(ImageSource source) {
@@ -850,8 +932,8 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 sourcePath: image.path,
                 //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
                 //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-                // maxWidth: 300,
-                // maxHeight: 300,
+                maxWidth: 1000,
+                maxHeight: 1000,
                 compressFormat: ImageCompressFormat.jpg,
                 compressQuality: 50);
 
@@ -880,11 +962,46 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
               //   height: MediaQuery.of(context).size.height - 300,
               //   child:
 
-              MyFlutterMap(LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0), _mapCenter, 1.0, 18.0, 14.0, _mapKey),
-              IgnorePointer(
-                ignoring: true,
-                child: Image.asset('images/other/map_center_target.png', height: 300.0, width: 300.0),
+              MyFlutterMap(
+                _eventAggregate.extensions.latitude == null ? null : LatLng(_eventAggregate.extensions.latitude, _eventAggregate.extensions.longitude),
+                _mapCenter,
+                LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude),
+                1.0,
+                18.0,
+                14.0,
+                (LatLng newPosition) {
+                  _mapCenter = newPosition;
+                },
+                _mapKey,
               ),
+              if ((_mapCenter.latitude == CLEAR_LATLONG) || (_mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
+                GestureDetector(
+                  onTapDown: (dynamic tapDownDetails) {
+                    setState(() {
+                      _mapCenter = LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude);
+                    });
+                  },
+                  child: Container(color: Colors.black54),
+                ),
+                IgnorePointer(
+                  ignoring: true,
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 60.0),
+                    child: Text(
+                      'No location selected',
+                      textAlign: TextAlign.center,
+                      style: largeTitleStyle,
+                    ),
+                  ),
+                ),
+              ],
+              if ((_mapCenter.latitude != CLEAR_LATLONG) || (_mapCenter.longitude != CLEAR_LATLONG)) ...<Widget>[
+                IgnorePointer(
+                  ignoring: true,
+                  child: Image.asset('images/other/map_center_target.png', height: 300.0, width: 300.0),
+                ),
+              ],
+
               Positioned(
                 left: 10.0,
                 right: 10.0,
@@ -900,13 +1017,31 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                   ),
                 ),
               ),
+
               Positioned(
                 right: 10.0,
                 top: 10.0,
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _mapCenter = LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0);
+                      _mapCenter = LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
+                    });
+                  },
+                  child: Container(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset('images/other/set_map_to_no_location.png'),
+                  ),
+                ),
+              ),
+
+              Positioned(
+                right: 70.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _mapCenter = LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon);
                     });
                   },
                   child: Container(
@@ -916,22 +1051,28 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                   ),
                 ),
               ),
-              Positioned(
-                right: 70.0,
-                top: 10.0,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _mapCenter = LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0);
-                    });
-                  },
-                  child: Container(
-                    height: 50.0,
-                    width: 50.0,
-                    child: Image.asset('images/other/set_map_to_event_location.png'),
+
+              if (_eventAggregate.extensions.isMapAndDistanceValid) ...<Widget>[
+                Positioned(
+                  right: 130.0,
+                  top: 10.0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _mapCenter = LatLng(
+                          _eventAggregate.extensions.latitude,
+                          _eventAggregate.extensions.longitude,
+                        );
+                      });
+                    },
+                    child: Container(
+                      height: 50.0,
+                      width: 50.0,
+                      child: Image.asset('images/other/set_map_to_event_location.png'),
+                    ),
                   ),
                 ),
-              ),
+              ],
               Positioned(
                 left: 10.0,
                 right: 10.0,
@@ -946,7 +1087,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                             child: HcCircularProgressIndicator(key: UniqueKey()),
                           )
                         : ElevatedButton(
-                            child: Text('Set Location', style: buttonLabelStyleMedium),
+                            child: Text(
+                              ((_mapCenter.latitude == CLEAR_LATLONG) && (_mapCenter.longitude == CLEAR_LATLONG)) ? 'Set no location' : 'Set Location',
+                              style: buttonLabelStyleMedium,
+                            ),
                             onPressed: () {
                               if (_eventAggregate?.event?.eventId == null) {
                                 IveCoreUtilities.showAlert(context, 'Please save details first',
@@ -958,12 +1102,15 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 setState(() {
                                   _isUpdating = true;
                                   final EventsService nSvc = EventsService();
-                                  _mapCenter = _mapKey.currentState.mapController.center;
+                                  // check to see if "no location" is set. If so, don't overwrite it
+                                  if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG)) {
+                                    _mapCenter = _mapKey.currentState.mapController.center;
+                                  }
                                   nSvc
                                       .addEditEvent(
                                     eventId: _eventAggregate.event.eventId,
-                                    lat: _mapKey.currentState.mapController.center.latitude,
-                                    lon: _mapKey.currentState.mapController.center.longitude,
+                                    lat: _mapCenter.latitude,
+                                    lon: _mapCenter.longitude,
                                     useFbLatLon: 0,
                                   )
                                       .then((String eventId) async {
@@ -1524,13 +1671,24 @@ class CheckboxFormField extends FormField<bool> {
 }
 
 class MyFlutterMap extends StatefulWidget {
-  const MyFlutterMap(this.eventLocation, this.mapCenter, this.minZoom, this.maxZoom, this.zoom, Key key) : super(key: key);
+  const MyFlutterMap(
+    this.eventLocation,
+    this.mapCenter,
+    this.kennelLocation,
+    this.minZoom,
+    this.maxZoom,
+    this.zoom,
+    this.mapMoved,
+    Key key,
+  ) : super(key: key);
 
   final LatLng eventLocation;
   final LatLng mapCenter;
+  final LatLng kennelLocation;
   final num minZoom;
   final num maxZoom;
   final num zoom;
+  final Function mapMoved;
 
   @override
   MyFlutterMapState createState() => MyFlutterMapState();
@@ -1544,20 +1702,26 @@ class MyFlutterMapState extends State<MyFlutterMap> {
   @override
   void initState() {
     _oldCenter = widget.mapCenter;
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     // only move the map if the center has changed
-    if (_oldCenter != widget.mapCenter) {
-      mapController.move(widget.mapCenter, mapController.zoom);
-      _oldCenter = widget.mapCenter;
+    LatLng mapCenterPoint = widget.mapCenter;
+    if ((mapCenterPoint.latitude == CLEAR_LATLONG) && (mapCenterPoint.longitude == CLEAR_LATLONG)) {
+      mapCenterPoint = widget.kennelLocation;
+    }
+
+    if (_oldCenter != mapCenterPoint) {
+      mapController.move(mapCenterPoint, mapController.zoom);
+      _oldCenter = mapCenterPoint;
     }
     return FlutterMap(
       mapController: mapController,
       options: MapOptions(
-        center: widget.mapCenter,
+        center: mapCenterPoint,
         zoom: widget.zoom,
         minZoom: widget.minZoom,
         maxZoom: widget.maxZoom,
@@ -1574,7 +1738,7 @@ class MyFlutterMapState extends State<MyFlutterMap> {
             Marker(
               height: 50.0,
               width: 50.0,
-              point: LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
+              point: LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
               builder: (BuildContext ctx) => Container(
                 padding: const EdgeInsets.all(1.0),
                 height: 50.0,
@@ -1589,19 +1753,21 @@ class MyFlutterMapState extends State<MyFlutterMap> {
                 ),
               ),
             ),
-            Marker(
-              width: 120.0,
-              height: 120.0,
-              point: widget.eventLocation,
-              builder: (BuildContext ctx) => GestureDetector(
-                //onTap: () => _launchMaps(widget.futureRun.event),
-                child: Container(
-                  padding: const EdgeInsets.only(bottom: 58.0),
-                  child: Image.asset('images/icons/map_pin_foot.png'),
-                  //child: FlutterLogo(colors: Colors.purple),
+            if (widget.eventLocation != null) ...<Marker>[
+              Marker(
+                width: 120.0,
+                height: 120.0,
+                point: widget.eventLocation,
+                builder: (BuildContext ctx) => GestureDetector(
+                  //onTap: () => _launchMaps(widget.futureRun.event),
+                  child: Container(
+                    padding: const EdgeInsets.only(bottom: 58.0),
+                    child: Image.asset('images/icons/map_pin_foot.png'),
+                    //child: FlutterLogo(colors: Colors.purple),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         )
       ],

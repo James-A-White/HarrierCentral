@@ -3,7 +3,7 @@ import 'package:harrier_central/imports.dart';
 class ReceiptsList extends StatefulWidget {
   const ReceiptsList({Key key, @required this.eventAggregate}) : super(key: key);
 
-  final RunDetailAggregate eventAggregate;
+  final RunAdminAggregate eventAggregate;
 
   @override
   ReceiptsListState createState() => ReceiptsListState();

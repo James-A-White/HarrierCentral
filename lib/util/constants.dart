@@ -41,6 +41,7 @@ const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
 
 const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
+const String BASE_EVENT_IMAGE_URL = 'https://harriercentral.blob.core.windows.net/event-images/';
 const String BASE_RECEIPTS_URL = 'https://harriercentral.blob.core.windows.net/receipts/';
 
 const String EMAIL_RUN_DETAILS_TO_PACK_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
@@ -69,7 +70,9 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 330;
+const int DB_VERSION = 350;
+
+const num CLEAR_LATLONG = -2.0;
 
 const int IGNORE_REPLICATION_TIMESTAMP = 628387200000; // 1990-01-01 00:00:00
 const int FORCE_ALL_REPLICATION_TIMESTAMP = 949276800000; // 2000-01-31 00:00:00

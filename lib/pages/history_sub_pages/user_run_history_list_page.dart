@@ -700,7 +700,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               Navigator.push<dynamic>(
                                 context,
                                 MaterialPageRoute<dynamic>(
-                                  builder: (BuildContext context) => RunDetailPage(eventId: item.eventId),
+                                  builder: (BuildContext context) => RunAdminPage(eventId: item.eventId),
                                 ),
                               ); //
                             },

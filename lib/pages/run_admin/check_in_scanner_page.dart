@@ -3,7 +3,7 @@ import 'package:harrier_central/imports.dart';
 class CheckInScannerPage extends StatefulWidget {
   const CheckInScannerPage({@required this.eventAggregate});
 
-  final RunDetailAggregate eventAggregate;
+  final RunAdminAggregate eventAggregate;
 
   @override
   _CheckInScannerPageState createState() => _CheckInScannerPageState();

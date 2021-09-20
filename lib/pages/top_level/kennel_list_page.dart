@@ -100,7 +100,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user, hasherId: hasherId);
 
         for (int i = 0; i < results.length; i++) {
-          final num dist = await locator.distanceBetween(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0, results[i]['cityLat'] + .0, results[i]['cityLon'] + .0);
+          final num dist = await locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['cityLat'] + .0, results[i]['cityLon'] + .0);
 
           final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
           final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);

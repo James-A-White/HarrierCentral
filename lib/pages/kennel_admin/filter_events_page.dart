@@ -697,14 +697,14 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             final dynamic rawEvent = _calendarEvents[_toDateOnly(_calendarController.selectedDay)][0];
 
             if ((rawEvent != null) && (rawEvent['eventId'] != null)) {
-              RunDetailAggregate rda = await CommonQueries.getEventFromLocalCache(rawEvent['eventId'], getStringPref(StringPrefsEnum.userId));
+              RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent['eventId'], getStringPref(StringPrefsEnum.userId));
 
               Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
                       builder: (BuildContext context) => EditRunDetailsPage(rda, (String eventId) async {
                             final String userId = getStringPref(StringPrefsEnum.userId);
-                            rda = await CommonQueries.getEventFromLocalCache(eventId, userId);
+                            rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
                             _isLoading = false;
                             return rda;
                           }))).then((void dummy) {
@@ -737,14 +737,14 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         ElevatedButton(
           child: Text('Add event', style: buttonLabelStyleMedium),
           onPressed: () async {
-            RunDetailAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _calendarController?.selectedDay);
+            RunAdminAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _calendarController?.selectedDay);
 
             Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) => EditRunDetailsPage(rda, (String eventId) async {
                           final String userId = getStringPref(StringPrefsEnum.userId);
-                          rda = await CommonQueries.getEventFromLocalCache(eventId, userId);
+                          rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
                           _isLoading = false;
                           return rda;
                         }))).then((void dummy) {
