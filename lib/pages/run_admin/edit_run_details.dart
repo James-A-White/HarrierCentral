@@ -1185,6 +1185,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 .then((String eventId) async {
                               _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
                               setState(() {
+                                _mapCenter = LatLng(
+                                  _eventAggregate.extensions.latitude,
+                                  _eventAggregate.extensions.longitude,
+                                );
                                 _isUpdating = false;
                                 final SnackBar snackBar = SnackBar(
                                   duration: const Duration(seconds: 3),
