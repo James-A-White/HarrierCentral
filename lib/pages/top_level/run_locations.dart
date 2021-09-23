@@ -1,6 +1,7 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-import 'package:latlong/latlong.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 import 'package:geolocator/geolocator.dart';
 
 // class MapMarker extends Marker {
@@ -137,8 +138,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
   Widget getFab() {
     return SpeedDial(
-        marginEnd: 18,
-        marginBottom: 10,
+        // marginEnd: 18,
+        // marginBottom: 10,
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: const IconThemeData(size: 22.0),
         // this is ignored if animatedIcon is non null
@@ -222,8 +223,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                 setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
                 mapController.move(
                     ((homeKennelLat != null) && (homeKennelLon != null))
-                        ? LatLng(homeKennelLat + .0, homeKennelLon + .0)
-                        : LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+                        ? latlng.LatLng(homeKennelLat + .0, homeKennelLon + .0)
+                        : latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
                     mapController.zoom);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
@@ -237,7 +238,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
               } else {
                 mapCenterOption = centerOnCurrentLocation.value;
                 setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
-                mapController.move(LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon), mapController.zoom);
+                mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon), mapController.zoom);
 
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
@@ -281,12 +282,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<RunDetailsAggregate> getSingleRun(String eventId) async {
-    final Geolocator locator = Geolocator();
+    //final Geolocator locator = Geolocator();
     RunDetailsAggregate item;
 
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
     if (results.isNotEmpty) {
-      final num dist = await locator.distanceBetween(
+      final num dist = Geolocator.distanceBetween(
         G0<DeviceInfo>().deviceLat,
         G0<DeviceInfo>().deviceLon,
         results[0]['latitude'] + .0,
@@ -403,7 +404,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     for (int i = 0; i < filteredRuns.length; i++) {
       final RunDetailsAggregate run = filteredRuns[i];
 
-      final LatLng ll = LatLng(
+      final latlng.LatLng ll = latlng.LatLng(
         run.extensions.latitude,
         run.extensions.longitude,
       );
@@ -469,12 +470,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
               setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
 
               if ((mapCenterOption == centerOnHomeKennel.value) && (homeKennelLat != null) && (homeKennelLon != null)) {
-                mapController.move(LatLng(homeKennelLat + .0, homeKennelLon + .0), mapController.zoom);
+                mapController.move(latlng.LatLng(homeKennelLat + .0, homeKennelLon + .0), mapController.zoom);
               }
             }
 
             if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
-              final LatLng ll = LatLng(lat + .0, lon + .0);
+              final latlng.LatLng ll = latlng.LatLng(lat + .0, lon + .0);
               final Marker marker = Marker(
                   width: 120.0,
                   height: 120.0,
@@ -532,14 +533,14 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     }
     return GestureDetector(
       onTap: () async {
-        final Geolocator locator = Geolocator();
+        //final Geolocator locator = Geolocator();
 
         final String hasherId = getStringPref(StringPrefsEnum.userId);
         final List<Map<String, dynamic>> results =
             await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
         if (results.isNotEmpty) {
-          final num dist = await locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+          final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
 
           final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
           final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
@@ -634,10 +635,10 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                   mapController: mapController,
                   options: MapOptions(
                     center: (widget.kennel?.kennelLatitude != null)
-                        ? LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
+                        ? latlng.LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
                         : ((mapCenterOption == centerOnCurrentLocation.value) || (homeKennelLat == null) || (homeKennelLon == null))
-                            ? LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon)
-                            : LatLng(homeKennelLat + .0, homeKennelLon + .0),
+                            ? latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon)
+                            : latlng.LatLng(homeKennelLat + .0, homeKennelLon + .0),
                     zoom: 10.0,
                     minZoom: 1.0,
                     maxZoom: 18.0,

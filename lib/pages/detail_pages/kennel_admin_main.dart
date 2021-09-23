@@ -1,7 +1,8 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong/latlong.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 import 'package:intl/intl.dart';
 
 class KennelAdminMainPage extends StatefulWidget {
@@ -59,35 +60,34 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
-      final Geolocator locator = Geolocator();
+      //final Geolocator locator = Geolocator();
 
       QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId)
           .then((List<Map<String, dynamic>> results) {
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {
-          locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['latitude'] + .0, results[i]['longitude'] + .0).then((num dist) {
-            final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
-            final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
-            extensionsItem.distToEvent = dist;
+          final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['latitude'] + .0, results[i]['longitude'] + .0);
+          final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
+          final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+          final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
+          extensionsItem.distToEvent = dist;
 
-            String paymentLinkUrl = '';
+          String paymentLinkUrl = '';
 
-            if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-              paymentLinkUrl = eventItem.eventPaymentUrl;
-            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
-                ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-              paymentLinkUrl = kennelItem.kennelPaymentUrl;
-            }
+          if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
+            paymentLinkUrl = eventItem.eventPaymentUrl;
+          } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
+              ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+            paymentLinkUrl = kennelItem.kennelPaymentUrl;
+          }
 
-            final num julianNow = results[i]['nowJulian'];
-            final num eventJulian = results[i]['eventJulian'];
+          final num julianNow = results[i]['nowJulian'];
+          final num eventJulian = results[i]['eventJulian'];
 
-            print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+          print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
-            final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-            allRuns.add(item);
-          });
+          final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+          allRuns.add(item);
         }
       });
     }
@@ -484,8 +484,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   child: FlutterMap(
                                     mapController: mapController,
                                     options: MapOptions(
-                                      interactive: false,
-                                      center: LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+                                      //interactive: false,
+                                      center: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
                                       zoom: sliderValue,
                                       minZoom: 1.0,
                                       maxZoom: 18.0,
@@ -502,7 +502,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           Marker(
                                             width: 240.0,
                                             height: 240.0,
-                                            point: LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+                                            point: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
                                             builder: (BuildContext ctx) => GestureDetector(
                                               onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat, widget.kennelAggregateItem.extensions.cityLat),
                                               child: Container(
@@ -541,7 +541,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     onChanged: (num val) {
                                       // setState(() {
                                       if (mapController != null) {
-                                        mapController.move(LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
+                                        mapController.move(
+                                            latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
                                       }
                                       setState(() {
                                         sliderValue = val;

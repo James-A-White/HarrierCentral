@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'hasher_event_map_service.dart';
@@ -27,21 +28,15 @@ HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) {
     removed: json['removed'] as int,
     hemEventName: json['hemEventName'] as String,
     hemEventNumber: json['hemEventNumber'] as int,
-    hemEventStartDatetime: json['hemEventStartDatetime'] == null
-        ? null
-        : DateTime.parse(json['hemEventStartDatetime'] as String),
+    hemEventStartDatetime: json['hemEventStartDatetime'] == null ? null : DateTime.parse(json['hemEventStartDatetime'] as String),
     hemEventIsCountedAndVisible: json['hemEventIsCountedAndVisible'] as int,
     hemCanEditRunAttendence: json['hemCanEditRunAttendence'] as num,
     hemEventKennelId: json['hemEventKennelId'] as String,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$HasherEventMapModelToJson(
-        HasherEventMapModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$HasherEventMapModelToJson(HasherEventMapModel instance) => <String, dynamic>{
       'hemId': instance.hemId,
       'userId': instance.userId,
       'eventId': instance.eventId,
@@ -60,8 +55,7 @@ Map<String, dynamic> _$HasherEventMapModelToJson(
       'phoneNumber': instance.phoneNumber,
       'hemEventName': instance.hemEventName,
       'hemEventNumber': instance.hemEventNumber,
-      'hemEventStartDatetime':
-          instance.hemEventStartDatetime?.toIso8601String(),
+      'hemEventStartDatetime': instance.hemEventStartDatetime?.toIso8601String(),
       'hemCanEditRunAttendence': instance.hemCanEditRunAttendence,
       'hemEventKennelId': instance.hemEventKennelId,
       'hemEventIsCountedAndVisible': instance.hemEventIsCountedAndVisible,

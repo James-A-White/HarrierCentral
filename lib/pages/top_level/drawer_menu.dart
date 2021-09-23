@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
 

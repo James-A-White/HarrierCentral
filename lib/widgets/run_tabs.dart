@@ -1,5 +1,6 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
-import 'package:latlong/latlong.dart' as lat_lng;
+import 'package:latlong2/latlong.dart' as latlng;
 
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
@@ -671,7 +672,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           children: <Widget>[
             FlutterMap(
               options: MapOptions(
-                center: lat_lng.LatLng(
+                center: latlng.LatLng(
                   widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
                   widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
                 ),
@@ -692,7 +693,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       Marker(
                         width: 120.0,
                         height: 120.0,
-                        point: lat_lng.LatLng(
+                        point: latlng.LatLng(
                           widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
                           widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
                         ),
@@ -740,8 +741,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         opacity: fabIsVisible ? 1.0 : 0.0,
         child: SpeedDial(
           // both default to 16
-          marginEnd: 18,
-          marginBottom: 20,
+          // marginEnd: 18,
+          // marginBottom: 20,
           animatedIcon: AnimatedIcons.menu_close,
           animatedIconTheme: const IconThemeData(size: 22.0),
           // this is ignored if animatedIcon is non null

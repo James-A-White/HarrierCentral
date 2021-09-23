@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 part 'hasher_event_map_service.g.dart';
@@ -199,7 +200,7 @@ class HasherEventMapService {
         'emailAddress': emailAddress
       });
 
-      final Response response = await post(EMAIL_RUN_REPORT_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      final Response response = await post(Uri.parse(EMAIL_RUN_REPORT_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
         (dynamic error) {
           return Future<Response>.value(null);
         },

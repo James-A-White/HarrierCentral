@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class ImprintPage extends StatefulWidget {
@@ -14,9 +15,7 @@ class ImprintPageState extends State<ImprintPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -41,8 +40,7 @@ class ImprintPageState extends State<ImprintPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus ==
-              EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
@@ -59,19 +57,9 @@ class ImprintPageContent extends StatefulWidget {
 }
 
 class _ImprintPageContentState extends State<ImprintPageContent> {
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 24.0,
-      height: 1.2);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.2);
 
-  TextStyle bodyStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 20.0,
-      height: 1.2);
+  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.2);
 
   String appName;
   String packageName;
@@ -89,8 +77,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
       });
     });
 
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
         child: ConstrainedBox(
           constraints: const BoxConstraints(
@@ -112,9 +99,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}',
-                          style: bodyStyle),
+                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}', style: bodyStyle),
                     ],
                   ),
                   Row(
@@ -126,8 +111,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                          'Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31',
+                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31',
                           style: bodyStyle),
                     ],
                   ),
@@ -154,8 +138,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('© 2020, InnoVet Europe\r\nAll rights reserved',
-                          style: bodyStyle),
+                      Text('© 2020, InnoVet Europe\r\nAll rights reserved', style: bodyStyle),
                     ],
                   ),
                   Row(

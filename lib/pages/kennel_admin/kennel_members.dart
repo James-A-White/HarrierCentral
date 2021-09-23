@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/kennel_admin/mismanagement_roles_page.dart';
 
@@ -282,8 +283,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
       key: _scaffoldKey,
       floatingActionButton: SpeedDial(
         // both default to 16
-        marginEnd: 18,
-        marginBottom: 30,
+        // marginEnd: 18,
+        // marginBottom: 30,
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: const IconThemeData(size: 22.0),
         // this is ignored if animatedIcon is non null

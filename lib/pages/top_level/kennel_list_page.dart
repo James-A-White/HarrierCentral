@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -88,7 +89,7 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   Future<void> _refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (G0<TableModel>().globalKennelMainPageList == null) || (G0<TableModel>().globalKennelMainPageList.isEmpty)) {
-      final Geolocator locator = Geolocator();
+      //final Geolocator locator = Geolocator();
       if (G0<TableModel>().globalKennelMainPageList != null) {
         G0<TableModel>().globalKennelMainPageList.clear();
       }
@@ -100,7 +101,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user, hasherId: hasherId);
 
         for (int i = 0; i < results.length; i++) {
-          final num dist = await locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['cityLat'] + .0, results[i]['cityLon'] + .0);
+          final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['cityLat'] + .0, results[i]['cityLon'] + .0);
 
           final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
           final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);

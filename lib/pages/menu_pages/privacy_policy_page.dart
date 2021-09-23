@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
@@ -91,17 +92,18 @@ class PDFScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PDFViewerScaffold(
-        appBar: AppBar(
-          backgroundColor: themeAppBarBackground,
-          title: const Text('Privacy Policy'),
-          // actions: <Widget>[
-          //   IconButton(
-          //     icon:const  Icon(Icons.share),
-          //     onPressed: () {},
-          //   ),
-          // ],
-        ),
-        path: pathPDF);
+    return Container();
+    // return PDFViewerScaffold(
+    //     appBar: AppBar(
+    //       backgroundColor: themeAppBarBackground,
+    //       title: const Text('Privacy Policy'),
+    //       // actions: <Widget>[
+    //       //   IconButton(
+    //       //     icon:const  Icon(Icons.share),
+    //       //     onPressed: () {},
+    //       //   ),
+    //       // ],
+    //     ),
+    //     path: pathPDF);
   }
 }

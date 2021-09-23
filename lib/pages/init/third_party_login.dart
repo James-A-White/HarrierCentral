@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class ThirdPartyLogin extends StatefulWidget {
@@ -80,7 +81,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                         if (Platform.isIOS) ...<Widget>[
                           GestureDetector(
                             onTap: () {
-                              _appleLogin();
+                              //_appleLogin();
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
@@ -108,62 +109,63 @@ class _LoginPageState extends State<ThirdPartyLogin> {
     );
   }
 
-  Future<void> _appleLogin() async {
-    try {
-      final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: <AppleIDAuthorizationScopes>[
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-        webAuthenticationOptions: WebAuthenticationOptions(
-          clientId: 'com.harriercentral.hc',
-          redirectUri: Uri.parse(
-            'https://hcazurefunctions7.azurewebsites.net/api/HandleResponseFromApple',
-          ),
-        ),
-        nonce: 'riejlwWj8f093FekWo9r3Edo9sp2Rdp3',
-        state: 'Test',
-      );
+  // Future<void> _appleLogin() async {
+  //   try {
+  //     final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
+  //       scopes: <AppleIDAuthorizationScopes>[
+  //         AppleIDAuthorizationScopes.email,
+  //         AppleIDAuthorizationScopes.fullName,
+  //       ],
+  //       webAuthenticationOptions: WebAuthenticationOptions(
+  //         clientId: 'com.harriercentral.hc',
+  //         redirectUri: Uri.parse(
+  //           'https://hcazurefunctions7.azurewebsites.net/api/HandleResponseFromApple',
+  //         ),
+  //       ),
+  //       nonce: 'riejlwWj8f093FekWo9r3Edo9sp2Rdp3',
+  //       state: 'Test',
+  //     );
 
-      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, appleCredential.authorizationCode);
-      await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
-      await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
-      await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
-      await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
+  //     await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, appleCredential.authorizationCode);
+  //     await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
+  //     await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
+  //     await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
+  //     await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
 
-      final ThirdPartyLoginData d = ThirdPartyLoginData(
-        'apple',
-        appleCredential.identityToken,
-        appleCredential.userIdentifier,
-        appleCredential.givenName,
-        appleCredential.familyName,
-        appleCredential.email,
-        authorizationCode: appleCredential.authorizationCode,
-      );
+  //     final ThirdPartyLoginData d = ThirdPartyLoginData(
+  //       'apple',
+  //       appleCredential.identityToken,
+  //       appleCredential.userIdentifier,
+  //       appleCredential.givenName,
+  //       appleCredential.familyName,
+  //       appleCredential.email,
+  //       authorizationCode: appleCredential.authorizationCode,
+  //     );
 
-      _onLoginStatusChanged(true, loginData: d);
-    } on UnknownSignInWithAppleException catch (e) {
-      print('UnknownSignInWithAppleException');
-      print(e.message);
-    } on SignInWithAppleCredentialsException catch (e) {
-      print('SignInWithAppleCredentialsException');
-      print(e.message);
-    } on SignInWithAppleAuthorizationException catch (e) {
-      print('SignInWithAppleCredentialsException');
-      print(e.message);
-    } on SignInWithAppleNotSupportedException catch (e) {
-      print('SignInWithAppleCredentialsException');
-      print(e.message);
-    }
+  //     _onLoginStatusChanged(true, loginData: d);
+  //   } on UnknownSignInWithAppleException catch (e) {
+  //     print('UnknownSignInWithAppleException');
+  //     print(e.message);
+  //   } on SignInWithAppleCredentialsException catch (e) {
+  //     print('SignInWithAppleCredentialsException');
+  //     print(e.message);
+  //   } on SignInWithAppleAuthorizationException catch (e) {
+  //     print('SignInWithAppleCredentialsException');
+  //     print(e.message);
+  //   } on SignInWithAppleNotSupportedException catch (e) {
+  //     print('SignInWithAppleCredentialsException');
+  //     print(e.message);
+  //   }
 
-    // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
-    // after they have been validated with Apple (see `Integration` section for more information on how to do this)
-  }
+  //   // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
+  //   // after they have been validated with Apple (see `Integration` section for more information on how to do this)
+  // }
 
   Future<void> _facebookLogin() async {
-    try {
-      // by default the login method has the next permissions ['email','public_profile']
-      final AccessToken accessToken = await FacebookAuth.instance.login();
+    // by default the login method has the next permissions ['email','public_profile']
+    final LoginResult loginResult = await FacebookAuth.instance.login();
+    if (loginResult.status == LoginStatus.success) {
+      final AccessToken accessToken = loginResult.accessToken;
 
       // get the user data
       final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
@@ -191,19 +193,19 @@ class _LoginPageState extends State<ThirdPartyLogin> {
       );
 
       _onLoginStatusChanged(true, loginData: d);
-    } on FacebookAuthException catch (e) {
-      switch (e.errorCode) {
-        case FacebookAuthErrorCode.OPERATION_IN_PROGRESS:
-          print('You have a previous login operation in progress');
-          break;
-        case FacebookAuthErrorCode.CANCELLED:
+    } else {
+      switch (loginResult.status) {
+        case LoginStatus.cancelled:
           print('login cancelled');
           break;
-        case FacebookAuthErrorCode.FAILED:
+        case LoginStatus.failed:
           print('login failed');
           break;
+        case LoginStatus.operationInProgress:
+          print('another operation is already in progress');
+          break;
         default:
-          print(e.errorCode);
+          print('Unknown Facebook login error');
           break;
       }
     }

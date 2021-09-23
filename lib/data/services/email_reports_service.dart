@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class EmailReportsService {
@@ -20,7 +21,7 @@ class EmailReportsService {
         'currencySymbol': currencySymbol
       });
 
-      final Response response = await post(EMAIL_KENNEL_RUN_STATS_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      final Response response = await post(Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
         (dynamic error) {
           return Future<Response>.value(null);
         },

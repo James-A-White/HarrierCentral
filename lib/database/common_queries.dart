@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 import 'package:geolocator/geolocator.dart';
@@ -76,12 +77,10 @@ class CommonQueries {
 
       final List<Map<String, dynamic>> queryResults = await G0<Database>().rawQuery(sql);
 
-      final Geolocator locator = Geolocator();
-
       if (queryResults.isNotEmpty) {
         for (int i = 0; i < queryResults.length; i++) {
           if (queryResults[i]['lat'] != null) {
-            final num dist = await locator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+            final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
 
             if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
               continue;
@@ -240,7 +239,7 @@ class CommonQueries {
 
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
 
-      final Geolocator locator = Geolocator();
+      //final Geolocator locator = Geolocator();
 
       if (results.isNotEmpty) {
         final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
@@ -251,14 +250,14 @@ class CommonQueries {
         num dist;
 
         if (extensions.latitude != null) {
-          dist = await locator.distanceBetween(
+          dist = Geolocator.distanceBetween(
             G0<DeviceInfo>().deviceLat,
             G0<DeviceInfo>().deviceLon,
             extensions.latitude,
             extensions.longitude,
           );
         } else {
-          dist = await locator.distanceBetween(
+          dist = Geolocator.distanceBetween(
             G0<DeviceInfo>().deviceLat,
             G0<DeviceInfo>().deviceLon,
             kennel.kennelLatitude,

@@ -1,11 +1,9 @@
+// @dart=2.11
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class OfflineModeRibbon extends StatelessWidget {
-  const OfflineModeRibbon(
-      {@required this.showRibbon,
-      @required this.lastSync,
-      this.ribbonImage = 'images/icons/offline_mode.png'});
+  const OfflineModeRibbon({@required this.showRibbon, @required this.lastSync, this.ribbonImage = 'images/icons/offline_mode.png'});
 
   final bool showRibbon;
   final DateTime lastSync;
@@ -27,11 +25,7 @@ class OfflineModeRibbon extends StatelessWidget {
                       'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d \'at\' h:mm a").format(lastSync)}',
                       'OK');
                 } else {
-                  showAlert(
-                      context,
-                      'Offline Mode',
-                      'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.',
-                      'OK');
+                  showAlert(context, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK');
                 }
               },
               child: Image.asset(
@@ -43,10 +37,7 @@ class OfflineModeRibbon extends StatelessWidget {
           );
   }
 
-  static Future<bool> showAlert(
-      BuildContext context, String title, String body, String buttonText,
-      {bool showCancelButton = false,
-      String cancelButtonText = 'Cancel'}) async {
+  static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false, String cancelButtonText = 'Cancel'}) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!

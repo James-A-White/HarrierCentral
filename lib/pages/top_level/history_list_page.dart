@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 final GlobalKey<HistoryListPageState> historyListPageKey = GlobalKey<HistoryListPageState>();

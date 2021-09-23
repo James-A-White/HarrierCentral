@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'cities_service.dart';
@@ -16,14 +17,11 @@ CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) {
     cityAscii: json['cityAscii'] as String,
     flagFile: json['flagFile'] as String,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$CitiesModelToJson(CitiesModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CitiesModelToJson(CitiesModel instance) => <String, dynamic>{
       'cityId': instance.cityId,
       'cityName': instance.cityName,
       'regionId': instance.regionId,

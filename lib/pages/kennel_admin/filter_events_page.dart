@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -20,10 +21,15 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   void dispose() {
     //_pageController?.dispose();
     _tabController.dispose();
-    _calendarController.dispose();
+    //_calendarController.dispose();
     _animationController.dispose();
     super.dispose();
   }
+
+  final ValueNotifier<DateTime> _focusedDay = ValueNotifier<DateTime>(DateTime.now());
+
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff;
 
   @override
   void initState() {
@@ -36,7 +42,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     _refreshSqlTablesFromBackend(true);
 
     super.initState();
-    _calendarController = CalendarController();
+    //_calendarController = Calen();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -60,7 +66,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   final List<Tab> _tabs = <Tab>[];
 
   TabController _tabController;
-  CalendarController _calendarController;
+  //CalendarController _calendarController;
+  PageController _pageController;
   AnimationController _animationController;
 
   DateTime _selectedDate;
@@ -177,11 +184,11 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             // rebuild the items in _selectedDate so that state changes
             // are reflected in the UI when someone changes an event's
             // properties
-            if (_calendarController?.selectedDay != null) {
-              if (eventDate == _toDateOnly(_calendarController.selectedDay)) {
-                _selectedEvents.add(event);
-              }
-            }
+            // if (_calendarController?.selectedDay != null) {
+            //   if (eventDate == _toDateOnly(_calendarController.selectedDay)) {
+            //     _selectedEvents.add(event);
+            //   }
+            // }
           }
         }
 
@@ -466,209 +473,204 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             Container(
               //color: Colors.white,
               padding: const EdgeInsets.only(bottom: 10.0),
-              child: TableCalendar(
-                onCalendarCreated: (DateTime firstVisibleDay, DateTime lastVisibleDay, CalendarFormat calendarFormat) {
-                  if (_selectedDate == null) {
-                    _calendarController.setSelectedDay(DateTime.now().add(const Duration(days: 1)), runCallback: false);
-                  } else {
-                    _calendarController.setSelectedDay(_selectedDate);
-                  }
-                  //if (_calendarController.selectedDay == null) {
-                  //_calendarController.setSelectedDay(DateTime.now().add(const Duration(days: 1)), runCallback: false);
-                  //}
-                },
+              child: TableCalendar<dynamic>(
+                onCalendarCreated: (PageController controller) => _pageController = controller,
+                firstDay: DateTime(2010, 1, 1),
+                lastDay: DateTime(2030, 1, 1),
+                focusedDay: _selectedDate ?? DateTime.now().add(const Duration(days: 1)),
                 rowHeight: 35.0,
                 //startDay: DateTime.now(),
                 headerStyle: HeaderStyle(
                   rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.black),
                   leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.black),
-                  centerHeaderTitle: true,
                   formatButtonDecoration: BoxDecoration(
                     color: Colors.blue.shade600,
                     borderRadius: BorderRadius.circular(6.0),
                   ),
                   formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
                 ),
-                onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
-                  _calendarController.setSelectedDay(datePressed);
-                  _selectedDate = datePressed;
+                onDayLongPressed: (DateTime selectedDay, DateTime focusedDay) {},
+                // onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
+                //   _calendarController.setSelectedDay(datePressed);
+                //   _selectedDate = datePressed;
 
-                  // only allow the date popup if the conditions allowing for new runs is met
-                  if (datePressed != null &&
-                      _toDateOnly(datePressed).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-                      (_calendarEvents[_toDateOnly(datePressed)]?.length ?? 0) == 0) {
-                    _showEventPopup(datePressed);
-                  }
-                },
-                calendarController: _calendarController,
-                events: _calendarEvents.cast<DateTime, List<dynamic>>(),
-                onDaySelected: _onDaySelected,
-                availableCalendarFormats: const <CalendarFormat, String>{
-                  CalendarFormat.month: 'Week',
-                  CalendarFormat.week: 'Month',
-                },
-                calendarStyle: CalendarStyle(
-                  selectedColor: Colors.deepOrange[400],
-                  todayColor: Colors.deepOrange[200],
-                  markersColor: Colors.brown[700],
-                  outsideDaysVisible: false,
-                ),
-                builders: CalendarBuilders(
-                  selectedDayBuilder: (BuildContext context, DateTime date, _) {
-                    return FutureBuilder<DateTime>(
-                        future: _dateBeingUpdated,
-                        builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
-                          return ((snapshot.hasData) && (_toDateOnly(snapshot.data) == _toDateOnly(date)))
-                              ? Container(
-                                  decoration: BoxDecoration(
-                                    color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                                        ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
-                                            ? Colors.blue.shade100
-                                            : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                                                ? Colors.white
-                                                : Colors.grey.shade200
-                                        : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                                            ? Colors.red.shade100
-                                            : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                                                ? Colors.grey.shade300
-                                                : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                                                    ? Colors.green.shade100
-                                                    : Colors.yellow.shade200,
-                                    border: Border.all(
-                                      color: Colors.red,
-                                      width: 3.0,
-                                    ),
-                                  ),
-                                  // margin: const EdgeInsets.all(4.0),
-                                  // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                                  //color: Colors.deepOrange[300],
-                                  width: 100,
-                                  height: 50,
-                                  child: Icon(delayIcon, color: Colors.blue),
-                                )
-                              : FadeTransition(
-                                  opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                                          ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
-                                              ? Colors.blue.shade100
-                                              : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                                                  ? Colors.white
-                                                  : Colors.grey.shade200
-                                          : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                                              ? Colors.red.shade100
-                                              : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                                                  ? Colors.grey.shade300
-                                                  : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                                                      ? Colors.green.shade100
-                                                      : Colors.yellow.shade200,
-                                      border: Border.all(
-                                        color: Colors.red,
-                                        width: 3.0,
-                                      ),
-                                    ),
-                                    // margin: const EdgeInsets.all(4.0),
-                                    // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                                    //color: Colors.deepOrange[300],
-                                    width: 100,
-                                    height: 50,
-                                    child: Text(
-                                      '${date.day}',
-                                      style: const TextStyle().copyWith(fontSize: 16.0),
-                                    ),
-                                  ),
-                                );
-                        });
-                  },
-                  todayDayBuilder: (BuildContext context, DateTime date, _) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
-                        border: Border.all(
-                          color: Colors.black26,
-                          width: 1.0,
-                        ),
-                      ),
-                      width: 100,
-                      height: 50,
-                      child: Text(
-                        '${date.day}',
-                        style: const TextStyle().copyWith(fontSize: 16.0),
-                      ),
-                    );
-                  },
-                  dayBuilder: (BuildContext context, DateTime date, _) {
-                    return FutureBuilder<DateTime>(
-                        future: _dateBeingUpdated,
-                        builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
-                          return ((snapshot.hasData) && _toDateOnly(snapshot.data) == _toDateOnly(date))
-                              ? Container(color: Colors.pink)
-                              : Container(
-                                  // margin: const EdgeInsets.all(4.0),
-                                  // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                                  decoration: BoxDecoration(
-                                    color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                                        ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                                            ? Colors.white
-                                            : Colors.grey.shade200
-                                        : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                                            ? Colors.red.shade100
-                                            : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                                                ? Colors.grey.shade300
-                                                : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                                                    ? Colors.green.shade100
-                                                    : Colors.yellow.shade200,
-                                    border: Border.all(
-                                      color: Colors.black26,
-                                      width: 1.0,
-                                    ),
-                                  ),
-                                  width: 100,
-                                  height: 50,
-                                  child: Text(
-                                    '${date.day}',
-                                    style: const TextStyle().copyWith(
-                                        fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
-                                  ),
-                                );
-                        });
-                  },
-                  // markersBuilder: (context, date, events, holidays) {
-                  //   final children = <Widget>[];
+                //   // only allow the date popup if the conditions allowing for new runs is met
+                //   if (datePressed != null &&
+                //       _toDateOnly(datePressed).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+                //       (_calendarEvents[_toDateOnly(datePressed)]?.length ?? 0) == 0) {
+                //     _showEventPopup(datePressed);
+                //   }
+                // },
 
-                  //   if (events.isNotEmpty) {
-                  //     children.add(
-                  //       Positioned(
-                  //         right: 1,
-                  //         bottom: 1,
-                  //         child: _buildEventsMarker(date, events),
-                  //       ),
-                  //     );
-                  //   }
+                // events: _calendarEvents.cast<DateTime, List<dynamic>>(),
+                // onDaySelected: _onDaySelected,
+                // availableCalendarFormats: const <CalendarFormat, String>{
+                //   CalendarFormat.month: 'Week',
+                //   CalendarFormat.week: 'Month',
+                // },
+                // calendarStyle: CalendarStyle(
+                //   selectedColor: Colors.deepOrange[400],
+                //   todayColor: Colors.deepOrange[200],
+                //   markersColor: Colors.brown[700],
+                //   outsideDaysVisible: false,
+                // ),
+                // builders: CalendarBuilders(
+                //   selectedDayBuilder: (BuildContext context, DateTime date, _) {
+                //     return FutureBuilder<DateTime>(
+                //         future: _dateBeingUpdated,
+                //         builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                //           return ((snapshot.hasData) && (_toDateOnly(snapshot.data) == _toDateOnly(date)))
+                //               ? Container(
+                //                   decoration: BoxDecoration(
+                //                     color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                //                         ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                //                             ? Colors.blue.shade100
+                //                             : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                //                                 ? Colors.white
+                //                                 : Colors.grey.shade200
+                //                         : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                //                             ? Colors.red.shade100
+                //                             : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                //                                 ? Colors.grey.shade300
+                //                                 : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                //                                     ? Colors.green.shade100
+                //                                     : Colors.yellow.shade200,
+                //                     border: Border.all(
+                //                       color: Colors.red,
+                //                       width: 3.0,
+                //                     ),
+                //                   ),
+                //                   // margin: const EdgeInsets.all(4.0),
+                //                   // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                //                   //color: Colors.deepOrange[300],
+                //                   width: 100,
+                //                   height: 50,
+                //                   child: Icon(delayIcon, color: Colors.blue),
+                //                 )
+                //               : FadeTransition(
+                //                   opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
+                //                   child: Container(
+                //                     decoration: BoxDecoration(
+                //                       color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                //                           ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                //                               ? Colors.blue.shade100
+                //                               : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                //                                   ? Colors.white
+                //                                   : Colors.grey.shade200
+                //                           : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                //                               ? Colors.red.shade100
+                //                               : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                //                                   ? Colors.grey.shade300
+                //                                   : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                //                                       ? Colors.green.shade100
+                //                                       : Colors.yellow.shade200,
+                //                       border: Border.all(
+                //                         color: Colors.red,
+                //                         width: 3.0,
+                //                       ),
+                //                     ),
+                //                     // margin: const EdgeInsets.all(4.0),
+                //                     // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                //                     //color: Colors.deepOrange[300],
+                //                     width: 100,
+                //                     height: 50,
+                //                     child: Text(
+                //                       '${date.day}',
+                //                       style: const TextStyle().copyWith(fontSize: 16.0),
+                //                     ),
+                //                   ),
+                //                 );
+                //         });
+                //   },
+                //   // todayDayBuilder: (BuildContext context, DateTime date, _) {
+                //   //   return Container(
+                //   //     decoration: BoxDecoration(
+                //   //       color: Colors.blue.shade100,
+                //   //       border: Border.all(
+                //   //         color: Colors.black26,
+                //   //         width: 1.0,
+                //   //       ),
+                //   //     ),
+                //   //     width: 100,
+                //   //     height: 50,
+                //   //     child: Text(
+                //   //       '${date.day}',
+                //   //       style: const TextStyle().copyWith(fontSize: 16.0),
+                //   //     ),
+                //   //   );
+                //   // },
 
-                  //   if (holidays.isNotEmpty) {
-                  //     children.add(
-                  //       Positioned(
-                  //         right: -2,
-                  //         top: -2,
-                  //         child: _buildHolidaysMarker(),
-                  //       ),
-                  //     );
-                  //   }
+                //   // dayBuilder: (BuildContext context, DateTime date, _) {
+                //   //   return FutureBuilder<DateTime>(
+                //   //       future: _dateBeingUpdated,
+                //   //       builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                //   //         return ((snapshot.hasData) && _toDateOnly(snapshot.data) == _toDateOnly(date))
+                //   //             ? Container(color: Colors.pink)
+                //   //             : Container(
+                //   //                 // margin: const EdgeInsets.all(4.0),
+                //   //                 // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                //   //                 decoration: BoxDecoration(
+                //   //                   color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                //   //                       ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                //   //                           ? Colors.white
+                //   //                           : Colors.grey.shade200
+                //   //                       : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                //   //                           ? Colors.red.shade100
+                //   //                           : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                //   //                               ? Colors.grey.shade300
+                //   //                               : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                //   //                                   ? Colors.green.shade100
+                //   //                                   : Colors.yellow.shade200,
+                //   //                   border: Border.all(
+                //   //                     color: Colors.black26,
+                //   //                     width: 1.0,
+                //   //                   ),
+                //   //                 ),
+                //   //                 width: 100,
+                //   //                 height: 50,
+                //   //                 child: Text(
+                //   //                   '${date.day}',
+                //   //                   style: const TextStyle().copyWith(
+                //   //                       fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
+                //   //                 ),
+                //   //               );
+                //   //       });
+                //   // },
+                //   // markersBuilder: (context, date, events, holidays) {
+                //   //   final children = <Widget>[];
 
-                  //   return children;
-                  // },
-                ),
+                //   //   if (events.isNotEmpty) {
+                //   //     children.add(
+                //   //       Positioned(
+                //   //         right: 1,
+                //   //         bottom: 1,
+                //   //         child: _buildEventsMarker(date, events),
+                //   //       ),
+                //   //     );
+                //   //   }
+
+                //   //   if (holidays.isNotEmpty) {
+                //   //     children.add(
+                //   //       Positioned(
+                //   //         right: -2,
+                //   //         top: -2,
+                //   //         child: _buildHolidaysMarker(),
+                //   //       ),
+                //   //     );
+                //   //   }
+
+                //   //   return children;
+                //   // },
+                // ),
               ),
             ),
             const SizedBox(height: 5.0),
-            if (_calendarController?.selectedDay != null &&
-                _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-                (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 0) ...<Widget>[_buildButtons()],
-            if (_calendarController?.selectedDay != null &&
-                _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-                (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 1) ...<Widget>[_buildEditButton()],
+            // if (_calendarController?.selectedDay != null &&
+            //     _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+            //     (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 0) ...<Widget>[_buildButtons()],
+            // if (_calendarController?.selectedDay != null &&
+            //     _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+            //     (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 1) ...<Widget>[_buildEditButton()],
           ],
         ),
       ),
@@ -694,8 +696,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         ElevatedButton(
           child: Text('Edit event', style: buttonLabelStyleMedium),
           onPressed: () async {
-            final dynamic rawEvent = _calendarEvents[_toDateOnly(_calendarController.selectedDay)][0];
-
+            //final dynamic rawEvent = _calendarEvents[_toDateOnly(_calendarController.selectedDay)][0];
+            final dynamic rawEvent = null;
             if ((rawEvent != null) && (rawEvent['eventId'] != null)) {
               RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent['eventId'], getStringPref(StringPrefsEnum.userId));
 
@@ -737,8 +739,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         ElevatedButton(
           child: Text('Add event', style: buttonLabelStyleMedium),
           onPressed: () async {
-            RunAdminAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _calendarController?.selectedDay);
-
+            //RunAdminAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _calendarController?.selectedDay);
+            RunAdminAggregate rda = null;
             Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
@@ -757,7 +759,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           child: Text('Add event placeholder', style: buttonLabelStyleMedium),
           onPressed: () {
             setState(() {
-              _showEventPopup(_calendarController.selectedDay);
+              //_showEventPopup(_calendarController.selectedDay);
             });
           },
         ),

@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'payments_service.dart';
@@ -16,18 +17,12 @@ PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) {
     paidTo: json['paidTo'] as String,
     creditAmount: json['creditAmount'] as num,
     debitAmount: json['debitAmount'] as num,
-    paidDate: json['paidDate'] == null
-        ? null
-        : DateTime.parse(json['paidDate'] as String),
+    paidDate: json['paidDate'] == null ? null : DateTime.parse(json['paidDate'] as String),
     paymentType: json['paymentType'] as int,
     productType: json['productType'] as int,
-    cancelledDate: json['cancelledDate'] == null
-        ? null
-        : DateTime.parse(json['cancelledDate'] as String),
+    cancelledDate: json['cancelledDate'] == null ? null : DateTime.parse(json['cancelledDate'] as String),
     cancelledBy: json['cancelledBy'] as String,
-    confirmedDate: json['confirmedDate'] == null
-        ? null
-        : DateTime.parse(json['confirmedDate'] as String),
+    confirmedDate: json['confirmedDate'] == null ? null : DateTime.parse(json['confirmedDate'] as String),
     confirmedBy: json['confirmedBy'] as String,
     paymentReference: json['paymentReference'] as String,
     notes: json['notes'] as String,
@@ -35,14 +30,11 @@ PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) {
     surcharge: json['surcharge'] as num,
     paymentProvider: json['paymentProvider'] as String,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$PaymentsModelToJson(PaymentsModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$PaymentsModelToJson(PaymentsModel instance) => <String, dynamic>{
       'paymentId': instance.paymentId,
       'kennelId': instance.kennelId,
       'paidBy': instance.paidBy,

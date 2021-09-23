@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 part 'payments_service.g.dart';
@@ -280,7 +281,7 @@ class PaymentsService {
         'emailAddress': emailAddress
       });
 
-      final Response response = await post(EMAIL_PAYMENT_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
+      final Response response = await post(Uri.parse(EMAIL_PAYMENT_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body
               // Send authorization headers to your backend
               //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
               )

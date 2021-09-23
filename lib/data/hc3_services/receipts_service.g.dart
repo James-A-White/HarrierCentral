@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'receipts_service.dart';
@@ -13,9 +14,7 @@ ReceiptsModel _$ReceiptsModelFromJson(Map<String, dynamic> json) {
     userId: json['userId'] as String,
     receiptAmount: json['receiptAmount'] as num,
     costCategory: json['costCategory'] as int,
-    dateUploaded: json['dateUploaded'] == null
-        ? null
-        : DateTime.parse(json['dateUploaded'] as String),
+    dateUploaded: json['dateUploaded'] == null ? null : DateTime.parse(json['dateUploaded'] as String),
     imageUrl: json['imageUrl'] as String,
     receiptShortDescription: json['receiptShortDescription'] as String,
     notes: json['notes'] as String,
@@ -24,14 +23,11 @@ ReceiptsModel _$ReceiptsModelFromJson(Map<String, dynamic> json) {
     reimbursedAmount: json['reimbursedAmount'] as num,
     reimbursedNotes: json['reimbursedNotes'] as String,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$ReceiptsModelToJson(ReceiptsModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$ReceiptsModelToJson(ReceiptsModel instance) => <String, dynamic>{
       'receiptId': instance.receiptId,
       'eventId': instance.eventId,
       'userId': instance.userId,

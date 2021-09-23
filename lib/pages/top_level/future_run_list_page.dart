@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -168,7 +169,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   Future<void> refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
-      final Geolocator locator = Geolocator();
+      //final Geolocator locator = Geolocator();
 
       IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
       final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns);
@@ -181,14 +182,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
         num dist;
         if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
-          dist = await locator.distanceBetween(
+          dist = Geolocator.distanceBetween(
             G0<DeviceInfo>().deviceLat,
             G0<DeviceInfo>().deviceLon,
             results[i]['latitude'] + .0,
             results[i]['longitude'] + .0,
           );
         } else {
-          dist = await locator.distanceBetween(
+          dist = Geolocator.distanceBetween(
             G0<DeviceInfo>().deviceLat,
             G0<DeviceInfo>().deviceLon,
             kennelItem.kennelLatitude + .0,

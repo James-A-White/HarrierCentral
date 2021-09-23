@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'countries_service.dart';
@@ -22,14 +23,11 @@ CountriesModel _$CountriesModelFromJson(Map<String, dynamic> json) {
     digitsAfterDecimal: json['digitsAfterDecimal'] as int,
     distancePreference: json['distancePreference'] as int,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$CountriesModelToJson(CountriesModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CountriesModelToJson(CountriesModel instance) => <String, dynamic>{
       'countryId': instance.countryId,
       'countryCode': instance.countryCode,
       'latitude': instance.latitude,

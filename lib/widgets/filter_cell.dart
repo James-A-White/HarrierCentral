@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class CheckinFiltersCell extends StatelessWidget {
@@ -25,10 +26,7 @@ class CheckinFiltersCell extends StatelessWidget {
   Widget build(BuildContext context) {
     //final String total = (creditAmount ?? 0) <= 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-    const TextStyle textStyle = TextStyle(
-        color: Colors.black,
-        fontSize: 24.0,
-        fontFamily: 'AvenirNextCondensedDemiBold');
+    const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return Container(
       width: 50,
       child: Column(

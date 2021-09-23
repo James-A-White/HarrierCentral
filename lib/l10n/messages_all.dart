@@ -1,3 +1,4 @@
+// @dart=2.11
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -49,9 +50,7 @@ MessageLookupByLibrary _findExact(String localeName) {
 
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) async {
-  final String availableLocale = Intl.verifiedLocale(
-      localeName, (String locale) => _deferredLibraries[locale] != null,
-      onFailure: (dynamic _) => null);
+  final String availableLocale = Intl.verifiedLocale(localeName, (String locale) => _deferredLibraries[locale] != null, onFailure: (dynamic _) => null);
   if (availableLocale == null) {
     // ignore: unnecessary_new
     return Future<bool>.value(false);
@@ -75,8 +74,7 @@ bool _messagesExistFor(String locale) {
 }
 
 MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
-  final String actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
-      onFailure: (dynamic _) => null);
+  final String actualLocale = Intl.verifiedLocale(locale, _messagesExistFor, onFailure: (dynamic _) => null);
   if (actualLocale == null) {
     return null;
   }

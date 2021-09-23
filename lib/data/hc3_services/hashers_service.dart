@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 part 'hashers_service.g.dart';
@@ -279,7 +280,7 @@ class HashersService extends BaseService {
       'email': email,
     });
 
-    final Response response = await post(EMAIL_INVITE_CODE_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
+    final Response response = await post(Uri.parse(EMAIL_INVITE_CODE_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )

@@ -1,22 +1,25 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class NotificationSupport {
   Future<void> configureNotifications(bool doSubscriptions) async {
-    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-    _firebaseMessaging.requestNotificationPermissions(const IosNotificationSettings(sound: true, alert: true, badge: false));
+    await Firebase.initializeApp();
+    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+    _firebaseMessaging.requestPermission(sound: true, alert: true, badge: false);
 
-    _firebaseMessaging.configure(onMessage: (dynamic content) {
-      print('onMessage content = ${content.toString()}');
-      return;
-    }, onLaunch: (dynamic content) {
-      print('onLaunch content = ${content.toString()}');
-      return;
-    }, onResume: (dynamic content) {
-      print('onResume content = ${content.toString()}');
-      return;
-    });
+    // _firebaseMessaging.(onMessage: (dynamic content) {
+    //   print('onMessage content = ${content.toString()}');
+    //   return;
+    // }, onLaunch: (dynamic content) {
+    //   print('onLaunch content = ${content.toString()}');
+    //   return;
+    // }, onResume: (dynamic content) {
+    //   print('onResume content = ${content.toString()}');
+    //   return;
+    // });
 
     final String token = await _firebaseMessaging.getToken();
     print('Messaging token = $token');
@@ -126,7 +129,7 @@ class NotificationSupport {
   }
 
   Future<void> setNotificationState({String eventId, String kennelId}) async {
-    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
     try {
       final String userId = getStringPref(StringPrefsEnum.userId);

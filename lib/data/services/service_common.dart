@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class ServiceCommon {
@@ -6,7 +7,7 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
-    final Response response = await post(BASE_API_URL + procName, headers: <String, String>{'content-type': 'application/json'}, body: requestBody).catchError(
+    final Response response = await post(Uri.parse(BASE_API_URL + procName), headers: <String, String>{'content-type': 'application/json'}, body: requestBody).catchError(
       (dynamic error) {
         return Future<Response>.value(null);
       },

@@ -1,10 +1,10 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class VideoTutorialPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const VideoTutorialPage({Key key, this.title, this.videoUrl})
-      : super(key: key);
+  const VideoTutorialPage({Key key, this.title, this.videoUrl}) : super(key: key);
 
   final String title;
   final String videoUrl;

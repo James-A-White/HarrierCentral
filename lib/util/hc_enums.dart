@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 enum EnumAppPages { settings, futureRuns, kennelList, runCounts, qrCodePage, friends, fab }
@@ -58,8 +59,8 @@ enum DatePrefsEnum {
 
 enum EnumDataContext { user, event, kennel }
 
-abstract class Enum<T> {
-  const Enum(this._value);
+abstract class HcEnum<T> {
+  const HcEnum(this._value);
   final T _value;
   T get value => _value;
 }
@@ -78,7 +79,7 @@ abstract class Enum<T> {
 
 //////////////////////////
 
-class EnumVirginVisitor<int> extends Enum<int> {
+class EnumVirginVisitor<int> extends HcEnum<int> {
   const EnumVirginVisitor(int val) : super(val);
 }
 
@@ -89,7 +90,7 @@ const EnumVirginVisitor<int> enumKnownVisitor = EnumVirginVisitor<int>(3);
 
 //////////////////////////
 ///
-class EnumNotificationState<int> extends Enum<int> {
+class EnumNotificationState<int> extends HcEnum<int> {
   const EnumNotificationState(int val) : super(val);
 }
 
@@ -100,7 +101,7 @@ const EnumNotificationState<int> notificationsOff = EnumNotificationState<int>(2
 
 //////////////////////////
 ///
-class EnumEmailAlertState<int> extends Enum<int> {
+class EnumEmailAlertState<int> extends HcEnum<int> {
   const EnumEmailAlertState(int val) : super(val);
 }
 
@@ -111,7 +112,7 @@ const EnumEmailAlertState<int> emailAlertsOff = EnumEmailAlertState<int>(2);
 
 //////////////////////////
 
-class EnumRsvpState<int> extends Enum<int> {
+class EnumRsvpState<int> extends HcEnum<int> {
   const EnumRsvpState(int val) : super(val);
 }
 
@@ -124,7 +125,7 @@ const EnumRsvpState<int> rsvpYes = EnumRsvpState<int>(3);
 
 //////////////////////////
 
-class EnumYesNo<int> extends Enum<int> {
+class EnumYesNo<int> extends HcEnum<int> {
   const EnumYesNo(int val) : super(val);
 }
 
@@ -134,7 +135,7 @@ const EnumYesNo<int> enumYesNo_Yes = EnumYesNo<int>(1);
 
 //////////////////////////
 
-class EnumIsHare<int> extends Enum<int> {
+class EnumIsHare<int> extends HcEnum<int> {
   const EnumIsHare(int val) : super(val);
 }
 
@@ -144,7 +145,7 @@ const EnumIsHare<int> isHareYes = EnumIsHare<int>(1);
 
 /////////////////////////
 
-class EnumAttendenceState<int> extends Enum<int> {
+class EnumAttendenceState<int> extends HcEnum<int> {
   const EnumAttendenceState(int val) : super(val);
 }
 
@@ -158,7 +159,7 @@ const EnumAttendenceState<int> attendenceGone = EnumAttendenceState<int>(40);
 
 //////////////////////////
 
-class EnumIsPaid<int> extends Enum<int> {
+class EnumIsPaid<int> extends HcEnum<int> {
   const EnumIsPaid(int val) : super(val);
 }
 
@@ -168,7 +169,7 @@ const EnumIsPaid<int> isPaidYes = EnumIsPaid<int>(1);
 
 //////////////////////////
 
-class EnumPaymentType<int> extends Enum<int> {
+class EnumPaymentType<int> extends HcEnum<int> {
   const EnumPaymentType(int val) : super(val);
 }
 
@@ -184,7 +185,7 @@ const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(100
 
 //////////////////////////
 
-class EnumPayForExtras<int> extends Enum<int> {
+class EnumPayForExtras<int> extends HcEnum<int> {
   const EnumPayForExtras(int val) : super(val);
 }
 
@@ -193,7 +194,7 @@ const EnumPayForExtras<int> payForRunAndExtras = EnumPayForExtras<int>(1);
 
 //////////////////////////
 
-class EnumProductType<int> extends Enum<int> {
+class EnumProductType<int> extends HcEnum<int> {
   const EnumProductType(int val) : super(val);
 }
 
@@ -203,7 +204,7 @@ const EnumProductType<int> productTypeHaberdashery = EnumProductType<int>(3);
 
 //////////////////////////
 
-class EnumCheckInType<int> extends Enum<int> {
+class EnumCheckInType<int> extends HcEnum<int> {
   const EnumCheckInType(int val) : super(val);
 }
 
@@ -212,7 +213,7 @@ const EnumCheckInType<int> checkinTypeRunEnd = EnumCheckInType<int>(1);
 
 //////////////////////////
 
-class EnumHasherType<int> extends Enum<int> {
+class EnumHasherType<int> extends HcEnum<int> {
   const EnumHasherType(int val) : super(val);
 }
 
@@ -222,7 +223,7 @@ const EnumHasherType<int> hasherTypeVirgin = EnumHasherType<int>(2);
 
 //////////////////////////
 
-class EnumFollowType<int> extends Enum<int> {
+class EnumFollowType<int> extends HcEnum<int> {
   const EnumFollowType(int val) : super(val);
 }
 
@@ -234,7 +235,7 @@ const EnumFollowType<int> followTypeToggleHomeKennel = EnumFollowType<int>(3);
 
 //////////////////////////
 
-class EnumNotificationType<int> extends Enum<int> {
+class EnumNotificationType<int> extends HcEnum<int> {
   const EnumNotificationType(int val) : super(val);
 }
 
@@ -245,7 +246,7 @@ const EnumNotificationType<int> notificationTypeBlock = EnumNotificationType<int
 
 //////////////////////////
 
-class EnumEventFilterType<int> extends Enum<int> {
+class EnumEventFilterType<int> extends HcEnum<int> {
   const EnumEventFilterType(int val) : super(val);
 }
 
@@ -258,7 +259,7 @@ const EnumEventFilterType<int> eventFilterType_setRunNumber = EnumEventFilterTyp
 
 //////////////////////////
 ///
-class EnumServerStatus<int> extends Enum<int> {
+class EnumServerStatus<int> extends HcEnum<int> {
   const EnumServerStatus(int val) : super(val);
 }
 
@@ -268,7 +269,7 @@ const EnumServerStatus<int> serverStatusDegraded = EnumServerStatus<int>(2);
 
 //////////////////////////
 
-class EnumLoginMessageType<int> extends Enum<int> {
+class EnumLoginMessageType<int> extends HcEnum<int> {
   const EnumLoginMessageType(int val) : super(val);
 }
 
@@ -281,7 +282,7 @@ const EnumLoginMessageType<int> loginMessageTypeImageViewWithContinue = EnumLogi
 
 //////////////////////////
 
-class EnumLoginApproval<int> extends Enum<int> {
+class EnumLoginApproval<int> extends HcEnum<int> {
   const EnumLoginApproval(int val) : super(val);
 }
 
@@ -293,7 +294,7 @@ const EnumLoginApproval<int> loginApprovalNotAuthorized = EnumLoginApproval<int>
 
 //////////////////////////
 ///
-class EnumMapCenterOption<int> extends Enum<int> {
+class EnumMapCenterOption<int> extends HcEnum<int> {
   const EnumMapCenterOption(int val) : super(val);
 }
 

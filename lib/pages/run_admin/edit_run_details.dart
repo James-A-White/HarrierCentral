@@ -1,6 +1,8 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
-import 'package:latlong/latlong.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 import 'package:date_time_picker/date_time_picker.dart';
+import 'package:intl/intl.dart';
 
 class EditRunDetailsPage extends StatefulWidget {
   const EditRunDetailsPage(this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
@@ -20,7 +22,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
   RunAdminAggregate _eventAggregate;
 
-  LatLng _mapCenter;
+  latlng.LatLng _mapCenter;
 
   GlobalKey _tabKey;
 
@@ -225,7 +227,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     super.initState();
     _eventAggregate = widget.eventAggregate;
 
-    _mapCenter = LatLng(
+    _mapCenter = latlng.LatLng(
       _eventAggregate.extensions.latitude ?? _eventAggregate.kennel.kennelLatitude,
       _eventAggregate.extensions.longitude ?? _eventAggregate.kennel.kennelLongitude,
     );
@@ -998,13 +1000,13 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
               //   child:
 
               MyFlutterMap(
-                _eventAggregate.extensions.latitude == null ? null : LatLng(_eventAggregate.extensions.latitude, _eventAggregate.extensions.longitude),
+                _eventAggregate.extensions.latitude == null ? null : latlng.LatLng(_eventAggregate.extensions.latitude, _eventAggregate.extensions.longitude),
                 _mapCenter,
-                LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude),
+                latlng.LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude),
                 1.0,
                 18.0,
                 14.0,
-                (LatLng newPosition) {
+                (latlng.LatLng newPosition) {
                   _mapCenter = newPosition;
                 },
                 _mapKey,
@@ -1013,7 +1015,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 GestureDetector(
                   onTapDown: (dynamic tapDownDetails) {
                     setState(() {
-                      _mapCenter = LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude);
+                      _mapCenter = latlng.LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude);
                     });
                   },
                   child: Container(color: Colors.black54),
@@ -1059,7 +1061,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _mapCenter = LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
+                      _mapCenter = latlng.LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
                     });
                   },
                   child: Container(
@@ -1076,7 +1078,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _mapCenter = LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon);
+                      _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon);
                     });
                   },
                   child: Container(
@@ -1094,7 +1096,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        _mapCenter = LatLng(
+                        _mapCenter = latlng.LatLng(
                           _eventAggregate.extensions.latitude,
                           _eventAggregate.extensions.longitude,
                         );
@@ -1185,7 +1187,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 .then((String eventId) async {
                               _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
                               setState(() {
-                                _mapCenter = LatLng(
+                                _mapCenter = latlng.LatLng(
                                   _eventAggregate.extensions.latitude,
                                   _eventAggregate.extensions.longitude,
                                 );
@@ -1721,9 +1723,9 @@ class MyFlutterMap extends StatefulWidget {
     Key key,
   ) : super(key: key);
 
-  final LatLng eventLocation;
-  final LatLng mapCenter;
-  final LatLng kennelLocation;
+  final latlng.LatLng eventLocation;
+  final latlng.LatLng mapCenter;
+  final latlng.LatLng kennelLocation;
   final num minZoom;
   final num maxZoom;
   final num zoom;
@@ -1736,7 +1738,7 @@ class MyFlutterMap extends StatefulWidget {
 class MyFlutterMapState extends State<MyFlutterMap> {
   final MapController mapController = MapController();
 
-  LatLng _oldCenter;
+  latlng.LatLng _oldCenter;
 
   @override
   void initState() {
@@ -1748,7 +1750,7 @@ class MyFlutterMapState extends State<MyFlutterMap> {
   @override
   Widget build(BuildContext context) {
     // only move the map if the center has changed
-    LatLng mapCenterPoint = widget.mapCenter;
+    latlng.LatLng mapCenterPoint = widget.mapCenter;
     if ((mapCenterPoint.latitude == CLEAR_LATLONG) && (mapCenterPoint.longitude == CLEAR_LATLONG)) {
       mapCenterPoint = widget.kennelLocation;
     }
@@ -1777,7 +1779,7 @@ class MyFlutterMapState extends State<MyFlutterMap> {
             Marker(
               height: 50.0,
               width: 50.0,
-              point: LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+              point: latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
               builder: (BuildContext ctx) => Container(
                 padding: const EdgeInsets.all(1.0),
                 height: 50.0,

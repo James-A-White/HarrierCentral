@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 part 'cities_service.g.dart';
@@ -16,8 +17,7 @@ class CitiesModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory CitiesModel.fromJson(Map<String, dynamic> json) =>
-      _$CitiesModelFromJson(json);
+  factory CitiesModel.fromJson(Map<String, dynamic> json) => _$CitiesModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$CitiesModelToJson(this);
 
@@ -64,8 +64,7 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -87,12 +86,9 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(
-      Database db, int version, dynamic appDomainType) async {
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   @override

@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 enum AppDomainType { user, event, kennel }
@@ -58,111 +59,49 @@ class Tables {
     //      '''),
   ];
 
-  static Future<void> createTables(
-      Database db, int version, Function informUser) async {
-    await G0<TableModel>()
-        .hashersTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .citiesTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .regionsTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .countriesTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .kennelsTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .hasherKennelMapTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .hasherEventMapTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .eventsTableHelper
-        .createTable(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .paymentsTableHelper
-        .createTable(db, version, AppDomainType.user);
+  static Future<void> createTables(Database db, int version, Function informUser) async {
+    await G0<TableModel>().hashersTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().citiesTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().regionsTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().countriesTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().kennelsTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().hasherEventMapTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().eventsTableHelper.createTable(db, version, AppDomainType.user);
+    await G0<TableModel>().paymentsTableHelper.createTable(db, version, AppDomainType.user);
     await NotificationsTableHelper.createTable(db, version);
     await MigrationsTableHelper.createTable(db, version);
 
     // create event admin tables
-    await G0<TableModel>()
-        .hasherEventMapTableHelper
-        .createTable(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .hasherKennelMapTableHelper
-        .createTable(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .paymentsTableHelper
-        .createTable(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .receiptsTableHelper
-        .createTable(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .kennelCreditsTableHelper
-        .createTable(db, version, AppDomainType.event);
+    await G0<TableModel>().hasherEventMapTableHelper.createTable(db, version, AppDomainType.event);
+    await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.event);
+    await G0<TableModel>().paymentsTableHelper.createTable(db, version, AppDomainType.event);
+    await G0<TableModel>().receiptsTableHelper.createTable(db, version, AppDomainType.event);
+    await G0<TableModel>().kennelCreditsTableHelper.createTable(db, version, AppDomainType.event);
 
     // create kennel admin tables
-    await G0<TableModel>()
-        .hasherKennelMapTableHelper
-        .createTable(db, version, AppDomainType.kennel);
+    await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.kennel);
   }
 
-  static Future<void> createIndexes(Database db, int version,
-      Function informUser, String clientAppIdentifier) async {
-    await G0<TableModel>()
-        .hashersTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .citiesTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .regionsTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .countriesTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .kennelsTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .hasherKennelMapTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .hasherEventMapTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .eventsTableHelper
-        .createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>()
-        .paymentsTableHelper
-        .createIndexes(db, version, AppDomainType.user);
+  static Future<void> createIndexes(Database db, int version, Function informUser, String clientAppIdentifier) async {
+    await G0<TableModel>().hashersTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().citiesTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().regionsTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().countriesTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().kennelsTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().hasherEventMapTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().eventsTableHelper.createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>().paymentsTableHelper.createIndexes(db, version, AppDomainType.user);
 
     // create event admin tables
-    await G0<TableModel>()
-        .hasherEventMapTableHelper
-        .createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .hasherKennelMapTableHelper
-        .createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .paymentsTableHelper
-        .createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .receiptsTableHelper
-        .createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>()
-        .kennelCreditsTableHelper
-        .createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>().hasherEventMapTableHelper.createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>().paymentsTableHelper.createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>().receiptsTableHelper.createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>().kennelCreditsTableHelper.createIndexes(db, version, AppDomainType.event);
 
     // create kennel admin tables
-    await G0<TableModel>()
-        .hasherKennelMapTableHelper
-        .createIndexes(db, version, AppDomainType.kennel);
+    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.kennel);
   }
 }

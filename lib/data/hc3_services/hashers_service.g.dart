@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'hashers_service.dart';
@@ -17,14 +18,11 @@ HashersModel _$HashersModelFromJson(Map<String, dynamic> json) {
     dispPref: json['dispPref'] as int,
     includeInGlobalHashDirectory: json['includeInGlobalHashDirectory'] as int,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$HashersModelToJson(HashersModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$HashersModelToJson(HashersModel instance) => <String, dynamic>{
       'hasherId': instance.hasherId,
       'firstName': instance.firstName,
       'lastName': instance.lastName,

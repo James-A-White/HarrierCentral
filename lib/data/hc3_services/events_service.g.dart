@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'events_service.dart';
@@ -9,9 +10,7 @@ part of 'events_service.dart';
 EventModel _$EventModelFromJson(Map<String, dynamic> json) {
   return EventModel(
     eventId: json['eventId'] as String,
-    eventStartDatetime: json['eventStartDatetime'] == null
-        ? null
-        : DateTime.parse(json['eventStartDatetime'] as String),
+    eventStartDatetime: json['eventStartDatetime'] == null ? null : DateTime.parse(json['eventStartDatetime'] as String),
     kennelId: json['kennelId'] as String,
     isVisible: json['isVisible'] as int,
     isCountedRun: json['isCountedRun'] as int,
@@ -40,9 +39,7 @@ EventModel _$EventModelFromJson(Map<String, dynamic> json) {
     hares: json['hares'] as String,
     eventPaymentScheme: json['eventPaymentScheme'] as String,
     eventPaymentUrl: json['eventPaymentUrl'] as String,
-    eventPaymentUrlExpires: json['eventPaymentUrlExpires'] == null
-        ? null
-        : DateTime.parse(json['eventPaymentUrlExpires'] as String),
+    eventPaymentUrlExpires: json['eventPaymentUrlExpires'] == null ? null : DateTime.parse(json['eventPaymentUrlExpires'] as String),
     unconfirmedBankXferCount: json['unconfirmedBankXferCount'] as int,
     eventPriceForExtras: json['eventPriceForExtras'] as num,
     extrasDescription: json['extrasDescription'] as String,
@@ -55,14 +52,11 @@ EventModel _$EventModelFromJson(Map<String, dynamic> json) {
     useFbRunDetails: json['useFbRunDetails'] as int,
     useFbImage: json['useFbImage'] as int,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$EventModelToJson(EventModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$EventModelToJson(EventModel instance) => <String, dynamic>{
       'eventId': instance.eventId,
       'eventStartDatetime': instance.eventStartDatetime?.toIso8601String(),
       'kennelId': instance.kennelId,
@@ -93,8 +87,7 @@ Map<String, dynamic> _$EventModelToJson(EventModel instance) =>
       'hares': instance.hares,
       'eventPaymentScheme': instance.eventPaymentScheme,
       'eventPaymentUrl': instance.eventPaymentUrl,
-      'eventPaymentUrlExpires':
-          instance.eventPaymentUrlExpires?.toIso8601String(),
+      'eventPaymentUrlExpires': instance.eventPaymentUrlExpires?.toIso8601String(),
       'unconfirmedBankXferCount': instance.unconfirmedBankXferCount,
       'eventPriceForExtras': instance.eventPriceForExtras,
       'extrasDescription': instance.extrasDescription,

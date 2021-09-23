@@ -1,0 +1,140 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter pub get
+
+## exception
+
+ProcessException: ProcessException: The command failed
+Stdout:
+building file list ... done
+Versions/
+Versions/Current -> A
+Versions/A/
+Versions/A/FlutterMacOS
+Versions/A/Headers/
+Versions/A/Headers/FlutterAppDelegate.h
+Versions/A/Headers/FlutterBinaryMessenger.h
+Versions/A/Headers/FlutterChannels.h
+Versions/A/Headers/FlutterCodecs.h
+Versions/A/Headers/FlutterDartProject.h
+Versions/A/Headers/FlutterEngine.h
+Versions/A/Headers/FlutterMacOS.h
+Versions/A/Headers/FlutterMacros.h
+Versions/A/Headers/FlutterPluginMacOS.h
+Versions/A/Headers/FlutterPluginRegistrarMacOS.h
+Versions/A/Headers/FlutterTexture.h
+Versions/A/Headers/FlutterViewController.h
+Versions/A/Modules/
+Versions/A/Modules/module.modulemap
+Versions/A/Resources/
+Versions/A/Resources/Info.plist
+Versions/A/Resources/icudtl.dat
+Versions/A/_CodeSignature/
+Versions/A/_CodeSignature/CodeResources
+
+sent 41663108 bytes  received 436 bytes  83327088.00 bytes/sec
+total size is 41656612  speedup is 1.00
+
+Stderr:
+rsync: stat "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/.FlutterMacOS.YOhmFA" failed: No such file or directory (2)
+rsync: rename "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/.FlutterMacOS.YOhmFA" -> "Versions/A/FlutterMacOS": No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterAppDelegate.h.7nvnSE" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterBinaryMessenger.h.vjBkAY" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterChannels.h.EsC63g" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterCodecs.h.i4A4eM" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterDartProject.h.NTNqCE" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterEngine.h.6JbHfN" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterMacOS.h.aeJ1rV" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterMacros.h.IZafdp" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterPluginMacOS.h.plJ1GQ" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterPluginRegistrarMacOS.h.ITp7Nn" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterTexture.h.vzehtD" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Headers/.FlutterViewController.h.c89e7r" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Modules/.module.modulemap.bwZ9en" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Resources/.Info.plist.9fbmUC" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/Resources/.icudtl.dat.puMAJ4" failed: No such file or directory (2)
+rsync: mkstemp "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions/A/_CodeSignature/.CodeResources.rhTH5L" failed: No such file or directory (2)
+rsync: recv_generator: mkdir "/Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework/Versions" failed: No such file or directory (2)
+*** Skipping everything below this failed directory ***
+rsync error: some files could not be transferred (code 23) at /System/Volumes/Data/SWE/macOS/BuildRoots/d7e177bcf5/Library/Caches/com.apple.xbs/Sources/rsync/rsync-55/rsync/main.c(996) [sender=2.6.9]
+
+  Command: rsync -av --delete /var/folders/97/kjdpm4q90lncbjq_7w30pcxc0000gn/T/flutter_tools.eIf7au/flutter_FlutterMacOS.framework.zip.yPR7V3/Versions /Users/jameswhite/Desktop/Development.nosync/flutter/bin/cache/artifacts/engine/darwin-x64/FlutterMacOS.framework
+
+```
+#0      RunResult.throwException (package:flutter_tools/src/base/process.dart:124:5)
+#1      _DefaultProcessUtils.runSync (package:flutter_tools/src/base/process.dart:411:17)
+#2      _MacOSUtils.unzip (package:flutter_tools/src/base/os.dart:450:25)
+#3      EngineCachedArtifact.updateInner (package:flutter_tools/src/cache.dart:795:30)
+<asynchronous suspension>
+#4      CachedArtifact.update (package:flutter_tools/src/cache.dart:688:5)
+<asynchronous suspension>
+#5      Cache.updateAll (package:flutter_tools/src/cache.dart:557:9)
+<asynchronous suspension>
+#6      FlutterCommand.verifyThenRunCommand (package:flutter_tools/src/runner/flutter_command.dart:1227:7)
+<asynchronous suspension>
+#7      FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1125:27)
+<asynchronous suspension>
+#8      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:150:19)
+<asynchronous suspension>
+#9      CommandRunner.runCommand (package:args/command_runner.dart:209:13)
+<asynchronous suspension>
+#10     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:288:9)
+<asynchronous suspension>
+#11     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:150:19)
+<asynchronous suspension>
+#12     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:236:5)
+<asynchronous suspension>
+#13     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:62:9)
+<asynchronous suspension>
+#14     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:150:19)
+<asynchronous suspension>
+#15     main (package:flutter_tools/executable.dart:92:3)
+<asynchronous suspension>
+```
+
+## flutter doctor
+
+```
+[✓] Flutter (Channel stable, 2.5.1, on macOS 11.5.2 20G95 darwin-x64, locale en-US)
+    • Flutter version 2.5.1 at /Users/jameswhite/Desktop/Development.nosync/flutter
+    • Upstream repository https://github.com/flutter/flutter.git
+    • Framework revision ffb2ecea52 (5 days ago), 2021-09-17 15:26:33 -0400
+    • Engine revision b3af521a05
+    • Dart version 2.14.2
+
+[✓] Android toolchain - develop for Android devices (Android SDK version 30.0.3)
+    • Android SDK at /Users/jameswhite/Library/Android/sdk
+    • Platform android-30, build-tools 30.0.3
+    • Java binary at: /Applications/Android Studio.app/Contents/jre/jdk/Contents/Home/bin/java
+    • Java version OpenJDK Runtime Environment (build 1.8.0_242-release-1644-b3-6915495)
+    • All Android licenses accepted.
+
+[✓] Xcode - develop for iOS and macOS
+    • Xcode at /Applications/Xcode.app/Contents/Developer
+    • Xcode 12.5.1, Build version 12E507
+    • CocoaPods version 1.11.2
+
+[✓] Chrome - develop for the web
+    • Chrome at /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+
+[✓] Android Studio (version 4.1)
+    • Android Studio at /Applications/Android Studio.app/Contents
+    • Flutter plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/9212-flutter
+    • Dart plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/6351-dart
+    • Java version OpenJDK Runtime Environment (build 1.8.0_242-release-1644-b3-6915495)
+
+[✓] VS Code (version 1.60.2)
+    • VS Code at /Applications/Visual Studio Code.app/Contents
+    • Flutter extension version 3.26.0
+
+[✓] Connected device (2 available)
+    • iPhone 12 Pro (mobile) • 0B985518-8E52-49F3-9EF3-5417313A34BF • ios            • com.apple.CoreSimulator.SimRuntime.iOS-14-5 (simulator)
+    • Chrome (web)           • chrome                               • web-javascript • Google Chrome 94.0.4606.54
+
+• No issues found!
+```

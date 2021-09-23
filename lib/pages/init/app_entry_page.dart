@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class AppEntryPage extends StatefulWidget {
@@ -42,7 +43,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
         final String facebookId = getStringPref(StringPrefsEnum.facebookId);
 
         if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
-          final AccessToken accessToken = await FacebookAuth.instance.login();
+          final LoginResult loginResult = await FacebookAuth.instance.login();
+          final AccessToken accessToken = loginResult.accessToken;
           facebookAccessToken = accessToken.token;
           await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
           await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());

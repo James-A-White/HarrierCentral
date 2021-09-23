@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class ApproveLoginService {
@@ -55,7 +56,7 @@ class ApproveLoginService {
 
     Future<Response> response;
 
-    response = post(BASE_API_URL + 'hc3_approve_login', headers: <String, String>{'content-type': 'application/json'}, body: body
+    response = post(Uri.parse(BASE_API_URL + 'hc3_approve_login'), headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )

@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -553,7 +554,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Future<void> _getImageFromFacebook() async {
     if ((_facebookProfileUrl != null) && (_facebookProfileUrl.isNotEmpty)) {
-      final Response response = await get(_facebookProfileUrl);
+      final Response response = await get(Uri.parse(_facebookProfileUrl));
       final Directory documentDirectory = await getApplicationDocumentsDirectory();
       final File profilePhotoFile = File(documentDirectory.path + '/temp.jpg');
       profilePhotoFile.writeAsBytesSync(response.bodyBytes);

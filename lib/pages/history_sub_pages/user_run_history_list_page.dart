@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 // import 'package:flutter/material.dart';
@@ -182,8 +183,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             ),
             floatingActionButton: SpeedDial(
               // both default to 16
-              marginEnd: 18,
-              marginBottom: 30,
+
+              // marginEnd: 18,
+              // marginBottom: 30,
               animatedIcon: AnimatedIcons.menu_close,
               animatedIconTheme: const IconThemeData(size: 22.0),
               // this is ignored if animatedIcon is non null

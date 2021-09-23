@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 Color themeButtonColors = const Color.fromARGB(255, 13, 115, 124);
@@ -13,40 +14,16 @@ const num detailsFontSize = 16.0;
 const num detailLineSpace = 1.0;
 const num detailLineSpaceForBold = 1.1;
 
-TextStyle listLabelStyle = const TextStyle(
-    color: Colors.yellow,
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    fontSize: detailsFontSize,
-    height: detailLineSpace);
+TextStyle listLabelStyle = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpace);
 
-TextStyle listValueStyle = const TextStyle(
-    color: Colors.white,
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    fontSize: detailsFontSize,
-    height: detailLineSpaceForBold);
+TextStyle listValueStyle =
+    const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpaceForBold);
 
-TextStyle bodyStyle = const TextStyle(
-    color: Colors.white,
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    fontSize: 20.0,
-    height: 1.0);
+TextStyle bodyStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
 
-TextStyle bodyStyleYellow = const TextStyle(
-    color: Colors.yellow,
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    fontSize: 20.0,
-    height: 1.0);
+TextStyle bodyStyleYellow = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
 
-TextStyle bodyStyleSc = const TextStyle(
-    color: Colors.white,
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    fontSize: 12.0,
-    height: 1.0);
+TextStyle bodyStyleSc = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 12.0, height: 1.0);
 
 // TextStyle titleStyle = const TextStyle(
 //     color: Colors.white,
@@ -55,193 +32,50 @@ TextStyle bodyStyleSc = const TextStyle(
 //     fontSize: 30.0,
 //     height: 1.0);
 
-TextStyle textStyleButton = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    fontSize: 22.0,
-    color: Colors.white);
+TextStyle textStyleButton = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.white);
 
-TextStyle textStyleDisabledButton = TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    fontSize: 22.0,
-    color: Colors.grey[350]);
+TextStyle textStyleDisabledButton = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.grey[350]);
 
-TextStyle smallTitleStyle = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    color: Colors.white,
-    fontSize: 20.0,
-    height: 1.0);
+TextStyle smallTitleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
 
-TextStyle titleStyle = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    color: Colors.white,
-    fontSize: 24.0,
-    height: 1.2);
+TextStyle titleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0, height: 1.2);
 
-TextStyle largeTitleStyle = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    color: Colors.yellow,
-    fontSize: 32.0,
-    height: 1.0);
+TextStyle largeTitleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 32.0, height: 1.0);
 
-TextStyle headingStyle = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.yellow,
-    fontSize: 24.0,
-    height: 1.0);
-TextStyle headingStyle20 = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.yellow,
-    fontSize: 20.0,
-    height: 1.0);
-TextStyle headingStyle20italic = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.italic,
-    color: Colors.yellow,
-    fontSize: 20.0,
-    height: 1.0);
+TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
+TextStyle headingStyle20 = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 20.0, height: 1.0);
+TextStyle headingStyle20italic = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.yellow, fontSize: 20.0, height: 1.0);
 
-TextStyle headingStyleBlack = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.black,
-    fontSize: 24.0,
-    height: 1.0);
-TextStyle headingStyle20Black = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.black,
-    fontSize: 20.0,
-    height: 1.0);
-TextStyle headingStyle20italicBlack = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.italic,
-    color: Colors.black,
-    fontSize: 20.0,
-    height: 1.0);
+TextStyle headingStyleBlack = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 24.0, height: 1.0);
+TextStyle headingStyle20Black = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
+TextStyle headingStyle20italicBlack = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.black, fontSize: 20.0, height: 1.0);
 
-TextStyle headingStyleOnLightBg = TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.blue[800],
-    fontSize: 24.0,
-    height: 1.0);
+TextStyle headingStyleOnLightBg = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.blue[800], fontSize: 24.0, height: 1.0);
 
-TextStyle smallHeadingStyle = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    color: Colors.yellow,
-    fontSize: 20.0,
-    height: 1.0);
+TextStyle smallHeadingStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 20.0, height: 1.0);
 
-TextStyle buttonLabelStyleMedium = const TextStyle(
-    fontFamily: 'AvenirNextMedium',
-    fontStyle: FontStyle.normal,
-    color: Colors.white,
-    fontSize: 20.0,
-    height: 1.0);
-TextStyle buttonLabelStyleSmallCompressedLines = const TextStyle(
-    fontFamily: 'AvenirNextMedium',
-    fontStyle: FontStyle.normal,
-    color: Colors.white,
-    fontSize: 16.0,
-    height: 0.8);
-TextStyle buttonLabelStyleSmall = const TextStyle(
-    fontFamily: 'AvenirNextMedium',
-    fontStyle: FontStyle.normal,
-    color: Colors.white,
-    fontSize: 16.0,
-    height: 1.0);
+TextStyle buttonLabelStyleMedium = const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
+TextStyle buttonLabelStyleSmallCompressedLines = const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 0.8);
+TextStyle buttonLabelStyleSmall = const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
-TextStyle largeText = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.white,
-    fontSize: 32.0,
-    height: 1.0);
+TextStyle largeText = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 32.0, height: 1.0);
 
-TextStyle buttonTextStyle = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.white,
-    fontSize: 16.0,
-    height: 1.0);
+TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
-TextStyle smallContentStyleDb = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    color: Colors.black,
-    fontSize: 20.0,
-    height: 1.0);
-TextStyle smallContentStyle = const TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.black,
-    fontSize: 20.0,
-    height: 1.0);
+TextStyle smallContentStyleDb = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
+TextStyle smallContentStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
 
-TextStyle footnoteSmall = TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.italic,
-    color: Colors.grey[700],
-    fontSize: 14.0,
-    height: 1.0);
-TextStyle footnoteSmallRed = TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.italic,
-    color: Colors.red[900],
-    fontSize: 14.0,
-    height: 1.0);
-TextStyle footnoteSmallBlack = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.italic,
-    color: Colors.black,
-    fontSize: 14.0,
-    height: 1.0);
+TextStyle footnoteSmall = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.grey[700], fontSize: 14.0, height: 1.0);
+TextStyle footnoteSmallRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.red[900], fontSize: 14.0, height: 1.0);
+TextStyle footnoteSmallBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.black, fontSize: 14.0, height: 1.0);
 
-TextStyle footnoteMedium = TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.italic,
-    color: Colors.grey[700],
-    fontSize: 16.0,
-    height: 1.0);
-TextStyle footnoteMediumRed = TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.italic,
-    color: Colors.red[900],
-    fontSize: 16.0,
-    height: 1.0);
-TextStyle footnoteMediumBlack = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.italic,
-    color: Colors.black,
-    fontSize: 16.0,
-    height: 1.0);
+TextStyle footnoteMedium = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.grey[700], fontSize: 16.0, height: 1.0);
+TextStyle footnoteMediumRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.red[900], fontSize: 16.0, height: 1.0);
+TextStyle footnoteMediumBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.black, fontSize: 16.0, height: 1.0);
 
-TextStyle mediumText = TextStyle(
-    fontFamily: 'AvenirNextRegular',
-    fontStyle: FontStyle.normal,
-    color: Colors.grey[700],
-    fontSize: 16.0,
-    height: 1.0);
-TextStyle mediumTextRed = TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    color: Colors.red[900],
-    fontSize: 16.0,
-    height: 1.0);
-TextStyle mediumTextBlack = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    color: Colors.black,
-    fontSize: 16.0,
-    height: 1.0);
+TextStyle mediumText = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.grey[700], fontSize: 16.0, height: 1.0);
+TextStyle mediumTextRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.red[900], fontSize: 16.0, height: 1.0);
+TextStyle mediumTextBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 16.0, height: 1.0);
 
 // Color brown = const Color.fromARGB(255, 107, 87, 66);
 // Color purple = const Color.fromARGB(255, 61, 27, 142);
@@ -261,8 +95,7 @@ class Backgrounds {
   static BoxDecoration defaultHcBackgroundLight() {
     return const BoxDecoration(
         image: DecorationImage(
-      image:
-          ExactAssetImage('images/backgrounds/hash_foot_background_light.png'),
+      image: ExactAssetImage('images/backgrounds/hash_foot_background_light.png'),
       fit: BoxFit.cover,
     ));
   }

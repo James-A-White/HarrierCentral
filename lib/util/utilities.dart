@@ -1,6 +1,8 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:location_permissions/location_permissions.dart';
 
 class LatLon {
   num latitude;
@@ -77,15 +79,12 @@ class Utilities {
     G0<DeviceInfo>().deviceLat = DEFAULT_LATITUDE;
     G0<DeviceInfo>().deviceLon = DEFAULT_LONGITUDE;
 
-    final Geolocator geolocator = Geolocator();
-
     IveCoreUtilities.logTiming('Geostatus query start', G0<AppModel>().appStartTime);
-    final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
+    final LocationPermission permission = await Geolocator.checkPermission();
 
     IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
-    if (status == GeolocationStatus.granted) {
-      const LocationOptions locationOptions = LocationOptions(accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50);
-      G0<AppModel>().geoLocationStream = geolocator.getPositionStream(locationOptions).listen((Position position) {
+    if ((permission == LocationPermission.always) || (permission == LocationPermission.whileInUse)) {
+      G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(desiredAccuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50).listen((Position position) {
         if (position != null) {
           G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
           G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
@@ -96,7 +95,7 @@ class Utilities {
       // start with the lowest possible accuracy to ensure that the
       // app boots up quickly. As soon as the geoLocationStream resolves an accurate
       // location, it will correct the lat/long to be more accurate.
-      final Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
+      final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
       G0<DeviceInfo>().deviceLat = position.latitude;
       G0<DeviceInfo>().deviceLon = position.longitude;
       print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));

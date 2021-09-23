@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'kennel_credits_service.dart';
@@ -13,15 +14,12 @@ KennelCreditsModel _$KennelCreditsModelFromJson(Map<String, dynamic> json) {
     kennelId: json['kennelId'] as String,
     currentBalance: json['currentBalance'] as num,
     balanceAsOfEventId: json['balanceAsOfEventId'] as String,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
     removed: json['removed'] as int,
   );
 }
 
-Map<String, dynamic> _$KennelCreditsModelToJson(KennelCreditsModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$KennelCreditsModelToJson(KennelCreditsModel instance) => <String, dynamic>{
       'kennelCreditId': instance.kennelCreditId,
       'userId': instance.userId,
       'kennelId': instance.kennelId,

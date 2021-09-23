@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 class PermissionSliderPage extends StatefulWidget {
@@ -224,8 +225,18 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
 
       // Skip button
       renderSkipBtn: renderSkipBtn(),
-      colorSkipBtn: const Color(0x00000000),
-      highlightColorSkipBtn: const Color(0xff000000),
+
+      skipButtonStyle: ButtonStyle(
+        foregroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            if (states.contains(MaterialState.pressed)) {
+              return const Color(0xff000000);
+            }
+            return const Color(0x00000000); // Use the component's default.
+          },
+        ),
+      ),
+
       onSkipPress: onSkipPress,
       showSkipBtn: true,
 
@@ -243,8 +254,16 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       // Done button
       renderDoneBtn: renderDoneBtn(),
       onDonePress: onDonePress,
-      colorDoneBtn: const Color(0x00000000),
-      highlightColorDoneBtn: const Color(0xff000000),
+      doneButtonStyle: ButtonStyle(
+        foregroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            if (states.contains(MaterialState.pressed)) {
+              return const Color(0xff000000);
+            }
+            return const Color(0x00000000); // Use the component's default.
+          },
+        ),
+      ),
 
       // Show or hide status bar
       hideStatusBar: true,

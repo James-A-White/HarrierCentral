@@ -1,3 +1,4 @@
+// @dart=2.11
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'hasher_kennel_map_service.dart';
@@ -25,27 +26,17 @@ HasherKennelMapModel _$HasherKennelMapModelFromJson(Map<String, dynamic> json) {
     historicalPackRunCount: json['historicalPackRunCount'] as int,
     historicalHaringCount: json['historicalHaringCount'] as int,
     historicalCountIsEstimate: json['historicalCountIsEstimate'] as int,
-    dateOfLastRun: json['dateOfLastRun'] == null
-        ? null
-        : DateTime.parse(json['dateOfLastRun'] as String),
-    membershipExpirationDate: json['membershipExpirationDate'] == null
-        ? null
-        : DateTime.parse(json['membershipExpirationDate'] as String),
-    memberSince: json['memberSince'] == null
-        ? null
-        : DateTime.parse(json['memberSince'] as String),
+    dateOfLastRun: json['dateOfLastRun'] == null ? null : DateTime.parse(json['dateOfLastRun'] as String),
+    membershipExpirationDate: json['membershipExpirationDate'] == null ? null : DateTime.parse(json['membershipExpirationDate'] as String),
+    memberSince: json['memberSince'] == null ? null : DateTime.parse(json['memberSince'] as String),
     isKennelFollowing: json['isKennelFollowing'] as int,
     mismanagementRoles: json['mismanagementRoles'] as int,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
-Map<String, dynamic> _$HasherKennelMapModelToJson(
-        HasherKennelMapModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$HasherKennelMapModelToJson(HasherKennelMapModel instance) => <String, dynamic>{
       'hkmId': instance.hkmId,
       'userId': instance.userId,
       'kennelId': instance.kennelId,
@@ -64,8 +55,7 @@ Map<String, dynamic> _$HasherKennelMapModelToJson(
       'historicalHaringCount': instance.historicalHaringCount,
       'historicalCountIsEstimate': instance.historicalCountIsEstimate,
       'dateOfLastRun': instance.dateOfLastRun?.toIso8601String(),
-      'membershipExpirationDate':
-          instance.membershipExpirationDate?.toIso8601String(),
+      'membershipExpirationDate': instance.membershipExpirationDate?.toIso8601String(),
       'memberSince': instance.memberSince?.toIso8601String(),
       'isKennelFollowing': instance.isKennelFollowing,
       'mismanagementRoles': instance.mismanagementRoles,

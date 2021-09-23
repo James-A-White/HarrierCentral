@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 part 'events_service.g.dart';
@@ -438,7 +439,7 @@ class EventsService extends BaseService {
 
     print(body);
 
-    final Response response = await post(EMAIL_RUN_DETAILS_TO_PACK_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
+    final Response response = await post(Uri.parse(EMAIL_RUN_DETAILS_TO_PACK_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )

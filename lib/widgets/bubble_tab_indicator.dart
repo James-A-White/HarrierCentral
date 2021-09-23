@@ -1,3 +1,4 @@
+// @dart=2.11
 library bubble_tab_indicator;
 
 import 'package:flutter/material.dart';
@@ -19,8 +20,7 @@ class BubbleTabIndicator extends Decoration {
     this.indicatorColor = Colors.greenAccent,
     this.indicatorRadius = 100.0,
     this.tabBarIndicatorSize = TabBarIndicatorSize.label,
-    this.bubblePadding =
-        const EdgeInsets.symmetric(vertical: 2.0, horizontal: 8.0),
+    this.bubblePadding = const EdgeInsets.symmetric(vertical: 2.0, horizontal: 8.0),
     this.insets = const EdgeInsets.symmetric(horizontal: 5.0),
   })  : assert(indicatorHeight != null),
         assert(indicatorColor != null),
@@ -39,8 +39,7 @@ class BubbleTabIndicator extends Decoration {
   Decoration lerpFrom(Decoration a, num t) {
     if (a is BubbleTabIndicator) {
       return BubbleTabIndicator(
-        bubblePadding:
-            EdgeInsetsGeometry.lerp(a.bubblePadding, bubblePadding, t),
+        bubblePadding: EdgeInsetsGeometry.lerp(a.bubblePadding, bubblePadding, t),
         insets: EdgeInsetsGeometry.lerp(a.insets, insets, t),
       );
     }
@@ -51,8 +50,7 @@ class BubbleTabIndicator extends Decoration {
   Decoration lerpTo(Decoration b, num t) {
     if (b is BubbleTabIndicator) {
       return BubbleTabIndicator(
-        bubblePadding:
-            EdgeInsetsGeometry.lerp(bubblePadding, b.bubblePadding, t),
+        bubblePadding: EdgeInsetsGeometry.lerp(bubblePadding, b.bubblePadding, t),
         insets: EdgeInsetsGeometry.lerp(insets, b.insets, t),
       );
     }
@@ -101,16 +99,12 @@ class _BubblePainter extends BoxPainter {
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
     assert(configuration != null);
     assert(configuration.size != null);
-    final Rect rect = Offset(
-            offset.dx, (configuration.size.height / 2) - indicatorHeight / 2) &
-        Size(configuration.size.width, indicatorHeight);
+    final Rect rect = Offset(offset.dx, (configuration.size.height / 2) - indicatorHeight / 2) & Size(configuration.size.width, indicatorHeight);
     final TextDirection textDirection = configuration.textDirection;
     final Rect indicator = _indicatorRectFor(rect, textDirection);
     final Paint paint = Paint();
     paint.color = indicatorColor;
     paint.style = PaintingStyle.fill;
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(indicator, Radius.circular(indicatorRadius)),
-        paint);
+    canvas.drawRRect(RRect.fromRectAndRadius(indicator, Radius.circular(indicatorRadius)), paint);
   }
 }

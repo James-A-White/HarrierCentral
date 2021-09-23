@@ -1,3 +1,4 @@
+// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 SharedPreferences _sharedPreferences;
@@ -18,6 +19,9 @@ String getStringPref(dynamic key) {
 }
 
 Future<bool> setStringPref(dynamic key, String value) async {
+  if ((key == null) || (value == null)) {
+    return false;
+  }
   return _sharedPreferences.setString(key.toString(), value);
 }
 
@@ -28,6 +32,9 @@ num getNumPref(dynamic key) {
 }
 
 Future<bool> setNumPref(dynamic key, num value) async {
+  if ((key == null) || (value == null)) {
+    return false;
+  }
   return _sharedPreferences.setDouble(key.toString(), value);
 }
 
@@ -38,12 +45,18 @@ int getIntPref(dynamic key) {
 }
 
 Future<bool> setIntPref(dynamic key, int value) async {
+  if ((key == null) || (value == null)) {
+    return false;
+  }
   return _sharedPreferences.setInt(key.toString(), value);
 }
 
 // DATE
 
 Future<bool> setDatePref(dynamic key, DateTime value) async {
+  if ((key == null) || (value == null)) {
+    return false;
+  }
   return _sharedPreferences.setInt(key.toString(), value.millisecondsSinceEpoch);
 }
 
@@ -58,6 +71,9 @@ DateTime getDatePref(dynamic key) {
 // BOOL
 
 Future<bool> setBoolPref(dynamic key, bool value) async {
+  if ((key == null) || (value == null)) {
+    return false;
+  }
   return _sharedPreferences.setInt(key.toString(), value == true ? 1 : 0);
 }
 
@@ -73,7 +89,8 @@ Future<bool> removePref(dynamic key) async {
   return result;
 }
 
-// import 'package:harrier_central/imports.dart';
+// // @dart=2.11
+//import 'package:harrier_central/imports.dart';
 
 // class SecurePrefs {
 //   static FlutterSecureStorage storage;
