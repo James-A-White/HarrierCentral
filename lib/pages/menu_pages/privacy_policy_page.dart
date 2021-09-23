@@ -92,18 +92,13 @@ class PDFScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
-    // return PDFViewerScaffold(
-    //     appBar: AppBar(
-    //       backgroundColor: themeAppBarBackground,
-    //       title: const Text('Privacy Policy'),
-    //       // actions: <Widget>[
-    //       //   IconButton(
-    //       //     icon:const  Icon(Icons.share),
-    //       //     onPressed: () {},
-    //       //   ),
-    //       // ],
-    //     ),
-    //     path: pathPDF);
+    //return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Privacy Policy'),
+        backgroundColor: themeAppBarBackground,
+      ),
+      body: PdfView(path: pathPDF),
+    );
   }
 }

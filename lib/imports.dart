@@ -158,6 +158,7 @@ export 'package:keyboard_actions/keyboard_actions.dart';
 export 'package:keyboard_avoider/keyboard_avoider.dart';
 export 'package:package_info/package_info.dart';
 export 'package:path_provider/path_provider.dart';
+export 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
 export 'package:permission_handler/permission_handler.dart';
 export 'package:qonversion_flutter/qonversion_flutter.dart';
 export 'package:qr_code_scanner/qr_code_scanner.dart';
