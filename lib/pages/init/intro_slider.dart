@@ -208,13 +208,33 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             if (states.contains(MaterialState.pressed)) {
               return const Color(0xff000000);
             }
-            return const Color(0x00000000); // Use the component's default.
+            return const Color(0xffffffff);
+          },
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            return const Color(0x00000000);
           },
         ),
       ),
 
       // Next button
       renderNextBtn: renderNextBtn(),
+      nextButtonStyle: ButtonStyle(
+        foregroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            if (states.contains(MaterialState.pressed)) {
+              return const Color(0xff000000);
+            }
+            return const Color(0xffffffff);
+          },
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            return const Color(0x00000000);
+          },
+        ),
+      ),
 
       // Done button
       renderDoneBtn: renderDoneBtn(),
@@ -225,7 +245,12 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             if (states.contains(MaterialState.pressed)) {
               return const Color(0xff000000);
             }
-            return const Color(0x00000000); // Use the component's default.
+            return const Color(0xffffffff);
+          },
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            return const Color(0x00000000);
           },
         ),
       ),

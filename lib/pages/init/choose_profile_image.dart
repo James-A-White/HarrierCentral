@@ -576,7 +576,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   void _getImageFromCameraOrGallery(ImageSource source) {
     setState(() {
-      ImagePicker().getImage(source: source).then((PickedFile image) {
+      ImagePicker().pickImage(source: source).then((XFile image) {
         setState(() {
           if (image == null) {
             setState(() {

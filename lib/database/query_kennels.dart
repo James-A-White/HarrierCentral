@@ -65,6 +65,8 @@ enum EnumKennelQueryType { topKennelPage, singleKennel }
 enum EnumKennelQueryContext { user, kennelAdmin }
 
 class QueryKennels {
+  // the variable below is there to suppress a warning about defining classes with only static members
+  int unusedVariableToSuppressWarning;
   // it is important to have the beginning and end of the search field have a space
   // character to ensure that searches run properly.
 

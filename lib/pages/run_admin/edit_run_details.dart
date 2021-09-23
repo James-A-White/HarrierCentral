@@ -57,9 +57,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   bool _isPromotedEvent = false;
   int _eventGeographicScope = 1;
 
-  Future<File> _imageFromCamera;
+  //Future<File> _imageFromCamera;
   Future<File> _imageFromGallery;
-  SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
+  final SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
   //SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
 
   @override
@@ -956,7 +956,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       });
     } else {
       setState(() {
-        ImagePicker().getImage(source: source).then((PickedFile image) {
+        ImagePicker().pickImage(source: source).then((XFile image) {
           setState(() {
             if (image == null) {
               // setState(() {
@@ -973,9 +973,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                   compressFormat: ImageCompressFormat.jpg,
                   compressQuality: 50);
 
-              if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-                _imageFromCamera = img;
-              } else {
+              if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
                 _imageFromGallery = img;
               }
             }

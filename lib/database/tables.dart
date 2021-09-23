@@ -5,6 +5,9 @@ enum AppDomainType { user, event, kennel }
 //enum TableType { baseTable, hemUser, hemEventAdmin, hkmUser, hkmEventAdmin, hkmKennelAdmin, paymentsUser, paymentsEvent }
 
 class Tables {
+  // the variable below is there to suppress a warning about defining classes with only static members
+  int unusedVariableToSuppressWarning;
+
   // static String getTableName(BaseTableHelper tableHelper, {AppDomainType appDomainType}) {
   //   String tableName = tableHelper.tableName;
   //   if (tableType != null) {

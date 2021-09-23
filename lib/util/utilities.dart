@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:location_permissions/location_permissions.dart';
+//import 'package:location_permissions/location_permissions.dart';
 
 class LatLon {
   num latitude;

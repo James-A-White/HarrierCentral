@@ -199,7 +199,10 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
   }
 
   Future<File> onImageButtonPressed() async {
-    final PickedFile image = await ImagePicker().getImage(source: ImageSource.camera);
+    //final PickedFile image = await ImagePicker().getImage(source: ImageSource.camera);
+
+    final XFile image = await ImagePicker().pickImage(source: ImageSource.camera);
+
     return ImageCropper.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
   }
 

@@ -116,7 +116,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
   }
 
-  Widget renderNextBtn() {
+  Widget _renderNextBtn() {
     return GestureDetector(
         child: Text('Allow', style: navStyle),
         onTap: () {
@@ -124,22 +124,14 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         });
   }
 
-  void _requestPermissions() {
+  Future<void> _requestPermissions() async {
     if (activeTab == 0) {
-      Permission.location.request().isGranted.then((bool allow) {
-        if (allow) {
-          // this is an async call.. go ahead and let it run
-          // asynchronously as it can take time for the geostream
-          // to start becuase we are requesting high accuracy
-          // locations.
-          Utilities.subscribeToGeoLocationStream();
-          activeTab = 1;
-          goToTab(1);
-        } else {
-          activeTab = 1;
-          goToTab(1);
-        }
-      });
+      final PermissionStatus ps = await Permission.locationWhenInUse.request();
+      if (ps.isGranted) {
+        Utilities.subscribeToGeoLocationStream();
+      }
+      activeTab = 1;
+      goToTab(1);
     }
 
     if (activeTab == 1) {
@@ -232,7 +224,12 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
             if (states.contains(MaterialState.pressed)) {
               return const Color(0xff000000);
             }
-            return const Color(0x00000000); // Use the component's default.
+            return const Color(0xffffffff);
+          },
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            return const Color(0x00000000);
           },
         ),
       ),
@@ -249,7 +246,22 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       sizeDot: 6.0,
 
       // Next button
-      renderNextBtn: renderNextBtn(),
+      renderNextBtn: _renderNextBtn(),
+      nextButtonStyle: ButtonStyle(
+        foregroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            if (states.contains(MaterialState.pressed)) {
+              return const Color(0xff000000);
+            }
+            return const Color(0xffffffff);
+          },
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            return const Color(0x00000000);
+          },
+        ),
+      ),
 
       // Done button
       renderDoneBtn: renderDoneBtn(),
@@ -260,7 +272,12 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
             if (states.contains(MaterialState.pressed)) {
               return const Color(0xff000000);
             }
-            return const Color(0x00000000); // Use the component's default.
+            return const Color(0xffffffff);
+          },
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            return const Color(0x00000000);
           },
         ),
       ),

@@ -33,12 +33,17 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
     super.initState();
   }
 
-  QLaunchResult _qLaunchResult;
+  //QLaunchResult _qLaunchResult;
 
   Future<void> _launchQonversion() async {
     await Qonversion.setDebugMode();
 
-    _qLaunchResult = await Qonversion.launch(
+    // _qLaunchResult = await Qonversion.launch(
+    //   'MWZuq2mnsUxL-fvpm9Y5oIaUeXs-asAk',
+    //   isObserveMode: false,
+    // );
+
+    await Qonversion.launch(
       'MWZuq2mnsUxL-fvpm9Y5oIaUeXs-asAk',
       isObserveMode: false,
     );
@@ -102,13 +107,31 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
         ),
         Padding(
           padding: const EdgeInsets.all(8),
-          child: FlatButton(
+          child: TextButton(
             child: const Text('Buy'),
-            color: Colors.blue,
-            textColor: Colors.white,
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                (Set<MaterialState> states) {
+                  if (states.contains(MaterialState.disabled)) {
+                    return Colors.grey.shade700;
+                  }
+                  return Colors.blue; // Use the component's default.
+                },
+              ),
+              textStyle: MaterialStateProperty.resolveWith<TextStyle>(
+                (Set<MaterialState> states) {
+                  if (states.contains(MaterialState.disabled)) {
+                    return TextStyle(color: Colors.grey.shade200);
+                  }
+                  return const TextStyle(color: Colors.white); // Use the component's default.
+                },
+              ),
+            ),
+            // color: Colors.blue,
+            // textColor: Colors.white,
             onPressed: () async {
               final Map<String, QPermission> permissions = await Qonversion.purchase(product.qonversionId);
-              final permission = permissions.values.firstWhere((element) => element.productId == product.qonversionId, orElse: () => null);
+              final QPermission permission = permissions.values.firstWhere((QPermission element) => element.productId == product.qonversionId, orElse: () => null);
 
               print(permission?.isActive);
             },
