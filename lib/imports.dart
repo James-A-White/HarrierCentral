@@ -135,6 +135,7 @@ export 'package:harrier_central/widgets/run_list_item.dart';
 export 'package:harrier_central/widgets/run_tabs.dart';
 export 'package:harrier_central/widgets/user_details_ui.dart';
 export 'package:harrier_central/widgets/user_event_list_item.dart';
+export 'package:harrier_central/widgets/zoomable_image.dart';
 //export 'package:hive_flutter/hive_flutter.dart';
 //export 'package:hive/hive.dart';
 export 'package:http/http.dart';

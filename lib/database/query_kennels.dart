@@ -12,6 +12,9 @@ class KennelListQueryExtenstions {
     this.distanceUnitsPref,
     this.cityLat,
     this.cityLon,
+    this.cityName,
+    this.regionName,
+    this.countryName,
     this.searchText,
   });
 
@@ -24,6 +27,9 @@ class KennelListQueryExtenstions {
   final int distanceUnitsPref;
   num cityLat;
   num cityLon;
+  String cityName;
+  String regionName;
+  String countryName;
   final String searchText;
 
   int followingRequested;
@@ -41,6 +47,9 @@ class KennelListQueryExtenstions {
       distanceUnitsPref: map['distanceUnitsPref'],
       cityLat: map['cityLat'],
       cityLon: map['cityLon'],
+      cityName: map['cityName'],
+      regionName: map['regionName'],
+      countryName: map['countryName'],
       searchText: map['searchText'],
     );
     return item;
@@ -156,6 +165,9 @@ class QueryKennels {
           COALESCE(hkm.following,0) as following,
           COALESCE(hkm.appAccessFlags,0) as appAccessFlags,
           c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location,
+          c.cityName as cityName,
+          r.regionName as regionName,
+          n.countryName as countryName,
           (SELECT min(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime >= datetime('now','localtime') ) as nextRunDate,
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
           n.digitsAfterDecimal,
