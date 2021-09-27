@@ -688,7 +688,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       flex: flexRight),
                                 ],
                               ),
-                              ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) || (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty))
+                              ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) ||
+                                      (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty) ||
+                                      (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.toLowerCase().contains('none listed')))
                                   ? Container()
                                   : Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
