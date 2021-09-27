@@ -2,8 +2,20 @@
 import 'package:harrier_central/imports.dart';
 
 class PaymentIcons extends StatelessWidget {
-  const PaymentIcons(this.event, this.kennel, this.digitsAfterDecimal, this.currencySymbol, this.distancePreference, this.distToEvent, this.paymentLinkUrl, this.rsvpState,
-      this.isMember, this.isPaid, this.showHairlineDivider, this.stateSetter);
+  const PaymentIcons(
+    this.event,
+    this.kennel,
+    this.digitsAfterDecimal,
+    this.currencySymbol,
+    this.distancePreference,
+    this.distToEvent,
+    this.paymentLinkUrl,
+    this.rsvpState,
+    this.isMember,
+    this.isPaid,
+    this.showHairlineDivider,
+    this.stateSetter,
+  );
 
   final EventModel event;
   final KennelsModel kennel;
@@ -294,7 +306,7 @@ class PaymentIcons extends StatelessWidget {
 
     // if the event is more than 10k away, don't show the payment options
     // TODO(James): Need to test what happens here if user doesn't allow location
-    if (distToEvent > distanceToDisplayPaymentIcons * 1000) {
+    if ((distToEvent == null) || (distToEvent > distanceToDisplayPaymentIcons * 1000)) {
       return false;
     }
 
