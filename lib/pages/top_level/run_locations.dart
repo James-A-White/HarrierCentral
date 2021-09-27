@@ -14,16 +14,16 @@ import 'package:geolocator/geolocator.dart';
 
 enum RunLocationsViewMode { all, past, recent, myRuns }
 
-class RunLocationsPage extends StatefulWidget {
-  const RunLocationsPage({Key key, this.kennel}) : super(key: key);
+class RunAndKennelMapPage extends StatefulWidget {
+  const RunAndKennelMapPage({Key key, this.kennel}) : super(key: key);
 
   final KennelsModel kennel;
 
   @override
-  RunLocationsPageState createState() => RunLocationsPageState();
+  RunAndKennelMapPageState createState() => RunAndKennelMapPageState();
 }
 
-class RunLocationsPageState extends State<RunLocationsPage> {
+class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   List<Marker> runLocationMarkers = <Marker>[];
   List<Marker> kennelMarkers = <Marker>[];
 
@@ -136,7 +136,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     setState(() {});
   }
 
-  Widget getFab() {
+  Widget getMapFab() {
     return SpeedDial(
         // marginEnd: 18,
         // marginBottom: 10,
@@ -730,7 +730,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
         child: widget.kennel == null
             ? runLocationsBody()
             : Scaffold(
-                floatingActionButton: getFab(),
+                floatingActionButton: getMapFab(),
                 appBar: AppBar(
                   centerTitle: true,
                   backgroundColor: themeAppBarBackground,

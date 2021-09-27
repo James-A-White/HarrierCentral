@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 final GlobalKey<KennelsListPageState> kennelListPageKey = GlobalKey<KennelsListPageState>();
 
 class KennelsListPage extends StatefulWidget {
-  KennelsListPage() : super(key: kennelListPageKey);
+  const KennelsListPage({Key key}) : super(key: key);
 
   @override
   KennelsListPageState createState() => KennelsListPageState();
@@ -21,6 +21,8 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   List<KennelListAggregate> _filteredList = <KennelListAggregate>[];
 
+  bool _sortByFollowingAndDistance = true;
+
   @override
   void initState() {
     _searchController.text = '';
@@ -30,11 +32,65 @@ class KennelsListPageState extends State<KennelsListPage> {
     // tables to be populated immediately when this call returns.
     _refreshFromTable(false).then((void dummy) {
       setState(() {});
+      // Future<dynamic>.delayed(const Duration(seconds: 1)).then((void dummy) {
+      //   setState(() {});
+      // });
     });
 
     //print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
     super.initState();
+  }
+
+  Widget getKennelFab() {
+    return SpeedDial(
+        // marginEnd: 18,
+        // marginBottom: 10,
+        animatedIcon: AnimatedIcons.menu_close,
+        animatedIconTheme: const IconThemeData(size: 22.0),
+        // this is ignored if animatedIcon is non null
+        // child:const  Icon(Icons.add),
+        visible: true,
+        curve: Curves.bounceIn,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        onOpen: () {
+          // ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          // searchFocusNode.unfocus();
+        },
+        //onClose: () => print('DIAL CLOSED'),
+        tooltip: 'Speed Dial',
+        heroTag: 'speed-dial-hero-tag',
+        backgroundColor: Theme.of(context).accentColor,
+        foregroundColor: Colors.white,
+        elevation: 8.0,
+        shape: const CircleBorder(),
+        children: <SpeedDialChild>[
+          SpeedDialChild(
+            child: const Icon(FontAwesome.sort_amount_asc),
+            backgroundColor: Colors.lightBlue.shade500,
+            label: 'Sort by distance',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _sortByFollowingAndDistance = true;
+              _refreshFromTable(true).then((void dummy) {
+                setState(() {});
+              });
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(FontAwesome.sort_alpha_asc),
+            backgroundColor: Colors.lightBlue.shade500,
+            label: 'Sort alphabetically',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _sortByFollowingAndDistance = false;
+              _refreshFromTable(true).then((void dummy) {
+                setState(() {});
+              });
+            },
+          ),
+        ]);
   }
 
   Container _searchBar() {
@@ -121,7 +177,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           G0<TableModel>().globalKennelMainPageList.add(item);
         }
 
-        if (G0<AppModel>().hasLocationPermissions) {
+        if ((G0<AppModel>().hasLocationPermissions) && _sortByFollowingAndDistance) {
           G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
         } else {
           G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.kennel.kennelName.compareTo(b.kennel.kennelName));
@@ -172,6 +228,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
+      floatingActionButton: getKennelFab(),
       body: G0<TableModel>().globalKennelMainPageList == null
           ? Center(
               child: HcCircularProgressIndicator(key: UniqueKey()),
@@ -193,76 +250,78 @@ class KennelsListPageState extends State<KennelsListPage> {
                       body: RefreshIndicator(
                         onRefresh: _handleRefresh,
                         child: ListView.builder(
-                          itemCount: _filteredList.length,
+                          itemCount: _filteredList.length + 1,
                           itemBuilder: (BuildContext context, int index) {
                             //print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                              child: KennelsListItem(
-                                kennelItem: _filteredList[index],
-                                kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) async {
-                                  _filteredList[index].extensions.followingRequested = -1;
-                                  _filteredList[index].extensions.notificationsRequested = -1;
-                                  _filteredList[index].extensions.emailAlertRequested = -1;
-                                  _filteredList[index].hkm.following = following;
-                                  _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
-                                  _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
+                            return _filteredList.length == index
+                                ? Container(height: 100.0)
+                                : Padding(
+                                    padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                                    child: KennelsListItem(
+                                      kennelItem: _filteredList[index],
+                                      kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) async {
+                                        _filteredList[index].extensions.followingRequested = -1;
+                                        _filteredList[index].extensions.notificationsRequested = -1;
+                                        _filteredList[index].extensions.emailAlertRequested = -1;
+                                        _filteredList[index].hkm.following = following;
+                                        _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                        _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
 
-                                  if (_filteredList[index].kennel.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
-                                    // if this kennel has been set as the home kennel, clear the home kennel
-                                    // flag on the rest of the kennels
+                                        if (_filteredList[index].kennel.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+                                          // if this kennel has been set as the home kennel, clear the home kennel
+                                          // flag on the rest of the kennels
 
-                                    for (int i = 0; i < _filteredList.length; i++) {
-                                      _filteredList[i].isHomeKennel = false;
-                                    }
+                                          for (int i = 0; i < _filteredList.length; i++) {
+                                            _filteredList[i].isHomeKennel = false;
+                                          }
 
-                                    _filteredList[index].isHomeKennel = true;
-                                  } else {
-                                    _filteredList[index].isHomeKennel = false;
-                                  }
+                                          _filteredList[index].isHomeKennel = true;
+                                        } else {
+                                          _filteredList[index].isHomeKennel = false;
+                                        }
 
-                                  // delete all of the events for a kennel being followed (or unfollowed) before
-                                  // requerying for those events.
-                                  final String sql = '''
+                                        // delete all of the events for a kennel being followed (or unfollowed) before
+                                        // requerying for those events.
+                                        final String sql = '''
                                     DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}
                                     WHERE ${G0<TableModel>().eventsTableHelper.colKennelId} = '${_filteredList[index].kennel.kennelId}'
                                     ''';
 
-                                  await G0<Database>().rawQuery(sql);
+                                        await G0<Database>().rawQuery(sql);
 
-                                  // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
-                                  // we have either all of the events for the kennel (if it is being followed) or only the
-                                  // events from the normal time period for unfollowed kennels (currently one year in the past)
-                                  await G0<TableModel>()
-                                      .syncUserDataService
-                                      .updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true, forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId);
+                                        // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
+                                        // we have either all of the events for the kennel (if it is being followed) or only the
+                                        // events from the normal time period for unfollowed kennels (currently one year in the past)
+                                        await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true,
+                                            forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId);
 
-                                  setState(() {});
-                                },
-                                kennelSelected: () {
-                                  final KennelListAggregate kennel = _filteredList[index];
-                                  // // this is a bit of a hack where we clear the list before navigating to the
-                                  // // next page. When state changes occurred in child pages further down the
-                                  // // route tree, the list would get refreshed, which I think was causing
-                                  // // a bug where the selected Kennel itself would occasioinall change.
-                                  // // By deleting the list, I'm hoping that this bug will be fixed.
-                                  G0<TableModel>().globalKennelMainPageList.clear();
-                                  Navigator.of(context)
-                                      .push<dynamic>(
-                                    MaterialPageRoute<dynamic>(
-                                      builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+                                        setState(() {});
+                                      },
+                                      kennelSelected: () {
+                                        final KennelListAggregate kennel = _filteredList[index];
+                                        // // this is a bit of a hack where we clear the list before navigating to the
+                                        // // next page. When state changes occurred in child pages further down the
+                                        // // route tree, the list would get refreshed, which I think was causing
+                                        // // a bug where the selected Kennel itself would occasioinall change.
+                                        // // By deleting the list, I'm hoping that this bug will be fixed.
+                                        G0<TableModel>().globalKennelMainPageList.clear();
+                                        Navigator.of(context)
+                                            .push<dynamic>(
+                                          MaterialPageRoute<dynamic>(
+                                            builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+                                          ),
+                                        )
+                                            .then((void dummy) async {
+                                          final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(
+                                              SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable,
+                                              true);
+                                          final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                          print('Pack member data synchronized $resultStr');
+                                          await _refreshFromTable(true);
+                                        });
+                                      },
                                     ),
-                                  )
-                                      .then((void dummy) async {
-                                    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                        SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable, true);
-                                    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                    print('Pack member data synchronized $resultStr');
-                                    await _refreshFromTable(true);
-                                  });
-                                },
-                              ),
-                            );
+                                  );
                           },
                         ),
                       ),

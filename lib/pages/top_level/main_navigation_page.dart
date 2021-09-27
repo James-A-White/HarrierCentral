@@ -11,24 +11,27 @@ class MainNavigationPage extends StatefulWidget {
   _MainNavigationPageState createState() => _MainNavigationPageState();
 }
 
-final GlobalKey<RunLocationsPageState> runLocationsPageKey = GlobalKey<RunLocationsPageState>();
+final GlobalKey<RunAndKennelMapPageState> _runAndKennelMapPageKey = GlobalKey<RunAndKennelMapPageState>();
+final GlobalKey<KennelsListPageState> _kennelLocationsPageKey = GlobalKey<KennelsListPageState>();
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
-  List<Widget> tabs = <Widget>[];
-  List<String> tabTitles = <String>[];
+  //final List<Widget> _tabs = <Widget>[];
+  final List<String> _tabTitles = <String>[];
 
-  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns, tutorialKennelsView, tutorialRunLocations, tutorialRunCounts];
+  final List<List<String>> _tutorials = <List<String>>[_tutorialUpcomingRuns, _tutorialKennelsView, _tutorialRunLocations, _tutorialRunCounts];
 
-  static List<String> tutorialRunLocations = <String>[
+  // ignore: prefer_final_fields
+  static List<String> _tutorialRunLocations = <String>[
     'images/tutorial/run_locations_help_1.jpg',
     'images/tutorial/run_locations_help_2.jpg',
     'images/tutorial/run_locations_help_3.jpg',
     'images/tutorial/run_locations_help_4.jpg',
   ];
 
-  static List<String> tutorialUpcomingRuns = <String>[
+  // ignore: prefer_final_fields
+  static List<String> _tutorialUpcomingRuns = <String>[
     'images/tutorial/upcoming_runs_page_1.jpg',
     'images/tutorial/upcoming_runs_page_2.jpg',
     'images/tutorial/upcoming_runs_page_3.jpg',
@@ -42,13 +45,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   //   'images/tutorial/help_not_available.jpg',
   // ];
 
-  static List<String> tutorialRunCounts = <String>[
+  // ignore: prefer_final_fields
+  static List<String> _tutorialRunCounts = <String>[
     'images/tutorial/run_counts_tutorial_1.jpg',
     'images/tutorial/run_counts_tutorial_2.jpg',
     'images/tutorial/run_counts_tutorial_3.jpg',
   ];
 
-  static List<String> tutorialKennelsView = <String>[
+  // ignore: prefer_final_fields
+  static List<String> _tutorialKennelsView = <String>[
     'images/tutorial/kennels_tutorial_1.jpg',
     'images/tutorial/kennels_tutorial_2.jpg',
     'images/tutorial/kennels_tutorial_3.jpg',
@@ -58,33 +63,32 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     'images/tutorial/kennels_tutorial_7.jpg',
   ];
 
-  String appBarText;
-  String initializationMessage = '';
+  String _appBarText;
+  String _initializationMessage = '';
 
-  bool isFlipped = false;
-  bool fabFlipped = false;
+  bool _isFlipped = false;
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
-  FutureRunsListPage futureRunsListPage;
-  KennelsListPage kennelsListPage;
-  HistoryListPage historyListPage;
+  FutureRunsListPage _futureRunsListPage;
+  KennelsListPage _kennelsListPage;
+  HistoryListPage _historyListPage;
   //final UserQrCodePage userQrCodePage = const UserQrCodePage();
-  RunLocationsPage runLocationsPage;
+  RunAndKennelMapPage _runAndKennelMapPage;
 
   Future<bool> _dbReady;
 
   @override
   void initState() {
-    tabTitles.add('Upcoming Runs');
-    tabTitles.add('Kennels');
-    tabTitles.add('Explore Runs');
-    tabTitles.add('Run Counts');
+    _tabTitles.add('Upcoming Runs');
+    _tabTitles.add('Kennels');
+    _tabTitles.add('Explore Runs');
+    _tabTitles.add('Run Counts');
 
-    //tabTitles.add('Scanner');
-    // tabTitles.add('Friends');
+    //_tabTitles.add('Scanner');
+    // _tabTitles.add('Friends');
 
-    appBarText = tabTitles[0];
+    _appBarText = _tabTitles[0];
 
     super.initState();
 
@@ -112,11 +116,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       //   setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
       // create pages after database is loaded
-      futureRunsListPage = FutureRunsListPage();
-      kennelsListPage = KennelsListPage();
-      historyListPage = HistoryListPage();
+      _futureRunsListPage = FutureRunsListPage();
+      _kennelsListPage = KennelsListPage(key: _kennelLocationsPageKey);
+      _historyListPage = HistoryListPage();
       //final UserQrCodePage userQrCodePage = const UserQrCodePage();
-      runLocationsPage = RunLocationsPage(key: runLocationsPageKey);
+      _runAndKennelMapPage = RunAndKennelMapPage(key: _runAndKennelMapPageKey);
 
       setState(() {});
 
@@ -230,7 +234,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   void informUser(String message) {
     setState(() {
-      initializationMessage = message;
+      _initializationMessage = message;
     });
   }
 
@@ -242,26 +246,40 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   Widget _getPage(int pageIndex) {
     Widget w;
-    appBarText = tabTitles[pageIndex];
+    _appBarText = _tabTitles[pageIndex];
 
     switch (pageIndex) {
       case 0:
-        w = futureRunsListPage;
+        w = _futureRunsListPage;
         break;
       case 1:
-        w = kennelsListPage;
+        w = _kennelsListPage;
         break;
       case 2:
-        w = runLocationsPage;
+        w = _runAndKennelMapPage;
         break;
       case 3:
-        w = historyListPage;
+        w = _historyListPage;
         break;
       // case 3:
       //   w = userQrCodePage;
       //   break;
     }
     return w;
+  }
+
+  Widget _getFab() {
+    Widget fab;
+
+    if ((_runAndKennelMapPageKey?.currentState != null) && !_isFlipped && (currentPage == 2)) {
+      fab = _runAndKennelMapPageKey.currentState.getMapFab();
+    }
+
+    if ((_kennelLocationsPageKey?.currentState != null) && !_isFlipped && (currentPage == 1)) {
+      fab = _kennelLocationsPageKey.currentState.getKennelFab();
+    }
+
+    return fab;
   }
 
   @override
@@ -277,7 +295,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: themeAppBarBackground,
-              title: Text(appBarText),
+              title: Text(_appBarText),
               centerTitle: true,
               actions: <IconButton>[
                 IconButton(
@@ -291,15 +309,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       );
                     }),
                 IconButton(
-                    icon: Icon(isFlipped ? Icons.undo : Icons.info_outline),
+                    icon: Icon(_isFlipped ? Icons.undo : Icons.info_outline),
                     onPressed: () {
                       setState(() {
-                        isFlipped = !isFlipped;
+                        _isFlipped = !_isFlipped;
                       });
                     }),
               ],
             ),
-            floatingActionButton: ((runLocationsPageKey?.currentState == null) || isFlipped || (currentPage != 2)) ? null : runLocationsPageKey.currentState.getFab(),
+            floatingActionButton: _getFab(),
             body: Container(
               decoration: const BoxDecoration(color: Colors.white),
               child: FutureBuilder<void>(
@@ -337,7 +355,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                 );
                               },
                             ),
-                            itemCount: tutorials[currentPage].length,
+                            itemCount: _tutorials[currentPage].length,
                             control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
                             itemBuilder: (BuildContext context, int index) {
                               // this configuration of LayoutBuilder is used to center images that do not
@@ -358,7 +376,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                           ConstrainedBox(
                                             constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
                                             child: Image.asset(
-                                              tutorials[currentPage][index],
+                                              _tutorials[currentPage][index],
                                               fit: BoxFit.fitWidth,
                                             ),
                                           ),
@@ -372,7 +390,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                             },
                           ),
                         ),
-                        isFlipped: isFlipped,
+                        isFlipped: _isFlipped,
                       );
                     } else {
                       return Container(
@@ -403,7 +421,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                             Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Text(
-                                initializationMessage,
+                                _initializationMessage,
                                 style: headingStyle,
                                 textAlign: TextAlign.center,
                               ),
@@ -443,12 +461,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   key: bottomNavigationKey,
                   onTabChangedListener: (int position) {
                     setState(() {
-                      appBarText = tabTitles[position];
+                      _appBarText = _tabTitles[position];
                       currentPage = position;
 
                       // this extra setState is here to ensure that the FAB
                       // displays properly when the map page is showing
-                      if ((!isFlipped) && (currentPage == 2)) {
+                      if ((!_isFlipped) && (currentPage == 2)) {
                         Future<void>.delayed(const Duration(milliseconds: 250)).then((void dummy) {
                           setState(() {});
                         });
@@ -458,7 +476,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 ),
               ),
               back: Container(height: 0, width: 0),
-              isFlipped: isFlipped,
+              isFlipped: _isFlipped,
             ),
             drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
           ),

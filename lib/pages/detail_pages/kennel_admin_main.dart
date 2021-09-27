@@ -444,7 +444,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   Navigator.push<dynamic>(
                                                     context,
                                                     MaterialPageRoute<dynamic>(
-                                                      builder: (BuildContext context) => RunLocationsPage(kennel: widget.kennelAggregateItem.kennel),
+                                                      builder: (BuildContext context) => RunAndKennelMapPage(kennel: widget.kennelAggregateItem.kennel),
                                                     ),
                                                   );
                                                 },
