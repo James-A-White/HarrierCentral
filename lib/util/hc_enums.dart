@@ -34,7 +34,12 @@ enum StringPrefsEnum {
   thirdPartyLoginType,
 }
 
-enum NumPrefsEnum { latitude, longitude, homeKennelLat, homeKennelLon }
+enum NumPrefsEnum {
+  currentDeviceLat,
+  currentDeviceLon,
+  homeKennelLat,
+  homeKennelLon,
+}
 
 enum BoolPrefsEnum { showEnvironmentWarning }
 
@@ -55,6 +60,7 @@ enum DatePrefsEnum {
   lastFbTokenUpdate,
   thirdPartyTokenLastUpdated,
   thirdPartyTokenExpires,
+  lastLocationUpdate,
 }
 
 enum EnumDataContext { user, event, kennel }

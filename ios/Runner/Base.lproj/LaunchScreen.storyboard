@@ -19,11 +19,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" image="cover_photo" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
-                                <rect key="frame" x="-475" y="0.0" width="1325" height="667"/>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" image="cover_photo" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
+                                <rect key="frame" x="-486" y="-143" width="1347" height="952"/>
                             </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hc_logo" translatesAutoresizingMaskIntoConstraints="NO" id="gg8-O0-3Hh">
-                                <rect key="frame" x="0.0" y="-87.5" width="375" height="775"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="hc_logo" translatesAutoresizingMaskIntoConstraints="NO" id="gg8-O0-3Hh">
+                                <rect key="frame" x="107" y="224" width="160" height="219"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -39,11 +39,11 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="84.799999999999997" y="337.33133433283359"/>
+            <point key="canvasLocation" x="84" y="336.88155922038982"/>
         </scene>
     </scenes>
     <resources>
-        <image name="cover_photo" width="1325" height="1550"/>
-        <image name="hc_logo" width="775" height="775"/>
+        <image name="cover_photo" width="585" height="1266"/>
+        <image name="hc_logo" width="512" height="512"/>
     </resources>
 </document>

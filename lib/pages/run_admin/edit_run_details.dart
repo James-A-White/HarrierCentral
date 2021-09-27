@@ -59,7 +59,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
   //Future<File> _imageFromCamera;
   Future<File> _imageFromGallery;
-  final SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
+  //final SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
   //SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
 
   @override
@@ -746,7 +746,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     ),
                     child: Text('Select again from gallery', style: buttonLabelStyleMedium),
                     onPressed: () {
-                      _getImageFromCameraOrGallery(ImageSource.gallery);
+                      _getImageFromGallery(ImageSource.gallery);
                     },
                   ),
                 ),
@@ -845,7 +845,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                         ),
                                         child: Text('Select from gallery', style: buttonLabelStyleMedium),
                                         onPressed: () {
-                                          _getImageFromCameraOrGallery(ImageSource.gallery);
+                                          _getImageFromGallery(ImageSource.gallery);
                                         },
                                       ),
                                     ),
@@ -916,7 +916,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                             ),
                             child: Text('Select from gallery', style: buttonLabelStyleMedium),
                             onPressed: () {
-                              _getImageFromCameraOrGallery(ImageSource.gallery);
+                              _getImageFromGallery(ImageSource.gallery);
                             },
                           ),
                         ),
@@ -947,7 +947,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     return fileName;
   }
 
-  void _getImageFromCameraOrGallery(ImageSource source) {
+  void _getImageFromGallery(ImageSource source) {
     if (_eventAggregate.event.eventId == null) {
       IveCoreUtilities.showAlert(context, 'Please save Details first',
               'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK')
@@ -973,9 +973,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                   compressFormat: ImageCompressFormat.jpg,
                   compressQuality: 50);
 
-              if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
-                _imageFromGallery = img;
-              }
+              _imageFromGallery = img;
             }
           });
         });

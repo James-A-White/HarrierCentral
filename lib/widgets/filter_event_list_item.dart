@@ -13,15 +13,14 @@ class FilterEventListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final num iconSize = 45 * G0<DeviceInfo>().deviceWidthScaleFactor;
     return GestureDetector(
-      onTap: () {
-        Navigator.push<void>(
+      onTap: () async {
+        await Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
             builder: (BuildContext context) => RunAdminPage(eventId: event['eventId']),
           ),
-        ).then((void dummy) {
-          updateEvent(eventFilterType_refreshOnly);
-        });
+        );
+        await updateEvent(eventFilterType_refreshOnly);
       },
       child: Container(
         margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),

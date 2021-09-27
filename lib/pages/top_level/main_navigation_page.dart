@@ -1,8 +1,8 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
-import 'package:location_permissions/location_permissions.dart' as perms;
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -120,72 +120,78 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
       setState(() {});
 
-      final bool hasLoc = await checkLocationPermissions();
-      if (hasLoc) {
-        final List<AreWeAtRunResult> resultList = await CommonQueries.areWeAtRunStart();
-        final String userId = getStringPref(StringPrefsEnum.userId);
-
-        if (resultList.length == 1) {
-          final AreWeAtRunResult result = resultList[0];
-          if ((result.eventId != EMPTY_RESULT) &&
-              (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) &&
-              (result.attendenceState < attendenceAtHash.value)) {
-            final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-              title: 'Check-in to Run',
-              eventImage: result.eventImage,
-              eventName: result.eventName,
-              kennelLogo: result.kennelLogo,
-              okButtonTitle: 'Yes',
-              cancelButtonTitle: 'No',
-              kennelShortName: result.kennelShortName,
-              eventNumber: result.eventNumber,
-            );
-
-            final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
-                context: context,
-                barrierDismissible: false, // user must tap button!
-                builder: (BuildContext context) {
-                  return popup;
-                });
-
-            if (retVal == enumYesNo_Yes) {
-              _checkInAtEvent(result.eventId, userId);
-            }
-          }
-        } else if (resultList.length > 1) {
-          // look through the list of runs and determine if this hasher is
-          // at any of the runs on the list. If so, don't show the
-          // selection view
-          bool showRunList = true;
-
-          for (AreWeAtRunResult result in resultList) {
-            if (result.attendenceState >= attendenceAtHash.value) {
-              showRunList = false;
-              break;
-            }
-          }
-
-          if (showRunList) {
-            Navigator.push<dynamic>(
-              context,
-              MaterialPageRoute<dynamic>(
-                builder: (BuildContext context) => SelectRunPage(runList: resultList),
-              ),
-            ).then((dynamic doCheckIn) async {
-              if ((doCheckIn as bool) == true) {
-                for (AreWeAtRunResult result in resultList) {
-                  if (result.selected) {
-                    await _checkInAtEvent(result.eventId, userId);
-                  }
-                }
-              }
-            });
-          }
+      _checkLocationPermissions().then((bool hasLoc) {
+        if (hasLoc) {
+          _checkAreWeAtRunStart();
         }
-      }
+      });
 
       return true;
     });
+  }
+
+  Future<void> _checkAreWeAtRunStart() async {
+    //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
+    final List<AreWeAtRunResult> resultList = await CommonQueries.areWeAtRunStart();
+    final String userId = getStringPref(StringPrefsEnum.userId);
+
+    if (resultList.length == 1) {
+      final AreWeAtRunResult result = resultList[0];
+      if ((result.eventId != EMPTY_RESULT) &&
+          (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) &&
+          (result.attendenceState < attendenceAtHash.value)) {
+        final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+          title: 'Check-in to Run',
+          eventImage: result.eventImage,
+          eventName: result.eventName,
+          kennelLogo: result.kennelLogo,
+          okButtonTitle: 'Yes',
+          cancelButtonTitle: 'No',
+          kennelShortName: result.kennelShortName,
+          eventNumber: result.eventNumber,
+        );
+
+        final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
+            context: context,
+            barrierDismissible: false, // user must tap button!
+            builder: (BuildContext context) {
+              return popup;
+            });
+
+        if (retVal == enumYesNo_Yes) {
+          _checkInAtEvent(result.eventId, userId);
+        }
+      }
+    } else if (resultList.length > 1) {
+      // look through the list of runs and determine if this hasher is
+      // at any of the runs on the list. If so, don't show the
+      // selection view
+      bool showRunList = true;
+
+      for (AreWeAtRunResult result in resultList) {
+        if (result.attendenceState >= attendenceAtHash.value) {
+          showRunList = false;
+          break;
+        }
+      }
+
+      if (showRunList) {
+        Navigator.push<dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => SelectRunPage(runList: resultList),
+          ),
+        ).then((dynamic doCheckIn) async {
+          if ((doCheckIn as bool) == true) {
+            for (AreWeAtRunResult result in resultList) {
+              if (result.selected) {
+                await _checkInAtEvent(result.eventId, userId);
+              }
+            }
+          }
+        });
+      }
+    }
   }
 
   Future<void> _checkInAtEvent(String eventId, String userId) async {
@@ -195,32 +201,27 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     }
   }
 
-  Future<bool> checkLocationPermissions() async {
+  Future<bool> _checkLocationPermissions() async {
     bool hasLocPermission = true;
 
-    final perms.LocationPermissions permissions = perms.LocationPermissions();
+    final LocationPermission permissions = await Geolocator.checkPermission();
 
-    // ServiceStatus locationStatus = await permissions.checkServiceStatus(PermissionGroup.location);
-    // if (locationStatus != ServiceStatus.enabled) {
-    //   locationStatus = await permissions.checkServiceStatus(PermissionGroup.locationAlways);
-    //   if (locationStatus != ServiceStatus.enabled) {
-    //     locationStatus = await permissions.checkServiceStatus(PermissionGroup.locationWhenInUse);
-    //     if (locationStatus != ServiceStatus.enabled) {
+    //final perms.LocationPermissions permissions = perms.LocationPermissions();
+
+    if ((permissions != LocationPermission.always) && (permissions != LocationPermission.whileInUse)) {
+      hasLocPermission = false;
+    }
+
+    // perms.PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.location);
+    // if (locationPermission != perms.PermissionStatus.granted) {
+    //   locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationWhenInUse);
+    //   if (locationPermission != perms.PermissionStatus.granted) {
+    //     locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationAlways);
+    //     if (locationPermission != perms.PermissionStatus.granted) {
     //       hasLocPermission = false;
     //     }
     //   }
     // }
-
-    perms.PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.location);
-    if (locationPermission != perms.PermissionStatus.granted) {
-      locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationWhenInUse);
-      if (locationPermission != perms.PermissionStatus.granted) {
-        locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationAlways);
-        if (locationPermission != perms.PermissionStatus.granted) {
-          hasLocPermission = false;
-        }
-      }
-    }
 
     setIntPref(IntPrefsEnum.hasLocationPermissions, hasLocPermission ? 1 : 0);
     G0<AppModel>().hasLocationPermissions = hasLocPermission;

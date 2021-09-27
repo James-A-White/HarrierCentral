@@ -22,14 +22,12 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     //_pageController?.dispose();
     _tabController.dispose();
     //_calendarController.dispose();
+    _selectedEvents.dispose();
     _animationController.dispose();
+    _focusedDay.dispose();
+    _selectedDay.dispose();
     super.dispose();
   }
-
-  final ValueNotifier<DateTime> _focusedDay = ValueNotifier<DateTime>(DateTime.now());
-
-  CalendarFormat _calendarFormat = CalendarFormat.month;
-  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff;
 
   @override
   void initState() {
@@ -42,7 +40,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     _refreshSqlTablesFromBackend(true);
 
     super.initState();
-    //_calendarController = Calen();
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -66,15 +64,13 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   final List<Tab> _tabs = <Tab>[];
 
   TabController _tabController;
-  //CalendarController _calendarController;
+
   PageController _pageController;
   AnimationController _animationController;
 
-  DateTime _selectedDate;
-
   List<Map<String, dynamic>> _allEventsSqlResult = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
-  List<Map<String, dynamic>> _selectedEvents = <Map<String, dynamic>>[];
+  ValueNotifier<List<Map<String, dynamic>>> _selectedEvents = ValueNotifier<List<Map<String, dynamic>>>(<Map<String, dynamic>>[]);
   final Map<DateTime, List<Map<String, dynamic>>> _calendarEvents = <DateTime, List<Map<String, dynamic>>>{};
   Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(null);
 
@@ -114,12 +110,12 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   //   );
   // }
 
-  void _onDaySelected(DateTime day, List<dynamic> events, List<dynamic> holidays) {
-    setState(() {
-      _selectedDate = day;
-      _selectedEvents = events.cast<Map<String, dynamic>>();
-    });
-  }
+  // void _onDaySelected(DateTime day, List<dynamic> events, List<dynamic> holidays) {
+  //   setState(() {
+  //     _selectedDate = day;
+  //     _selectedEvents = events.cast<Map<String, dynamic>>();
+  //   });
+  // }
 
   Future<void> _refreshEventFromTables(bool forceRefresh) async {
     final String sortOrder = widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
@@ -169,7 +165,9 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
       _allEventsSqlResult = await G0<Database>().rawQuery(sql);
       setState(() {
         _calendarEvents.clear();
-        _selectedEvents.clear();
+        if (_selectedEvents.value != null) {
+          _selectedEvents.value.clear();
+        }
 
         for (int i = 0; i < _allEventsSqlResult.length; i++) {
           final Map<String, dynamic> event = _allEventsSqlResult[i];
@@ -305,7 +303,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Receipts data synchronized $resultStr');
-    _refreshEventFromTables(true);
+    await _refreshEventFromTables(true);
   }
 
   static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
@@ -446,258 +444,13 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     );
   }
 
-  DateTime _toDateOnly(DateTime d) {
-    return d == null ? null : DateTime(d.year, d.month, d.day);
-  }
-
-  Widget _calendarView() {
-    return Column(children: <Widget>[
-      //
-      Container(
-        decoration: BoxDecoration(
-          // border: new Border.all(width: 1.0, color: Colors.black),
-          //shape: BoxShape.circle,
-          color: Colors.grey.shade300,
-          boxShadow: const <BoxShadow>[
-            BoxShadow(
-              color: Color.fromARGB(70, 0, 0, 0),
-              offset: Offset(0.0, 6.0),
-              blurRadius: 10.0,
-            ),
-          ],
-        ),
-        // TODO(James): Clean up builders to get rid of duplicate code
-        child: Column(
-          children: <Widget>[
-            const Divider(color: Colors.black, height: 1.0),
-            Container(
-              //color: Colors.white,
-              padding: const EdgeInsets.only(bottom: 10.0),
-              child: TableCalendar<dynamic>(
-                onCalendarCreated: (PageController controller) => _pageController = controller,
-                firstDay: DateTime(2010, 1, 1),
-                lastDay: DateTime(2030, 1, 1),
-                focusedDay: _selectedDate ?? DateTime.now().add(const Duration(days: 1)),
-                rowHeight: 35.0,
-                //startDay: DateTime.now(),
-                headerStyle: HeaderStyle(
-                  rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.black),
-                  leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.black),
-                  formatButtonDecoration: BoxDecoration(
-                    color: Colors.blue.shade600,
-                    borderRadius: BorderRadius.circular(6.0),
-                  ),
-                  formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
-                ),
-                onDayLongPressed: (DateTime selectedDay, DateTime focusedDay) {},
-                // onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
-                //   _calendarController.setSelectedDay(datePressed);
-                //   _selectedDate = datePressed;
-
-                //   // only allow the date popup if the conditions allowing for new runs is met
-                //   if (datePressed != null &&
-                //       _toDateOnly(datePressed).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-                //       (_calendarEvents[_toDateOnly(datePressed)]?.length ?? 0) == 0) {
-                //     _showEventPopup(datePressed);
-                //   }
-                // },
-
-                // events: _calendarEvents.cast<DateTime, List<dynamic>>(),
-                // onDaySelected: _onDaySelected,
-                // availableCalendarFormats: const <CalendarFormat, String>{
-                //   CalendarFormat.month: 'Week',
-                //   CalendarFormat.week: 'Month',
-                // },
-                // calendarStyle: CalendarStyle(
-                //   selectedColor: Colors.deepOrange[400],
-                //   todayColor: Colors.deepOrange[200],
-                //   markersColor: Colors.brown[700],
-                //   outsideDaysVisible: false,
-                // ),
-                // builders: CalendarBuilders(
-                //   selectedDayBuilder: (BuildContext context, DateTime date, _) {
-                //     return FutureBuilder<DateTime>(
-                //         future: _dateBeingUpdated,
-                //         builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
-                //           return ((snapshot.hasData) && (_toDateOnly(snapshot.data) == _toDateOnly(date)))
-                //               ? Container(
-                //                   decoration: BoxDecoration(
-                //                     color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                //                         ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
-                //                             ? Colors.blue.shade100
-                //                             : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                //                                 ? Colors.white
-                //                                 : Colors.grey.shade200
-                //                         : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                //                             ? Colors.red.shade100
-                //                             : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                //                                 ? Colors.grey.shade300
-                //                                 : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                //                                     ? Colors.green.shade100
-                //                                     : Colors.yellow.shade200,
-                //                     border: Border.all(
-                //                       color: Colors.red,
-                //                       width: 3.0,
-                //                     ),
-                //                   ),
-                //                   // margin: const EdgeInsets.all(4.0),
-                //                   // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                //                   //color: Colors.deepOrange[300],
-                //                   width: 100,
-                //                   height: 50,
-                //                   child: Icon(delayIcon, color: Colors.blue),
-                //                 )
-                //               : FadeTransition(
-                //                   opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
-                //                   child: Container(
-                //                     decoration: BoxDecoration(
-                //                       color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                //                           ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
-                //                               ? Colors.blue.shade100
-                //                               : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                //                                   ? Colors.white
-                //                                   : Colors.grey.shade200
-                //                           : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                //                               ? Colors.red.shade100
-                //                               : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                //                                   ? Colors.grey.shade300
-                //                                   : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                //                                       ? Colors.green.shade100
-                //                                       : Colors.yellow.shade200,
-                //                       border: Border.all(
-                //                         color: Colors.red,
-                //                         width: 3.0,
-                //                       ),
-                //                     ),
-                //                     // margin: const EdgeInsets.all(4.0),
-                //                     // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                //                     //color: Colors.deepOrange[300],
-                //                     width: 100,
-                //                     height: 50,
-                //                     child: Text(
-                //                       '${date.day}',
-                //                       style: const TextStyle().copyWith(fontSize: 16.0),
-                //                     ),
-                //                   ),
-                //                 );
-                //         });
-                //   },
-                //   // todayDayBuilder: (BuildContext context, DateTime date, _) {
-                //   //   return Container(
-                //   //     decoration: BoxDecoration(
-                //   //       color: Colors.blue.shade100,
-                //   //       border: Border.all(
-                //   //         color: Colors.black26,
-                //   //         width: 1.0,
-                //   //       ),
-                //   //     ),
-                //   //     width: 100,
-                //   //     height: 50,
-                //   //     child: Text(
-                //   //       '${date.day}',
-                //   //       style: const TextStyle().copyWith(fontSize: 16.0),
-                //   //     ),
-                //   //   );
-                //   // },
-
-                //   // dayBuilder: (BuildContext context, DateTime date, _) {
-                //   //   return FutureBuilder<DateTime>(
-                //   //       future: _dateBeingUpdated,
-                //   //       builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
-                //   //         return ((snapshot.hasData) && _toDateOnly(snapshot.data) == _toDateOnly(date))
-                //   //             ? Container(color: Colors.pink)
-                //   //             : Container(
-                //   //                 // margin: const EdgeInsets.all(4.0),
-                //   //                 // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                //   //                 decoration: BoxDecoration(
-                //   //                   color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                //   //                       ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                //   //                           ? Colors.white
-                //   //                           : Colors.grey.shade200
-                //   //                       : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                //   //                           ? Colors.red.shade100
-                //   //                           : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                //   //                               ? Colors.grey.shade300
-                //   //                               : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                //   //                                   ? Colors.green.shade100
-                //   //                                   : Colors.yellow.shade200,
-                //   //                   border: Border.all(
-                //   //                     color: Colors.black26,
-                //   //                     width: 1.0,
-                //   //                   ),
-                //   //                 ),
-                //   //                 width: 100,
-                //   //                 height: 50,
-                //   //                 child: Text(
-                //   //                   '${date.day}',
-                //   //                   style: const TextStyle().copyWith(
-                //   //                       fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
-                //   //                 ),
-                //   //               );
-                //   //       });
-                //   // },
-                //   // markersBuilder: (context, date, events, holidays) {
-                //   //   final children = <Widget>[];
-
-                //   //   if (events.isNotEmpty) {
-                //   //     children.add(
-                //   //       Positioned(
-                //   //         right: 1,
-                //   //         bottom: 1,
-                //   //         child: _buildEventsMarker(date, events),
-                //   //       ),
-                //   //     );
-                //   //   }
-
-                //   //   if (holidays.isNotEmpty) {
-                //   //     children.add(
-                //   //       Positioned(
-                //   //         right: -2,
-                //   //         top: -2,
-                //   //         child: _buildHolidaysMarker(),
-                //   //       ),
-                //   //     );
-                //   //   }
-
-                //   //   return children;
-                //   // },
-                // ),
-              ),
-            ),
-            const SizedBox(height: 5.0),
-            // if (_calendarController?.selectedDay != null &&
-            //     _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-            //     (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 0) ...<Widget>[_buildButtons()],
-            // if (_calendarController?.selectedDay != null &&
-            //     _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-            //     (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 1) ...<Widget>[_buildEditButton()],
-          ],
-        ),
-      ),
-      Expanded(child: _listView(_selectedEvents)),
-    ]);
-  }
-
   Widget _buildEditButton() {
     return Column(
       children: <Widget>[
-        // ElevatedButton(
-        //   child: Text(
-        //     'Add run',
-        //     style: buttonLabelStyleMedium,
-        //   ),
-        //   onPressed: () {
-        //     setState(() {
-        //       //_calendarController.setCalendarFormat(CalendarFormat.month);
-        //     });
-        //   },
-        // ),
-
         ElevatedButton(
-          child: Text('Edit event', style: buttonLabelStyleMedium),
+          child: Text('Edit run', style: buttonLabelStyleMedium),
           onPressed: () async {
-            //final dynamic rawEvent = _calendarEvents[_toDateOnly(_calendarController.selectedDay)][0];
-            final dynamic rawEvent = null;
+            final dynamic rawEvent = _calendarEvents[_toDateOnly(_selectedDay.value)][0];
             if ((rawEvent != null) && (rawEvent['eventId'] != null)) {
               RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent['eventId'], getStringPref(StringPrefsEnum.userId));
 
@@ -715,33 +468,21 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             }
           },
         ),
-
-        const SizedBox(height: 18.0),
+        //const SizedBox(height: 18.0),
       ],
     );
   }
 
-  Widget _buildButtons() {
-    return Column(
+  Widget _buildAddButtons() {
+    return ButtonBar(
+      alignment: MainAxisAlignment.center,
       children: <Widget>[
-        // ElevatedButton(
-        //   child: Text(
-        //     'Add run',
-        //     style: buttonLabelStyleMedium,
-        //   ),
-        //   onPressed: () {
-        //     setState(() {
-        //       //_calendarController.setCalendarFormat(CalendarFormat.month);
-        //     });
-        //   },
-        // ),
-
         ElevatedButton(
-          child: Text('Add event', style: buttonLabelStyleMedium),
+          child: Text('Add run', style: buttonLabelStyleMedium),
           onPressed: () async {
-            //RunAdminAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _calendarController?.selectedDay);
-            RunAdminAggregate rda = null;
-            Navigator.push<dynamic>(
+            RunAdminAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _selectedDay.value);
+            //RunAdminAggregate rda = null;
+            await Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) => EditRunDetailsPage(rda, (String eventId) async {
@@ -749,22 +490,21 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                           rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
                           _isLoading = false;
                           return rda;
-                        }))).then((void dummy) {
-              _refreshSqlTablesFromBackend(true);
-            });
+                        })));
+
+            await _refreshSqlTablesFromBackend(true);
+            await _refreshEventFromTables(true);
+            _refreshList();
           },
         ),
-        const SizedBox(height: 10.0),
         ElevatedButton(
-          child: Text('Add event placeholder', style: buttonLabelStyleMedium),
+          child: Text('Add run placeholder', style: buttonLabelStyleMedium),
           onPressed: () {
             setState(() {
-              //_showEventPopup(_calendarController.selectedDay);
+              _showEventPopup(_selectedDay.value);
             });
           },
         ),
-
-        const SizedBox(height: 18.0),
       ],
     );
   }
@@ -790,20 +530,17 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
       });
 
       final EventsService nSvc = EventsService();
-      nSvc
-          .addEditEvent(
-        kennelId: widget.kennel.kennel.kennelId,
-        isVisible: true,
-        isCountedRun: type == eventFilterType_countEvent.value.toString() ? true : false,
-        eventName: eventName,
-        eventStartDatetime: _toDateOnly(eventStartDate),
-      )
-          .then((String eventId) {
-        _refreshEventFromTables(true).then((void dummy) {
-          setState(() {
-            _dateBeingUpdated = Future<DateTime>.value(null);
-          });
-        });
+      await nSvc.addEditEvent(
+          kennelId: widget.kennel.kennel.kennelId,
+          isVisible: true,
+          isCountedRun: type == eventFilterType_countEvent.value.toString() ? true : false,
+          eventName: eventName,
+          eventStartDatetime: _toDateOnly(eventStartDate));
+
+      await _refreshEventFromTables(true);
+      setState(() {
+        _dateBeingUpdated = Future<DateTime>.value(null);
+        _refreshList();
       });
     }
   }
@@ -811,7 +548,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   Widget _listView(List<Map<String, dynamic>> listEvents) {
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: listEvents.length,
+      itemCount: listEvents?.length ?? 0,
       padding: const EdgeInsets.only(top: 5),
       separatorBuilder: (BuildContext context, int index) => const Divider(
         height: 1.0,
@@ -830,7 +567,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                 // the hasher either attended the run as a pack
                 // member or as a hare
                 final bool isVisible = direction == DismissDirection.endToStart;
-                updateEvent(eventId: event['eventId'], isVisible: isVisible);
+                _updateEvent(eventId: event['eventId'], isVisible: isVisible);
               });
             }
             return Future<bool>.value(false);
@@ -875,28 +612,34 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           child: FilterEventListItem(
             event: event,
             kennelShortName: widget.kennel.kennel.kennelShortName,
-            updateEvent: (dynamic retVal) {
+            updateEvent: (dynamic retVal) async {
               final EnumEventFilterType<int> ft = retVal;
               switch (ft) {
                 case eventFilterType_showEvent:
-                  updateEvent(eventId: event['eventId'], isVisible: true);
+                  await _updateEvent(eventId: event['eventId'], isVisible: true);
                   break;
                 case eventFilterType_hideEvent:
-                  updateEvent(eventId: event['eventId'], isVisible: false);
+                  await _updateEvent(eventId: event['eventId'], isVisible: false);
                   break;
                 case eventFilterType_countEvent:
-                  updateEvent(eventId: event['eventId'], isCountedRun: true);
+                  await _updateEvent(eventId: event['eventId'], isCountedRun: true);
                   break;
                 case eventFilterType_doNotCountEvent:
-                  updateEvent(eventId: event['eventId'], isCountedRun: false);
+                  await _updateEvent(eventId: event['eventId'], isCountedRun: false);
                   break;
                 case eventFilterType_setRunNumber:
-                  setRunNumber(event, context);
+                  await setRunNumber(event, context);
                   break;
                 case eventFilterType_refreshOnly:
-                  _refreshSqlTablesFromBackend(false);
+                  await _refreshSqlTablesFromBackend(false);
+                  await _refreshEventFromTables(true);
+                  _refreshList();
                   break;
               }
+
+              // setState(() {
+              //
+              // });
             },
           ),
         );
@@ -915,48 +658,356 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     );
   }
 
-  void setRunNumber(Map<String, dynamic> event, BuildContext context) {
+  Future<void> setRunNumber(Map<String, dynamic> event, BuildContext context) async {
     final RunNumberPopup newEventPopup = RunNumberPopup(runNumber: event['absoluteEventNumber']);
 
-    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+    final Map<String, String> x = await showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return newEventPopup;
         });
 
-    dlg.then((Map<String, String> x) {
-      final String runNumber = x['runNumber'];
+    final String runNumber = x['runNumber'];
 
-      if ((runNumber != null) && (runNumber != 'cancel')) {
-        int rn = -1;
-        if (runNumber == 'auto') {
-          rn = 0;
-        } else {
-          rn = int.parse(runNumber);
-        }
-
-        updateEvent(eventId: event['eventId'], asboluteEventNumber: rn);
+    if ((runNumber != null) && (runNumber != 'cancel')) {
+      int rn = -1;
+      if (runNumber == 'auto') {
+        rn = 0;
+      } else {
+        rn = int.parse(runNumber);
       }
-    });
+
+      await _updateEvent(eventId: event['eventId'], asboluteEventNumber: rn);
+    }
   }
 
-  Future<void> updateEvent({String eventId, bool isVisible, bool isCountedRun, int asboluteEventNumber, String kennelId}) async {
+  Future<void> _updateEvent({String eventId, bool isVisible, bool isCountedRun, int asboluteEventNumber, String kennelId}) async {
     if (eventId != null) {
       await G0<Database>().transaction<dynamic>((Transaction txn) async {
         final int flag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
         final String sql = 'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
         final int result = await txn.rawUpdate(sql);
         print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        _refreshEventFromTables(true);
       });
     }
 
     final EventsService nSvc = EventsService();
-    nSvc.addEditEvent(eventId: eventId, kennelId: kennelId, isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
-      _refreshEventFromTables(true).then((void dummy) {
-        setState(() {});
-      });
+    await nSvc.addEditEvent(eventId: eventId, kennelId: kennelId, isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber);
+    await _refreshEventFromTables(true);
+    _refreshList();
+  }
+
+  final ValueNotifier<DateTime> _focusedDay = ValueNotifier<DateTime>(DateTime.now());
+  final ValueNotifier<DateTime> _selectedDay = ValueNotifier<DateTime>(DateTime.now());
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+
+  Widget _calendarView() {
+    return Column(children: <Widget>[
+      //
+      Container(
+        decoration: BoxDecoration(
+          // border: new Border.all(width: 1.0, color: Colors.black),
+          //shape: BoxShape.circle,
+          color: Colors.grey.shade300,
+          boxShadow: const <BoxShadow>[
+            BoxShadow(
+              color: Color.fromARGB(70, 0, 0, 0),
+              offset: Offset(0.0, 6.0),
+              blurRadius: 10.0,
+            ),
+          ],
+        ),
+        // TODO(James): Clean up builders to get rid of duplicate code
+        child: Column(
+          children: <Widget>[
+            const Divider(color: Colors.black, height: 1.0),
+            Container(
+              //color: Colors.white,
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: TableCalendar<dynamic>(
+                onCalendarCreated: (PageController controller) => _pageController = controller,
+                firstDay: DateTime(2010, 1, 1),
+                lastDay: DateTime(2030, 1, 1),
+                focusedDay: _focusedDay.value ?? DateTime.now().add(const Duration(days: 1)),
+                calendarFormat: _calendarFormat,
+                rowHeight: 35.0,
+                rangeSelectionMode: RangeSelectionMode.toggledOff,
+                headerStyle: HeaderStyle(
+                  rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.black),
+                  leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.black),
+                  formatButtonDecoration: BoxDecoration(
+                    color: Colors.blue.shade600,
+                    borderRadius: BorderRadius.circular(6.0),
+                  ),
+                  formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
+                ),
+                onFormatChanged: (CalendarFormat format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                },
+                onPageChanged: (DateTime focusedDay) {
+                  _focusedDay.value = focusedDay;
+                },
+
+                //onDayLongPressed: (DateTime selectedDay, DateTime focusedDay) {},
+                // onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
+                //   _calendarController.setSelectedDay(datePressed);
+                //   _selectedDate = datePressed;
+
+                //   // only allow the date popup if the conditions allowing for new runs is met
+                //   if (datePressed != null &&
+                //       _toDateOnly(datePressed).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+                //       (_calendarEvents[_toDateOnly(datePressed)]?.length ?? 0) == 0) {
+                //     _showEventPopup(datePressed);
+                //   }
+                // },
+
+                eventLoader: (DateTime dt) {
+                  return _calendarEvents[_toDateOnly(dt)];
+                },
+                onDaySelected: _onDaySelected,
+
+                availableCalendarFormats: const <CalendarFormat, String>{
+                  CalendarFormat.month: 'Week',
+                  CalendarFormat.twoWeeks: 'Month',
+                  CalendarFormat.week: '2 weeks',
+                },
+                calendarStyle: CalendarStyle(
+                  selectedDecoration: BoxDecoration(color: Colors.deepOrange[400]),
+                  todayDecoration: BoxDecoration(color: Colors.deepOrange[200]),
+                  markerDecoration: BoxDecoration(color: Colors.brown[700]),
+                  outsideDaysVisible: false,
+                ),
+                calendarBuilders: CalendarBuilders<dynamic>(
+                  // selectedBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
+                  //   return FutureBuilder<DateTime>(
+                  //       future: _dateBeingUpdated,
+                  //       builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                  //         return ((snapshot.hasData) && (_toDateOnly(snapshot.data) == _toDateOnly(date)))
+                  //             ? Container(
+                  //                 decoration: BoxDecoration(
+                  //                   color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                  //                       ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                  //                           ? Colors.blue.shade100
+                  //                           : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                  //                               ? Colors.white
+                  //                               : Colors.grey.shade200
+                  //                       : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                  //                           ? Colors.red.shade100
+                  //                           : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                  //                               ? Colors.grey.shade300
+                  //                               : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                  //                                   ? Colors.green.shade100
+                  //                                   : Colors.yellow.shade200,
+                  //                   border: Border.all(
+                  //                     color: Colors.red,
+                  //                     width: 3.0,
+                  //                   ),
+                  //                 ),
+                  //                 // margin: const EdgeInsets.all(4.0),
+                  //                 // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                  //                 //color: Colors.deepOrange[300],
+                  //                 width: 100,
+                  //                 height: 50,
+                  //                 child: Icon(delayIcon, color: Colors.blue),
+                  //               )
+                  //             : FadeTransition(
+                  //                 opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
+                  //                 child: Container(
+                  //                   decoration: BoxDecoration(
+                  //                     color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                  //                         ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                  //                             ? Colors.blue.shade100
+                  //                             : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                  //                                 ? Colors.white
+                  //                                 : Colors.grey.shade200
+                  //                         : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                  //                             ? Colors.red.shade100
+                  //                             : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                  //                                 ? Colors.grey.shade300
+                  //                                 : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                  //                                     ? Colors.green.shade100
+                  //                                     : Colors.yellow.shade200,
+                  //                     border: Border.all(
+                  //                       color: Colors.red,
+                  //                       width: 3.0,
+                  //                     ),
+                  //                   ),
+                  //                   // margin: const EdgeInsets.all(4.0),
+                  //                   // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                  //                   //color: Colors.deepOrange[300],
+                  //                   width: 100,
+                  //                   height: 50,
+                  //                   child: Text(
+                  //                     '${date.day}',
+                  //                     style: const TextStyle().copyWith(fontSize: 16.0),
+                  //                   ),
+                  //                 ),
+                  //               );
+                  //       });
+                  // },
+                  todayBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        border: Border.all(
+                          color: Colors.black26,
+                          width: 1.0,
+                        ),
+                      ),
+                      width: 100,
+                      height: 50,
+                      child: Text(
+                        '${date.day}',
+                        style: const TextStyle().copyWith(fontSize: 16.0),
+                      ),
+                    );
+                  },
+
+                  outsideBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        border: Border.all(
+                          color: Colors.black12,
+                          width: 1.0,
+                        ),
+                      ),
+                      width: 100,
+                      height: 50,
+                      child: Text(
+                        '${date.day}',
+                        style: const TextStyle().copyWith(fontSize: 16.0, color: Colors.grey.shade400),
+                      ),
+                    );
+                  },
+
+                  defaultBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
+                    return FutureBuilder<DateTime>(
+                        future: _dateBeingUpdated,
+                        builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                          return Container(
+                            // margin: const EdgeInsets.all(4.0),
+                            // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                            decoration: BoxDecoration(
+                              color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                                  ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                                      ? Colors.white
+                                      : Colors.grey.shade200
+                                  : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                                      ? Colors.red.shade100
+                                      : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                                          ? Colors.grey.shade300
+                                          : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                                              ? Colors.green.shade100
+                                              : Colors.yellow.shade200,
+                              border: _toDateOnly(date) != _toDateOnly(_focusedDay.value)
+                                  ? Border.all(
+                                      color: Colors.black26,
+                                      width: 1.0,
+                                    )
+                                  : Border.all(
+                                      color: Colors.red,
+                                      width: 3.0,
+                                    ),
+                            ),
+                            width: 100,
+                            height: 50,
+                            child: Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: <Widget>[
+                                Positioned(
+                                  top: 1.0,
+                                  left: 1.0,
+                                  child: Text(
+                                    '${date.day}',
+                                    style: const TextStyle().copyWith(
+                                        fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
+                                  ),
+                                ),
+                                if ((snapshot.hasData) && _toDateOnly(snapshot.data) == _toDateOnly(date)) ...<Widget>[
+                                  Positioned(
+                                    right: 1.0,
+                                    child: Icon(delayIcon, color: Colors.blue),
+                                  )
+                                ],
+                              ],
+                            ),
+                          );
+                        });
+                  },
+                  markerBuilder: (BuildContext context, DateTime date, List<dynamic> events) {
+                    final List<Widget> children = <Widget>[];
+
+                    if (events.isNotEmpty) {
+                      if (events.length <= 5) {
+                        for (int i = 0; i < events.length; i++) {
+                          children.add(
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 5.0),
+                              child: Icon(
+                                FontAwesome.circle,
+                                size: 8.0,
+                                color: events[i]['isVisible'] == 0
+                                    ? Colors.grey
+                                    : events[i]['isCountedRun'] == 0
+                                        ? Colors.red
+                                        : Colors.blue.shade700,
+                              ),
+                            ),
+                          );
+                        }
+                      } else {
+                        children.add(
+                          Text(events.length.toString()),
+                        );
+                      }
+                    }
+
+                    return Row(mainAxisAlignment: MainAxisAlignment.center, children: children);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 5.0),
+            // if (_selectedDay.value != null &&
+            //     _toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+            //     (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 0) ...<Widget>[_buildAddButtons()],
+
+            if (_selectedDay.value != null &&
+                _toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+                (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 1) ...<Widget>[_buildEditButton()],
+            _buildAddButtons(),
+          ],
+        ),
+      ),
+      Expanded(child: _listView(_selectedEvents.value)),
+    ]);
+  }
+
+  DateTime _toDateOnly(DateTime d) {
+    return d == null ? null : DateTime(d.year, d.month, d.day);
+  }
+
+  void _refreshList({DateTime selectedDay, DateTime focusedDay}) {
+    setState(() {
+      if (selectedDay != null) {
+        _selectedDay.value = selectedDay;
+      }
+
+      if (focusedDay != null) {
+        _focusedDay.value = focusedDay;
+      }
+
+      _selectedEvents.value = _calendarEvents[_toDateOnly(_selectedDay.value)];
     });
+  }
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    if (!isSameDay(_selectedDay.value, selectedDay)) {
+      _refreshList(selectedDay: selectedDay, focusedDay: focusedDay);
+    }
   }
 }

@@ -18,131 +18,131 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
     await setupLocalServices(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
 
-    G0.allReady().then((void dummy) async {
-      G0<AppModel>().appStartTime = DateTime.now();
+    await G0.allReady();
 
-      G0<DeviceInfo>().deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
-      G0<DeviceInfo>().deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
-      G0<DeviceInfo>().deviceMaxScaleFactor ??= max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
-      G0<DeviceInfo>().deviceMinScaleFactor ??= min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
+    G0<AppModel>().appStartTime = DateTime.now();
 
-      G0<DeviceInfo>().deviceWidth ??= MediaQuery.of(context).size.width;
-      G0<DeviceInfo>().deviceHeight ??= MediaQuery.of(context).size.height;
+    G0<DeviceInfo>().deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
+    G0<DeviceInfo>().deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
+    G0<DeviceInfo>().deviceMaxScaleFactor ??= max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
+    G0<DeviceInfo>().deviceMinScaleFactor ??= min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
 
-      // await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
+    G0<DeviceInfo>().deviceWidth ??= MediaQuery.of(context).size.width;
+    G0<DeviceInfo>().deviceHeight ??= MediaQuery.of(context).size.height;
 
-      await Utilities.subscribeToGeoLocationStream();
+    // await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
-      final String userId = getStringPref(StringPrefsEnum.userId);
+    await Utilities.subscribeToGeoLocationStream();
 
-      final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
-      final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
-      String facebookAccessToken;
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
-      if (fbTokenUpdateDelta.inDays > 30) {
-        final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+    final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
+    final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
+    String facebookAccessToken;
 
-        if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
-          final LoginResult loginResult = await FacebookAuth.instance.login();
-          final AccessToken accessToken = loginResult.accessToken;
-          facebookAccessToken = accessToken.token;
-          await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-          await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+    if (fbTokenUpdateDelta.inDays > 30) {
+      final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+
+      if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
+        final LoginResult loginResult = await FacebookAuth.instance.login();
+        final AccessToken accessToken = loginResult.accessToken;
+        facebookAccessToken = accessToken.token;
+        await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+        await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+      }
+    }
+
+    final ApproveLoginService svc = ApproveLoginService();
+    final ApproveLoginModel loginResult = await svc.approveLogin(context, facebookAccessToken);
+
+    if (loginResult != null) {
+      await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
+      await setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+      await setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
+      await setIntPref(IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
+      await setStringPref(StringPrefsEnum.email, loginResult.email);
+      await setStringPref(StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
+    }
+
+    if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
+      // we get here if we are disconnected and the app has never been run before
+      // we can't operate in offline mode because there is no data in the cache
+      IveCoreUtilities.showAlert(
+              context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
+          .then((void dummy) async {
+        await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
+        return null;
+      });
+    } else if (loginResult == null) {
+      G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+      return;
+    } else {
+      const bool allowContinueFromMessage = true;
+
+      if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
+        if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
+          await _displayAlert(context, loginResult.loginMessage, loginResult.loginMessageTitle);
         }
       }
 
-      final ApproveLoginService svc = ApproveLoginService();
-      final ApproveLoginModel loginResult = await svc.approveLogin(context, facebookAccessToken);
-
-      if (loginResult != null) {
-        await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
-        await setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
-        await setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
-        await setIntPref(IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
-        await setStringPref(StringPrefsEnum.email, loginResult.email);
-        await setStringPref(StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
-      }
-
-      if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
-        // we get here if we are disconnected and the app has never been run before
-        // we can't operate in offline mode because there is no data in the cache
-        IveCoreUtilities.showAlert(
-                context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
-            .then((void dummy) async {
-          await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
-          return null;
-        });
-      } else if (loginResult == null) {
-        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
-        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-        return;
-      } else {
-        const bool allowContinueFromMessage = true;
-
-        if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
-          if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-            await _displayAlert(context, loginResult.loginMessage, loginResult.loginMessageTitle);
-          }
-        }
-
-        if (allowContinueFromMessage) {
-          if (loginResult.serverStatusCode == serverStatusUp.value) {
-            if (loginResult.approvalCode == loginApprovalApproved.value) {
-              G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
-              //if (true) {
-              if (userId == null) {
-                // first time the app has run
-                Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
-              } else {
-                // app has been run before... let's check the DB version.
-                final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
-                if ((installedDbVersion != DB_VERSION) && ((installedDbVersion + 9) < DB_VERSION)) {
-                  // the installed DB version is not up to date
-                  // if the version numbers are greater than 10 apart,
-                  // reload the entire DB.
-
-                  final String resetCode = getStringPref(StringPrefsEnum.resetCode);
-
-                  DBProvider.deleteDb(DB_NAME);
-                  G0<AppModel>().dbStatus = EdbStatus.uninitialized;
-
-                  //bool isLoading = true;
-                  String userName;
-
-                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
-                  apiCall.then((Map<String, String> result) async {
-                    setState(() {
-                      //isLoading = false;
-                    });
-
-                    if (result['result'] != 'failed') {
-                      userName = getStringPref(StringPrefsEnum.displayName);
-
-                      await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-
-                      IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
-                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-                      });
-                    } else {
-                      // TODO(James): Do something here if the auth device fails
-                    }
-                  });
-                } else {
-                  Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-                }
-              }
+      if (allowContinueFromMessage) {
+        if (loginResult.serverStatusCode == serverStatusUp.value) {
+          if (loginResult.approvalCode == loginApprovalApproved.value) {
+            G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
+            //if (true) {
+            if (userId == null) {
+              // first time the app has run
+              Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
-              // TODO(James): Handle cases where login is disapproved
+              // app has been run before... let's check the DB version.
+              final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
+              if ((installedDbVersion != DB_VERSION) && ((installedDbVersion + 9) < DB_VERSION)) {
+                // the installed DB version is not up to date
+                // if the version numbers are greater than 10 apart,
+                // reload the entire DB.
+
+                final String resetCode = getStringPref(StringPrefsEnum.resetCode);
+
+                DBProvider.deleteDb(DB_NAME);
+                G0<AppModel>().dbStatus = EdbStatus.uninitialized;
+
+                //bool isLoading = true;
+                String userName;
+
+                final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
+                apiCall.then((Map<String, String> result) async {
+                  setState(() {
+                    //isLoading = false;
+                  });
+
+                  if (result['result'] != 'failed') {
+                    userName = getStringPref(StringPrefsEnum.displayName);
+
+                    await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+
+                    IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
+                      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                    });
+                  } else {
+                    // TODO(James): Do something here if the auth device fails
+                  }
+                });
+              } else {
+                Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+              }
             }
           } else {
-            // TODO(James): Handle cases where server is down
+            // TODO(James): Handle cases where login is disapproved
           }
         } else {
-          // TODO(James): Handle case where not allowed to continue after a message
+          // TODO(James): Handle cases where server is down
         }
+      } else {
+        // TODO(James): Handle case where not allowed to continue after a message
       }
-    });
+    }
 
     //// return Future<void>(() {});((){});
   }

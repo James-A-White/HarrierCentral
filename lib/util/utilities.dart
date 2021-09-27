@@ -76,8 +76,8 @@ class Utilities {
   }
 
   static Future<void> subscribeToGeoLocationStream() async {
-    G0<DeviceInfo>().deviceLat = DEFAULT_LATITUDE;
-    G0<DeviceInfo>().deviceLon = DEFAULT_LONGITUDE;
+    G0<DeviceInfo>().deviceLat = getNumPref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
+    G0<DeviceInfo>().deviceLon = getNumPref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
 
     IveCoreUtilities.logTiming('Geostatus query start', G0<AppModel>().appStartTime);
     final LocationPermission permission = await Geolocator.checkPermission();
@@ -88,17 +88,24 @@ class Utilities {
         if (position != null) {
           G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
           G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
+          setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
+          setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
+          setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
         }
         print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
       });
 
-      // start with the lowest possible accuracy to ensure that the
-      // app boots up quickly. As soon as the geoLocationStream resolves an accurate
-      // location, it will correct the lat/long to be more accurate.
-      final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
-      G0<DeviceInfo>().deviceLat = position.latitude;
-      G0<DeviceInfo>().deviceLon = position.longitude;
-      print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+      // don't wait for the position to resolve to return from
+      // this function because we want the app to start quickly.
+      Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest).then((Position position) {
+        G0<DeviceInfo>().deviceLat = position.latitude;
+        G0<DeviceInfo>().deviceLon = position.longitude;
+        setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
+        setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
+        setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+
+        print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+      });
     }
   }
 

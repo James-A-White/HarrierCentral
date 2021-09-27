@@ -71,6 +71,7 @@ class CommonQueries {
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId}
           WHERE ABS((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
+          AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
           ORDER BY abs(julianday('now') - julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) ASC
           
           ''';
@@ -78,38 +79,55 @@ class CommonQueries {
       final List<Map<String, dynamic>> queryResults = await G0<Database>().rawQuery(sql);
 
       if (queryResults.isNotEmpty) {
-        for (int i = 0; i < queryResults.length; i++) {
-          if (queryResults[i]['lat'] != null) {
-            final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+        int escape = 0;
 
-            if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
-              continue;
-            }
+        bool hasValidPosition = false;
 
-            final AreWeAtRunResult result = AreWeAtRunResult();
+        // start a 2-minute loop where we look for an updated position
+        while (escape < 120 && !hasValidPosition) {
+          final DateTime lastLocationUpdate = getDatePref(DatePrefsEnum.lastLocationUpdate);
+          if (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() < 15) {
+            hasValidPosition = true;
+            continue;
+          }
+          escape++;
+          await Future<dynamic>.delayed(const Duration(seconds: 1));
+        }
 
-            result.eventId = queryResults[i]['eventId'];
-            result.eventName = queryResults[i]['eventName'];
-            result.eventImage = queryResults[i]['eventImage'];
-            result.kennelLogo = queryResults[i]['kennelLogo'];
-            result.eventNumber = queryResults[i]['eventNumber'];
-            result.kennelShortName = queryResults[i]['kennelShortName'];
-            result.distanceInMeters = dist;
-            result.attendenceState = queryResults[i]['attendenceState'];
-            result.selected = false;
+        if (hasValidPosition) {
+          for (int i = 0; i < queryResults.length; i++) {
+            if (queryResults[i]['lat'] != null) {
+              final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
 
-            // NOTE: Event images can either be full URLs or they can be partial URLs in the case
-            // when events have been uploaded directly to the DB using the HcWeb application.
-            // For partial URLs we need to append the root URL. The Root URL is stored in the
-            // Server settings table and copied into the string prefs on app startup.
-            if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
-              final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-              if ((s != null) && (s.isNotEmpty)) {
-                result.eventImage = s + result.eventImage;
+              if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
+                continue;
               }
-            }
 
-            resultList.add(result);
+              final AreWeAtRunResult result = AreWeAtRunResult();
+
+              result.eventId = queryResults[i]['eventId'];
+              result.eventName = queryResults[i]['eventName'];
+              result.eventImage = queryResults[i]['eventImage'];
+              result.kennelLogo = queryResults[i]['kennelLogo'];
+              result.eventNumber = queryResults[i]['eventNumber'];
+              result.kennelShortName = queryResults[i]['kennelShortName'];
+              result.distanceInMeters = dist;
+              result.attendenceState = queryResults[i]['attendenceState'];
+              result.selected = false;
+
+              // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+              // when events have been uploaded directly to the DB using the HcWeb application.
+              // For partial URLs we need to append the root URL. The Root URL is stored in the
+              // Server settings table and copied into the string prefs on app startup.
+              if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
+                final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+                if ((s != null) && (s.isNotEmpty)) {
+                  result.eventImage = s + result.eventImage;
+                }
+              }
+
+              resultList.add(result);
+            }
           }
         }
       }
