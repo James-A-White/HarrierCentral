@@ -4,18 +4,18 @@ import 'package:intl/intl.dart';
 
 enum FilterEventsPageType { past, future }
 
-class FilterEventsPage extends StatefulWidget {
-  const FilterEventsPage({Key key, @required this.kennel, @required this.pageType}) : super(key: key);
+class AddEditEventsPage extends StatefulWidget {
+  const AddEditEventsPage({Key key, @required this.kennel, @required this.pageType}) : super(key: key);
 
   final KennelListAggregate kennel;
   final FilterEventsPageType pageType;
 
   @override
-  FilterEventsPageState createState() => FilterEventsPageState();
+  AddEditEventsPageState createState() => AddEditEventsPageState();
 }
 
-class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderStateMixin {
-  FilterEventsPageState();
+class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProviderStateMixin {
+  AddEditEventsPageState();
 
   @override
   void dispose() {
@@ -37,9 +37,14 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     _tabController.addListener(() {
       setState(() {});
     });
-    _refreshSqlTablesFromBackend(true);
-
-    super.initState();
+    _refreshSqlTablesFromBackend(true).then((void dummy) {
+      _refreshList(selectedDay: _focusedDay?.value ?? DateTime.now(), focusedDay: _focusedDay?.value ?? DateTime.now());
+      Future<void>.delayed(const Duration(milliseconds: 500)).then((void dummy) {
+        setState(() {
+          // force the buttons on the calendar to be drawn
+        });
+      });
+    });
 
     _animationController = AnimationController(
       vsync: this,
@@ -47,11 +52,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     );
 
     _animationController.forward();
-    Future<void>.delayed(const Duration(milliseconds: 500)).then((void dummy) {
-      setState(() {
-        // force the buttons on the calendar to be drawn
-      });
-    });
+
+    super.initState();
   }
 
   void _initTabs() {
@@ -89,7 +91,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Events data synchronized $resultStr');
 
-    _refreshEventFromTables(true).then((void dummy) {});
+    await _refreshEventFromTables(true);
   }
 
   // Widget _buildEventList() {
@@ -163,35 +165,34 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           ''';
 
       _allEventsSqlResult = await G0<Database>().rawQuery(sql);
-      setState(() {
-        _calendarEvents.clear();
-        if (_selectedEvents.value != null) {
-          _selectedEvents.value.clear();
-        }
 
-        for (int i = 0; i < _allEventsSqlResult.length; i++) {
-          final Map<String, dynamic> event = _allEventsSqlResult[i];
-          DateTime eventDate = DateTime.tryParse(event['eventStartDatetime']);
-          if (eventDate != null) {
-            eventDate = _toDateOnly(eventDate);
-            if (_calendarEvents[eventDate] == null) {
-              _calendarEvents[eventDate] = <Map<String, dynamic>>[];
-            }
-            _calendarEvents[eventDate].add(event);
+      _calendarEvents.clear();
+      if (_selectedEvents.value != null) {
+        _selectedEvents.value.clear();
+      }
 
-            // rebuild the items in _selectedDate so that state changes
-            // are reflected in the UI when someone changes an event's
-            // properties
-            // if (_calendarController?.selectedDay != null) {
-            //   if (eventDate == _toDateOnly(_calendarController.selectedDay)) {
-            //     _selectedEvents.add(event);
-            //   }
-            // }
+      for (int i = 0; i < _allEventsSqlResult.length; i++) {
+        final Map<String, dynamic> event = _allEventsSqlResult[i];
+        DateTime eventDate = DateTime.tryParse(event['eventStartDatetime']);
+        if (eventDate != null) {
+          eventDate = _toDateOnly(eventDate);
+          if (_calendarEvents[eventDate] == null) {
+            _calendarEvents[eventDate] = <Map<String, dynamic>>[];
           }
-        }
+          _calendarEvents[eventDate].add(event);
 
-        _isLoading = false;
-      });
+          // rebuild the items in _selectedDate so that state changes
+          // are reflected in the UI when someone changes an event's
+          // properties
+          // if (_calendarController?.selectedDay != null) {
+          //   if (eventDate == _toDateOnly(_calendarController.selectedDay)) {
+          //     _selectedEvents.add(event);
+          //   }
+          // }
+        }
+      }
+
+      _isLoading = false;
     } catch (e) {
       print(e);
     }
@@ -729,7 +730,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                 onCalendarCreated: (PageController controller) => _pageController = controller,
                 firstDay: DateTime(2010, 1, 1),
                 lastDay: DateTime(2030, 1, 1),
-                focusedDay: _focusedDay.value ?? DateTime.now().add(const Duration(days: 1)),
+                focusedDay: _focusedDay?.value ?? DateTime.now(),
                 calendarFormat: _calendarFormat,
                 rowHeight: 35.0,
                 rangeSelectionMode: RangeSelectionMode.toggledOff,

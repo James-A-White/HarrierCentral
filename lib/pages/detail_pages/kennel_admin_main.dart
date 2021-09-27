@@ -19,8 +19,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   @override
   void initState() {
-    refreshFromTable(true);
-
     if ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) || (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty)) {
       mismanagement = null;
     } else {
@@ -30,11 +28,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     }
 
     G0<TableModel>().syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagsAllData, false, widget.kennelAggregateItem.kennel.kennelId).then((bool result) {
-      //refreshFromTables();
-      setState(() {
-        final String resultStr = result ? 'successfully' : 'unsuccessfully';
-        print('Event admin data synchronized $resultStr');
-        _isLoading = false;
+      _refreshFromTable(true).then((void dummy) {
+        setState(() {
+          final String resultStr = result ? 'successfully' : 'unsuccessfully';
+          print('Event admin data synchronized $resultStr');
+          _isLoading = false;
+        });
       });
     });
 
@@ -58,38 +57,40 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   List<RunDetailsAggregate> allRuns;
 
-  void refreshFromTable(bool forceRefresh) {
+  Future<void> _refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       //final Geolocator locator = Geolocator();
 
-      QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId)
-          .then((List<Map<String, dynamic>> results) {
-        allRuns = <RunDetailsAggregate>[];
-        for (int i = 0; i < results.length; i++) {
-          final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['latitude'] + .0, results[i]['longitude'] + .0);
-          final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
-          final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-          final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
-          extensionsItem.distToEvent = dist;
+      final List<Map<String, dynamic>> results =
+          await QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId);
 
-          String paymentLinkUrl = '';
-
-          if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-            paymentLinkUrl = eventItem.eventPaymentUrl;
-          } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
-              ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-            paymentLinkUrl = kennelItem.kennelPaymentUrl;
-          }
-
-          final num julianNow = results[i]['nowJulian'];
-          final num eventJulian = results[i]['eventJulian'];
-
-          print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
-
-          final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-          allRuns.add(item);
+      allRuns = <RunDetailsAggregate>[];
+      for (int i = 0; i < results.length; i++) {
+        num dist;
+        if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
+          dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['latitude'] + .0, results[i]['longitude'] + .0);
         }
-      });
+        final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
+        final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+        final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
+        extensionsItem.distToEvent = dist;
+
+        String paymentLinkUrl = '';
+
+        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
+          paymentLinkUrl = eventItem.eventPaymentUrl;
+        } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+          paymentLinkUrl = kennelItem.kennelPaymentUrl;
+        }
+
+        final num julianNow = results[i]['nowJulian'];
+        final num eventJulian = results[i]['eventJulian'];
+
+        print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+
+        final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+        allRuns.add(item);
+      }
     }
   }
 
@@ -307,12 +308,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<dynamic>(
-                                                        builder: (BuildContext context) => FilterEventsPage(
+                                                        builder: (BuildContext context) => AddEditEventsPage(
                                                           kennel: widget.kennelAggregateItem,
                                                           pageType: FilterEventsPageType.past,
                                                         ),
                                                       ),
-                                                    );
+                                                    ).then((void dummy) {
+                                                      _refreshFromTable(true).then((void dummy) {
+                                                        setState(() {});
+                                                      });
+                                                    });
                                                   }
                                                 },
                                               ),
@@ -349,12 +354,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<dynamic>(
-                                                        builder: (BuildContext context) => FilterEventsPage(
+                                                        builder: (BuildContext context) => AddEditEventsPage(
                                                           kennel: widget.kennelAggregateItem,
                                                           pageType: FilterEventsPageType.future,
                                                         ),
                                                       ),
-                                                    );
+                                                    ).then((void dummy) {
+                                                      _refreshFromTable(true).then((void dummy) {
+                                                        setState(() {});
+                                                      });
+                                                    });
                                                   }
                                                 },
                                               ),
