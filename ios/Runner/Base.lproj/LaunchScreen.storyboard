@@ -19,23 +19,27 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="hc_logo" translatesAutoresizingMaskIntoConstraints="NO" id="gg8-O0-3Hh">
-                                <rect key="frame" x="107" y="224" width="160" height="219"/>
-                            </imageView>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="cover_photo" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hc_logo" translatesAutoresizingMaskIntoConstraints="NO" id="gg8-O0-3Hh">
+                                <rect key="frame" x="107" y="224" width="161" height="219"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="161" id="4sd-Uh-6PQ"/>
+                                    <constraint firstAttribute="height" constant="219" id="ILN-Nq-0xz"/>
+                                </constraints>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottomMargin" id="HXW-ZF-As6"/>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="gg8-O0-3Hh" secondAttribute="centerX" id="Rxe-fm-I0g"/>
-                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="top" secondItem="Ydg-fD-yQy" secondAttribute="bottom" constant="224" id="b9H-U5-tKR"/>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="gg8-O0-3Hh" secondAttribute="centerY" id="f3j-U2-eWU"/>
+                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="MG5-Bt-9Ds"/>
+                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="centerX" secondItem="YRO-k0-Ey4" secondAttribute="centerX" id="Mys-gz-NDH"/>
+                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="centerY" secondItem="YRO-k0-Ey4" secondAttribute="centerY" id="TGn-rU-k6r"/>
+                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" constant="91" id="hSG-W2-BWN"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="topMargin" id="hfv-4n-URC"/>
-                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" constant="91" id="hiC-ux-jv4"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" constant="-16" id="lZS-rq-fYU"/>
-                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="rfe-V9-xbJ"/>
+                            <constraint firstItem="gg8-O0-3Hh" firstAttribute="top" secondItem="Ydg-fD-yQy" secondAttribute="bottom" constant="224" id="rcb-9x-CHX"/>
                         </constraints>
                     </view>
                 </viewController>
