@@ -139,6 +139,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
                                     logoHeight: 200.0,
                                     leftPadding: 0.0,
+                                    zoomGesture: KennelLogoZoomGesture.tap,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 45.0, bottom: 15.0),
@@ -166,6 +167,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
                                       logoHeight: 200.0,
                                       leftPadding: 0.0,
+                                      zoomGesture: KennelLogoZoomGesture.tap,
                                     ),
                                   ],
                                 ),
@@ -525,6 +527,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
                                                       logoHeight: 60.0,
                                                       leftPadding: 0.0,
+                                                      zoomGesture: KennelLogoZoomGesture.none,
                                                     ),
                                                   ),
                                                 ]

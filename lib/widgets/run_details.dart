@@ -78,7 +78,7 @@ class RunDetails extends StatelessWidget {
                           Navigator.push<void>(
                             context,
                             MaterialPageRoute<void>(
-                              builder: (BuildContext context) => ZoomableImagePage(
+                              builder: (BuildContext context) => ZoomableImagePage2(
                                 key: UniqueKey(),
                                 pageTitle: 'Zoomable Event Image',
                                 imageUrl: event.eventImage,

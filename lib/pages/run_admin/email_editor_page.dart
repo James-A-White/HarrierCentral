@@ -260,7 +260,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 //     Navigator.push<void>(
                 //       context,
                 //       MaterialPageRoute<void>(
-                //         builder: (BuildContext context) => ZoomableImagePage(
+                //         builder: (BuildContext context) => ZoomableImagePage2(
                 //           image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache,
                 //           pageTitle: 'Zoomable Receipt',
                 //         ),

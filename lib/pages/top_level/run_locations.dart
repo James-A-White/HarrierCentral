@@ -571,6 +571,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               kennelShortName: kennelShortName,
               logoHeight: 60.0,
               leftPadding: 0.0,
+              zoomGesture: KennelLogoZoomGesture.none,
             ),
           ),
         ]),

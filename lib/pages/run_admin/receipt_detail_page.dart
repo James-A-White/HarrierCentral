@@ -302,10 +302,9 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                           Navigator.push<void>(
                                             context,
                                             MaterialPageRoute<void>(
-                                              builder: (BuildContext context) => ZoomableImagePage(
+                                              builder: (BuildContext context) => ZoomableImagePage2(
                                                 key: UniqueKey(),
-                                                image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache,
-                                                imageUrl: '<not required, need to fix ZoomableImagePage>', // The imageUrl parameter should not be marked as required
+                                                file: _imageFromCamera != null ? _imageFromCamera : _imageFromCache,
                                                 pageTitle: 'Zoomable Receipt',
                                                 appBarBackgroundColor: themeAppBarBackground,
                                                 background: Backgrounds.defaultHcBackground(),

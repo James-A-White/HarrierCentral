@@ -1,44 +1,65 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
+enum KennelLogoZoomGesture { none, tap, longPress }
+
 class KennelLogo extends StatelessWidget {
-  const KennelLogo({@required this.kennelLogoUrl, @required this.kennelShortName, @required this.logoHeight, this.leftPadding, this.rightPadding});
+  const KennelLogo({
+    @required this.kennelLogoUrl,
+    @required this.kennelShortName,
+    @required this.logoHeight,
+    this.zoomGesture = KennelLogoZoomGesture.longPress,
+    this.leftPadding,
+    this.rightPadding,
+  });
 
   final String kennelLogoUrl;
   final String kennelShortName;
   final num logoHeight;
   final num leftPadding;
   final num rightPadding;
+  final KennelLogoZoomGesture zoomGesture;
+
+  void _showZoomPage(BuildContext context) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          final String s =
+              ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png').toLowerCase();
+          print(s);
+          return ZoomableImagePage2(
+            key: UniqueKey(),
+            file: null,
+            assetImage: kennelLogoUrl.contains('bundle://')
+                ? ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png')
+                    .toLowerCase()
+                : null,
+            assetImageText: kennelLogoUrl.contains('bundle://') ? kennelShortName : null,
+
+            imageUrl: kennelLogoUrl.contains('bundle://') ? null : kennelLogoUrl, // The imageUrl parameter should not be marked as required
+            pageTitle: 'Kennel logo',
+            appBarBackgroundColor: themeAppBarBackground,
+            background: Backgrounds.defaultHcBackground(),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push<void>(
-          context,
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) {
-              final String s = ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png')
-                  .toLowerCase();
-              print(s);
-              return ZoomableImagePage2(
-                key: UniqueKey(),
-                file: null,
-                assetImage: kennelLogoUrl.contains('bundle://')
-                    ? ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png')
-                        .toLowerCase()
-                    : null,
-                assetImageText: kennelLogoUrl.contains('bundle://') ? kennelShortName : null,
-
-                imageUrl: kennelLogoUrl.contains('bundle://') ? null : kennelLogoUrl, // The imageUrl parameter should not be marked as required
-                pageTitle: 'Kennel logo',
-                appBarBackgroundColor: themeAppBarBackground,
-                background: Backgrounds.defaultHcBackground(),
-              );
+      onTap: (zoomGesture != KennelLogoZoomGesture.tap)
+          ? null
+          : () {
+              _showZoomPage(context);
             },
-          ),
-        );
-      },
+      onLongPress: (zoomGesture != KennelLogoZoomGesture.longPress)
+          ? null
+          : () {
+              _showZoomPage(context);
+            },
       child: Container(
           width: logoHeight,
           height: logoHeight,

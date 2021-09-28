@@ -11,7 +11,7 @@ class KennelsListPage extends StatefulWidget {
   KennelsListPageState createState() => KennelsListPageState();
 }
 
-enum EnumSortKennelListBy { distance, kennelName, cityName, regionName, countryName }
+enum EnumSortKennelListBy { distance, kennelName, cityName, countryRegionName }
 
 class KennelsListPageState extends State<KennelsListPage> {
   KennelsListPageState();
@@ -124,7 +124,7 @@ class KennelsListPageState extends State<KennelsListPage> {
             label: 'Sort by country/region name',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
-              _sortByFollowingAndDistance = EnumSortKennelListBy.countryName;
+              _sortByFollowingAndDistance = EnumSortKennelListBy.countryRegionName;
               _refreshFromTable(true).then((void dummy) {
                 setState(() {});
               });
@@ -226,15 +226,12 @@ class KennelsListPageState extends State<KennelsListPage> {
             G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.countryName.compareTo(b.extensions.countryName));
             G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.regionName.compareTo(b.extensions.regionName));
             G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.cityName.compareTo(b.extensions.cityName));
-          } else if (_sortByFollowingAndDistance == EnumSortKennelListBy.regionName) {
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.countryName.compareTo(b.extensions.countryName));
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.cityName.compareTo(b.extensions.cityName));
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.regionName.compareTo(b.extensions.regionName));
-          } else if (_sortByFollowingAndDistance == EnumSortKennelListBy.countryName) {
+          } else if (_sortByFollowingAndDistance == EnumSortKennelListBy.countryRegionName) {
             G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.cityName.compareTo(b.extensions.cityName));
             G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.regionName.compareTo(b.extensions.regionName));
             G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.countryName.compareTo(b.extensions.countryName));
           } else {
+            // this should never be reached, but if we do get here use the default sort
             G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
           }
         }
