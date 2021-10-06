@@ -1,6 +1,7 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
+import 'package:harrier_central/pages/menu_pages/payment_terminal_config_page.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
@@ -218,6 +219,24 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
+              if (Utilities.isOpeeOrTuna()) ...<Widget>[
+                ListTile(
+                  leading: const Icon(FontAwesome.question_circle, color: textColor),
+                  title: Text('Payment Terminal', style: _style),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        settings: const RouteSettings(),
+                        builder: (BuildContext context) {
+                          return const PaymentTerminalConfigPage();
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
 
               // ListTile(
               //   leading: const Icon(FontAwesome.support, color: textColor),

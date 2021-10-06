@@ -238,7 +238,7 @@ packages:
       name: date_time_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.0"
+    version: "2.0.0"
   device_info:
     dependency: "direct main"
     description:
@@ -452,6 +452,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.3"
+  flutter_slidable:
+    dependency: "direct main"
+    description:
+      name: flutter_slidable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.6.0"
   flutter_speed_dial:
     dependency: "direct main"
     description:
@@ -1115,6 +1122,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
+  sumup:
+    dependency: "direct main"
+    description:
+      name: sumup
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.5"
   synchronized:
     dependency: transitive
     description:

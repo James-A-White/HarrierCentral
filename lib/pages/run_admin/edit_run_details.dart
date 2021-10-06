@@ -623,10 +623,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                           // },
                           // onChanged: (val) => print(val),
                           validator: (String val) {
-                            //print(val);
+                            print(val);
                             return null;
                           },
-                          //onSaved: (val) => print(val),
+                          onSaved: (String val) => print(val),
                         ),
                       ),
                       Container(

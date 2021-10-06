@@ -91,53 +91,51 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   //final PackScopedModel _packScopedModel = PackScopedModel();
   //final PayScopedModel _payScopedModel = PayScopedModel();
 
-  GlobalKey packListBoxKey = GlobalKey();
+  final GlobalKey _packListBoxKey = GlobalKey();
 
   bool _isLoading = true;
+  final SlidableController _slidableController = SlidableController();
 
-  List<CheckInPackModel> packList;
-  List<CheckInPackModel> filteredList;
-  List<CheckInPackModel> allHashers;
+  List<CheckInPackModel> _packList;
+  List<CheckInPackModel> _filteredList;
+  List<CheckInPackModel> _allHashers;
 
-  String searchText = '';
+  String _searchText = '';
 
-  int countAtHash = 0;
-  int countRsvps = 0;
-  int countComing = 0;
-  int countPaid = 0;
-  int countOnIn = 0;
-  int memberCount = 0;
-  int drinkCount = 0;
+  int _countAtHash = 0;
+  //int _countRsvps = 0;
+  int _countComing = 0;
+  int _countPaid = 0;
+  int _countOnIn = 0;
+  int _memberCount = 0;
+  int _drinkCount = 0;
 
-  num snackBarButtonSize = 35.0;
   static const num LIST_ITEM_HEIGHT = 84.0;
 
-  String userId = getStringPref(StringPrefsEnum.userId);
+  AnimationController _animationController;
+  Animation<double> _buttonAnimation;
+  Animation<Offset> _filterPanelAnimation;
+  Animation<RelativeRect> _hasherListAnimation;
+  final ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
+  FocusNode _searchFocusNode;
+  TextEditingController _searchController;
+  String _searchTypeText;
+  bool _showFilter = false;
 
-  AnimationController animationController;
-  Animation<double> buttonAnimation;
-  Animation<Offset> filterPanelAnimation;
-  Animation<RelativeRect> hasherListAnimation;
-  ScrollController scrollController = ScrollController(initialScrollOffset: 0.0);
-  FocusNode searchFocusNode;
-  TextEditingController searchController;
-  String searchTypeText;
-  bool showFilter = false;
+  static const String _searchKennel = 'Searching Kennel members and RSVPs';
+  static const String _searchAllHashers = 'Searching all Hashers';
+  bool _highlightSearchType = false;
 
-  static const String searchKennel = 'Searching Kennel members and RSVPs';
-  static const String searchAllHashers = 'Searching all Hashers';
-  bool highlightSearchType = false;
+  final TextStyle _localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
+  final TextStyle _localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
 
-  TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
-  TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
-
-  List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  List<int> _filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   @override
   void initState() {
-    searchTypeText = searchKennel;
-    searchController = TextEditingController();
-    searchFocusNode = FocusNode();
+    _searchTypeText = _searchKennel;
+    _searchController = TextEditingController();
+    _searchFocusNode = FocusNode();
 
     _getAllHashers().then((void dummy) {
       // get all Hashers first, then build the tables from the backend
@@ -145,9 +143,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     });
     super.initState();
 
-    animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
 
-    buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(animationController)
+    _buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
       ..addListener(() {
         setState(() {});
       });
@@ -176,7 +174,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _getAllHashers() async {
-    allHashers = <CheckInPackModel>[];
+    _allHashers = <CheckInPackModel>[];
 
     try {
       final String sql = ''' 
@@ -208,7 +206,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
           final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
-          allHashers.add(item);
+          _allHashers.add(item);
         }
       }
 
@@ -353,10 +351,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
       setState(() {
         if (results.isNotEmpty) {
-          packList = <CheckInPackModel>[];
+          _packList = <CheckInPackModel>[];
           for (int i = 0; i < results.length; i++) {
             final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
-            packList.add(item);
+            _packList.add(item);
           }
 
           setState(() {
@@ -378,52 +376,52 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     //bool searchingAllHashers = false;
 
     bool ignoreTextFilter = false;
-    final String temp = searchTypeText;
+    final String temp = _searchTypeText;
 
-    if (showFilter) {
-      filteredList = packList
+    if (_showFilter) {
+      _filteredList = _packList
           .where((CheckInPackModel a) =>
-              ((filterValues[0] == 0) || (filterValues[0] == -1 && ((a.rsvpState ?? 0) <= 1)) || (filterValues[0] == 1 && (a.rsvpState ?? 0) >= 2)) &&
-              ((filterValues[1] == 0)
+              ((_filterValues[0] == 0) || (_filterValues[0] == -1 && ((a.rsvpState ?? 0) <= 1)) || (_filterValues[0] == 1 && (a.rsvpState ?? 0) >= 2)) &&
+              ((_filterValues[1] == 0)
                   //|| (filterValues[1] == -1 && ((a.attendenceState ?? 0) < 20))
                   ||
-                  (filterValues[1] == 1 && (a.attendenceState ?? 0) < 20 && (a.rsvpState ?? 0) >= 2)) &&
-              ((filterValues[2] == 0) || (filterValues[2] == -1 && ((a.attendenceState ?? 0) < 20)) || (filterValues[2] == 1 && (a.attendenceState ?? 0) >= 20)) &&
-              ((filterValues[3] == 0) || (filterValues[3] == -1 && ((a.isPaid ?? 0) == 0)) || (filterValues[3] == 1 && (a.isPaid ?? 0) == 1)) &&
-              ((filterValues[4] == 0) || (filterValues[4] == -1 && ((a.attendenceState ?? 0) < 30)) || (filterValues[4] == 1 && (a.attendenceState ?? 0) >= 30)) &&
-              ((filterValues[5] == 0) || (filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (filterValues[5] == 1 && (a.isMember ?? 0) == 1)) &&
-              ((filterValues[6] == 0) ||
-                  (filterValues[6] == -1) ||
-                  (filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0))))))
+                  (_filterValues[1] == 1 && (a.attendenceState ?? 0) < 20 && (a.rsvpState ?? 0) >= 2)) &&
+              ((_filterValues[2] == 0) || (_filterValues[2] == -1 && ((a.attendenceState ?? 0) < 20)) || (_filterValues[2] == 1 && (a.attendenceState ?? 0) >= 20)) &&
+              ((_filterValues[3] == 0) || (_filterValues[3] == -1 && ((a.isPaid ?? 0) == 0)) || (_filterValues[3] == 1 && (a.isPaid ?? 0) == 1)) &&
+              ((_filterValues[4] == 0) || (_filterValues[4] == -1 && ((a.attendenceState ?? 0) < 30)) || (_filterValues[4] == 1 && (a.attendenceState ?? 0) >= 30)) &&
+              ((_filterValues[5] == 0) || (_filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (_filterValues[5] == 1 && (a.isMember ?? 0) == 1)) &&
+              ((_filterValues[6] == 0) ||
+                  (_filterValues[6] == -1) ||
+                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0))))))
           .toList();
     } else {
-      filteredList = <CheckInPackModel>[];
-      filteredList.addAll(packList);
+      _filteredList = <CheckInPackModel>[];
+      _filteredList.addAll(_packList);
     }
 
-    if ((searchText != null) && (searchText.isNotEmpty)) {
-      filteredList = filteredList.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(searchText.toLowerCase())).toList();
-      if (filteredList.isEmpty) {
+    if ((_searchText != null) && (_searchText.isNotEmpty)) {
+      _filteredList = _filteredList.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(_searchText.toLowerCase())).toList();
+      if (_filteredList.isEmpty) {
         // if (!ignoreTextFilter) {
         //   showSnackbar = true;
         // }
         ignoreTextFilter = true;
-        filteredList = allHashers.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(searchText.toLowerCase())).toList();
+        _filteredList = _allHashers.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(_searchText.toLowerCase())).toList();
       } else {
         ignoreTextFilter = false;
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } else {
-      searchTypeText = searchKennel;
+      _searchTypeText = _searchKennel;
     }
 
-    searchTypeText = ignoreTextFilter ? searchAllHashers : searchKennel;
+    _searchTypeText = ignoreTextFilter ? _searchAllHashers : _searchKennel;
 
-    if (temp != searchTypeText) {
-      highlightSearchType = true;
+    if (temp != _searchTypeText) {
+      _highlightSearchType = true;
       Future<void>.delayed(const Duration(milliseconds: 1500)).then((void dummy) {
         setState(() {
-          highlightSearchType = false;
+          _highlightSearchType = false;
         });
       });
     }
@@ -434,7 +432,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       final String sql = ''' 
 
           SELECT 
-              COUNT(CASE WHEN rsvpState >= 2 THEN 1 ELSE NULL END) as rsvps,
+              -- COUNT(CASE WHEN rsvpState >= 2 THEN 1 ELSE NULL END) as rsvps,
               COUNT(CASE WHEN attendenceState >= 20 THEN 1 ELSE NULL END) as atHash,
               COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
               COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
@@ -447,20 +445,20 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
       G0<Database>().rawQuery(sql).then((List<Map<String, dynamic>> results) {
         if (results.isNotEmpty) {
-          countRsvps = results[0]['rsvps'];
-          countAtHash = results[0]['atHash'];
-          countComing = results[0]['coming'];
-          countOnIn = results[0]['onIn'];
-          countPaid = results[0]['paid'];
-          memberCount = results[0]['memberCount'];
+          //_countRsvps = results[0]['rsvps'];
+          _countAtHash = results[0]['atHash'];
+          _countComing = results[0]['coming'];
+          _countOnIn = results[0]['onIn'];
+          _countPaid = results[0]['paid'];
+          _memberCount = results[0]['memberCount'];
         }
 
-        if (packList != null) {
+        if (_packList != null) {
           final List<CheckInPackModel> specialRunNumbers =
-              packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
-          drinkCount = specialRunNumbers.length;
+              _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
+          _drinkCount = specialRunNumbers.length;
         } else {
-          drinkCount = 0;
+          _drinkCount = 0;
         }
 
         if (forceRefresh) {
@@ -558,9 +556,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 final String hem = adHocData[0]['hasherEventMapId'].toString().toLowerCase();
-                scrollIndex = packList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
+                scrollIndex = _packList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
                 if ((scrollIndex ?? -1) >= 0) {
-                  final CheckInPackModel hasher = packList[scrollIndex];
+                  final CheckInPackModel hasher = _packList[scrollIndex];
                   if (hasher != null) {
                     final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, hasher);
 
@@ -568,8 +566,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                     ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
                       setState(() {
                         if ((scrollIndex ?? -1) >= 0) {
-                          if (scrollController.hasClients) {
-                            scrollController.animateTo(scrollIndex * LIST_ITEM_HEIGHT, duration: const Duration(seconds: 1), curve: Curves.ease);
+                          if (_scrollController.hasClients) {
+                            _scrollController.animateTo(scrollIndex * LIST_ITEM_HEIGHT, duration: const Duration(seconds: 1), curve: Curves.ease);
                           }
                         }
                       });
@@ -623,22 +621,22 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           Row(
             children: <Widget>[
               RotationTransition(
-                turns: buttonAnimation,
+                turns: _buttonAnimation,
                 child: IconButton(
                   padding: const EdgeInsets.all(0),
                   onPressed: () {
-                    searchFocusNode.unfocus();
-                    if (showFilter) {
-                      animationController.reverse();
+                    _searchFocusNode.unfocus();
+                    if (_showFilter) {
+                      _animationController.reverse();
                     } else {
-                      animationController.forward();
+                      _animationController.forward();
                     }
-                    showFilter = !showFilter;
+                    _showFilter = !_showFilter;
                     // searchController.text = '';
                     // searchText = '';
                     _refreshPackListFromTables(true);
                   },
-                  icon: Icon(FontAwesome5Solid.arrow_alt_circle_right, size: 35, color: showFilter ? Colors.green : Colors.grey),
+                  icon: Icon(FontAwesome5Solid.arrow_alt_circle_right, size: 35, color: _showFilter ? Colors.green : Colors.grey),
                 ),
               ),
               Container(
@@ -660,12 +658,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             autocorrect: false,
                             onChanged: (String text) {
                               setState(() {
-                                searchText = text;
+                                _searchText = text;
                                 filterPackListResults();
                               });
                             },
-                            focusNode: searchFocusNode,
-                            controller: searchController,
+                            focusNode: _searchFocusNode,
+                            controller: _searchController,
                             keyboardType: TextInputType.text,
                             style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                             decoration: const InputDecoration(
@@ -685,8 +683,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             style: TextButton.styleFrom(backgroundColor: Colors.white),
                             child: Text('X', style: TextStyle(color: Colors.grey.shade700)),
                             onPressed: () {
-                              searchController.text = '';
-                              searchText = '';
+                              _searchController.text = '';
+                              _searchText = '';
                               setState(() {
                                 filterPackListResults();
                               });
@@ -695,7 +693,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         ),
                       ],
                     ),
-                    Text(searchTypeText, style: highlightSearchType ? localFootnoteSmallRed : localFootnoteSmall)
+                    Text(_searchTypeText, style: _highlightSearchType ? _localFootnoteSmallRed : _localFootnoteSmall)
                   ],
                 ),
               ),
@@ -705,8 +703,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
                   child: const Text('X'),
                   onPressed: () {
-                    searchController.text = '';
-                    searchText = '';
+                    _searchController.text = '';
+                    _searchText = '';
                     _refreshPackListFromTables(true);
                   },
                 ),
@@ -740,13 +738,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
           CheckinFiltersCell(
-            counter: memberCount,
+            counter: _memberCount,
             label: 'Member',
             index: 5,
             onTap: () {
               _refreshPackListFromTables(true);
             },
-            filterValues: filterValues,
+            filterValues: _filterValues,
           ),
           // CheckinFiltersCell(
           //   counter: countRsvps,
@@ -758,51 +756,51 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           //   filterValues: filterValues,
           // ),
           CheckinFiltersCell(
-            counter: countComing,
+            counter: _countComing,
             label: 'Coming',
             index: 1,
             useTriState: false,
             onTap: () {
               _refreshPackListFromTables(true);
             },
-            filterValues: filterValues,
+            filterValues: _filterValues,
           ),
           CheckinFiltersCell(
-            counter: countAtHash,
+            counter: _countAtHash,
             index: 2,
             label: 'At Hash',
             onTap: () {
               _refreshPackListFromTables(true);
             },
-            filterValues: filterValues,
+            filterValues: _filterValues,
           ),
           CheckinFiltersCell(
-            counter: countPaid,
+            counter: _countPaid,
             index: 3,
             label: 'Paid',
             onTap: () {
               _refreshPackListFromTables(true);
             },
-            filterValues: filterValues,
+            filterValues: _filterValues,
           ),
           CheckinFiltersCell(
-            counter: countOnIn,
+            counter: _countOnIn,
             index: 4,
             label: 'On In',
             onTap: () {
               _refreshPackListFromTables(true);
             },
-            filterValues: filterValues,
+            filterValues: _filterValues,
           ),
           CheckinFiltersCell(
-            counter: drinkCount,
+            counter: _drinkCount,
             index: 6,
             useTriState: false,
             label: 'Drink!',
             onTap: () {
               _refreshPackListFromTables(true);
             },
-            filterValues: filterValues,
+            filterValues: _filterValues,
           ),
         ],
       ),
@@ -877,49 +875,49 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         }).then((dynamic retVal) {
       switch (retVal) {
         case FilterOptions.hashersNotHereYet:
-          filterValues = <int>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
-          searchText = '';
-          searchController.text = '';
+          _filterValues = <int>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
+          _searchText = '';
+          _searchController.text = '';
           break;
         case FilterOptions.hashersNotPaid:
-          filterValues = <int>[0, 0, 1, -1, 0, 0, 0, 0, 0, 0];
-          searchText = '';
-          searchController.text = '';
+          _filterValues = <int>[0, 0, 1, -1, 0, 0, 0, 0, 0, 0];
+          _searchText = '';
+          _searchController.text = '';
           break;
         case FilterOptions.hashersStillOnTrail:
-          filterValues = <int>[0, 0, 1, 0, -1, 0, 0, 0, 0, 0];
-          searchText = '';
-          searchController.text = '';
+          _filterValues = <int>[0, 0, 1, 0, -1, 0, 0, 0, 0, 0];
+          _searchText = '';
+          _searchController.text = '';
           break;
         case FilterOptions.clearAllFilters:
-          filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-          searchText = '';
-          searchController.text = '';
+          _filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          _searchText = '';
+          _searchController.text = '';
           break;
         case FilterOptions.visitors:
-          filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-          searchText = '(visitor)';
-          searchController.text = '(visitor)';
+          _filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+          _searchText = '(visitor)';
+          _searchController.text = '(visitor)';
           break;
         case FilterOptions.virgins:
-          filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-          searchText = '(virgin)';
-          searchController.text = '(virgin)';
+          _filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+          _searchText = '(virgin)';
+          _searchController.text = '(virgin)';
           break;
         case FilterOptions.cancel:
           break;
         default:
-          filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-          searchText = '';
-          searchController.text = '';
+          _filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          _searchText = '';
+          _searchController.text = '';
           break;
       }
 
       if (retVal != FilterOptions.cancel) {
-        if (!showFilter) {
-          showFilter = true;
+        if (!_showFilter) {
+          _showFilter = true;
 
-          animationController.forward();
+          _animationController.forward();
         }
         _refreshPackListFromTables(true);
       }
@@ -930,8 +928,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   Widget build(BuildContext context) {
     //print('mediaQuery = ${MediaQuery.of(context).size.toString()}');
     //print('filter dx = ${filterPanelAnimation.value.dy}');
-    filterPanelAnimation ??= Tween<Offset>(begin: const Offset(0, -.35), end: const Offset(0, .71)).animate(animationController);
-    hasherListAnimation ??= RelativeRectTween(begin: const RelativeRect.fromLTRB(0, 86, 0, 0), end: const RelativeRect.fromLTRB(0, 204, 0, 0)).animate(animationController);
+    _filterPanelAnimation ??= Tween<Offset>(begin: const Offset(0, -.35), end: const Offset(0, .71)).animate(_animationController);
+    _hasherListAnimation ??= RelativeRectTween(begin: const RelativeRect.fromLTRB(0, 86, 0, 0), end: const RelativeRect.fromLTRB(0, 204, 0, 0)).animate(_animationController);
     //print('rect = ${filterPanelAnimation.value}');
     return Scaffold(
       key: _scaffoldKey,
@@ -949,7 +947,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         overlayOpacity: 0.5,
         onOpen: () {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          searchFocusNode.unfocus();
+          _searchFocusNode.unfocus();
         },
         onClose: () => print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
@@ -1040,14 +1038,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ? HcCircularProgressIndicator(key: UniqueKey())
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
               Container(height: MediaQuery.of(context).size.height, width: 10),
-              (filteredList == null || filteredList.isEmpty)
+              (_filteredList == null || _filteredList.isEmpty)
                   //? Positioned(top: showFilter ? 210 : 95, left:0, right: 0, child: getAddHasherBlock())
-                  ? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
+                  ? Positioned(top: (_filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
                   : PositionedTransition(
-                      rect: hasherListAnimation,
-                      child: Container(key: packListBoxKey, height: 300, child: buildPackListView()),
+                      rect: _hasherListAnimation,
+                      child: Container(key: _packListBoxKey, height: 300, child: buildPackListView()),
                     ),
-              SlideTransition(position: filterPanelAnimation, child: filterBar()),
+              SlideTransition(position: _filterPanelAnimation, child: filterBar()),
               Positioned(top: 0, child: searchBar()),
             ]),
     );
@@ -1174,7 +1172,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   Widget listItem(BuildContext context, CheckInPackModel packMember) {
     return GestureDetector(
       onTap: () {
-        searchFocusNode.unfocus();
+        _searchFocusNode.unfocus();
         if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
           final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, packMember);
 
@@ -1438,7 +1436,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollNotification) {
         if (scrollNotification is UserScrollNotification) {
-          searchFocusNode.unfocus();
+          _searchFocusNode.unfocus();
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
         }
         return true;
@@ -1455,127 +1453,322 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ),
           physics: const AlwaysScrollableScrollPhysics(),
           scrollDirection: Axis.vertical,
-          controller: scrollController,
-          itemCount: (filteredList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
+          controller: _scrollController,
+          itemCount: (_filteredList?.length ?? 0) + (_searchController.text.isNotEmpty ? 1 : 0),
           itemBuilder: (BuildContext context, int index) {
-            if ((index == (filteredList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
+            if ((index == (_filteredList?.length ?? 0)) && (_searchController.text.isNotEmpty)) {
               return getAddHasherBlock();
             } else {
-              final CheckInPackModel packMember = filteredList[index];
+              final CheckInPackModel packMember = _filteredList[index];
               final Key key = Key(index.toString());
-              return Dismissible(
-                child: listItem(context, packMember),
+              //if (index == 0) {
+              return Slidable(
                 key: key,
-                confirmDismiss: (DismissDirection direction) {
-                  if (packMember.isPaid != 1) {
-                    print(direction.toString() + ' ' + index.toString());
-                    showExtrasDialog(context, _scaffoldKey.currentState, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, packMember, -1);
-                  } else {
-                    if (direction == DismissDirection.endToStart) {
-                      updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+                controller: _slidableController,
+                actionPane: const SlidableBehindActionPane(),
+                actionExtentRatio: 0.35,
+                child: Container(
+                  color: Colors.white,
+                  child: listItem(context, packMember),
+                ),
+                dismissal: SlidableDismissal(
+                  onWillDismiss: (SlideActionType actionType) {
+                    if (packMember.isPaid != 1) {
+                      print(actionType.toString() + ' ' + index.toString());
+                      showExtrasDialog(context, _scaffoldKey.currentState, actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value, packMember, -1);
+                    } else {
+                      if (actionType == SlideActionType.secondary) {
+                        updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+                      }
                     }
-                  }
-                  return Future<bool>.value(false);
-                },
-                background: packMember.isPaid == 1
-                    ? Container(
-                        color: Colors.grey,
-                        child: Row(
-                          children: const <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(left: 15.0),
-                              child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 15.0),
-                              child: Text(
-                                'Already paid',
-                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+
+                    Future<void>.delayed(const Duration(milliseconds: 10)).then((void dummy) {
+                      _slidableController.activeState.close();
+                    });
+
+                    return false;
+                  },
+                  dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
+                  child: const SlidableDrawerDismissal(),
+                  onDismissed: (SlideActionType actionType) {
+                    // _showSnackBar(
+                    //     context,
+                    //     actionType == SlideActionType.primary
+                    //         ? 'Dismiss Archive'
+                    //         : 'Dimiss Delete');
+                    setState(() {
+                      //items.removeAt(index);
+                    });
+                  },
+                ),
+                actions: <Widget>[
+                  IconSlideAction(
+                      iconWidget: packMember.isPaid == 1
+                          ? Container(
+                              color: Colors.grey,
+                              width: G0<DeviceInfo>().deviceWidth,
+                              child: Column(
+                                children: const <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 5.0),
+                                    child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 5.0),
+                                    child: Text(
+                                      'Already\r\npaid',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(
+                              color: Colors.blue,
+                              width: G0<DeviceInfo>().deviceWidth,
+                              child: Column(
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10.0),
+                                    child: Text(
+                                        '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank Transfer',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                      onTap: () {}),
+                  if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
+                    IconSlideAction(
+                        iconWidget: Container(
+                          color: Colors.deepPurple,
+                          width: G0<DeviceInfo>().deviceWidth,
+                          child: Column(
+                            children: <Widget>[
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8.0),
+                                child: Icon(MaterialCommunityIcons.contactless_payment_circle, size: 30.0, color: Colors.white),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Text(
+                                    '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Contactless',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                              ),
+                            ],
+                          ),
                         ),
-                      )
-                    : Container(
-                        color: Colors.blue,
-                        child: Row(
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15.0),
-                              child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15.0),
-                              child: Text(
-                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
-                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                            ),
-                          ],
-                        ),
-                      ),
-                secondaryBackground: packMember.isPaid == 1
-                    ? packMember.attendenceState >= attendenceOnIn.value
-                        ? Container(
-                            color: Colors.grey,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                        onTap: () async {
+                          final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+                          final SumupPluginResponse resp = await Sumup.init(affiliateKey);
+
+                          bool isLoggedIn = await Sumup.isLoggedIn;
+                          if (!isLoggedIn) {
+                            final SumupPluginResponse resp2 = await Sumup.login();
+                            int xxx = 0;
+                          }
+
+                          isLoggedIn = await Sumup.isLoggedIn;
+                          if (isLoggedIn) {
+                            _doTransaction();
+                          }
+                        }),
+                  ],
+                ],
+                secondaryActions: <Widget>[
+                  IconSlideAction(
+                    iconWidget: packMember.isPaid == 1
+                        ? packMember.attendenceState >= attendenceOnIn.value
+                            ? Container(
+                                width: G0<DeviceInfo>().deviceWidth,
+                                color: Colors.grey,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: const <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 5.0),
+                                      child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 5.0),
+                                      child: Text(
+                                        'Already\r\nOn-In',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                    'Already marked On-In',
-                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                  ),
+                              )
+                            : Container(
+                                color: Colors.amber[800],
+                                width: G0<DeviceInfo>().deviceWidth,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: const <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 2.0),
+                                      child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 5.0),
+                                      child: Text(
+                                        'Record as\r\nOn-In',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          )
+                              )
                         : Container(
-                            color: Colors.amber[800],
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const <Widget>[
+                            width: G0<DeviceInfo>().deviceWidth,
+                            color: Colors.green,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
                                 Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
+                                  padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
+                                  child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
+                                  padding: const EdgeInsets.only(bottom: 5.0),
                                   child: Text(
-                                    'Record as On-In',
-                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                  ),
+                                      '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                                 ),
                               ],
                             ),
-                          )
-                    : Container(
-                        color: Colors.green,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 15.0),
-                              child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 15.0),
-                              child: Text(
-                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                            ),
-                          ],
-                        ),
-                      ),
-                onDismissed: (DismissDirection direction) {
-                  print(direction.toString() + ' NOTE: We should never reach this point');
-                },
+                          ),
+                  ),
+                ],
               );
+              //}
+              // else {
+              //   return Dismissible(
+              //     child: listItem(context, packMember),
+              //     key: key,
+              //     confirmDismiss: (DismissDirection direction) {
+              //       if (packMember.isPaid != 1) {
+              //         print(direction.toString() + ' ' + index.toString());
+              //         showExtrasDialog(
+              //             context, _scaffoldKey.currentState, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, packMember, -1);
+              //       } else {
+              //         if (direction == DismissDirection.endToStart) {
+              //           updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+              //         }
+              //       }
+              //       return Future<bool>.value(false);
+              //     },
+              //     background: packMember.isPaid == 1
+              //         ? Container(
+              //             color: Colors.grey,
+              //             child: Row(
+              //               children: const <Widget>[
+              //                 Padding(
+              //                   padding: EdgeInsets.only(left: 15.0),
+              //                   child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+              //                 ),
+              //                 Padding(
+              //                   padding: EdgeInsets.only(left: 15.0),
+              //                   child: Text(
+              //                     'Already paid',
+              //                     style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+              //                   ),
+              //                 ),
+              //               ],
+              //             ),
+              //           )
+              //         : Container(
+              //             color: Colors.blue,
+              //             child: Row(
+              //               children: <Widget>[
+              //                 Padding(
+              //                   padding: const EdgeInsets.only(left: 15.0),
+              //                   child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
+              //                 ),
+              //                 Padding(
+              //                   padding: const EdgeInsets.only(left: 15.0),
+              //                   child: Text(
+              //                       '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
+              //                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+              //                 ),
+              //               ],
+              //             ),
+              //           ),
+              //     secondaryBackground: packMember.isPaid == 1
+              //         ? packMember.attendenceState >= attendenceOnIn.value
+              //             ? Container(
+              //                 color: Colors.grey,
+              //                 child: Row(
+              //                   mainAxisAlignment: MainAxisAlignment.end,
+              //                   children: const <Widget>[
+              //                     Padding(
+              //                       padding: EdgeInsets.only(right: 15.0),
+              //                       child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+              //                     ),
+              //                     Padding(
+              //                       padding: EdgeInsets.only(right: 15.0),
+              //                       child: Text(
+              //                         'Already marked On-In',
+              //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+              //                       ),
+              //                     ),
+              //                   ],
+              //                 ),
+              //               )
+              //             : Container(
+              //                 color: Colors.amber[800],
+              //                 child: Row(
+              //                   mainAxisAlignment: MainAxisAlignment.end,
+              //                   children: const <Widget>[
+              //                     Padding(
+              //                       padding: EdgeInsets.only(right: 15.0),
+              //                       child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
+              //                     ),
+              //                     Padding(
+              //                       padding: EdgeInsets.only(right: 15.0),
+              //                       child: Text(
+              //                         'Record as On-In',
+              //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+              //                       ),
+              //                     ),
+              //                   ],
+              //                 ),
+              //               )
+              //         : Container(
+              //             color: Colors.green,
+              //             child: Row(
+              //               mainAxisAlignment: MainAxisAlignment.end,
+              //               children: <Widget>[
+              //                 Padding(
+              //                   padding: const EdgeInsets.only(right: 15.0),
+              //                   child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
+              //                 ),
+              //                 Padding(
+              //                   padding: const EdgeInsets.only(right: 15.0),
+              //                   child: Text(
+              //                       '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
+              //                       textAlign: TextAlign.right,
+              //                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+              //                 ),
+              //               ],
+              //             ),
+              //           ),
+              //     onDismissed: (DismissDirection direction) {
+              //       print(direction.toString() + ' NOTE: We should never reach this point');
+              //     },
+              //   );
+              // }
             }
           },
         ),
@@ -1597,7 +1790,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               eventId: widget.eventAggregate.event.eventId,
               kennelId: widget.eventAggregate.event.kennelId,
               uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-              hashNameFromSearch: capitalizeFirstLetter(searchController.text),
+              hashNameFromSearch: capitalizeFirstLetter(_searchController.text),
             ),
           ),
         ).then((HashersModel result) {
@@ -1610,8 +1803,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               result.hashName = null;
             }
 
-            searchText = result.dispName ?? result.hashName ?? '${result.firstName} ${result.lastName}' ?? '<error no name entered>';
-            searchController.text = searchText;
+            _searchText = result.dispName ?? result.hashName ?? '${result.firstName} ${result.lastName}' ?? '<error no name entered>';
+            _searchController.text = _searchText;
             filterPackListResults();
           }
         });
@@ -1631,7 +1824,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   children: <Widget>[
                     Text('Can\'t find a Hasher?', style: smallContentStyleDb),
                     AutoSizeText(
-                      'Click here to add \'${capitalizeFirstLetter(searchController.text)}\'',
+                      'Click here to add \'${capitalizeFirstLetter(_searchController.text)}\'',
                       style: smallContentStyle,
                       maxLines: 1,
                     ),
@@ -1643,6 +1836,23 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ),
       ),
     );
+  }
+
+  Future<void> _doTransaction() async {
+    final SumupPayment payment = SumupPayment(
+      title: 'Test',
+      total: 2.0,
+      currency: 'EUR',
+      foreignTransactionId: '',
+      saleItemsCount: 1,
+      skipSuccessScreen: false,
+      tip: .0,
+    );
+
+    final SumupPaymentRequest request = SumupPaymentRequest(payment);
+
+    SumupPluginCheckoutResponse resp6 = await Sumup.checkout(request);
+    int xxx = 0;
   }
 }
 

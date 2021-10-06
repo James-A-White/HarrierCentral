@@ -364,13 +364,13 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 (eventAggregate.event.eventPriceForExtras ?? 0) != 0
                                     ? 'Paid cash'
-                                    : 'Paid ${formatMoney(packMember.isMember != 0 ? eventAggregate.extensions.memberPrice : eventAggregate.extensions.nonMemberPrice)} cash',
+                                    : 'Paid\r\n${formatMoney(packMember.isMember != 0 ? eventAggregate.extensions.memberPrice : eventAggregate.extensions.nonMemberPrice)} cash',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 15.0,
-                                  height: 0.7,
+                                  height: 0.9,
                                 ),
                               ),
                             ],

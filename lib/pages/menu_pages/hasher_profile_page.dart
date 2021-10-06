@@ -48,9 +48,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   bool _autoValidate = false;
 
-  final String deviceUserId = getStringPref(StringPrefsEnum.userId);
-  String email = getStringPref(StringPrefsEnum.email);
-  int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
+  final String _deviceUserId = getStringPref(StringPrefsEnum.userId);
+  String _email = getStringPref(StringPrefsEnum.email);
+  int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
 
   // String _firstName = getStringPref(StringPrefsEnum.firstName);
   // String _lastName = getStringPref(StringPrefsEnum.lastName);
@@ -61,11 +61,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _isLoading = true;
   bool _isDirty = false;
   bool _addAsKennelFollower = false;
-  String photoPrefix = '';
-  String newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
-  HashersModel hasher;
-  HasherKennelMapModel hkmData;
-  String previousRunCount;
+  String _photoPrefix = '';
+  String _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+  HashersModel _hasher;
+  HasherKennelMapModel _hkmData;
 
   bool isEmptyGuid(String guid) {
     if ((guid == null) || (guid.isEmpty) || (guid == GUID_EMPTY)) {
@@ -129,25 +128,25 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       });
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
       if ((results != null) && (results.isNotEmpty)) {
-        hasher = HashersModel.fromJson(results[0]);
+        _hasher = HashersModel.fromJson(results[0]);
         if (widget.dataContext == EnumDataContext.kennel) {
-          hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+          _hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
         }
 
-        firstNameController.text = hasher.firstName;
-        lastNameController.text = hasher.lastName;
-        emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
-        hashNameController.text = hasher.hashName;
-        newPhoto = hasher.photo; // if we have returned from the photo chooser, don't overwrite
-        previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
-        previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
-        historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
+        _firstNameController.text = _hasher.firstName;
+        _lastNameController.text = _hasher.lastName;
+        _emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
+        _hashNameController.text = _hasher.hashName;
+        _newPhoto = _hasher.photo; // if we have returned from the photo chooser, don't overwrite
+        _previousRunCountController.text = (_hkmData?.historicalPackRunCount ?? 0).toString();
+        _previousHaringCountController.text = (_hkmData?.historicalHaringCount ?? 0).toString();
+        _historicalCountIsEstimate = (_hkmData?.historicalCountIsEstimate ?? 0) == 1;
 
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          emailController.text = email;
-          _distancePreference = hasherPreferences & hasherPref_distanceMeasuredIn;
-          _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
+          _emailController.text = _email;
+          _distancePreference = _hasherPreferences & hasherPref_distanceMeasuredIn;
+          _autoRunPreference = _hasherPreferences & hasherPref_distanceForAutoDisplay;
         }
       }
 
@@ -159,29 +158,29 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     }
   }
 
-  TextEditingController firstNameController = TextEditingController();
-  TextEditingController lastNameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController hashNameController = TextEditingController();
-  TextEditingController previousRunCountController = TextEditingController();
-  TextEditingController previousHaringCountController = TextEditingController();
-  bool historicalCountIsEstimate = false;
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _hashNameController = TextEditingController();
+  final TextEditingController _previousRunCountController = TextEditingController();
+  final TextEditingController _previousHaringCountController = TextEditingController();
+  bool _historicalCountIsEstimate = false;
 
   @override
   void initState() {
     if (widget.hashNameFromSearch.isNotEmpty) {
-      hashNameController.text = widget.hashNameFromSearch;
+      _hashNameController.text = widget.hashNameFromSearch;
     }
     // print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
       refreshUserDataFromTable(true);
-      photoPrefix = widget.hasherId;
+      _photoPrefix = widget.hasherId;
     } else {
       if ((widget.kennelId != null) && (widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
         _addAsKennelFollower = true;
       }
-      hasher = HashersModel(hasherId: GUID_EMPTY);
-      photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
+      _hasher = HashersModel(hasherId: GUID_EMPTY);
+      _photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
 
       _isLoading = false;
     }
@@ -197,27 +196,27 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       ),
     );
 
-    firstNameController.addListener(() {
+    _firstNameController.addListener(() {
       checkDirty();
     });
-    lastNameController.addListener(() {
+    _lastNameController.addListener(() {
       checkDirty();
     });
-    emailController.addListener(() {
+    _emailController.addListener(() {
       checkDirty();
     });
-    hashNameController.addListener(() {
+    _hashNameController.addListener(() {
       checkDirty();
     });
-    previousRunCountController.addListener(() {
+    _previousRunCountController.addListener(() {
       checkDirty();
     });
-    previousHaringCountController.addListener(() {
+    _previousHaringCountController.addListener(() {
       checkDirty();
     });
     super.initState();
 
-    newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+    _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
   }
 
   String getDistancePreferenceAsString(int distPref) {
@@ -234,39 +233,39 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       return;
     }
     bool isDirty = false;
-    if (firstNameController.text != hasher?.firstName ?? '') {
+    if (_firstNameController.text != _hasher?.firstName ?? '') {
       isDirty = true;
     }
-    if (lastNameController.text != hasher?.lastName ?? '') {
+    if (_lastNameController.text != _hasher?.lastName ?? '') {
       isDirty = true;
     }
-    if ((email != null) && ((emailController.text ?? '') != (email ?? ''))) {
+    if ((_email != null) && ((_emailController.text ?? '') != (_email ?? ''))) {
       isDirty = true;
     }
-    if (hashNameController.text != hasher?.hashName ?? '') {
+    if (_hashNameController.text != _hasher?.hashName ?? '') {
       isDirty = true;
     }
-    if (newPhoto != hasher?.photo ?? '') {
+    if (_newPhoto != _hasher?.photo ?? '') {
       isDirty = true;
     }
-    if (previousRunCountController.text != (hkmData?.historicalPackRunCount ?? 0).toString()) {
+    if (_previousRunCountController.text != (_hkmData?.historicalPackRunCount ?? 0).toString()) {
       isDirty = true;
     }
-    if (previousHaringCountController.text != (hkmData?.historicalHaringCount ?? 0).toString()) {
+    if (_previousHaringCountController.text != (_hkmData?.historicalHaringCount ?? 0).toString()) {
       isDirty = true;
     }
-    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
+    if (_historicalCountIsEstimate != ((_hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
     }
 
-    if (hasher != null) {
-      hasherPreferences ??= 0;
-      if (hasherPreferences != (_distancePreference + _autoRunPreference)) {
+    if (_hasher != null) {
+      _hasherPreferences ??= 0;
+      if (_hasherPreferences != (_distancePreference + _autoRunPreference)) {
         isDirty = true;
       }
     }
 
-    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
+    if (_historicalCountIsEstimate != ((_hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
     }
 
@@ -315,24 +314,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         final HashersService srv = HashersService();
 
         final Future<String> apiCall = srv.addEditUser(
-            targetUserId: hasher.hasherId,
-            firstName: firstNameController.text,
-            lastName: lastNameController.text,
-            email: emailController.text,
-            hashName: hashNameController.text,
-            photo: newPhoto,
+            targetUserId: _hasher.hasherId,
+            firstName: _firstNameController.text,
+            lastName: _lastNameController.text,
+            email: _emailController.text,
+            hashName: _hashNameController.text,
+            photo: _newPhoto,
             eventId: widget.eventId,
             kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
-            historicalPackRunCount: previousRunCountController.text,
-            historicalHaringCount: previousHaringCountController.text,
-            historicalCountIsEstimate: historicalCountIsEstimate,
+            historicalPackRunCount: _previousRunCountController.text,
+            historicalHaringCount: _previousHaringCountController.text,
+            historicalCountIsEstimate: _historicalCountIsEstimate,
             preferences: _distancePreference + _autoRunPreference,
             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
         apiCall.then((String responseBody) async {
           if (!responseBody.startsWith(ERROR_PREFIX)) {
             if (widget.pageType == EnumMyProfilePageType.myProfile) {
-              setStringPref(StringPrefsEnum.email, emailController.text);
+              setStringPref(StringPrefsEnum.email, _emailController.text);
               setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
             }
             final dynamic jsonResult = json.decode(responseBody);
@@ -378,7 +377,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       children: <Widget>[
         TextFormField(
           autocorrect: false,
-          controller: firstNameController,
+          controller: _firstNameController,
           //initialValue: hasher.firstName,
           decoration: const InputDecoration(labelText: 'First name (or initial)'),
           keyboardType: TextInputType.text,
@@ -389,13 +388,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               return null;
           },
           onSaved: (String val) {
-            hasher.firstName = val;
+            _hasher.firstName = val;
           },
         ),
         TextFormField(
           autocorrect: false,
           //initialValue: hasher.lastName,
-          controller: lastNameController,
+          controller: _lastNameController,
           decoration: const InputDecoration(labelText: 'Last Name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
@@ -405,27 +404,27 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               return null;
           },
           onSaved: (String val) {
-            hasher.lastName = val;
+            _hasher.lastName = val;
           },
         ),
         TextFormField(
           autocorrect: false,
           //initialValue: hasher.email,
-          controller: emailController,
+          controller: _emailController,
           decoration: const InputDecoration(labelText: 'Email'),
           keyboardType: TextInputType.emailAddress,
           validator: validateEmail,
           onSaved: (String val) {
-            email = val;
+            _email = val;
           },
         ),
         TextFormField(
           autocorrect: false,
           //initialValue: hasher.hashName,
-          controller: hashNameController,
+          controller: _hashNameController,
           decoration: const InputDecoration(labelText: 'Hash Name (optional)'),
           onSaved: (String val) {
-            hasher.hashName = val;
+            _hasher.hashName = val;
           },
           keyboardType: TextInputType.text,
         ),
@@ -441,20 +440,20 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       children: <Widget>[
         TextFormField(
           autocorrect: false,
-          controller: previousRunCountController,
+          controller: _previousRunCountController,
           decoration: const InputDecoration(labelText: 'Historical run count'),
           keyboardType: TextInputType.number,
           onSaved: (String val) {
-            hasher.firstName = val;
+            _hasher.firstName = val;
           },
         ),
         TextFormField(
           autocorrect: false,
-          controller: previousHaringCountController,
+          controller: _previousHaringCountController,
           decoration: const InputDecoration(labelText: 'Historical haring count'),
           keyboardType: TextInputType.number,
           onSaved: (String val) {
-            hasher.firstName = val;
+            _hasher.firstName = val;
           },
         ),
         const SizedBox(
@@ -468,10 +467,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               width: 25,
               color: Colors.yellow[100],
               child: Checkbox(
-                value: historicalCountIsEstimate,
+                value: _historicalCountIsEstimate,
                 onChanged: (bool value) {
                   setState(() {
-                    historicalCountIsEstimate = value;
+                    _historicalCountIsEstimate = value;
                     checkDirty();
                   });
                 },
@@ -590,7 +589,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 color: Colors.white,
                                                 padding: const EdgeInsets.all(10.0),
                                                 margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                                child: newPhoto.isEmpty
+                                                child: _newPhoto.isEmpty
                                                     ? Image.asset(
                                                         'images/icons/create_profile_photo.png',
                                                       )
@@ -599,7 +598,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         child: AspectRatio(
                                                           aspectRatio: 1.0,
                                                           child: ProfilePhoto(
-                                                            profilePhotoUrl: newPhoto,
+                                                            profilePhotoUrl: _newPhoto,
                                                             //photoHeight: 200.0,
                                                             //leftPadding: 0.0,
                                                           ),
@@ -632,13 +631,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         MaterialPageRoute<String>(
                                                           builder: (BuildContext context) => ChooseProfileImage(
                                                             isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
-                                                            fileNamePrefix: photoPrefix,
-                                                            currentProfileImage: hasher?.photo ?? newPhoto,
+                                                            fileNamePrefix: _photoPrefix,
+                                                            currentProfileImage: _hasher?.photo ?? _newPhoto,
                                                           ),
                                                         ),
                                                       ).then((String result) {
                                                         if ((result != null) && (result.isNotEmpty)) {
-                                                          newPhoto = result;
+                                                          _newPhoto = result;
                                                           checkDirty();
                                                           //setState(() {});
                                                         }
@@ -1099,7 +1098,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ],
                                             ),
                                           ),
-                                          if (widget.hasherId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') ...<Widget>[
+                                          if (Utilities.isOpeeOrTuna()) ...<Widget>[
                                             Padding(
                                               padding: const EdgeInsets.only(top: 15, bottom: 40),
                                               child: Row(

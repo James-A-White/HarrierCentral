@@ -75,6 +75,18 @@ class Utilities {
     return result;
   }
 
+  static bool isOpeeOrTuna() {
+    bool isOpeeOrTuna = false;
+
+    final String currentUserId = getStringPref(StringPrefsEnum.userId) ?? '<no user id>';
+
+    if ((currentUserId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') || (currentUserId == 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A')) {
+      isOpeeOrTuna = true;
+    }
+
+    return isOpeeOrTuna;
+  }
+
   static Future<void> subscribeToGeoLocationStream() async {
     G0<DeviceInfo>().deviceLat = getNumPref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
     G0<DeviceInfo>().deviceLon = getNumPref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;

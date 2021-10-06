@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 1.0.7+507
+version: 1.0.8+508
 publish_to: none
 
 environment:
@@ -17,7 +17,7 @@ dependencies:
   chewie: ^1.2.2  # upgraded Sep 21 21 from 1.0.0  # upgraded Mar 30 21 from 0.12.2 # downgraded Mar 29 21 from 1.0.0 # upgraded Mar 23 21 from 0.12.1+1 # updated Jan 20 from 0.9.10 # upgraded 7 Apr 20 from ^0.9.8+1 # upgraded Nov 10 from ^0.9.8 # updated on 11 Sep from 0.9.7
   crypto: ^3.0.1  # upgraded Sep 21 21 from 2.1.5  # upgraded Jun 21 20 from 2.1.3 # updated on 11 Sep from 2.0.6
   cupertino_icons: ^1.0.3  # upgraded Sep 21 21 from 1.0.0 # downgraded Mar 29 21 from 1.0.2 # upgraded Mar 23 21 from 1.0.0 # updated Jan 20 from 0.1.3 # upgraded Dec 19 from ^0.1.2
-  date_time_picker: ^2.1.0  # upgraded Sep 21 21 from 1.1.1
+  date_time_picker: 2.0.0  # upgraded Sep 21 21 from 1.1.1
   device_info: ^2.0.2  # upgraded Sep 21 21 from 2.0.0 # upgraded Mar 30 21 from 1.0.0 # downgraded Mar 29 21 from 2.0.0 # upgraded Mar 23 21 from 1.0.0 # updated Jan 20 from 0.4.2+4  # upgraded Jun 21 20 from 0.4.2+1 # upgraded 7 Apr 20 from 0.4.1+5 # upgraded Feb 25 2020 from 0.4.1+4 # upgraded Dec 19 from ^0.4.1+1 # upgraded Nov 10 from ^0.4.0+2
   email_validator: ^2.0.1 # upgraded Mar 30 21 from 1.0.6 # downgraded Mar 29 21 from 2.0.1 # upgraded Mar 23 21 from 1.0.6 # updated Jan 20 from 1.0.4
   fancy_bottom_navigation: ^0.3.3  # upgraded Sep 21 21 from 0.3.2 # downgraded Mar 29 21 from 0.3.3 # upgraded Mar 23 21 from 0.3.2
@@ -36,6 +36,7 @@ dependencies:
   flutter_map_marker_cluster: ^0.4.0 # upgraded Sep 21 21 from 0.3.1 # downgraded Mar 29 21 from 0.3.4 # upgraded Mar 23 21 from 0.3.1 # updated Jan 20 from 0.2.8  # upgraded Jun 21 20 from 0.2.7
   flutter_phoenix: ^1.0.0  # upgraded Sep 21 21 from 0.1.0
   # problem with SpeedDial 4.4.0 - will have to wait until I can upgrade SDK to >=2.5.0
+  flutter_slidable: ^0.6.0 
   flutter_speed_dial: 4.3.0 # upgraded Sep 21 21 from 3.0.5 # upgraded Mar 30 21 from 2.1.1 # downgraded Mar 29 21 from 3.0.5 # upgraded Mar 23 21 from 1.2.5 # upgraded Dec 19 from ^1.2.1   # updated from 1.1.2 on 8 Jun 19
   flutter_staggered_grid_view: ^0.4.0 # upgraded Sep 21 21 from 0.3.4 # upgraded Mar 23 21 from 0.3.3 # updated Jan 20 from 0.3.0 # upgraded from ^0.2.7 on 29 Jul
   flutter_swiper: ^1.1.6
@@ -69,6 +70,7 @@ dependencies:
   # qr_flutter: ^2.1.0+55 # updated from 2.0.0 on 8 Jun 19
   shared_preferences: ^2.0.7 # upgraded Sep 21 21 from 0.5.12+4 # updated Jan 20 from 0.5.7+3 # upgraded Jun 21 20 from 0.5.6+3 # upgraded 7 Apr 20 from 0.5.6+2 # upgraded Feb 25 2020 from 0.5.6+1 # upgraded Feb 02 from ^0.5.6 # upgraded Dec 19 from ^0.5.4+3 # upgraded Nov 10 from ^0.5.3+4 #updated from ^0.5.3+1 on Jul 29 # updated from 0.5.2 on 8 Jun 19
   # sign_in_with_apple: ^3.0.0 # upgraded Sep 21 21 from 2.5.4
+  sumup: ^0.2.5
   table_calendar: ^3.0.2 # upgraded Sep 21 21 from 2.3.3
   tinycolor: ^1.0.3 # updated Jan 20 from 1.0.2
   url_launcher: ^6.0.10 # upgraded Sep 21 21 from 6.0.3 # upgraded Mar 30 21 from 5.7.10 # downgraded Mar 29 21 from 6.0.2  # upgraded Mar 23 21 from 5.7.10 # updated Jan 20 from 5.4.11 # upgraded Jun 21 20 from 5.4.2 # upgraded Feb 25 2020 from 5.4.1 # upgraded Dec 19 from ^5.2.5 # upgraded Nov 10 from 5.1.2 # updated on 11 Sep from 5.1.1 #updated from ^5.0.3 on 29 Jul # updated from 5.0.2 on 8 Jun 19

@@ -64,6 +64,8 @@
 	<string>This app does not currently access your calendar. Please contact us at connect@harriercentral.com if you see this message.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera permission is required for barcode scanning and taking your profile photo.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app would like to use Bluetooth to connect to payment terminals</string>
 	<key>NSContactsUsageDescription</key>
 	<string>This app does not currently access your contacts. Please contact us at connect@harriercentral.com if you see this message.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
