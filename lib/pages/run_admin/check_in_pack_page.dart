@@ -122,6 +122,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   String _searchTypeText;
   bool _showFilter = false;
 
+  bool _useTerminalForPayment = false;
+
   static const String _searchKennel = 'Searching Kennel members and RSVPs';
   static const String _searchAllHashers = 'Searching all Hashers';
   bool _highlightSearchType = false;
@@ -472,7 +474,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
   }
 
-  void findHasher() {
+  void _findHasher() {
     Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute<Map<String, dynamic>>(
@@ -503,7 +505,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     });
   }
 
-  void showVirginVisitorPopup(BuildContext parentContext) {
+  void _showVirginVisitorPopup(BuildContext parentContext) {
     int scrollIndex = -1;
 
     const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
@@ -952,7 +954,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         onClose: () => print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Theme.of(context).accentColor,
+        backgroundColor: Colors.red.shade900,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),
@@ -992,14 +994,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             backgroundColor: Colors.blue,
             label: 'Add Virgin / Visitor',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => showVirginVisitorPopup(context),
+            onTap: () => _showVirginVisitorPopup(context),
           ),
           SpeedDialChild(
             child: const Icon(MaterialCommunityIcons.account_search),
             backgroundColor: Colors.blue,
             label: 'Find Hasher and add',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => findHasher(),
+            onTap: () => _findHasher(),
           ),
           SpeedDialChild(
               child: const Icon(MaterialCommunityIcons.message_video),
@@ -1040,7 +1042,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               Container(height: MediaQuery.of(context).size.height, width: 10),
               (_filteredList == null || _filteredList.isEmpty)
                   //? Positioned(top: showFilter ? 210 : 95, left:0, right: 0, child: getAddHasherBlock())
-                  ? Positioned(top: (_filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
+                  ? Positioned(top: (_filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: _getAddHasherBlock())
                   : PositionedTransition(
                       rect: _hasherListAnimation,
                       child: Container(key: _packListBoxKey, height: 300, child: buildPackListView()),
@@ -1088,7 +1090,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           });
         }
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        updateRsvpState(packMember, rsvpState, attendenceState, isHare);
+        _updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
       onPaidCallback: (CheckInPackModel packMember, int paymentType, {num otherAmount = -1}) {
         setState(() {
@@ -1096,15 +1098,23 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
           packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
         });
-        showExtrasDialog(context, scaffoldState, paymentType, packMember, otherAmount);
+        _payForEvent(
+          context,
+          scaffoldState,
+          paymentType,
+          packMember,
+          otherAmount,
+        );
       },
     );
 
     return snackbar;
   }
 
-  void showExtrasDialog(BuildContext context, ScaffoldState scaffoldState, int paymentType, CheckInPackModel packMember, num otherAmount) {
+  Future<void> _payForEvent(BuildContext context, ScaffoldState scaffoldState, int paymentType, CheckInPackModel packMember, num otherAmount) async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    dynamic payForExtras = payForRunOnly;
+
     if (((paymentType == paymentFreeRun.value) ||
             (paymentType == paymentCash.value) ||
             (paymentType == paymentBankTransfer.value) ||
@@ -1144,32 +1154,23 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         cancelButtonReturnValue: followTypeCancel,
       );
 
-      showDialog<dynamic>(
+      payForExtras = await showDialog<dynamic>(
           context: context,
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
             return popup;
-          }).then((dynamic payForExtras) {
-        payForEvent(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
-          _refreshPackListFromTables(false).then((void dummy) {
-            _refreshCounters(true);
-            BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
           });
-        });
-      });
-    } else {
-      payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
-        _refreshPackListFromTables(false).then((void dummy) {
-          _refreshCounters(true);
-          BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
-        });
-      });
     }
+
+    final List<dynamic> results = await _processPayment(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras);
+    await _refreshPackListFromTables(false);
+    await _refreshCounters(true);
+    BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
   }
 
   static const num LIST_ITEM_LEFT_MARGIN = 88.0;
 
-  Widget listItem(BuildContext context, CheckInPackModel packMember) {
+  Widget _listItem(BuildContext context, CheckInPackModel packMember) {
     return GestureDetector(
       onTap: () {
         _searchFocusNode.unfocus();
@@ -1184,40 +1185,57 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
-            packMember.photo.startsWith('http')
-                ? CachedNetworkImage(
-                    imageUrl: packMember.photo,
-                    placeholder: (BuildContext context, String url) => Container(
-                        child: Center(
-                          child: Container(
-                            height: 20,
-                            width: 20,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 3.0,
+            GestureDetector(
+              onTap: () {
+                Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => ZoomableImagePage2(
+                        key: UniqueKey(),
+                        pageTitle: packMember.nameForDisplay,
+                        imageUrl: packMember.photo.startsWith('http') ? packMember.photo : null,
+                        assetImage: packMember.photo.contains('bundle://') ? 'images/avatars/' + packMember.photo.replaceAll('bundle://', '') + '.jpg' : null,
+                        appBarBackgroundColor: themeAppBarBackground,
+                        background: Backgrounds.defaultHcBackground(),
+                        margin: 20.0),
+                  ),
+                );
+              },
+              child: packMember.photo.startsWith('http')
+                  ? CachedNetworkImage(
+                      imageUrl: packMember.photo,
+                      placeholder: (BuildContext context, String url) => Container(
+                          child: Center(
+                            child: Container(
+                              height: 20,
+                              width: 20,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 3.0,
+                              ),
                             ),
                           ),
+                          height: LIST_ITEM_HEIGHT,
+                          width: LIST_ITEM_HEIGHT),
+                      errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error, size: LIST_ITEM_HEIGHT, color: Colors.red),
+                      //fadeOutDuration:  Duration(seconds: 1),
+                      fadeInDuration: const Duration(milliseconds: 0),
+                      width: LIST_ITEM_HEIGHT,
+                      height: LIST_ITEM_HEIGHT,
+                      fit: BoxFit.fill)
+                  : packMember.photo.startsWith('bundle')
+                      ? Image(
+                          width: LIST_ITEM_HEIGHT,
+                          height: LIST_ITEM_HEIGHT,
+                          fit: BoxFit.fill,
+                          image: AssetImage(('images/avatars/' + packMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                        )
+                      : const Image(
+                          width: LIST_ITEM_HEIGHT,
+                          height: LIST_ITEM_HEIGHT,
+                          fit: BoxFit.fill,
+                          image: AssetImage('images/avatars/avatar-2.jpg'),
                         ),
-                        height: LIST_ITEM_HEIGHT,
-                        width: LIST_ITEM_HEIGHT),
-                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error, size: LIST_ITEM_HEIGHT, color: Colors.red),
-                    //fadeOutDuration:  Duration(seconds: 1),
-                    fadeInDuration: const Duration(milliseconds: 0),
-                    width: LIST_ITEM_HEIGHT,
-                    height: LIST_ITEM_HEIGHT,
-                    fit: BoxFit.fill)
-                : packMember.photo.startsWith('bundle')
-                    ? Image(
-                        width: LIST_ITEM_HEIGHT,
-                        height: LIST_ITEM_HEIGHT,
-                        fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' + packMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
-                      )
-                    : const Image(
-                        width: LIST_ITEM_HEIGHT,
-                        height: LIST_ITEM_HEIGHT,
-                        fit: BoxFit.fill,
-                        image: AssetImage('images/avatars/avatar-2.jpg'),
-                      ),
+            ),
 
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN + 2.0,
@@ -1386,7 +1404,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return result;
   }
 
-  void updateRsvpState(CheckInPackModel packMember, int rsvpState, int attendenceState, int isHare) {
+  void _updateRsvpState(CheckInPackModel packMember, int rsvpState, int attendenceState, int isHare) {
     final String hemId = packMember.hemId;
     final String hasherId = packMember.hasherId;
 
@@ -1412,7 +1430,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     });
   }
 
-  Future<List<dynamic>> payForEvent(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
+  Future<List<dynamic>> _processPayment(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
     setState(() {
       packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
       packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
@@ -1424,6 +1442,44 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     num amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
     if (otherAmount != -1) {
       amount = otherAmount;
+    }
+
+    if (_useTerminalForPayment) {
+      _useTerminalForPayment = false;
+
+      num terminalAmount = amount;
+      if (doPayForExtras == payForRunAndExtras) {
+        terminalAmount += widget.eventAggregate.event.eventPriceForExtras;
+      }
+
+      final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+      await Sumup.init(affiliateKey);
+
+      bool isLoggedIn = await Sumup.isLoggedIn;
+      if (!isLoggedIn) {
+        await Sumup.login();
+      }
+
+      final String title = widget.eventAggregate.event.eventName + ' ' + packMember.nameForDisplay;
+
+      isLoggedIn = await Sumup.isLoggedIn;
+      if (isLoggedIn) {
+        final SumupPayment payment = SumupPayment(
+          title: title,
+          total: terminalAmount + .0,
+          currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode ?? 'USD',
+          foreignTransactionId: widget.eventAggregate.event.eventId + '_' + packMember.hasherId,
+          saleItemsCount: 1,
+          skipSuccessScreen: true,
+          tip: .0,
+        );
+
+        //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
+
+        final SumupPaymentRequest request = SumupPaymentRequest(payment);
+
+        await Sumup.checkout(request);
+      }
     }
 
     final PaymentsService paySrv = PaymentsService();
@@ -1457,7 +1513,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           itemCount: (_filteredList?.length ?? 0) + (_searchController.text.isNotEmpty ? 1 : 0),
           itemBuilder: (BuildContext context, int index) {
             if ((index == (_filteredList?.length ?? 0)) && (_searchController.text.isNotEmpty)) {
-              return getAddHasherBlock();
+              return _getAddHasherBlock();
             } else {
               final CheckInPackModel packMember = _filteredList[index];
               final Key key = Key(index.toString());
@@ -1469,16 +1525,25 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 actionExtentRatio: 0.35,
                 child: Container(
                   color: Colors.white,
-                  child: listItem(context, packMember),
+                  child: _listItem(context, packMember),
                 ),
                 dismissal: SlidableDismissal(
                   onWillDismiss: (SlideActionType actionType) {
+                    if (actionType == SlideActionType.secondary) {
+                      _useTerminalForPayment = false;
+                    }
                     if (packMember.isPaid != 1) {
                       print(actionType.toString() + ' ' + index.toString());
-                      showExtrasDialog(context, _scaffoldKey.currentState, actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value, packMember, -1);
+                      _payForEvent(
+                        context,
+                        _scaffoldKey.currentState,
+                        actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
+                        packMember,
+                        -1,
+                      );
                     } else {
                       if (actionType == SlideActionType.secondary) {
-                        updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+                        _updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
                       }
                     }
 
@@ -1543,7 +1608,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                 ],
                               ),
                             ),
-                      onTap: () {}),
+                      onTap: () {
+                        _useTerminalForPayment = false;
+                        _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
+                      }),
                   if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
                     IconSlideAction(
                         iconWidget: Container(
@@ -1565,20 +1633,22 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             ],
                           ),
                         ),
-                        onTap: () async {
-                          final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
-                          final SumupPluginResponse resp = await Sumup.init(affiliateKey);
+                        onTap: () {
+                          _useTerminalForPayment = true;
+                          _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
+                          // final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+                          // final SumupPluginResponse resp = await Sumup.init(affiliateKey);
 
-                          bool isLoggedIn = await Sumup.isLoggedIn;
-                          if (!isLoggedIn) {
-                            final SumupPluginResponse resp2 = await Sumup.login();
-                            int xxx = 0;
-                          }
+                          // bool isLoggedIn = await Sumup.isLoggedIn;
+                          // if (!isLoggedIn) {
+                          //   final SumupPluginResponse resp2 = await Sumup.login();
+                          //   int xxx = 0;
+                          // }
 
-                          isLoggedIn = await Sumup.isLoggedIn;
-                          if (isLoggedIn) {
-                            _doTransaction();
-                          }
+                          // isLoggedIn = await Sumup.isLoggedIn;
+                          // if (isLoggedIn) {
+                          //   _doTransaction();
+                          // }
                         }),
                   ],
                 ],
@@ -1776,9 +1846,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  String capitalizeFirstLetter(String s) => (s?.isNotEmpty ?? false) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
+  String _capitalizeFirstLetter(String s) => (s?.isNotEmpty ?? false) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
 
-  Widget getAddHasherBlock() {
+  Widget _getAddHasherBlock() {
     return GestureDetector(
       onTap: () {
         Navigator.push<HashersModel>(
@@ -1790,7 +1860,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               eventId: widget.eventAggregate.event.eventId,
               kennelId: widget.eventAggregate.event.kennelId,
               uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-              hashNameFromSearch: capitalizeFirstLetter(_searchController.text),
+              hashNameFromSearch: _capitalizeFirstLetter(_searchController.text),
             ),
           ),
         ).then((HashersModel result) {
@@ -1814,7 +1884,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         margin: const EdgeInsets.only(left: 10),
         child: Row(
           children: <Widget>[
-            Icon(SimpleLineIcons.question, size: 35.0, color: Theme.of(context).accentColor),
+            Icon(SimpleLineIcons.question, size: 35.0, color: Colors.red.shade900),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 14.0, right: 10.0),
@@ -1824,7 +1894,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   children: <Widget>[
                     Text('Can\'t find a Hasher?', style: smallContentStyleDb),
                     AutoSizeText(
-                      'Click here to add \'${capitalizeFirstLetter(_searchController.text)}\'',
+                      'Click here to add \'${_capitalizeFirstLetter(_searchController.text)}\'',
                       style: smallContentStyle,
                       maxLines: 1,
                     ),
@@ -1836,23 +1906,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ),
       ),
     );
-  }
-
-  Future<void> _doTransaction() async {
-    final SumupPayment payment = SumupPayment(
-      title: 'Test',
-      total: 2.0,
-      currency: 'EUR',
-      foreignTransactionId: '',
-      saleItemsCount: 1,
-      skipSuccessScreen: false,
-      tip: .0,
-    );
-
-    final SumupPaymentRequest request = SumupPaymentRequest(payment);
-
-    SumupPluginCheckoutResponse resp6 = await Sumup.checkout(request);
-    int xxx = 0;
   }
 }
 

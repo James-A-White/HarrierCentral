@@ -1,8 +1,8 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
-import 'package:latlong2/latlong.dart' as latlng;
 import 'package:date_time_picker/date_time_picker.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 
 class EditRunDetailsPage extends StatefulWidget {
   const EditRunDetailsPage(this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
@@ -187,7 +187,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
-                      indicatorColor: Theme.of(context).buttonColor,
+                      indicatorColor: Colors.red.shade900,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),

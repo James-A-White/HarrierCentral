@@ -93,7 +93,7 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                     labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
-                      indicatorColor: Theme.of(context).buttonColor,
+                      indicatorColor: Colors.red.shade900,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),

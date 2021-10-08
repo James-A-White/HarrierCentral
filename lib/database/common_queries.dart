@@ -1,7 +1,7 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
 
 import 'package:geolocator/geolocator.dart';
+import 'package:harrier_central/imports.dart';
 
 class AreWeAtRunResult {
   String eventId;
@@ -16,6 +16,9 @@ class AreWeAtRunResult {
 }
 
 class CommonQueries {
+  // the variable below is there to suppress a warning about defining classes with only static members
+  int unusedVariableToSuppressWarning;
+
   static Future<String> getClosestEventInTime(String kennelId) async {
     String result = EMPTY_RESULT;
     try {

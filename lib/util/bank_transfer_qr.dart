@@ -3,6 +3,9 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class BankTransferQr {
+  // the variable below is there to suppress a warning about defining classes with only static members
+  int unusedVariableToSuppressWarning;
+
   static void showBankTransferSnackbar(
       RunAdminAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
     if (eventAggregate.kennel.bankBic != null) {

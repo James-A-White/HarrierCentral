@@ -84,6 +84,9 @@ TextStyle mediumTextBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fo
 // Color teal = const Color.fromARGB(255, 13, 115, 124);
 
 class Backgrounds {
+  // the variable below is there to suppress a warning about defining classes with only static members
+  int unusedVariableToSuppressWarning;
+
   static BoxDecoration defaultHcBackground() {
     return const BoxDecoration(
         image: DecorationImage(

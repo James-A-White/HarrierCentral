@@ -1,8 +1,8 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/pages/top_level/select_run_page.dart';
-import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/top_level/drawer_menu.dart';
+import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);

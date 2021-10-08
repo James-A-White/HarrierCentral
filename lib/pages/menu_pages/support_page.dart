@@ -56,7 +56,7 @@ class SupportPageState extends State<SupportPage> {
           itemBuilder: (_, int index) {
             return DecoratedBox(
               decoration: BoxDecoration(
-                color: index.isEven ? Colors.grey[50] : Theme.of(context).accentColor,
+                color: index.isEven ? Colors.grey[50] : Colors.red.shade900,
               ),
             );
           },

@@ -200,7 +200,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               onClose: () => print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
               heroTag: 'speed-dial-hero-tag',
-              backgroundColor: Theme.of(context).accentColor,
+              backgroundColor: Theme.of(context).buttonTheme.colorScheme.primary,
               foregroundColor: Colors.white,
               elevation: 8.0,
               shape: const CircleBorder(),

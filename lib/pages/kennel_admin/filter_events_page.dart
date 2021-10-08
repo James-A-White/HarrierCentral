@@ -67,12 +67,12 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
   TabController _tabController;
 
-  PageController _pageController;
+  //PageController _pageController;
   AnimationController _animationController;
 
   List<Map<String, dynamic>> _allEventsSqlResult = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
-  ValueNotifier<List<Map<String, dynamic>>> _selectedEvents = ValueNotifier<List<Map<String, dynamic>>>(<Map<String, dynamic>>[]);
+  final ValueNotifier<List<Map<String, dynamic>>> _selectedEvents = ValueNotifier<List<Map<String, dynamic>>>(<Map<String, dynamic>>[]);
   final Map<DateTime, List<Map<String, dynamic>>> _calendarEvents = <DateTime, List<Map<String, dynamic>>>{};
   Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(null);
 
@@ -411,7 +411,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
-                      indicatorColor: Theme.of(context).buttonColor,
+                      indicatorColor: Colors.red.shade900,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),
@@ -727,7 +727,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               //color: Colors.white,
               padding: const EdgeInsets.only(bottom: 10.0),
               child: TableCalendar<dynamic>(
-                onCalendarCreated: (PageController controller) => _pageController = controller,
+                onCalendarCreated: (PageController controller) => controller,
                 firstDay: DateTime(2010, 1, 1),
                 lastDay: DateTime(2030, 1, 1),
                 focusedDay: _focusedDay?.value ?? DateTime.now(),

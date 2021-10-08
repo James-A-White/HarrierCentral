@@ -152,7 +152,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       },
                       keyboardType: TextInputType.text,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Theme.of(context).accentColor),
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Colors.red.shade900),
                     ),
                     const SizedBox(height: 20, width: 10),
                     Row(

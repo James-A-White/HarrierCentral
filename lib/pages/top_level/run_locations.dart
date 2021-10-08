@@ -1,8 +1,8 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
 
-import 'package:latlong2/latlong.dart' as latlng;
 import 'package:geolocator/geolocator.dart';
+import 'package:harrier_central/imports.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 
 // class MapMarker extends Marker {
 //   MapMarker({@required this.eventId, @required this.eventName, @required this.eventStartDatetime, num width, num height, LatLng point, WidgetBuilder builder}) : super(width: width, height: height, point: point, builder: builder);
@@ -155,7 +155,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         //onClose: () => print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Theme.of(context).accentColor,
+        backgroundColor: Colors.red.shade900,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),

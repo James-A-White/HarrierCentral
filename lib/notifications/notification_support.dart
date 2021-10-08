@@ -1,8 +1,8 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:harrier_central/imports.dart';
 
 class NotificationSupport {
   Future<void> configureNotifications(bool doSubscriptions) async {

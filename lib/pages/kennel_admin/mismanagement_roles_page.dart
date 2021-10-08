@@ -110,7 +110,7 @@ class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
 
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: Theme.of(context).accentColor,
+                          primary: Colors.red.shade900,
                         ),
                         onPressed: () {
                           // if mismanagementFlags = 1 that means this person has no role, so set all to zero, otherwise set the mmRoleIsOnMm flag

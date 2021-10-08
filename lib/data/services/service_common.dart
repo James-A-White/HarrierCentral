@@ -2,6 +2,9 @@
 import 'package:harrier_central/imports.dart';
 
 class ServiceCommon {
+  // the variable below is there to suppress a warning about defining classes with only static members
+  int unusedVariableToSuppressWarning;
+
   static Future<String> sendHttpPost(String procName, String requestBody, {Function errorCallback}) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return ERROR_NO_CONNECTION;

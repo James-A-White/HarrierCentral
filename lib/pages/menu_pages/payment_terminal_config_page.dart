@@ -53,7 +53,7 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
   final TextEditingController _accountKeyTextController = TextEditingController();
 
   final GlobalKey<FormState> _paymentTerminalFormKey = GlobalKey<FormState>();
-  bool _autoValidate = false;
+  final bool _autoValidate = false;
 
   @override
   void initState() {
@@ -140,8 +140,8 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
             child: Text('Test Login', style: headingStyle),
             onPressed: () async {
               final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
-              final SumupPluginResponse resp = await Sumup.init(affiliateKey);
-              final SumupPluginResponse resp2 = await Sumup.login();
+              await Sumup.init(affiliateKey);
+              await Sumup.login();
             },
           ),
           const SizedBox(height: 20.0),
@@ -150,7 +150,7 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
             onPressed: () async {
               Sumup.isLoggedIn.then((bool isLoggedIn) async {
                 if (isLoggedIn) {
-                  final SumupPluginResponse resp3 = await Sumup.openSettings();
+                  await Sumup.openSettings();
                 }
               });
             },
@@ -160,11 +160,11 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
             child: Text('Test SumUp transaction', style: headingStyle),
             onPressed: () async {
               final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
-              final SumupPluginResponse resp = await Sumup.init(affiliateKey);
+              await Sumup.init(affiliateKey);
 
               bool isLoggedIn = await Sumup.isLoggedIn;
               if (!isLoggedIn) {
-                final SumupPluginResponse resp2 = await Sumup.login();
+                await Sumup.login();
               }
 
               isLoggedIn = await Sumup.isLoggedIn;
@@ -238,13 +238,12 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
       tip: .0,
     );
 
-    var request = SumupPaymentRequest(payment, info: <String, String>{
+    final SumupPaymentRequest request = SumupPaymentRequest(payment, info: <String, String>{
       'AccountId': 'taxi0334',
       'From': 'Paris',
       'To': 'Berlin',
     });
 
-    SumupPluginCheckoutResponse resp6 = await Sumup.checkout(request);
-    int xxx = 0;
+    await Sumup.checkout(request);
   }
 }

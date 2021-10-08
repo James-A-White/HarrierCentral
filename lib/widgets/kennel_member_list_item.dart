@@ -54,33 +54,50 @@ class KennelMemberListItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(left: 0.0, right: 5.0),
-                child: kennelMember.photo.startsWith('http')
-                    ? CachedNetworkImage(
-                        imageUrl: kennelMember.photo,
-                        //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
-                        //errorWidget: const  Icon(Icons.error),
-                        // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: UniqueKey()),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) => ZoomableImagePage2(
+                            key: UniqueKey(),
+                            pageTitle: kennelMember.dispName,
+                            imageUrl: kennelMember.photo.startsWith('http') ? kennelMember.photo : null,
+                            assetImage: kennelMember.photo.contains('bundle://') ? 'images/avatars/' + kennelMember.photo.replaceAll('bundle://', '') + '.jpg' : null,
+                            appBarBackgroundColor: themeAppBarBackground,
+                            background: Backgrounds.defaultHcBackground(),
+                            margin: 20.0),
+                      ),
+                    );
+                  },
+                  child: kennelMember.photo.startsWith('http')
+                      ? CachedNetworkImage(
+                          imageUrl: kennelMember.photo,
+                          //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
+                          //errorWidget: const  Icon(Icons.error),
+                          // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: UniqueKey()),
 
-                        // TODO(James): Replace avatar icon with missing image icon
-                        errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
-                        //fadeOutDuration:  Duration(seconds: 1),
-                        fadeInDuration: const Duration(milliseconds: 0),
-                        width: PROFILE_PIC_SIZE,
-                        height: PROFILE_PIC_SIZE,
-                        fit: BoxFit.fill)
-                    : kennelMember.photo.startsWith('bundle')
-                        ? Image(
-                            width: PROFILE_PIC_SIZE,
-                            height: PROFILE_PIC_SIZE,
-                            fit: BoxFit.fill,
-                            image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
-                          )
-                        : const Image(
-                            width: PROFILE_PIC_SIZE,
-                            height: PROFILE_PIC_SIZE,
-                            fit: BoxFit.fill,
-                            image: AssetImage('images/avatars/avatar-2.jpg'),
-                          ),
+                          // TODO(James): Replace avatar icon with missing image icon
+                          errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
+                          //fadeOutDuration:  Duration(seconds: 1),
+                          fadeInDuration: const Duration(milliseconds: 0),
+                          width: PROFILE_PIC_SIZE,
+                          height: PROFILE_PIC_SIZE,
+                          fit: BoxFit.fill)
+                      : kennelMember.photo.startsWith('bundle')
+                          ? Image(
+                              width: PROFILE_PIC_SIZE,
+                              height: PROFILE_PIC_SIZE,
+                              fit: BoxFit.fill,
+                              image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                            )
+                          : const Image(
+                              width: PROFILE_PIC_SIZE,
+                              height: PROFILE_PIC_SIZE,
+                              fit: BoxFit.fill,
+                              image: AssetImage('images/avatars/avatar-2.jpg'),
+                            ),
+                ),
               ),
               Container(
                   padding: const EdgeInsets.only(left: 10.0, bottom: 2.0),

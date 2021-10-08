@@ -299,7 +299,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         onClose: () => print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Theme.of(context).accentColor,
+        backgroundColor: Colors.red.shade900,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),
@@ -405,7 +405,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
             ),
           ),
           SlideTransition(position: filterPanelAnimation, child: filterBar()),
-          Positioned(top: 0, child: searchBar()),
+          Positioned(top: 0, child: _searchBar()),
         ],
       ),
     );
@@ -571,7 +571,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     );
   }
 
-  Container searchBar() {
+  Container _searchBar() {
     return Container(
       decoration: const BoxDecoration(
         // border: new Border.all(width: 1.0, color: Colors.black),

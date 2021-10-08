@@ -1,9 +1,9 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
 
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart' as latlng;
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 
 class KennelAdminMainPage extends StatefulWidget {
   const KennelAdminMainPage({@required this.kennelAggregateItem});

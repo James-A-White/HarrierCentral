@@ -503,77 +503,63 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             )
                           : GestureDetector(
                               onTap: () {
-                                String actionText = '';
-
-                                if (_thePackList[index].hem.isHare == 1) {
-                                  actionText = ' will hare the Hash';
-                                } else {
-                                  switch (_thePackList[index].hem.rsvpState) {
-                                    case 1:
-                                      actionText = ' will not join the Hash';
-                                      break;
-                                    case 2:
-                                      actionText = ' might join the Hash';
-                                      break;
-                                    case 3:
-                                    case 4:
-                                    case 5:
-                                    case 6:
-                                      actionText = ' will join the Hash';
-                                      break;
-                                    case 0:
-                                    default:
-                                      break;
-                                  }
-                                }
-
-                                final SnackBar snackBar = SnackBar(
-                                  duration: const Duration(seconds: 2),
-                                  content: Text(
-                                    (_thePackList[index].hasher.dispName ?? _thePackList[index].hem.displayName) + actionText,
-                                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                Navigator.push<void>(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (BuildContext context) => ZoomableImagePage2(
+                                        key: UniqueKey(),
+                                        pageTitle: _thePackList[index].hasher.dispName,
+                                        imageUrl: _thePackList[index].hasher.photo.startsWith('http') ? _thePackList[index].hasher.photo : null,
+                                        assetImage: _thePackList[index].hasher.photo.contains('bundle://')
+                                            ? 'images/avatars/' + _thePackList[index].hasher.photo.replaceAll('bundle://', '') + '.jpg'
+                                            : null,
+                                        appBarBackgroundColor: themeAppBarBackground,
+                                        background: Backgrounds.defaultHcBackground(),
+                                        margin: 20.0),
                                   ),
-                                  backgroundColor: Theme.of(context).accentColor,
                                 );
-
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
                               },
+                              // onTap: () {
+                              //   String actionText = '';
+
+                              //   if (_thePackList[index].hem.isHare == 1) {
+                              //     actionText = ' will hare the Hash';
+                              //   } else {
+                              //     switch (_thePackList[index].hem.rsvpState) {
+                              //       case 1:
+                              //         actionText = ' will not join the Hash';
+                              //         break;
+                              //       case 2:
+                              //         actionText = ' might join the Hash';
+                              //         break;
+                              //       case 3:
+                              //       case 4:
+                              //       case 5:
+                              //       case 6:
+                              //         actionText = ' will join the Hash';
+                              //         break;
+                              //       case 0:
+                              //       default:
+                              //         break;
+                              //     }
+                              //   }
+
+                              //   final SnackBar snackBar = SnackBar(
+                              //     duration: const Duration(seconds: 2),
+                              //     content: Text(
+                              //       (_thePackList[index].hasher.dispName ?? _thePackList[index].hem.displayName) + actionText,
+                              //       style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                              //     ),
+                              //     backgroundColor: Theme.of(context).accentColor,
+                              //   );
+
+                              //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              // },
                               child: Stack(
                                 children: <Widget>[
                                   _thePackList[index].hasher.photo.startsWith('http')
                                       ? CachedNetworkImage(
                                           imageUrl: _thePackList[index].hasher.photo,
-                                          //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
-                                          //errorWidget: const  Icon(Icons.error),
-
-                                          // placeholder:
-                                          //     (context,
-                                          //             url) =>
-                                          //         Container(
-                                          //             child:
-                                          //                 Center(
-                                          //               child:
-                                          //                   Container(
-                                          //                 height: 20,
-                                          //                 width: 20,
-                                          //                 child: CircularProgressIndicator(
-                                          //                   strokeWidth: 3.0,
-                                          //                 ),
-                                          //               ),
-                                          //             ),
-                                          //             height:
-                                          //                 70.0,
-                                          //             width:
-                                          //                 70.0),
-                                          // errorWidget: (BuildContext
-                                          //             context,
-                                          //         String
-                                          //             url,
-                                          //         Exception
-                                          //             error) =>
-                                          //     const  Icon(Icons
-                                          //         .error),
-
                                           fadeInDuration: const Duration(milliseconds: 0),
                                           width: 300.0,
                                           height: 300.0,
@@ -757,7 +743,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           onClose: () => print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
-          backgroundColor: Theme.of(context).accentColor,
+          backgroundColor: Colors.red.shade900,
           foregroundColor: Colors.white,
           elevation: 8.0,
           shape: const CircleBorder(),
@@ -853,7 +839,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicator: BubbleTabIndicator(
                           indicatorHeight: 30.0,
-                          indicatorColor: Theme.of(context).buttonColor,
+                          indicatorColor: Colors.red.shade900,
                           tabBarIndicatorSize: TabBarIndicatorSize.tab,
                           indicatorRadius: 20.0,
                           // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),

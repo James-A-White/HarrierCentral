@@ -1,10 +1,9 @@
 // @dart=2.11
+
 import 'dart:io' as platform;
-
 import 'package:flutter/material.dart';
-
-import 'package:photo_view/photo_view.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:photo_view/photo_view.dart';
 
 class ZoomableImagePage2 extends StatelessWidget {
   const ZoomableImagePage2({
@@ -16,6 +15,7 @@ class ZoomableImagePage2 extends StatelessWidget {
     this.background,
     this.assetImage,
     this.assetImageText,
+    this.margin,
   }) : super(key: key);
 
   final platform.File file;
@@ -25,6 +25,7 @@ class ZoomableImagePage2 extends StatelessWidget {
   final BoxDecoration background;
   final String assetImage;
   final String assetImageText;
+  final num margin;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +44,7 @@ class ZoomableImagePage2 extends StatelessWidget {
       //key: scaffoldKey,
       appBar: appBar,
       body: Container(
+          padding: EdgeInsets.all(margin ?? 0.0),
           decoration: background,
           child: file != null
               ? PhotoView(
@@ -54,9 +56,11 @@ class ZoomableImagePage2 extends StatelessWidget {
                 )
               : imageUrl != null
                   ? PhotoView(
-                      imageProvider: NetworkImage(
-                        imageUrl,
-                      ),
+                      imageProvider: CachedNetworkImageProvider(imageUrl),
+
+                      // NetworkImage(
+                      //   imageUrl,
+                      // ),
                       minScale: 0.1,
                       maxScale: 100.0,
                       backgroundDecoration: background,
@@ -75,10 +79,10 @@ class ZoomableImagePage2 extends StatelessWidget {
                       Padding(
                         padding: EdgeInsets.only(left: G0<DeviceInfo>().deviceWidth / 6, right: G0<DeviceInfo>().deviceWidth / 6),
                         child: AutoSizeText(
-                          assetImageText.toLowerCase().contains('my runs')
+                          (assetImageText ?? '').toLowerCase().contains('my runs')
                               ? ''
                               : // TODO(James): find a more elegant way of doing this
-                              '$assetImageText'
+                              '${assetImageText ?? ''}'
                                   '',
                           style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
                           textAlign: TextAlign.center,

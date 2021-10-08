@@ -387,7 +387,7 @@ class HasherListView extends StatelessWidget {
         margin: const EdgeInsets.only(left: 10),
         child: Row(
           children: <Widget>[
-            Icon(SimpleLineIcons.question, size: 35.0, color: Theme.of(context).accentColor),
+            Icon(SimpleLineIcons.question, size: 35.0, color: Colors.red.shade900),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 14.0, right: 10.0),

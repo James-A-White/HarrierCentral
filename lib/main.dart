@@ -38,11 +38,9 @@ void main() {
               primaryColor: Colors.grey.shade700,
               primaryColorDark: Colors.grey.shade900,
               primaryColorLight: Colors.grey.shade400,
-              accentColor: Colors.red.shade900,
               bottomAppBarColor: Colors.grey.shade700,
               highlightColor: Colors.yellow,
               selectedRowColor: Colors.red.shade50,
-              buttonColor: Colors.red.shade900,
               elevatedButtonTheme: ElevatedButtonThemeData(
                 style: ElevatedButton.styleFrom(
                     primary: Colors.red.shade900,

@@ -1,6 +1,6 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:harrier_central/imports.dart';
 
 // lat lon of London Eye
 const num DEFAULT_LATITUDE = 51.5033;

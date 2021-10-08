@@ -76,7 +76,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> with SingleTickerProv
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
-                      indicatorColor: Theme.of(context).buttonColor,
+                      indicatorColor: Colors.red.shade900,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),

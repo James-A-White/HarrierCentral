@@ -48,7 +48,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   bool _autoValidate = false;
 
-  final String _deviceUserId = getStringPref(StringPrefsEnum.userId);
   String _email = getStringPref(StringPrefsEnum.email);
   int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
 
@@ -290,7 +289,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           itemBuilder: (_, int index) {
             return DecoratedBox(
               decoration: BoxDecoration(
-                color: index.isEven ? Colors.grey[50] : Theme.of(context).accentColor,
+                color: index.isEven ? Colors.grey[50] : Colors.red.shade900,
               ),
             );
           },
@@ -1160,7 +1159,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                   G0<AppModel>().connectionStatus,
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: _isDirty ? Theme.of(context).accentColor : Colors.grey,
+                      primary: _isDirty ? Colors.red.shade900 : Colors.grey,
                     ),
                     onPressed: () {
                       if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus) && _isDirty) {

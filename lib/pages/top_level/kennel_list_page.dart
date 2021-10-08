@@ -1,6 +1,6 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:harrier_central/imports.dart';
 
 final GlobalKey<KennelsListPageState> kennelListPageKey = GlobalKey<KennelsListPageState>();
 
@@ -63,7 +63,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         //onClose: () => print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Theme.of(context).accentColor,
+        backgroundColor: Colors.red.shade900,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),

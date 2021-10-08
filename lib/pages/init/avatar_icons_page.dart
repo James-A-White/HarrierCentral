@@ -46,7 +46,7 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
               itemBuilder: (BuildContext bldCtx, int index) {
                 return MaterialButton(
                     child: Container(
-                      color: widget.selectedAvatarIcon == index + 1 ? Theme.of(context).accentColor : Theme.of(context).scaffoldBackgroundColor,
+                      color: widget.selectedAvatarIcon == index + 1 ? Colors.red.shade900 : Theme.of(context).scaffoldBackgroundColor,
                       child: Padding(
                         padding: EdgeInsets.all(imagePadding),
                         child: Image.asset(

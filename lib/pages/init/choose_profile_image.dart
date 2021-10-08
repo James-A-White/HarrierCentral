@@ -1,7 +1,7 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
 
 import 'package:flutter/cupertino.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class ChooseProfileImage extends StatefulWidget {
@@ -92,7 +92,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         borderRadius: BorderRadius.circular(10.0),
         color: disabled == true ? Colors.grey[500] : Colors.yellow[100],
         border: Border.all(
-          color: Theme.of(context).accentColor,
+          color: Colors.red.shade900,
           width: 2, //                   <--- border width here
         ),
       ),
@@ -106,7 +106,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Radio<int>(
-                    activeColor: Theme.of(context).accentColor,
+                    activeColor: Colors.red.shade900,
                     value: selectedImageType.index,
                     groupValue: _selectedRadioValue,
                     onChanged: (int dummy) {
@@ -281,7 +281,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                     Positioned(
                       bottom: 20.0,
                       child: TextButton(
-                        style: TextButton.styleFrom(backgroundColor: _imageTypeSelection == SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor),
+                        style: TextButton.styleFrom(backgroundColor: _imageTypeSelection == SelectedImageTypeEnum.none ? Colors.grey : Colors.red.shade900),
                         //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
                         child: const Text('Next'),
                         onPressed: () {
@@ -333,7 +333,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             itemBuilder: (_, int index) {
               return DecoratedBox(
                 decoration: BoxDecoration(
-                  color: index.isEven ? Colors.white : Theme.of(context).accentColor,
+                  color: index.isEven ? Colors.white : Colors.red.shade900,
                 ),
               );
             },
