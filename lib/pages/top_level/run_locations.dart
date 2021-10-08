@@ -63,7 +63,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     }
 
     loadEvents();
-    loadKennels().then((void dummy) {
+    loadKennels().then((void _) {
       setState(() {});
     });
 
@@ -168,7 +168,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             onTap: () {
               textDescription = 'Showing all runs';
               viewMode = RunLocationsViewMode.all;
-              loadEvents().then((void dummy) {
+              loadEvents().then((void _) {
                 setState(() {});
               });
             },
@@ -181,7 +181,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             onTap: () {
               textDescription = 'Showing runs in last 90 days';
               viewMode = RunLocationsViewMode.recent;
-              loadEvents().then((void dummy) {
+              loadEvents().then((void _) {
                 setState(() {});
               });
             },
@@ -194,7 +194,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             onTap: () {
               textDescription = 'Showing all past runs';
               viewMode = RunLocationsViewMode.past;
-              loadEvents().then((void dummy) {
+              loadEvents().then((void _) {
                 setState(() {});
               });
             },
@@ -207,7 +207,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             onTap: () {
               textDescription = 'Showing runs you\'ve been at';
               viewMode = RunLocationsViewMode.myRuns;
-              loadEvents().then((void dummy) {
+              loadEvents().then((void _) {
                 setState(() {});
               });
             },
@@ -510,8 +510,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             MaterialPageRoute<dynamic>(
               builder: (BuildContext context) => RunDetailsPage(futureRun: run),
             ),
-          ).then((void dummy) {
-            // _refreshFromBackend(clearLocalTables: false).then((void dummy) {
+          ).then((void _) {
+            // _refreshFromBackend(clearLocalTables: false).then((void _) {
             //   setState(() {});
             // });
           });

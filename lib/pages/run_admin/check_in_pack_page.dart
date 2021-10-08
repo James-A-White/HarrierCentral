@@ -1,4 +1,6 @@
 // @dart=2.11
+import 'dart:math';
+
 import 'package:harrier_central/imports.dart';
 
 class CheckInPackModel {
@@ -139,7 +141,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     _searchController = TextEditingController();
     _searchFocusNode = FocusNode();
 
-    _getAllHashers().then((void dummy) {
+    _getAllHashers().then((void _) {
       // get all Hashers first, then build the tables from the backend
       _refreshSqlTablesFromBackend(true);
     });
@@ -170,7 +172,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Payments data synchronized $resultStr');
 
-    _refreshPackListFromTables(false).then((void dummy) {
+    _refreshPackListFromTables(false).then((void _) {
       _refreshCounters(true);
     });
   }
@@ -421,7 +423,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
     if (temp != _searchTypeText) {
       _highlightSearchType = true;
-      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void dummy) {
+      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void _) {
         setState(() {
           _highlightSearchType = false;
         });
@@ -497,7 +499,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             );
 
         retVal.then((List<dynamic> adHocData) {
-          _refreshPackListFromTables(false).then((void dummy) {
+          _refreshPackListFromTables(false).then((void _) {
             _refreshCounters(true);
           });
         });
@@ -543,7 +545,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             );
 
         retVal.then((List<dynamic> adHocData) {
-          _refreshPackListFromTables(false).then((void dummy) {
+          _refreshPackListFromTables(false).then((void _) {
             _refreshCounters(true);
             // if (name?.isNotEmpty ?? false) {
             //   searchText = name;
@@ -1424,7 +1426,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         );
 
     retVal.then((List<dynamic> adHocData) {
-      _refreshPackListFromTables(false).then((void dummy) {
+      _refreshPackListFromTables(false).then((void _) {
         _refreshCounters(true);
       });
     });
@@ -1444,6 +1446,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       amount = otherAmount;
     }
 
+    final Random random = Random.secure();
+    final List<int> values = List<int>.generate(6, (int i) => random.nextInt(26));
+    final String randomString = String.fromCharCodes(Iterable<int>.generate(values.length, (int i) => values[i] + 65));
+    String paymentReference;
+
     if (_useTerminalForPayment) {
       _useTerminalForPayment = false;
 
@@ -1461,6 +1468,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       }
 
       final String title = widget.eventAggregate.event.eventName + ' ' + packMember.nameForDisplay;
+      paymentReference = 'SU:' + randomString;
 
       isLoggedIn = await Sumup.isLoggedIn;
       if (isLoggedIn) {
@@ -1468,7 +1476,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           title: title,
           total: terminalAmount + .0,
           currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode ?? 'USD',
-          foreignTransactionId: widget.eventAggregate.event.eventId + '_' + packMember.hasherId,
+          foreignTransactionId: paymentReference,
           saleItemsCount: 1,
           skipSuccessScreen: true,
           tip: .0,
@@ -1478,13 +1486,27 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
         final SumupPaymentRequest request = SumupPaymentRequest(payment);
 
-        await Sumup.checkout(request);
+        final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
+        if (checkoutResult?.transactionCode != null) {
+          paymentReference = 'SU:' + checkoutResult.transactionCode;
+        }
       }
+    } else {
+      paymentReference = 'HC:' + randomString;
     }
 
     final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(widget.eventAggregate.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
-        ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event);
+    return paySrv.payForEvent(
+      widget.eventAggregate.event.eventId,
+      ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
+      ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
+      paymentType,
+      amount,
+      attendenceAtHash.value,
+      doPayForExtras,
+      AppDomainType.event,
+      paymentReference: paymentReference,
+    );
   }
 
   Widget buildPackListView() {
@@ -1547,7 +1569,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                       }
                     }
 
-                    Future<void>.delayed(const Duration(milliseconds: 10)).then((void dummy) {
+                    Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
                       _slidableController.activeState.close();
                     });
 

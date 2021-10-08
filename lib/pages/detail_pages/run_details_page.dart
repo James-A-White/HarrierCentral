@@ -46,7 +46,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                             eventId: _futureRun.event.eventId,
                           ),
                         ),
-                      ).then((void dummy) {
+                      ).then((void _) {
                         if (widget.refreshPage != null) {
                           widget.refreshPage().then((RunDetailsAggregate rda) {
                             setState(() {

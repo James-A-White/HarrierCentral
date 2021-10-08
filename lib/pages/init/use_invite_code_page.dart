@@ -257,7 +257,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
                             profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                            IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
+                            IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void _) {
                               Navigator.pushReplacement<dynamic, dynamic>(
                                   context,
                                   MaterialPageRoute<dynamic>(

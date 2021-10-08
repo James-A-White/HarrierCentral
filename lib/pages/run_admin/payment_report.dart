@@ -93,7 +93,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Payments data synchronized $resultStr');
 
-    _refreshListsFromTable().then((void dummy) {
+    _refreshListsFromTable().then((void _) {
       setState(() {
         _isLoading = false;
         refreshTotals();
@@ -416,7 +416,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                             });
                                             if (needsConfirm) {
                                               payForEvent(filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
-                                                _refreshListsFromTable().then((void dummy) {
+                                                _refreshListsFromTable().then((void _) {
                                                   setState(() {
                                                     refreshTotals();
                                                   });
@@ -553,7 +553,7 @@ class PaymentReportState extends State<PaymentReportPage> {
             return popup;
           }).then((dynamic payForExtras) {
         payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
-          _refreshListsFromTable().then((void dummy) {
+          _refreshListsFromTable().then((void _) {
             setState(() {
               refreshTotals();
               BankTransferQr.showBankTransferSnackbar(
@@ -565,7 +565,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     } else {
       // there are no extras so just pay for the run without any extras dialog
       payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForRunOnly).then((List<dynamic> results) {
-        _refreshListsFromTable().then((void dummy) {
+        _refreshListsFromTable().then((void _) {
           setState(() {
             refreshTotals();
             BankTransferQr.showBankTransferSnackbar(
@@ -632,7 +632,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                   showExtrasDialog(context, _scaffoldKey.currentState, paymentValue.transactionType, item, paymentValue.transactionValue);
 
                   // payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
-                  //   _refreshListsFromTable().then((void dummy) {
+                  //   _refreshListsFromTable().then((void _) {
                   //     setState(() {
                   //       refreshTotals();
                   //       BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
@@ -649,7 +649,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                   item.extensions.isLoading = true;
                 });
                 payForEvent(item, paymentNotPaid.value, 0).then((List<dynamic> results) {
-                  _refreshListsFromTable().then((void dummy) {
+                  _refreshListsFromTable().then((void _) {
                     setState(() {
                       refreshTotals();
                     });
@@ -660,7 +660,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                   item.extensions.isLoading = true;
                 });
                 payForEvent(item, paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
-                  _refreshListsFromTable().then((void dummy) {
+                  _refreshListsFromTable().then((void _) {
                     setState(() {
                       refreshTotals();
                     });

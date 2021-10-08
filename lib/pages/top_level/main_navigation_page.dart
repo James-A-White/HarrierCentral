@@ -467,7 +467,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       // this extra setState is here to ensure that the FAB
                       // displays properly when the map page is showing
                       if ((!_isFlipped) && (currentPage == 2)) {
-                        Future<void>.delayed(const Duration(milliseconds: 250)).then((void dummy) {
+                        Future<void>.delayed(const Duration(milliseconds: 250)).then((void _) {
                           setState(() {});
                         });
                       }

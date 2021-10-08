@@ -22,7 +22,7 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
   void initState() {
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..addListener(listener)
-      ..initialize().then((_) {
+      ..initialize().then((void _) {
         setState(() {
           _chewieController = ChewieController(
             videoPlayerController: _controller,
@@ -64,7 +64,7 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
       // floatingActionButton: FloatingActionButton(
       //   onPressed: () {
       //     setState(() {
-      //       _controller.value.isPlaying ? _controller.pause() : _controller.play().then((void dummy) {});
+      //       _controller.value.isPlaying ? _controller.pause() : _controller.play().then((void _) {});
       //     });
       //   },
       //   child: Icon(
@@ -96,8 +96,8 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
 //   void initState() {
 //     _controller = VideoPlayerController.network(widget.videoUrl)
 //       ..addListener(listener)
-//       ..initialize().then((_) {
-//         _controller.play().then((void dummy){
+//       ..initialize().then((void _) {
+//         _controller.play().then((void _){
 
 //         });
 //         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
@@ -135,7 +135,7 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
 //             setState(() {
 //               _controller.value.isPlaying
 //                   ? _controller.pause()
-//                   : _controller.play().then((void dummy){
+//                   : _controller.play().then((void _){
 
 //                   });
 //             });

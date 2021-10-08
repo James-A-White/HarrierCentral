@@ -37,9 +37,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     _tabController.addListener(() {
       setState(() {});
     });
-    _refreshSqlTablesFromBackend(true).then((void dummy) {
+    _refreshSqlTablesFromBackend(true).then((void _) {
       _refreshList(selectedDay: _focusedDay?.value ?? DateTime.now(), focusedDay: _focusedDay?.value ?? DateTime.now());
-      Future<void>.delayed(const Duration(milliseconds: 500)).then((void dummy) {
+      Future<void>.delayed(const Duration(milliseconds: 500)).then((void _) {
         setState(() {
           // force the buttons on the calendar to be drawn
         });
@@ -201,7 +201,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   int pageIndex = 1;
 
   // void refreshListFromDb(bool showLoadingIndicator) {
-  //   model.getUserEventsFromBackend(showLoadingIndicator, 0, 1,1).then((void dummy) {
+  //   model.getUserEventsFromBackend(showLoadingIndicator, 0, 1,1).then((void _) {
   //     myRunCount = model.userEventList
   //         .where(
   //             (Event ueh) => ueh.attendenceState >= attendenceAtHash.value)
@@ -463,7 +463,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                             rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
                             _isLoading = false;
                             return rda;
-                          }))).then((void dummy) {
+                          }))).then((void _) {
                 _refreshSqlTablesFromBackend(true);
               });
             }

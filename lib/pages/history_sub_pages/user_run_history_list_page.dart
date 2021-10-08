@@ -562,7 +562,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                         );
 
                                     retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true).then((void dummy) {});
+                                      refreshRunHistoryFromTable(true).then((void _) {});
                                     });
                                   } else {
                                     item.isLoading = true;
@@ -577,7 +577,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                         );
 
                                     retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true).then((void dummy) {});
+                                      refreshRunHistoryFromTable(true).then((void _) {});
                                     });
                                   }
                                 } else {
@@ -595,7 +595,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                       );
 
                                   retVal.then((List<dynamic> adHocData) {
-                                    refreshRunHistoryFromTable(true).then((void dummy) {});
+                                    refreshRunHistoryFromTable(true).then((void _) {});
                                   });
                                 }
                               });

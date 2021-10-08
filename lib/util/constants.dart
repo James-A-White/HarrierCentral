@@ -2,6 +2,8 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
+const String RANDOM_STRING_LIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 // lat lon of London Eye
 const num DEFAULT_LATITUDE = 51.5033;
 const num DEFAULT_LONGITUDE = 0.1195;

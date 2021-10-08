@@ -319,7 +319,7 @@ class KennelListItemState extends State<KennelsListItem> {
                                 .updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: retVal.value, isHomeKennel: isHomeKennel)
                                 .then((List<dynamic> queryResults) {
                               setState(() {
-                                setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId ?? '' : '').then((void dummy) {
+                                setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId ?? '' : '').then((void _) {
                                   widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
                                       queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                                 });

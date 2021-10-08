@@ -363,7 +363,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       if (_eventAggregate.event.eventId == null) {
         IveCoreUtilities.showAlert(context, 'Please save Details first',
                 'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK')
-            .then((void dummy) {
+            .then((void _) {
           _tabController.animateTo(0);
         });
       } else {
@@ -951,7 +951,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     if (_eventAggregate.event.eventId == null) {
       IveCoreUtilities.showAlert(context, 'Please save Details first',
               'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK')
-          .then((void dummy) {
+          .then((void _) {
         _tabController.animateTo(0);
       });
     } else {
@@ -1128,7 +1128,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                               if (_eventAggregate?.event?.eventId == null) {
                                 IveCoreUtilities.showAlert(context, 'Please save details first',
                                         'When creating a new event, please save the information on the Details tab before saving the location', 'OK')
-                                    .then((void dummy) {
+                                    .then((void _) {
                                   _tabController.animateTo(0);
                                 });
                               } else {

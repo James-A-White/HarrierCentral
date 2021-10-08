@@ -491,7 +491,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                                 _eventAggregate = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, _userId);
                                 _isLoading = false;
                                 return _eventAggregate;
-                              }))).then((void dummy) {
+                              }))).then((void _) {
                     _getRunDetails(widget.eventId);
                   });
                 },

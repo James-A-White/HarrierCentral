@@ -568,7 +568,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 50);
 
-      _imageFromFacebook.then((void dummy) {
+      _imageFromFacebook.then((void _) {
         setState(() {});
       });
     }

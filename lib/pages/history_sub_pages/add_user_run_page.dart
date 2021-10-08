@@ -197,8 +197,8 @@
 // //             historicalCountIsEstimate: historicalCountIsEstimate,
 // //             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
-// //         apiCall.then((void dummy) async {
-// //           refreshUserDataFromTable(false).then((void dummy) {
+// //         apiCall.then((void _) async {
+// //           refreshUserDataFromTable(false).then((void _) {
 // //             setState(() {
 // //               if (widget.pageType == EnumMyProfilePageType.myProfile) {
 // //                 setStringPref(StringPrefsEnum.profilePhotoUrl, hasher.photo);

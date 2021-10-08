@@ -268,7 +268,7 @@
 //                                     if (result['result'] != 'failed') {
 //                                       userName = getStringPref(StringPrefsEnum.displayName);
 
-//                                       IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
+//                                       IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void _) {
 //                                         Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
 //                                       });
 //                                     } else {
@@ -593,7 +593,7 @@
 //       final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, scanResult);
 //       apiCall.then((Map<String, String> result) {
 //         if (result != null) {
-//           Future<dynamic>.delayed(const Duration(milliseconds: 3500)).then((void dummy) {
+//           Future<dynamic>.delayed(const Duration(milliseconds: 3500)).then((void _) {
 //             if (result['result'] == 'success') {
 //               setState(() => _scanState = 0);
 //               Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));

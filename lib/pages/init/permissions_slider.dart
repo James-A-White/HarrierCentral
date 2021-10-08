@@ -192,7 +192,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
 
     if (activeTab == 2) {
       final NotificationSupport notifications = NotificationSupport();
-      notifications.configureNotifications(false).then((void dummy) {
+      notifications.configureNotifications(false).then((void _) {
         activeTab = 3;
         goToTab(3);
       });

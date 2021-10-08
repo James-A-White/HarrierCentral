@@ -32,9 +32,9 @@ class KennelsListPageState extends State<KennelsListPage> {
 
     // NOTE: refreshFromTable will run asynchronously so don't expect the
     // tables to be populated immediately when this call returns.
-    _refreshFromTable(false).then((void dummy) {
+    _refreshFromTable(false).then((void _) {
       setState(() {});
-      // Future<dynamic>.delayed(const Duration(seconds: 1)).then((void dummy) {
+      // Future<dynamic>.delayed(const Duration(seconds: 1)).then((void _) {
       //   setState(() {});
       // });
     });
@@ -76,7 +76,7 @@ class KennelsListPageState extends State<KennelsListPage> {
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
                 _sortByFollowingAndDistance = EnumSortKennelListBy.distance;
-                _refreshFromTable(true).then((void dummy) {
+                _refreshFromTable(true).then((void _) {
                   setState(() {});
                 });
               },
@@ -89,7 +89,7 @@ class KennelsListPageState extends State<KennelsListPage> {
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               _sortByFollowingAndDistance = EnumSortKennelListBy.kennelName;
-              _refreshFromTable(true).then((void dummy) {
+              _refreshFromTable(true).then((void _) {
                 setState(() {});
               });
             },
@@ -101,7 +101,7 @@ class KennelsListPageState extends State<KennelsListPage> {
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               _sortByFollowingAndDistance = EnumSortKennelListBy.cityName;
-              _refreshFromTable(true).then((void dummy) {
+              _refreshFromTable(true).then((void _) {
                 setState(() {});
               });
             },
@@ -113,7 +113,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           //   labelStyle: const TextStyle(fontSize: 18.0),
           //   onTap: () {
           //     _sortByFollowingAndDistance = EnumSortKennelListBy.regionName;
-          //     _refreshFromTable(true).then((void dummy) {
+          //     _refreshFromTable(true).then((void _) {
           //       setState(() {});
           //     });
           //   },
@@ -125,7 +125,7 @@ class KennelsListPageState extends State<KennelsListPage> {
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               _sortByFollowingAndDistance = EnumSortKennelListBy.countryRegionName;
-              _refreshFromTable(true).then((void dummy) {
+              _refreshFromTable(true).then((void _) {
                 setState(() {});
               });
             },
@@ -364,7 +364,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                             builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
                                           ),
                                         )
-                                            .then((void dummy) async {
+                                            .then((void _) async {
                                           final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(
                                               SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable,
                                               true);

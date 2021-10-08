@@ -168,9 +168,19 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
 }
 
 class PaymentsService {
-  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue,
-      EnumPayForExtras<int> doPayForExtras, AppDomainType appDomainType,
-      {num surcharge, String paymentProvider}) async {
+  Future<List<dynamic>> payForEvent(
+    String eventId,
+    String hasherId,
+    String hasherEventMapId,
+    int paymentType,
+    num paymentAmount,
+    int minimumAttendenceValue,
+    EnumPayForExtras<int> doPayForExtras,
+    AppDomainType appDomainType, {
+    num surcharge,
+    String paymentProvider,
+    String paymentReference,
+  }) async {
     List<dynamic> results = <dynamic>[];
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
@@ -245,7 +255,8 @@ class PaymentsService {
       'doPayForExtras': doPayForExtras.value.toString(),
       'surcharge': surcharge == null ? null : surcharge.toString(),
       'paymentProvider': paymentProvider ?? '',
-      'appDomainType': appDomainStr
+      'appDomainType': appDomainStr,
+      'paymentReference': paymentReference,
     });
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_payment', body);

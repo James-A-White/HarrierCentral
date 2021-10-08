@@ -132,7 +132,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         ),
       ),
     );
-    refreshKennelMembersFromTable(true).then((void dummy) {
+    refreshKennelMembersFromTable(true).then((void _) {
       _refreshCounters(true);
       setState(() {});
     });
@@ -311,7 +311,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
                 _sortBy = sortBySpeedDialType;
-                refreshKennelMembersFromTable(true).then((void dummy) {
+                refreshKennelMembersFromTable(true).then((void _) {
                   _refreshCounters(true);
                 });
                 setSortBySpeedDial();
@@ -344,8 +344,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     srv
                         .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
                             monthsToAddToMembership: widget.kennelListAggregate.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId)
-                        .then((void dummy) {
-                      refreshKennelMembersFromTable(true).then((void dummy) {
+                        .then((void _) {
+                      refreshKennelMembersFromTable(true).then((void _) {
                         _refreshCounters(true);
                       });
                     });
@@ -370,7 +370,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     ),
                   ),
                 ).then((HashersModel result) {
-                  refreshKennelMembersFromTable(true).then((void dummy) {
+                  refreshKennelMembersFromTable(true).then((void _) {
                     _refreshCounters(true);
                   });
                 });
@@ -606,7 +606,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     showFilter = !showFilter;
                     searchController.text = '';
                     searchText = '';
-                    refreshKennelMembersFromTable(true).then((void dummy) {
+                    refreshKennelMembersFromTable(true).then((void _) {
                       _refreshCounters(true);
                       setState(() {});
                     });
@@ -719,7 +719,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
     if (temp != searchTypeText) {
       highlightSearchType = true;
-      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void dummy) {
+      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void _) {
         setState(() {
           highlightSearchType = false;
         });
@@ -795,7 +795,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
             label: 'Member',
             index: 0,
             onTap: () {
-              refreshKennelMembersFromTable(true).then((void dummy) {
+              refreshKennelMembersFromTable(true).then((void _) {
                 _refreshCounters(true);
                 setState(() {});
               });
@@ -807,7 +807,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
             label: 'Follow',
             index: 1,
             onTap: () {
-              refreshKennelMembersFromTable(true).then((void dummy) {
+              refreshKennelMembersFromTable(true).then((void _) {
                 _refreshCounters(true);
                 setState(() {});
               });
@@ -820,7 +820,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           //   index: 2,
           //   useTriState: true,
           //   onTap: () {
-          //     refreshKennelMembersFromTable(true).then((void dummy) {
+          //     refreshKennelMembersFromTable(true).then((void _) {
           //       _refreshCounters(true);
           //       setState(() {});
           //     });
@@ -833,7 +833,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
             index: 3,
             useTriState: true,
             onTap: () {
-              refreshKennelMembersFromTable(true).then((void dummy) {
+              refreshKennelMembersFromTable(true).then((void _) {
                 _refreshCounters(true);
                 setState(() {});
               });
@@ -882,7 +882,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         widget.kennelListAggregate.kennel.kennelId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Kennel member data synchronized $resultStr');
-    refreshKennelMembersFromTable(true).then((void dummy) {
+    refreshKennelMembersFromTable(true).then((void _) {
       _refreshCounters(true);
       setState(() {});
     });
@@ -895,8 +895,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     setState(() {});
     srv
         .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId)
-        .then((void dummy) {
-      refreshKennelMembersFromTable(true).then((void dummy) {
+        .then((void _) {
+      refreshKennelMembersFromTable(true).then((void _) {
         item.memberInfoBeingUpdated = false;
         _refreshCounters(true);
         setState(() {});
@@ -913,8 +913,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     srv
         .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
             targetUserId: item.hasherId, appAccessFlags: appAccessFlags, mismanagementRoles: mismanagementRoles)
-        .then((void dummy) {
-      refreshKennelMembersFromTable(true).then((void dummy) {
+        .then((void _) {
+      refreshKennelMembersFromTable(true).then((void _) {
         item.memberInfoBeingUpdated = false;
         _refreshCounters(true);
         setState(() {});
@@ -930,8 +930,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   //   srv
   //       .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel,
   //           targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel)
-  //       .then((void dummy) {
-  //     refreshKennelMembersFromTable(true).then((void dummy) {
+  //       .then((void _) {
+  //     refreshKennelMembersFromTable(true).then((void _) {
   //       item.homeKennelBeingUpdated = false;
   //       _refreshCounters(true);
   //       setState(() {});

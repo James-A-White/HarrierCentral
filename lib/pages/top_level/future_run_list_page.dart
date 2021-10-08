@@ -78,8 +78,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     searchController.text = '';
     searchText = '';
 
-    _refreshFromBackend().then((void dummy) {
-      refreshFromTable(true).then((void dummy) {
+    _refreshFromBackend().then((void _) {
+      refreshFromTable(true).then((void _) {
         setState(() {});
       });
     });
@@ -100,7 +100,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 value: searchAllRuns,
                 onChanged: (bool value) {
                   searchAllRuns = !searchAllRuns;
-                  refreshFromTable(true).then((void dummy) {
+                  refreshFromTable(true).then((void _) {
                     setState(() {});
                   });
                 },
@@ -358,8 +358,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                               },
                             ),
                           ),
-                        ).then((void dummy) {
-                          _refreshFromBackend(clearLocalTables: false).then((void dummy) {
+                        ).then((void _) {
+                          _refreshFromBackend(clearLocalTables: false).then((void _) {
                             setState(() {});
                           });
                         });

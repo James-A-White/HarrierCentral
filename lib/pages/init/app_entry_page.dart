@@ -69,7 +69,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
       // we can't operate in offline mode because there is no data in the cache
       IveCoreUtilities.showAlert(
               context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
-          .then((void dummy) async {
+          .then((void _) async {
         await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
         return null;
       });
@@ -122,7 +122,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
-                    IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
+                    IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
                       Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
                     });
                   } else {

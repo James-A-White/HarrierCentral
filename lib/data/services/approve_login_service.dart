@@ -88,7 +88,7 @@ class ApproveLoginService {
   Future<Response> _onTimeout(BuildContext context) {
     IveCoreUtilities.showAlert(
             context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
-        .then((void dummy) async {
+        .then((void _) async {
       await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
     });
 

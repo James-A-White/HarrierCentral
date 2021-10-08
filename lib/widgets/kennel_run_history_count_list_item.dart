@@ -29,7 +29,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                   );
                 },
               ),
-            ).then((void dummy) {
+            ).then((void _) {
               refreshCounters();
             });
           },

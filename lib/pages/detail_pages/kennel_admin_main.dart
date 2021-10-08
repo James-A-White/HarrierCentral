@@ -28,7 +28,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     }
 
     G0<TableModel>().syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagsAllData, false, widget.kennelAggregateItem.kennel.kennelId).then((bool result) {
-      _refreshFromTable(true).then((void dummy) {
+      _refreshFromTable(true).then((void _) {
         setState(() {
           final String resultStr = result ? 'successfully' : 'unsuccessfully';
           print('Event admin data synchronized $resultStr');
@@ -315,8 +315,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                           pageType: FilterEventsPageType.past,
                                                         ),
                                                       ),
-                                                    ).then((void dummy) {
-                                                      _refreshFromTable(true).then((void dummy) {
+                                                    ).then((void _) {
+                                                      _refreshFromTable(true).then((void _) {
                                                         setState(() {});
                                                       });
                                                     });
@@ -361,8 +361,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                           pageType: FilterEventsPageType.future,
                                                         ),
                                                       ),
-                                                    ).then((void dummy) {
-                                                      _refreshFromTable(true).then((void dummy) {
+                                                    ).then((void _) {
+                                                      _refreshFromTable(true).then((void _) {
                                                         setState(() {});
                                                       });
                                                     });
@@ -825,8 +825,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           MaterialPageRoute<dynamic>(
             builder: (BuildContext context) => RunDetailsPage(futureRun: s),
           ),
-        ).then((void dummy) {
-          // _refreshFromBackend(clearLocalTables: false).then((void dummy) {
+        ).then((void _) {
+          // _refreshFromBackend(clearLocalTables: false).then((void _) {
           //   setState(() {});
           // });
         });

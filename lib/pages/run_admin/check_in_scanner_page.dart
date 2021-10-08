@@ -296,7 +296,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
               //
               if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
                 //scanUserBarcode();
-                // Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
+                // Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
                 //   scanUserBarcode();
                 // });
               } else {
@@ -433,7 +433,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           }
           setState(() {});
 
-          Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
+          Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
             //scanUserBarcode();
           });
         }
