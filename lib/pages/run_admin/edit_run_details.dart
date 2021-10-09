@@ -97,11 +97,11 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       _eventDatetimeController.text = _eventAggregate.event.eventStartDatetime.toString();
       _locationOneLineDescController.text = _eventAggregate.event.locationOneLineDesc;
 
-      _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '<auto>';
-      _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toString() ?? '<default>';
-      _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toString() ?? '<default>';
-      _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toString() ?? '<none>';
-      _extrasDescriptionController.text = _eventAggregate.event.extrasDescription ?? '<none>';
+      _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
+      _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toString() ?? '';
+      _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toString() ?? '';
+      _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toString() ?? '';
+      _extrasDescriptionController.text = _eventAggregate.event.extrasDescription ?? '';
       _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
     }
   }
@@ -337,9 +337,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             useFbRunDetails: 0,
             isCountedRun: _eventAggregate.event.isCountedRun == 1,
             kennelId: _eventAggregate.event.kennelId,
-            eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForMembersController.text),
-            eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
-            eventPriceForExtras: _eventPriceForExtrasController.text == '<none>' ? -2 : num.tryParse(_eventPriceForExtrasController.text),
+            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForMembersController.text),
+            eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
+            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : num.tryParse(_eventPriceForExtrasController.text),
           )
               .then((String eventId) async {
             _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
@@ -377,13 +377,13 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             nSvc
                 .addEditEvent(
               eventId: _eventAggregate.event.eventId,
-              eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForMembersController.text),
-              eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
+              eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForMembersController.text),
+              eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
               // note for "auto" the value we send to the server is '0' because this will
               // remove any previous absoluteEventNumber that is stored there
-              absoluteEventNumber: _absoluteEventNumberController.text == '<auto>' ? 0 : num.tryParse(_absoluteEventNumberController.text),
-              eventPriceForExtras: _eventPriceForExtrasController.text == '<none>' ? -2 : num.tryParse(_eventPriceForExtrasController.text),
-              extrasDescription: _extrasDescriptionController.text,
+              absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : num.tryParse(_absoluteEventNumberController.text),
+              eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : num.tryParse(_eventPriceForExtrasController.text),
+              extrasDescription: _extrasDescriptionController.text.isEmpty ? '<none>' : _extrasDescriptionController.text,
               isCountedRun: _isCountedRun,
               isVisible: _isVisible,
               isPromotedEvent: _isPromotedEvent,
@@ -1263,35 +1263,35 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                         color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
                         margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                         child: TextFormField(
-                          onChanged: (String text) {
-                            if ((text == null) || (text.isEmpty)) {
-                              _absoluteEventNumberController.text = '<auto>';
-                            } else if ((text.length > 6) && (text.contains('<auto>'))) {
-                              _absoluteEventNumberController.text = _absoluteEventNumberController.text.replaceAll('<auto>', '');
-                              _absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: _absoluteEventNumberController.text.length));
-                            }
-                          },
+                          // onChanged: (String text) {
+                          //   if ((text == null) || (text.isEmpty)) {
+                          //     _absoluteEventNumberController.text = '<auto>';
+                          //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
+                          //     _absoluteEventNumberController.text = _absoluteEventNumberController.text.replaceAll('<auto>', '');
+                          //     _absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: _absoluteEventNumberController.text.length));
+                          //   }
+                          // },
                           maxLines: 1,
                           focusNode: _focusNodeAbsoluteEventNumber,
                           controller: _absoluteEventNumberController,
-                          validator: (String val) {
-                            if (val.isEmpty) {
-                              return 'Please provide an event number or enter \'<auto>\'';
-                            } else {
-                              return null;
-                            }
-                          },
+                          // validator: (String val) {
+                          //   if (val.isEmpty) {
+                          //     return 'Please provide an event number or leave blank for auto numbering';
+                          //   } else {
+                          //     return null;
+                          //   }
+                          // },
                           keyboardType: const TextInputType.numberWithOptions(),
                           textCapitalization: TextCapitalization.sentences,
                           style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                           decoration: InputDecoration(
-                            labelText: 'Event Number (or \'<auto>\')',
+                            labelText: 'Event Number',
                             fillColor: Colors.red,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                               borderSide: const BorderSide(),
                             ),
-                            hintText: 'Event Number (or \'<auto>\')',
+                            hintText: '<use auto numbering>',
                             hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                           ),
                         ),
@@ -1314,14 +1314,14 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 color: _focusNodeEventPriceForMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
                                 margin: const EdgeInsets.only(right: 12.5),
                                 child: TextFormField(
-                                  onChanged: (String text) {
-                                    if ((text == null) || (text.isEmpty)) {
-                                      _eventPriceForMembersController.text = '<default>';
-                                    } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                      _eventPriceForMembersController.text = _eventPriceForMembersController.text.replaceAll('<default>', '');
-                                      _eventPriceForMembersController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForMembersController.text.length));
-                                    }
-                                  },
+                                  // onChanged: (String text) {
+                                  //   if ((text == null) || (text.isEmpty)) {
+                                  //     //_eventPriceForMembersController.text = '';
+                                  //   } else if ((text.length > 9) && (text.contains('<default>'))) {
+                                  //     // _eventPriceForMembersController.text = _eventPriceForMembersController.text.replaceAll('<default>', '');
+                                  //     // _eventPriceForMembersController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForMembersController.text.length));
+                                  //   }
+                                  // },
                                   maxLines: 1,
                                   focusNode: _focusNodeEventPriceForMembers,
                                   controller: _eventPriceForMembersController,
@@ -1329,13 +1329,13 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                   textCapitalization: TextCapitalization.sentences,
                                   style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                                   decoration: InputDecoration(
-                                    labelText: 'H-cash (members)',
+                                    labelText: 'Member price',
                                     fillColor: Colors.red,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
                                       borderSide: const BorderSide(),
                                     ),
-                                    hintText: 'H-cash (members)',
+                                    hintText: '<use default>',
                                     hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                   ),
                                 ),
@@ -1347,15 +1347,15 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 color: _focusNodeEventPriceForNonMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
                                 margin: const EdgeInsets.only(left: 12.5),
                                 child: TextFormField(
-                                  onChanged: (String text) {
-                                    if ((text == null) || (text.isEmpty)) {
-                                      _eventPriceForNonMembersController.text = '<default>';
-                                    } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                      _eventPriceForNonMembersController.text = _eventPriceForNonMembersController.text.replaceAll('<default>', '');
-                                      _eventPriceForNonMembersController.selection =
-                                          TextSelection.fromPosition(TextPosition(offset: _eventPriceForNonMembersController.text.length));
-                                    }
-                                  },
+                                  // onChanged: (String text) {
+                                  //   if ((text == null) || (text.isEmpty)) {
+                                  //     //_eventPriceForNonMembersController.text = '<default>';
+                                  //   } else if ((text.length > 9) && (text.contains('<default>'))) {
+                                  //     _eventPriceForNonMembersController.text = _eventPriceForNonMembersController.text.replaceAll('<default>', '');
+                                  //     _eventPriceForNonMembersController.selection =
+                                  //         TextSelection.fromPosition(TextPosition(offset: _eventPriceForNonMembersController.text.length));
+                                  //   }
+                                  // },
                                   maxLines: 1,
                                   focusNode: _focusNodeEventPriceForNonMembers,
                                   controller: _eventPriceForNonMembersController,
@@ -1363,13 +1363,13 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                   textCapitalization: TextCapitalization.sentences,
                                   style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                                   decoration: InputDecoration(
-                                    labelText: 'H-cash (non-members)',
+                                    labelText: 'Non-member price',
                                     fillColor: Colors.red,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
                                       borderSide: const BorderSide(),
                                     ),
-                                    hintText: 'H-cash (non-members)',
+                                    hintText: '<use default>',
                                     hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                   ),
                                 ),
@@ -1396,14 +1396,14 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 color: _focusNodeEventPriceForExtras.hasFocus ? Colors.yellow.shade50 : Colors.white,
                                 margin: const EdgeInsets.only(right: 12.5),
                                 child: TextFormField(
-                                  onChanged: (String text) {
-                                    if ((text == null) || (text.isEmpty)) {
-                                      _eventPriceForExtrasController.text = '<none>';
-                                    } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                      _eventPriceForExtrasController.text = _eventPriceForExtrasController.text.replaceAll('<none>', '');
-                                      _eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForExtrasController.text.length));
-                                    }
-                                  },
+                                  // onChanged: (String text) {
+                                  //   if ((text == null) || (text.isEmpty)) {
+                                  //     _eventPriceForExtrasController.text = '<none>';
+                                  //   } else if ((text.length > 6) && (text.contains('<none>'))) {
+                                  //     _eventPriceForExtrasController.text = _eventPriceForExtrasController.text.replaceAll('<none>', '');
+                                  //     _eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForExtrasController.text.length));
+                                  //   }
+                                  // },
                                   maxLines: 1,
                                   focusNode: _focusNodeEventPriceForExtras,
                                   controller: _eventPriceForExtrasController,
@@ -1417,7 +1417,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                       borderRadius: BorderRadius.circular(10.0),
                                       borderSide: const BorderSide(),
                                     ),
-                                    hintText: 'Price for extras',
+                                    hintText: '<none>',
                                     hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                   ),
                                 ),
@@ -1429,14 +1429,14 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 color: _focusNodeExtrasDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
                                 margin: const EdgeInsets.only(left: 12.5),
                                 child: TextFormField(
-                                  onChanged: (String text) {
-                                    if ((text == null) || (text.isEmpty)) {
-                                      _extrasDescriptionController.text = '<none>';
-                                    } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                      _extrasDescriptionController.text = _extrasDescriptionController.text.replaceAll('<none>', '');
-                                      _extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _extrasDescriptionController.text.length));
-                                    }
-                                  },
+                                  // onChanged: (String text) {
+                                  //   if ((text == null) || (text.isEmpty)) {
+                                  //     _extrasDescriptionController.text = '<none>';
+                                  //   } else if ((text.length > 6) && (text.contains('<none>'))) {
+                                  //     _extrasDescriptionController.text = _extrasDescriptionController.text.replaceAll('<none>', '');
+                                  //     _extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _extrasDescriptionController.text.length));
+                                  //   }
+                                  // },
                                   maxLines: 1,
                                   focusNode: _focusNodeExtrasDescription,
                                   controller: _extrasDescriptionController,
@@ -1444,13 +1444,13 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                   textCapitalization: TextCapitalization.sentences,
                                   style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                                   decoration: InputDecoration(
-                                    labelText: 'Extras description',
+                                    labelText: 'Description',
                                     fillColor: Colors.red,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
                                       borderSide: const BorderSide(),
                                     ),
-                                    hintText: 'Extras description',
+                                    hintText: '<none>',
                                     hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                   ),
                                 ),
