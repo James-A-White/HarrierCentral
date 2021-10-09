@@ -368,14 +368,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
         print('Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}');
 
-        filterPackListResults();
+        _filterPackListResults();
       });
     } catch (e) {
       print(e);
     }
   }
 
-  void filterPackListResults() {
+  void _filterPackListResults() {
     //bool showSnackbar = false;
     //bool searchingAllHashers = false;
 
@@ -396,7 +396,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               ((_filterValues[5] == 0) || (_filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (_filterValues[5] == 1 && (a.isMember ?? 0) == 1)) &&
               ((_filterValues[6] == 0) ||
                   (_filterValues[6] == -1) ||
-                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0))))))
+                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0))))))
           .toList();
     } else {
       _filteredList = <CheckInPackModel>[];
@@ -459,7 +459,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
         if (_packList != null) {
           final List<CheckInPackModel> specialRunNumbers =
-              _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
+              _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
           _drinkCount = specialRunNumbers.length;
         } else {
           _drinkCount = 0;
@@ -564,7 +564,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 if ((scrollIndex ?? -1) >= 0) {
                   final CheckInPackModel hasher = _packList[scrollIndex];
                   if (hasher != null) {
-                    final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, hasher);
+                    final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, hasher);
 
                     ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
                     ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
@@ -590,7 +590,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  AppBar getAppBar(String title) {
+  AppBar _getAppBar(String title) {
     return AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
@@ -603,7 +603,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  Container searchBar() {
+  Container _searchBar() {
     return Container(
       decoration: const BoxDecoration(
         // border: new Border.all(width: 1.0, color: Colors.black),
@@ -663,7 +663,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             onChanged: (String text) {
                               setState(() {
                                 _searchText = text;
-                                filterPackListResults();
+                                _filterPackListResults();
                               });
                             },
                             focusNode: _searchFocusNode,
@@ -690,7 +690,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               _searchController.text = '';
                               _searchText = '';
                               setState(() {
-                                filterPackListResults();
+                                _filterPackListResults();
                               });
                             },
                           ),
@@ -720,7 +720,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  Container filterBar() {
+  Container _filterBar() {
     return Container(
       decoration: const BoxDecoration(
         // border: new Border.all(width: 1.0, color: Colors.black),
@@ -811,7 +811,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  void filterOptionsPopup() {
+  void _filterOptionsPopup() {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Hashers not here yet',
@@ -967,7 +967,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             label: 'Preset Filters',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
-              filterOptionsPopup();
+              _filterOptionsPopup();
             },
           ),
           // SpeedDialChild(
@@ -1037,7 +1037,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 ),
               ])),
       ),
-      appBar: getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : (widget?.eventAggregate?.event?.eventName ?? '') + ' Check In'),
+      appBar: _getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : (widget?.eventAggregate?.event?.eventName ?? '') + ' Check In'),
       body: _isLoading
           ? HcCircularProgressIndicator(key: UniqueKey())
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
@@ -1047,10 +1047,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   ? Positioned(top: (_filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: _getAddHasherBlock())
                   : PositionedTransition(
                       rect: _hasherListAnimation,
-                      child: Container(key: _packListBoxKey, height: 300, child: buildPackListView()),
+                      child: Container(key: _packListBoxKey, height: 300, child: _buildPackListView()),
                     ),
-              SlideTransition(position: _filterPanelAnimation, child: filterBar()),
-              Positioned(top: 0, child: searchBar()),
+              SlideTransition(position: _filterPanelAnimation, child: _filterBar()),
+              Positioned(top: 0, child: _searchBar()),
             ]),
     );
   }
@@ -1073,7 +1073,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   //   return snackbar;
   // }
 
-  SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, CheckInPackModel packMember) {
+  SnackBar _buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, CheckInPackModel packMember) {
     final SnackBar snackbar = PaymentSnackBar(
       context: context,
       eventAggregate: widget.eventAggregate,
@@ -1165,9 +1165,114 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
 
     final List<dynamic> results = await _processPayment(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras);
+    if (results != null) {
+      if ((results[0]['terminalWasUsedForPayment'] == null) || (!results[0]['terminalWasUsedForPayment'])) {
+        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
+      }
+    }
     await _refreshPackListFromTables(false);
     await _refreshCounters(true);
-    BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
+  }
+
+  Future<List<dynamic>> _processPayment(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
+    bool paymentCancelled = false;
+    bool terminalWasUsedForPayment = false;
+
+    setState(() {
+      packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
+      packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
+      packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+    });
+
+    final String hemId = packMember.hemId;
+    final String hasherId = packMember.hasherId;
+    num amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+    if (otherAmount != -1) {
+      amount = otherAmount;
+    }
+
+    final Random random = Random.secure();
+    final List<int> values = List<int>.generate(6, (int i) => random.nextInt(26));
+    final String randomString = String.fromCharCodes(Iterable<int>.generate(values.length, (int i) => values[i] + 65));
+    String paymentReference;
+
+    if (_useTerminalForPayment) {
+      // this is a bit of a hack to use this boolean to indicate if the
+      // payment terminal should be used. Maybe one day I'll clean this up.
+      _useTerminalForPayment = false;
+      terminalWasUsedForPayment = true;
+
+      num terminalAmount = amount;
+      if (doPayForExtras == payForRunAndExtras) {
+        terminalAmount += widget.eventAggregate.event.eventPriceForExtras;
+      }
+
+      final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+      await Sumup.init(affiliateKey);
+
+      bool isLoggedIn = await Sumup.isLoggedIn;
+      if (!isLoggedIn) {
+        await Sumup.login();
+      }
+
+      final String title = widget.eventAggregate.event.eventName + ' (' + packMember.nameForDisplay + ')';
+      paymentReference = 'HC:' + randomString;
+
+      isLoggedIn = await Sumup.isLoggedIn;
+      if (isLoggedIn) {
+        final SumupPayment payment = SumupPayment(
+          title: title,
+          total: terminalAmount + .0,
+          currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode ?? 'USD',
+          foreignTransactionId: paymentReference,
+          saleItemsCount: 1,
+          skipSuccessScreen: true,
+          tip: .0,
+        );
+
+        //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
+
+        final SumupPaymentRequest request = SumupPaymentRequest(payment, info: <String, String>{
+          'hashName': 'packMember.nameForDisplay',
+          'foreignTransId': paymentReference,
+        });
+
+        final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
+        if ((checkoutResult == null) || (!checkoutResult.success)) {
+          paymentCancelled = true;
+        } else {
+          if (checkoutResult?.transactionCode != null) {
+            paymentReference = 'SU:' + checkoutResult.transactionCode;
+          }
+        }
+      }
+    } else {
+      paymentReference = 'HC:' + randomString;
+    }
+
+    if (paymentCancelled) {
+      return null;
+    } else {
+      final PaymentsService paySrv = PaymentsService();
+      final List<dynamic> result = await paySrv.payForEvent(
+        widget.eventAggregate.event.eventId,
+        ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
+        ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
+        paymentType,
+        amount,
+        attendenceAtHash.value,
+        doPayForExtras,
+        AppDomainType.event,
+        paymentReference: paymentReference,
+      );
+
+      if ((result != null) && (result.isNotEmpty)) {
+        final Map<String, dynamic> m = result[0];
+        m.addAll(<String, dynamic>{'terminalWasUsedForPayment': terminalWasUsedForPayment});
+      }
+
+      return result;
+    }
   }
 
   static const num LIST_ITEM_LEFT_MARGIN = 88.0;
@@ -1177,7 +1282,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       onTap: () {
         _searchFocusNode.unfocus();
         if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
-          final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, packMember);
+          final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, packMember);
 
           ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -1360,7 +1465,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                     right: 4,
                     bottom: 17,
                     child: Text('Hared = ${packMember.currentHaringCount}',
-                        style: getRunLabelStyle(packMember.currentPackRunCount + packMember.currentHaringCount, packMember.attendenceState)),
+                        style: _getRunLabelStyle(packMember.currentPackRunCount + packMember.currentHaringCount, packMember.attendenceState)),
                   ),
             packMember.currentPackRunCount == null
                 ? Container()
@@ -1368,7 +1473,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                     right: 4,
                     bottom: 1,
                     child: Text('Runs = ${packMember.currentPackRunCount + packMember.currentHaringCount}',
-                        style: getRunLabelStyle(packMember.currentPackRunCount + packMember.currentHaringCount, packMember.attendenceState)),
+                        style: _getRunLabelStyle(packMember.currentPackRunCount + packMember.currentHaringCount, packMember.attendenceState)),
                   ),
             //packMember.currentPackRunCount == null ? Container() : Positioned(right: 20, bottom: 1, child: Text('Times hared = ${packMember.currentHaringCount}')),
           ],
@@ -1377,16 +1482,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  TextStyle getRunLabelStyle(int numRuns, int attendenceState) {
+  TextStyle _getRunLabelStyle(int numRuns, int attendenceState) {
     if (attendenceState >= attendenceAtHash.value) {
-      if (checkSpecialRun(numRuns)) {
+      if (_checkSpecialRun(numRuns)) {
         return mediumTextRed;
       }
     }
     return mediumText;
   }
 
-  bool checkSpecialRun(int runCount) {
+  bool _checkSpecialRun(int runCount) {
     bool result = false;
     if (runCount == 1) {
       result = true;
@@ -1432,84 +1537,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     });
   }
 
-  Future<List<dynamic>> _processPayment(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
-    setState(() {
-      packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
-      packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
-      packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
-    });
-
-    final String hemId = packMember.hemId;
-    final String hasherId = packMember.hasherId;
-    num amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-    if (otherAmount != -1) {
-      amount = otherAmount;
-    }
-
-    final Random random = Random.secure();
-    final List<int> values = List<int>.generate(6, (int i) => random.nextInt(26));
-    final String randomString = String.fromCharCodes(Iterable<int>.generate(values.length, (int i) => values[i] + 65));
-    String paymentReference;
-
-    if (_useTerminalForPayment) {
-      _useTerminalForPayment = false;
-
-      num terminalAmount = amount;
-      if (doPayForExtras == payForRunAndExtras) {
-        terminalAmount += widget.eventAggregate.event.eventPriceForExtras;
-      }
-
-      final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
-      await Sumup.init(affiliateKey);
-
-      bool isLoggedIn = await Sumup.isLoggedIn;
-      if (!isLoggedIn) {
-        await Sumup.login();
-      }
-
-      final String title = widget.eventAggregate.event.eventName + ' ' + packMember.nameForDisplay;
-      paymentReference = 'SU:' + randomString;
-
-      isLoggedIn = await Sumup.isLoggedIn;
-      if (isLoggedIn) {
-        final SumupPayment payment = SumupPayment(
-          title: title,
-          total: terminalAmount + .0,
-          currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode ?? 'USD',
-          foreignTransactionId: paymentReference,
-          saleItemsCount: 1,
-          skipSuccessScreen: true,
-          tip: .0,
-        );
-
-        //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
-
-        final SumupPaymentRequest request = SumupPaymentRequest(payment);
-
-        final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
-        if (checkoutResult?.transactionCode != null) {
-          paymentReference = 'SU:' + checkoutResult.transactionCode;
-        }
-      }
-    } else {
-      paymentReference = 'HC:' + randomString;
-    }
-
-    final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(
-      widget.eventAggregate.event.eventId,
-      ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
-      ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
-      paymentType,
-      amount,
-      attendenceAtHash.value,
-      doPayForExtras,
-      AppDomainType.event,
-      paymentReference: paymentReference,
-    );
-  }
-
-  Widget buildPackListView() {
+  Widget _buildPackListView() {
     print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollNotification) {
@@ -1897,7 +1925,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
             _searchText = result.dispName ?? result.hashName ?? '${result.firstName} ${result.lastName}' ?? '<error no name entered>';
             _searchController.text = _searchText;
-            filterPackListResults();
+            _filterPackListResults();
           }
         });
       },
