@@ -92,6 +92,11 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     print('Events data synchronized $resultStr');
 
     await _refreshEventFromTables(true);
+    if (showLoadingIndicator) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   // Widget _buildEventList() {
@@ -458,7 +463,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => EditRunDetailsPage(rda, (String eventId) async {
+                      builder: (BuildContext context) => EditRunDetailsPage(false, rda, (String eventId) async {
                             final String userId = getStringPref(StringPrefsEnum.userId);
                             rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
                             _isLoading = false;
@@ -486,7 +491,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             await Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => EditRunDetailsPage(rda, (String eventId) async {
+                    builder: (BuildContext context) => EditRunDetailsPage(true, rda, (String eventId) async {
                           final String userId = getStringPref(StringPrefsEnum.userId);
                           rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
                           _isLoading = false;

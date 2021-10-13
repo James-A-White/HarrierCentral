@@ -5,8 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 class EditRunDetailsPage extends StatefulWidget {
-  const EditRunDetailsPage(this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
+  const EditRunDetailsPage(this.isNewRun, this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
 
+  final bool isNewRun;
   final RunAdminAggregate eventAggregate;
   final Function getUpdatedEventAggregate;
 
@@ -287,125 +288,103 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     }
   }
 
-  void _useFacebookDetails() {
+  Future<void> _useFacebookDetails() async {
     setState(() {
       _isUpdating = true;
-      final EventsService nSvc = EventsService();
-      nSvc
-          .addEditEvent(
-        eventId: _eventAggregate.event.eventId,
-        useFbRunDetails: 1,
-      )
-          .then((String eventId) async {
-        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-        setState(() {
-          _isUpdating = false;
-          _setTextFields();
-          final SnackBar snackBar = SnackBar(
-            duration: const Duration(seconds: 3),
-            content: const Text(
-              'Run details being synced from Facebook',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-            ),
-            backgroundColor: Colors.blue.shade700,
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        });
-      });
+    });
+    final EventsService nSvc = EventsService();
+    final String eventId = await nSvc.addEditEvent(
+      eventId: _eventAggregate.event.eventId,
+      useFbRunDetails: 1,
+    );
+
+    _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+    setState(() {
+      _isUpdating = false;
+      _setTextFields();
+      final SnackBar snackBar = SnackBar(
+        duration: const Duration(seconds: 3),
+        content: const Text(
+          'Run details being synced from Facebook',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+        ),
+        backgroundColor: Colors.blue.shade700,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     });
   }
 
-  void _updateRunDetails(bool isMainRunDetails) {
-    if (isMainRunDetails) {
+  Future<void> _updateRunDetails(bool isMainRunDetailsPage) async {
+    if (isMainRunDetailsPage) {
       if (_detailsFormKey.currentState.validate()) {
         //    If all data are correct then save data to out variables
         _detailsFormKey.currentState.save();
 
+        FocusScope.of(context).unfocus();
         setState(() {
-          FocusScope.of(context).unfocus();
-
           _isUpdating = true;
-          final EventsService nSvc = EventsService();
-          nSvc
-              .addEditEvent(
-            eventId: _eventAggregate.event.eventId,
-            eventName: _eventNameController.text,
-            eventStartDatetime: DateTime.tryParse(_eventDatetimeController.text),
-            eventDescription: _eventDescriptionController.text,
-            locationOneLineDesc: _locationOneLineDescController.text,
-            useFbRunDetails: 0,
-            isCountedRun: _eventAggregate.event.isCountedRun == 1,
-            kennelId: _eventAggregate.event.kennelId,
-            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForMembersController.text),
-            eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
-            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : num.tryParse(_eventPriceForExtrasController.text),
-          )
-              .then((String eventId) async {
-            _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-            setState(() {
-              _isUpdating = false;
-              final SnackBar snackBar = SnackBar(
-                duration: const Duration(seconds: 3),
-                content: const Text(
-                  'Run details have been saved',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                ),
-                backgroundColor: Colors.blue.shade700,
-              );
-              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            });
-          });
         });
+
+        final EventsService nSvc = EventsService();
+        final String eventId = await nSvc.addEditEvent(
+          eventId: _eventAggregate.event.eventId,
+          eventName: _eventNameController.text,
+          eventStartDatetime: DateTime.tryParse(_eventDatetimeController.text),
+          eventDescription: _eventDescriptionController.text,
+          locationOneLineDesc: _locationOneLineDescController.text,
+          useFbRunDetails: 0,
+          isCountedRun: _eventAggregate.event.isCountedRun == 1,
+          kennelId: _eventAggregate.event.kennelId,
+          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForMembersController.text),
+          eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
+          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : num.tryParse(_eventPriceForExtrasController.text),
+        );
+
+        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
       }
     } else {
       if (_eventAggregate.event.eventId == null) {
-        IveCoreUtilities.showAlert(context, 'Please save Details first',
-                'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK')
-            .then((void _) {
-          _tabController.animateTo(0);
-        });
+        await IveCoreUtilities.showAlert(context, 'Please save Details first',
+            'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
+        _tabController.animateTo(0);
       } else {
         if (_otherDetailsFormKey.currentState.validate()) {
           //    If all data are correct then save data to out variables
           _otherDetailsFormKey.currentState.save();
+
+          FocusScope.of(context).unfocus();
+          _isUpdating = true;
+          final EventsService nSvc = EventsService();
+          final String eventId = await nSvc.addEditEvent(
+            eventId: _eventAggregate.event.eventId,
+            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForMembersController.text),
+            eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
+            // note for "auto" the value we send to the server is '0' because this will
+            // remove any previous absoluteEventNumber that is stored there
+            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : num.tryParse(_absoluteEventNumberController.text),
+            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : num.tryParse(_eventPriceForExtrasController.text),
+            extrasDescription: _extrasDescriptionController.text.isEmpty ? '<none>' : _extrasDescriptionController.text,
+            isCountedRun: _isCountedRun,
+            isVisible: _isVisible,
+            isPromotedEvent: _isPromotedEvent,
+            eventGeographicScope: _eventGeographicScope,
+            usersCanEditRunAttendence: _usersCanEditRunAttendence,
+          );
+
+          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
           setState(() {
-            FocusScope.of(context).unfocus();
-            _isUpdating = true;
-            final EventsService nSvc = EventsService();
-            nSvc
-                .addEditEvent(
-              eventId: _eventAggregate.event.eventId,
-              eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForMembersController.text),
-              eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
-              // note for "auto" the value we send to the server is '0' because this will
-              // remove any previous absoluteEventNumber that is stored there
-              absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : num.tryParse(_absoluteEventNumberController.text),
-              eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : num.tryParse(_eventPriceForExtrasController.text),
-              extrasDescription: _extrasDescriptionController.text.isEmpty ? '<none>' : _extrasDescriptionController.text,
-              isCountedRun: _isCountedRun,
-              isVisible: _isVisible,
-              isPromotedEvent: _isPromotedEvent,
-              eventGeographicScope: _eventGeographicScope,
-              usersCanEditRunAttendence: _usersCanEditRunAttendence,
-            )
-                .then((String eventId) async {
-              _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-              setState(() {
-                _isUpdating = false;
-                final SnackBar snackBar = SnackBar(
-                  duration: const Duration(seconds: 3),
-                  content: const Text(
-                    'Other info has been saved',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                  ),
-                  backgroundColor: Colors.blue.shade700,
-                );
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              });
-            });
+            _isUpdating = false;
+            // final SnackBar snackBar = SnackBar(
+            //   duration: const Duration(seconds: 3),
+            //   content: const Text(
+            //     'Other info has been saved',
+            //     textAlign: TextAlign.center,
+            //     style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+            //   ),
+            //   backgroundColor: Colors.blue.shade700,
+            // );
+            // ScaffoldMessenger.of(context).showSnackBar(snackBar);
           });
         }
       }
@@ -644,11 +623,32 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 : Container(
                                     width: 162.0,
                                     child: ElevatedButton(
-                                      child: Text('Save Details', style: buttonLabelStyleMedium),
-                                      onPressed: () {
-                                        setState(() {
-                                          _updateRunDetails(true);
-                                        });
+                                      child: Text(widget.isNewRun ? 'Next' : 'Save Details', style: buttonLabelStyleMedium),
+                                      onPressed: () async {
+                                        if (_detailsFormKey.currentState.validate()) {
+                                          await _updateRunDetails(true);
+
+                                          if (widget.isNewRun) {
+                                            // this delay is required to ensure that the _isUpdating setState
+                                            // to function properly
+                                            _tabController.animateTo(1);
+                                          } else {
+                                            final SnackBar snackBar = SnackBar(
+                                              duration: const Duration(seconds: 3),
+                                              content: const Text(
+                                                'Run details have been saved',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                              ),
+                                              backgroundColor: Colors.blue.shade700,
+                                            );
+                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                          }
+                                          await Future<void>.delayed(const Duration(milliseconds: 500));
+                                          setState(() {
+                                            _isUpdating = false;
+                                          });
+                                        }
                                       },
                                     ),
                                   ),
@@ -660,7 +660,6 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                   child: Text('Use Facebook', style: buttonLabelStyleMedium),
                                   onPressed: () {
                                     setState(() {
-                                      _isUpdating = true;
                                       _useFacebookDetails();
                                     });
                                   },
@@ -701,25 +700,33 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
-                    ),
-                    child: Text('Use this image', style: buttonLabelStyleMedium),
-                    onPressed: () {
-                      if (_eventAggregate?.event?.eventId != null) {
-                        final String fileName = _upload(snapshot.data, _eventAggregate.event.eventId);
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                      ),
+                      child: Text('Use this image', style: buttonLabelStyleMedium),
+                      onPressed: () async {
+                        if (_eventAggregate?.event?.eventId != null) {
+                          final String fileName = _upload(snapshot.data, _eventAggregate.event.eventId);
 
-                        final EventsService nSvc = EventsService();
-                        nSvc
-                            .addEditEvent(
-                          eventId: _eventAggregate.event.eventId,
-                          eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
-                          useFbImage: 0,
-                        )
-                            .then((String eventId) async {
+                          final EventsService nSvc = EventsService();
+                          final String eventId = await nSvc.addEditEvent(
+                            eventId: _eventAggregate.event.eventId,
+                            eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
+                            useFbImage: 0,
+                          );
+
                           _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                          setState(() {
-                            _isUpdating = false;
+
+                          if (widget.isNewRun) {
+                            setState(() {
+                              _isUpdating = false;
+                            });
+                            await Future<void>.delayed(const Duration(milliseconds: 1000));
+                            _tabController.animateTo(3);
+                          } else {
+                            setState(() {
+                              _isUpdating = false;
+                            });
 
                             final SnackBar snackBar = SnackBar(
                               duration: const Duration(seconds: 3),
@@ -731,11 +738,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                               backgroundColor: Colors.blue.shade700,
                             );
                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          });
-                        });
-                      }
-                    },
-                  ),
+                          }
+                        }
+                      }),
                 ),
                 //const SizedBox(height: 20),
                 Padding(
@@ -758,31 +763,29 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                         minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                       ),
                       child: Text('Use image from Facebook', style: buttonLabelStyleMedium),
-                      onPressed: () {
+                      onPressed: () async {
                         setState(() {
                           _isUpdating = true;
-                          final EventsService nSvc = EventsService();
-                          nSvc
-                              .addEditEvent(
-                            eventId: _eventAggregate.event.eventId,
-                            useFbImage: 1,
-                          )
-                              .then((String eventId) async {
-                            _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                            setState(() {
-                              _isUpdating = false;
-                              final SnackBar snackBar = SnackBar(
-                                duration: const Duration(seconds: 3),
-                                content: const Text(
-                                  'Image is being synced from Facebook',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                ),
-                                backgroundColor: Colors.blue.shade700,
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                            });
-                          });
+                        });
+                        final EventsService nSvc = EventsService();
+                        final String eventId = await nSvc.addEditEvent(
+                          eventId: _eventAggregate.event.eventId,
+                          useFbImage: 1,
+                        );
+
+                        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                        setState(() {
+                          _isUpdating = false;
+                          final SnackBar snackBar = SnackBar(
+                            duration: const Duration(seconds: 3),
+                            content: const Text(
+                              'Image is being synced from Facebook',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                            ),
+                            backgroundColor: Colors.blue.shade700,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
                       },
                     ),
@@ -807,37 +810,37 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
               ],
             );
           } else {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                if (_eventAggregate?.event?.eventImage != null) ...<Widget>[
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.all(20.0),
-                      //height: G0<DeviceInfo>().deviceHeight - 235,
-                      child: Column(
-                        //mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Expanded(
-                            child: CachedNetworkImage(
-                              imageUrl: _eventAggregate.event.eventImage,
-                              // errorWidget:
-                              //     (BuildContext context, String url, Exception error) =>
-                              //         const  Icon(Icons.error),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: <Widget>[
-                              _isUpdating
-                                  ? Container(
-                                      height: 70.0,
-                                      width: 70.0,
-                                      child: HcCircularProgressIndicator(key: UniqueKey()),
-                                    )
-                                  : Padding(
+            return _isUpdating
+                ? Container(
+                    height: 70.0,
+                    width: 70.0,
+                    child: HcCircularProgressIndicator(key: UniqueKey()),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      if (_eventAggregate?.event?.eventImage != null) ...<Widget>[
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.all(20.0),
+                            //height: G0<DeviceInfo>().deviceHeight - 235,
+                            child: Column(
+                              //mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Expanded(
+                                  child: CachedNetworkImage(
+                                    imageUrl: _eventAggregate.event.eventImage,
+                                    // errorWidget:
+                                    //     (BuildContext context, String url, Exception error) =>
+                                    //         const  Icon(Icons.error),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
@@ -849,66 +852,58 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                         },
                                       ),
                                     ),
-                              if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                                const SizedBox(height: 10),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
-                                    ),
-                                    child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isUpdating = true;
-                                        final EventsService nSvc = EventsService();
-                                        nSvc
-                                            .addEditEvent(
-                                          eventId: _eventAggregate.event.eventId,
-                                          useFbImage: 1,
-                                        )
-                                            .then((String eventId) async {
-                                          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                                          setState(() {
-                                            _isUpdating = false;
-                                            final SnackBar snackBar = SnackBar(
-                                              duration: const Duration(seconds: 3),
-                                              content: const Text(
-                                                'Image is being synced from Facebook',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                              ),
-                                              backgroundColor: Colors.blue.shade700,
+                                    if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                                      const SizedBox(height: 10),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                                          ),
+                                          child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                                          onPressed: () async {
+                                            setState(() {
+                                              _isUpdating = true;
+                                            });
+                                            final EventsService nSvc = EventsService();
+                                            final String eventId = await nSvc.addEditEvent(
+                                              eventId: _eventAggregate.event.eventId,
+                                              useFbImage: 1,
                                             );
-                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                          });
-                                        });
-                                      });
-                                    },
-                                  ),
+
+                                            _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                            setState(() {
+                                              _isUpdating = false;
+                                              final SnackBar snackBar = SnackBar(
+                                                duration: const Duration(seconds: 3),
+                                                content: const Text(
+                                                  'Image is being synced from Facebook',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                                ),
+                                                backgroundColor: Colors.blue.shade700,
+                                              );
+                                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
+                                const SizedBox(height: 40),
                               ],
-                            ],
+                            ),
                           ),
-                          const SizedBox(height: 40),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-                if (_eventAggregate?.event?.eventImage == null) ...<Widget>[
-                  Text(
-                    'No image available',
-                    textAlign: TextAlign.center,
-                    style: largeTitleStyle.copyWith(color: Colors.black),
-                  ),
-                  _isUpdating
-                      ? Container(
-                          height: 70.0,
-                          width: 70.0,
-                          child: HcCircularProgressIndicator(key: UniqueKey()),
-                        )
-                      : Padding(
+                        ),
+                      ],
+                      if (_eventAggregate?.event?.eventImage == null) ...<Widget>[
+                        Text(
+                          'No image provided',
+                          textAlign: TextAlign.center,
+                          style: largeTitleStyle.copyWith(color: Colors.black),
+                        ),
+                        Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -920,9 +915,23 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                             },
                           ),
                         ),
-                ],
-              ],
-            );
+                      ],
+                      if (widget.isNewRun) ...<Widget>[
+                        ElevatedButton(
+                          child: Text(
+                            'Skip',
+                            style: buttonLabelStyleMedium,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _tabController.animateTo(3);
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 20.0),
+                      ],
+                    ],
+                  );
           }
         });
   }
@@ -947,36 +956,32 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     return fileName;
   }
 
-  void _getImageFromGallery(ImageSource source) {
+  Future<void> _getImageFromGallery(ImageSource source) async {
     if (_eventAggregate.event.eventId == null) {
-      IveCoreUtilities.showAlert(context, 'Please save Details first',
-              'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK')
-          .then((void _) {
-        _tabController.animateTo(0);
-      });
-    } else {
-      setState(() {
-        ImagePicker().pickImage(source: source).then((XFile image) {
-          setState(() {
-            if (image == null) {
-              // setState(() {
-              //   _selectedRadioValue = _previouslySelectedRadioValue;
-              //   _imageTypeSelection = _previousImageTypeSelection;
-              // });
-            } else {
-              final Future<File> img = ImageCropper.cropImage(
-                  sourcePath: image.path,
-                  //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-                  //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-                  maxWidth: 1000,
-                  maxHeight: 1000,
-                  compressFormat: ImageCompressFormat.jpg,
-                  compressQuality: 50);
+      await IveCoreUtilities.showAlert(context, 'Please save Details first',
+          'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
 
-              _imageFromGallery = img;
-            }
-          });
-        });
+      _tabController.animateTo(0);
+    } else {
+      final XFile image = await ImagePicker().pickImage(source: source);
+      setState(() {
+        if (image == null) {
+          // setState(() {
+          //   _selectedRadioValue = _previouslySelectedRadioValue;
+          //   _imageTypeSelection = _previousImageTypeSelection;
+          // });
+        } else {
+          final Future<File> img = ImageCropper.cropImage(
+              sourcePath: image.path,
+              //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+              //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
+              maxWidth: 1000,
+              maxHeight: 1000,
+              compressFormat: ImageCompressFormat.jpg,
+              compressQuality: 50);
+
+          _imageFromGallery = img;
+        }
       });
     }
   }
@@ -1110,102 +1115,123 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 left: 10.0,
                 right: 10.0,
                 bottom: 80.0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    _isUpdating
-                        ? Container(
-                            height: 70.0,
-                            width: 70.0,
-                            child: HcCircularProgressIndicator(key: UniqueKey()),
-                          )
-                        : ElevatedButton(
+                child: _isUpdating
+                    ? Container(
+                        height: 70.0,
+                        width: 70.0,
+                        child: HcCircularProgressIndicator(key: UniqueKey()),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          if (widget.isNewRun) ...<Widget>[
+                            ElevatedButton(
+                              child: Text(
+                                'Skip',
+                                style: buttonLabelStyleMedium,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _tabController.animateTo(2);
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 20.0),
+                          ],
+                          ElevatedButton(
                             child: Text(
                               ((_mapCenter.latitude == CLEAR_LATLONG) && (_mapCenter.longitude == CLEAR_LATLONG)) ? 'Set no location' : 'Set Location',
                               style: buttonLabelStyleMedium,
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               if (_eventAggregate?.event?.eventId == null) {
-                                IveCoreUtilities.showAlert(context, 'Please save details first',
-                                        'When creating a new event, please save the information on the Details tab before saving the location', 'OK')
-                                    .then((void _) {
-                                  _tabController.animateTo(0);
-                                });
+                                await IveCoreUtilities.showAlert(context, 'Please save details first',
+                                    'When creating a new event, please save the information on the Details tab before saving the location', 'OK');
+
+                                _tabController.animateTo(0);
                               } else {
                                 setState(() {
                                   _isUpdating = true;
-                                  final EventsService nSvc = EventsService();
-                                  // check to see if "no location" is set. If so, don't overwrite it
-                                  if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG)) {
-                                    _mapCenter = _mapKey.currentState.mapController.center;
-                                  }
-                                  nSvc
-                                      .addEditEvent(
-                                    eventId: _eventAggregate.event.eventId,
-                                    lat: _mapCenter.latitude,
-                                    lon: _mapCenter.longitude,
-                                    useFbLatLon: 0,
-                                  )
-                                      .then((String eventId) async {
-                                    _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                                    setState(() {
-                                      _isUpdating = false;
-                                      final SnackBar snackBar = SnackBar(
-                                        duration: const Duration(seconds: 3),
-                                        content: const Text(
-                                          'Updated location saved in Harrier Central',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                        ),
-                                        backgroundColor: Colors.blue.shade700,
-                                      );
-                                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                    });
-                                  });
-
-                                  //_showEventPopup(_calendarController.selectedDay);
                                 });
+                                final EventsService nSvc = EventsService();
+                                // check to see if "no location" is set. If so, don't overwrite it
+                                if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG)) {
+                                  _mapCenter = _mapKey.currentState.mapController.center;
+                                }
+                                final String eventId = await nSvc.addEditEvent(
+                                  eventId: _eventAggregate.event.eventId,
+                                  lat: _mapCenter.latitude,
+                                  lon: _mapCenter.longitude,
+                                  useFbLatLon: 0,
+                                );
+                                _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+
+                                if (widget.isNewRun) {
+                                  setState(() {
+                                    _isUpdating = false;
+                                  });
+                                  await Future<void>.delayed(const Duration(milliseconds: 1000));
+                                  _tabController.animateTo(2);
+                                } else {
+                                  final SnackBar snackBar = SnackBar(
+                                    duration: const Duration(seconds: 3),
+                                    content: const Text(
+                                      'Updated location saved in Harrier Central',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                    ),
+                                    backgroundColor: Colors.blue.shade700,
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                }
+
+                                await Future<void>.delayed(const Duration(milliseconds: 500));
+                                setState(() {
+                                  _isUpdating = false;
+                                });
+
+                                //_showEventPopup(_calendarController.selectedDay);
+
                               }
                             },
                           ),
-                    if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                      ElevatedButton(
-                        child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                        onPressed: () {
-                          setState(() {
-                            _isUpdating = true;
-                            final EventsService nSvc = EventsService();
-                            nSvc
-                                .addEditEvent(
-                              eventId: _eventAggregate.event.eventId,
-                              useFbLatLon: 1,
-                            )
-                                .then((String eventId) async {
-                              _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                              setState(() {
-                                _mapCenter = latlng.LatLng(
-                                  _eventAggregate.extensions.latitude,
-                                  _eventAggregate.extensions.longitude,
+                          if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                            const SizedBox(width: 20.0),
+                            ElevatedButton(
+                              child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                              onPressed: () async {
+                                setState(() {
+                                  _isUpdating = true;
+                                });
+                                final EventsService nSvc = EventsService();
+                                final String eventId = await nSvc.addEditEvent(
+                                  eventId: _eventAggregate.event.eventId,
+                                  useFbLatLon: 1,
                                 );
-                                _isUpdating = false;
-                                final SnackBar snackBar = SnackBar(
-                                  duration: const Duration(seconds: 3),
-                                  content: const Text(
-                                    'Location is being synced from Facebook',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                  ),
-                                  backgroundColor: Colors.blue.shade700,
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                              });
-                            });
-                          });
-                        },
+
+                                _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                setState(() {
+                                  _mapCenter = latlng.LatLng(
+                                    _eventAggregate.extensions.latitude,
+                                    _eventAggregate.extensions.longitude,
+                                  );
+                                  _isUpdating = false;
+                                  final SnackBar snackBar = SnackBar(
+                                    duration: const Duration(seconds: 3),
+                                    content: const Text(
+                                      'Location is being synced from Facebook',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                    ),
+                                    backgroundColor: Colors.blue.shade700,
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                });
+                              },
+                            ),
+                          ]
+                        ],
                       ),
-                    ]
-                  ],
-                ),
               ),
             ],
           ),
@@ -1643,11 +1669,24 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 : Container(
                                     width: 300.0,
                                     child: ElevatedButton(
-                                      child: Text('Save Other Information', style: buttonLabelStyleMedium),
-                                      onPressed: () {
-                                        setState(() {
-                                          _updateRunDetails(false);
-                                        });
+                                      child: Text(widget.isNewRun ? 'Finish' : 'Save Other Information', style: buttonLabelStyleMedium),
+                                      onPressed: () async {
+                                        await _updateRunDetails(false);
+
+                                        if (widget.isNewRun) {
+                                          Navigator.of(context).pop();
+                                        } else {
+                                          final SnackBar snackBar = SnackBar(
+                                            duration: const Duration(seconds: 3),
+                                            content: const Text(
+                                              'Other info has been saved',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                            ),
+                                            backgroundColor: Colors.blue.shade700,
+                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        }
                                       },
                                     ),
                                   ),

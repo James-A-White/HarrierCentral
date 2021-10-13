@@ -483,17 +483,16 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ),
                 ]),
-                onPressed: () {
-                  Navigator.push<dynamic>(
+                onPressed: () async {
+                  await Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => EditRunDetailsPage(_eventAggregate, (String eventId) async {
+                          builder: (BuildContext context) => EditRunDetailsPage(false, _eventAggregate, (String eventId) async {
                                 _eventAggregate = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, _userId);
                                 _isLoading = false;
                                 return _eventAggregate;
-                              }))).then((void _) {
-                    _getRunDetails(widget.eventId);
-                  });
+                              })));
+                  _getRunDetails(widget.eventId);
                 },
               ),
             ),

@@ -11,7 +11,7 @@ class KennelsListPage extends StatefulWidget {
   KennelsListPageState createState() => KennelsListPageState();
 }
 
-enum EnumSortKennelListBy { distance, kennelName, cityName, countryRegionName }
+enum EnumSortKennelListBy { distance, kennelName, cityName, countryRegionName, following }
 
 class KennelsListPageState extends State<KennelsListPage> {
   KennelsListPageState();
@@ -23,7 +23,7 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   List<KennelListAggregate> _filteredList = <KennelListAggregate>[];
 
-  EnumSortKennelListBy _sortByFollowingAndDistance = EnumSortKennelListBy.distance;
+  EnumSortKennelListBy _sortByType = EnumSortKennelListBy.following;
 
   @override
   void initState() {
@@ -68,17 +68,27 @@ class KennelsListPageState extends State<KennelsListPage> {
         elevation: 8.0,
         shape: const CircleBorder(),
         children: <SpeedDialChild>[
+          SpeedDialChild(
+            child: const Icon(Entypo.heart, color: Colors.white),
+            backgroundColor: Colors.red,
+            label: 'Sort by following status',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () async {
+              _sortByType = EnumSortKennelListBy.following;
+              await _refreshFromTable(true);
+              setState(() {});
+            },
+          ),
           if (G0<AppModel>().hasLocationPermissions) ...<SpeedDialChild>[
             SpeedDialChild(
               child: const Icon(FontAwesome.sort_amount_asc),
               backgroundColor: Colors.lightBlue.shade500,
               label: 'Sort by distance',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _sortByFollowingAndDistance = EnumSortKennelListBy.distance;
-                _refreshFromTable(true).then((void _) {
-                  setState(() {});
-                });
+              onTap: () async {
+                _sortByType = EnumSortKennelListBy.distance;
+                await _refreshFromTable(true);
+                setState(() {});
               },
             ),
           ],
@@ -87,11 +97,10 @@ class KennelsListPageState extends State<KennelsListPage> {
             backgroundColor: Colors.pink.shade200,
             label: 'Sort by Kennel name',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              _sortByFollowingAndDistance = EnumSortKennelListBy.kennelName;
-              _refreshFromTable(true).then((void _) {
-                setState(() {});
-              });
+            onTap: () async {
+              _sortByType = EnumSortKennelListBy.kennelName;
+              await _refreshFromTable(true);
+              setState(() {});
             },
           ),
           SpeedDialChild(
@@ -99,11 +108,10 @@ class KennelsListPageState extends State<KennelsListPage> {
             backgroundColor: Colors.lightGreen.shade500,
             label: 'Sort by city name',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              _sortByFollowingAndDistance = EnumSortKennelListBy.cityName;
-              _refreshFromTable(true).then((void _) {
-                setState(() {});
-              });
+            onTap: () async {
+              _sortByType = EnumSortKennelListBy.cityName;
+              await _refreshFromTable(true);
+              setState(() {});
             },
           ),
           // SpeedDialChild(
@@ -123,11 +131,10 @@ class KennelsListPageState extends State<KennelsListPage> {
             backgroundColor: Colors.lightGreen.shade500,
             label: 'Sort by country/region name',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              _sortByFollowingAndDistance = EnumSortKennelListBy.countryRegionName;
-              _refreshFromTable(true).then((void _) {
-                setState(() {});
-              });
+            onTap: () async {
+              _sortByType = EnumSortKennelListBy.countryRegionName;
+              await _refreshFromTable(true);
+              setState(() {});
             },
           ),
         ]);
@@ -217,38 +224,6 @@ class KennelsListPageState extends State<KennelsListPage> {
           G0<TableModel>().globalKennelMainPageList.add(item);
         }
 
-        if ((G0<AppModel>().hasLocationPermissions) && (_sortByFollowingAndDistance == EnumSortKennelListBy.distance)) {
-          G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
-        } else {
-          if ((_sortByFollowingAndDistance == EnumSortKennelListBy.distance) || (_sortByFollowingAndDistance == EnumSortKennelListBy.kennelName)) {
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.kennel.kennelName.compareTo(b.kennel.kennelName));
-          } else if (_sortByFollowingAndDistance == EnumSortKennelListBy.cityName) {
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.countryName.compareTo(b.extensions.countryName));
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.regionName.compareTo(b.extensions.regionName));
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.cityName.compareTo(b.extensions.cityName));
-          } else if (_sortByFollowingAndDistance == EnumSortKennelListBy.countryRegionName) {
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.cityName.compareTo(b.extensions.cityName));
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.regionName.compareTo(b.extensions.regionName));
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.countryName.compareTo(b.extensions.countryName));
-          } else {
-            // this should never be reached, but if we do get here use the default sort
-            G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
-          }
-        }
-
-        G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (a.hkm.following == 1
-                ? 0
-                : a.hkm.following == 2
-                    ? 1
-                    : 2)
-            .compareTo(b.hkm.following == 1
-                ? 0
-                : b.hkm.following == 2
-                    ? 1
-                    : 2));
-
-        G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.isHomeKennel ? 1 : 0).compareTo(a.isHomeKennel ? 1 : 0));
-
         setState(() {
           _filterResults();
         });
@@ -274,6 +249,77 @@ class KennelsListPageState extends State<KennelsListPage> {
       } else {
         _filteredList = QueryKennels.doFilter(_searchText, G0<TableModel>().globalKennelMainPageList);
       }
+
+      if ((G0<AppModel>().hasLocationPermissions) && (_sortByType == EnumSortKennelListBy.distance)) {
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
+          return (a.isHomeKennel ? 0 : a.extensions.distToKennel).compareTo(b.isHomeKennel ? 0 : b.extensions.distToKennel);
+        });
+      } else if ((!G0<AppModel>().hasLocationPermissions) && (_sortByType == EnumSortKennelListBy.distance)) {
+        // if no location permissions given, but search by distance selected
+        // sort by kennelName
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
+          return (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim()).compareTo(b.isHomeKennel ? ' ' : b.kennel.kennelName.trim());
+        });
+      } else if (_sortByType == EnumSortKennelListBy.kennelName) {
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
+          return (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim()).compareTo(b.isHomeKennel ? ' ' : b.kennel.kennelName.trim());
+        });
+      } else if (_sortByType == EnumSortKennelListBy.cityName) {
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
+          return (a.isHomeKennel ? ' ' : a.extensions.cityName.trim()).compareTo(b.isHomeKennel ? ' ' : b.extensions.cityName.trim());
+        });
+      } else if (_sortByType == EnumSortKennelListBy.countryRegionName) {
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
+          int result = (a.isHomeKennel ? ' ' : a.extensions.countryName.trim()).compareTo(b.isHomeKennel ? ' ' : b.extensions.countryName.trim());
+
+          if (result == 0) {
+            result = a.extensions.regionName.trim().compareTo(b.extensions.regionName.trim());
+          }
+
+          if (result == 0) {
+            result = a.extensions.cityName.trim().compareTo(b.extensions.cityName.trim());
+          }
+
+          return result;
+        });
+      } else if (_sortByType == EnumSortKennelListBy.following) {
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
+          if (a.isHomeKennel) {
+            return -1;
+          }
+
+          if (b.isHomeKennel) {
+            return 1;
+          }
+
+          int result = (a.hkm.following == 1
+                  ? 0
+                  : a.hkm.following == 2
+                      ? 2
+                      : 1)
+              .compareTo(b.hkm.following == 1
+                  ? 0
+                  : b.hkm.following == 2
+                      ? 2
+                      : 1);
+
+          if (result == 0) {
+            if (G0<AppModel>().hasLocationPermissions) {
+              result = a.extensions.distToKennel.compareTo(b.extensions.distToKennel);
+            } else {
+              result = a.kennel.kennelName.trim().compareTo(b.kennel.kennelName.trim());
+            }
+          }
+
+          return result;
+        });
+      } else {
+        // this should never be reached, but if we do get here use the default sort
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
+      }
+
+      //G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.isHomeKennel ? 1 : 0).compareTo(a.isHomeKennel ? 1 : 0));
+      int xxx = 0;
     }
   }
 

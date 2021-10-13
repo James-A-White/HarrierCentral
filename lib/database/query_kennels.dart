@@ -68,6 +68,11 @@ class KennelListAggregate {
   final HasherKennelMapModel hkm;
   final KennelListQueryExtenstions extensions;
   bool isHomeKennel;
+
+  @override
+  String toString() {
+    return kennel?.kennelName ?? 'No kennel name';
+  }
 }
 
 enum EnumKennelQueryType { topKennelPage, singleKennel }

@@ -494,8 +494,8 @@ class PaymentSnackBar extends SnackBar {
                                     ),
                                     Text(
                                       (eventAggregate.event.eventPriceForExtras ?? 0) != 0
-                                          ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})'
-                                          : 'Credit ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})',
+                                          ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})'
+                                          : 'Credit ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})',
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontFamily: 'AvenirNextCondensedDemiBold',

@@ -45,10 +45,14 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
       if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
         final LoginResult loginResult = await FacebookAuth.instance.login();
-        final AccessToken accessToken = loginResult.accessToken;
-        facebookAccessToken = accessToken.token;
-        await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-        await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+        if ((loginResult != null) && (loginResult.status == LoginStatus.success)) {
+          final AccessToken accessToken = loginResult.accessToken;
+          facebookAccessToken = accessToken?.token;
+          if (facebookAccessToken != null) {
+            await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+            await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+          }
+        }
       }
     }
 
