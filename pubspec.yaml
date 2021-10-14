@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 1.0.14+514
+version: 1.0.15+515
 publish_to: none
 
 environment:

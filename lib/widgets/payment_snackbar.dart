@@ -405,38 +405,44 @@ class PaymentSnackBar extends SnackBar {
                             ],
                           ),
                         ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Image.asset('images/icons/payment_type_1.png',
-                                    height: 30.0,
-                                    width: 30.0,
-                                    color: ((packMember.isPaid == 0) || (packMember.paymentType == paymentNotPaid.value)) ? Colors.yellow : Colors.white),
-
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () {
-                                  onPaidCallback(packMember, paymentNotPaid.value);
-                                },
-                              ),
-                              const Text(
-                                'Not paid',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.9,
+                        (packMember.isMember == 0)
+                            ? Container()
+                            : Expanded(
+                                flex: 1,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    IconButton(
+                                      icon: Image.asset('images/icons/payment_type_5.png',
+                                          height: 30.0,
+                                          width: 30.0,
+                                          color: ((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value))
+                                              ? Colors.yellow
+                                              : Colors.white),
+                                      //tooltip: 'Select to follow a Kennel',
+                                      iconSize: 30.0,
+                                      alignment: Alignment.topCenter,
+                                      splashColor: Colors.greenAccent,
+                                      onPressed: () {
+                                        payOther(packMember, context);
+                                      },
+                                    ),
+                                    Text(
+                                      'Paid other' +
+                                          (((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value))
+                                              ? '\r\n(${formatMoney(packMember.creditAmount)}' + (packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)')
+                                              : ''),
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontFamily: 'AvenirNextCondensedDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 15.0,
+                                        height: 0.9,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                     Container(width: 100, height: 10),
@@ -465,6 +471,38 @@ class PaymentSnackBar extends SnackBar {
                                     : 'Paid ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\nbank transfer',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
+                                  fontFamily: 'AvenirNextCondensedDemiBold',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 15.0,
+                                  height: 0.9,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              IconButton(
+                                icon: Image.asset('images/icons/payment_type_1.png',
+                                    height: 30.0,
+                                    width: 30.0,
+                                    color: ((packMember.isPaid == 0) || (packMember.paymentType == paymentNotPaid.value)) ? Colors.yellow : Colors.white),
+
+                                //tooltip: 'Select to follow a Kennel',
+                                iconSize: 30.0,
+                                alignment: Alignment.topCenter,
+                                splashColor: Colors.greenAccent,
+                                onPressed: () {
+                                  onPaidCallback(packMember, paymentNotPaid.value);
+                                },
+                              ),
+                              const Text(
+                                'Not paid',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 15.0,
@@ -507,42 +545,6 @@ class PaymentSnackBar extends SnackBar {
                                   ],
                                 ),
                               ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Image.asset('images/icons/payment_type_5.png',
-                                    height: 30.0,
-                                    width: 30.0,
-                                    color: ((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value))
-                                        ? Colors.yellow
-                                        : Colors.white),
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () {
-                                  payOther(packMember, context);
-                                },
-                              ),
-                              Text(
-                                'Paid other' +
-                                    (((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value))
-                                        ? '\r\n(${formatMoney(packMember.creditAmount)}' + (packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)')
-                                        : ''),
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.9,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                   ],

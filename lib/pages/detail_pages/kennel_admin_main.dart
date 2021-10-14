@@ -185,57 +185,103 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       textAlign: TextAlign.center,
                                     ),
                                     Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                      Container(
-                                        margin: const EdgeInsets.only(top: 20, bottom: 15),
-                                        width: 110,
-                                        height: 110,
-                                        child: Connection.styleForConnected(
-                                          G0<AppModel>().connectionStatus,
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                                            ),
-                                            child: Column(children: <Widget>[
-                                              Padding(
-                                                padding: const EdgeInsets.only(right: 2.0),
-                                                child: Image.asset('images/icons/excel.png', height: 50.0, width: 50.0),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                        child: Container(
+                                          width: 110,
+                                          height: 110,
+                                          child: Connection.styleForConnected(
+                                            G0<AppModel>().connectionStatus,
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
-                                                child: Text(
-                                                  'Email run stats',
-                                                  textAlign: TextAlign.center,
-                                                  style: buttonLabelStyleSmall,
+                                              child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                const Padding(
+                                                  padding: EdgeInsets.only(left: 0),
+                                                  child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
                                                 ),
-                                              ),
-                                            ]),
-                                            onPressed: () {
-                                              if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                final EmailReportsService svc = EmailReportsService();
-                                                svc
-                                                    .sendKennelRunStatsReportByEmail(
-                                                        kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                                        kennelName: widget.kennelAggregateItem.kennel.kennelName,
-                                                        digitsAfterDecimal: widget.kennelAggregateItem.extensions.digitsAfterDecimal,
-                                                        currencySymbol: widget.kennelAggregateItem.extensions.currencySymbol)
-                                                    .then((Map<String, String> result) {
-                                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-                                                  if (result['result'].toLowerCase().startsWith('success')) {
-                                                    IveCoreUtilities.showAlert(
-                                                        context,
-                                                        'E-mail successfully sent',
-                                                        'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                                                        'OK');
-                                                  }
-                                                });
-
-                                                IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
-                                              }
-                                            },
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+                                                  child: Text(
+                                                    'Add & Edit\r\nruns',
+                                                    textAlign: TextAlign.center,
+                                                    style: buttonLabelStyleSmall,
+                                                  ),
+                                                ),
+                                              ]),
+                                              onPressed: () {
+                                                if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                  Navigator.push<dynamic>(
+                                                    context,
+                                                    MaterialPageRoute<dynamic>(
+                                                      builder: (BuildContext context) => AddEditEventsPage(
+                                                        kennel: widget.kennelAggregateItem,
+                                                        pageType: FilterEventsPageType.future,
+                                                      ),
+                                                    ),
+                                                  ).then((void _) {
+                                                    _refreshFromTable(true).then((void _) {
+                                                      setState(() {});
+                                                    });
+                                                  });
+                                                }
+                                              },
+                                            ),
                                           ),
                                         ),
                                       ),
+                                      // Container(
+                                      //   margin: const EdgeInsets.only(top: 20, bottom: 15),
+                                      //   width: 110,
+                                      //   height: 110,
+                                      //   child: Connection.styleForConnected(
+                                      //     G0<AppModel>().connectionStatus,
+                                      //     ElevatedButton(
+                                      //       style: ElevatedButton.styleFrom(
+                                      //         padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                                      //       ),
+                                      //       child: Column(children: <Widget>[
+                                      //         Padding(
+                                      //           padding: const EdgeInsets.only(right: 2.0),
+                                      //           child: Image.asset('images/icons/excel.png', height: 50.0, width: 50.0),
+                                      //         ),
+                                      //         Padding(
+                                      //           padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
+                                      //           child: Text(
+                                      //             'Email run stats',
+                                      //             textAlign: TextAlign.center,
+                                      //             style: buttonLabelStyleSmall,
+                                      //           ),
+                                      //         ),
+                                      //       ]),
+                                      //       onPressed: () {
+                                      //         if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                      //           final EmailReportsService svc = EmailReportsService();
+                                      //           svc
+                                      //               .sendKennelRunStatsReportByEmail(
+                                      //                   kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                      //                   kennelName: widget.kennelAggregateItem.kennel.kennelName,
+                                      //                   digitsAfterDecimal: widget.kennelAggregateItem.extensions.digitsAfterDecimal,
+                                      //                   currencySymbol: widget.kennelAggregateItem.extensions.currencySymbol)
+                                      //               .then((Map<String, String> result) {
+                                      //             ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+                                      //             if (result['result'].toLowerCase().startsWith('success')) {
+                                      //               IveCoreUtilities.showAlert(
+                                      //                   context,
+                                      //                   'E-mail successfully sent',
+                                      //                   'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                                      //                   'OK');
+                                      //             }
+                                      //           });
+
+                                      //           IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                      //         }
+                                      //       },
+                                      //     ),
+                                      //   ),
+                                      // ),
                                       Padding(
                                         padding: const EdgeInsets.only(top: 15, bottom: 15),
                                         child: Container(
@@ -326,52 +372,105 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ),
                                           ),
                                         ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                          child: Container(
-                                            width: 110,
-                                            height: 110,
-                                            child: Connection.styleForConnected(
-                                              G0<AppModel>().connectionStatus,
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                                                ),
-                                                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                                  const Padding(
-                                                    padding: EdgeInsets.only(left: 0),
-                                                    child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
-                                                    child: Text(
-                                                      'Upcoming\r\nevents',
-                                                      textAlign: TextAlign.center,
-                                                      style: buttonLabelStyleSmall,
-                                                    ),
-                                                  ),
-                                                ]),
-                                                onPressed: () {
-                                                  if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                    Navigator.push<dynamic>(
-                                                      context,
-                                                      MaterialPageRoute<dynamic>(
-                                                        builder: (BuildContext context) => AddEditEventsPage(
-                                                          kennel: widget.kennelAggregateItem,
-                                                          pageType: FilterEventsPageType.future,
-                                                        ),
-                                                      ),
-                                                    ).then((void _) {
-                                                      _refreshFromTable(true).then((void _) {
-                                                        setState(() {});
-                                                      });
-                                                    });
-                                                  }
-                                                },
+
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 20, bottom: 15),
+                                          width: 110,
+                                          height: 110,
+                                          child: Connection.styleForConnected(
+                                            G0<AppModel>().connectionStatus,
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
                                               ),
+                                              child: Column(children: <Widget>[
+                                                Padding(
+                                                  padding: const EdgeInsets.only(right: 2.0),
+                                                  child: Image.asset('images/icons/excel.png', height: 50.0, width: 50.0),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
+                                                  child: Text(
+                                                    'Email run stats',
+                                                    textAlign: TextAlign.center,
+                                                    style: buttonLabelStyleSmall,
+                                                  ),
+                                                ),
+                                              ]),
+                                              onPressed: () {
+                                                if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                  final EmailReportsService svc = EmailReportsService();
+                                                  svc
+                                                      .sendKennelRunStatsReportByEmail(
+                                                          kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                          kennelName: widget.kennelAggregateItem.kennel.kennelName,
+                                                          digitsAfterDecimal: widget.kennelAggregateItem.extensions.digitsAfterDecimal,
+                                                          currencySymbol: widget.kennelAggregateItem.extensions.currencySymbol)
+                                                      .then((Map<String, String> result) {
+                                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+                                                    if (result['result'].toLowerCase().startsWith('success')) {
+                                                      IveCoreUtilities.showAlert(
+                                                          context,
+                                                          'E-mail successfully sent',
+                                                          'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                                                          'OK');
+                                                    }
+                                                  });
+
+                                                  IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                                }
+                                              },
                                             ),
                                           ),
                                         ),
+
+                                        // Padding(
+                                        //   padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                        //   child: Container(
+                                        //     width: 110,
+                                        //     height: 110,
+                                        //     child: Connection.styleForConnected(
+                                        //       G0<AppModel>().connectionStatus,
+                                        //       ElevatedButton(
+                                        //         style: ElevatedButton.styleFrom(
+                                        //           padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                                        //         ),
+                                        //         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                        //           const Padding(
+                                        //             padding: EdgeInsets.only(left: 0),
+                                        //             child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
+                                        //           ),
+                                        //           Padding(
+                                        //             padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+                                        //             child: Text(
+                                        //               'Add & Edit\r\nruns',
+                                        //               textAlign: TextAlign.center,
+                                        //               style: buttonLabelStyleSmall,
+                                        //             ),
+                                        //           ),
+                                        //         ]),
+                                        //         onPressed: () {
+                                        //           if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                        //             Navigator.push<dynamic>(
+                                        //               context,
+                                        //               MaterialPageRoute<dynamic>(
+                                        //                 builder: (BuildContext context) => AddEditEventsPage(
+                                        //                   kennel: widget.kennelAggregateItem,
+                                        //                   pageType: FilterEventsPageType.future,
+                                        //                 ),
+                                        //               ),
+                                        //             ).then((void _) {
+                                        //               _refreshFromTable(true).then((void _) {
+                                        //                 setState(() {});
+                                        //               });
+                                        //             });
+                                        //           }
+                                        //         },
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // ),
                                       ],
                                     ),
                                     Row(
