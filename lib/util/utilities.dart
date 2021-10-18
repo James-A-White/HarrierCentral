@@ -120,6 +120,39 @@ class Utilities {
     }
   }
 
+  static String getEventScopeText(int eventGeographicScope) {
+    String s = 'Special event';
+
+    switch (eventGeographicScope) {
+      case 0:
+        s = 'Not specified';
+        break;
+      case 1:
+        s = 'Normal run';
+        break;
+      case 2:
+        s = 'Special local event';
+        break;
+      case 3:
+        s = 'Special regional / state event';
+        break;
+      case 4:
+        s = 'Nash Hash / national event';
+        break;
+      case 5:
+        s = 'Interhash / continental event';
+        break;
+      case 6:
+        s = 'World Interhash / global event';
+        break;
+      case 7:
+        s = 'Other special event';
+        break;
+    }
+
+    return s;
+  }
+
   static String getDistance(num meters, BuildContext context, {bool isMetric = true}) {
     if (!G0<AppModel>().hasLocationPermissions) {
       return '';

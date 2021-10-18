@@ -295,7 +295,7 @@ class RunDetails extends StatelessWidget {
                             ),
                             Expanded(
                                 child: Text(
-                                  getEventText(event),
+                                  Utilities.getEventScopeText(event.eventGeographicScope),
                                   style: listValueStyle,
                                   textAlign: TextAlign.left,
                                   maxLines: 1,
@@ -766,25 +766,25 @@ class RunDetails extends StatelessWidget {
     );
   }
 
-  String getEventText(EventModel event) {
-    String result = '';
-    switch (event.eventGeographicScope) {
-      case 1:
-        result = 'Local event';
-        break;
-      case 2:
-        result = 'Regional event';
-        break;
-      case 3:
-        result = 'Nash hash';
-        break;
-      case 4:
-        result = 'Inter hash';
-        break;
-      case 5:
-        result = 'World interhash / global event';
-        break;
-    }
-    return result;
-  }
+  // String getEventText(EventModel event) {
+  //   String result = '';
+  //   switch (event.eventGeographicScope) {
+  //     case 1:
+  //       result = 'Local event';
+  //       break;
+  //     case 2:
+  //       result = 'Regional event';
+  //       break;
+  //     case 3:Int32x4.xxxw
+  //       result = 'Nash hash';
+  //       break;
+  //     case 4:
+  //       result = 'Inter hash';
+  //       break;
+  //     case 5:
+  //       result = 'World interhash / global event';
+  //       break;
+  //   }
+  //   return result;
+  // }
 }

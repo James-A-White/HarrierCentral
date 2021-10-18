@@ -276,7 +276,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                   ],
                                   if (widget.futureRun.event.eventGeographicScope > 1) ...<Widget>[
                                     Text(
-                                      _getEventScopeText(widget.futureRun.event.eventGeographicScope),
+                                      Utilities.getEventScopeText(widget.futureRun.event.eventGeographicScope),
                                       style: TextStyle(color: Colors.blue.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
@@ -345,33 +345,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         ],
       ),
     );
-  }
-
-  String _getEventScopeText(int eventGeographicScope) {
-    String s = 'Special event';
-
-    switch (eventGeographicScope) {
-      case 2:
-        s = 'Special local event';
-        break;
-      case 3:
-        s = 'Special regional / state event';
-        break;
-      case 4:
-        s = 'Nash Hash / national event';
-        break;
-      case 5:
-        s = 'Interhash / continental event';
-        break;
-      case 6:
-        s = 'World Interhash / global event';
-        break;
-      case 7:
-        s = 'Other special event';
-        break;
-    }
-
-    return s;
   }
 
   void showRsvpOptionsPopup(BuildContext context) {
