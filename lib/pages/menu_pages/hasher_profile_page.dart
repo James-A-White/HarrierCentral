@@ -32,6 +32,7 @@ class HasherProfilePage extends StatefulWidget {
   static const int flagUiElement_distancePref = 0x00000004;
   static const int flagUiElement_autoDisplayRunsDistance = 0x00000008;
   static const int flagUiElement_logOutAndRefreshButton = 0x00000010;
+  static const int flagUiElement_refresh3rdPartyLogin = 0x00000020;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -1136,6 +1137,45 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ),
                                           ]
+                                        ],
+                                      ),
+                                    ],
+                                    if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_refresh3rdPartyLogin != 0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          FancyDivider(
+                                            key: UniqueKey(),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection.styleForConnected(
+                                                  G0<AppModel>().connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                    ),
+                                                    onPressed: () async {
+                                                      Navigator.push<dynamic>(
+                                                        context,
+                                                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => ThirdPartyLogin(false)),
+                                                      );
+                                                    },
+                                                    child: Text(
+                                                      'Login with 3rd Party',
+                                                      style: textStyleButton,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ],

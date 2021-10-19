@@ -15,6 +15,7 @@ enum StringPrefsEnum {
   harrierCentralVersion,
   hashName,
   email,
+  thirdPartyLoginEmail,
   gender,
   profilePhotoUrl,
   adminEventId,

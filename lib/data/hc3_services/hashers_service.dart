@@ -388,7 +388,7 @@ class HashersService extends BaseService {
       'firstName': loginData.firstName,
       'lastName': loginData.lastName,
       'hashName': hashName,
-      'email': loginData.email,
+      //'email': loginData.email,
       'photo': loginData.photoUrl ?? '',
       'thirdPartyLoginType': loginData.loginType,
       'thirdPartyUserId': loginData.id,
@@ -398,7 +398,8 @@ class HashersService extends BaseService {
       'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
       'hcVersion': hcVersion,
       'latitude': G0<DeviceInfo>().deviceLat.toString(),
-      'longitude': G0<DeviceInfo>().deviceLon.toString()
+      'longitude': G0<DeviceInfo>().deviceLon.toString(),
+      'thirdPartyEmail': loginData.thirdPartyEmail,
     });
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_third_party_login', body);

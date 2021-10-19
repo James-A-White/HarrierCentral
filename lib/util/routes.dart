@@ -16,7 +16,7 @@ enum RouteNames {
 }
 
 final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
-  RouteNames.FACEBOOK_LOGIN.toString(): (BuildContext context) => ThirdPartyLogin(),
+  //RouteNames.FACEBOOK_LOGIN.toString(): (BuildContext context) => ThirdPartyLogin(true),
   RouteNames.MAIN_LANDING_PAGE.toString(): (BuildContext context) => const MainNavigationPage(),
   RouteNames.NEW_ACCOUNT.toString(): (BuildContext context) => const NewAccountPage(),
   RouteNames.INTRO_SLIDER.toString(): (BuildContext context) => const IntroSliderPage(),

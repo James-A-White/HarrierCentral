@@ -2,6 +2,10 @@
 import 'package:harrier_central/imports.dart';
 
 class ThirdPartyLogin extends StatefulWidget {
+  ThirdPartyLogin(this.isNewUser);
+
+  final bool isNewUser;
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -81,7 +85,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                         if (Platform.isIOS) ...<Widget>[
                           GestureDetector(
                             onTap: () {
-                              //_appleLogin();
+                              _appleLogin();
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
@@ -109,57 +113,61 @@ class _LoginPageState extends State<ThirdPartyLogin> {
     );
   }
 
-  // Future<void> _appleLogin() async {
-  //   try {
-  //     final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
-  //       scopes: <AppleIDAuthorizationScopes>[
-  //         AppleIDAuthorizationScopes.email,
-  //         AppleIDAuthorizationScopes.fullName,
-  //       ],
-  //       webAuthenticationOptions: WebAuthenticationOptions(
-  //         clientId: 'com.harriercentral.hc',
-  //         redirectUri: Uri.parse(
-  //           'https://hcazurefunctions7.azurewebsites.net/api/HandleResponseFromApple',
-  //         ),
-  //       ),
-  //       nonce: 'riejlwWj8f093FekWo9r3Edo9sp2Rdp3',
-  //       state: 'Test',
-  //     );
+  Future<void> _appleLogin() async {
+    try {
+      final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: <AppleIDAuthorizationScopes>[
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'com.harriercentral.hc',
+          redirectUri: Uri.parse(
+            'https://hcazurefunctions7.azurewebsites.net/api/HandleResponseFromApple',
+          ),
+        ),
+        nonce: 'riejlwWj8f093FekWo9r3Edo9sp2Rdp3',
+        state: 'Test',
+      );
 
-  //     await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, appleCredential.authorizationCode);
-  //     await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
-  //     await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
-  //     await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
-  //     await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
+      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, appleCredential.authorizationCode);
+      await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
+      await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
+      await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
+      await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
 
-  //     final ThirdPartyLoginData d = ThirdPartyLoginData(
-  //       'apple',
-  //       appleCredential.identityToken,
-  //       appleCredential.userIdentifier,
-  //       appleCredential.givenName,
-  //       appleCredential.familyName,
-  //       appleCredential.email,
-  //       authorizationCode: appleCredential.authorizationCode,
-  //     );
+      final ThirdPartyLoginData d = ThirdPartyLoginData(
+        'apple',
+        appleCredential.identityToken,
+        appleCredential.userIdentifier,
+        appleCredential.givenName,
+        appleCredential.familyName,
+        authorizationCode: appleCredential.authorizationCode,
+        thirdPartyEmail: appleCredential.email,
+      );
 
-  //     _onLoginStatusChanged(true, loginData: d);
-  //   } on UnknownSignInWithAppleException catch (e) {
-  //     print('UnknownSignInWithAppleException');
-  //     print(e.message);
-  //   } on SignInWithAppleCredentialsException catch (e) {
-  //     print('SignInWithAppleCredentialsException');
-  //     print(e.message);
-  //   } on SignInWithAppleAuthorizationException catch (e) {
-  //     print('SignInWithAppleCredentialsException');
-  //     print(e.message);
-  //   } on SignInWithAppleNotSupportedException catch (e) {
-  //     print('SignInWithAppleCredentialsException');
-  //     print(e.message);
-  //   }
+      _onLoginStatusChanged(true, loginData: d);
+    } on UnknownSignInWithAppleException catch (e) {
+      print('UnknownSignInWithAppleException');
+      print(e.message);
+      _onLoginStatusChanged(false);
+    } on SignInWithAppleCredentialsException catch (e) {
+      print('SignInWithAppleCredentialsException');
+      print(e.message);
+      _onLoginStatusChanged(false);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      print('SignInWithAppleCredentialsException');
+      print(e.message);
+      _onLoginStatusChanged(false);
+    } on SignInWithAppleNotSupportedException catch (e) {
+      print('SignInWithAppleCredentialsException');
+      print(e.message);
+      _onLoginStatusChanged(false);
+    }
 
-  //   // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
-  //   // after they have been validated with Apple (see `Integration` section for more information on how to do this)
-  // }
+    // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
+    // after they have been validated with Apple (see `Integration` section for more information on how to do this)
+  }
 
   Future<void> _facebookLogin() async {
     // by default the login method has the next permissions ['email','public_profile']
@@ -187,9 +195,9 @@ class _LoginPageState extends State<ThirdPartyLogin> {
         userData['id'],
         userData['first_name'],
         userData['last_name'],
-        userData['email'],
         photoUrl: userData['picture']['data']['url'],
         accessTokenExpires: accessToken.expires,
+        thirdPartyEmail: userData['email'],
       );
 
       _onLoginStatusChanged(true, loginData: d);
@@ -197,15 +205,19 @@ class _LoginPageState extends State<ThirdPartyLogin> {
       switch (loginResult.status) {
         case LoginStatus.cancelled:
           print('login cancelled');
+          _onLoginStatusChanged(false);
           break;
         case LoginStatus.failed:
           print('login failed');
+          _onLoginStatusChanged(false);
           break;
         case LoginStatus.operationInProgress:
           print('another operation is already in progress');
+          _onLoginStatusChanged(false);
           break;
         default:
           print('Unknown Facebook login error');
+          _onLoginStatusChanged(false);
           break;
       }
     }
@@ -353,14 +365,21 @@ class _LoginPageState extends State<ThirdPartyLogin> {
 
                   final HashersService hSrv = HashersService();
                   final String responseBody = await hSrv.processThirdPartyLogin(
-                      loginData: profileData, hashName: hashNameTextController.text, includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                    loginData: profileData,
+                    hashName: hashNameTextController.text,
+                    includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0,
+                  );
 
                   if (!responseBody.startsWith(ERROR_PREFIX)) {
                     final dynamic result = json.decode(responseBody);
 
                     await setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
                     await setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
-                    await setStringPref(StringPrefsEnum.email, result[0]['email']);
+                    // if the email has not already been set, populate it with the email address received by the third party identity provider
+                    if ((getStringPref(StringPrefsEnum.email) ?? '').trim().isEmpty) {
+                      await setStringPref(StringPrefsEnum.email, result[0]['email']);
+                    }
+                    await setStringPref(StringPrefsEnum.thirdPartyLoginEmail, result[0]['thirdPartyEmail']);
 
                     final String thirdPartyLoginType = result[0]['thirdPartyLoginType'] ?? 'none';
                     await setStringPref(StringPrefsEnum.thirdPartyLoginType, thirdPartyLoginType);
@@ -404,22 +423,27 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                         'OK');
                   }
 
-                  //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                  final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
-                  //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                  if (widget.isNewUser) {
+                    //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                    final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
+                    //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                  Navigator.pushReplacement<dynamic, dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => ChooseProfileImage(
-                          isForThisDevice: true,
-                          fileNamePrefix: fileNamePrefix,
-                          currentProfileImage: null,
-                          popToCaller: false,
-                        ),
-                      ));
-
-                  //Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                    Navigator.pushReplacement<dynamic, dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => ChooseProfileImage(
+                            isForThisDevice: true,
+                            fileNamePrefix: fileNamePrefix,
+                            currentProfileImage: null,
+                            popToCaller: false,
+                          ),
+                        ));
+                  } else {
+                    // not a new user, pop back to the User profile page.
+                    IveCoreUtilities.showAlert(context, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
+                      Navigator.of(context).pop();
+                    });
+                  }
                 }
               },
             ),
@@ -432,8 +456,18 @@ class _LoginPageState extends State<ThirdPartyLogin> {
 }
 
 class ThirdPartyLoginData {
-  ThirdPartyLoginData(this.loginType, this.accessToken, this.id, this.firstName, this.lastName, this.email,
-      {this.photoUrl, this.name, this.authorizationCode, this.accessTokenExpires}) {
+  ThirdPartyLoginData(
+    this.loginType,
+    this.accessToken,
+    this.id,
+    this.firstName,
+    this.lastName, {
+    this.photoUrl,
+    this.name,
+    this.authorizationCode,
+    this.accessTokenExpires,
+    this.thirdPartyEmail,
+  }) {
     name ??= (firstName ?? '') + ' ' + (lastName ?? '');
   }
 
@@ -442,10 +476,10 @@ class ThirdPartyLoginData {
   String id;
   String firstName;
   String lastName;
-  String email;
 
   String name;
   String photoUrl;
   String authorizationCode;
+  String thirdPartyEmail;
   DateTime accessTokenExpires;
 }

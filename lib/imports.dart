@@ -162,7 +162,7 @@ export 'package:qonversion_flutter/qonversion_flutter.dart';
 export 'package:qr_code_scanner/qr_code_scanner.dart';
 export 'package:qr_flutter/qr_flutter.dart';
 export 'package:shared_preferences/shared_preferences.dart';
-//export 'package:sign_in_with_apple/sign_in_with_apple.dart';
+export 'package:sign_in_with_apple/sign_in_with_apple.dart';
 export 'package:sqflite/sqflite.dart';
 export 'package:sumup/sumup.dart';
 export 'package:table_calendar/table_calendar.dart';

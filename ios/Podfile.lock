@@ -140,6 +140,8 @@ PODS:
     - SDWebImage/Core (~> 5.10)
   - shared_preferences (0.0.1):
     - Flutter
+  - sign_in_with_apple (0.0.1):
+    - Flutter
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
@@ -173,6 +175,7 @@ DEPENDENCIES:
   - qonversion_flutter (from `.symlinks/plugins/qonversion_flutter/ios`)
   - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
+  - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - sumup (from `.symlinks/plugins/sumup/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
@@ -239,6 +242,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/qr_code_scanner/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
+  sign_in_with_apple:
+    :path: ".symlinks/plugins/sign_in_with_apple/ios"
   sqflite:
     :path: ".symlinks/plugins/sqflite/ios"
   sumup:
@@ -288,6 +293,7 @@ SPEC CHECKSUMS:
   SDWebImage: 4ea20cca2986adc5aacde07aa686742fd4c67a37
   SDWebImageWebPCoder: f93010f3f6c031e2f8fb3081ca4ee6966c539815
   shared_preferences: 5033afbb22d372e15aff8ff766df9021b845f273
+  sign_in_with_apple: f3bf75217ea4c2c8b91823f225d70230119b8440
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   sumup: ae9921905675072cb20880fccfc1c60d91a6509c
   SumUpSDK: 2278a183933ad71d814ac535896524f2056f7bbf
