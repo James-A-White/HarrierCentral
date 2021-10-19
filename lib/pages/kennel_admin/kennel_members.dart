@@ -169,8 +169,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     final String query = ''' 
         SELECT 
           h.${G0<TableModel>().hashersTableHelper.colHasherId},
-          h.${G0<TableModel>().hashersTableHelper.colDispName},
-          lower(h.${G0<TableModel>().hashersTableHelper.colDispName} || " " || h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName}) as nameForSort,
+          coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>") as dispName,
+          lower(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " ") as nameForSort,
           h.${G0<TableModel>().hashersTableHelper.colPhoto},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun},
