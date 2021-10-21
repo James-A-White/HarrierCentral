@@ -413,7 +413,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           controller: _emailController,
           decoration: const InputDecoration(labelText: 'Email'),
           keyboardType: TextInputType.emailAddress,
-          validator: validateEmail,
+          validator: Utilities.validateEmail,
           onSaved: (String val) {
             _email = val;
           },
@@ -488,18 +488,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         ),
       ],
     );
-  }
-
-  String validateEmail(String value) {
-    if (value.isNotEmpty) {
-      const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
-      final RegExp regex = RegExp(pattern, caseSensitive: false);
-      if (!regex.hasMatch(value))
-        return 'Please enter a valid Email';
-      else
-        return null;
-    }
-    return 'Please enter a valid Email';
   }
 
   AppBar appBar;

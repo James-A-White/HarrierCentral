@@ -347,6 +347,7 @@ class HashersService extends BaseService {
   Future<String> processThirdPartyLogin({
     ThirdPartyLoginData loginData,
     String hashName,
+    String email,
     int includeInGlobalHashDirectory = -1,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
@@ -388,7 +389,7 @@ class HashersService extends BaseService {
       'firstName': loginData.firstName,
       'lastName': loginData.lastName,
       'hashName': hashName,
-      //'email': loginData.email,
+      'email': email,
       'photo': loginData.photoUrl ?? '',
       'thirdPartyLoginType': loginData.loginType,
       'thirdPartyUserId': loginData.id,

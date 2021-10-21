@@ -158,17 +158,7 @@ class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserv
                   focusNode: myFocusNodeEmail,
                   controller: signupEmailController,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (String val) {
-                    if (val.isEmpty) {
-                      return 'Please provide an email address';
-                    } else {
-                      if (EmailValidator.validate(val)) {
-                        return null;
-                      } else {
-                        return 'Please provide a valid email address';
-                      }
-                    }
-                  },
+                  validator: Utilities.validateEmail,
                   style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                   decoration: const InputDecoration(
                     border: InputBorder.none,

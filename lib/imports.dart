@@ -11,7 +11,7 @@ export 'package:auto_size_text/auto_size_text.dart';
 export 'package:cached_network_image/cached_network_image.dart';
 export 'package:chewie/chewie.dart';
 export 'package:device_info/device_info.dart';
-export 'package:email_validator/email_validator.dart';
+//export 'package:email_validator/email_validator.dart';
 export 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 export 'package:flutter/material.dart';
 export 'package:flutter/rendering.dart';

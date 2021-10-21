@@ -120,6 +120,18 @@ class Utilities {
     }
   }
 
+  static String validateEmail(String value) {
+    if ((value != null) && (value.isNotEmpty)) {
+      const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+      final RegExp regex = RegExp(pattern, caseSensitive: false);
+      if (!regex.hasMatch(value))
+        return 'Please enter a valid email';
+      else
+        return null;
+    }
+    return 'Please enter an email address';
+  }
+
   static String getEventScopeText(int eventGeographicScope) {
     String s = 'Special event';
 

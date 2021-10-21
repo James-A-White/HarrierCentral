@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class ThirdPartyLogin extends StatefulWidget {
-  ThirdPartyLogin(this.isNewUser);
+  const ThirdPartyLogin(this.isNewUser);
 
   final bool isNewUser;
 
@@ -11,28 +11,34 @@ class ThirdPartyLogin extends StatefulWidget {
 }
 
 class _LoginPageState extends State<ThirdPartyLogin> {
-  bool isLoggedIn = false;
+  bool _isLoggedIn = false;
   ThirdPartyLoginData _profileData;
   //String facebookAccessToken;
 
-  bool includeInGlobalHashDirectory = true;
+  bool _includeInGlobalHashDirectory = true;
 
-  TextEditingController hashNameTextController;
-  final FocusNode hashNameFocusNode = FocusNode();
+  final TextEditingController _hashNameTextController = TextEditingController();
+  final FocusNode _hashNameFocusNode = FocusNode();
+
+  final TextEditingController _emailTextController = TextEditingController();
+  final FocusNode _emailFocusNode = FocusNode();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool isLoading = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
 
-    hashNameTextController = TextEditingController();
+    if (!widget.isNewUser) {
+      _hashNameTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.hashName));
+      _emailTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.email));
+    }
   }
 
   void _onLoginStatusChanged(bool loggedIn, {ThirdPartyLoginData loginData}) {
     setState(() {
-      isLoggedIn = loggedIn;
+      _isLoggedIn = loggedIn;
       _profileData = loginData;
     });
   }
@@ -57,11 +63,11 @@ class _LoginPageState extends State<ThirdPartyLogin> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
-        child: isLoading
+        child: _isLoading
             ? Center(
                 child: HcCircularProgressIndicator(key: UniqueKey()),
               )
-            : isLoggedIn
+            : _isLoggedIn
                 ? _displayUserData(_profileData)
                 : Center(
                     child: Column(
@@ -267,107 +273,133 @@ class _LoginPageState extends State<ThirdPartyLogin> {
             topMargin: 35.0,
             bottomMargin: 15.0,
           ),
-          Form(
-            key: _formKey,
-            child: Container(
-              margin: const EdgeInsets.only(left: 15, right: 15),
-              padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
+          if (widget.isNewUser) ...<Widget>[
+            Form(
+              key: _formKey,
+              child: Container(
+                margin: const EdgeInsets.only(left: 15, right: 15),
+                padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
 
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                color: Colors.yellow[100],
-              ),
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                  color: Colors.yellow[100],
+                ),
 
-              //color: Colors.yellow[100],
-              child: Column(
-                children: <Widget>[
-                  TextFormField(
-                    autocorrect: false,
-                    //textCapitalization: TextCapitalization.characters,
-                    controller: hashNameTextController,
-                    focusNode: hashNameFocusNode,
-                    decoration: InputDecoration(
-                      labelText: 'Hash Name',
-                      //hintText: profileData != null ? 'Just ' + profileData['first_name'] : '',
-                      fillColor: Colors.red,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(),
+                //color: Colors.yellow[100],
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      autocorrect: false,
+                      //textCapitalization: TextCapitalization.characters,
+                      controller: _hashNameTextController,
+                      focusNode: _hashNameFocusNode,
+                      decoration: InputDecoration(
+                        labelText: 'Hash Name',
+                        //hintText: profileData != null ? 'Just ' + profileData['first_name'] : '',
+                        fillColor: Colors.red,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: const BorderSide(),
+                        ),
                       ),
+                      // validator: (String val) {
+                      //   if (val.length != 6) {
+                      //     return 'Invite codes are six characters';
+                      //   } else {
+                      //     return null;
+                      //   }
+                      // },
+                      //keyboardType: TextInputType.,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Colors.red.shade900),
                     ),
-                    // validator: (String val) {
-                    //   if (val.length != 6) {
-                    //     return 'Invite codes are six characters';
-                    //   } else {
-                    //     return null;
-                    //   }
-                    // },
-                    //keyboardType: TextInputType.,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Colors.red.shade900),
-                  ),
-                  const SizedBox(height: 20, width: 10),
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        height: 25,
-                        width: 25,
-                        color: Colors.yellow[100],
-                        child: Checkbox(
-                          value: includeInGlobalHashDirectory,
-                          onChanged: (bool value) {
-                            setState(() {
-                              includeInGlobalHashDirectory = value;
-                              // checkDirty();
-                            });
+                    const SizedBox(height: 20, width: 10),
+                    TextFormField(
+                      autocorrect: false,
+                      //textCapitalization: TextCapitalization.characters,
+                      controller: _emailTextController,
+                      focusNode: _emailFocusNode,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        //hintText: profileData != null ? 'Just ' + profileData['first_name'] : '',
+                        fillColor: Colors.red,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: const BorderSide(),
+                        ),
+                      ),
+                      validator: Utilities.validateEmail,
+                      // onSaved: (String val) {
+                      //   _email = val;
+                      // },
+                      //keyboardType: TextInputType.,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 20.0, color: Colors.red.shade900),
+                    ),
+                    const SizedBox(height: 20, width: 10),
+                    Row(
+                      children: <Widget>[
+                        Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          height: 25,
+                          width: 25,
+                          color: Colors.yellow[100],
+                          child: Checkbox(
+                            value: _includeInGlobalHashDirectory,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _includeInGlobalHashDirectory = value;
+                                // checkDirty();
+                              });
+                            },
+                          ),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Include me in Global Hash Directory',
+                            //style: headingStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            IveCoreUtilities.showAlert(
+                                context,
+                                'What is the Global Hash Directory?',
+                                'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
+                                'OK');
                           },
+                          child: Container(
+                            padding: const EdgeInsets.only(left: 20),
+                            height: 26,
+                            child: Image.asset('images/icons/more_info_button.png'),
+                          ),
                         ),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'Include me in Global Hash Directory',
-                          //style: headingStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          IveCoreUtilities.showAlert(
-                              context,
-                              'What is the Global Hash Directory?',
-                              'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
-                              'OK');
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.only(left: 20),
-                          height: 26,
-                          child: Image.asset('images/icons/more_info_button.png'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8, width: 10),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 8, width: 10),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
           Padding(
             padding: const EdgeInsets.only(top: 25.0),
             child: TextButton(
-              child: Text('Get started!', style: textStyleButton),
+              child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info', style: textStyleButton),
               onPressed: () async {
-                if (_formKey.currentState.validate()) {
+                if (!widget.isNewUser || ((_formKey?.currentState != null) && (_formKey.currentState.validate()))) {
                   setState(() {
-                    isLoading = true;
+                    _isLoading = true;
                   });
 
                   final HashersService hSrv = HashersService();
                   final String responseBody = await hSrv.processThirdPartyLogin(
                     loginData: profileData,
-                    hashName: hashNameTextController.text,
-                    includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0,
+                    hashName: _hashNameTextController.text,
+                    email: _emailTextController.text,
+                    includeInGlobalHashDirectory: _includeInGlobalHashDirectory ? 1 : 0,
                   );
 
                   if (!responseBody.startsWith(ERROR_PREFIX)) {
