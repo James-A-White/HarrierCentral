@@ -52,7 +52,12 @@ class Tables {
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
     // MIGRATION 270
-    MigrationsModel(dbVersion: DB_VERSION, migrationText: '', appliedAtInt: 0),
+    MigrationsModel(
+        dbVersion: DB_VERSION,
+        migrationText: ''' 
+      ALTER TABLE ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().regionsTableHelper.colRegionAbbreviation} TEXT;
+    ''',
+        appliedAtInt: 0),
 
     // // MIGRATION 222
     // MigrationsModel(dbVersion: 222, migrationText: '''

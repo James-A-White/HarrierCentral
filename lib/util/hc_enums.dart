@@ -29,10 +29,12 @@ enum StringPrefsEnum {
   facebookId,
   facebookAccessToken,
   facebookProfilePhoto,
+  facebookEmail,
   thirdPartyAccessToken,
   thirdPartyUserId,
   thirdPartyAuthorizationCode,
   thirdPartyLoginType,
+  thirdPartyEmail,
   paymentTerminalAccountKey,
 }
 

@@ -140,6 +140,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
       await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
       await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
       await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
+      await setStringPref(StringPrefsEnum.thirdPartyEmail, appleCredential?.email ?? '');
       await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
@@ -151,6 +152,10 @@ class _LoginPageState extends State<ThirdPartyLogin> {
         authorizationCode: appleCredential.authorizationCode,
         thirdPartyEmail: appleCredential.email,
       );
+
+      if (widget.isNewUser) {
+        _emailTextController.value = TextEditingValue(text: appleCredential?.email ?? '');
+      }
 
       _onLoginStatusChanged(true, loginData: d);
     } on UnknownSignInWithAppleException catch (e) {
@@ -186,12 +191,14 @@ class _LoginPageState extends State<ThirdPartyLogin> {
 
       await setStringPref(StringPrefsEnum.facebookId, accessToken.userId);
       await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.token);
+      await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
       await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
 
       await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, ''); // facebook does not have an auth code
       await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.token);
       await setStringPref(StringPrefsEnum.thirdPartyUserId, accessToken.userId);
       await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'facebook');
+      await setStringPref(StringPrefsEnum.thirdPartyEmail, (userData['email'] ?? '').toString());
       await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
       await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, accessToken.expires);
 
@@ -205,6 +212,10 @@ class _LoginPageState extends State<ThirdPartyLogin> {
         accessTokenExpires: accessToken.expires,
         thirdPartyEmail: userData['email'],
       );
+
+      if (widget.isNewUser) {
+        _emailTextController.value = TextEditingValue(text: (userData['email'] ?? '').toString());
+      }
 
       _onLoginStatusChanged(true, loginData: d);
     } else {

@@ -106,12 +106,12 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-                  Text('\r\n1.4. What are Hash Points?', style: headingStyle),
-                  Text(
-                    'It\'s traditional for many Hash Kennels to record how many runs each Hasher has and to give rewards based on this. However, many Kennels have either lost track of run counts or never started in the first place. Hash Points are awarded for good Hash behavior (such as haring a run). Hash Points get reset at the beginning of each year to give newcomers a chance to achieve greatness quickly!',
-                    style: bodyStyle,
-                    textAlign: TextAlign.justify,
-                  ),
+                  // Text('\r\n1.4. What are Hash Points?', style: headingStyle),
+                  // Text(
+                  //   'It\'s traditional for many Hash Kennels to record how many runs each Hasher has and to give rewards based on this. However, many Kennels have either lost track of run counts or never started in the first place. Hash Points are awarded for good Hash behavior (such as haring a run). Hash Points get reset at the beginning of each year to give newcomers a chance to achieve greatness quickly!',
+                  //   style: bodyStyle,
+                  //   textAlign: TextAlign.justify,
+                  // ),
                   Text('\r\n2. Your Data', style: sectionStyle),
                   Text('\r\n2.1. What personal data do we store?', style: headingStyle),
                   Text(
@@ -153,18 +153,46 @@ class _FaqPageContentState extends State<FaqPageContent> {
                   ),
                   Text('\r\n3. App usage for Hashers', style: sectionStyle),
                   Text('\r\n3.1. What can I get for free?', style: headingStyle),
-                  Text(
-                    'See https://www.harriercentral.com/index.php/pricing/ for the full list of features, including searching for run information and keeping track of your run counts at Kennels around the world',
+                  Linkify(
+                    text:
+                        'Visit:\r\n\r\nhttps://www.harriercentral.com/index.php/pricing/\r\n\r\nfor the full list of features, including searching for run information and keeping track of your run counts at Kennels around the world',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
+                    linkStyle: bodyStylePink,
+                    onOpen: (LinkableElement link) async {
+                      if (await canLaunch(link.url)) {
+                        await launch(link.url);
+                      } else {
+                        IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                      }
+                    },
                   ),
+                  // Text(
+                  //   'See https://www.harriercentral.com/index.php/pricing/ for the full list of features, including searching for run information and keeping track of your run counts at Kennels around the world',
+                  //   style: bodyStyle,
+                  //   textAlign: TextAlign.justify,
+                  // ),
                   Text('\r\n4. Information for Hash House Harriers organizations', style: sectionStyle),
                   Text('\r\n4.1. How can our Hash Kennel join?', style: headingStyle),
-                  Text(
-                    'To create a Kennel account, go to https://www.harriercentral.com/index.php/kennel-signup-main/ If your Kennel posts events in a FB Group (either public or private) and you are an admin of that group, then you can opt to register to use Facebook integration so you do not have to enter the information more than once. We currently use a 5-minute polling mechanism, so any changes you make to your run event in Facebook will be automatically incorporated into the app within 5 minutes. Otherwise, it is an easy process to manually enter runs into the app.',
+                  Linkify(
+                    text:
+                        'To create a Kennel account, go to:\r\n\r\nhttps://www.harriercentral.com/index.php/kennel-signup-main/\r\n\r\nIf your Kennel posts events in a FB Group (either public or private) and you are an admin of that group, then you can opt to register to use Facebook integration so you do not have to enter the information more than once. We currently use a 5-minute polling mechanism, so any changes you make to your run event in Facebook will be automatically incorporated into the app within 5 minutes. Otherwise, it is an easy process to manually enter runs into the app.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
+                    linkStyle: bodyStylePink,
+                    onOpen: (LinkableElement link) async {
+                      if (await canLaunch(link.url)) {
+                        await launch(link.url);
+                      } else {
+                        IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                      }
+                    },
                   ),
+                  // Text(
+                  //   'To create a Kennel account, go to https://www.harriercentral.com/index.php/kennel-signup-main/ If your Kennel posts events in a FB Group (either public or private) and you are an admin of that group, then you can opt to register to use Facebook integration so you do not have to enter the information more than once. We currently use a 5-minute polling mechanism, so any changes you make to your run event in Facebook will be automatically incorporated into the app within 5 minutes. Otherwise, it is an easy process to manually enter runs into the app.',
+                  //   style: bodyStyle,
+                  //   textAlign: TextAlign.justify,
+                  // ),
                   Text('\r\n4.2. Is there a fee for our Kennel to be on the app?', style: headingStyle),
                   Text(
                     'There is a free tier for Kennels to post their runs. However, for advanced admin services, such as tracking hash cash, there will be a nominal annual fee to help us cover our costs of cloud service provision. There are generally three ways companies cover these costs: 1) by selling users’ private data to third parties (the Facebook & Google models), 2) by putting advertisements in the app, or 3) by charging a fee directly to users. Above all, we value our users’ privacy and we aim to provide the best user experience, uninterrupted by ads. Accordingly, we have chosen to charge a fee to kennels for our advanced services.',
@@ -173,8 +201,38 @@ class _FaqPageContentState extends State<FaqPageContent> {
                   ),
                   Text('\r\n5. Other', style: sectionStyle),
                   Text('\r\n5.1. I have other questions, how can I get them answered?', style: headingStyle),
+                  Linkify(
+                    text:
+                        'The best way to get your questions answered is to contact us at:\r\n\r\nconnect@harriercentral.com.\r\n\r\nYou can also use the button below to open our web contact form.',
+                    style: bodyStyle,
+                    textAlign: TextAlign.justify,
+                    linkStyle: bodyStylePink,
+                    onOpen: (LinkableElement link) async {
+                      if (await canLaunch(link.url)) {
+                        await launch(link.url);
+                      } else {
+                        IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                      }
+                    },
+                  ),
+
+                  Connection.styleForConnected(
+                    G0<AppModel>().connectionStatus,
+                    Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                        ),
+                        onPressed: () async {
+                          await launch('https://harriercentral.com/index.php/contact/');
+                        },
+                        child: Text('Contact us', style: textStyleButton),
+                      ),
+                    ),
+                  ),
+
                   Text(
-                    'The best way to get your questions answered is to contact us at connect@harriercentral.com. We\'d be delighted to hear from you, get your thoughts on our App and Service and answer any questions you might have. We hope you enjoy Harrier Central!',
+                    '\r\n\r\nWe\'d be delighted to hear from you, get your thoughts on our App and Service and answer any questions you might have. We hope you enjoy Harrier Central!',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),

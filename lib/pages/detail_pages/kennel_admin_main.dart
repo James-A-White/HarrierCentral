@@ -614,7 +614,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             height: 240.0,
                                             point: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
                                             builder: (BuildContext ctx) => GestureDetector(
-                                              onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat, widget.kennelAggregateItem.extensions.cityLat),
+                                              onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
                                               child: Container(
                                                 margin: const EdgeInsets.only(bottom: 110.0),
                                                 child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[

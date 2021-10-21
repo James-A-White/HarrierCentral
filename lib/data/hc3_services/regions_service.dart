@@ -8,6 +8,7 @@ class RegionsModel implements BaseModel {
   RegionsModel({
     this.regionId,
     this.regionName,
+    this.regionAbbreviation,
     this.countryId,
     this.flagFile,
     this.removed,
@@ -20,6 +21,7 @@ class RegionsModel implements BaseModel {
 
   final String regionId;
   final String regionName;
+  final String regionAbbreviation;
   final String countryId;
   final String flagFile;
   final int removed;
@@ -53,6 +55,7 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
 
   final String colRegionId = 'regionId';
   final String colRegionName = 'regionName';
+  final String colRegionAbbreviation = 'regionAbbreviation';
   final String colCountryId = 'countryId';
   final String colFlagFile = 'flagFile';
 
@@ -65,6 +68,7 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
 
             $colRegionId TEXT NOT NULL,
             $colRegionName TEXT,
+            $colRegionAbbreviation TEXT,
             $colCountryId TEXT,
             $colFlagFile TEXT,
 

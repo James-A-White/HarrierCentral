@@ -23,6 +23,8 @@ TextStyle bodyStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNe
 
 TextStyle bodyStyleYellow = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
 
+TextStyle bodyStylePink = TextStyle(color: Colors.pink.shade100, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
+
 TextStyle bodyStyleSc = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 12.0, height: 1.0);
 
 // TextStyle titleStyle = const TextStyle(

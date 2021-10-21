@@ -14,6 +14,7 @@ class KennelListQueryExtenstions {
     this.cityLon,
     this.cityName,
     this.regionName,
+    this.regionAbbreviation,
     this.countryName,
     this.searchText,
   });
@@ -29,6 +30,7 @@ class KennelListQueryExtenstions {
   num cityLon;
   String cityName;
   String regionName;
+  String regionAbbreviation;
   String countryName;
   final String searchText;
 
@@ -49,6 +51,7 @@ class KennelListQueryExtenstions {
       cityLon: map['cityLon'],
       cityName: map['cityName'],
       regionName: map['regionName'],
+      regionAbbreviation: map['regionAbbreviation'],
       countryName: map['countryName'],
       searchText: map['searchText'],
     );
@@ -84,6 +87,8 @@ class QueryKennels {
   // it is important to have the beginning and end of the search field have a space
   // character to ensure that searches run properly.
 
+// || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"")
+
   // note: the tilde characters at the beginning and end of the search field ensure
   // that the kennelName is searchable and whatever is at the end of the search field
   // is also searchable
@@ -92,8 +97,10 @@ class QueryKennels {
                "~ " || k.${G0<TableModel>().kennelsTableHelper.colKennelName} 
             || " " || k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} 
             || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
-            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName} 
+            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName}
+            || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"") 
             || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
+            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryCode} 
             || " " || 
               case 
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 
@@ -172,6 +179,7 @@ class QueryKennels {
           c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location,
           c.cityName as cityName,
           r.regionName as regionName,
+          r.regionAbbreviation as regionAbbreviation,
           n.countryName as countryName,
           (SELECT min(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime >= datetime('now','localtime') ) as nextRunDate,
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
