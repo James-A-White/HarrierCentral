@@ -72,10 +72,12 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
       IveCoreUtilities.showAlert(
-              context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
+              context,
+              'Network Error',
+              'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.',
+              'Quit')
           .then((void _) async {
-        await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
-        return null;
+        exit(0);
       });
     } else if (loginResult == null) {
       G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;

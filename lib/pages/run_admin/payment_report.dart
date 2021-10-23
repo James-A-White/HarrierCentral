@@ -392,7 +392,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                       child: filteredList.isEmpty
                           ? const Center(child: Text('No transactions available.'))
                           : RefreshIndicator(
-                              onRefresh: () => _refreshSqlTablesFromBackend(),
+                              onRefresh: _refreshSqlTablesFromBackend,
                               displacement: 40.0,
                               child: ListView.separated(
                                 separatorBuilder: (BuildContext context, int index) => const Divider(

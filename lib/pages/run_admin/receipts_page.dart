@@ -212,7 +212,7 @@ class ReceiptsListState extends State<ReceiptsList> {
             child: receiptsList.isEmpty
                 ? const Center(child: Text('No receipts available.'))
                 : RefreshIndicator(
-                    onRefresh: () => _handleRefresh(),
+                    onRefresh: _handleRefresh,
                     displacement: 40.0,
                     child: ListView.separated(
                       separatorBuilder: (BuildContext context, int index) => const Divider(

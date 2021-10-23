@@ -411,7 +411,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       child: runCountsList.isEmpty
           ? const Center(child: Text('No runs logged yet.'))
           : RefreshIndicator(
-              onRefresh: () => _handleRefresh(),
+              onRefresh: _handleRefresh,
               displacement: 130.0,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

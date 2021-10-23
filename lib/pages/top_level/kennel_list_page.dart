@@ -319,7 +319,7 @@ class KennelsListPageState extends State<KennelsListPage> {
       }
 
       //G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.isHomeKennel ? 1 : 0).compareTo(a.isHomeKennel ? 1 : 0));
-      int xxx = 0;
+
     }
   }
 

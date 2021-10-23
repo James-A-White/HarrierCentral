@@ -15,7 +15,7 @@ class OfflineModeRibbon extends StatelessWidget {
         ? const SizedBox.shrink()
         : Positioned(
             right: 0,
-            top: 0,
+            top: 20,
             child: GestureDetector(
               onTap: () {
                 if (lastSync != null) {
@@ -30,8 +30,8 @@ class OfflineModeRibbon extends StatelessWidget {
               },
               child: Image.asset(
                 'images/icons/offline_mode.png',
-                height: 60,
-                width: 60,
+                height: 100,
+                width: 100,
               ),
             ),
           );

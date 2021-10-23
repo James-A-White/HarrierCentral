@@ -289,15 +289,17 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                             ),
                           ),
 
-                          IconButton(
-                            icon: Connection.styleForConnected(G0<AppModel>().connectionStatus, const Icon(MaterialCommunityIcons.dots_vertical)),
-                            iconSize: Theme.of(context).iconTheme.size,
-                            color: Colors.black54,
-                            splashColor: Theme.of(context).highlightColor,
-                            onPressed: () {
-                              showAllOptionsPopup(context);
-                            },
-                          ),
+                          if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) ...<Widget>[
+                            IconButton(
+                              icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                              iconSize: Theme.of(context).iconTheme.size,
+                              color: Colors.black54,
+                              splashColor: Theme.of(context).highlightColor,
+                              onPressed: () {
+                                showAllOptionsPopup(context);
+                              },
+                            ),
+                          ],
 
                           // (widget.futureRun.event.hares ?? '') == '' ? Container(
                           //   padding: const EdgeInsets.only(top:15),
@@ -345,6 +347,32 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+  static Widget styleForConnected(EnumConnectionStatus status, Widget w, {num borderRadius = 0.0}) {
+    return Opacity(
+      child: w,
+      opacity: .5,
+    );
+    //return w;
+    // return Container(
+    //   foregroundDecoration: status == EnumConnectionStatus.connected
+    //       ? const BoxDecoration()
+    //       : BoxDecoration(
+    //           borderRadius: BorderRadius.circular(borderRadius.toDouble()),
+    //           color: Colors.grey,
+    //           backgroundBlendMode: BlendMode.lighten,
+    //         ),
+    //   child: Container(
+    //     foregroundDecoration: status == EnumConnectionStatus.connected
+    //         ? const BoxDecoration()
+    //         : const BoxDecoration(
+    //             color: Colors.grey,
+    //             backgroundBlendMode: BlendMode.saturation,
+    //           ),
+    //     child: w,
+    //   ),
+    // );
   }
 
   void showRsvpOptionsPopup(BuildContext context) {

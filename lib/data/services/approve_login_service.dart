@@ -54,27 +54,63 @@ class ApproveLoginService {
       'fbToken': facebookAccessToken,
     });
 
-    Future<Response> response;
+    Future<Response> futureResponse;
 
-    response = post(Uri.parse(BASE_API_URL + 'hc3_approve_login'), headers: <String, String>{'content-type': 'application/json'}, body: body
+    futureResponse = post(Uri.parse(BASE_API_URL + 'hc3_approve_login'), headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
         .catchError(
       (dynamic error) {
         // TODO(James): Handle socketException
-        response = null;
+        futureResponse = null;
       },
     );
 
-    if (response == null) {
+    if (futureResponse == null) {
       return null;
     }
 
-    // if the response times out, show an error
-    response.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
+    //final Future<void> delay = Future<void>.delayed(const Duration(seconds: 25));
 
-    final Response resp = await response;
+    // wait 7 seconds then issue the first warning
+    Response resp = await futureResponse.timeout(const Duration(seconds: LOGIN_IS_DELAYED_WARNING_1), onTimeout: () {
+      return null;
+    });
+
+    if (resp == null) {
+      final bool keepWaiting = await _onLoginDelayed(
+        context,
+        'Harrier Central is waiting for a response from the server. It appears as though the network is slow. Please stand by while we wait for a server response.',
+      );
+
+      if (!keepWaiting) {
+        futureResponse.ignore();
+        //delay.ignore();
+        return null;
+      }
+    }
+
+    // wait 15 more seconds then issue another warning
+    resp ??= await futureResponse.timeout(const Duration(seconds: LOGIN_IS_DELAYED_WARNING_2), onTimeout: () {
+      return null;
+    });
+
+    if (resp == null) {
+      final bool keepWaiting = await _onLoginDelayed(
+        context,
+        'Harrier Central is still waiting for a response from the server. Let\'s give it just a bit more time.',
+      );
+
+      if (!keepWaiting) {
+        futureResponse.ignore();
+        //delay.ignore();
+        return null;
+      }
+    }
+
+    // finally, if the response times out again, continue with offline mode
+    resp ??= await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
 
     if (resp == null) {
       return null;
@@ -83,15 +119,31 @@ class ApproveLoginService {
     final ApproveLoginModel loginResult = ApproveLoginModel.itemFromJson(resp.body);
 
     return loginResult;
+    //return null;
   }
 
-  Future<Response> _onTimeout(BuildContext context) {
-    IveCoreUtilities.showAlert(
-            context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
-        .then((void _) async {
-      await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
-    });
+  Future<bool> _onLoginDelayed(BuildContext context, String message) async {
+    final bool isWait = await IveCoreUtilities.showAlert(
+      context,
+      'Slow Network',
+      message,
+      'Wait',
+      showCancelButton: true,
+      cancelButtonText: 'Continue offline',
+    );
+    if (!isWait) {
+      // return an empty response to indicate that the user wants to continue offline.
+      return false;
+    }
+    return true;
+  }
 
+  Future<Response> _onTimeout(BuildContext context) async {
+    await IveCoreUtilities.showAlert(
+        context,
+        'Network Error',
+        'Harrier Central was not able to contact the server. Please check your network connection.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
+        'Use Offline');
     return null;
   }
 }

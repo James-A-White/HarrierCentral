@@ -59,23 +59,23 @@ class KennelListItemState extends State<KennelsListItem> {
                 },
                 child: Container(
                   child: IconButton(
-                    icon: Connection.styleForConnected(
-                        G0<AppModel>().connectionStatus,
-                        Icon(
-                            widget.kennelItem.extensions.followingRequested != -1
-                                ? delayIcon
-                                : widget.kennelItem.hkm.following == 1
-                                    ? const Icon(FontAwesome.check_circle).icon
-                                    : widget.kennelItem.hkm.following == 2
-                                        ? const Icon(FontAwesome.times_circle).icon
-                                        : const Icon(FontAwesome.star).icon,
-                            color: widget.kennelItem.extensions.followingRequested != -1
+                    icon: Icon(
+                        widget.kennelItem.extensions.followingRequested != -1
+                            ? delayIcon
+                            : widget.kennelItem.hkm.following == 1
+                                ? const Icon(FontAwesome.check_circle).icon
+                                : widget.kennelItem.hkm.following == 2
+                                    ? const Icon(FontAwesome.times_circle).icon
+                                    : const Icon(FontAwesome.star).icon,
+                        color: G0<AppModel>().connectionStatus != EnumConnectionStatus.connected
+                            ? Colors.grey
+                            : widget.kennelItem.extensions.followingRequested != -1
                                 ? Colors.blue
                                 : widget.kennelItem.hkm.following == 1
                                     ? Colors.green
                                     : widget.kennelItem.hkm.following == 2
                                         ? Colors.red
-                                        : Colors.yellow[800])),
+                                        : Colors.yellow[800]),
                     tooltip: 'Select to follow a Kennel',
                     iconSize: 35.0,
                     alignment: Alignment.topCenter,
@@ -238,98 +238,100 @@ class KennelListItemState extends State<KennelsListItem> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: Connection.styleForConnected(G0<AppModel>().connectionStatus, const Icon(MaterialCommunityIcons.dots_vertical)),
-                    iconSize: Theme.of(context).iconTheme.size,
-                    color: Colors.black54,
-                    splashColor: Theme.of(context).highlightColor,
-                    onPressed: () {
-                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
-                          message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
-                        final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
-                          <String, dynamic>{
-                            'title': 'Always show runs',
-                            'icon': <Widget>[
-                              Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                              const Icon(FontAwesome.check_circle, color: Colors.green)
-                            ],
-                            'returnValue': followTypeFollow
-                          },
-                          <String, dynamic>{
-                            'title': 'Never show runs',
-                            'icon': <Widget>[
-                              Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                              const Icon(FontAwesome.times_circle, color: Colors.red)
-                            ],
-                            'returnValue': followTypeIgnore
-                          },
-                          <String, dynamic>{
-                            'title': 'Show runs within ' + getDistanceString(),
-                            'icon': <Widget>[
-                              const Icon(
-                                FontAwesome.star,
-                                color: Colors.yellow,
-                              ),
-                            ],
-                            'returnValue': followTypeAuto
-                          },
-                          !widget.kennelItem.isHomeKennel
-                              ? <String, dynamic>{
-                                  'title': 'Set home kennel',
-                                  'icon': <Widget>[
-                                    Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
-                                    const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                                  ],
-                                  'returnValue': followTypeToggleHomeKennel
-                                }
-                              : <String, dynamic>{
-                                  'title': 'Clear home kennel',
-                                  'icon': <Widget>[
-                                    Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
-                                    const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                                  ],
-                                  'returnValue': followTypeToggleHomeKennel
-                                },
-                        ];
+                  if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) ...<Widget>[
+                    IconButton(
+                      icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                      iconSize: Theme.of(context).iconTheme.size,
+                      color: Colors.black54,
+                      splashColor: Theme.of(context).highlightColor,
+                      onPressed: () {
+                        if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+                            message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+                          final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+                            <String, dynamic>{
+                              'title': 'Always show runs',
+                              'icon': <Widget>[
+                                Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                const Icon(FontAwesome.check_circle, color: Colors.green)
+                              ],
+                              'returnValue': followTypeFollow
+                            },
+                            <String, dynamic>{
+                              'title': 'Never show runs',
+                              'icon': <Widget>[
+                                Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                const Icon(FontAwesome.times_circle, color: Colors.red)
+                              ],
+                              'returnValue': followTypeIgnore
+                            },
+                            <String, dynamic>{
+                              'title': 'Show runs within ' + getDistanceString(),
+                              'icon': <Widget>[
+                                const Icon(
+                                  FontAwesome.star,
+                                  color: Colors.yellow,
+                                ),
+                              ],
+                              'returnValue': followTypeAuto
+                            },
+                            !widget.kennelItem.isHomeKennel
+                                ? <String, dynamic>{
+                                    'title': 'Set home kennel',
+                                    'icon': <Widget>[
+                                      Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+                                      const Icon(FontAwesome.home, color: Colors.white, size: 23)
+                                    ],
+                                    'returnValue': followTypeToggleHomeKennel
+                                  }
+                                : <String, dynamic>{
+                                    'title': 'Clear home kennel',
+                                    'icon': <Widget>[
+                                      Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                                      const Icon(FontAwesome.home, color: Colors.white, size: 23)
+                                    ],
+                                    'returnValue': followTypeToggleHomeKennel
+                                  },
+                          ];
 
-                        final MultipleChoicePopup popup = MultipleChoicePopup(
-                          key: UniqueKey(),
-                          title: 'Follow ${widget.kennelItem.kennel.kennelName}',
-                          buttons: buttons,
-                          cancelButtonTitle: 'Cancel',
-                          cancelButtonReturnValue: followTypeCancel,
-                        );
+                          final MultipleChoicePopup popup = MultipleChoicePopup(
+                            key: UniqueKey(),
+                            title: 'Follow ${widget.kennelItem.kennel.kennelName}',
+                            buttons: buttons,
+                            cancelButtonTitle: 'Cancel',
+                            cancelButtonReturnValue: followTypeCancel,
+                          );
 
-                        showDialog<dynamic>(
-                            context: context,
-                            barrierDismissible: false, // user must tap button!
-                            builder: (BuildContext context) {
-                              return popup;
-                            }).then((dynamic retVal) {
-                          if (retVal.value != -1) {
-                            final HasherKennelMapService srv = HasherKennelMapService();
-                            widget.kennelItem.extensions.followingRequested = retVal.value;
-                            setState(() {});
-                            int isHomeKennel = -1;
-                            if (retVal == followTypeToggleHomeKennel) {
-                              isHomeKennel = widget.kennelItem.isHomeKennel ? 0 : 1;
-                            }
+                          showDialog<dynamic>(
+                              context: context,
+                              barrierDismissible: false, // user must tap button!
+                              builder: (BuildContext context) {
+                                return popup;
+                              }).then((dynamic retVal) {
+                            if (retVal.value != -1) {
+                              final HasherKennelMapService srv = HasherKennelMapService();
+                              widget.kennelItem.extensions.followingRequested = retVal.value;
+                              setState(() {});
+                              int isHomeKennel = -1;
+                              if (retVal == followTypeToggleHomeKennel) {
+                                isHomeKennel = widget.kennelItem.isHomeKennel ? 0 : 1;
+                              }
 
-                            srv
-                                .updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: retVal.value, isHomeKennel: isHomeKennel)
-                                .then((List<dynamic> queryResults) {
-                              setState(() {
-                                setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId ?? '' : '').then((void _) {
-                                  widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
-                                      queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                              srv
+                                  .updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: retVal.value, isHomeKennel: isHomeKennel)
+                                  .then((List<dynamic> queryResults) {
+                                setState(() {
+                                  setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId ?? '' : '').then((void _) {
+                                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
+                                        queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                                  });
                                 });
                               });
-                            });
-                          }
-                        });
-                      }
-                    },
-                  ),
+                            }
+                          });
+                        }
+                      },
+                    ),
+                  ],
                 ],
               )),
         ],

@@ -330,7 +330,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
       child: RefreshIndicator(
-          onRefresh: () => _handleRefresh(),
+          onRefresh: _handleRefresh,
           displacement: 130.0,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -421,7 +421,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
             child: snapshot.data.isEmpty
                 ? const Center(child: Text('No members found.'))
                 : RefreshIndicator(
-                    onRefresh: () => _handleRefresh(),
+                    onRefresh: _handleRefresh,
                     displacement: 40.0,
                     child: ListView.separated(
                       separatorBuilder: (BuildContext context, int index) => const Divider(

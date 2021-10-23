@@ -156,25 +156,27 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (showLoadingIndicator) {
-      setState(() {
-        _isLoading = true;
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+      if (showLoadingIndicator) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
+
+      final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(
+          SyncEventAdminService.flagHashersTable |
+              SyncEventAdminService.flagPaymentsTable |
+              SyncEventAdminService.flagHasherEventMapTable |
+              SyncEventAdminService.flagHasherKennelMapTable,
+          true,
+          widget.eventAggregate.event.eventId);
+      final String resultStr = result ? 'successfully' : 'unsuccessfully';
+      print('Payments data synchronized $resultStr');
+
+      _refreshPackListFromTables(false).then((void _) {
+        _refreshCounters(true);
       });
     }
-
-    final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(
-        SyncEventAdminService.flagHashersTable |
-            SyncEventAdminService.flagPaymentsTable |
-            SyncEventAdminService.flagHasherEventMapTable |
-            SyncEventAdminService.flagHasherKennelMapTable,
-        true,
-        widget.eventAggregate.event.eventId);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Payments data synchronized $resultStr');
-
-    _refreshPackListFromTables(false).then((void _) {
-      _refreshCounters(true);
-    });
   }
 
   Future<void> _getAllHashers() async {
