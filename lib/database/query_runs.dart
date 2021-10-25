@@ -172,6 +172,15 @@ class QueryRuns {
             || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationStreet},'')
             || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationSubRegion},'')
             || " " || case when evt.${G0<TableModel>().eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${G0<TableModel>().eventsTableHelper.colEventNumber} as TEXT) END
+            || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
+            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName}
+            || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"") 
+            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
+            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryCode} 
+            || " " || replace(coalesce(c.${G0<TableModel>().citiesTableHelper.colCitySearchTags},""),","," ") 
+            || " " || replace(coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionSearchTags},""),","," ") 
+            || " " || replace(coalesce(n.${G0<TableModel>().countriesTableHelper.colCountrySearchTags},""),","," ") 
+            || " " || replace(coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelSearchTags},""),","," ") 
             || " " || 
               case 
               when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 1 THEN "not event is local" 
@@ -193,8 +202,7 @@ class QueryRuns {
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
-              end 
-            || " ~"
+              end || " ~" 
           as searchText
           ''';
 
@@ -293,7 +301,9 @@ class QueryRuns {
           $searchField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
-          INNER JOIN countries n on n.countryId = k.countryId
+          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
+          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
+          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           ''';
     } else {
@@ -325,7 +335,9 @@ class QueryRuns {
           $searchField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
-          INNER JOIN countries n on n.countryId = k.countryId
+          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
+          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
+          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           LEFT OUTER JOIN $paymentsTable pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
