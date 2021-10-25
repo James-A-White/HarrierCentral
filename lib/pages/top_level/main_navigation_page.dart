@@ -124,11 +124,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
       setState(() {});
 
-      _checkLocationPermissions().then((bool hasLoc) {
-        if (hasLoc) {
-          _checkAreWeAtRunStart();
-        }
-      });
+      final bool hasLoc = await _checkLocationPermissions();
+      if (hasLoc) {
+        await _checkAreWeAtRunStart();
+      }
 
       return true;
     });
@@ -163,7 +162,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             });
 
         if (retVal == enumYesNo_Yes) {
-          _checkInAtEvent(result.eventId, userId);
+          await _checkInAtEvent(result.eventId, userId);
         }
       }
     } else if (resultList.length > 1) {
@@ -180,20 +179,19 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       }
 
       if (showRunList) {
-        Navigator.push<dynamic>(
+        final dynamic doCheckIn = await Navigator.push<dynamic>(
           context,
           MaterialPageRoute<dynamic>(
             builder: (BuildContext context) => SelectRunPage(runList: resultList),
           ),
-        ).then((dynamic doCheckIn) async {
-          if ((doCheckIn as bool) == true) {
-            for (AreWeAtRunResult result in resultList) {
-              if (result.selected) {
-                await _checkInAtEvent(result.eventId, userId);
-              }
+        );
+        if ((doCheckIn as bool) == true) {
+          for (AreWeAtRunResult result in resultList) {
+            if (result.selected) {
+              await _checkInAtEvent(result.eventId, userId);
             }
           }
-        });
+        }
       }
     }
   }
@@ -227,7 +225,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     //   }
     // }
 
-    setIntPref(IntPrefsEnum.hasLocationPermissions, hasLocPermission ? 1 : 0);
+    await setIntPref(IntPrefsEnum.hasLocationPermissions, hasLocPermission ? 1 : 0);
     G0<AppModel>().hasLocationPermissions = hasLocPermission;
     return hasLocPermission;
   }

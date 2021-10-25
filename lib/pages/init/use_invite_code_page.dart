@@ -113,8 +113,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                   textAlign: TextAlign.center,
                 ),
                 GestureDetector(
-                  onTap: () {
-                    IveCoreUtilities.showAlert(
+                  onTap: () async {
+                    await IveCoreUtilities.showAlert(
                         context,
                         'What is an "Invite Code"?',
                         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
@@ -180,8 +180,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            IveCoreUtilities.showAlert(
+                          onTap: () async {
+                            await IveCoreUtilities.showAlert(
                                 context,
                                 'What is the Global Hash Directory?',
                                 'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -211,16 +211,15 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                                 return emailPopup;
                               });
 
-                          dlg.then((Map<String, String> x) async {
-                            final String email = x['email'];
-                            final String type = x['type'];
+                          final Map<String, String> x = await dlg;
+                          final String email = x['email'];
+                          final String type = x['type'];
 
-                            if (type != 'cancel') {
-                              emailAddress = email;
-                              final String userMessage = await HashersService.sendInviteCodeByEmail(email);
-                              await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Instructions', userMessage, 'OK');
-                            }
-                          });
+                          if (type != 'cancel') {
+                            emailAddress = email;
+                            final String userMessage = await HashersService.sendInviteCodeByEmail(email);
+                            await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Instructions', userMessage, 'OK');
+                          }
                         }),
                   ],
                 ),
@@ -246,7 +245,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         final AuthorizeDeviceService srv = AuthorizeDeviceService();
                         final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(),
                             includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
-                        apiCall.then((Map<String, String> result) {
+                        apiCall.then((Map<String, String> result) async {
                           setState(() {
                             isLoading = false;
                           });
@@ -257,18 +256,17 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
                             profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                            IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void _) {
-                              Navigator.pushReplacement<dynamic, dynamic>(
-                                  context,
-                                  MaterialPageRoute<dynamic>(
-                                    builder: (BuildContext context) => ChooseProfileImage(
-                                      isForThisDevice: true,
-                                      fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
-                                      currentProfileImage: profilePhotoUrl,
-                                      popToCaller: false,
-                                    ),
-                                  ));
-                            });
+                            await IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
+                            await Navigator.pushReplacement<dynamic, dynamic>(
+                                context,
+                                MaterialPageRoute<dynamic>(
+                                  builder: (BuildContext context) => ChooseProfileImage(
+                                    isForThisDevice: true,
+                                    fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
+                                    currentProfileImage: profilePhotoUrl,
+                                    popToCaller: false,
+                                  ),
+                                ));
                           } else {
                             // TODO(James): Do something here if the auth device fails
                           }

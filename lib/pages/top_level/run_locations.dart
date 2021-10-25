@@ -466,8 +466,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               homeKennelLat = lat;
               homeKennelLon = lon;
 
-              setNumPref(NumPrefsEnum.homeKennelLat, homeKennelLat);
-              setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
+              await setNumPref(NumPrefsEnum.homeKennelLat, homeKennelLat);
+              await setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
 
               if ((mapCenterOption == centerOnHomeKennel.value) && (homeKennelLat != null) && (homeKennelLon != null)) {
                 mapController.move(latlng.LatLng(homeKennelLat + .0, homeKennelLon + .0), mapController.zoom);
@@ -552,7 +552,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
           final KennelListAggregate kennel = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem, isHomeKennel: isHomeKennel);
 
-          Navigator.of(context).push<dynamic>(
+          await Navigator.of(context).push<dynamic>(
             MaterialPageRoute<dynamic>(
               builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
             ),

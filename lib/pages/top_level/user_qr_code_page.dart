@@ -403,6 +403,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
   Future<void> _onCodeRead(dynamic scanResult) async {
     final AudioCache audioPlayer = AudioCache(prefix: 'assets/sounds/');
+    // ignore: unawaited_futures
     audioPlayer.play('camera.mp3');
 
     setState(() {
@@ -431,9 +432,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
         final String userId = getStringPref(StringPrefsEnum.userId);
 
-        G0<TableModel>()
-            .hasherEventMapService
-            .joinEvent(
+        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
               content,
               userId,
               null,
@@ -442,18 +441,15 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
               attendenceState: attendenceState,
               isHare: isHareNo.value,
               virginVisitorType: enumHasher.value,
-            )
-            .then((
-          List<dynamic> adHocData,
-        ) {
-          setState(() {
-            _state = EQrScannerState.dataRecorded;
-            if ((adHocData != null) && (adHocData.isNotEmpty)) {
-              _onScreenMessage = adHocData[0]['userMessage'];
-            } else {
-              _onScreenMessage = 'Processing Complete';
-            }
-          });
+            );
+
+        setState(() {
+          _state = EQrScannerState.dataRecorded;
+          if ((adHocData != null) && (adHocData.isNotEmpty)) {
+            _onScreenMessage = adHocData[0]['userMessage'];
+          } else {
+            _onScreenMessage = 'Processing Complete';
+          }
         });
       }
 
@@ -486,19 +482,16 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
           } else {
             final String userId = getStringPref(StringPrefsEnum.userId);
 
-            G0<TableModel>()
+            final List<dynamic> adHocData = await G0<TableModel>()
                 .hasherEventMapService
-                .joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value)
-                .then((
-              List<dynamic> adHocData,
-            ) {
-              setState(() {
-                if ((adHocData != null) && (adHocData.isNotEmpty)) {
-                  _onScreenMessage = adHocData[0]['userMessage'];
-                } else {
-                  _onScreenMessage = 'Processing Complete';
-                }
-              });
+                .joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value);
+
+            setState(() {
+              if ((adHocData != null) && (adHocData.isNotEmpty)) {
+                _onScreenMessage = adHocData[0]['userMessage'];
+              } else {
+                _onScreenMessage = 'Processing Complete';
+              }
             });
           }
         }
@@ -669,7 +662,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
                   ),
                   onPressed: () async {
                     if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                      _toggleScanning();
+                      await _toggleScanning();
                     }
                   }),
             ),

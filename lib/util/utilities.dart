@@ -108,6 +108,8 @@ class Utilities {
 
       // don't wait for the position to resolve to return from
       // this function because we want the app to start quickly.
+
+      // ignore: unawaited_futures
       Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest).then((Position position) {
         G0<DeviceInfo>().deviceLat = position.latitude;
         G0<DeviceInfo>().deviceLon = position.longitude;

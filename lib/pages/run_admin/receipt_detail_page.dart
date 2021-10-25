@@ -102,7 +102,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     return '$BASE_RECEIPTS_URL$fileName';
   }
 
-  void _uploadReceipt() {
+  Future<void> _uploadReceipt() async {
     if (_formKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
       _formKey.currentState.save();
@@ -128,27 +128,23 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
       setState(() {
         _isLoading = true;
-
-        final ReceiptsService srv = ReceiptsService();
-        srv.uploadReceipt(item).then((String responseBody) {
-          if (!responseBody.startsWith(ERROR_PREFIX)) {
-            G0<TableModel>()
-                .baseService
-                .bulkUpdateDatabase(
-                  G0<TableModel>().receiptsTableHelper,
-                  G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
-                  responseBody,
-                  G0<Database>(),
-                )
-                .then((int notUsed) {
-              Navigator.of(context).pop();
-            });
-          } else {
-            IveCoreUtilities.showAlert(context, 'Error uploading receipt',
-                'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
-          }
-        });
       });
+
+      final ReceiptsService srv = ReceiptsService();
+      final String responseBody = await srv.uploadReceipt(item);
+      if (!responseBody.startsWith(ERROR_PREFIX)) {
+        await G0<TableModel>().baseService.bulkUpdateDatabase(
+              G0<TableModel>().receiptsTableHelper,
+              G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+              responseBody,
+              G0<Database>(),
+            );
+
+        Navigator.of(context).pop();
+      } else {
+        await IveCoreUtilities.showAlert(context, 'Error uploading receipt',
+            'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+      }
     } else {
 //    If all data are not valid then start auto validation.
       setState(() {

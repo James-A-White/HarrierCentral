@@ -61,7 +61,10 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
 
   await G0.isReady<Database>();
 
-  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser);
+  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllDataWithoutHashersOrEvents, false, informUser: informUser);
+  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, false, informUser: informUser);
+  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, false, informUser: informUser);
+
   if (_createIndexes) {
     await Tables.createIndexes(G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);
     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);

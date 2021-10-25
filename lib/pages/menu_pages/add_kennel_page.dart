@@ -110,7 +110,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20.0,
                   ),
                   Connection.styleForConnected(

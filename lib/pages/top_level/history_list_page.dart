@@ -141,7 +141,7 @@ class HistoryListPageState extends State<HistoryListPage> {
         .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Hasher data synchronized $resultStr');
-    refreshRunHistoryFromTable(true);
+    await refreshRunHistoryFromTable(true);
   }
 
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);

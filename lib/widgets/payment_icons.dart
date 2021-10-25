@@ -252,42 +252,39 @@ class PaymentIcons extends StatelessWidget {
               }
 
               // show the alert so the user knows how much to pay
-              IveCoreUtilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
-                      showCancelButton: true, cancelButtonText: 'Cancel')
-                  .then((bool result) {
-                if (result) {
-                  // now launch into the payment provider
-                  launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))).then((bool launched) {
-                    if (kennel.allowSelfPayment == 0) {
-                      IveCoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
-                    } else {
-                      // show the alert so the user knows how much to pay
-                      IveCoreUtilities.showAlert(
-                        context,
-                        'Were you able to pay?',
-                        'Were you able to complete a payment of $totalStr using $paymentProvider',
-                        'Yes',
-                        showCancelButton: true,
-                        cancelButtonText: 'No',
-                      ).then((bool result2) {
-                        if (result2) {
-                          //rsvpState = -1;
-                          stateSetter(-1, -1); // call setState on the parent
-                          payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
-                            // rsvpState = adHocItems[0]['rsvpState'];
-                            // isPaid = 1;
-                            stateSetter(adHocItems[0]['rsvpState'], 1);
-                          });
-                        } else {
-                          IveCoreUtilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
-                        }
-                      });
-                    }
-                  });
+              final bool result = await IveCoreUtilities.showAlert(
+                  context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
+                  showCancelButton: true, cancelButtonText: 'Cancel');
+
+              if (result) {
+                // now launch into the payment provider
+                await launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.')));
+                if (kennel.allowSelfPayment == 0) {
+                  await IveCoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
+                } else {
+                  // show the alert so the user knows how much to pay
+                  final bool result2 = await IveCoreUtilities.showAlert(
+                    context,
+                    'Were you able to pay?',
+                    'Were you able to complete a payment of $totalStr using $paymentProvider',
+                    'Yes',
+                    showCancelButton: true,
+                    cancelButtonText: 'No',
+                  );
+                  if (result2) {
+                    //rsvpState = -1;
+                    stateSetter(-1, -1); // call setState on the parent
+                    final List<dynamic> adHocItems = await payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider);
+                    // rsvpState = adHocItems[0]['rsvpState'];
+                    // isPaid = 1;
+                    stateSetter(adHocItems[0]['rsvpState'], 1);
+                  } else {
+                    await IveCoreUtilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+                  }
                 }
-              });
+              }
             } else {
-              IveCoreUtilities.showAlert(context, 'Bad payment URL',
+              await IveCoreUtilities.showAlert(context, 'Bad payment URL',
                   'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
             }
           });

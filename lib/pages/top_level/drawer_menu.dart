@@ -97,7 +97,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   //onTabTapped(EnumAppPages.settings);
                   //final String userId = getStringPref(StringPrefsEnum.userId);
                   Navigator.pop(context);
-                  Navigator.push<dynamic>(
+                  await Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: const RouteSettings(),

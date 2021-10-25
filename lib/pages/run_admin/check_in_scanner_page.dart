@@ -253,6 +253,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
   Future<void> _onCodeRead(dynamic scanResult) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
+    // ignore: unawaited_futures
     audioPlayer.play('camera.mp3');
 
     final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user);
@@ -274,66 +275,61 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         });
         final int attendenceState = _isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
-        G0<TableModel>()
-            .hasherEventMapService
-            .joinEvent(
-                widget.eventAggregate.event.eventId,
-                GUID_EMPTY, // normally the Hasher ID, but null when we are scanning
-                null,
-                AppDomainType.event,
-                rsvpState: rsvpYes.value,
-                attendenceState: attendenceState,
-                isHare: isHareNo.value,
-                virginVisitorType: enumHasher.value,
-                userQrCode: prefix + content)
-            .then((
-          List<dynamic> adHocData,
-        ) {
-          setState(() {
-            if ((adHocData != null) && (adHocData.isNotEmpty)) {
-              final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-              IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
-              //
-              if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
-                //scanUserBarcode();
-                // Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
-                //   scanUserBarcode();
-                // });
-              } else {
-                final PaymentPopup pp = PaymentPopup(
-                  amount: amount,
-                  creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-                  creditRemaining: 0,
-                  currencySymbol: widget.eventAggregate.extensions.curSym,
-                  hemId: adHocData[0]['hasherEventMapId'],
-                  decimalDigits: widget.eventAggregate.extensions.digAfterDec,
-                  // valueChanged: (num value) {
-                  //   finalValue = value;
-                  // },
-                );
+        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
+            widget.eventAggregate.event.eventId,
+            GUID_EMPTY, // normally the Hasher ID, but null when we are scanning
+            null,
+            AppDomainType.event,
+            rsvpState: rsvpYes.value,
+            attendenceState: attendenceState,
+            isHare: isHareNo.value,
+            virginVisitorType: enumHasher.value,
+            userQrCode: prefix + content);
 
-                final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
-                    context: context,
-                    barrierDismissible: false, // user must tap button!
-                    builder: (BuildContext context) {
-                      return pp;
+        setState(() {
+          if ((adHocData != null) && (adHocData.isNotEmpty)) {
+            final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+            IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
+            //
+            if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
+              //scanUserBarcode();
+              // Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
+              //   scanUserBarcode();
+              // });
+            } else {
+              final PaymentPopup pp = PaymentPopup(
+                amount: amount,
+                creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+                creditRemaining: 0,
+                currencySymbol: widget.eventAggregate.extensions.curSym,
+                hemId: adHocData[0]['hasherEventMapId'],
+                decimalDigits: widget.eventAggregate.extensions.digAfterDec,
+                // valueChanged: (num value) {
+                //   finalValue = value;
+                // },
+              );
+
+              final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
+                  context: context,
+                  barrierDismissible: false, // user must tap button!
+                  builder: (BuildContext context) {
+                    return pp;
+                  });
+
+              dlg.then(
+                (PaymentPopupResult popupResult) {
+                  if (popupResult.transactionType != -1) {
+                    setState(() {
+                      _onScreenMessage = 'Please wait, processing payment';
                     });
 
-                dlg.then(
-                  (PaymentPopupResult popupResult) {
-                    if (popupResult.transactionType != -1) {
-                      setState(() {
-                        _onScreenMessage = 'Please wait, processing payment';
-                      });
-
-                      payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
-                    }
-                  },
-                );
-              }
+                    payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
+                  }
+                },
+              );
             }
-            _onScreenMessage = 'Processing Complete';
-          });
+          }
+          _onScreenMessage = 'Processing Complete';
         });
       }
     }

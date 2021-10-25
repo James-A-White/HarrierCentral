@@ -268,7 +268,7 @@
 //                                     if (result['result'] != 'failed') {
 //                                       userName = getStringPref(StringPrefsEnum.displayName);
 
-//                                       IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void _) {
+//                                       await IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void _) {
 //                                         Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
 //                                       });
 //                                     } else {
@@ -411,7 +411,7 @@
 //                           userDetailsUi.lastName = lastName;
 //                           userDetailsUi.email = email;
 
-//                           IveCoreUtilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
+//                           await IveCoreUtilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
 //                         });
 //                       },
 //                       child: Container(
@@ -421,7 +421,7 @@
 //                     ),
 //                     GestureDetector(
 //                       onTap: () {
-//                         IveCoreUtilities.showAlert(
+//                         await IveCoreUtilities.showAlert(
 //                             context,
 //                             'Why Connect with Facebook?',
 //                             'If you are not on a Hash group\'s Mismanagement, this only saves you time typing in your name and e-mail address. For those with administrative access to Harrier Central, having your Facebook credentials allows us to automatically download run information from your Hash group\'s Facebook events and add them to the app.',

@@ -38,7 +38,7 @@ class SyncKennelAdminService {
 
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
       // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
-      G0<TableModel>().baseService.clearTable(
+      await G0<TableModel>().baseService.clearTable(
             G0<Database>(),
             G0<TableModel>().hasherKennelMapTableHelper,
             G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel),

@@ -99,14 +99,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           ''';
 
     try {
-      G0<Database>().rawQuery(query).then((List<Map<String, dynamic>> results) {
-        if (results.isNotEmpty) {
-          _packCount = results[0];
-        }
-        if (callSetState) {
-          setState(() {});
-        }
-      });
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      if (results.isNotEmpty) {
+        _packCount = results[0];
+      }
+      if (callSetState) {
+        setState(() {});
+      }
     } catch (e) {
       print(e);
     }
@@ -439,7 +438,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       );
 
                                   retVal.then((List<dynamic> adHocData) async {
-                                    _refreshHemTableFromBackend(false);
+                                    await _refreshHemTableFromBackend(false);
                                   });
                                 }
                               });
@@ -644,7 +643,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         );
 
     retVal.then((List<dynamic> adHocData) async {
-      _refreshHemTableFromBackend(false);
+      await _refreshHemTableFromBackend(false);
     });
   }
 
@@ -780,32 +779,30 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               backgroundColor: Colors.white,
               label: 'I will hare',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
-                  if (willHare) {
-                    setState(() {
-                      if (_thisUserIndex >= 0) {
-                        _thePackList[_thisUserIndex].hem.rsvpState = -1;
-                        _thePackList[_thisUserIndex].hem.isHare = -1;
-                        rsvpRequested = rsvpYes;
-                      }
-                    });
-                    //final String userId = getStringPref(StringPrefsEnum.userId);
-                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-                          widget.futureRun.event.eventId,
-                          userId,
-                          null,
-                          AppDomainType.user,
-                          rsvpState: rsvpYes.value,
-                          attendenceState: attendenceNoChange.value,
-                          isHare: isHareYes.value,
-                        );
+              onTap: () async {
+                final bool willHare = await _promptForHare(widget.futureRun.event.hares ?? '');
+                if (willHare) {
+                  setState(() {
+                    if (_thisUserIndex >= 0) {
+                      _thePackList[_thisUserIndex].hem.rsvpState = -1;
+                      _thePackList[_thisUserIndex].hem.isHare = -1;
+                      rsvpRequested = rsvpYes;
+                    }
+                  });
 
-                    retVal.then((List<dynamic> adHocData) async {
-                      _refreshHemTableFromBackend(false);
-                    });
-                  }
-                });
+                  //final String userId = getStringPref(StringPrefsEnum.userId);
+                  await G0<TableModel>().hasherEventMapService.joinEvent(
+                        widget.futureRun.event.eventId,
+                        userId,
+                        null,
+                        AppDomainType.user,
+                        rsvpState: rsvpYes.value,
+                        attendenceState: attendenceNoChange.value,
+                        isHare: isHareYes.value,
+                      );
+
+                  await _refreshHemTableFromBackend(false);
+                }
               },
             ),
           ],
@@ -1169,7 +1166,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     } else if ((latStr != '') && (lonStr != '')) {
       url = latStr + ',' + lonStr;
     } else {
-      IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+      await IveCoreUtilities.showAlert(
+          context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
     }
 
     final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';

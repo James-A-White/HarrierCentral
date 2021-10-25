@@ -254,7 +254,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         //               if (result['result']
         //                   .toLowerCase()
         //                   .startsWith('success')) {
-        //                 IveCoreUtilities.showAlert(
+        //                 await IveCoreUtilities.showAlert(
         //                     context,
         //                     'E-mail successfully sent',
         //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
@@ -277,7 +277,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         //               if (result['result']
         //                   .toLowerCase()
         //                   .startsWith('success')) {
-        //                 IveCoreUtilities.showAlert(
+        //                 await IveCoreUtilities.showAlert(
         //                     context,
         //                     'E-mail successfully sent',
         //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
@@ -460,7 +460,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             if ((rawEvent != null) && (rawEvent['eventId'] != null)) {
               RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent['eventId'], getStringPref(StringPrefsEnum.userId));
 
-              Navigator.push<dynamic>(
+              await Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
                       builder: (BuildContext context) => EditRunDetailsPage(false, rda, (String eventId) async {
@@ -468,9 +468,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                             rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
                             _isLoading = false;
                             return rda;
-                          }))).then((void _) {
-                _refreshSqlTablesFromBackend(true);
-              });
+                          })));
+              await _refreshSqlTablesFromBackend(true);
             }
           },
         ),

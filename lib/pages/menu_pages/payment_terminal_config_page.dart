@@ -148,11 +148,10 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
           ElevatedButton(
             child: Text('Open Settings', style: headingStyle),
             onPressed: () async {
-              Sumup.isLoggedIn.then((bool isLoggedIn) async {
-                if (isLoggedIn) {
-                  await Sumup.openSettings();
-                }
-              });
+              final bool isLoggedIn = await Sumup.isLoggedIn;
+              if (isLoggedIn) {
+                await Sumup.openSettings();
+              }
             },
           ),
           const SizedBox(height: 20.0),
@@ -169,7 +168,7 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
 
               isLoggedIn = await Sumup.isLoggedIn;
               if (isLoggedIn) {
-                _doTransaction();
+                await _doTransaction();
               }
             },
           ),

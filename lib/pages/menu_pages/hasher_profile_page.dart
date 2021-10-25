@@ -301,69 +301,68 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   GlobalKey<ScaffoldState> scaffoldKey;
 
-  void _updateProfile() {
+  Future<void> _updateProfile() async {
     if (_profileFormKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
       _profileFormKey.currentState.save();
 
+      // write the value of the email address to local preferences
+
       setState(() {
-        // write the value of the email address to local preferences
-
         _isLoading = true;
-
-        final HashersService srv = HashersService();
-
-        final Future<String> apiCall = srv.addEditUser(
-            targetUserId: _hasher.hasherId,
-            firstName: _firstNameController.text,
-            lastName: _lastNameController.text,
-            email: _emailController.text,
-            hashName: _hashNameController.text,
-            photo: _newPhoto,
-            eventId: widget.eventId,
-            kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
-            historicalPackRunCount: _previousRunCountController.text,
-            historicalHaringCount: _previousHaringCountController.text,
-            historicalCountIsEstimate: _historicalCountIsEstimate,
-            preferences: _distancePreference + _autoRunPreference,
-            followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
-
-        apiCall.then((String responseBody) async {
-          if (!responseBody.startsWith(ERROR_PREFIX)) {
-            if (widget.pageType == EnumMyProfilePageType.myProfile) {
-              setStringPref(StringPrefsEnum.email, _emailController.text);
-              setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
-            }
-            final dynamic jsonResult = json.decode(responseBody);
-            final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
-            setState(() {
-              if (widget.pageType == EnumMyProfilePageType.myProfile) {
-                setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
-                setStringPref(StringPrefsEnum.displayName, h.dispName);
-                // don't set the e-mail with the result from the
-                // api call. Use the local value in hasher.email instead
-                //setStringPref(StringPrefsEnum.email, hasher.email);
-                setStringPref(StringPrefsEnum.firstName, h.firstName);
-                setStringPref(StringPrefsEnum.hashName, h.hashName);
-                setStringPref(StringPrefsEnum.lastName, h.lastName);
-              }
-
-              refreshUserDataFromTable(true);
-              _isLoading = false;
-              checkDirty();
-
-              if (widget.pageType != EnumMyProfilePageType.myProfile) {
-                Navigator.of(context).pop(h);
-              } else {
-                IveCoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
-              }
-            });
-          } else {
-            IveCoreUtilities.showAlert(
-                context, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
-          }
-        });
       });
+
+      final HashersService srv = HashersService();
+
+      final String responseBody = await srv.addEditUser(
+          targetUserId: _hasher.hasherId,
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          email: _emailController.text,
+          hashName: _hashNameController.text,
+          photo: _newPhoto,
+          eventId: widget.eventId,
+          kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
+          historicalPackRunCount: _previousRunCountController.text,
+          historicalHaringCount: _previousHaringCountController.text,
+          historicalCountIsEstimate: _historicalCountIsEstimate,
+          preferences: _distancePreference + _autoRunPreference,
+          followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
+
+      if (!responseBody.startsWith(ERROR_PREFIX)) {
+        if (widget.pageType == EnumMyProfilePageType.myProfile) {
+          await setStringPref(StringPrefsEnum.email, _emailController.text);
+          await setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
+        }
+        final dynamic jsonResult = json.decode(responseBody);
+        final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
+
+        if (widget.pageType == EnumMyProfilePageType.myProfile) {
+          await setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
+          await setStringPref(StringPrefsEnum.displayName, h.dispName);
+          // don't set the e-mail with the result from the
+          // api call. Use the local value in hasher.email instead
+          //setStringPref(StringPrefsEnum.email, hasher.email);
+          await setStringPref(StringPrefsEnum.firstName, h.firstName);
+          await setStringPref(StringPrefsEnum.hashName, h.hashName);
+          await setStringPref(StringPrefsEnum.lastName, h.lastName);
+        }
+
+        await refreshUserDataFromTable(true);
+        setState(() {
+          _isLoading = false;
+          checkDirty();
+        });
+
+        if (widget.pageType != EnumMyProfilePageType.myProfile) {
+          Navigator.of(context).pop(h);
+        } else {
+          await IveCoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
+        }
+      } else {
+        await IveCoreUtilities.showAlert(
+            context, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
+      }
     } else {
 //    If all data are not valid then start auto validation.
       setState(() {
@@ -715,19 +714,19 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   onPressed: () async {
                                                                     if (Platform.isIOS) {
                                                                       if (await Permission.locationWhenInUse.isGranted) {
-                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         G0<AppModel>().hasLocationPermissions = true;
-                                                                        Utilities.subscribeToGeoLocationStream();
+                                                                        await Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     } else {
                                                                       if (await Permission.location.isGranted) {
-                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         G0<AppModel>().hasLocationPermissions = true;
-                                                                        Utilities.subscribeToGeoLocationStream();
+                                                                        await Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     }
 
-                                                                    IveCoreUtilities.showAlert(
+                                                                    await IveCoreUtilities.showAlert(
                                                                         context,
                                                                         'Location preferences updated',
                                                                         'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
@@ -883,19 +882,19 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   onPressed: () async {
                                                                     if (Platform.isIOS) {
                                                                       if (await Permission.locationWhenInUse.isGranted) {
-                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         G0<AppModel>().hasLocationPermissions = true;
-                                                                        Utilities.subscribeToGeoLocationStream();
+                                                                        await Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     } else {
                                                                       if (await Permission.location.isGranted) {
-                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         G0<AppModel>().hasLocationPermissions = true;
-                                                                        Utilities.subscribeToGeoLocationStream();
+                                                                        await Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     }
 
-                                                                    IveCoreUtilities.showAlert(
+                                                                    await IveCoreUtilities.showAlert(
                                                                         context,
                                                                         'Location preferences updated',
                                                                         'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
@@ -1048,7 +1047,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                     ),
                                                     onPressed: () async {
-                                                      IveCoreUtilities.showAlert(
+                                                      await IveCoreUtilities.showAlert(
                                                               context,
                                                               'Refresh cache',
                                                               'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
@@ -1099,7 +1098,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                       ),
                                                       onPressed: () async {
-                                                        IveCoreUtilities.showAlert(
+                                                        await IveCoreUtilities.showAlert(
                                                                 context,
                                                                 'Log out?',
                                                                 'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
@@ -1150,9 +1149,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                     ),
                                                     onPressed: () async {
-                                                      Navigator.push<dynamic>(
+                                                      await Navigator.push<dynamic>(
                                                         context,
-                                                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => ThirdPartyLogin(false)),
+                                                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => const ThirdPartyLogin(false)),
                                                       );
                                                     },
                                                     child: Text(

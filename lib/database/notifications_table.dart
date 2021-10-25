@@ -93,6 +93,6 @@ class NotificationsTableHelper {
     final String sql =
         'INSERT OR REPLACE INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch});';
     //print(sql);
-    G0<Database>().rawQuery(sql);
+    await G0<Database>().rawQuery(sql);
   }
 }

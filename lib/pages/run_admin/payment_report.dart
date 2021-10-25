@@ -93,11 +93,10 @@ class PaymentReportState extends State<PaymentReportPage> {
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Payments data synchronized $resultStr');
 
-    _refreshListsFromTable().then((void _) {
-      setState(() {
-        _isLoading = false;
-        refreshTotals();
-      });
+    await _refreshListsFromTable();
+    setState(() {
+      _isLoading = false;
+      refreshTotals();
     });
   }
 
@@ -257,23 +256,21 @@ class PaymentReportState extends State<PaymentReportPage> {
               backgroundColor: Colors.green,
               label: 'Email me payment report',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                G0<TableModel>()
-                    .paymentsService
-                    .sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName)
-                    .then((Map<String, String> result) {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  if (result['result'].toLowerCase().startsWith('success')) {
-                    IveCoreUtilities.showAlert(
-                        context,
-                        'E-mail successfully sent',
-                        'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                        'OK');
-                  } else {
-                    IveCoreUtilities.showAlert(context, 'Error sending report',
-                        'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
-                  }
-                });
+              onTap: () async {
+                final Map<String, String> result =
+                    await G0<TableModel>().paymentsService.sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName);
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                if (result['result'].toLowerCase().startsWith('success')) {
+                  await IveCoreUtilities.showAlert(
+                      context,
+                      'E-mail successfully sent',
+                      'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                      'OK');
+                } else {
+                  await IveCoreUtilities.showAlert(context, 'Error sending report',
+                      'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+                }
+
                 IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Payment Report being processed...', durationInSeconds: 10);
               },
             ),

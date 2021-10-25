@@ -101,24 +101,21 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                 child: const Text('Reset device'),
                 onPressed: () async {
                   if (getResetCodeTextController.text.toUpperCase() == QR_PREFIX_USER_RESET_CODE + 'CLEAR') {
-                    clearPrefs();
+                    await clearPrefs();
                     await DBProvider.deleteDb(DB_NAME);
 
-                    IveCoreUtilities.showAlert(context, 'App Cleared Successful',
+                    await IveCoreUtilities.showAlert(context, 'App Cleared Successful',
                         'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
                   } else {
                     final AuthorizeDeviceService srv = AuthorizeDeviceService();
                     final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, getResetCodeTextController.text.toUpperCase());
-                    apiCall.then((Map<String, String> result) {
-                      if (result != null) {
-                        setState(() {
-                          getResetCodeTextController.text = getStringPref(StringPrefsEnum.displayName);
+                    final Map<String, String> result = await apiCall;
+                    if (result != null) {
+                      getResetCodeTextController.text = getStringPref(StringPrefsEnum.displayName);
 
-                          IveCoreUtilities.showAlert(context, 'App Reset Successful',
-                              'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                        });
-                      }
-                    });
+                      await IveCoreUtilities.showAlert(
+                          context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                    }
                   }
                 },
               ),

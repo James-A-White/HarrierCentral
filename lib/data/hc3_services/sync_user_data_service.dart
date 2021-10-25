@@ -17,6 +17,7 @@ class SyncUserDataService {
   static const int flagHasherEventMapTable = 0x00020000;
 
   static const int flagsAllData = 0x0003003f;
+  static const int flagAllDataWithoutHashersOrEvents = 0x0003001e;
 
   num _hashersLastUpdated;
   num _citiesLastUpdated;

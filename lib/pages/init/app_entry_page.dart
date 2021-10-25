@@ -71,17 +71,15 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
-      IveCoreUtilities.showAlert(
-              context,
-              'Network Error',
-              'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.',
-              'Quit')
-          .then((void _) async {
-        exit(0);
-      });
+      await IveCoreUtilities.showAlert(
+          context,
+          'Network Error',
+          'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.',
+          'Quit');
+      exit(0);
     } else if (loginResult == null) {
       G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
-      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+      await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
       return;
     } else {
       const bool allowContinueFromMessage = true;
@@ -99,7 +97,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
             //if (true) {
             if (userId == null) {
               // first time the app has run
-              Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+              await Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
               // app has been run before... let's check the DB version.
               final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
@@ -110,7 +108,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
                 final String resetCode = getStringPref(StringPrefsEnum.resetCode);
 
-                DBProvider.deleteDb(DB_NAME);
+                await DBProvider.deleteDb(DB_NAME);
                 G0<AppModel>().dbStatus = EdbStatus.uninitialized;
 
                 //bool isLoading = true;
@@ -118,25 +116,25 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
                 final AuthorizeDeviceService srv = AuthorizeDeviceService();
                 final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
-                apiCall.then((Map<String, String> result) async {
-                  setState(() {
-                    //isLoading = false;
-                  });
+                final Map<String, String> result = await apiCall;
 
-                  if (result['result'] != 'failed') {
-                    userName = getStringPref(StringPrefsEnum.displayName);
-
-                    await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-
-                    IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
-                      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-                    });
-                  } else {
-                    // TODO(James): Do something here if the auth device fails
-                  }
+                setState(() {
+                  //isLoading = false;
                 });
+
+                if (result['result'] != 'failed') {
+                  userName = getStringPref(StringPrefsEnum.displayName);
+
+                  await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+
+                  await IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
+                    Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                  });
+                } else {
+                  // TODO(James): Do something here if the auth device fails
+                }
               } else {
-                Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
               }
             }
           } else {

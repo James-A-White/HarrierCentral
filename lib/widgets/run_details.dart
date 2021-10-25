@@ -673,7 +673,7 @@ class RunDetails extends StatelessWidget {
             //             if (await canLaunch(paymentLinkUrl)) {
             //               await launch(paymentLinkUrl);
             //             } else {
-            //               IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
+            //               await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
             //             }
             //           },
             //           child: Text('Pay for Hash', style: buttonTextStyle),
@@ -733,7 +733,7 @@ class RunDetails extends StatelessWidget {
                         if (await canLaunch(link.url)) {
                           await launch(link.url);
                         } else {
-                          IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                          await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                         }
                       },
                     ),
@@ -754,7 +754,7 @@ class RunDetails extends StatelessWidget {
                     if (await canLaunch(linkUrl)) {
                       await launch(linkUrl);
                     } else {
-                      IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
+                      await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
                     }
                   },
                 ),

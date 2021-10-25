@@ -384,17 +384,14 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-      _imageFromCamera.then((File file) {
-        _upload(file, fileName);
-      });
+      final File file = await _imageFromCamera;
+      _upload(file, fileName);
     } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
-      _imageFromGallery.then((File file) {
-        _upload(file, fileName);
-      });
+      final File file = await _imageFromGallery;
+      _upload(file, fileName);
     } else if (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook) {
-      _imageFromFacebook.then((File file) {
-        _upload(file, fileName);
-      });
+      final File file = await _imageFromFacebook;
+      _upload(file, fileName);
     }
 
     final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
@@ -421,7 +418,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
       }
 
-      Navigator.pushReplacement<dynamic, dynamic>(
+      await Navigator.pushReplacement<dynamic, dynamic>(
           context,
           MaterialPageRoute<dynamic>(
             builder: (BuildContext context) => const MainNavigationPage(),
@@ -568,9 +565,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 50);
 
-      _imageFromFacebook.then((void _) {
-        setState(() {});
-      });
+      await _imageFromFacebook;
+      setState(() {});
     }
   }
 

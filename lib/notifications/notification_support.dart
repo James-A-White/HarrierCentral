@@ -8,7 +8,7 @@ class NotificationSupport {
   Future<void> configureNotifications(bool doSubscriptions) async {
     await Firebase.initializeApp();
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-    _firebaseMessaging.requestPermission(sound: true, alert: true, badge: false);
+    await _firebaseMessaging.requestPermission(sound: true, alert: true, badge: false);
 
     // _firebaseMessaging.(onMessage: (dynamic content) {
     //   print('onMessage content = ${content.toString()}');
@@ -60,9 +60,9 @@ class NotificationSupport {
 
       for (int i = 0; i < results.length; i++) {
         final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
-        _firebaseMessaging.subscribeToTopic(tag);
+        await _firebaseMessaging.subscribeToTopic(tag);
         print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
-        NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
+        await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
       }
 
       // only deactivate subscriptions that have existed and no longer do
@@ -88,9 +88,9 @@ class NotificationSupport {
 
       for (int i = 0; i < results.length; i++) {
         final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
-        _firebaseMessaging.unsubscribeFromTopic(tag);
+        await _firebaseMessaging.unsubscribeFromTopic(tag);
         print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
-        NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 0);
+        await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 0);
       }
 
       // clean up the notification table
@@ -107,9 +107,9 @@ class NotificationSupport {
       results = await G0<Database>().rawQuery(sql);
       for (int i = 0; i < results.length; i++) {
         final String tag = results[i]['topicTag'];
-        _firebaseMessaging.subscribeToTopic(results[i]['eventId']);
+        await _firebaseMessaging.subscribeToTopic(results[i]['eventId']);
         print('timeout unsubscribed from: ${results[i]['topicTag']}');
-        NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
+        await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
       }
 
       // clean up the notification table and hope we have unsubscribed from
@@ -156,14 +156,14 @@ class NotificationSupport {
       for (int i = 0; i < results.length; i++) {
         final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
         if (results[i]['notificationPreference'] == 1) {
-          _firebaseMessaging.subscribeToTopic(tag);
+          await _firebaseMessaging.subscribeToTopic(tag);
           print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
         } else if (results[i]['notificationPreference'] == 2) {
-          _firebaseMessaging.unsubscribeFromTopic(tag);
+          await _firebaseMessaging.unsubscribeFromTopic(tag);
           print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
         }
 
-        NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
+        await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
       }
     } catch (e) {
       print(e);

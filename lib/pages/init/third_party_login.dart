@@ -374,8 +374,8 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            IveCoreUtilities.showAlert(
+                          onTap: () async {
+                            await IveCoreUtilities.showAlert(
                                 context,
                                 'What is the Global Hash Directory?',
                                 'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -459,7 +459,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                         0; // we turn the result into a string and then back into an int to allow the DB to return either int or string without causing an error
                     await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                   } else {
-                    IveCoreUtilities.showAlert(
+                    await IveCoreUtilities.showAlert(
                         context,
                         'Account not created',
                         'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
@@ -471,7 +471,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                     final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
                     //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                    Navigator.pushReplacement<dynamic, dynamic>(
+                    await Navigator.pushReplacement<dynamic, dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
                           builder: (BuildContext context) => ChooseProfileImage(
@@ -483,7 +483,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                         ));
                   } else {
                     // not a new user, pop back to the User profile page.
-                    IveCoreUtilities.showAlert(context, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
+                    await IveCoreUtilities.showAlert(context, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
                       Navigator.of(context).pop();
                     });
                   }

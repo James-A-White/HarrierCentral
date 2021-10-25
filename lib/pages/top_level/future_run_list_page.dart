@@ -315,7 +315,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   child: TextButton(
                     child: Text('Reload runs', style: buttonLabelStyleMedium),
                     onPressed: () async {
-                      _refreshFromBackend(clearLocalTables: false);
+                      await _refreshFromBackend(clearLocalTables: false);
                     },
                   ),
                 ),

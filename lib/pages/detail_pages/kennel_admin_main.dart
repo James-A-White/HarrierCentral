@@ -268,7 +268,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       //             ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
                                       //             if (result['result'].toLowerCase().startsWith('success')) {
-                                      //               IveCoreUtilities.showAlert(
+                                      //               await IveCoreUtilities.showAlert(
                                       //                   context,
                                       //                   'E-mail successfully sent',
                                       //                   'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
@@ -572,7 +572,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         if (await canLaunch(link.url)) {
                                           await launch(link.url);
                                         } else {
-                                          IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                                          await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                                         }
                                       },
                                     ),

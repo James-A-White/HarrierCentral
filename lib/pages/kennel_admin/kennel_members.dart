@@ -259,16 +259,15 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   
           ''';
 
-      G0<Database>().rawQuery(sql).then((List<Map<String, dynamic>> results) {
-        if (results.isNotEmpty) {
-          countIsMember = results[0]['isMember'];
-          countIsFollowing = results[0]['isFollowing'];
-          countHasRecentRuns = results[0]['hasRecentRuns'];
-        }
-        if (forceRefresh) {
-          setState(() {});
-        }
-      });
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      if (results.isNotEmpty) {
+        countIsMember = results[0]['isMember'];
+        countIsFollowing = results[0]['isFollowing'];
+        countHasRecentRuns = results[0]['hasRecentRuns'];
+      }
+      if (forceRefresh) {
+        setState(() {});
+      }
     } catch (e) {
       print(e);
     }
@@ -719,10 +718,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
     if (temp != searchTypeText) {
       highlightSearchType = true;
-      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void _) {
-        setState(() {
-          highlightSearchType = false;
-        });
+      await Future<void>.delayed(const Duration(milliseconds: 1500));
+      setState(() {
+        highlightSearchType = false;
       });
     }
   }
@@ -882,10 +880,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         widget.kennelListAggregate.kennel.kennelId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Kennel member data synchronized $resultStr');
-    refreshKennelMembersFromTable(true).then((void _) {
-      _refreshCounters(true);
-      setState(() {});
-    });
+    await refreshKennelMembersFromTable(true);
+    await _refreshCounters(true);
+    setState(() {});
   }
 
   void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {

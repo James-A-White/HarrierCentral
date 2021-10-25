@@ -173,9 +173,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Payments data synchronized $resultStr');
 
-      _refreshPackListFromTables(false).then((void _) {
-        _refreshCounters(true);
-      });
+      await _refreshPackListFromTables(false);
+      await _refreshCounters(true);
     }
   }
 
@@ -449,30 +448,29 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   
           ''';
 
-      G0<Database>().rawQuery(sql).then((List<Map<String, dynamic>> results) {
-        if (results.isNotEmpty) {
-          //_countRsvps = results[0]['rsvps'];
-          _countAtHash = results[0]['atHash'];
-          _countComing = results[0]['coming'];
-          _countOnIn = results[0]['onIn'];
-          _countPaid = results[0]['paid'];
-          _memberCount = results[0]['memberCount'];
-        }
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      if (results.isNotEmpty) {
+        //_countRsvps = results[0]['rsvps'];
+        _countAtHash = results[0]['atHash'];
+        _countComing = results[0]['coming'];
+        _countOnIn = results[0]['onIn'];
+        _countPaid = results[0]['paid'];
+        _memberCount = results[0]['memberCount'];
+      }
 
-        if (_packList != null) {
-          final List<CheckInPackModel> specialRunNumbers =
-              _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
-          _drinkCount = specialRunNumbers.length;
-        } else {
-          _drinkCount = 0;
-        }
+      if (_packList != null) {
+        final List<CheckInPackModel> specialRunNumbers =
+            _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
+        _drinkCount = specialRunNumbers.length;
+      } else {
+        _drinkCount = 0;
+      }
 
-        if (forceRefresh) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      });
+      if (forceRefresh) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       print(e);
     }
@@ -1552,7 +1550,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       child: RefreshIndicator(
         displacement: 120,
         onRefresh: () async {
-          _refreshSqlTablesFromBackend(true);
+          await _refreshSqlTablesFromBackend(true);
         },
         child: ListView.separated(
           separatorBuilder: (BuildContext context, int index) => const Divider(

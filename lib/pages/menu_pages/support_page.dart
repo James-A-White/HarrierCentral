@@ -221,27 +221,23 @@ class SupportPageState extends State<SupportPage> {
                                                   if (resetCodeTextController.text.length == 6) {
                                                     setState(() {
                                                       isLoading = true;
-
-                                                      final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                      final Future<Map<String, String>> apiCall =
-                                                          srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
-                                                      apiCall.then((Map<String, String> result) {
-                                                        setState(() {
-                                                          isLoading = false;
-                                                        });
-
-                                                        if (result['result'] != 'failed') {
-                                                          userName = getStringPref(StringPrefsEnum.displayName);
-                                                          userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
-
-                                                          IveCoreUtilities.showAlert(
-                                                              context,
-                                                              'App Reset Successful',
-                                                              'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-                                                              'OK');
-                                                        }
-                                                      });
                                                     });
+
+                                                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                    final Map<String, String> result =
+                                                        await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+
+                                                    setState(() {
+                                                      isLoading = false;
+                                                    });
+
+                                                    if (result['result'] != 'failed') {
+                                                      userName = getStringPref(StringPrefsEnum.displayName);
+                                                      userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
+
+                                                      await IveCoreUtilities.showAlert(context, 'App Reset Successful',
+                                                          'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                    }
                                                   }
                                                 }
                                               },
@@ -271,27 +267,23 @@ class SupportPageState extends State<SupportPage> {
                                                   if (resetCodeTextController.text.length == 6) {
                                                     setState(() {
                                                       isLoading = true;
-
-                                                      final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                      final Future<Map<String, String>> apiCall =
-                                                          srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
-                                                      apiCall.then((Map<String, String> result) {
-                                                        setState(() {
-                                                          isLoading = false;
-                                                        });
-
-                                                        if (result['result'] != 'failed') {
-                                                          userName = getStringPref(StringPrefsEnum.displayName);
-                                                          userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
-
-                                                          IveCoreUtilities.showAlert(
-                                                              context,
-                                                              'App Reset Successful',
-                                                              'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-                                                              'OK');
-                                                        }
-                                                      });
                                                     });
+
+                                                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                    final Map<String, String> result =
+                                                        await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+
+                                                    setState(() {
+                                                      isLoading = false;
+                                                    });
+
+                                                    if (result['result'] != 'failed') {
+                                                      userName = getStringPref(StringPrefsEnum.displayName);
+                                                      userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
+
+                                                      await IveCoreUtilities.showAlert(context, 'App Reset Successful',
+                                                          'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                    }
                                                   }
                                                 }
                                               },

@@ -349,32 +349,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     );
   }
 
-  static Widget styleForConnected(EnumConnectionStatus status, Widget w, {num borderRadius = 0.0}) {
-    return Opacity(
-      child: w,
-      opacity: .5,
-    );
-    //return w;
-    // return Container(
-    //   foregroundDecoration: status == EnumConnectionStatus.connected
-    //       ? const BoxDecoration()
-    //       : BoxDecoration(
-    //           borderRadius: BorderRadius.circular(borderRadius.toDouble()),
-    //           color: Colors.grey,
-    //           backgroundBlendMode: BlendMode.lighten,
-    //         ),
-    //   child: Container(
-    //     foregroundDecoration: status == EnumConnectionStatus.connected
-    //         ? const BoxDecoration()
-    //         : const BoxDecoration(
-    //             color: Colors.grey,
-    //             backgroundBlendMode: BlendMode.saturation,
-    //           ),
-    //     child: w,
-    //   ),
-    // );
-  }
-
   void showRsvpOptionsPopup(BuildContext context) {
     if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[

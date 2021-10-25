@@ -149,7 +149,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
   }
 
   Future<void> onDonePress() async {
-    Navigator.of(context).pushReplacementNamed(RouteNames.PERMISSIONS_SLIDER.toString());
+    await Navigator.of(context).pushReplacementNamed(RouteNames.PERMISSIONS_SLIDER.toString());
   }
 
   Future<void> onSkipPress() async {
@@ -159,7 +159,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     // setState(() {
     //   buildIntroSlider();
     // });
-    Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+    await Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
   }
 
   Widget renderNextBtn() {

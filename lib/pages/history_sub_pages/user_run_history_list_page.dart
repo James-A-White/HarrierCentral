@@ -279,7 +279,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('User data synchronized $resultStr');
-    refreshRunHistoryFromTable(true);
+    await refreshRunHistoryFromTable(true);
   }
 
   // bool _isLoading = true;
@@ -324,7 +324,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: () {
   //                   model.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       IveCoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       await IveCoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },
@@ -337,7 +337,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: ()  {
   //                   model.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       IveCoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       await IveCoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },

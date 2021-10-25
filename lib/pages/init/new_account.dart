@@ -125,7 +125,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               onTap: () {
                 Navigator.push<dynamic>(
                   context,
-                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => ThirdPartyLogin(true)),
+                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const ThirdPartyLogin(true)),
                 );
               },
               child: Container(

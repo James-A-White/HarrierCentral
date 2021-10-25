@@ -105,7 +105,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                   ),
                   // GestureDetector(
                   //   onTap: () {
-                  //     IveCoreUtilities.showAlert(
+                  //     await IveCoreUtilities.showAlert(
                   //         context,
                   //         'What is an "Invite Code"?',
                   //         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
@@ -159,8 +159,8 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            IveCoreUtilities.showAlert(
+                          onTap: () async {
+                            await IveCoreUtilities.showAlert(
                                 context,
                                 'What is the Global Hash Directory?',
                                 'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -190,10 +190,10 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                         isLoading = true;
                       });
 
-                      setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
-                      setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
-                      setStringPref(StringPrefsEnum.email, userDetailsUi.email);
-                      setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
+                      await setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
+                      await setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
+                      await setStringPref(StringPrefsEnum.email, userDetailsUi.email);
+                      await setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
 
                       final HashersService srv = HashersService();
 
@@ -212,7 +212,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
 
                       if (responseBody == ERROR_INVITE_CODE_SENT) {
                         isSuccessfulLoad = true;
-                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
+                        await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
                       } else if (!responseBody.startsWith(ERROR_PREFIX)) {
                         final List<dynamic> jsonResultSets = json.decode(responseBody);
                         if (jsonResultSets.isNotEmpty) {
@@ -220,18 +220,18 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                           if (subSet.isNotEmpty) {
                             final Map<String, dynamic> result = subSet[0];
                             if (result.isNotEmpty) {
-                              setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
-                              setStringPref(StringPrefsEnum.displayName, result['displayName']);
+                              await setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
+                              await setStringPref(StringPrefsEnum.displayName, result['displayName']);
                               //setStringPref(StringPrefsEnum.email, result['email']);
-                              setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
-                              setStringPref(StringPrefsEnum.firstName, result['firstName']);
-                              setStringPref(StringPrefsEnum.hashName, result['hashName']);
-                              setStringPref(StringPrefsEnum.lastName, result['lastName']);
-                              setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
-                              setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
-                              setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
-                              setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
-                              setStringPref(StringPrefsEnum.userId, result['hasherId']);
+                              await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
+                              await setStringPref(StringPrefsEnum.firstName, result['firstName']);
+                              await setStringPref(StringPrefsEnum.hashName, result['hashName']);
+                              await setStringPref(StringPrefsEnum.lastName, result['lastName']);
+                              await setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
+                              await setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
+                              await setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
+                              await setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
+                              await setStringPref(StringPrefsEnum.userId, result['hasherId']);
                               final int preferences = int.tryParse(result['preferences'] ?? '14') ?? 14;
                               await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                               isSuccessfulLoad = true;
@@ -240,7 +240,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                               final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
                               //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                              Navigator.pushReplacement<dynamic, dynamic>(
+                              await Navigator.pushReplacement<dynamic, dynamic>(
                                   context,
                                   MaterialPageRoute<dynamic>(
                                     builder: (BuildContext context) => ChooseProfileImage(
@@ -256,7 +256,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                       }
 
                       if (!isSuccessfulLoad) {
-                        IveCoreUtilities.showAlert(
+                        await IveCoreUtilities.showAlert(
                             context,
                             'Account not created',
                             'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
