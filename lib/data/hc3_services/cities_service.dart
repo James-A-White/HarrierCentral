@@ -8,6 +8,7 @@ class CitiesModel implements BaseModel {
   CitiesModel({
     this.cityId,
     this.cityName,
+    this.citySearchTags,
     this.regionId,
     this.latitude,
     this.longitude,
@@ -23,6 +24,7 @@ class CitiesModel implements BaseModel {
 
   final String cityId;
   final String cityName;
+  final String citySearchTags;
   final String regionId;
   final num latitude;
   final num longitude;
@@ -57,6 +59,7 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
 
   final String colCityId = 'cityId';
   final String colCityName = 'cityName';
+  final String colCitySearchTags = 'citySearchTags';
   final String colRegionId = 'regionId';
   final String colLatitude = 'latitude';
   final String colLongitude = 'longitude';
@@ -72,6 +75,7 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
 
             $colCityId TEXT NOT NULL,
             $colCityName TEXT,
+            $colCitySearchTags TEXT,
             $colRegionId TEXT,
             $colLatitude NUM,
             $colLongitude NUM,

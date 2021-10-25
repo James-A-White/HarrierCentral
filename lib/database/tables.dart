@@ -53,9 +53,19 @@ class Tables {
   static List<MigrationsModel> migrationList = <MigrationsModel>[
     // MIGRATION 270
     MigrationsModel(
-        dbVersion: DB_VERSION,
+        dbVersion: 351,
         migrationText: ''' 
       ALTER TABLE ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().regionsTableHelper.colRegionAbbreviation} TEXT;
+    ''',
+        appliedAtInt: 0),
+
+    MigrationsModel(
+        dbVersion: 352,
+        migrationText: ''' 
+      ALTER TABLE ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().citiesTableHelper.colCitySearchTags} TEXT;
+      ALTER TABLE ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().regionsTableHelper.colRegionSearchTags} TEXT;
+      ALTER TABLE ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().countriesTableHelper.colCountrySearchTags} TEXT;
+      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colKennelSearchTags} TEXT;
     ''',
         appliedAtInt: 0),
 

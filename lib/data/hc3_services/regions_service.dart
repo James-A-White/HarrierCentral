@@ -8,6 +8,7 @@ class RegionsModel implements BaseModel {
   RegionsModel({
     this.regionId,
     this.regionName,
+    this.regionSearchTags,
     this.regionAbbreviation,
     this.countryId,
     this.flagFile,
@@ -21,6 +22,7 @@ class RegionsModel implements BaseModel {
 
   final String regionId;
   final String regionName;
+  final String regionSearchTags;
   final String regionAbbreviation;
   final String countryId;
   final String flagFile;
@@ -55,6 +57,7 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
 
   final String colRegionId = 'regionId';
   final String colRegionName = 'regionName';
+  final String colRegionSearchTags = 'regionSearchTags';
   final String colRegionAbbreviation = 'regionAbbreviation';
   final String colCountryId = 'countryId';
   final String colFlagFile = 'flagFile';
@@ -68,6 +71,7 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
 
             $colRegionId TEXT NOT NULL,
             $colRegionName TEXT,
+            $colRegionSearchTags TEXT,
             $colRegionAbbreviation TEXT,
             $colCountryId TEXT,
             $colFlagFile TEXT,

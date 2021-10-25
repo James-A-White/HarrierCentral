@@ -11,6 +11,7 @@ class CountriesModel implements BaseModel {
       this.latitude,
       this.longitude,
       this.countryName,
+      this.countrySearchTags,
       this.continentCode,
       this.flagFile,
       this.currencyCode,
@@ -31,6 +32,7 @@ class CountriesModel implements BaseModel {
   final num latitude;
   final num longitude;
   final String countryName;
+  final String countrySearchTags;
   final String continentCode;
   final String flagFile;
   final String currencyCode;
@@ -73,6 +75,7 @@ class CountriesTableHelper extends BaseTableHelper with BaseFields {
   final String colLatitude = 'latitude';
   final String colLongitude = 'longitude';
   final String colCountryName = 'countryName';
+  final String colCountrySearchTags = 'countrySearchTags';
   final String colContinentCode = 'continentCode';
   final String colFlagFile = 'flagFile';
   final String colCurrencyCode = 'currencyCode';
@@ -94,6 +97,7 @@ class CountriesTableHelper extends BaseTableHelper with BaseFields {
             $colLatitude NUM,
             $colLongitude NUM,
             $colCountryName TEXT NOT NULL,
+            $colCountrySearchTags TEXT,
             $colContinentCode TEXT NOT NULL,
             $colFlagFile TEXT,
             $colCurrencyCode TEXT,

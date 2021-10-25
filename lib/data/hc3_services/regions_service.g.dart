@@ -11,6 +11,7 @@ RegionsModel _$RegionsModelFromJson(Map<String, dynamic> json) {
   return RegionsModel(
     regionId: json['regionId'] as String,
     regionName: json['regionName'] as String,
+    regionSearchTags: json['regionSearchTags'] as String,
     regionAbbreviation: json['regionAbbreviation'] as String,
     countryId: json['countryId'] as String,
     flagFile: json['flagFile'] as String,
@@ -22,6 +23,7 @@ RegionsModel _$RegionsModelFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$RegionsModelToJson(RegionsModel instance) => <String, dynamic>{
       'regionId': instance.regionId,
       'regionName': instance.regionName,
+      'regionSearchTags': instance.regionSearchTags,
       'regionAbbreviation': instance.regionAbbreviation,
       'countryId': instance.countryId,
       'flagFile': instance.flagFile,

@@ -101,6 +101,10 @@ class QueryKennels {
             || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"") 
             || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
             || " " || n.${G0<TableModel>().countriesTableHelper.colCountryCode} 
+            || " " || replace(coalesce(c.${G0<TableModel>().citiesTableHelper.colCitySearchTags},""),","," ") 
+            || " " || replace(coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionSearchTags},""),","," ") 
+            || " " || replace(coalesce(n.${G0<TableModel>().countriesTableHelper.colCountrySearchTags},""),","," ") 
+            || " " || replace(coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelSearchTags},""),","," ") 
             || " " || 
               case 
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 

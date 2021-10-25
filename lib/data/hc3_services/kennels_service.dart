@@ -11,6 +11,7 @@ class KennelsModel implements BaseModel {
       this.regionId,
       this.countryId,
       this.kennelName,
+      this.kennelSearchTags,
       this.kennelShortName,
       this.kennelDescription,
       this.kennelLogo,
@@ -66,6 +67,7 @@ class KennelsModel implements BaseModel {
   final String regionId;
   final String countryId;
   final String kennelName;
+  final String kennelSearchTags;
   final String kennelShortName;
   final String kennelDescription;
   final String kennelLogo;
@@ -141,6 +143,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   final String colRegionId = 'regionId';
   final String colCountryId = 'countryId';
   final String colKennelName = 'kennelName';
+  final String colKennelSearchTags = 'kennelSearchTags';
   final String colKennelShortName = 'kennelShortName';
   final String colKennelDescription = 'kennelDescription';
   final String colKennelLogo = 'kennelLogo';
@@ -197,6 +200,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colRegionId TEXT NOT NULL,
             $colCountryId TEXT NOT NULL,
             $colKennelName TEXT NOT NULL,
+            $colKennelSearchTags TEXT,
             $colKennelShortName TEXT NOT NULL,
             $colKennelDescription TEXT,
             $colKennelLogo TEXT,

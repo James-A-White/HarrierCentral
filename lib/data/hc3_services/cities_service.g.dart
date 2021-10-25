@@ -11,6 +11,7 @@ CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) {
   return CitiesModel(
     cityId: json['cityId'] as String,
     cityName: json['cityName'] as String,
+    citySearchTags: json['citySearchTags'] as String,
     regionId: json['regionId'] as String,
     latitude: json['latitude'] as num,
     longitude: json['longitude'] as num,
@@ -24,6 +25,7 @@ CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$CitiesModelToJson(CitiesModel instance) => <String, dynamic>{
       'cityId': instance.cityId,
       'cityName': instance.cityName,
+      'citySearchTags': instance.citySearchTags,
       'regionId': instance.regionId,
       'latitude': instance.latitude,
       'longitude': instance.longitude,
