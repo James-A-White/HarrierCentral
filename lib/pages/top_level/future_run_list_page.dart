@@ -18,7 +18,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
-  String searchText;
+  String searchRunsText;
   bool searchAllRuns = false;
   ScrollController scrollController = ScrollController(initialScrollOffset: 100.0);
   bool showFilters = false;
@@ -76,7 +76,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void initState() {
     IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
     searchController.text = '';
-    searchText = '';
+    searchRunsText = '';
 
     _refreshFromBackend().then((void _) {
       refreshFromTable(true).then((void _) {
@@ -125,7 +125,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       autocorrect: false,
                       onChanged: (String text) {
                         setState(() {
-                          searchText = text;
+                          searchRunsText = text;
                           filterRuns();
                         });
                       },
@@ -151,7 +151,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       child: const Text('X'),
                       onPressed: () {
                         searchController.text = '';
-                        searchText = '';
+                        searchRunsText = '';
                         setState(() {
                           filterRuns();
                         });
@@ -279,7 +279,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
   ///
   void filterRuns() {
-    filteredRuns = QueryRuns.doFilter(searchText, allRuns);
+    filteredRuns = QueryRuns.doRunsFilter(searchRunsText, allRuns);
 
     //buildRunMarkers();
     setState(() {});

@@ -19,7 +19,7 @@ class RunDetailsQueryExtensions {
     this.notificationPreference,
     this.emailAlertPreference,
     this.distanceUnitsPref,
-    this.searchText,
+    this.searchRunsText,
     this.latitude,
     this.longitude,
     this.isMapAndDistanceValid,
@@ -40,7 +40,7 @@ class RunDetailsQueryExtensions {
   int emailAlertPreference;
   int distanceUnitsPref;
   //int userPrefs;
-  String searchText;
+  String searchRunsText;
   num latitude;
   num longitude;
   bool isMapAndDistanceValid;
@@ -126,7 +126,7 @@ class RunDetailsQueryExtensions {
       notificationPreference: map['notificationPreference'],
       emailAlertPreference: map['emailAlertPreference'],
       distanceUnitsPref: _distanceUnitsPref ?? map['distanceUnitsPref'],
-      searchText: map['searchText'] + getSearchDateString(eventStartDateTime),
+      searchRunsText: map['searchRunsText'] + getSearchDateString(eventStartDateTime),
       latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
       longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
       isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
@@ -158,7 +158,7 @@ class QueryRuns {
 
   num dummyVariableToSuppressWarning = 0;
 
-  static String searchField = '''
+  static String searchRunsField = '''
                "~ " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventName},"")
             || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},"") 
             || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelName},"")   
@@ -203,17 +203,17 @@ class QueryRuns {
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
               end || " ~" 
-          as searchText
+          as searchRunsText
           ''';
 
-  static List<RunDetailsAggregate> doFilter(String searchText, List<RunDetailsAggregate> allRuns) {
+  static List<RunDetailsAggregate> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
     if (allRuns != null) {
       filteredRuns.addAll(allRuns);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-      if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+      if ((searchRunsText != null) && (searchRunsText.isNotEmpty)) {
+        final List<String> searchItems = searchRunsText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -233,7 +233,7 @@ class QueryRuns {
                 continue;
               }
               orItem = ' ' + orItem.trim().toLowerCase();
-              if (a.extensions.searchText.toLowerCase().contains(orItem)) {
+              if (a.extensions.searchRunsText.toLowerCase().contains(orItem)) {
                 return !negate;
               }
             }
@@ -298,7 +298,7 @@ class QueryRuns {
           CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
           julianday('now','localtime') + 0.5 as nowJulian,
-          $searchField
+          $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
@@ -332,7 +332,7 @@ class QueryRuns {
           CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
           julianday('now','localtime') + 0.5 as nowJulian,
-          $searchField
+          $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}

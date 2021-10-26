@@ -18,7 +18,7 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
-  String _searchText;
+  String _searchKennelsText;
   final ScrollController _scrollController = ScrollController(initialScrollOffset: 0);
 
   List<KennelListAggregate> _filteredList = <KennelListAggregate>[];
@@ -28,7 +28,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   @override
   void initState() {
     _searchController.text = '';
-    _searchText = '';
+    _searchKennelsText = '';
 
     // NOTE: refreshFromTable will run asynchronously so don't expect the
     // tables to be populated immediately when this call returns.
@@ -152,7 +152,7 @@ class KennelsListPageState extends State<KennelsListPage> {
               autocorrect: false,
               onChanged: (String text) {
                 setState(() {
-                  _searchText = text;
+                  _searchKennelsText = text;
                   _filterResults();
                 });
               },
@@ -178,7 +178,7 @@ class KennelsListPageState extends State<KennelsListPage> {
               child: const Text('X'),
               onPressed: () {
                 _searchController.text = '';
-                _searchText = '';
+                _searchKennelsText = '';
                 setState(() {
                   _filterResults();
                 });
@@ -247,7 +247,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         _filteredList = <KennelListAggregate>[];
         _filteredList.addAll(G0<TableModel>().globalKennelMainPageList);
       } else {
-        _filteredList = QueryKennels.doFilter(_searchText, G0<TableModel>().globalKennelMainPageList);
+        _filteredList = QueryKennels.doFilter(_searchKennelsText, G0<TableModel>().globalKennelMainPageList);
       }
 
       if ((G0<AppModel>().hasLocationPermissions) && (_sortByType == EnumSortKennelListBy.distance)) {

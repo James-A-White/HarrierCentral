@@ -16,7 +16,7 @@ class KennelListQueryExtenstions {
     this.regionName,
     this.regionAbbreviation,
     this.countryName,
-    this.searchText,
+    this.searchKennelsText,
   });
 
   final String location;
@@ -32,7 +32,7 @@ class KennelListQueryExtenstions {
   String regionName;
   String regionAbbreviation;
   String countryName;
-  final String searchText;
+  final String searchKennelsText;
 
   int followingRequested;
   int notificationsRequested;
@@ -53,7 +53,7 @@ class KennelListQueryExtenstions {
       regionName: map['regionName'],
       regionAbbreviation: map['regionAbbreviation'],
       countryName: map['countryName'],
-      searchText: map['searchText'],
+      searchKennelsText: map['searchKennelsText'],
     );
     return item;
   }
@@ -92,7 +92,7 @@ class QueryKennels {
   // note: the tilde characters at the beginning and end of the search field ensure
   // that the kennelName is searchable and whatever is at the end of the search field
   // is also searchable
-  static String searchField = '''
+  static String searchKennelsField = '''
                lower(
                "~ " || k.${G0<TableModel>().kennelsTableHelper.colKennelName} 
             || " " || k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} 
@@ -117,7 +117,7 @@ class QueryKennels {
               else "" 
               end || " ~" 
             )
-          as searchText
+          as searchKennelsText
           ''';
 
   static List<KennelListAggregate> doFilter(String searchText, List<KennelListAggregate> allKennels) {
@@ -147,7 +147,7 @@ class QueryKennels {
                 continue;
               }
               orItem = ' ' + orItem.trim().toLowerCase();
-              if (a.extensions.searchText.toLowerCase().contains(orItem)) {
+              if (a.extensions.searchKennelsText.toLowerCase().contains(orItem)) {
                 return !negate;
               }
             }
@@ -192,7 +192,7 @@ class QueryKennels {
           COALESCE(k.DistancePreference,n.DistancePreference,0) as distanceUnitsPref,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},c.${G0<TableModel>().citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},c.${G0<TableModel>().citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
-          $searchField
+          $searchKennelsField
           FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
           INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
           INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
