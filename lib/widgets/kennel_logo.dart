@@ -75,7 +75,12 @@ class KennelLogo extends StatelessWidget {
                           ? ''
                           : // TODO(James): find a more elegant way of doing this
                           '$kennelShortName',
-                      style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
+                      style: const TextStyle(
+                        fontFamily: 'AvenirNextCondensedBold',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 400.0,
+                        color: Colors.black,
+                      ),
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       minFontSize: 1.0,
