@@ -25,7 +25,12 @@ class NotificationSupport {
     print('Messaging token = $token');
 
     if (doSubscriptions) {
-      await initNotificationTopics(_firebaseMessaging);
+      // let it do the subscriptions in the background while
+      // the app is starting up. For debugging, we want to
+      // await this so it is easier to see which subscriptions
+      // are being made.
+      // ignore: unawaited_futures
+      initNotificationTopics(_firebaseMessaging);
     }
   }
 

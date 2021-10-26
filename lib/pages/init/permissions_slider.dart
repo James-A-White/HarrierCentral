@@ -139,8 +139,8 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     );
   }
 
-  Future<void> onDonePress() async {
-    await Navigator.of(context).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+  void _onDonePress() {
+    Navigator.of(context).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
   }
 
   bool permission1requested = false;
@@ -149,7 +149,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
 
   int activeTab = 0;
 
-  void onTabChangeCompleted(num index) {
+  void _onTabChangeCompleted(num index) {
     // NOTE: Checking the tab versus the index is done
     // to catch cases where the GestureDetector on the
     // 'Allow' button does not fire properly. This is
@@ -157,17 +157,17 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     // permissions are always requested. The real way to
     // fix this would be to find out why the GestureDetctor
     // on the 'Allow' button is not consistently firing.
-    if (activeTab != index) {
-      _requestPermissions();
-      //activeTab = index;
-    }
+    // if (activeTab != index) {
+    //   _requestPermissions();
+    //   //activeTab = index;
+    // }
   }
 
   Widget _renderNextBtn() {
     return GestureDetector(
         child: Text('Allow', style: navStyle),
-        onTap: () {
-          _requestPermissions();
+        onTap: () async {
+          await _requestPermissions();
         });
   }
 
@@ -179,39 +179,33 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       }
       activeTab = 1;
       goToTab(1);
-    }
-
-    if (activeTab == 1) {
-      await Permission.camera.request().isGranted.then((bool allowCamera) {
-        Permission.photos.request().isGranted.then((bool allowPhotos) {
-          activeTab = 2;
-          goToTab(2);
-        });
-      });
-    }
-
-    if (activeTab == 2) {
+    } else if (activeTab == 1) {
+      await Permission.camera.request().isGranted;
+      await Permission.photos.request().isGranted;
+      activeTab = 2;
+      goToTab(2);
+    } else if (activeTab == 2) {
       final NotificationSupport notifications = NotificationSupport();
-      await notifications.configureNotifications(false).then((void _) {
-        activeTab = 3;
-        goToTab(3);
-      });
+      // ignore: unawaited_futures
+      await notifications.configureNotifications(false);
+      activeTab = 3;
+      goToTab(3);
     }
   }
 
-  Widget renderDoneBtn() {
+  Widget _renderDoneBtn() {
     return Text('OK', style: navStyle);
   }
 
   IntroSlider slider;
 
-  Widget renderSkipBtn() {
+  Widget _renderSkipBtn() {
     return Text('Skip', style: navStyle);
   }
 
-  Future<void> onSkipPress() async {
+  void _onSkipPress() {
     if (activeTab == 0) {
-      await IveCoreUtilities.showAlert(context, 'Location Preference',
+      IveCoreUtilities.showAlert(context, 'Location Preference',
               'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
@@ -227,7 +221,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      await IveCoreUtilities.showAlert(context, 'Camera Preference',
+      IveCoreUtilities.showAlert(context, 'Camera Preference',
               'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
@@ -244,15 +238,16 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      final bool allow = await IveCoreUtilities.showAlert(
-          context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
-          showCancelButton: true, cancelButtonText: 'Disallow');
-
-      if (allow) {
-        final NotificationSupport notifications = NotificationSupport();
-        await notifications.configureNotifications(false);
-      }
-      goToTab(3);
+      IveCoreUtilities.showAlert(
+              context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
+              showCancelButton: true, cancelButtonText: 'Disallow')
+          .then((bool allow) {
+        if (allow) {
+          final NotificationSupport notifications = NotificationSupport();
+          notifications.configureNotifications(false);
+        }
+        goToTab(3);
+      });
     }
   }
 
@@ -263,7 +258,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       slides: slides,
 
       // Skip button
-      renderSkipBtn: renderSkipBtn(),
+      renderSkipBtn: _renderSkipBtn(),
 
       skipButtonStyle: ButtonStyle(
         foregroundColor: MaterialStateProperty.resolveWith<Color>(
@@ -281,10 +276,10 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         ),
       ),
 
-      onSkipPress: onSkipPress,
+      onSkipPress: _onSkipPress,
       showSkipBtn: true,
 
-      onTabChangeCompleted: onTabChangeCompleted,
+      onTabChangeCompleted: _onTabChangeCompleted,
 
       // Dot indicator
       showDotIndicator: true,
@@ -311,8 +306,8 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       ),
 
       // Done button
-      renderDoneBtn: renderDoneBtn(),
-      onDonePress: onDonePress,
+      renderDoneBtn: _renderDoneBtn(),
+      onDonePress: _onDonePress,
       doneButtonStyle: ButtonStyle(
         foregroundColor: MaterialStateProperty.resolveWith<Color>(
           (Set<MaterialState> states) {
