@@ -27,7 +27,7 @@ class BankTransferQr {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             backgroundColor: Colors.blue,
             duration: const Duration(seconds: 10),
-            content: Container(
+            content: SizedBox(
               height: 80,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(primary: Colors.red),

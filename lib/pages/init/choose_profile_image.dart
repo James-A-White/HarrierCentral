@@ -176,16 +176,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                   //overflow: Overflow.visible,
                   alignment: AlignmentDirectional.center,
                   children: <Widget>[
-                    Container(width: G0<DeviceInfo>().deviceWidth, height: G0<DeviceInfo>().deviceHeight),
+                    SizedBox(width: G0<DeviceInfo>().deviceWidth, height: G0<DeviceInfo>().deviceHeight),
                     Positioned(
                       top: 25.0,
-                      child: Container(
-                        //padding: const EdgeInsets.only(top: 25.0, bottom: 25.0),
-                        child: Text(
-                          'Choose an image source',
-                          textAlign: TextAlign.center,
-                          style: smallHeadingStyle.copyWith(fontSize: 24.0),
-                        ),
+                      child: Text(
+                        'Choose an image source',
+                        textAlign: TextAlign.center,
+                        style: smallHeadingStyle.copyWith(fontSize: 24.0),
                       ),
                     ),
 

@@ -70,7 +70,7 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: G0<DeviceInfo>().deviceWidth,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -206,10 +206,11 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
           decoration: const InputDecoration(labelText: 'Payment account key'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
-            if (arg.isEmpty)
+            if (arg.isEmpty) {
               return 'Payment account cannot be empty';
-            else
+            } else {
               return null;
+            }
           },
           onSaved: (String val) {
             setStringPref(StringPrefsEnum.paymentTerminalAccountKey, val);

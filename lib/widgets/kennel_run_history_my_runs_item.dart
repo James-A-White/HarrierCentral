@@ -54,7 +54,7 @@ class KennelRunHistoryMyRunsItem extends StatelessWidget {
                 //       ),
               ),
               Expanded(
-                child: Container(
+                child: SizedBox(
                   width: 250,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

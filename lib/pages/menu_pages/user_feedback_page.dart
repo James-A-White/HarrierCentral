@@ -55,7 +55,7 @@ class _UserFeedbackPageContentState extends State<UserFeedbackPageContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
       child: Center(child: Text('Your Feedback\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),

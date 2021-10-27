@@ -106,7 +106,7 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
             Positioned(
                 top: 80,
                 bottom: 0,
-                child: Container(
+                child: SizedBox(
                   key: tabKey,
                   width: MediaQuery.of(context).size.width,
                   child: TabBarView(

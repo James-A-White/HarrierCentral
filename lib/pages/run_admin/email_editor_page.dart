@@ -145,7 +145,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    Container(
+                    SizedBox(
                       width: 130,
                       child: ElevatedButton(
                         onPressed: () {
@@ -159,7 +159,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         ),
                       ),
                     ),
-                    Container(
+                    SizedBox(
                       width: 130,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
@@ -179,7 +179,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    Container(
+                    SizedBox(
                       width: 130,
                       child: ElevatedButton(
                         onPressed: () {
@@ -193,7 +193,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         ),
                       ),
                     ),
-                    Container(
+                    SizedBox(
                       width: 130,
                       child: ElevatedButton(
                         onPressed: () {
@@ -283,7 +283,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 //               child: receiptImageFromWeb)
                 //           : Container(),
                 // ),
-                Container(width: 40, height: 20),
+                const SizedBox(width: 40, height: 20),
               ],
             ),
           ),

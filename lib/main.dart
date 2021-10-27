@@ -32,7 +32,7 @@ void main() {
             Locale('de', 'DE'), // German
             // ... other locales the app supports
           ],
-          home: AppEntryPage(),
+          home: const AppEntryPage(),
           routes: routes,
           theme: ThemeData(
               primaryColor: Colors.grey.shade700,

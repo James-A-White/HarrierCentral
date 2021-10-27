@@ -39,7 +39,7 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
         CachedNetworkImage(
           height: 120.0,
-          imageUrl: widget.eventImage != null ? widget.eventImage : widget.kennelLogo,
+          imageUrl: widget.eventImage ?? widget.kennelLogo,
           // errorWidget:
           //     (BuildContext context, String url, Exception error) =>
           //         const  Icon(Icons.error),

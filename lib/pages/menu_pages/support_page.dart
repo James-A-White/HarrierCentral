@@ -79,7 +79,7 @@ class SupportPageState extends State<SupportPage> {
     );
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -106,13 +106,13 @@ class SupportPageState extends State<SupportPage> {
                                 maxLines: 1,
                                 style: headingStyle),
                             const SizedBox(height: 15.0),
-                            AutoSizeText('$userName',
+                            AutoSizeText(userName,
                                 //'QR Code for xxx',
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 style: largeText),
                             const SizedBox(height: 15.0),
-                            Container(
+                            SizedBox(
                               height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4)
                                   ? MediaQuery.of(context).size.width * 0.8
                                   : MediaQuery.of(context).size.height * 0.4,
@@ -172,135 +172,133 @@ class SupportPageState extends State<SupportPage> {
                               padding: const EdgeInsets.all(30.0),
 
                               //color: const Color.fromARGB(255, 255, 255, 255),
-                              child: Container(
-                                child: Center(
-                                  child: Column(
-                                    children: <Widget>[
-                                      Container(
-                                        //color: Colors.white,
-                                        padding: const EdgeInsets.all(10.0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.yellow[100],
-                                          borderRadius: BorderRadius.circular(5.0),
-                                        ),
-                                        // padding: const EdgeInsets.only(
-                                        //     top: 0.0, bottom: 8.0),
-                                        child: TextFormField(
-                                          autocorrect: false,
-                                          controller: resetCodeTextController,
-                                          focusNode: resetCodeFocusNode,
-                                          decoration: resetCodeDecoration,
-                                          // validator: (val) {
-                                          //   if (val.length == 0) {
-                                          //     return "Email cannot be empty";
-                                          //   } else {
-                                          //     return null;
-                                          //   }
-                                          // },
-                                          keyboardType: TextInputType.text,
-                                          style: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                          ),
+                              child: Center(
+                                child: Column(
+                                  children: <Widget>[
+                                    Container(
+                                      //color: Colors.white,
+                                      padding: const EdgeInsets.all(10.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.yellow[100],
+                                        borderRadius: BorderRadius.circular(5.0),
+                                      ),
+                                      // padding: const EdgeInsets.only(
+                                      //     top: 0.0, bottom: 8.0),
+                                      child: TextFormField(
+                                        autocorrect: false,
+                                        controller: resetCodeTextController,
+                                        focusNode: resetCodeFocusNode,
+                                        decoration: resetCodeDecoration,
+                                        // validator: (val) {
+                                        //   if (val.length == 0) {
+                                        //     return "Email cannot be empty";
+                                        //   } else {
+                                        //     return null;
+                                        //   }
+                                        // },
+                                        keyboardType: TextInputType.text,
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 25),
-                                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                          Connection.styleForConnected(
-                                            G0<AppModel>().connectionStatus,
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                              ),
-                                              onPressed: () async {
-                                                if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
-                                                  //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                  //print('Master data synchronized $resultStr');
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 25),
+                                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                                        Connection.styleForConnected(
+                                          G0<AppModel>().connectionStatus,
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                            ),
+                                            onPressed: () async {
+                                              if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
+                                                //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                                //print('Master data synchronized $resultStr');
 
-                                                  if (resetCodeTextController.text.length == 6) {
-                                                    setState(() {
-                                                      isLoading = true;
-                                                    });
+                                                if (resetCodeTextController.text.length == 6) {
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
 
-                                                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                    final Map<String, String> result =
-                                                        await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+                                                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                  final Map<String, String> result =
+                                                      await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
 
-                                                    setState(() {
-                                                      isLoading = false;
-                                                    });
+                                                  setState(() {
+                                                    isLoading = false;
+                                                  });
 
-                                                    if (result['result'] != 'failed') {
-                                                      userName = getStringPref(StringPrefsEnum.displayName);
-                                                      userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
+                                                  if (result['result'] != 'failed') {
+                                                    userName = getStringPref(StringPrefsEnum.displayName);
+                                                    userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
-                                                      await IveCoreUtilities.showAlert(context, 'App Reset Successful',
-                                                          'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                                                    }
+                                                    await IveCoreUtilities.showAlert(context, 'App Reset Successful',
+                                                        'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
-                                              },
-                                              child: Text(
-                                                'Reset App',
-                                                style: textStyleButton,
-                                              ),
+                                              }
+                                            },
+                                            child: Text(
+                                              'Reset App',
+                                              style: textStyleButton,
                                             ),
                                           ),
-                                        ]),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 25),
-                                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                          Connection.styleForConnected(
-                                            G0<AppModel>().connectionStatus,
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                              ),
-                                              onPressed: () async {
-                                                if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
-                                                  final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                  print('Master data synchronized $resultStr');
+                                        ),
+                                      ]),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 25),
+                                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                                        Connection.styleForConnected(
+                                          G0<AppModel>().connectionStatus,
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                            ),
+                                            onPressed: () async {
+                                              if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
+                                                // final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                                // print('Master data synchronized $resultStr');
 
-                                                  if (resetCodeTextController.text.length == 6) {
-                                                    setState(() {
-                                                      isLoading = true;
-                                                    });
+                                                if (resetCodeTextController.text.length == 6) {
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
 
-                                                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                    final Map<String, String> result =
-                                                        await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+                                                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                  final Map<String, String> result =
+                                                      await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
 
-                                                    setState(() {
-                                                      isLoading = false;
-                                                    });
+                                                  setState(() {
+                                                    isLoading = false;
+                                                  });
 
-                                                    if (result['result'] != 'failed') {
-                                                      userName = getStringPref(StringPrefsEnum.displayName);
-                                                      userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
+                                                  if (result['result'] != 'failed') {
+                                                    userName = getStringPref(StringPrefsEnum.displayName);
+                                                    userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
-                                                      await IveCoreUtilities.showAlert(context, 'App Reset Successful',
-                                                          'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                                                    }
+                                                    await IveCoreUtilities.showAlert(context, 'App Reset Successful',
+                                                        'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
-                                              },
-                                              child: Text(
-                                                'Reload Database',
-                                                style: textStyleButton,
-                                              ),
+                                              }
+                                            },
+                                            child: Text(
+                                              'Reload Database',
+                                              style: textStyleButton,
                                             ),
                                           ),
-                                        ]),
-                                      ),
-                                    ],
-                                  ),
+                                        ),
+                                      ]),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                            Container(width: 40, height: 40),
+                            const SizedBox(width: 40, height: 40),
                           ],
                         ),
                       ),

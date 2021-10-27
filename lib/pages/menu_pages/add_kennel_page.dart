@@ -14,7 +14,7 @@ class AddKennelPageState extends State<AddKennelPage> {
   @override
   Widget build(BuildContext context) {
     return Stack(children: <Widget>[
-      Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+      SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
       Positioned(
         top: 0,
         left: 0,
@@ -127,7 +127,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                       ),
                     ),
                   ),
-                  Container(
+                  const SizedBox(
                     height: 50,
                     width: 30,
                   )

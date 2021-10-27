@@ -354,7 +354,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Container(
+                    SizedBox(
                       height: 75,
                       child: KennelLogo(
                         kennelLogoUrl: widget.kennel.kennel.kennelLogo,
@@ -369,33 +369,25 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Container(
-                            child: AutoSizeText(
-                              '${widget.kennel.kennel.kennelName}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.left,
-                            ),
-                            //color: Colors.green,
+                          AutoSizeText(
+                            widget.kennel.kennel.kennelName,
+                            //'Super fucking long text thats sure to overflow and more',
+                            //'999',
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 18.0,
+                            maxLines: 1,
+                            style: numberStyle,
+                            textAlign: TextAlign.left,
                           ),
-                          Container(
-                            child: AutoSizeText(
-                              widget.pageType == FilterEventsPageType.past
-                                  ? 'Past run count: ${publishedRunCount.toString()}'
-                                  : 'Future run count: ${publishedRunCount.toString()}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.left,
-                            ),
-                            //color: Colors.green,
+                          AutoSizeText(
+                            widget.pageType == FilterEventsPageType.past ? 'Past run count: ${publishedRunCount.toString()}' : 'Future run count: ${publishedRunCount.toString()}',
+                            //'Super fucking long text thats sure to overflow and more',
+                            //'999',
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 18.0,
+                            maxLines: 1,
+                            style: numberStyle,
+                            textAlign: TextAlign.left,
                           ),
                         ],
                       ),

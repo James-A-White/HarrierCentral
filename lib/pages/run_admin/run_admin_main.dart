@@ -144,7 +144,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                       topMargin: 20.0,
                       bottomMargin: 5.0,
                     ),
-                    Column(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[]..addAll(kiddies())),
+                    Column(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: kiddies()),
                     FancyDivider(
                       key: UniqueKey(),
                       innerColor: Colors.white,
@@ -180,7 +180,7 @@ class RunAdminPageState extends State<RunAdminPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: Container(
+            child: SizedBox(
               width: 110,
               height: 110,
               child: ElevatedButton(
@@ -219,7 +219,7 @@ class RunAdminPageState extends State<RunAdminPage> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: Container(
+            child: SizedBox(
               width: 110,
               height: 110,
               child: ElevatedButton(
@@ -361,7 +361,7 @@ class RunAdminPageState extends State<RunAdminPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: Container(
+            child: SizedBox(
               width: 110,
               height: 110,
               // foregroundDecoration: BoxDecoration(
@@ -407,7 +407,7 @@ class RunAdminPageState extends State<RunAdminPage> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: Container(
+            child: SizedBox(
               width: 110,
               height: 110,
               child: ElevatedButton(
@@ -454,7 +454,7 @@ class RunAdminPageState extends State<RunAdminPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: Container(
+            child: SizedBox(
               width: 110,
               height: 110,
               // foregroundDecoration: BoxDecoration(

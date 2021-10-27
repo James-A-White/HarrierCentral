@@ -451,7 +451,7 @@ class PaymentSnackBar extends SnackBar {
                               ),
                       ],
                     ),
-                    Container(width: 100, height: 10),
+                    const SizedBox(width: 100, height: 10),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[

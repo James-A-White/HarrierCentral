@@ -25,7 +25,7 @@ class PaymentReportListItem extends StatelessWidget {
         //mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Container(
+          SizedBox(
             width: MediaQuery.of(context).size.width,
             child: Stack(
               //fit: StackFit.expand,
@@ -44,7 +44,7 @@ class PaymentReportListItem extends StatelessWidget {
                   left: 10.0,
                   top: 11.5,
                   child: Text(
-                    '${paymentReportItem.extensions.paidByName}',
+                    paymentReportItem.extensions.paidByName,
                     //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
                     style: TextStyle(
                         fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
@@ -58,7 +58,7 @@ class PaymentReportListItem extends StatelessWidget {
                   right: 50.0,
                   top: 14.0,
                   child: Text(
-                    '$amountPaid',
+                    amountPaid,
                     style: TextStyle(
                         color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) ||
                                     (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) &&
@@ -107,7 +107,7 @@ class PaymentTotalsCell extends StatelessWidget {
     final String total = (creditAmount ?? 0) <= 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
-    return Container(
+    return SizedBox(
       width: 40,
       child: Column(
         children: <Widget>[
@@ -125,7 +125,7 @@ class PaymentTotalsCell extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 1.0),
-            child: Container(
+            child: SizedBox(
               child: AutoSizeText(
                 total,
                 style: textStyle,

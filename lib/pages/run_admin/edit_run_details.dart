@@ -201,7 +201,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             Positioned(
                 top: 86,
                 bottom: 0,
-                child: Container(
+                child: SizedBox(
                   key: _tabKey,
                   //color: Colors.teal,
                   width: MediaQuery.of(context).size.width,
@@ -442,237 +442,230 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       child: KeyboardActions(
         config: _buildConfig(context),
         tapOutsideBehavior: TapOutsideBehavior.none,
-        child: Container(
-          //elevation: 2.0,
-          //decoration: Backgrounds.defaultHcBackgroundLight(),
-          // shape: RoundedRectangleBorder(
-          //   borderRadius: BorderRadius.circular(8.0),
-          // ),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _detailsFormKey,
-              child: Wrap(
-                children: <Widget>[
-                  Column(
-                    //mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
-                        padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
-                        child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
-                            textAlign: TextAlign.center, style: headingStyle20Black),
-                        decoration: BoxDecoration(
-                          color: Colors.yellow[100],
-                          border: Border.all(width: 2.0),
-                          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _detailsFormKey,
+            child: Wrap(
+              children: <Widget>[
+                Column(
+                  //mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Container(
+                      margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
+                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
+                          textAlign: TextAlign.center, style: headingStyle20Black),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[100],
+                        border: Border.all(width: 2.0),
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       ),
-                      Container(
-                        color: _focusNodeEventName.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: TextFormField(
-                          focusNode: _focusNodeEventName,
-                          controller: _eventNameController,
-                          minLines: 1,
-                          maxLines: 2,
-                          onChanged: (String text) {
-                            //widget.EventName = text;
-                          },
-                          keyboardType: TextInputType.multiline,
-                          validator: (String val) {
-                            if (val.isEmpty) {
-                              return 'Please provide an event name';
-                            } else {
-                              return null;
-                            }
-                          },
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Event name',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintText: 'Event Name',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        color: _focusNodeEventDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: TextFormField(
-                          onChanged: (String text) {
-                            //widget.EventDescription = text;
-                          },
-                          maxLines: null,
-                          focusNode: _focusNodeEventDescription,
-                          controller: _eventDescriptionController,
-                          validator: (String val) {
-                            if (val.isEmpty) {
-                              return 'Please provide an event description';
-                            } else {
-                              return null;
-                            }
-                          },
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Event Description',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintText: 'Event Description',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        color: _focusNodeLocationOneLineDesc.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: TextFormField(
-                          focusNode: _focusNodeLocationOneLineDesc,
-                          controller: _locationOneLineDescController,
-                          minLines: 1,
-                          maxLines: 2,
-                          onChanged: (String text) {
-                            //widget.EventName = text;
-                          },
-                          keyboardType: TextInputType.multiline,
-                          validator: (String val) {
-                            if (val.isEmpty) {
-                              return 'Please provide a location description';
-                            } else {
-                              return null;
-                            }
-                          },
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Location one-line description',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintText: 'Location description',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        color: _focusNodeDatetime.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: DateTimePicker(
-                          decoration: InputDecoration(
-                            labelText: 'Date / Time',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            //hintText: 'Event Number (or \'<auto>\')',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                          focusNode: _focusNodeDatetime,
-                          controller: _eventDatetimeController,
-                          type: DateTimePickerType.dateTime,
-                          use24HourFormat: false,
-                          locale: const Locale('en', 'US'),
-                          dateMask: 'E, d MMM, yyyy, h:mm a',
-                          //initialValue: DateTime.now().toString(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                          //icon: const Icon(Icons.event),
-                          dateLabelText: 'Date',
-                          timeLabelText: 'Hour',
-                          // selectableDayPredicate: (DateTime date) {
-                          //   // Disable weekend days to select from the calendar
-                          //   if (date.weekday == 6 || date.weekday == 7) {
-                          //     return false;
-                          //   }
-
-                          //   return true;
-                          // },
-                          // onChanged: (val) => //print(val),
-                          validator: (String val) {
-                            //print(val);
+                    ),
+                    Container(
+                      color: _focusNodeEventName.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: TextFormField(
+                        focusNode: _focusNodeEventName,
+                        controller: _eventNameController,
+                        minLines: 1,
+                        maxLines: 2,
+                        onChanged: (String text) {
+                          //widget.EventName = text;
+                        },
+                        keyboardType: TextInputType.multiline,
+                        validator: (String val) {
+                          if (val.isEmpty) {
+                            return 'Please provide an event name';
+                          } else {
                             return null;
-                          },
-                          //onSaved: (String val) => //print(val),
+                          }
+                        },
+                        textCapitalization: TextCapitalization.sentences,
+                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        decoration: InputDecoration(
+                          labelText: 'Event name',
+                          fillColor: Colors.red,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: const BorderSide(),
+                          ),
+                          hintText: 'Event Name',
+                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          //crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            _isUpdating
-                                ? Container(
-                                    height: 70.0,
-                                    width: 70.0,
-                                    child: HcCircularProgressIndicator(key: UniqueKey()),
-                                  )
-                                : Container(
-                                    width: 162.0,
-                                    child: ElevatedButton(
-                                      child: Text(widget.isNewRun ? 'Next' : 'Save Details', style: buttonLabelStyleMedium),
-                                      onPressed: () async {
-                                        if (_detailsFormKey.currentState.validate()) {
-                                          await _updateRunDetails(true);
+                    ),
+                    Container(
+                      color: _focusNodeEventDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: TextFormField(
+                        onChanged: (String text) {
+                          //widget.EventDescription = text;
+                        },
+                        maxLines: null,
+                        focusNode: _focusNodeEventDescription,
+                        controller: _eventDescriptionController,
+                        validator: (String val) {
+                          if (val.isEmpty) {
+                            return 'Please provide an event description';
+                          } else {
+                            return null;
+                          }
+                        },
+                        keyboardType: TextInputType.multiline,
+                        textCapitalization: TextCapitalization.sentences,
+                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        decoration: InputDecoration(
+                          labelText: 'Event Description',
+                          fillColor: Colors.red,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: const BorderSide(),
+                          ),
+                          hintText: 'Event Description',
+                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      color: _focusNodeLocationOneLineDesc.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: TextFormField(
+                        focusNode: _focusNodeLocationOneLineDesc,
+                        controller: _locationOneLineDescController,
+                        minLines: 1,
+                        maxLines: 2,
+                        onChanged: (String text) {
+                          //widget.EventName = text;
+                        },
+                        keyboardType: TextInputType.multiline,
+                        validator: (String val) {
+                          if (val.isEmpty) {
+                            return 'Please provide a location description';
+                          } else {
+                            return null;
+                          }
+                        },
+                        textCapitalization: TextCapitalization.sentences,
+                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        decoration: InputDecoration(
+                          labelText: 'Location one-line description',
+                          fillColor: Colors.red,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: const BorderSide(),
+                          ),
+                          hintText: 'Location description',
+                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      color: _focusNodeDatetime.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: DateTimePicker(
+                        decoration: InputDecoration(
+                          labelText: 'Date / Time',
+                          fillColor: Colors.red,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: const BorderSide(),
+                          ),
+                          //hintText: 'Event Number (or \'<auto>\')',
+                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        ),
+                        focusNode: _focusNodeDatetime,
+                        controller: _eventDatetimeController,
+                        type: DateTimePickerType.dateTime,
+                        use24HourFormat: false,
+                        locale: const Locale('en', 'US'),
+                        dateMask: 'E, d MMM, yyyy, h:mm a',
+                        //initialValue: DateTime.now().toString(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                        //icon: const Icon(Icons.event),
+                        dateLabelText: 'Date',
+                        timeLabelText: 'Hour',
+                        // selectableDayPredicate: (DateTime date) {
+                        //   // Disable weekend days to select from the calendar
+                        //   if (date.weekday == 6 || date.weekday == 7) {
+                        //     return false;
+                        //   }
 
-                                          if (widget.isNewRun) {
-                                            // this delay is required to ensure that the _isUpdating setState
-                                            // to function properly
-                                            _tabController.animateTo(1);
-                                          } else {
-                                            final SnackBar snackBar = SnackBar(
-                                              duration: const Duration(seconds: 3),
-                                              content: const Text(
-                                                'Run details have been saved',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                              ),
-                                              backgroundColor: Colors.blue.shade700,
-                                            );
-                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                          }
-                                          await Future<void>.delayed(const Duration(milliseconds: 500));
-                                          setState(() {
-                                            _isUpdating = false;
-                                          });
-                                        }
-                                      },
-                                    ),
-                                  ),
-                            if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                              const SizedBox(width: 10.0),
-                              Container(
-                                width: 162.0,
-                                child: ElevatedButton(
-                                  child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                                  onPressed: () {
-                                    setState(() {
-                                      _useFacebookDetails();
-                                    });
-                                  },
-                                ),
-                              ),
-                            ]
-                          ],
-                        ),
+                        //   return true;
+                        // },
+                        // onChanged: (val) => //print(val),
+                        validator: (String val) {
+                          //print(val);
+                          return null;
+                        },
+                        //onSaved: (String val) => //print(val),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        //crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          _isUpdating
+                              ? SizedBox(
+                                  height: 70.0,
+                                  width: 70.0,
+                                  child: HcCircularProgressIndicator(key: UniqueKey()),
+                                )
+                              : SizedBox(
+                                  width: 162.0,
+                                  child: ElevatedButton(
+                                    child: Text(widget.isNewRun ? 'Next' : 'Save Details', style: buttonLabelStyleMedium),
+                                    onPressed: () async {
+                                      if (_detailsFormKey.currentState.validate()) {
+                                        await _updateRunDetails(true);
+
+                                        if (widget.isNewRun) {
+                                          // this delay is required to ensure that the _isUpdating setState
+                                          // to function properly
+                                          _tabController.animateTo(1);
+                                        } else {
+                                          final SnackBar snackBar = SnackBar(
+                                            duration: const Duration(seconds: 3),
+                                            content: const Text(
+                                              'Run details have been saved',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                            ),
+                                            backgroundColor: Colors.blue.shade700,
+                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        }
+                                        await Future<void>.delayed(const Duration(milliseconds: 500));
+                                        setState(() {
+                                          _isUpdating = false;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                          if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                            const SizedBox(width: 10.0),
+                            SizedBox(
+                              width: 162.0,
+                              child: ElevatedButton(
+                                child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                                onPressed: () {
+                                  setState(() {
+                                    _useFacebookDetails();
+                                  });
+                                },
+                              ),
+                            ),
+                          ]
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -811,7 +804,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             );
           } else {
             return _isUpdating
-                ? Container(
+                ? SizedBox(
                     height: 70.0,
                     width: 70.0,
                     child: HcCircularProgressIndicator(key: UniqueKey()),
@@ -1065,7 +1058,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                       _mapCenter = latlng.LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
                     });
                   },
-                  child: Container(
+                  child: SizedBox(
                     height: 50.0,
                     width: 50.0,
                     child: Image.asset('images/other/set_map_to_no_location.png'),
@@ -1082,7 +1075,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                       _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon);
                     });
                   },
-                  child: Container(
+                  child: SizedBox(
                     height: 50.0,
                     width: 50.0,
                     child: Image.asset('images/other/set_map_to_current_location.png'),
@@ -1103,7 +1096,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                         );
                       });
                     },
-                    child: Container(
+                    child: SizedBox(
                       height: 50.0,
                       width: 50.0,
                       child: Image.asset('images/other/set_map_to_event_location.png'),
@@ -1116,7 +1109,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 right: 10.0,
                 bottom: 80.0,
                 child: _isUpdating
-                    ? Container(
+                    ? SizedBox(
                         height: 70.0,
                         width: 70.0,
                         child: HcCircularProgressIndicator(key: UniqueKey()),
@@ -1252,466 +1245,459 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       child: KeyboardActions(
         config: _buildConfig(context),
         tapOutsideBehavior: TapOutsideBehavior.none,
-        child: Container(
-          //elevation: 2.0,
-          //decoration: Backgrounds.defaultHcBackgroundLight(),
-          // shape: RoundedRectangleBorder(
-          //   borderRadius: BorderRadius.circular(8.0),
-          // ),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _otherDetailsFormKey,
-              child: Wrap(
-                children: <Widget>[
-                  Column(
-                    //mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
-                        padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
-                        child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
-                            textAlign: TextAlign.center, style: headingStyle20Black),
-                        decoration: BoxDecoration(
-                          color: Colors.yellow[100],
-                          border: Border.all(width: 2.0),
-                          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _otherDetailsFormKey,
+            child: Wrap(
+              children: <Widget>[
+                Column(
+                  //mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Container(
+                      margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
+                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
+                          textAlign: TextAlign.center, style: headingStyle20Black),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[100],
+                        border: Border.all(width: 2.0),
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
-                        child: Text(
-                          'Harrier Central automatically numbers runs. But if there is a reason to override this, you can manually enter a run number here.',
-                          style: mediumTextBlack,
-                        ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      child: Text(
+                        'Harrier Central automatically numbers runs. But if there is a reason to override this, you can manually enter a run number here.',
+                        style: mediumTextBlack,
                       ),
-                      Container(
-                        color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: TextFormField(
-                          // onChanged: (String text) {
-                          //   if ((text == null) || (text.isEmpty)) {
-                          //     _absoluteEventNumberController.text = '<auto>';
-                          //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
-                          //     _absoluteEventNumberController.text = _absoluteEventNumberController.text.replaceAll('<auto>', '');
-                          //     _absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: _absoluteEventNumberController.text.length));
-                          //   }
-                          // },
-                          maxLines: 1,
-                          focusNode: _focusNodeAbsoluteEventNumber,
-                          controller: _absoluteEventNumberController,
-                          // validator: (String val) {
-                          //   if (val.isEmpty) {
-                          //     return 'Please provide an event number or leave blank for auto numbering';
-                          //   } else {
-                          //     return null;
-                          //   }
-                          // },
-                          keyboardType: const TextInputType.numberWithOptions(),
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Event Number',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintText: '<use auto numbering>',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    ),
+                    Container(
+                      color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: TextFormField(
+                        // onChanged: (String text) {
+                        //   if ((text == null) || (text.isEmpty)) {
+                        //     _absoluteEventNumberController.text = '<auto>';
+                        //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
+                        //     _absoluteEventNumberController.text = _absoluteEventNumberController.text.replaceAll('<auto>', '');
+                        //     _absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: _absoluteEventNumberController.text.length));
+                        //   }
+                        // },
+                        maxLines: 1,
+                        focusNode: _focusNodeAbsoluteEventNumber,
+                        controller: _absoluteEventNumberController,
+                        // validator: (String val) {
+                        //   if (val.isEmpty) {
+                        //     return 'Please provide an event number or leave blank for auto numbering';
+                        //   } else {
+                        //     return null;
+                        //   }
+                        // },
+                        keyboardType: const TextInputType.numberWithOptions(),
+                        textCapitalization: TextCapitalization.sentences,
+                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        decoration: InputDecoration(
+                          labelText: 'Event Number',
+                          fillColor: Colors.red,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: const BorderSide(),
                           ),
+                          hintText: '<use auto numbering>',
+                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
-                        child: Text(
-                          'Enter in the hash cash amount here if it is different than the normal hash cash value.',
-                          style: mediumTextBlack,
-                        ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      child: Text(
+                        'Enter in the hash cash amount here if it is different than the normal hash cash value.',
+                        style: mediumTextBlack,
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                color: _focusNodeEventPriceForMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                                margin: const EdgeInsets.only(right: 12.5),
-                                child: TextFormField(
-                                  // onChanged: (String text) {
-                                  //   if ((text == null) || (text.isEmpty)) {
-                                  //     //_eventPriceForMembersController.text = '';
-                                  //   } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                  //     // _eventPriceForMembersController.text = _eventPriceForMembersController.text.replaceAll('<default>', '');
-                                  //     // _eventPriceForMembersController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForMembersController.text.length));
-                                  //   }
-                                  // },
-                                  maxLines: 1,
-                                  focusNode: _focusNodeEventPriceForMembers,
-                                  controller: _eventPriceForMembersController,
-                                  keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
-                                  textCapitalization: TextCapitalization.sentences,
-                                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                                  decoration: InputDecoration(
-                                    labelText: 'Member price',
-                                    fillColor: Colors.red,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(),
-                                    ),
-                                    hintText: '<use default>',
-                                    hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              color: _focusNodeEventPriceForMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              margin: const EdgeInsets.only(right: 12.5),
+                              child: TextFormField(
+                                // onChanged: (String text) {
+                                //   if ((text == null) || (text.isEmpty)) {
+                                //     //_eventPriceForMembersController.text = '';
+                                //   } else if ((text.length > 9) && (text.contains('<default>'))) {
+                                //     // _eventPriceForMembersController.text = _eventPriceForMembersController.text.replaceAll('<default>', '');
+                                //     // _eventPriceForMembersController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForMembersController.text.length));
+                                //   }
+                                // },
+                                maxLines: 1,
+                                focusNode: _focusNodeEventPriceForMembers,
+                                controller: _eventPriceForMembersController,
+                                keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
+                                textCapitalization: TextCapitalization.sentences,
+                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                decoration: InputDecoration(
+                                  labelText: 'Member price',
+                                  fillColor: Colors.red,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderSide: const BorderSide(),
                                   ),
+                                  hintText: '<use default>',
+                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                 ),
                               ),
                             ),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                color: _focusNodeEventPriceForNonMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                                margin: const EdgeInsets.only(left: 12.5),
-                                child: TextFormField(
-                                  // onChanged: (String text) {
-                                  //   if ((text == null) || (text.isEmpty)) {
-                                  //     //_eventPriceForNonMembersController.text = '<default>';
-                                  //   } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                  //     _eventPriceForNonMembersController.text = _eventPriceForNonMembersController.text.replaceAll('<default>', '');
-                                  //     _eventPriceForNonMembersController.selection =
-                                  //         TextSelection.fromPosition(TextPosition(offset: _eventPriceForNonMembersController.text.length));
-                                  //   }
-                                  // },
-                                  maxLines: 1,
-                                  focusNode: _focusNodeEventPriceForNonMembers,
-                                  controller: _eventPriceForNonMembersController,
-                                  keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
-                                  textCapitalization: TextCapitalization.sentences,
-                                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                                  decoration: InputDecoration(
-                                    labelText: 'Non-member price',
-                                    fillColor: Colors.red,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(),
-                                    ),
-                                    hintText: '<use default>',
-                                    hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              color: _focusNodeEventPriceForNonMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              margin: const EdgeInsets.only(left: 12.5),
+                              child: TextFormField(
+                                // onChanged: (String text) {
+                                //   if ((text == null) || (text.isEmpty)) {
+                                //     //_eventPriceForNonMembersController.text = '<default>';
+                                //   } else if ((text.length > 9) && (text.contains('<default>'))) {
+                                //     _eventPriceForNonMembersController.text = _eventPriceForNonMembersController.text.replaceAll('<default>', '');
+                                //     _eventPriceForNonMembersController.selection =
+                                //         TextSelection.fromPosition(TextPosition(offset: _eventPriceForNonMembersController.text.length));
+                                //   }
+                                // },
+                                maxLines: 1,
+                                focusNode: _focusNodeEventPriceForNonMembers,
+                                controller: _eventPriceForNonMembersController,
+                                keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
+                                textCapitalization: TextCapitalization.sentences,
+                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                decoration: InputDecoration(
+                                  labelText: 'Non-member price',
+                                  fillColor: Colors.red,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderSide: const BorderSide(),
                                   ),
+                                  hintText: '<use default>',
+                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
-                        child: Text(
-                          'If you have extra charges associated with your run, such as for dinner, you can put in the price and description here.',
-                          style: mediumTextBlack,
-                        ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      child: Text(
+                        'If you have extra charges associated with your run, such as for dinner, you can put in the price and description here.',
+                        style: mediumTextBlack,
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                color: _focusNodeEventPriceForExtras.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                                margin: const EdgeInsets.only(right: 12.5),
-                                child: TextFormField(
-                                  // onChanged: (String text) {
-                                  //   if ((text == null) || (text.isEmpty)) {
-                                  //     _eventPriceForExtrasController.text = '<none>';
-                                  //   } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                  //     _eventPriceForExtrasController.text = _eventPriceForExtrasController.text.replaceAll('<none>', '');
-                                  //     _eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForExtrasController.text.length));
-                                  //   }
-                                  // },
-                                  maxLines: 1,
-                                  focusNode: _focusNodeEventPriceForExtras,
-                                  controller: _eventPriceForExtrasController,
-                                  keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
-                                  textCapitalization: TextCapitalization.sentences,
-                                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                                  decoration: InputDecoration(
-                                    labelText: 'Price for extras',
-                                    fillColor: Colors.red,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(),
-                                    ),
-                                    hintText: '<none>',
-                                    hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              color: _focusNodeEventPriceForExtras.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              margin: const EdgeInsets.only(right: 12.5),
+                              child: TextFormField(
+                                // onChanged: (String text) {
+                                //   if ((text == null) || (text.isEmpty)) {
+                                //     _eventPriceForExtrasController.text = '<none>';
+                                //   } else if ((text.length > 6) && (text.contains('<none>'))) {
+                                //     _eventPriceForExtrasController.text = _eventPriceForExtrasController.text.replaceAll('<none>', '');
+                                //     _eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForExtrasController.text.length));
+                                //   }
+                                // },
+                                maxLines: 1,
+                                focusNode: _focusNodeEventPriceForExtras,
+                                controller: _eventPriceForExtrasController,
+                                keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
+                                textCapitalization: TextCapitalization.sentences,
+                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                decoration: InputDecoration(
+                                  labelText: 'Price for extras',
+                                  fillColor: Colors.red,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderSide: const BorderSide(),
                                   ),
+                                  hintText: '<none>',
+                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                 ),
                               ),
                             ),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                color: _focusNodeExtrasDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                                margin: const EdgeInsets.only(left: 12.5),
-                                child: TextFormField(
-                                  // onChanged: (String text) {
-                                  //   if ((text == null) || (text.isEmpty)) {
-                                  //     _extrasDescriptionController.text = '<none>';
-                                  //   } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                  //     _extrasDescriptionController.text = _extrasDescriptionController.text.replaceAll('<none>', '');
-                                  //     _extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _extrasDescriptionController.text.length));
-                                  //   }
-                                  // },
-                                  maxLines: 1,
-                                  focusNode: _focusNodeExtrasDescription,
-                                  controller: _extrasDescriptionController,
-                                  keyboardType: TextInputType.text,
-                                  textCapitalization: TextCapitalization.sentences,
-                                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                                  decoration: InputDecoration(
-                                    labelText: 'Description',
-                                    fillColor: Colors.red,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(),
-                                    ),
-                                    hintText: '<none>',
-                                    hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              color: _focusNodeExtrasDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              margin: const EdgeInsets.only(left: 12.5),
+                              child: TextFormField(
+                                // onChanged: (String text) {
+                                //   if ((text == null) || (text.isEmpty)) {
+                                //     _extrasDescriptionController.text = '<none>';
+                                //   } else if ((text.length > 6) && (text.contains('<none>'))) {
+                                //     _extrasDescriptionController.text = _extrasDescriptionController.text.replaceAll('<none>', '');
+                                //     _extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _extrasDescriptionController.text.length));
+                                //   }
+                                // },
+                                maxLines: 1,
+                                focusNode: _focusNodeExtrasDescription,
+                                controller: _extrasDescriptionController,
+                                keyboardType: TextInputType.text,
+                                textCapitalization: TextCapitalization.sentences,
+                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                decoration: InputDecoration(
+                                  labelText: 'Description',
+                                  fillColor: Colors.red,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderSide: const BorderSide(),
                                   ),
+                                  hintText: '<none>',
+                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      Container(
-                        //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.grey.shade500),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(10),
-                            )),
-                        child: Column(
-                          children: <Widget>[
-                            CheckboxFormField(
-                              title: const Text('Show run in Harrier Central'),
-                              validator: (bool result) {
-                                _isVisible = result;
-                                return null;
-                              },
-                              initialValue: _eventAggregate.event.isVisible == 1,
-                            ),
-                            CheckboxFormField(
-                              title: const Text('Count this run'),
-                              initialValue: _eventAggregate.event.isCountedRun == 1,
-                              validator: (bool result) {
-                                _isCountedRun = result;
-                                return null;
-                              },
-                            ),
-                            CheckboxFormField(
-                              title: const Text('Users can edit run history'),
-                              initialValue: _eventAggregate.event.canEditRunAttendence == null ? null : _eventAggregate.event.canEditRunAttendence == 1,
-                              tristate: true,
-                              validator: (bool result) {
-                                if (result == null) {
-                                  _usersCanEditRunAttendence = -1;
-                                } else {
-                                  _usersCanEditRunAttendence = result ? 1 : 0;
-                                }
+                    ),
+                    Container(
+                      //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey.shade500),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(10),
+                          )),
+                      child: Column(
+                        children: <Widget>[
+                          CheckboxFormField(
+                            title: const Text('Show run in Harrier Central'),
+                            validator: (bool result) {
+                              _isVisible = result;
+                              return null;
+                            },
+                            initialValue: _eventAggregate.event.isVisible == 1,
+                          ),
+                          CheckboxFormField(
+                            title: const Text('Count this run'),
+                            initialValue: _eventAggregate.event.isCountedRun == 1,
+                            validator: (bool result) {
+                              _isCountedRun = result;
+                              return null;
+                            },
+                          ),
+                          CheckboxFormField(
+                            title: const Text('Users can edit run history'),
+                            initialValue: _eventAggregate.event.canEditRunAttendence == null ? null : _eventAggregate.event.canEditRunAttendence == 1,
+                            tristate: true,
+                            validator: (bool result) {
+                              if (result == null) {
+                                _usersCanEditRunAttendence = -1;
+                              } else {
+                                _usersCanEditRunAttendence = result ? 1 : 0;
+                              }
 
-                                return null;
+                              return null;
+                            },
+                          ),
+                          CheckboxFormField(
+                            title: const Text('Promote this run'),
+                            initialValue: _eventAggregate.event.isPromotedEvent == 1,
+                            validator: (bool result) {
+                              _isPromotedEvent = result;
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      child: Text(
+                        'Let Hashers around the corner or around the world know about your run if it is interesting to them! By telling us the geographic scope of your run it will help us do a better job promoting it for you!',
+                        style: mediumTextBlack,
+                      ),
+                    ),
+                    Container(
+                      //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey.shade500),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(10),
+                          )),
+                      child: Column(
+                        children: <Widget>[
+                          ListTile(
+                            title: const Text('Local (normal run)'),
+                            leading: Radio<int>(
+                              value: 1,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
                               },
                             ),
-                            CheckboxFormField(
-                              title: const Text('Promote this run'),
-                              initialValue: _eventAggregate.event.isPromotedEvent == 1,
-                              validator: (bool result) {
-                                _isPromotedEvent = result;
-                                return null;
+                          ),
+                          ListTile(
+                            title: const Text('Local (special event)'),
+                            leading: Radio<int>(
+                              value: 2,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
                               },
                             ),
-                          ],
-                        ),
+                          ),
+                          ListTile(
+                            title: const Text('Regional / State'),
+                            leading: Radio<int>(
+                              value: 3,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
+                              },
+                            ),
+                          ),
+                          ListTile(
+                            title: const Text('Nash Hash (national)'),
+                            leading: Radio<int>(
+                              value: 4,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
+                              },
+                            ),
+                          ),
+                          ListTile(
+                            title: const Text('Interhash / Continent'),
+                            leading: Radio<int>(
+                              value: 5,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
+                              },
+                            ),
+                          ),
+                          ListTile(
+                            title: const Text('World Interhash / Global'),
+                            leading: Radio<int>(
+                              value: 6,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
+                              },
+                            ),
+                          ),
+                          ListTile(
+                            title: const Text('Other'),
+                            leading: Radio<int>(
+                              value: 7,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
+                              },
+                            ),
+                          ),
+                          ListTile(
+                            title: const Text('Not specified'),
+                            leading: Radio<int>(
+                              value: 0,
+                              groupValue: _eventGeographicScope,
+                              onChanged: (int value) {
+                                setState(() {
+                                  _eventGeographicScope = value;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
-                        child: Text(
-                          'Let Hashers around the corner or around the world know about your run if it is interesting to them! By telling us the geographic scope of your run it will help us do a better job promoting it for you!',
-                          style: mediumTextBlack,
-                        ),
-                      ),
-                      Container(
-                        //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.grey.shade500),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(10),
-                            )),
-                        child: Column(
-                          children: <Widget>[
-                            ListTile(
-                              title: const Text('Local (normal run)'),
-                              leading: Radio<int>(
-                                value: 1,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text('Local (special event)'),
-                              leading: Radio<int>(
-                                value: 2,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text('Regional / State'),
-                              leading: Radio<int>(
-                                value: 3,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text('Nash Hash (national)'),
-                              leading: Radio<int>(
-                                value: 4,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text('Interhash / Continent'),
-                              leading: Radio<int>(
-                                value: 5,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text('World Interhash / Global'),
-                              leading: Radio<int>(
-                                value: 6,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text('Other'),
-                              leading: Radio<int>(
-                                value: 7,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text('Not specified'),
-                              leading: Radio<int>(
-                                value: 0,
-                                groupValue: _eventGeographicScope,
-                                onChanged: (int value) {
-                                  setState(() {
-                                    _eventGeographicScope = value;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          //crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            _isUpdating
-                                ? Container(
-                                    height: 70.0,
-                                    width: 70.0,
-                                    child: HcCircularProgressIndicator(key: UniqueKey()),
-                                  )
-                                : Container(
-                                    width: 300.0,
-                                    child: ElevatedButton(
-                                      child: Text(widget.isNewRun ? 'Finish' : 'Save Other Information', style: buttonLabelStyleMedium),
-                                      onPressed: () async {
-                                        await _updateRunDetails(false);
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        //crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          _isUpdating
+                              ? SizedBox(
+                                  height: 70.0,
+                                  width: 70.0,
+                                  child: HcCircularProgressIndicator(key: UniqueKey()),
+                                )
+                              : SizedBox(
+                                  width: 300.0,
+                                  child: ElevatedButton(
+                                    child: Text(widget.isNewRun ? 'Finish' : 'Save Other Information', style: buttonLabelStyleMedium),
+                                    onPressed: () async {
+                                      await _updateRunDetails(false);
 
-                                        if (widget.isNewRun) {
-                                          Navigator.of(context).pop();
-                                        } else {
-                                          final SnackBar snackBar = SnackBar(
-                                            duration: const Duration(seconds: 3),
-                                            content: const Text(
-                                              'Other info has been saved',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                            ),
-                                            backgroundColor: Colors.blue.shade700,
-                                          );
-                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                        }
-                                      },
-                                    ),
+                                      if (widget.isNewRun) {
+                                        Navigator.of(context).pop();
+                                      } else {
+                                        final SnackBar snackBar = SnackBar(
+                                          duration: const Duration(seconds: 3),
+                                          content: const Text(
+                                            'Other info has been saved',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                          ),
+                                          backgroundColor: Colors.blue.shade700,
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      }
+                                    },
                                   ),
-                            // if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                            //   const SizedBox(width: 10.0),
-                            //   Container(
-                            //     width: 162.0,
-                            //     child: ElevatedButton(
-                            //       child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                            //       onPressed: () {
-                            //         setState(() {
-                            //           _isUpdating = true;
-                            //           _useFacebookDetails();
-                            //         });
-                            //       },
-                            //     ),
-                            //   ),
-                            // ]
-                          ],
-                        ),
+                                ),
+                          // if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                          //   const SizedBox(width: 10.0),
+                          //   Container(
+                          //     width: 162.0,
+                          //     child: ElevatedButton(
+                          //       child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                          //       onPressed: () {
+                          //         setState(() {
+                          //           _isUpdating = true;
+                          //           _useFacebookDetails();
+                          //         });
+                          //       },
+                          //     ),
+                          //   ),
+                          // ]
+                        ],
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),

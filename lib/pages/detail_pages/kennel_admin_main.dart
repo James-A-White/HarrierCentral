@@ -97,7 +97,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   @override
   Widget build(BuildContext context) {
     return Stack(children: <Widget>[
-      Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+      SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
       Positioned(
         top: 0,
         left: 0,
@@ -109,7 +109,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             centerTitle: true,
             backgroundColor: themeAppBarBackground,
             title: Text(
-              '${widget.kennelAggregateItem.kennel.kennelShortName}',
+              widget.kennelAggregateItem.kennel.kennelShortName,
               style: const TextStyle(
                 color: Colors.white,
               ),
@@ -187,7 +187,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
                                       Padding(
                                         padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                        child: Container(
+                                        child: SizedBox(
                                           width: 110,
                                           height: 110,
                                           child: Connection.styleForConnected(
@@ -284,7 +284,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       // ),
                                       Padding(
                                         padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                        child: Container(
+                                        child: SizedBox(
                                           width: 110,
                                           height: 110,
                                           child: Connection.styleForConnected(
@@ -328,7 +328,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       children: <Widget>[
                                         Padding(
                                           padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                          child: Container(
+                                          child: SizedBox(
                                             width: 110,
                                             height: 110,
                                             child: Connection.styleForConnected(
@@ -478,7 +478,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       children: <Widget>[
                                         Padding(
                                           padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                          child: Container(
+                                          child: SizedBox(
                                             width: 110,
                                             height: 110,
                                             child: Connection.styleForConnected(
@@ -518,7 +518,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                          child: Container(
+                                          child: SizedBox(
                                             width: 110,
                                             height: 110,
                                             child: Connection.styleForConnected(
@@ -585,7 +585,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               : Container(),
                           Column(
                             children: <Widget>[
-                              Container(
+                              SizedBox(
                                 width: MediaQuery.of(context).size.width,
                                 height: 300,
                                 //padding: const EdgeInsets.all(20.0),

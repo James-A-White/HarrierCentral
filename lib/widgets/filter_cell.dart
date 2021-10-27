@@ -28,7 +28,7 @@ class CheckinFiltersCell extends StatelessWidget {
     //final String total = (creditAmount ?? 0) <= 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
-    return Container(
+    return SizedBox(
       width: 50,
       child: Column(
         children: <Widget>[
@@ -48,23 +48,19 @@ class CheckinFiltersCell extends StatelessWidget {
               onTap();
             },
             icon: Icon(
-                icon != null
-                    ? icon
-                    : filterValues[index] == -1
-                        ? FontAwesome.times_circle
-                        : filterValues[index] == 0
-                            ? FontAwesome.circle_thin
-                            : FontAwesome.check_circle,
+                icon ?? filterValues[index] == -1
+                    ? FontAwesome.times_circle
+                    : filterValues[index] == 0
+                        ? FontAwesome.circle_thin
+                        : FontAwesome.check_circle,
                 size: 35,
-                color: color != null
-                    ? color
-                    : filterValues[index] == -1
-                        ? Colors.red
-                        : filterValues[index] == 0
-                            ? Colors.grey[350]
-                            : Colors.green),
+                color: color ?? filterValues[index] == -1
+                    ? Colors.red
+                    : filterValues[index] == 0
+                        ? Colors.grey[350]
+                        : Colors.green),
           ),
-          Container(
+          SizedBox(
             child: AutoSizeText(
               label,
               style: textStyle,

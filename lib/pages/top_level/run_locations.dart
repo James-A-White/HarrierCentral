@@ -108,7 +108,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       ),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 40,
                     child: TextButton(
                       style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
@@ -576,12 +576,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           });
         });
       },
-      child: Container(
-        //padding: const EdgeInsets.only(bottom: 58.0),
-        //color: Colors.red,
-        child: Image.asset(getPin(eventStartDatetime, rsvpState, attendenceState, isHare, kennelPinColor, eventScope, isCountedRun)),
-        //child: FlutterLogo(colors: Colors.purple),
-      ),
+      child: Image.asset(getPin(eventStartDatetime, rsvpState, attendenceState, isHare, kennelPinColor, eventScope, isCountedRun)),
     );
   }
 
@@ -618,23 +613,19 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           );
         }
       },
-      child: Container(
-        //padding: const EdgeInsets.only(bottom: 58.0),
-        //color: Colors.red,
-        child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
-          Image.asset('images/icons/grey_square_pin.png'),
-          Positioned(
-            top: 9,
-            child: KennelLogo(
-              kennelLogoUrl: kennelLogo,
-              kennelShortName: kennelShortName,
-              logoHeight: 60.0,
-              leftPadding: 0.0,
-              zoomGesture: KennelLogoZoomGesture.none,
-            ),
+      child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
+        Image.asset('images/icons/grey_square_pin.png'),
+        Positioned(
+          top: 9,
+          child: KennelLogo(
+            kennelLogoUrl: kennelLogo,
+            kennelShortName: kennelShortName,
+            logoHeight: 60.0,
+            leftPadding: 0.0,
+            zoomGesture: KennelLogoZoomGesture.none,
           ),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 
@@ -688,75 +679,71 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         Expanded(
           child: Stack(
             children: <Widget>[
-              Container(
-                //decoration: Backgrounds.defaultHcBackground(),
-                //height: MediaQuery.of(context).size.height,
-                child: FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                    center: (widget.kennel?.kennelLatitude != null)
-                        ? latlng.LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
-                        : ((_mapCenterOption == centerOnCurrentLocation.value) || (_homeKennelLat == null) || (_homeKennelLon == null))
-                            ? latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon)
-                            : latlng.LatLng(_homeKennelLat + .0, _homeKennelLon + .0),
-                    zoom: 10.0,
-                    minZoom: 1.0,
-                    maxZoom: 18.0,
-                    plugins: <MarkerClusterPlugin>[
-                      MarkerClusterPlugin(),
-                    ],
-                  ),
-                  layers: <LayerOptions>[
-                    TileLayerOptions(
-                        urlTemplate:
-                            //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                        //subdomains: ['a', 'b', 'c']),
-                        subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-
-                    MarkerClusterLayerOptions(
-                      maxClusterRadius: 60,
-                      size: const Size(40, 40),
-                      fitBoundsOptions: const FitBoundsOptions(
-                        padding: EdgeInsets.all(50),
-                      ),
-                      markers: _runLocationMarkers,
-                      polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
-                      builder: (BuildContext context, List<Marker> markers) {
-                        heroCounter++;
-                        return FloatingActionButton(
-                          backgroundColor: Colors.blue[800],
-                          child: Text(markers.length.toString()),
-                          onPressed: null,
-                          heroTag: 'btn_$heroCounter',
-                        );
-                      },
-                    ),
-
-                    MarkerClusterLayerOptions(
-                      maxClusterRadius: 60,
-                      size: const Size(50, 50),
-                      fitBoundsOptions: const FitBoundsOptions(
-                        padding: EdgeInsets.all(50),
-                      ),
-                      markers: _showKennels == true ? _kennelMarkers : <Marker>[],
-                      polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
-                      builder: (BuildContext context, List<Marker> markers) {
-                        heroCounter++;
-                        return FloatingActionButton(
-                          backgroundColor: Colors.purple[600],
-                          child: Text(markers.length.toString()),
-                          onPressed: null,
-                          heroTag: 'btn_$heroCounter',
-                        );
-                      },
-                    ),
-
-                    // MarkerLayerOptions(
-                    //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
-                    // )
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  center: (widget.kennel?.kennelLatitude != null)
+                      ? latlng.LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
+                      : ((_mapCenterOption == centerOnCurrentLocation.value) || (_homeKennelLat == null) || (_homeKennelLon == null))
+                          ? latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon)
+                          : latlng.LatLng(_homeKennelLat + .0, _homeKennelLon + .0),
+                  zoom: 10.0,
+                  minZoom: 1.0,
+                  maxZoom: 18.0,
+                  plugins: <MarkerClusterPlugin>[
+                    MarkerClusterPlugin(),
                   ],
                 ),
+                layers: <LayerOptions>[
+                  TileLayerOptions(
+                      urlTemplate:
+                          //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                      //subdomains: ['a', 'b', 'c']),
+                      subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+
+                  MarkerClusterLayerOptions(
+                    maxClusterRadius: 60,
+                    size: const Size(40, 40),
+                    fitBoundsOptions: const FitBoundsOptions(
+                      padding: EdgeInsets.all(50),
+                    ),
+                    markers: _runLocationMarkers,
+                    polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
+                    builder: (BuildContext context, List<Marker> markers) {
+                      heroCounter++;
+                      return FloatingActionButton(
+                        backgroundColor: Colors.blue[800],
+                        child: Text(markers.length.toString()),
+                        onPressed: null,
+                        heroTag: 'btn_$heroCounter',
+                      );
+                    },
+                  ),
+
+                  MarkerClusterLayerOptions(
+                    maxClusterRadius: 60,
+                    size: const Size(50, 50),
+                    fitBoundsOptions: const FitBoundsOptions(
+                      padding: EdgeInsets.all(50),
+                    ),
+                    markers: _showKennels == true ? _kennelMarkers : <Marker>[],
+                    polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
+                    builder: (BuildContext context, List<Marker> markers) {
+                      heroCounter++;
+                      return FloatingActionButton(
+                        backgroundColor: Colors.purple[600],
+                        child: Text(markers.length.toString()),
+                        onPressed: null,
+                        heroTag: 'btn_$heroCounter',
+                      );
+                    },
+                  ),
+
+                  // MarkerLayerOptions(
+                  //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
+                  // )
+                ],
               ),
               Positioned(
                   left: 10.0,
@@ -781,7 +768,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   @override
   Widget build(BuildContext context) {
     return Stack(children: <Widget>[
-      Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+      SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
       Positioned(
         top: 0,
         left: 0,

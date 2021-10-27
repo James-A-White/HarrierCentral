@@ -99,7 +99,7 @@ class FindHasherPageState extends State<FindHasherPage> {
           searchBar(),
           Expanded(
             child: (_isLoading == true)
-                ? Center(child: Container(child: HcCircularProgressIndicator(key: UniqueKey())))
+                ? Center(child: HcCircularProgressIndicator(key: UniqueKey()))
                 : HasherListView(
                     hasherList: filteredList,
                     pageType: widget.pageType,
@@ -156,7 +156,7 @@ class FindHasherPageState extends State<FindHasherPage> {
               ),
             ),
           ),
-          Container(
+          SizedBox(
             width: 40,
             child: TextButton(
               //color: Colors.red,
@@ -218,7 +218,7 @@ class HasherListView extends StatelessWidget {
             actions: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 15.0),
-                child: Container(
+                child: SizedBox(
                   width: 63.0,
                   height: 50.0,
                   child: ElevatedButton(
@@ -230,7 +230,7 @@ class HasherListView extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
+              SizedBox(
                 width: 70.0,
                 height: 50.0,
                 child: ElevatedButton(
@@ -243,7 +243,7 @@ class HasherListView extends StatelessWidget {
                   },
                 ),
               ),
-              Container(
+              SizedBox(
                 width: 60.0,
                 height: 50.0,
                 child: ElevatedButton(
@@ -279,19 +279,19 @@ class HasherListView extends StatelessWidget {
         }
         return null;
       },
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
             hasherList[index].photo.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: hasherList[index].photo,
-                    placeholder: (BuildContext context, String url) => Container(
+                    placeholder: (BuildContext context, String url) => const SizedBox(
                         child: Center(
-                          child: Container(
+                          child: SizedBox(
                             height: 20,
                             width: 20,
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               strokeWidth: 3.0,
                             ),
                           ),

@@ -70,7 +70,9 @@ class FilterEventListItem extends StatelessWidget {
                       textAlign: TextAlign.left,
                     ),
                     Text(
-                      '${DateTime.parse(event['eventStartDatetime']).year != DateTime.now().year ? DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime'])) : DateFormat("E, MMM d \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime']))}',
+                      DateTime.parse(event['eventStartDatetime']).year != DateTime.now().year
+                          ? DateFormat("E, MMM d, yyyy 'at' h:mm a").format(DateTime.parse(event['eventStartDatetime']))
+                          : DateFormat("E, MMM d 'at' h:mm a").format(DateTime.parse(event['eventStartDatetime'])),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -120,7 +122,7 @@ class FilterEventListItem extends StatelessWidget {
                     <String, dynamic>{
                       'title': event['isVisible'] == 0 ? 'Show Event' : 'Hide Event',
                       'icon': <Widget>[
-                        Container(
+                        SizedBox(
                           height: 30,
                           width: 30,
                           child: Icon(event['isVisible'] == 0 ? Ionicons.md_eye : Ionicons.md_eye_off, color: Colors.yellow),
@@ -131,7 +133,7 @@ class FilterEventListItem extends StatelessWidget {
                     <String, dynamic>{
                       'title': event['isCountedRun'] == 0 ? 'Count Run' : 'Don\'t Count Run',
                       'icon': <Widget>[
-                        Container(
+                        SizedBox(
                           height: 30,
                           width: 30,
                           child: Icon(event['isCountedRun'] == 0 ? MaterialCommunityIcons.pencil : MaterialCommunityIcons.pencil_off, color: Colors.blue[200]),
@@ -142,7 +144,7 @@ class FilterEventListItem extends StatelessWidget {
                     <String, dynamic>{
                       'title': 'Set run number',
                       'icon': <Widget>[
-                        Container(
+                        SizedBox(
                           height: 30,
                           width: 30,
                           child: Icon(FontAwesome.hashtag, color: Colors.red.shade200),

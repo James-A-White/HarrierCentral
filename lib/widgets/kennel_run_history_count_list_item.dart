@@ -40,7 +40,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 20.0),
                 child: (kennelInfo.kennelLogo == null || kennelInfo.kennelLogo.length < 5)
-                    ? Container(height: 80, width: 80)
+                    ? const SizedBox(height: 80, width: 80)
                     : KennelLogo(
                         kennelLogoUrl: kennelInfo.kennelLogo,
                         kennelShortName: kennelInfo.kennelShortName,
@@ -49,36 +49,33 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                       ),
               ),
               Expanded(
-                child: Container(
-                  //width: 250,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      const SizedBox(
-                        height: 28,
-                        width: 20,
-                      ),
-                      Text(
-                        '  =  ' + (kennelInfo.historicalCountIsEstimate != 0 ? '~' : '') + '${kennelInfo.totalRunsThisKennel.toString()}',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: numberStyle.copyWith(height: 0.6),
-                        textAlign: TextAlign.left,
-                      ),
-                      kennelInfo.totalHaringThisKennel <= 0
-                          ? const SizedBox(height: 20)
-                          : Container(
-                              padding: const EdgeInsets.only(left: 45.0),
-                              child: Text(
-                                '(${kennelInfo.totalHaringThisKennel.toString()} times hared)',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: numberStyle.copyWith(fontSize: 18.0),
-                                textAlign: TextAlign.left,
-                              ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const SizedBox(
+                      height: 28,
+                      width: 20,
+                    ),
+                    Text(
+                      '  =  ' + (kennelInfo.historicalCountIsEstimate != 0 ? '~' : '') + kennelInfo.totalRunsThisKennel.toString(),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: numberStyle.copyWith(height: 0.6),
+                      textAlign: TextAlign.left,
+                    ),
+                    kennelInfo.totalHaringThisKennel <= 0
+                        ? const SizedBox(height: 20)
+                        : Container(
+                            padding: const EdgeInsets.only(left: 45.0),
+                            child: Text(
+                              '(${kennelInfo.totalHaringThisKennel.toString()} times hared)',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: numberStyle.copyWith(fontSize: 18.0),
+                              textAlign: TextAlign.left,
                             ),
-                    ],
-                  ),
+                          ),
+                  ],
                 ),
               ),
             ],

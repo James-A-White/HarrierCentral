@@ -132,7 +132,7 @@ class KennelListItemState extends State<KennelsListItem> {
                     width: MediaQuery.of(context).size.width - 70,
                     padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right: 5.0),
                     child: AutoSizeText(
-                      '${widget.kennelItem.kennel.kennelName}',
+                      widget.kennelItem.kennel.kennelName,
                       //'An extremely long kennel name for testing purposes',
                       style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                       textAlign: TextAlign.left,
@@ -208,7 +208,7 @@ class KennelListItemState extends State<KennelsListItem> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Container(width: 5.0, height: 85.0),
+                  const SizedBox(width: 5.0, height: 85.0),
                   KennelLogo(
                       kennelLogoUrl: widget.kennelItem.kennel.kennelLogo,
                       kennelShortName: widget.kennelItem.kennel.kennelShortName,
@@ -223,9 +223,9 @@ class KennelListItemState extends State<KennelsListItem> {
                         //mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Container(width: 10.0, height: 10.0),
+                          const SizedBox(width: 10.0, height: 10.0),
                           Text(
-                            '${widget.kennelItem.extensions.location}',
+                            widget.kennelItem.extensions.location,
                             style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                           ),
                           G0<AppModel>().hasLocationPermissions

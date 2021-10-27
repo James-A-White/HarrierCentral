@@ -110,7 +110,7 @@ dev_dependencies:
   build_runner: ^2.1.2 # upgraded Sep 21 21 from 1.11.4 # upgraded Jun 21 20 from 1.8.1
   flutter_launcher_icons: ^0.9.2 # upgraded Sep 21 21 from 0.8.1 # upgraded Mar 23 21 from 0.7.5 # upgraded Jun 21 20 from 0.7.4 # upgraded Nov 10 from ^0.7.3 # updated on 11 Sep from 0.7.2+1 # updated from 0.7.0 on 5 Jul 19 from 0.7.2
   # intl_translation: ^0.17.10+1 # upgraded Feb 02 from ^0.17.7 # updated on 11 Sep from 0.17.5 # updated from 0.17.4 on 8 Jun 19
-  flutter_lints: ^1.0.0
+  flutter_lints: ^1.0.1
   json_annotation: ^4.1.0 # upgraded Sep 21 21 from 3.1.1
   json_serializable: ^5.0.2 # upgraded Sep 21 21 from 3.5.1 # upgraded Mar 23 21 from 3.3.0
 

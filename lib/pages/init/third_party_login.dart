@@ -262,7 +262,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
           if ((profileData.photoUrl != null) && (profileData.photoUrl.length > 5)) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20),
-              child: Container(
+              child: SizedBox(
                 width: MediaQuery.of(context).size.width / 2.0,
                 child: AspectRatio(
                   aspectRatio: 1.0,

@@ -75,7 +75,7 @@ class KennelLogo extends StatelessWidget {
                       kennelShortName.toLowerCase().contains('my runs')
                           ? ''
                           : // TODO(James): find a more elegant way of doing this
-                          '$kennelShortName',
+                          kennelShortName,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedBold',
                         fontStyle: FontStyle.normal,

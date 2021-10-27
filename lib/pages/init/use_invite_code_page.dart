@@ -16,7 +16,7 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,

@@ -37,15 +37,7 @@ class DrawerMenuState extends State<DrawerMenu> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Container(
-                  // decoration: const BoxDecoration(
-                  //   image: const DecorationImage(
-                  //     fit: BoxFit.fill,
-                  //     image: const AssetImage("images/other/drawer_image.jpg"),
-                  //   ),
-                  // ),
-                  child: Image.asset('images/other/drawer_image.jpg', fit: BoxFit.fill, height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
-                ),
+                Image.asset('images/other/drawer_image.jpg', fit: BoxFit.fill, height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
               ],
             ),
           ),

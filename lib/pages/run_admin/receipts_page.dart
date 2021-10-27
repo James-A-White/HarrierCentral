@@ -360,7 +360,7 @@ class ReceiptListItem extends StatelessWidget {
       onTap: () {
         itemPressed();
       },
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width,
         child: Row(
           // crossAxisAlignment: CrossAxisAlignment.center,
@@ -382,7 +382,7 @@ class ReceiptListItem extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Text(
-                  '${IveCoreUtilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol)}',
+                  IveCoreUtilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol),
                   style: TextStyle(
                       fontFamily: 'AvenirNextCondensedDemiBold',
                       fontStyle: FontStyle.normal,

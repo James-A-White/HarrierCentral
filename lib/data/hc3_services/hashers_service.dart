@@ -226,7 +226,7 @@ class HashersService extends BaseService {
       'historicalPackRunCount': historicalPackRunCount,
       'historicalHaringCount': historicalHaringCount,
       'historicalCountIsEstimate': (historicalCountIsEstimate ?? false) ? '1' : '0',
-      'followKennelOnAddNewUser': followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString(),
+      'followKennelOnAddNewUser': followKennelOnAddNewUser?.toString(),
       'latitude': G0<DeviceInfo>().deviceLat.toString(),
       'longitude': G0<DeviceInfo>().deviceLon.toString()
     });

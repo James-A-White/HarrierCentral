@@ -89,7 +89,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> with SingleTickerProv
             Positioned(
                 top: 80,
                 bottom: 0,
-                child: Container(
+                child: SizedBox(
                   key: tabKey,
                   //color: Colors.teal,
                   width: MediaQuery.of(context).size.width,

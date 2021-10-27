@@ -126,10 +126,11 @@ class Utilities {
     if ((value != null) && (value.isNotEmpty)) {
       const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
       final RegExp regex = RegExp(pattern, caseSensitive: false);
-      if (!regex.hasMatch(value))
+      if (!regex.hasMatch(value)) {
         return 'Please enter a valid email';
-      else
+      } else {
         return null;
+      }
     }
     return 'Please enter an email address';
   }

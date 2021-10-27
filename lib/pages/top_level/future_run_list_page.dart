@@ -144,7 +144,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       ),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 40,
                     child: TextButton(
                       style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),

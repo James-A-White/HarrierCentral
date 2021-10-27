@@ -380,7 +380,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         fit: StackFit.loose,
         alignment: AlignmentDirectional.topStart,
         children: <Widget>[
-          Container(height: MediaQuery.of(context).size.height, width: 10),
+          SizedBox(height: MediaQuery.of(context).size.height, width: 10),
           // (snapshot?.data == null || snapshot.data.isEmpty)
 
           //     //? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
@@ -389,7 +389,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
           PositionedTransition(
             rect: hasherListAnimation,
-            child: Container(
+            child: SizedBox(
               key: packListBoxKey,
               height: 300,
               child: FutureBuilder<List<KennelMembersResults>>(
@@ -651,7 +651,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                   ],
                 ),
               ),
-              Container(
+              SizedBox(
                 width: 40,
                 child: TextButton(
                   style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),

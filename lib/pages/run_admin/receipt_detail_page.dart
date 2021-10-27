@@ -162,10 +162,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           decoration: const InputDecoration(labelText: 'Short description'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
-            if (arg.length < 4)
+            if (arg.length < 4) {
               return 'Description must be more than 3 charaters';
-            else
+            } else {
               return null;
+            }
           },
           onSaved: (String val) {
             _shortDescription = val;
@@ -253,37 +254,35 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                       //   child:
                                       Container(
                                         padding: const EdgeInsets.all(30.0),
-                                        child: Container(
-                                          child: Center(
-                                            child: Column(
-                                              children: <Widget>[
-                                                Container(
-                                                  padding: const EdgeInsets.all(10.0),
-                                                  margin: const EdgeInsets.only(bottom: 45),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.yellow[100],
-                                                    borderRadius: BorderRadius.circular(5.0),
-                                                  ),
-                                                  child: Form(
-                                                    key: _formKey,
-                                                    autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
-                                                    child: formUi(),
-                                                  ),
+                                        child: Center(
+                                          child: Column(
+                                            children: <Widget>[
+                                              Container(
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(bottom: 45),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow[100],
+                                                  borderRadius: BorderRadius.circular(5.0),
                                                 ),
-                                                FancyDivider(key: UniqueKey(), innerColor: Colors.white),
-                                                const SizedBox(height: 20),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    onImageButtonPressed().then((File imageFile) {
-                                                      setState(() {
-                                                        _imageFromCamera = imageFile;
-                                                      });
+                                                child: Form(
+                                                  key: _formKey,
+                                                  autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+                                                  child: formUi(),
+                                                ),
+                                              ),
+                                              FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                                              const SizedBox(height: 20),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  onImageButtonPressed().then((File imageFile) {
+                                                    setState(() {
+                                                      _imageFromCamera = imageFile;
                                                     });
-                                                  },
-                                                  child: Text('Scan Receipt', style: buttonTextStyle),
-                                                )
-                                              ],
-                                            ),
+                                                  });
+                                                },
+                                                child: Text('Scan Receipt', style: buttonTextStyle),
+                                              )
+                                            ],
                                           ),
                                         ),
                                       ),
@@ -300,7 +299,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                             MaterialPageRoute<void>(
                                               builder: (BuildContext context) => ZoomableImagePage2(
                                                 key: UniqueKey(),
-                                                file: _imageFromCamera != null ? _imageFromCamera : _imageFromCache,
+                                                file: _imageFromCamera ?? _imageFromCache,
                                                 pageTitle: 'Zoomable Receipt',
                                                 appBarBackgroundColor: themeAppBarBackground,
                                                 background: Backgrounds.defaultHcBackground(),
@@ -324,7 +323,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                     child: receiptImageFromWeb)
                                                 : Container(),
                                       ),
-                                      Container(width: 40, height: 40),
+                                      const SizedBox(width: 40, height: 40),
                                     ],
                                   ),
                                 ),

@@ -110,33 +110,31 @@ class SelectRunPageState extends State<SelectRunPage> {
             ),
           ),
           Expanded(
-            child: Container(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
-                physics: const AlwaysScrollableScrollPhysics(),
-                //padding: const EdgeInsets.only( bottom: 40.0),
-                itemCount: widget.runList.length,
-                //itemCount: 100,
-                itemBuilder: (BuildContext context, int index) {
-                  //index = 0;
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: RunListItem(
-                        item: widget.runList[index],
-                        callback: (AreWeAtRunResult item) {
-                          setState(() {
-                            _showCheckinButton = false;
-                            for (AreWeAtRunResult r in widget.runList) {
-                              if (r.selected) {
-                                _showCheckinButton = true;
-                                break;
-                              }
+            child: ListView.builder(
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
+              physics: const AlwaysScrollableScrollPhysics(),
+              //padding: const EdgeInsets.only( bottom: 40.0),
+              itemCount: widget.runList.length,
+              //itemCount: 100,
+              itemBuilder: (BuildContext context, int index) {
+                //index = 0;
+                return Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: RunListItem(
+                      item: widget.runList[index],
+                      callback: (AreWeAtRunResult item) {
+                        setState(() {
+                          _showCheckinButton = false;
+                          for (AreWeAtRunResult r in widget.runList) {
+                            if (r.selected) {
+                              _showCheckinButton = true;
+                              break;
                             }
-                          });
-                        }),
-                  );
-                },
-              ),
+                          }
+                        });
+                      }),
+                );
+              },
             ),
           ),
         ],

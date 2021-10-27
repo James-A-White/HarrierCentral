@@ -15,7 +15,7 @@ class ImprintPageState extends State<ImprintPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -150,7 +150,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Text(
                       'The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.',
                       style: bodyStyle),
-                  Container(width: 40, height: 40),
+                  const SizedBox(width: 40, height: 40),
                 ],
               ),
             ),

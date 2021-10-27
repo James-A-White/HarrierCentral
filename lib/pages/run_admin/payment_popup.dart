@@ -101,71 +101,71 @@ class _PaymentPopupState extends State<PaymentPopup> {
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ]),
-              ]..addAll((widget.creditAllowed == 0)
-                  ? List<Widget>.from(<Widget>[otherAmountRow()])
-                  : List<Widget>.from(<Widget>[
-                      Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                        Radio<int>(
-                          value: 6,
-                          groupValue: selectedValue,
-                          onChanged: _handleRadioValueChange1,
+                if (widget.creditAllowed == 0) ...<Widget>[otherAmountRow()],
+                if (widget.creditAllowed != 0) ...<Widget>[
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                    Radio<int>(
+                      value: 6,
+                      groupValue: selectedValue,
+                      onChanged: _handleRadioValueChange1,
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                          style: const TextStyle(fontSize: 16.0),
                         ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              'Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                              style: const TextStyle(fontSize: 16.0),
-                            ),
-                            Text(
-                              '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' +
-                                  ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
-                              style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
-                            ),
-                          ],
+                        Text(
+                          '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' +
+                              ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
+                          style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                         ),
-                      ]),
-                      otherAmountRow()
-                      // Row(
-                      //     //crossAxisAlignment: CrossAxisAlignment.start,
-                      //     children: <Widget>[
-                      //       Radio<int>(
-                      //         value: 5,
-                      //         groupValue: selectedValue,
-                      //         onChanged: _handleRadioValueChange1,
-                      //       ),
-                      //       Column(
-                      //         mainAxisAlignment: MainAxisAlignment.start,
-                      //         crossAxisAlignment: CrossAxisAlignment.start,
-                      //         children: <Widget>[
-                      //           Text(
-                      //             'Pay ${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
-                      //             style: const TextStyle(fontSize: 16.0),
-                      //           ),
+                      ],
+                    ),
+                  ])
+                ],
+                otherAmountRow()
+                // Row(
+                //     //crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: <Widget>[
+                //       Radio<int>(
+                //         value: 5,
+                //         groupValue: selectedValue,
+                //         onChanged: _handleRadioValueChange1,
+                //       ),
+                //       Column(
+                //         mainAxisAlignment: MainAxisAlignment.start,
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: <Widget>[
+                //           Text(
+                //             'Pay ${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
+                //             style: const TextStyle(fontSize: 16.0),
+                //           ),
 
-                      //           //         TextField(
+                //           //         TextField(
 
-                      //           //   keyboardType: TextInputType.number,
-                      //           //   style: const TextStyle(
-                      //           //       fontFamily: 'WorkSansSemiBold',
-                      //           //       fontSize: 16.0,
-                      //           //       color: Colors.black),
-                      //           //   decoration: const InputDecoration(
-                      //           //     border: InputBorder.none,
-                      //           //     icon:const  Icon(
-                      //           //       FontAwesomeIcons.moneyBill,
-                      //           //       color: Colors.black,
-                      //           //     ),
-                      //           //     hintText: 'Amount',
-                      //           //     hintStyle: TextStyle(
-                      //           //         fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                      //           //   ),
-                      //           // ),
-                      //         ],
-                      //       ),
-                      //     ]),
-                    ])),
+                //           //   keyboardType: TextInputType.number,
+                //           //   style: const TextStyle(
+                //           //       fontFamily: 'WorkSansSemiBold',
+                //           //       fontSize: 16.0,
+                //           //       color: Colors.black),
+                //           //   decoration: const InputDecoration(
+                //           //     border: InputBorder.none,
+                //           //     icon:const  Icon(
+                //           //       FontAwesomeIcons.moneyBill,
+                //           //       color: Colors.black,
+                //           //     ),
+                //           //     hintText: 'Amount',
+                //           //     hintStyle: TextStyle(
+                //           //         fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                //           //   ),
+                //           // ),
+                //         ],
+                //       ),
+                //     ]),
+              ],
             ),
           ],
         ),
@@ -173,7 +173,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
       actions: <Widget>[
         Padding(
           padding: const EdgeInsets.only(right: 60.0),
-          child: Container(
+          child: SizedBox(
             width: 100.0,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(primary: Colors.red),
@@ -185,7 +185,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
             ),
           ),
         ),
-        Container(
+        SizedBox(
           width: 100.0,
           child: ElevatedButton(
             child: const Text('Process'),
@@ -228,7 +228,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
               style: TextStyle(fontSize: 16.0),
             ),
             otherTransType == null
-                ? Container(height: 1, width: 1)
+                ? const SizedBox(height: 1, width: 1)
                 : Text(
                     '${IveCoreUtilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((otherTransType == 5) ? ' cash' : ' bank transfer'),
                     style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),

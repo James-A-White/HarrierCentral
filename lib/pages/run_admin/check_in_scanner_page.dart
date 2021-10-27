@@ -164,7 +164,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                             }),
                       ),
                     ],
-                    Container(
+                    SizedBox(
                       //color:Colors.yellow,
                       height: 100,
                       child: Center(

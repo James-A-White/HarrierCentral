@@ -22,7 +22,7 @@ class OfflineModeRibbon extends StatelessWidget {
                   showAlert(
                       context,
                       'Offline Mode',
-                      'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d \'at\' h:mm a").format(lastSync)}',
+                      'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d 'at' h:mm a").format(lastSync)}',
                       'OK');
                 } else {
                   showAlert(context, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK');

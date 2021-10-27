@@ -595,7 +595,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: Text(
-        '$title',
+        title,
         style: const TextStyle(
           color: Colors.white,
         ),
@@ -681,7 +681,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             ),
                           ),
                         ),
-                        Container(
+                        SizedBox(
                           width: 40,
                           child: TextButton(
                             style: TextButton.styleFrom(backgroundColor: Colors.white),
@@ -701,7 +701,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   ],
                 ),
               ),
-              Container(
+              SizedBox(
                 width: 40,
                 child: TextButton(
                   style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
@@ -938,116 +938,114 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return Scaffold(
       key: _scaffoldKey,
       floatingActionButton: SpeedDial(
-        // both default to 16
-        // marginEnd: 18,
-        // marginBottom: 30,
-        animatedIcon: AnimatedIcons.menu_close,
-        animatedIconTheme: const IconThemeData(size: 22.0),
-        // this is ignored if animatedIcon is non null
-        // child:const  Icon(Icons.add),
-        visible: true,
-        curve: Curves.bounceIn,
-        overlayColor: Colors.black,
-        overlayOpacity: 0.5,
-        onOpen: () {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          _searchFocusNode.unfocus();
-        },
-        //onClose: () => //print('DIAL CLOSED'),
-        tooltip: 'Speed Dial',
-        heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Colors.red.shade900,
-        foregroundColor: Colors.white,
-        elevation: 8.0,
-        shape: const CircleBorder(),
-        children: <SpeedDialChild>[
-          SpeedDialChild(
-            child: const Icon(Icons.filter_list),
-            backgroundColor: Colors.green,
-            label: 'Preset Filters',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              _filterOptionsPopup();
-            },
-          ),
-          // SpeedDialChild(
-          //     child: const Icon(Icons.person_add),
-          //     backgroundColor: Colors.blue,
-          //     label: 'Add Hasher to Harrier Central',
-          //     labelStyle: const TextStyle(fontSize: 18.0),
-          //     onTap: () {
-          //       Navigator.push<HashersModel>(
-          //         context,
-          //         MaterialPageRoute<HashersModel>(
-          //           builder: (BuildContext context) => HasherProfilePage(
-          //             dataContext: EnumDataContext.event,
-          //             pageType: EnumMyProfilePageType.newHasherProfile,
-          //             eventId: widget.eventAggregate.event.eventId,
-          //             kennelId: widget.eventAggregate.event.kennelId,
-          //             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-          //           ),
-          //         ),
-          //       ).then((HashersModel result) {
-          //         _refreshPackListFromTables(true);
-          //       });
-          //     }),
-          SpeedDialChild(
-            child: const Icon(FontAwesome.heart),
-            backgroundColor: Colors.blue,
-            label: 'Add Virgin / Visitor',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => _showVirginVisitorPopup(context),
-          ),
-          SpeedDialChild(
-            child: const Icon(MaterialCommunityIcons.account_search),
-            backgroundColor: Colors.blue,
-            label: 'Find Hasher and add',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => _findHasher(),
-          ),
-          SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.message_video),
-              backgroundColor: Colors.deepOrange,
-              label: 'View video tutorial',
+          // both default to 16
+          // marginEnd: 18,
+          // marginBottom: 30,
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          // this is ignored if animatedIcon is non null
+          // child:const  Icon(Icons.add),
+          visible: true,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          onOpen: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            _searchFocusNode.unfocus();
+          },
+          //onClose: () => //print('DIAL CLOSED'),
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag',
+          backgroundColor: Colors.red.shade900,
+          foregroundColor: Colors.white,
+          elevation: 8.0,
+          shape: const CircleBorder(),
+          children: <SpeedDialChild>[
+            SpeedDialChild(
+              child: const Icon(Icons.filter_list),
+              backgroundColor: Colors.green,
+              label: 'Preset Filters',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () => Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => const VideoTutorialPage(
-                              title: 'How to use Check In Page',
-                              videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
-                            )),
-                  )),
-        ]..addAll(((widget.eventAggregate?.kennel?.bankScheme == null) || (widget.eventAggregate?.kennel?.bankScheme == ''))
-            ? List<SpeedDialChild>.from(<SpeedDialChild>[])
-            : List<SpeedDialChild>.from(<SpeedDialChild>[
-                SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.bank),
-                  backgroundColor: Colors.purple,
-                  label: 'Bank Transfer\r\n(Member)',
-                  labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, true),
-                ),
-                SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.bank),
-                  backgroundColor: Colors.purple,
-                  label: 'Bank Transfer\r\n(Non-Member)',
-                  labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, false),
-                ),
-              ])),
-      ),
+              onTap: () {
+                _filterOptionsPopup();
+              },
+            ),
+            // SpeedDialChild(
+            //     child: const Icon(Icons.person_add),
+            //     backgroundColor: Colors.blue,
+            //     label: 'Add Hasher to Harrier Central',
+            //     labelStyle: const TextStyle(fontSize: 18.0),
+            //     onTap: () {
+            //       Navigator.push<HashersModel>(
+            //         context,
+            //         MaterialPageRoute<HashersModel>(
+            //           builder: (BuildContext context) => HasherProfilePage(
+            //             dataContext: EnumDataContext.event,
+            //             pageType: EnumMyProfilePageType.newHasherProfile,
+            //             eventId: widget.eventAggregate.event.eventId,
+            //             kennelId: widget.eventAggregate.event.kennelId,
+            //             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+            //           ),
+            //         ),
+            //       ).then((HashersModel result) {
+            //         _refreshPackListFromTables(true);
+            //       });
+            //     }),
+            SpeedDialChild(
+              child: const Icon(FontAwesome.heart),
+              backgroundColor: Colors.blue,
+              label: 'Add Virgin / Visitor',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () => _showVirginVisitorPopup(context),
+            ),
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.account_search),
+              backgroundColor: Colors.blue,
+              label: 'Find Hasher and add',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () => _findHasher(),
+            ),
+            SpeedDialChild(
+                child: const Icon(MaterialCommunityIcons.message_video),
+                backgroundColor: Colors.deepOrange,
+                label: 'View video tutorial',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () => Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => const VideoTutorialPage(
+                                title: 'How to use Check In Page',
+                                videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
+                              )),
+                    )),
+            if ((widget.eventAggregate?.kennel?.bankScheme != null) && (widget.eventAggregate?.kennel?.bankScheme != '')) ...<SpeedDialChild>[
+              SpeedDialChild(
+                child: const Icon(MaterialCommunityIcons.bank),
+                backgroundColor: Colors.purple,
+                label: 'Bank Transfer\r\n(Member)',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, true),
+              ),
+              SpeedDialChild(
+                child: const Icon(MaterialCommunityIcons.bank),
+                backgroundColor: Colors.purple,
+                label: 'Bank Transfer\r\n(Non-Member)',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, false),
+              ),
+            ],
+          ]),
       appBar: _getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : (widget?.eventAggregate?.event?.eventName ?? '') + ' Check In'),
       body: _isLoading
           ? HcCircularProgressIndicator(key: UniqueKey())
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
-              Container(height: MediaQuery.of(context).size.height, width: 10),
+              SizedBox(height: MediaQuery.of(context).size.height, width: 10),
               (_filteredList == null || _filteredList.isEmpty)
                   //? Positioned(top: showFilter ? 210 : 95, left:0, right: 0, child: getAddHasherBlock())
                   ? Positioned(top: (_filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: _getAddHasherBlock())
                   : PositionedTransition(
                       rect: _hasherListAnimation,
-                      child: Container(key: _packListBoxKey, height: 300, child: _buildPackListView()),
+                      child: SizedBox(key: _packListBoxKey, height: 300, child: _buildPackListView()),
                     ),
               SlideTransition(position: _filterPanelAnimation, child: _filterBar()),
               Positioned(top: 0, child: _searchBar()),
@@ -1288,7 +1286,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
       },
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
@@ -1311,12 +1309,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               child: packMember.photo.startsWith('http')
                   ? CachedNetworkImage(
                       imageUrl: packMember.photo,
-                      placeholder: (BuildContext context, String url) => Container(
+                      placeholder: (BuildContext context, String url) => const SizedBox(
                           child: Center(
-                            child: Container(
+                            child: SizedBox(
                               height: 20,
                               width: 20,
-                              child: const CircularProgressIndicator(
+                              child: CircularProgressIndicator(
                                 strokeWidth: 3.0,
                               ),
                             ),

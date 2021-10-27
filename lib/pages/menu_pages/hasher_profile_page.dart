@@ -381,10 +381,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           decoration: const InputDecoration(labelText: 'First name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
-            if (arg.isEmpty)
+            if (arg.isEmpty) {
               return 'First name must have a least one letter';
-            else
+            } else {
               return null;
+            }
           },
           onSaved: (String val) {
             _hasher.firstName = val;
@@ -397,10 +398,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           decoration: const InputDecoration(labelText: 'Last Name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
-            if (arg.isEmpty)
+            if (arg.isEmpty) {
               return 'Last name must have a least one letter';
-            else
+            } else {
               return null;
+            }
           },
           onSaved: (String val) {
             _hasher.lastName = val;
@@ -512,7 +514,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -541,7 +543,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
-                              Container(
+                              SizedBox(
                                 width: MediaQuery.of(context).size.width,
                                 child: Column(
                                   children: <Widget>[
@@ -553,364 +555,362 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                     Container(
                                       padding: EdgeInsets.only(
                                           top: 30.0, left: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30, right: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30),
-                                      child: Container(
-                                        child: Center(
-                                          child: Column(
-                                            children: <Widget>[
-                                              Container(
-                                                padding: const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(bottom: 45),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow[100],
-                                                  borderRadius: BorderRadius.circular(5.0),
-                                                ),
-                                                child: Form(
-                                                  key: _profileFormKey,
-                                                  autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
-                                                  child: profileFormUi(),
-                                                ),
+                                      child: Center(
+                                        child: Column(
+                                          children: <Widget>[
+                                            Container(
+                                              padding: const EdgeInsets.all(10.0),
+                                              margin: const EdgeInsets.only(bottom: 45),
+                                              decoration: BoxDecoration(
+                                                color: Colors.yellow[100],
+                                                borderRadius: BorderRadius.circular(5.0),
                                               ),
-                                              FancyDivider(key: UniqueKey(), innerColor: Colors.white),
-                                              Container(
-                                                height: 220,
-                                                color: Colors.white,
-                                                padding: const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                                child: _newPhoto.isEmpty
-                                                    ? Image.asset(
-                                                        'images/icons/create_profile_photo.png',
-                                                      )
-                                                    : Padding(
-                                                        padding: const EdgeInsets.only(left: 0, right: 0),
-                                                        child: AspectRatio(
-                                                          aspectRatio: 1.0,
-                                                          child: ProfilePhoto(
-                                                            profilePhotoUrl: _newPhoto,
-                                                            //photoHeight: 200.0,
-                                                            //leftPadding: 0.0,
-                                                          ),
+                                              child: Form(
+                                                key: _profileFormKey,
+                                                autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+                                                child: profileFormUi(),
+                                              ),
+                                            ),
+                                            FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                                            Container(
+                                              height: 220,
+                                              color: Colors.white,
+                                              padding: const EdgeInsets.all(10.0),
+                                              margin: const EdgeInsets.only(top: 20, bottom: 30),
+                                              child: _newPhoto.isEmpty
+                                                  ? Image.asset(
+                                                      'images/icons/create_profile_photo.png',
+                                                    )
+                                                  : Padding(
+                                                      padding: const EdgeInsets.only(left: 0, right: 0),
+                                                      child: AspectRatio(
+                                                        aspectRatio: 1.0,
+                                                        child: ProfilePhoto(
+                                                          profilePhotoUrl: _newPhoto,
+                                                          //photoHeight: 200.0,
+                                                          //leftPadding: 0.0,
+                                                        ),
 
-                                                          // Container(
-                                                          //   decoration: BoxDecoration(
-                                                          //     shape: BoxShape.rectangle,
-                                                          //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                                                          //     image: DecorationImage(
-                                                          //       fit: BoxFit.fill,
-                                                          //       image: NetworkImage(
-                                                          //         newPhoto,
-                                                          //       ),
-                                                          //     ),
-                                                          //   ),
-                                                          // ),
+                                                        // Container(
+                                                        //   decoration: BoxDecoration(
+                                                        //     shape: BoxShape.rectangle,
+                                                        //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                                                        //     image: DecorationImage(
+                                                        //       fit: BoxFit.fill,
+                                                        //       image: NetworkImage(
+                                                        //         newPhoto,
+                                                        //       ),
+                                                        //     ),
+                                                        //   ),
+                                                        // ),
+                                                      ),
+                                                    ),
+                                            ),
+                                            Connection.styleForConnected(
+                                              G0<AppModel>().connectionStatus,
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                ),
+                                                onPressed: () {
+                                                  if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute<String>(
+                                                        builder: (BuildContext context) => ChooseProfileImage(
+                                                          isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
+                                                          fileNamePrefix: _photoPrefix,
+                                                          currentProfileImage: _hasher?.photo ?? _newPhoto,
                                                         ),
                                                       ),
+                                                    ).then((String result) {
+                                                      if ((result != null) && (result.isNotEmpty)) {
+                                                        _newPhoto = result;
+                                                        checkDirty();
+                                                        //setState(() {});
+                                                      }
+                                                    });
+                                                  }
+                                                },
+                                                child: Text('Update Profile Image', style: textStyleButton),
                                               ),
-                                              Connection.styleForConnected(
-                                                G0<AppModel>().connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                            ),
+                                            const SizedBox(height: 15),
+                                            (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_distancePref == 0)
+                                                ? Container()
+                                                : Column(
+                                                    children: <Widget>[
+                                                      FancyDivider(
+                                                        key: UniqueKey(),
+                                                        innerColor: Colors.white,
+                                                        topMargin: 30.0,
+                                                        bottomMargin: 20.0,
+                                                      ),
+                                                      Container(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.yellow[100],
+                                                          borderRadius: BorderRadius.circular(5.0),
+                                                        ),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const SizedBox(
+                                                              height: 10,
+                                                              width: 10,
+                                                            ),
+                                                            Text(
+                                                              'Distance Preference',
+                                                              style: headingStyle20Black,
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 10,
+                                                              width: 10,
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 0,
+                                                                  groupValue: _distancePreference,
+                                                                  onChanged: _handleRadioValueChange1,
+                                                                ),
+                                                                const Text(
+                                                                  'Auto',
+                                                                  style: TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 2,
+                                                                  groupValue: _distancePreference,
+                                                                  onChanged: _handleRadioValueChange1,
+                                                                ),
+                                                                const Text(
+                                                                  'Kilometers',
+                                                                  style: TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 3,
+                                                                  groupValue: _distancePreference,
+                                                                  onChanged: _handleRadioValueChange1,
+                                                                ),
+                                                                const Text(
+                                                                  'Miles',
+                                                                  style: TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      G0<AppModel>().hasLocationPermissions
+                                                          ? Container()
+                                                          : Padding(
+                                                              padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                                              child: ElevatedButton(
+                                                                onPressed: () async {
+                                                                  if (Platform.isIOS) {
+                                                                    if (await Permission.locationWhenInUse.isGranted) {
+                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                      G0<AppModel>().hasLocationPermissions = true;
+                                                                      await Utilities.subscribeToGeoLocationStream();
+                                                                    }
+                                                                  } else {
+                                                                    if (await Permission.location.isGranted) {
+                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                      G0<AppModel>().hasLocationPermissions = true;
+                                                                      await Utilities.subscribeToGeoLocationStream();
+                                                                    }
+                                                                  }
+
+                                                                  await IveCoreUtilities.showAlert(
+                                                                      context,
+                                                                      'Location preferences updated',
+                                                                      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
+                                                                      'OK');
+                                                                },
+                                                                child: Text('Enable Location Svcs', style: buttonTextStyle),
+                                                              ),
+                                                            ),
+                                                    ],
                                                   ),
-                                                  onPressed: () {
-                                                    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute<String>(
-                                                          builder: (BuildContext context) => ChooseProfileImage(
-                                                            isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
-                                                            fileNamePrefix: _photoPrefix,
-                                                            currentProfileImage: _hasher?.photo ?? _newPhoto,
-                                                          ),
+                                            (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_autoDisplayRunsDistance == 0)
+                                                ? Container()
+                                                : Column(
+                                                    children: <Widget>[
+                                                      FancyDivider(
+                                                        key: UniqueKey(),
+                                                        innerColor: Colors.white,
+                                                        topMargin: 45.0,
+                                                        bottomMargin: 20.0,
+                                                      ),
+                                                      Container(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.yellow[100],
+                                                          borderRadius: BorderRadius.circular(5.0),
                                                         ),
-                                                      ).then((String result) {
-                                                        if ((result != null) && (result.isNotEmpty)) {
-                                                          _newPhoto = result;
-                                                          checkDirty();
-                                                          //setState(() {});
-                                                        }
-                                                      });
-                                                    }
-                                                  },
-                                                  child: Text('Update Profile Image', style: textStyleButton),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 15),
-                                              (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_distancePref == 0)
-                                                  ? Container()
-                                                  : Column(
-                                                      children: <Widget>[
-                                                        FancyDivider(
-                                                          key: UniqueKey(),
-                                                          innerColor: Colors.white,
-                                                          topMargin: 30.0,
-                                                          bottomMargin: 20.0,
-                                                        ),
-                                                        Container(
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.yellow[100],
-                                                            borderRadius: BorderRadius.circular(5.0),
-                                                          ),
-                                                          child: Column(
-                                                            children: <Widget>[
-                                                              const SizedBox(
-                                                                height: 10,
-                                                                width: 10,
-                                                              ),
-                                                              Text(
-                                                                'Distance Preference',
-                                                                style: headingStyle20Black,
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 10,
-                                                                width: 10,
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 0,
-                                                                    groupValue: _distancePreference,
-                                                                    onChanged: _handleRadioValueChange1,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Auto',
-                                                                    style: TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 2,
-                                                                    groupValue: _distancePreference,
-                                                                    onChanged: _handleRadioValueChange1,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Kilometers',
-                                                                    style: TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 3,
-                                                                    groupValue: _distancePreference,
-                                                                    onChanged: _handleRadioValueChange1,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Miles',
-                                                                    style: TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        G0<AppModel>().hasLocationPermissions
-                                                            ? Container()
-                                                            : Padding(
-                                                                padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
-                                                                child: ElevatedButton(
-                                                                  onPressed: () async {
-                                                                    if (Platform.isIOS) {
-                                                                      if (await Permission.locationWhenInUse.isGranted) {
-                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        G0<AppModel>().hasLocationPermissions = true;
-                                                                        await Utilities.subscribeToGeoLocationStream();
-                                                                      }
-                                                                    } else {
-                                                                      if (await Permission.location.isGranted) {
-                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        G0<AppModel>().hasLocationPermissions = true;
-                                                                        await Utilities.subscribeToGeoLocationStream();
-                                                                      }
-                                                                    }
-
-                                                                    await IveCoreUtilities.showAlert(
-                                                                        context,
-                                                                        'Location preferences updated',
-                                                                        'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
-                                                                        'OK');
-                                                                  },
-                                                                  child: Text('Enable Location Svcs', style: buttonTextStyle),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const SizedBox(
+                                                              height: 20,
+                                                              width: 10,
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 0,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
                                                                 ),
-                                                              ),
-                                                      ],
-                                                    ),
-                                              (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_autoDisplayRunsDistance == 0)
-                                                  ? Container()
-                                                  : Column(
-                                                      children: <Widget>[
-                                                        FancyDivider(
-                                                          key: UniqueKey(),
-                                                          innerColor: Colors.white,
-                                                          topMargin: 45.0,
-                                                          bottomMargin: 20.0,
-                                                        ),
-                                                        Container(
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.yellow[100],
-                                                            borderRadius: BorderRadius.circular(5.0),
-                                                          ),
-                                                          child: Column(
-                                                            children: <Widget>[
-                                                              const SizedBox(
-                                                                height: 20,
-                                                                width: 10,
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 0,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Do not auto show runs',
-                                                                    style: TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Text(
-                                                                'Or...\r\n...Automatically Show\r\nAll Runs Within...',
-                                                                textAlign: TextAlign.center,
-                                                                style: headingStyle20Black,
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 10,
-                                                                width: 10,
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 4,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '10 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                    style: const TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 8,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '25 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                    style: const TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 12,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '50 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                    style: const TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 16,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '75 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                    style: const TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 20,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '100 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                    style: const TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 24,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '150 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                    style: const TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 28,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '200 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                    style: const TextStyle(fontSize: 16.0),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        G0<AppModel>().hasLocationPermissions
-                                                            ? Container()
-                                                            : Padding(
-                                                                padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
-                                                                child: ElevatedButton(
-                                                                  onPressed: () async {
-                                                                    if (Platform.isIOS) {
-                                                                      if (await Permission.locationWhenInUse.isGranted) {
-                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        G0<AppModel>().hasLocationPermissions = true;
-                                                                        await Utilities.subscribeToGeoLocationStream();
-                                                                      }
-                                                                    } else {
-                                                                      if (await Permission.location.isGranted) {
-                                                                        await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        G0<AppModel>().hasLocationPermissions = true;
-                                                                        await Utilities.subscribeToGeoLocationStream();
-                                                                      }
-                                                                    }
-
-                                                                    await IveCoreUtilities.showAlert(
-                                                                        context,
-                                                                        'Location preferences updated',
-                                                                        'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
-                                                                        'OK');
-                                                                  },
-                                                                  child: Text('Enable Location Svcs', style: buttonTextStyle),
+                                                                const Text(
+                                                                  'Do not auto show runs',
+                                                                  style: TextStyle(fontSize: 16.0),
                                                                 ),
+                                                              ],
+                                                            ),
+                                                            Text(
+                                                              'Or...\r\n...Automatically Show\r\nAll Runs Within...',
+                                                              textAlign: TextAlign.center,
+                                                              style: headingStyle20Black,
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 10,
+                                                              width: 10,
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 4,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '10 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 8,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '25 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 12,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '50 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 16,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '75 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 20,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '100 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 24,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '150 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: 28,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '200 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      G0<AppModel>().hasLocationPermissions
+                                                          ? Container()
+                                                          : Padding(
+                                                              padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                                              child: ElevatedButton(
+                                                                onPressed: () async {
+                                                                  if (Platform.isIOS) {
+                                                                    if (await Permission.locationWhenInUse.isGranted) {
+                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                      G0<AppModel>().hasLocationPermissions = true;
+                                                                      await Utilities.subscribeToGeoLocationStream();
+                                                                    }
+                                                                  } else {
+                                                                    if (await Permission.location.isGranted) {
+                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                      G0<AppModel>().hasLocationPermissions = true;
+                                                                      await Utilities.subscribeToGeoLocationStream();
+                                                                    }
+                                                                  }
+
+                                                                  await IveCoreUtilities.showAlert(
+                                                                      context,
+                                                                      'Location preferences updated',
+                                                                      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
+                                                                      'OK');
+                                                                },
+                                                                child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                               ),
-                                                      ],
-                                                    ),
-                                              const SizedBox(
-                                                height: 40,
-                                                width: 40,
-                                              )
-                                            ],
-                                          ),
+                                                            ),
+                                                    ],
+                                                  ),
+                                            const SizedBox(
+                                              height: 40,
+                                              width: 40,
+                                            )
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -1169,7 +1169,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                   ],
                                 ),
                               ),
-                              Container(width: 70, height: 70),
+                              const SizedBox(width: 70, height: 70),
                             ],
                           ),
                         ),

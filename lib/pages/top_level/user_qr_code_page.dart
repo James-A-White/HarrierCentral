@@ -24,7 +24,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -73,7 +73,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
                   Positioned(
                       top: 80,
                       bottom: 0,
-                      child: Container(
+                      child: SizedBox(
                         key: _tabKey,
                         //color: Colors.teal,
                         width: MediaQuery.of(context).size.width,

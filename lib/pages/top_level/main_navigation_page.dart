@@ -325,6 +325,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       return FlippableBox(
                         key: UniqueKey(),
                         front: front(),
+                        // ignore: avoid_unnecessary_containers
                         back: Container(
                           child: Swiper(
                             pagination: SwiperCustomPagination(
@@ -432,6 +433,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             ),
             bottomNavigationBar: FlippableBox(
               key: UniqueKey(),
+              // ignore: avoid_unnecessary_containers
               front: Container(
                 child: FancyBottomNavigation(
                   circleColor: themeButtonColors,
@@ -473,6 +475,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   },
                 ),
               ),
+              // ignore: sized_box_for_whitespace
               back: Container(height: 0, width: 0),
               isFlipped: _isFlipped,
             ),
@@ -489,6 +492,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   Container front() {
+    // ignore: avoid_unnecessary_containers
     return Container(
       child: Center(
         child: _getPage(currentPage),
