@@ -1,5 +1,4 @@
 // @dart=2.11
-import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
 final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
@@ -13,7 +12,7 @@ class FutureRunsListPage extends StatefulWidget {
 
 class FutureRunListPageState extends State<FutureRunsListPage> {
   int pageIndex = 1;
-  List<RunDetailsAggregate> allRuns;
+  List<RunDetailsAggregate> _allRuns;
   List<RunDetailsAggregate> filteredRuns;
 
   FocusNode searchFocusNode = FocusNode();
@@ -26,18 +25,18 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: allRuns == null ? HcCircularProgressIndicator(key: UniqueKey()) : _buildListView(),
+      body: _allRuns == null ? HcCircularProgressIndicator(key: UniqueKey()) : _buildListView(),
     );
   }
 
   Future<void> forceRefreshFromTableExternal() async {
-    await refreshFromTable(true);
+    await _refreshFromTable(true);
   }
 
   Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
     if (clearLocalTables) {
       setState(() {
-        allRuns = null;
+        _allRuns = null;
       });
 
       String query = 'DELETE FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
@@ -67,7 +66,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         //| SyncUserDataService.flagPaymentsTable,
         false);
 
-    await refreshFromTable(true);
+    await _refreshFromTable(true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events user data synchronized $resultStr');
   }
@@ -79,7 +78,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     searchRunsText = '';
 
     _refreshFromBackend().then((void _) {
-      refreshFromTable(true).then((void _) {
+      _refreshFromTable(true).then((void _) {
         setState(() {});
       });
     });
@@ -100,7 +99,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 value: searchAllRuns,
                 onChanged: (bool value) {
                   searchAllRuns = !searchAllRuns;
-                  refreshFromTable(true).then((void _) {
+                  _refreshFromTable(true).then((void _) {
                     setState(() {});
                   });
                 },
@@ -167,106 +166,116 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  Future<void> refreshFromTable(bool forceRefresh) async {
-    if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
-      //final Geolocator locator = Geolocator();
-
-      IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
-      final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns);
-
-      IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
-      allRuns = <RunDetailsAggregate>[];
-      for (int i = 0; i < results.length; i++) {
-        final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
-        final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-
-        num dist;
-        if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
-          dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat,
-            G0<DeviceInfo>().deviceLon,
-            results[i]['latitude'] + .0,
-            results[i]['longitude'] + .0,
-          );
-        } else {
-          dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat,
-            G0<DeviceInfo>().deviceLon,
-            kennelItem.kennelLatitude + .0,
-            kennelItem.kennelLongitude + .0,
-          );
-        }
-
-        final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
-        extensionsItem.distToEvent = dist;
-
-        String paymentLinkUrl = '';
-
-        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-          paymentLinkUrl = eventItem.eventPaymentUrl;
-        } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-          paymentLinkUrl = kennelItem.kennelPaymentUrl;
-        }
-
-        // final num julianNow = results[i]['nowJulian'];
-        // final num eventJulian = results[i]['eventJulian'];
-
-        //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
-
-        num meters = 0;
-        final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
-
-        switch (userDistPrefs) {
-          case hasherPref_0:
-            meters = 0;
-            break;
-          case hasherPref_10:
-            meters = 10000;
-            break;
-          case hasherPref_25:
-            meters = 25000;
-            break;
-          case hasherPref_50:
-            meters = 50000;
-            break;
-          case hasherPref_75:
-            meters = 75000;
-            break;
-          case hasherPref_100:
-            meters = 100000;
-            break;
-          case hasherPref_150:
-            meters = 150000;
-            break;
-          case hasherPref_200:
-            meters = 200000;
-            break;
-          default:
-            meters = 50000;
-            break;
-        }
-
-        // if the user has set their preferences to miles or
-        // the user has set their preferences to "auto" and the
-        // distance preference associated with the kennel is miles
-        // then convert our range for runs from meters to miles.
-        if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
-          meters = meters * MILES_TO_METERS / 1000;
-        }
-
-        if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
-          final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-          allRuns.add(item);
-        }
-        if (i == results.length - 1) {
-          IveCoreUtilities.logTiming('Filter start', G0<AppModel>().appStartTime);
-          filterRuns();
-          setState(() {});
-          IveCoreUtilities.logTiming('Filter end', G0<AppModel>().appStartTime);
-        }
-      }
+  Future<void> _refreshFromTable(bool forceRefresh) async {
+    if (forceRefresh || (_allRuns == null) || (_allRuns.isEmpty)) {
+      _allRuns = await QueryRuns.getRunDetailsAggregates(searchAllRuns);
+      filterRuns();
+      setState(() {});
     }
+    return;
   }
+
+  // Future<List<RunDetailsAggregate>> _refreshFromTable() async {
+  //   final List<RunDetailsAggregate> runs = <RunDetailsAggregate>[];
+
+  //   //final Geolocator locator = Geolocator();
+
+  //   IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
+  //   final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns);
+
+  //   IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
+
+  //   for (int i = 0; i < results.length; i++) {
+  //     final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
+  //     final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+
+  //     num dist;
+  //     if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
+  //       dist = Geolocator.distanceBetween(
+  //         G0<DeviceInfo>().deviceLat,
+  //         G0<DeviceInfo>().deviceLon,
+  //         results[i]['latitude'] + .0,
+  //         results[i]['longitude'] + .0,
+  //       );
+  //     } else {
+  //       dist = Geolocator.distanceBetween(
+  //         G0<DeviceInfo>().deviceLat,
+  //         G0<DeviceInfo>().deviceLon,
+  //         kennelItem.kennelLatitude + .0,
+  //         kennelItem.kennelLongitude + .0,
+  //       );
+  //     }
+
+  //     final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
+  //     extensionsItem.distToEvent = dist;
+
+  //     String paymentLinkUrl = '';
+
+  //     if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
+  //       paymentLinkUrl = eventItem.eventPaymentUrl;
+  //     } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+  //       paymentLinkUrl = kennelItem.kennelPaymentUrl;
+  //     }
+
+  //     // final num julianNow = results[i]['nowJulian'];
+  //     // final num eventJulian = results[i]['eventJulian'];
+
+  //     //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+
+  //     num meters = 0;
+  //     final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
+
+  //     switch (userDistPrefs) {
+  //       case hasherPref_0:
+  //         meters = 0;
+  //         break;
+  //       case hasherPref_10:
+  //         meters = 10000;
+  //         break;
+  //       case hasherPref_25:
+  //         meters = 25000;
+  //         break;
+  //       case hasherPref_50:
+  //         meters = 50000;
+  //         break;
+  //       case hasherPref_75:
+  //         meters = 75000;
+  //         break;
+  //       case hasherPref_100:
+  //         meters = 100000;
+  //         break;
+  //       case hasherPref_150:
+  //         meters = 150000;
+  //         break;
+  //       case hasherPref_200:
+  //         meters = 200000;
+  //         break;
+  //       default:
+  //         meters = 50000;
+  //         break;
+  //     }
+
+  //     // if the user has set their preferences to miles or
+  //     // the user has set their preferences to "auto" and the
+  //     // distance preference associated with the kennel is miles
+  //     // then convert our range for runs from meters to miles.
+  //     if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
+  //       meters = meters * MILES_TO_METERS / 1000;
+  //     }
+
+  //     if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
+  //       final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+  //       runs.add(item);
+  //     }
+  //     if (i == results.length - 1) {
+  //       IveCoreUtilities.logTiming('Filter start', G0<AppModel>().appStartTime);
+  //       filterRuns();
+  //       setState(() {});
+  //       IveCoreUtilities.logTiming('Filter end', G0<AppModel>().appStartTime);
+  //     }
+  //   }
+  //   return runs;
+  // }
 
   /// filterRuns() provides a complex filtering (search) option
   /// where the plus sign (+) is used as a logical OR allowing
@@ -279,7 +288,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
   ///
   void filterRuns() {
-    filteredRuns = QueryRuns.doRunsFilter(searchRunsText, allRuns);
+    filteredRuns = QueryRuns.doRunsFilter(searchRunsText, _allRuns);
 
     //buildRunMarkers();
     setState(() {});
@@ -288,7 +297,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   Widget _buildListView() {
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
-      child: allRuns.isEmpty
+      child: _allRuns.isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -352,7 +361,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                 // on it's ID and not the index
 
                                 //await _refreshFromBackend(clearLocalTables: false);
-                                await refreshFromTable(true);
+                                await _refreshFromTable(true);
                                 //filterRuns();
                                 return filteredRuns[index];
                               },

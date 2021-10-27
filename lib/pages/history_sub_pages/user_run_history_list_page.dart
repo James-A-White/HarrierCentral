@@ -682,13 +682,26 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             //print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: GestureDetector(
-                            onTapUp: (TapUpDetails details) {
-                              Navigator.push<dynamic>(
-                                context,
-                                MaterialPageRoute<dynamic>(
-                                  builder: (BuildContext context) => RunAdminPage(eventId: item.eventId),
-                                ),
-                              ); //
+                            onTapUp: (TapUpDetails details) async {
+                              final List<RunDetailsAggregate> run = await QueryRuns.getRunDetailsAggregates(
+                                true,
+                                eventId: item.eventId,
+                                queryType: EnumRunQueryType.singleRun,
+                              );
+
+                              if ((run != null) && (run.isNotEmpty)) {
+                                await Navigator.push<dynamic>(
+                                  context,
+                                  MaterialPageRoute<dynamic>(
+                                    builder: (BuildContext context) {
+                                      return RunDetailsPage(
+                                        futureRun: run[0],
+                                        refreshPage: () async {},
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
                             },
                             child: UserEventListItem(
                               item: item,

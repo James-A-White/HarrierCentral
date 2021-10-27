@@ -1,4 +1,5 @@
 // @dart=2.11
+import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
 import 'package:intl/intl.dart';
@@ -206,10 +207,10 @@ class QueryRuns {
           as searchRunsText
           ''';
 
-  static List<RunDetailsAggregate> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> allRuns) {
+  static List<RunDetailsAggregate> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> _allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
-    if (allRuns != null) {
-      filteredRuns.addAll(allRuns);
+    if (_allRuns != null) {
+      filteredRuns.addAll(_allRuns);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchRunsText != null) && (searchRunsText.isNotEmpty)) {
@@ -243,6 +244,111 @@ class QueryRuns {
       }
     }
     return filteredRuns;
+  }
+
+  static Future<List<RunDetailsAggregate>> getRunDetailsAggregates(
+    bool searchAllRuns, {
+    String eventId,
+    EnumRunQueryType queryType = EnumRunQueryType.topRunsPage,
+  }) async {
+    final List<RunDetailsAggregate> runs = <RunDetailsAggregate>[];
+
+    //final Geolocator locator = Geolocator();
+
+    IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
+    final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
+      queryType,
+      EnumRunQueryContext.user,
+      searchAllRuns: searchAllRuns,
+      eventId: eventId,
+    );
+
+    IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
+
+    for (int i = 0; i < results.length; i++) {
+      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
+      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+
+      num dist;
+      if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
+        dist = Geolocator.distanceBetween(
+          G0<DeviceInfo>().deviceLat,
+          G0<DeviceInfo>().deviceLon,
+          results[i]['latitude'] + .0,
+          results[i]['longitude'] + .0,
+        );
+      } else {
+        dist = Geolocator.distanceBetween(
+          G0<DeviceInfo>().deviceLat,
+          G0<DeviceInfo>().deviceLon,
+          kennelItem.kennelLatitude + .0,
+          kennelItem.kennelLongitude + .0,
+        );
+      }
+
+      final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
+      extensionsItem.distToEvent = dist;
+
+      String paymentLinkUrl = '';
+
+      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
+        paymentLinkUrl = eventItem.eventPaymentUrl;
+      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+        paymentLinkUrl = kennelItem.kennelPaymentUrl;
+      }
+
+      // final num julianNow = results[i]['nowJulian'];
+      // final num eventJulian = results[i]['eventJulian'];
+
+      //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+
+      num meters = 0;
+      final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
+
+      switch (userDistPrefs) {
+        case hasherPref_0:
+          meters = 0;
+          break;
+        case hasherPref_10:
+          meters = 10000;
+          break;
+        case hasherPref_25:
+          meters = 25000;
+          break;
+        case hasherPref_50:
+          meters = 50000;
+          break;
+        case hasherPref_75:
+          meters = 75000;
+          break;
+        case hasherPref_100:
+          meters = 100000;
+          break;
+        case hasherPref_150:
+          meters = 150000;
+          break;
+        case hasherPref_200:
+          meters = 200000;
+          break;
+        default:
+          meters = 50000;
+          break;
+      }
+
+      // if the user has set their preferences to miles or
+      // the user has set their preferences to "auto" and the
+      // distance preference associated with the kennel is miles
+      // then convert our range for runs from meters to miles.
+      if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
+        meters = meters * MILES_TO_METERS / 1000;
+      }
+
+      if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
+        final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+        runs.add(item);
+      }
+    }
+    return runs;
   }
 
   static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext,

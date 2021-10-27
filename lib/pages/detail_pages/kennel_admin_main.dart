@@ -14,15 +14,15 @@ class KennelAdminMainPage extends StatefulWidget {
 }
 
 class KennelAdminMainPageState extends State<KennelAdminMainPage> {
-  num sliderValue;
+  num _sliderValue;
   bool _isLoading = true;
 
   @override
   void initState() {
     if ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) || (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty)) {
-      mismanagement = null;
+      _mismanagement = null;
     } else {
-      mismanagement = widget.kennelAggregateItem.kennel.kennelMismanagementTeam.contains('\r')
+      _mismanagement = widget.kennelAggregateItem.kennel.kennelMismanagementTeam.contains('\r')
           ? widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\r')
           : widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\n');
     }
@@ -37,34 +37,34 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       });
     });
 
-    sliderValue = 5.0;
-    isAdmin = widget.kennelAggregateItem.hkm.appAccess.isAdmin;
+    _sliderValue = 5.0;
+    _isAdmin = widget.kennelAggregateItem.hkm.appAccess.isAdmin;
     super.initState();
   }
 
-  MapController mapController = MapController();
+  final MapController _mapController = MapController();
 
-  int flexLeft = 3;
-  int flexRight = 7;
+  final int _flexLeft = 3;
+  final int _flexRight = 7;
 
-  bool isAdmin = false;
+  bool _isAdmin = false;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  KennelMembersList kennelMembersList;
+  KennelMembersList _kennelMembersList;
 
-  List<String> mismanagement;
+  List<String> _mismanagement;
 
-  List<RunDetailsAggregate> allRuns;
+  List<RunDetailsAggregate> _allRuns;
 
   Future<void> _refreshFromTable(bool forceRefresh) async {
-    if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
+    if (forceRefresh || (_allRuns == null) || (_allRuns.isEmpty)) {
       //final Geolocator locator = Geolocator();
 
       final List<Map<String, dynamic>> results =
           await QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId);
 
-      allRuns = <RunDetailsAggregate>[];
+      _allRuns = <RunDetailsAggregate>[];
       for (int i = 0; i < results.length; i++) {
         num dist;
         if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
@@ -89,7 +89,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
         final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-        allRuns.add(item);
+        _allRuns.add(item);
       }
     }
   }
@@ -175,7 +175,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                             padding: const EdgeInsets.only(top: 50.0, bottom: 25.0),
                             child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
                           ),
-                          !isAdmin
+                          !_isAdmin
                               ? Container()
                               : Column(
                                   children: <Widget>[
@@ -309,11 +309,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ]),
                                               onPressed: () {
                                                 if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  kennelMembersList = KennelMembersList(kennelListAggregate: widget.kennelAggregateItem);
+                                                  _kennelMembersList = KennelMembersList(kennelListAggregate: widget.kennelAggregateItem);
                                                   Navigator.push<dynamic>(
                                                     context,
                                                     MaterialPageRoute<dynamic>(
-                                                      builder: (BuildContext context) => kennelMembersList,
+                                                      builder: (BuildContext context) => _kennelMembersList,
                                                     ),
                                                   );
                                                 }
@@ -592,11 +592,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                 child: Center(
                                   // Map
                                   child: FlutterMap(
-                                    mapController: mapController,
+                                    mapController: _mapController,
                                     options: MapOptions(
                                       //interactive: false,
                                       center: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
-                                      zoom: sliderValue,
+                                      zoom: _sliderValue,
                                       minZoom: 1.0,
                                       maxZoom: 18.0,
                                     ),
@@ -644,19 +644,19 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               Container(
                                 padding: const EdgeInsets.only(top: 10.0),
                                 child: Slider(
-                                    value: sliderValue,
+                                    value: _sliderValue,
                                     activeColor: Colors.yellow,
                                     inactiveColor: Colors.grey,
                                     min: 1.0,
                                     max: 20.0,
                                     onChanged: (num val) {
                                       // setState(() {
-                                      if (mapController != null) {
-                                        mapController.move(
+                                      if (_mapController != null) {
+                                        _mapController.move(
                                             latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
                                       }
                                       setState(() {
-                                        sliderValue = val;
+                                        _sliderValue = val;
                                       });
 
                                       //});
@@ -673,7 +673,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: flexLeft,
+                                    flex: _flexLeft,
                                   ),
                                   Expanded(
                                       child: Text(
@@ -683,7 +683,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      flex: flexRight),
+                                      flex: _flexRight),
                                 ],
                               ),
                               Row(
@@ -697,7 +697,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: flexLeft,
+                                    flex: _flexLeft,
                                   ),
                                   Expanded(
                                       child: Text(
@@ -709,7 +709,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      flex: flexRight),
+                                      flex: _flexRight),
                                 ],
                               ),
                               Row(
@@ -723,7 +723,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: flexLeft,
+                                    flex: _flexLeft,
                                   ),
                                   Expanded(
                                       child: Text(
@@ -735,7 +735,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      flex: flexRight),
+                                      flex: _flexRight),
                                 ],
                               ),
                               Row(
@@ -749,7 +749,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: flexLeft,
+                                    flex: _flexLeft,
                                   ),
                                   Expanded(
                                       child: Text(
@@ -761,7 +761,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      flex: flexRight),
+                                      flex: _flexRight),
                                 ],
                               ),
                               Row(
@@ -775,7 +775,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: flexLeft,
+                                    flex: _flexLeft,
                                   ),
                                   Expanded(
                                       child: Text(
@@ -787,7 +787,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      flex: flexRight),
+                                      flex: _flexRight),
                                 ],
                               ),
                               ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) ||
@@ -798,10 +798,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[
                                         FancyDivider(key: UniqueKey(), innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0),
-                                        for (String item in mismanagement) mmRow(item)
+                                        for (String item in _mismanagement) mmRow(item)
                                       ],
                                     ),
-                              ((allRuns == null) || (allRuns.isEmpty))
+                              ((_allRuns == null) || (_allRuns.isEmpty))
                                   ? Container()
                                   : Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
@@ -812,7 +812,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: Padding(
                                             padding: const EdgeInsets.only(bottom: 15.0),
                                             child: Text(
-                                              allRuns.length == 1 ? 'Next run' : 'Next ${allRuns.length} runs',
+                                              _allRuns.length == 1 ? 'Next run' : 'Next ${_allRuns.length} runs',
                                               style: headingStyle,
                                               textAlign: TextAlign.right,
                                               maxLines: 1,
@@ -820,7 +820,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ),
                                           ),
                                         ),
-                                        for (RunDetailsAggregate item in allRuns) runRow(item),
+                                        for (RunDetailsAggregate item in _allRuns) runRow(item),
                                         const SizedBox(height: 15.0)
                                       ],
                                     ),
