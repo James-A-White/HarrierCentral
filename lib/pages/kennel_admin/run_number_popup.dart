@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class RunNumberPopup extends StatefulWidget {
-  const RunNumberPopup({@required this.runNumber});
+  const RunNumberPopup({Key key, @required this.runNumber}) : super(key: key);
 
   final int runNumber;
 

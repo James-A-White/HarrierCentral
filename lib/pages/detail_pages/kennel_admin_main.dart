@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 class KennelAdminMainPage extends StatefulWidget {
-  const KennelAdminMainPage({@required this.kennelAggregateItem});
+  const KennelAdminMainPage({Key key, @required this.kennelAggregateItem}) : super(key: key);
   final KennelListAggregate kennelAggregateItem;
 
   @override
@@ -30,8 +30,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     G0<TableModel>().syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagsAllData, false, widget.kennelAggregateItem.kennel.kennelId).then((bool result) {
       _refreshFromTable(true).then((void _) {
         setState(() {
-          final String resultStr = result ? 'successfully' : 'unsuccessfully';
-          print('Event admin data synchronized $resultStr');
+          //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+          //print('Event admin data synchronized $resultStr');
           _isLoading = false;
         });
       });
@@ -83,10 +83,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           paymentLinkUrl = kennelItem.kennelPaymentUrl;
         }
 
-        final num julianNow = results[i]['nowJulian'];
-        final num eventJulian = results[i]['eventJulian'];
+        // final num julianNow = results[i]['nowJulian'];
+        // final num eventJulian = results[i]['eventJulian'];
 
-        print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+        //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
         final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
         allRuns.add(item);
@@ -968,13 +968,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';
     final String appleUrl = 'https://maps.apple.com/?sll=$lat,$lon';
     if (await canLaunch('comgooglemaps://')) {
-      print('launching com googleUrl');
+      //print('launching com googleUrl');
       await launch(googleAppUrl);
     } else if (await canLaunch(googleWebUrl)) {
-      print('launching apple url');
+      //print('launching apple url');
       await launch(googleWebUrl);
     } else if (await canLaunch(appleUrl)) {
-      print('launching apple url');
+      //print('launching apple url');
       await launch(appleUrl);
     } else {
       throw 'Could not launch url';

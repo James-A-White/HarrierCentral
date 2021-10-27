@@ -103,7 +103,7 @@ class Utilities {
           setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
           setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
         }
-        print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+        //print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
       });
 
       // don't wait for the position to resolve to return from
@@ -117,7 +117,7 @@ class Utilities {
         setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
         setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
 
-        print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+        //print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
       });
     }
   }

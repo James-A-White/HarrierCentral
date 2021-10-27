@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class CheckInScannerPage extends StatefulWidget {
-  const CheckInScannerPage({@required this.eventAggregate});
+  const CheckInScannerPage({Key key, @required this.eventAggregate}) : super(key: key);
 
   final RunAdminAggregate eventAggregate;
 
@@ -268,7 +268,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
       if (prefix != QR_PREFIX_USER_CODE) {
         // NOTE: We should never get to this point in, but set
-        print('ERROR! The app should never reach this point.');
+        //print('ERROR! The app should never reach this point.');
       } else {
         setState(() {
           _onScreenMessage = 'Processing QR Scan';

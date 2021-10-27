@@ -5,13 +5,14 @@ enum KennelLogoZoomGesture { none, tap, longPress }
 
 class KennelLogo extends StatelessWidget {
   const KennelLogo({
+    Key key,
     @required this.kennelLogoUrl,
     @required this.kennelShortName,
     @required this.logoHeight,
     this.zoomGesture = KennelLogoZoomGesture.longPress,
     this.leftPadding,
     this.rightPadding,
-  });
+  }) : super(key: key);
 
   final String kennelLogoUrl;
   final String kennelShortName;
@@ -25,9 +26,9 @@ class KennelLogo extends StatelessWidget {
       context,
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          final String s =
-              ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png').toLowerCase();
-          print(s);
+          // final String s =
+          //     ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png').toLowerCase();
+          //print(s);
           return ZoomableImagePage2(
             key: UniqueKey(),
             file: null,

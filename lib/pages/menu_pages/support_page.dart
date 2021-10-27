@@ -214,9 +214,9 @@ class SupportPageState extends State<SupportPage> {
                                               ),
                                               onPressed: () async {
                                                 if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
-                                                  final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                  print('Master data synchronized $resultStr');
+                                                  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
+                                                  //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                                  //print('Master data synchronized $resultStr');
 
                                                   if (resetCodeTextController.text.length == 6) {
                                                     setState(() {

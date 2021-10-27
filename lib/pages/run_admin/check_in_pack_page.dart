@@ -77,7 +77,7 @@ class CheckInPackModel {
 }
 
 class CheckInPackPage extends StatefulWidget {
-  const CheckInPackPage({@required this.eventAggregate});
+  const CheckInPackPage({Key key, @required this.eventAggregate}) : super(key: key);
 
   final RunAdminAggregate eventAggregate;
 
@@ -163,15 +163,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         });
       }
 
-      final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(
+      await G0<TableModel>().syncEventAdminService.updateFromBackend(
           SyncEventAdminService.flagHashersTable |
               SyncEventAdminService.flagPaymentsTable |
               SyncEventAdminService.flagHasherEventMapTable |
               SyncEventAdminService.flagHasherKennelMapTable,
           true,
           widget.eventAggregate.event.eventId);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Payments data synchronized $resultStr');
+      //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+      //print('Payments data synchronized $resultStr');
 
       await _refreshPackListFromTables(false);
       await _refreshCounters(true);
@@ -215,9 +215,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         }
       }
 
-      print('All hashers loaded @ ${DateTime.now().millisecondsSinceEpoch}');
+      //print('All hashers loaded @ ${DateTime.now().millisecondsSinceEpoch}');
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -351,7 +351,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       try {
         results = await G0<Database>().rawQuery(sql);
       } catch (x) {
-        print(x);
+        //print(x);
       }
 
       setState(() {
@@ -367,12 +367,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           });
         }
 
-        print('Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}');
+        //print('Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}');
 
         _filterPackListResults();
       });
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -472,7 +472,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         });
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -930,11 +930,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
-    //print('mediaQuery = ${MediaQuery.of(context).size.toString()}');
-    //print('filter dx = ${filterPanelAnimation.value.dy}');
+    ////print('mediaQuery = ${MediaQuery.of(context).size.toString()}');
+    ////print('filter dx = ${filterPanelAnimation.value.dy}');
     _filterPanelAnimation ??= Tween<Offset>(begin: const Offset(0, -.35), end: const Offset(0, .71)).animate(_animationController);
     _hasherListAnimation ??= RelativeRectTween(begin: const RelativeRect.fromLTRB(0, 86, 0, 0), end: const RelativeRect.fromLTRB(0, 204, 0, 0)).animate(_animationController);
-    //print('rect = ${filterPanelAnimation.value}');
+    ////print('rect = ${filterPanelAnimation.value}');
     return Scaffold(
       key: _scaffoldKey,
       floatingActionButton: SpeedDial(
@@ -953,7 +953,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           _searchFocusNode.unfocus();
         },
-        onClose: () => print('DIAL CLOSED'),
+        //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
         backgroundColor: Colors.red.shade900,
@@ -1538,7 +1538,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Widget _buildPackListView() {
-    print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    //print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollNotification) {
         if (scrollNotification is UserScrollNotification) {
@@ -1583,7 +1583,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                       _useTerminalForPayment = false;
                     }
                     if (packMember.isPaid != 1) {
-                      print(actionType.toString() + ' ' + index.toString());
+                      //print(actionType.toString() + ' ' + index.toString());
                       _payForEvent(
                         context,
                         _scaffoldKey.currentState,
@@ -1779,7 +1779,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               //     key: key,
               //     confirmDismiss: (DismissDirection direction) {
               //       if (packMember.isPaid != 1) {
-              //         print(direction.toString() + ' ' + index.toString());
+              //         //print(direction.toString() + ' ' + index.toString());
               //         showExtrasDialog(
               //             context, _scaffoldKey.currentState, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, packMember, -1);
               //       } else {
@@ -1885,7 +1885,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               //             ),
               //           ),
               //     onDismissed: (DismissDirection direction) {
-              //       print(direction.toString() + ' NOTE: We should never reach this point');
+              //       //print(direction.toString() + ' NOTE: We should never reach this point');
               //     },
               //   );
               // }
@@ -1960,7 +1960,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 }
 
 class AddVisitorVirginPopup extends StatefulWidget {
-  const AddVisitorVirginPopup();
+  const AddVisitorVirginPopup({Key key}) : super(key: key);
 
   @override
   _AddVisitorVirginPopupState createState() => _AddVisitorVirginPopupState();

@@ -13,8 +13,13 @@ enum EnumMemberPopupActions {
 }
 
 class KennelMemberListItem extends StatelessWidget {
-  const KennelMemberListItem(
-      {@required this.kennelListAggregate, @required this.kennelMember, @required this.modifyMembershipCallback, @required this.toggleEmailPreferenceCallback});
+  const KennelMemberListItem({
+    Key key,
+    @required this.kennelListAggregate,
+    @required this.kennelMember,
+    @required this.modifyMembershipCallback,
+    @required this.toggleEmailPreferenceCallback,
+  }) : super(key: key);
 
   final KennelListAggregate kennelListAggregate;
   final KennelMembersResults kennelMember;

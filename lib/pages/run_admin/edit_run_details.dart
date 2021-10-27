@@ -600,12 +600,12 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
                           //   return true;
                           // },
-                          // onChanged: (val) => print(val),
+                          // onChanged: (val) => //print(val),
                           validator: (String val) {
-                            print(val);
+                            //print(val);
                             return null;
                           },
-                          onSaved: (String val) => print(val),
+                          //onSaved: (String val) => //print(val),
                         ),
                       ),
                       Container(
@@ -950,7 +950,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
     request.bodyBytes = imageFile.readAsBytesSync();
     request.send().then((StreamedResponse response) {
-      print('Avatar thumbnail upload response = ${response.statusCode}');
+      //print('Avatar thumbnail upload response = ${response.statusCode}');
     });
 
     return fileName;
@@ -1721,8 +1721,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 }
 
 class CheckboxFormField extends FormField<bool> {
-  CheckboxFormField({Widget title, FormFieldSetter<bool> onSaved, FormFieldValidator<bool> validator, bool initialValue = false, bool tristate = false})
+  CheckboxFormField({Key key, Widget title, FormFieldSetter<bool> onSaved, FormFieldValidator<bool> validator, bool initialValue = false, bool tristate = false})
       : super(
+            key: key,
             onSaved: onSaved,
             validator: validator,
             initialValue: initialValue,

@@ -35,11 +35,12 @@ class RunDetails extends StatelessWidget {
     this.paymentLinkUrl,
     this.showPaymentOptions,
     this.isMapAndDistanceValid, {
+    Key key,
     this.isMember = 0,
     this.isPaid = 0,
     this.rsvpState = 0,
     this.processPayment,
-  });
+  }) : super(key: key);
 
   final EventModel event;
   final KennelsModel kennel;

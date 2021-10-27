@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class GetResetCodePopup extends StatefulWidget {
-  const GetResetCodePopup();
+  const GetResetCodePopup({Key key}) : super(key: key);
 
   @override
   _GetResetCodePopupState createState() => _GetResetCodePopupState();

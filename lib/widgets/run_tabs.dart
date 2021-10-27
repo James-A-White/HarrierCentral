@@ -43,9 +43,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       });
     }
 
-    final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Pack member data synchronized $resultStr');
+    await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Pack member data synchronized $resultStr');
 
     await refreshPackListFromTable(false);
     await refreshPackCountFromTable(true);
@@ -80,7 +80,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         }
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -107,7 +107,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         setState(() {});
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -134,7 +134,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         setState(() {
           fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
           if (tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
-            print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+            //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
             _refreshHemTableFromBackend(false);
           }
         });
@@ -185,7 +185,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   EnumRsvpState<int> rsvpRequested = rsvpUnknown;
 
   Container buildRsvpView() {
-    print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
+    //print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
 
     return Container(
       child: Center(
@@ -739,7 +739,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           onOpen: () {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
-          onClose: () => print('DIAL CLOSED'),
+          //onClose: () => //print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
           backgroundColor: Colors.red.shade900,
@@ -1178,13 +1178,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     }
 
     if (await canLaunch('comgooglemaps://')) {
-      print('launching com googleUrl');
+      //print('launching com googleUrl');
       await launch(googleAppUrl);
     } else if (await canLaunch(googleWebUrl)) {
-      print('launching Google web url');
+      //print('launching Google web url');
       await launch(googleWebUrl);
     } else if ((appleUrl.isNotEmpty) && (await canLaunch(appleUrl))) {
-      print('launching apple url');
+      //print('launching apple url');
       await launch(appleUrl);
     } else {
       throw 'Could not launch url';

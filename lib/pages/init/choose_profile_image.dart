@@ -438,7 +438,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
     request.bodyBytes = imageFile.readAsBytesSync();
     request.send().then((StreamedResponse response) {
-      print('Avatar thumbnail upload response = ${response.statusCode}');
+      //print('Avatar thumbnail upload response = ${response.statusCode}');
     });
 
     return uri.toString();

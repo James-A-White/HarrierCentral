@@ -3,14 +3,16 @@ import 'package:harrier_central/imports.dart';
 
 class ConfirmAutoCheckinPopup extends StatefulWidget {
   const ConfirmAutoCheckinPopup(
-      {@required this.title,
+      {Key key,
+      @required this.title,
       @required this.kennelLogo,
       @required this.eventName,
       @required this.eventImage,
       @required this.cancelButtonTitle,
       @required this.okButtonTitle,
       @required this.kennelShortName,
-      @required this.eventNumber});
+      @required this.eventNumber})
+      : super(key: key);
 
   final String title;
   final String kennelLogo;

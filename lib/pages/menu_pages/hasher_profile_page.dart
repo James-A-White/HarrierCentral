@@ -88,22 +88,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       // TODO(James): Make this AppDomainType correct
       switch (widget.dataContext) {
         case EnumDataContext.event:
-          final bool res = await G0<TableModel>().syncEventAdminService.updateFromBackend(
+          await G0<TableModel>().syncEventAdminService.updateFromBackend(
               SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
-          final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          //final String resultStr = res ? 'successfully' : 'unsuccessfully';
+          //print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.user:
-          final bool res = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, true);
-          final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, true);
+          //final String resultStr = res ? 'successfully' : 'unsuccessfully';
+          //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
-          final bool res = await G0<TableModel>()
+          await G0<TableModel>()
               .syncKennelAdminService
               .updateFromBackend(SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
-          final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          //final String resultStr = res ? 'successfully' : 'unsuccessfully';
+          //print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
           query = ''' 
 
@@ -154,7 +154,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       checkDirty();
       setState(() {});
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -171,7 +171,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (widget.hashNameFromSearch.isNotEmpty) {
       _hashNameController.text = widget.hashNameFromSearch;
     }
-    // print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    // //print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
       refreshUserDataFromTable(true);
       _photoPrefix = widget.hasherId;

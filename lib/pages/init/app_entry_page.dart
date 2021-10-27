@@ -2,6 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class AppEntryPage extends StatefulWidget {
+  const AppEntryPage({Key key}) : super(key: key);
   @override
   _AppEntryPageState createState() => _AppEntryPageState();
 }

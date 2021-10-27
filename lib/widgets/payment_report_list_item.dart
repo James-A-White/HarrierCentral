@@ -2,7 +2,13 @@
 import 'package:harrier_central/imports.dart';
 
 class PaymentReportListItem extends StatelessWidget {
-  const PaymentReportListItem({@required this.paymentReportItem, @required this.currencySymbol, @required this.digitsAfterDecimal, @required this.onTap});
+  const PaymentReportListItem({
+    Key key,
+    @required this.paymentReportItem,
+    @required this.currencySymbol,
+    @required this.digitsAfterDecimal,
+    @required this.onTap,
+  }) : super(key: key);
 
   final PaymentAggregate paymentReportItem;
   final String currencySymbol;
@@ -78,6 +84,7 @@ class PaymentReportListItem extends StatelessWidget {
 
 class PaymentTotalsCell extends StatelessWidget {
   const PaymentTotalsCell({
+    Key key,
     @required this.creditAmount,
     @required this.counter,
     @required this.color,
@@ -85,7 +92,7 @@ class PaymentTotalsCell extends StatelessWidget {
     @required this.currencySymbol,
     @required this.digitsAfterDecimal,
     @required this.onTap,
-  });
+  }) : super(key: key);
 
   final EnumPaymentType<int> paymentRecordType;
   final Color color;

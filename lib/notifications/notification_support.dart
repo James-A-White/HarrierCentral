@@ -11,18 +11,19 @@ class NotificationSupport {
     await _firebaseMessaging.requestPermission(sound: true, alert: true, badge: false);
 
     // _firebaseMessaging.(onMessage: (dynamic content) {
-    //   print('onMessage content = ${content.toString()}');
+    //   //print('onMessage content = ${content.toString()}');
     //   return;
     // }, onLaunch: (dynamic content) {
-    //   print('onLaunch content = ${content.toString()}');
+    //   //print('onLaunch content = ${content.toString()}');
     //   return;
     // }, onResume: (dynamic content) {
-    //   print('onResume content = ${content.toString()}');
+    //   //print('onResume content = ${content.toString()}');
     //   return;
     // });
 
+    // ignore: unused_local_variable
     final String token = await _firebaseMessaging.getToken();
-    print('Messaging token = $token');
+    //print('Messaging token = $token');
 
     if (doSubscriptions) {
       // let it do the subscriptions in the background while
@@ -37,7 +38,7 @@ class NotificationSupport {
   Future<void> initNotificationTopics(FirebaseMessaging _firebaseMessaging) async {
     try {
       final String userId = getStringPref(StringPrefsEnum.userId);
-      print('UserId = $userId');
+      //print('UserId = $userId');
 
       //
       //
@@ -66,7 +67,7 @@ class NotificationSupport {
       for (int i = 0; i < results.length; i++) {
         final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
         await _firebaseMessaging.subscribeToTopic(tag);
-        print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
+        //print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
         await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
       }
 
@@ -94,7 +95,7 @@ class NotificationSupport {
       for (int i = 0; i < results.length; i++) {
         final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
         await _firebaseMessaging.unsubscribeFromTopic(tag);
-        print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
+        //print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
         await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 0);
       }
 
@@ -113,7 +114,7 @@ class NotificationSupport {
       for (int i = 0; i < results.length; i++) {
         final String tag = results[i]['topicTag'];
         await _firebaseMessaging.subscribeToTopic(results[i]['eventId']);
-        print('timeout unsubscribed from: ${results[i]['topicTag']}');
+        //print('timeout unsubscribed from: ${results[i]['topicTag']}');
         await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
       }
 
@@ -129,7 +130,7 @@ class NotificationSupport {
 
       results = await G0<Database>().rawQuery(sql);
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -138,7 +139,7 @@ class NotificationSupport {
 
     try {
       final String userId = getStringPref(StringPrefsEnum.userId);
-      print('UserId = $userId');
+      //print('UserId = $userId');
 
       //
       //
@@ -162,16 +163,16 @@ class NotificationSupport {
         final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
         if (results[i]['notificationPreference'] == 1) {
           await _firebaseMessaging.subscribeToTopic(tag);
-          print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
+          //print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
         } else if (results[i]['notificationPreference'] == 2) {
           await _firebaseMessaging.unsubscribeFromTopic(tag);
-          print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
+          //print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
         }
 
         await NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 }

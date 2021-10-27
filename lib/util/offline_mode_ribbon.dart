@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class OfflineModeRibbon extends StatelessWidget {
-  const OfflineModeRibbon({@required this.showRibbon, @required this.lastSync, this.ribbonImage = 'images/icons/offline_mode.png'});
+  const OfflineModeRibbon({Key key, @required this.showRibbon, @required this.lastSync, this.ribbonImage = 'images/icons/offline_mode.png'}) : super(key: key);
 
   final bool showRibbon;
   final DateTime lastSync;

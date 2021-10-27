@@ -2,8 +2,14 @@
 import 'package:harrier_central/imports.dart';
 
 class PaymentSnackBar extends SnackBar {
-  const PaymentSnackBar({@required this.context, @required this.packMember, @required this.eventAggregate, @required this.onRsvpCallback, @required this.onPaidCallback})
-      : super(content: const Text('test'));
+  const PaymentSnackBar({
+    Key key,
+    @required this.context,
+    @required this.packMember,
+    @required this.eventAggregate,
+    @required this.onRsvpCallback,
+    @required this.onPaidCallback,
+  }) : super(key: key, content: const Text('test'));
 
   final BuildContext context;
   final CheckInPackModel packMember;

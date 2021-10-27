@@ -21,7 +21,7 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
         _products = offerings.main.products;
       });
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -103,7 +103,7 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
           title: Text('Store ID: ${product.storeId}'),
           subtitle: Text('Q ID: ${product.qonversionId}'),
           trailing: product.skProduct != null ? Text(product.skProduct.localizedTitle) : null,
-          onTap: () => print(product.toJson()),
+          //onTap: () => //print(product.toJson()),
         ),
         Padding(
           padding: const EdgeInsets.all(8),
@@ -130,10 +130,10 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
             // color: Colors.blue,
             // textColor: Colors.white,
             onPressed: () async {
-              final Map<String, QPermission> permissions = await Qonversion.purchase(product.qonversionId);
-              final QPermission permission = permissions.values.firstWhere((QPermission element) => element.productId == product.qonversionId, orElse: () => null);
+              //final Map<String, QPermission> permissions = await Qonversion.purchase(product.qonversionId);
+              //final QPermission permission = permissions.values.firstWhere((QPermission element) => element.productId == product.qonversionId, orElse: () => null);
 
-              print(permission?.isActive);
+              //print(permission?.isActive);
             },
           ),
         ),

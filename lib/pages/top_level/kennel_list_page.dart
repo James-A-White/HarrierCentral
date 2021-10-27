@@ -39,7 +39,7 @@ class KennelsListPageState extends State<KennelsListPage> {
       // });
     });
 
-    //print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    ////print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
     super.initState();
   }
@@ -60,7 +60,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           // ScaffoldMessenger.of(context).hideCurrentSnackBar();
           // searchFocusNode.unfocus();
         },
-        //onClose: () => print('DIAL CLOSED'),
+        //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
         backgroundColor: Colors.red.shade900,
@@ -228,7 +228,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           _filterResults();
         });
       } catch (e) {
-        print(e);
+        //print(e);
       }
     } else {
       // if the global list is already loaded,
@@ -351,7 +351,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                         child: ListView.builder(
                           itemCount: _filteredList.length + 1,
                           itemBuilder: (BuildContext context, int index) {
-                            //print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+                            ////print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
                             return _filteredList.length == index
                                 ? Container(height: 100.0)
                                 : Padding(
@@ -411,11 +411,11 @@ class KennelsListPageState extends State<KennelsListPage> {
                                           ),
                                         )
                                             .then((void _) async {
-                                          final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(
+                                          await G0<TableModel>().syncUserDataService.updateFromBackend(
                                               SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable,
                                               true);
-                                          final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                          print('Pack member data synchronized $resultStr');
+                                          //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                          //print('Pack member data synchronized $resultStr');
                                           await _refreshFromTable(true);
                                         });
                                       },
@@ -438,19 +438,19 @@ class KennelsListPageState extends State<KennelsListPage> {
     try {
       await G0<Database>().rawQuery(query);
     } catch (e) {
-      print(e);
+      //print(e);
     }
 
     query = 'DELETE FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)}';
     try {
       await G0<Database>().rawQuery(query);
     } catch (e) {
-      print(e);
+      //print(e);
     }
 
-    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, true);
+    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, true);
     await _refreshFromTable(true);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Kennel user data synchronized $resultStr');
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Kennel user data synchronized $resultStr');
   }
 }

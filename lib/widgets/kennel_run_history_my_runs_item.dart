@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class KennelRunHistoryMyRunsItem extends StatelessWidget {
-  const KennelRunHistoryMyRunsItem({@required this.refreshCounters});
+  const KennelRunHistoryMyRunsItem({Key key, @required this.refreshCounters}) : super(key: key);
 
   final Function refreshCounters;
 

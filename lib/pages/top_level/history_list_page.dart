@@ -116,7 +116,7 @@ class HistoryListPageState extends State<HistoryListPage> {
         }
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -136,11 +136,11 @@ class HistoryListPageState extends State<HistoryListPage> {
       _isLoading = true;
     });
 
-    final bool result = await G0<TableModel>()
+    await G0<TableModel>()
         .syncUserDataService
         .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Hasher data synchronized $resultStr');
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Hasher data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);
   }
 

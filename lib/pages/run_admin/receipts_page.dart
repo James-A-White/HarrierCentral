@@ -24,7 +24,7 @@ class ReceiptsListState extends State<ReceiptsList> {
     refreshFromTable();
     // DBProvider.db.database.then((Database db) {
     //   db.rawQuery('SELECT * FROM receipts ORDER BY id').then((List<Map<String, dynamic>> result) {
-    //     print(result);
+    //     //print(result);
     //   });
     // });
 
@@ -39,7 +39,7 @@ class ReceiptsListState extends State<ReceiptsList> {
         });
       });
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -72,7 +72,7 @@ class ReceiptsListState extends State<ReceiptsList> {
           onOpen: () {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
-          onClose: () => print('DIAL CLOSED'),
+          //onClose: () => //print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
           backgroundColor: Colors.red.shade900,
@@ -104,9 +104,9 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> _handleRefresh() async {
-    final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagReceiptsTable, true, widget.eventAggregate.event.eventId);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Receipts data synchronized $resultStr');
+    await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagReceiptsTable, true, widget.eventAggregate.event.eventId);
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Receipts data synchronized $resultStr');
     refreshFromTable();
   }
 
@@ -116,8 +116,8 @@ class ReceiptsListState extends State<ReceiptsList> {
     await G0<Database>().transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
       final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
-      final int result = await txn.rawUpdate(sql);
-      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      await txn.rawUpdate(sql);
+      //print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       refreshFromTable();
     });
 
@@ -155,8 +155,8 @@ class ReceiptsListState extends State<ReceiptsList> {
     await G0<Database>().transaction<dynamic>((Transaction txn) async {
       final String guidFlag = removed ? GUID_9 : GUID_8;
       final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
-      final int result = await txn.rawUpdate(sql);
-      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      await txn.rawUpdate(sql);
+      //print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       refreshFromTable();
     });
 
@@ -291,7 +291,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                                   ),
                                 ),
                           onDismissed: (DismissDirection direction) {
-                            print(direction.toString() + ' NOTE: We should never reach this point');
+                            //print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: Container(
                             height: 50.0,
@@ -347,7 +347,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 }
 
 class ReceiptListItem extends StatelessWidget {
-  const ReceiptListItem({@required this.receipt, @required this.itemPressed, @required this.currencySymbol, @required this.digitsAfterDecimal});
+  const ReceiptListItem({Key key, @required this.receipt, @required this.itemPressed, @required this.currencySymbol, @required this.digitsAfterDecimal}) : super(key: key);
 
   final Map<String, dynamic> receipt;
   final Function itemPressed;

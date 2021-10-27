@@ -153,7 +153,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         }
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -197,7 +197,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               onOpen: () {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
               },
-              onClose: () => print('DIAL CLOSED'),
+              //onClose: () => //print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
               heroTag: 'speed-dial-hero-tag',
               backgroundColor: Theme.of(context).buttonTheme.colorScheme.primary,
@@ -274,11 +274,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       _isLoading = true;
     });
 
-    final bool result = await G0<TableModel>()
+    //final bool result = await G0<TableModel>()
+    await G0<TableModel>()
         .syncUserDataService
         .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('User data synchronized $resultStr');
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('User data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);
   }
 
@@ -307,8 +308,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //         curve: Curves.bounceIn,
   //         overlayColor: Colors.black,
   //         overlayOpacity: 0.5,
-  //         onOpen: () => print('OPENING DIAL'),
-  //         onClose: () => print('DIAL CLOSED'),
+  //         onOpen: () => //print('OPENING DIAL'),
+  //         onClose: () => //print('DIAL CLOSED'),
   //         tooltip: 'Speed Dial',
   //         heroTag: 'speed-dial-hero-tag',
   //         backgroundColor: Theme.of(context).accentColor,
@@ -695,7 +696,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                       ),
                                     ),
                           onDismissed: (DismissDirection direction) {
-                            print(direction.toString() + ' NOTE: We should never reach this point');
+                            //print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: GestureDetector(
                             onTapUp: (TapUpDetails details) {

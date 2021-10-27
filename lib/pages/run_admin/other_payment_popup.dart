@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class OtherPaymentPopup extends StatefulWidget {
-  const OtherPaymentPopup();
+  const OtherPaymentPopup({Key key}) : super(key: key);
 
   @override
   _OtherPaymentPopupState createState() => _OtherPaymentPopupState();

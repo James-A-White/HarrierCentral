@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePhoto extends StatelessWidget {
-  const ProfilePhoto({@required this.profilePhotoUrl, this.photoHeight, this.leftPadding});
+  const ProfilePhoto({Key key, @required this.profilePhotoUrl, this.photoHeight, this.leftPadding}) : super(key: key);
 
   final String profilePhotoUrl;
   final num photoHeight;

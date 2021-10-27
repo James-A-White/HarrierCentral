@@ -95,7 +95,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     ).then((List<int> compressed) {
       request.bodyBytes = compressed;
       request.send().then((StreamedResponse response) {
-        print('Receipt upload response = ${response.statusCode}');
+        //print('Receipt upload response = ${response.statusCode}');
       });
     });
 

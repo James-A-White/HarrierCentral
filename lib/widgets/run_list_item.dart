@@ -30,7 +30,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('App lifecycle state => ' + state.toString());
+    //print('App lifecycle state => ' + state.toString());
     super.didChangeAppLifecycleState(state);
   }
 

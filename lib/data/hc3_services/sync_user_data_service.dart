@@ -32,7 +32,7 @@ class SyncUserDataService {
   Future<num> getLastUpdatedTime(String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];
-    print(timeValue.toString());
+    //print(timeValue.toString());
     return timeValue;
   }
 
@@ -121,7 +121,7 @@ class SyncUserDataService {
 
       // if (lastCacheClear + CitiesTableHelper.cacheDuration <
       //     DateTime.now().millisecondsSinceEpoch) {
-      //   print(
+      //   //print(
       //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       //   await clearTable();
       // }

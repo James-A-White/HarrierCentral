@@ -156,7 +156,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           }
           final List<String> orItems = st.split('+');
 
-          //print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
+          ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
           _filteredKennels = _filteredKennels.where((Map<String, dynamic> a) {
             for (String orItem in orItems) {
@@ -198,7 +198,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           // ScaffoldMessenger.of(context).hideCurrentSnackBar();
           // searchFocusNode.unfocus();
         },
-        //onClose: () => print('DIAL CLOSED'),
+        //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
         backgroundColor: Colors.red.shade900,
@@ -355,7 +355,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       // final num julianNow = results[0]['nowJulian'];
       // final num eventJulian = results[0]['eventJulian'];
 
-      //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+      ////print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
       item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
     }
@@ -441,7 +441,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       _filterRuns();
       setState(() {});
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -554,7 +554,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
       setState(() {});
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -563,7 +563,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     return GestureDetector(
       onTap: () {
         _getSingleRun(eventId).then((RunDetailsAggregate run) {
-          //print(run.event.eventName + ' + ' + run.event.eventId);
+          ////print(run.event.eventName + ' + ' + run.event.eventId);
           Navigator.push<dynamic>(
             context,
             MaterialPageRoute<dynamic>(
@@ -677,7 +677,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       }
     }
 
-    //print(pinFileName);
+    ////print(pinFileName);
     return pinFileName;
   }
 

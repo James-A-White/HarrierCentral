@@ -47,7 +47,7 @@ class CommonQueries {
         }
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
     return result;
   }
@@ -135,7 +135,7 @@ class CommonQueries {
         }
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
     return resultList;
   }
@@ -158,7 +158,7 @@ class CommonQueries {
         result = results[0]['hasherId'];
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
     return result;
   }
@@ -225,7 +225,7 @@ class CommonQueries {
         runDetailAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
 
     return runDetailAggregate;
@@ -298,7 +298,7 @@ class CommonQueries {
         runAdminAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
 
     return runAdminAggregate;

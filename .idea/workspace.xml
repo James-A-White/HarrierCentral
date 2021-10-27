@@ -117,7 +117,7 @@
       <find>notifyL</find>
       <find>a</find>
       <find>isLoadin</find>
-      <find>print</find>
+      <find>//print</find>
       <find>details</find>
       <find>DETAILS</find>
       <find>screenSize</find>

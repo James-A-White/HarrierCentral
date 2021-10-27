@@ -27,7 +27,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     createFileOfPdfUrl().then((File f) {
       setState(() {
         pathPDF = f.path;
-        print(pathPDF);
+        //print(pathPDF);
       });
     });
   }
@@ -86,7 +86,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 }
 
 class PDFScreen extends StatelessWidget {
-  const PDFScreen(this.pathPDF);
+  const PDFScreen(this.pathPDF, {Key key}) : super(key: key);
 
   final String pathPDF;
 

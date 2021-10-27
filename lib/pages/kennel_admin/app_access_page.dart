@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class AppAccessPage extends StatefulWidget {
-  const AppAccessPage({@required this.appAccess});
+  const AppAccessPage({Key key, @required this.appAccess}) : super(key: key);
 
   final int appAccess;
 

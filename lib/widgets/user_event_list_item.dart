@@ -3,7 +3,7 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class UserEventListItem extends StatelessWidget {
-  const UserEventListItem({@required this.item, @required this.kennelShortName});
+  const UserEventListItem({Key key, @required this.item, @required this.kennelShortName}) : super(key: key);
 
   final UserRunHistoryResults item;
   final String kennelShortName;
@@ -55,8 +55,8 @@ class UserEventListItem extends StatelessWidget {
                   ),
                   Text(
                     item.eventStartDatetime.year != DateTime.now().year
-                        ? 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(item.eventStartDatetime)}'
-                        : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(item.eventStartDatetime)}',
+                        ? 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy 'at' h:mm a").format(item.eventStartDatetime)}'
+                        : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d 'at' h:mm a").format(item.eventStartDatetime)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),

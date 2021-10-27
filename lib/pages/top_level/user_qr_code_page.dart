@@ -139,7 +139,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
                   _tabController.index == 0
                       ?
                       //'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
-                      'Mis-management can scan this code to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.\r\n\r\nThis is your unique code. If you don\'t normally carry a phone, you can print this code as a way to be quickly checked in at Hash runs.'
+                      'Mis-management can scan this code to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.\r\n\r\nThis is your unique code. If you don\'t normally carry a phone, you can //print this code as a way to be quickly checked in at Hash runs.'
                       : 'You can use your QR scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out on trail.',
                   //'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
@@ -245,8 +245,8 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
     final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
 
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
-      print('Height = ${constraints.maxHeight}');
-      print('Width = ${constraints.maxWidth}');
+      //print('Height = ${constraints.maxHeight}');
+      //print('Width = ${constraints.maxWidth}');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

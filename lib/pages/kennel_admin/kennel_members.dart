@@ -209,7 +209,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         }
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -269,7 +269,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         setState(() {});
       }
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -295,7 +295,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         onOpen: () {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
         },
-        onClose: () => print('DIAL CLOSED'),
+        //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
         backgroundColor: Colors.red.shade900,
@@ -486,7 +486,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                               ),
                             ),
                             onDismissed: (DismissDirection direction) {
-                              print(direction.toString() + ' NOTE: We should never reach this point');
+                              //print(direction.toString() + ' NOTE: We should never reach this point');
                             },
                             child: KennelMemberListItem(
                                 kennelListAggregate: widget.kennelListAggregate,
@@ -759,9 +759,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         }
       }
 
-      print('All hashers loaded @ ${DateTime.now().millisecondsSinceEpoch}');
+      //print('All hashers loaded @ ${DateTime.now().millisecondsSinceEpoch}');
     } catch (e) {
-      print(e);
+      //print(e);
     }
 
     return hasherList;
@@ -874,12 +874,12 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
       //_isLoading = true;
     });
 
-    final bool result = await G0<TableModel>().syncKennelAdminService.updateFromBackend(
+    await G0<TableModel>().syncKennelAdminService.updateFromBackend(
         SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable,
         true,
         widget.kennelListAggregate.kennel.kennelId);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Kennel member data synchronized $resultStr');
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Kennel member data synchronized $resultStr');
     await refreshKennelMembersFromTable(true);
     await _refreshCounters(true);
     setState(() {});

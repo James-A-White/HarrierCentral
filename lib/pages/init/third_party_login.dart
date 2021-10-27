@@ -2,7 +2,7 @@
 import 'package:harrier_central/imports.dart';
 
 class ThirdPartyLogin extends StatefulWidget {
-  const ThirdPartyLogin(this.isNewUser);
+  const ThirdPartyLogin(this.isNewUser, {Key key}) : super(key: key);
 
   final bool isNewUser;
 
@@ -158,21 +158,26 @@ class _LoginPageState extends State<ThirdPartyLogin> {
       }
 
       _onLoginStatusChanged(true, loginData: d);
+
+      // ignore: unused_catch_clause
     } on UnknownSignInWithAppleException catch (e) {
-      print('UnknownSignInWithAppleException');
-      print(e.message);
+      //print('UnknownSignInWithAppleException');
+      //print(e.message);
       _onLoginStatusChanged(false);
+      // ignore: unused_catch_clause
     } on SignInWithAppleCredentialsException catch (e) {
-      print('SignInWithAppleCredentialsException');
-      print(e.message);
+      //print('SignInWithAppleCredentialsException');
+      //print(e.message);
       _onLoginStatusChanged(false);
+      // ignore: unused_catch_clause
     } on SignInWithAppleAuthorizationException catch (e) {
-      print('SignInWithAppleCredentialsException');
-      print(e.message);
+      //print('SignInWithAppleCredentialsException');
+      //print(e.message);
       _onLoginStatusChanged(false);
+      // ignore: unused_catch_clause
     } on SignInWithAppleNotSupportedException catch (e) {
-      print('SignInWithAppleCredentialsException');
-      print(e.message);
+      //print('SignInWithAppleCredentialsException');
+      //print(e.message);
       _onLoginStatusChanged(false);
     }
 
@@ -221,19 +226,19 @@ class _LoginPageState extends State<ThirdPartyLogin> {
     } else {
       switch (loginResult.status) {
         case LoginStatus.cancelled:
-          print('login cancelled');
+          //print('login cancelled');
           _onLoginStatusChanged(false);
           break;
         case LoginStatus.failed:
-          print('login failed');
+          //print('login failed');
           _onLoginStatusChanged(false);
           break;
         case LoginStatus.operationInProgress:
-          print('another operation is already in progress');
+          //print('another operation is already in progress');
           _onLoginStatusChanged(false);
           break;
         default:
-          print('Unknown Facebook login error');
+          //print('Unknown Facebook login error');
           _onLoginStatusChanged(false);
           break;
       }

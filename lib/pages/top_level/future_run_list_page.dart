@@ -44,32 +44,32 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       try {
         await G0<Database>().rawQuery(query);
       } catch (e) {
-        print(e);
+        //print(e);
       }
 
       query = 'DELETE FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await G0<Database>().rawQuery(query);
       } catch (e) {
-        print(e);
+        //print(e);
       }
 
       query = 'DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await G0<Database>().rawQuery(query);
       } catch (e) {
-        print(e);
+        //print(e);
       }
     }
 
-    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
         SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
         //| SyncUserDataService.flagPaymentsTable,
         false);
 
     await refreshFromTable(true);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Events user data synchronized $resultStr');
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Events user data synchronized $resultStr');
   }
 
   @override
@@ -208,10 +208,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           paymentLinkUrl = kennelItem.kennelPaymentUrl;
         }
 
-        final num julianNow = results[i]['nowJulian'];
-        final num eventJulian = results[i]['eventJulian'];
+        // final num julianNow = results[i]['nowJulian'];
+        // final num eventJulian = results[i]['eventJulian'];
 
-        print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+        //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
         num meters = 0;
         final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;

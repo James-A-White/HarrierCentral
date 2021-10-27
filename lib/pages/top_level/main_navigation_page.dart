@@ -94,7 +94,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     // final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false);
     // final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    // print('Master data synchronized $resultStr');
+    // //print('Master data synchronized $resultStr');
 
     // this is here to force the database to be instnatiated upon startup.
     // the first time this is run, the database will be created. On subsequent
@@ -111,7 +111,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       await notifications.configureNotifications(true);
       // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
       //   final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      //   print('Master data synchronized $resultStr');
+      //   //print('Master data synchronized $resultStr');
 
       //   setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 

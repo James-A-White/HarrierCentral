@@ -4,7 +4,7 @@ import 'package:harrier_central/imports.dart';
 enum FindHasherPageType { addHasherToRun, addMember }
 
 class FindHasherPage extends StatefulWidget {
-  const FindHasherPage(this.pageType, {this.kennelId, this.eventId});
+  const FindHasherPage(this.pageType, {Key key, this.kennelId, this.eventId}) : super(key: key);
 
   final FindHasherPageType pageType;
   final String kennelId;
@@ -76,7 +76,7 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   // void _onSearchTextChanged() {
   //   setState(() {
-  //     print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
+  //     //print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
   //   });
   // }
 
@@ -435,7 +435,7 @@ class HasherListView extends StatelessWidget {
         break;
     }
 
-    print(DateTime.now().millisecondsSinceEpoch.toString());
+    //print(DateTime.now().millisecondsSinceEpoch.toString());
     return ListView.separated(
         separatorBuilder: (BuildContext context, int index) => const Divider(
               height: 1.0,
@@ -503,7 +503,7 @@ class HasherListView extends StatelessWidget {
                           )
                         ])),
                     onDismissed: (DismissDirection direction) {
-                      print(direction.toString() + ' NOTE: We should never reach this point');
+                      //print(direction.toString() + ' NOTE: We should never reach this point');
                     },
                     child: listItem(context, index),
                   );

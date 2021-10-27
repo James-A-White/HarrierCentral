@@ -437,7 +437,7 @@ class EventsService extends BaseService {
 
     final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});
 
-    print(body);
+    //print(body);
 
     final Response response = await post(Uri.parse(EMAIL_RUN_DETAILS_TO_PACK_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend

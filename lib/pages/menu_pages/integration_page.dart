@@ -196,13 +196,13 @@
 //     } on FacebookAuthException catch (e) {
 //       switch (e.errorCode) {
 //         case FacebookAuthErrorCode.OPERATION_IN_PROGRESS:
-//           print('You have a previous login operation in progress');
+//           //print('You have a previous login operation in progress');
 //           break;
 //         case FacebookAuthErrorCode.CANCELLED:
-//           print('login cancelled');
+//           //print('login cancelled');
 //           break;
 //         case FacebookAuthErrorCode.FAILED:
-//           print('login failed');
+//           //print('login failed');
 //           break;
 //       }
 //     }

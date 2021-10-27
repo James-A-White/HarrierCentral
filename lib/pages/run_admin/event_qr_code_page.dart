@@ -165,7 +165,7 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
   //           child: ListBody(
   //             children: const <Widget>[
   //               Text(
-  //                 'You can print out these codes and place them somewhere convenient for Hashers to scan at the beginning and end of the runs. This is especially good for large Hash groups.',
+  //                 'You can //print out these codes and place them somewhere convenient for Hashers to scan at the beginning and end of the runs. This is especially good for large Hash groups.',
   //                 textAlign: TextAlign.justify,
   //                 style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
   //               )

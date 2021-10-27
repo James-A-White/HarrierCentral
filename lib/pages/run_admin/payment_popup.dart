@@ -10,9 +10,16 @@ class PaymentPopupResult {
 
 class PaymentPopup extends StatefulWidget {
   const PaymentPopup(
-      {@required this.hemId, @required this.currencySymbol, @required this.amount, @required this.creditRemaining, @required this.creditAllowed, @required this.decimalDigits
+      {Key key,
+      @required this.hemId,
+      @required this.currencySymbol,
+      @required this.amount,
+      @required this.creditRemaining,
+      @required this.creditAllowed,
+      @required this.decimalDigits
       // @required this.valueChanged
-      });
+      })
+      : super(key: key);
 
   final String hemId;
   final String currencySymbol;

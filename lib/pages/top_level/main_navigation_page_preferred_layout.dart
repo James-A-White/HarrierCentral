@@ -96,7 +96,7 @@
 //             key: bottomNavigationKey,
 //             onTabChangedListener: (int position) {
 //               if (myPage != position) {
-//                 print(ModalRoute.of(_contentNavigator.currentContext).settings.name);
+//                 //print(ModalRoute.of(_contentNavigator.currentContext).settings.name);
 //                 //_contentNavigator.currentState.popUntil(ModalRoute.withName(Navigator.defaultRouteName));
 
 //                 // Navigator.of(_contentNavigator.currentContext).push<dynamic>(MaterialPageRoute<dynamic>(
@@ -199,7 +199,7 @@
 //       ]),
 //     );
 
-//     print(ModalRoute.of(_contentNavigator.currentContext).settings.name);
+//     //print(ModalRoute.of(_contentNavigator.currentContext).settings.name);
 
 //     return x;
 

@@ -139,7 +139,7 @@ class QueryKennels {
           }
           final List<String> orItems = st.split('+');
 
-          //print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
+          ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
           filteredKennels = filteredKennels.where((KennelListAggregate a) {
             for (String orItem in orItems) {

@@ -270,8 +270,8 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
     super.build(context);
 
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
-      print('Height = ${constraints.maxHeight}');
-      print('Width = ${constraints.maxWidth}');
+      //print('Height = ${constraints.maxHeight}');
+      //print('Width = ${constraints.maxWidth}');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -391,8 +391,8 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
     super.build(context);
 
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
-      print('Height = ${constraints.maxHeight}');
-      print('Width = ${constraints.maxWidth}');
+      //print('Height = ${constraints.maxHeight}');
+      //print('Width = ${constraints.maxWidth}');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

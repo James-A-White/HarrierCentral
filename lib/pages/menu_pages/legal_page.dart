@@ -66,7 +66,7 @@ class _LegalPageContentState extends State<LegalPageContent> {
   int tapCounter = 0;
   void backdoorTap() {
     Future<dynamic>.delayed(const Duration(milliseconds: 2500)).then((void _) {
-      print('Tapcounter reset = $tapCounter');
+      //print('Tapcounter reset = $tapCounter');
       tapCounter = 0;
     });
 
@@ -291,7 +291,7 @@ class _LegalPageContentState extends State<LegalPageContent> {
                   Container(child: Text('\r\n7. General', style: headingStyle), margin: const EdgeInsets.only(top: 15)),
                   Container(
                       child: Text(
-                        '(1) You may print and keep a copy of these Terms, which form the entire agreement between You and Us and supersede any other communications or advertising with respect to the App. These Terms may only be modified with Our prior written consent. We may alter or amend these Terms at any time, with immediate effect and without notice. By continuing to use the App after such alteration, you will be deemed to have accepted any amendment to these Terms.',
+                        '(1) You may //print and keep a copy of these Terms, which form the entire agreement between You and Us and supersede any other communications or advertising with respect to the App. These Terms may only be modified with Our prior written consent. We may alter or amend these Terms at any time, with immediate effect and without notice. By continuing to use the App after such alteration, you will be deemed to have accepted any amendment to these Terms.',
                         style: bodyStyle,
                         textAlign: TextAlign.left,
                       ),

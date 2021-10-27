@@ -99,8 +99,8 @@ class RunAdminPageState extends State<RunAdminPage> {
         _eventAggregate = rd;
         setState(() {
           _isLoading = false;
-          final String resultStr = result ? 'successfully' : 'unsuccessfully';
-          print('Event admin data synchronized $resultStr');
+          //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+          //print('Event admin data synchronized $resultStr');
         });
       });
     });

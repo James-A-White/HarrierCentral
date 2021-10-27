@@ -99,7 +99,7 @@ class RunDetailsQueryExtensions {
     }
 
     //final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
-    //print(test);
+    ////print(test);
 
     return ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
   }
@@ -225,7 +225,7 @@ class QueryRuns {
           }
           final List<String> orItems = st.split('+');
 
-          //print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
+          ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
           filteredRuns = filteredRuns.where((RunDetailsAggregate a) {
             for (String orItem in orItems) {

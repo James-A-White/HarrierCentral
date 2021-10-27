@@ -87,9 +87,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       });
     }
 
-    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Events data synchronized $resultStr');
+    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Events data synchronized $resultStr');
 
     await _refreshEventFromTables(true);
     if (showLoadingIndicator) {
@@ -110,7 +110,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   //               margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
   //               child: ListTile(
   //                 title: Text(event['eventName'].toString()),
-  //                 onTap: () => print('$event tapped!'),
+  //                 onTap: () => //print('$event tapped!'),
   //               ),
   //             ))
   //         .toList(),
@@ -144,7 +144,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
       _publishedRunCountSqlResult = await G0<Database>().rawQuery(sql);
     } catch (e) {
-      print(e);
+      //print(e);
     }
 
     try {
@@ -199,7 +199,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
       _isLoading = false;
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
@@ -231,8 +231,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         //   curve: Curves.bounceIn,
         //   overlayColor: Colors.black,
         //   overlayOpacity: 0.5,
-        //   onOpen: () => print('OPENING DIAL'),
-        //   onClose: () => print('DIAL CLOSED'),
+        //   onOpen: () => //print('OPENING DIAL'),
+        //   onClose: () => //print('DIAL CLOSED'),
         //   tooltip: 'Speed Dial',
         //   heroTag: 'speed-dial-hero-tag',
         //   backgroundColor: Theme.of(context).accentColor,
@@ -306,9 +306,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       _isLoading = true;
     });
 
-    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Receipts data synchronized $resultStr');
+    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Receipts data synchronized $resultStr');
     await _refreshEventFromTables(true);
   }
 
@@ -612,7 +612,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             ),
           ),
           onDismissed: (DismissDirection direction) {
-            print(direction.toString() + ' NOTE: We should never reach this point');
+            //print(direction.toString() + ' NOTE: We should never reach this point');
           },
           child: FilterEventListItem(
             event: event,
@@ -692,8 +692,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       await G0<Database>().transaction<dynamic>((Transaction txn) async {
         final int flag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
         final String sql = 'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
-        final int result = await txn.rawUpdate(sql);
-        print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+        await txn.rawUpdate(sql);
+        //print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       });
     }
 

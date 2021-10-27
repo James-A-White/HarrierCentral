@@ -9,5 +9,5 @@ class SingleResultModel {
   final String result;
 
   @override
-  String toString() => '$result';
+  String toString() => result;
 }

@@ -3,7 +3,12 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class FilterEventListItem extends StatelessWidget {
-  const FilterEventListItem({@required this.event, @required this.kennelShortName, @required this.updateEvent});
+  const FilterEventListItem({
+    Key key,
+    @required this.event,
+    @required this.kennelShortName,
+    @required this.updateEvent,
+  }) : super(key: key);
 
   final Map<String, dynamic> event;
   final String kennelShortName;

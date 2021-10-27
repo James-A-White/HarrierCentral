@@ -89,7 +89,7 @@ class BankTransferQr {
         }
       }
 
-      print('Remittance info:$remittanceInfo');
+      //print('Remittance info:$remittanceInfo');
       final String qrPayload = '''BCD
 001
 1

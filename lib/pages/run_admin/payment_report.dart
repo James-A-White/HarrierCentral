@@ -86,12 +86,12 @@ class PaymentReportState extends State<PaymentReportPage> {
       _isLoading = true;
     });
 
-    final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(
+    await G0<TableModel>().syncEventAdminService.updateFromBackend(
         SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable,
         true,
         widget.eventAggregate.event.eventId);
-    final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Payments data synchronized $resultStr');
+    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    //print('Payments data synchronized $resultStr');
 
     await _refreshListsFromTable();
     setState(() {
@@ -185,10 +185,10 @@ class PaymentReportState extends State<PaymentReportPage> {
         });
       });
     } catch (e) {
-      print(e);
+      //print(e);
     }
 
-    print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
+    //print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
   Future<List<dynamic>> payForEvent(PaymentAggregate item, int paymentType, num amount, {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
@@ -243,7 +243,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           onOpen: () {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
-          onClose: () => print('DIAL CLOSED'),
+          //onClose: () => //print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
           backgroundColor: Colors.red.shade900,
@@ -407,7 +407,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                       : Dismissible(
                                           key: Key(index.toString()),
                                           confirmDismiss: (DismissDirection direction) {
-                                            print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
+                                            //print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
                                             setState(() {
                                               filteredList[index].extensions.isLoading = true;
                                             });
@@ -489,7 +489,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     )
                                                   ])),
                                           onDismissed: (DismissDirection direction) {
-                                            print(direction.toString() + ' NOTE: We should never reach this point');
+                                            //print(direction.toString() + ' NOTE: We should never reach this point');
                                           },
                                           child: listItem(filteredList[index], context),
                                         );

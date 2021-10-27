@@ -92,7 +92,7 @@ class NotificationsTableHelper {
     //final String sql = 'INSERT INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch}) ON CONFLICT($colNotificationTag) DO UPDATE SET $colNotificationStatus = $status, $colUpdatedAtInt = ${DateTime.now().millisecondsSinceEpoch};';
     final String sql =
         'INSERT OR REPLACE INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch});';
-    //print(sql);
+    ////print(sql);
     await G0<Database>().rawQuery(sql);
   }
 }
