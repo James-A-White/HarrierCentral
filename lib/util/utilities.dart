@@ -19,6 +19,7 @@ class Utilities {
   static const int qrScanTypeFlag_kennelRunStart = 0x00000010;
   static const int qrScanTypeFlag_kennelRunEnd = 0x00000020;
   static const int qrScanTypeFlag_resetCode = 0x00000040;
+  static const int qrScanTypeFlag_authenticateWebPortal = 0x00000080;
 
   static int logCounter = 0;
 
@@ -60,6 +61,9 @@ class Utilities {
           break;
         case QR_PREFIX_KENNEL_GENERIC_RUN_END:
           scanType = qrScanTypeFlag_kennelRunEnd;
+          break;
+        case QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN:
+          scanType = qrScanTypeFlag_authenticateWebPortal;
           break;
         default:
           validHcQr = false;

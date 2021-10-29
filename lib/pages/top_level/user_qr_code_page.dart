@@ -416,7 +416,11 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
     final Map<String, String> result = Utilities.validateScan(
         scanResult,
         //Utilities.qrScanTypeFlag_user |
-        Utilities.qrScanTypeFlag_runStart | Utilities.qrScanTypeFlag_runEnd | Utilities.qrScanTypeFlag_kennelRunEnd | Utilities.qrScanTypeFlag_kennelRunStart);
+        Utilities.qrScanTypeFlag_runStart |
+            Utilities.qrScanTypeFlag_runEnd |
+            Utilities.qrScanTypeFlag_kennelRunEnd |
+            Utilities.qrScanTypeFlag_kennelRunStart |
+            Utilities.qrScanTypeFlag_authenticateWebPortal);
 
     if (result['validScan'] == 'false') {
       setState(() {
@@ -425,7 +429,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       });
     } else {
       final String prefix = result['prefix'];
-      final String content = result['content'];
+      final String scanData = result['content'];
 
       if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
         final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
@@ -433,7 +437,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         final String userId = getStringPref(StringPrefsEnum.userId);
 
         final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
-              content,
+              scanData,
               userId,
               null,
               AppDomainType.user,
@@ -451,12 +455,10 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             _onScreenMessage = 'Processing Complete';
           }
         });
-      }
-
-      if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
+      } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
         final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
 
-        final String eventId = await CommonQueries.getClosestEventInTime(content);
+        final String eventId = await CommonQueries.getClosestEventInTime(scanData);
         if (num.tryParse(eventId) != null) {
           final num hoursUntilNextEvent = num.tryParse(eventId);
           setState(() {
@@ -495,6 +497,17 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             });
           }
         }
+      } else if (prefix == QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN) {
+        final AuthenticateWebPortalService svc = AuthenticateWebPortalService();
+        final SingleResultModel returnValue = await svc.authenticateWebPortal(scanData);
+
+        setState(() {
+          if ((returnValue != null) && (returnValue.result != null) && (returnValue.result.isNotEmpty)) {
+            _onScreenMessage = returnValue.result;
+          } else {
+            _onScreenMessage = 'Processing Complete';
+          }
+        });
       }
     }
 
@@ -571,13 +584,14 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       _state = EQrScannerState.scanning;
     });
 
-    _controller.scannedDataStream.listen((Barcode scanData) {
+    _controller.scannedDataStream.listen((Barcode scanData) async {
+      await _controller.pauseCamera();
       setState(() {
-        _result = scanData.code;
-        _onCodeRead(_result);
-        _controller.pauseCamera();
         _isScanning = false;
+        _result = scanData.code;
       });
+      await _onCodeRead(_result);
+      setState(() {});
     });
   }
 

@@ -89,6 +89,7 @@ const String QR_PREFIX_KENNEL_GENERIC_RUN_END = 'KRE:';
 const String QR_PREFIX_USER_CODE = 'UQR:';
 const String QR_PREFIX_USER_SECRET_CODE = 'USC:';
 const String QR_PREFIX_USER_RESET_CODE = 'URC:';
+const String QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN = 'UWP:';
 
 const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
 

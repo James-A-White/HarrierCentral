@@ -49,6 +49,7 @@ export 'package:harrier_central/data/models/approve_login_model.dart';
 export 'package:harrier_central/data/models/db_error_model.dart';
 export 'package:harrier_central/data/models/single_result_model.dart';
 export 'package:harrier_central/data/services/approve_login_service.dart';
+export 'package:harrier_central/data/services/authenticate_web_portal_service.dart';
 export 'package:harrier_central/data/services/authorize_device_service.dart';
 export 'package:harrier_central/data/services/email_reports_service.dart';
 export 'package:harrier_central/data/services/get_reset_code_service.dart';
