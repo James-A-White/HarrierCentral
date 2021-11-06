@@ -210,6 +210,7 @@ class KennelListItemState extends State<KennelsListItem> {
                 children: <Widget>[
                   const SizedBox(width: 5.0, height: 85.0),
                   KennelLogo(
+                      kennelId: widget.kennelItem.kennel.kennelId,
                       kennelLogoUrl: widget.kennelItem.kennel.kennelLogo,
                       kennelShortName: widget.kennelItem.kennel.kennelShortName,
                       logoHeight: 70.0,

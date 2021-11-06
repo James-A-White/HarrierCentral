@@ -42,6 +42,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                 child: (kennelInfo.kennelLogo == null || kennelInfo.kennelLogo.length < 5)
                     ? const SizedBox(height: 80, width: 80)
                     : KennelLogo(
+                        kennelId: kennelInfo.kennelId,
                         kennelLogoUrl: kennelInfo.kennelLogo,
                         kennelShortName: kennelInfo.kennelShortName,
                         logoHeight: 80.0,

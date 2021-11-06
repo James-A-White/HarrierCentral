@@ -357,6 +357,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                     SizedBox(
                       height: 75,
                       child: KennelLogo(
+                        kennelId: widget.kennel.kennel.kennelId,
                         kennelLogoUrl: widget.kennel.kennel.kennelLogo,
                         kennelShortName: widget.kennel.kennel.kennelShortName,
                         logoHeight: 75.0,

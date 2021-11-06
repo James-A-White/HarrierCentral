@@ -206,6 +206,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
                           KennelLogo(
+                            kennelId: widget.futureRun.kennel.kennelId,
                             kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
                             kennelShortName: widget.futureRun.kennel.kennelShortName,
                             logoHeight: 70.0,

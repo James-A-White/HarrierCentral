@@ -6,6 +6,7 @@ enum KennelLogoZoomGesture { none, tap, longPress }
 class KennelLogo extends StatelessWidget {
   const KennelLogo({
     Key key,
+    this.kennelId,
     @required this.kennelLogoUrl,
     @required this.kennelShortName,
     @required this.logoHeight,
@@ -14,6 +15,7 @@ class KennelLogo extends StatelessWidget {
     this.rightPadding,
   }) : super(key: key);
 
+  final String kennelId;
   final String kennelLogoUrl;
   final String kennelShortName;
   final num logoHeight;
@@ -42,6 +44,7 @@ class KennelLogo extends StatelessWidget {
             pageTitle: 'Kennel logo',
             appBarBackgroundColor: themeAppBarBackground,
             background: Backgrounds.defaultHcBackground(),
+            kennelId: kennelId,
           );
         },
       ),

@@ -156,7 +156,12 @@ class RunListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: <Widget>[
-      KennelLogo(kennelLogoUrl: item.kennelLogo, kennelShortName: item.kennelShortName, logoHeight: 45.0),
+      KennelLogo(
+        kennelId: item.kennelId,
+        kennelLogoUrl: item.kennelLogo,
+        kennelShortName: item.kennelShortName,
+        logoHeight: 45.0,
+      ),
       Expanded(
         child: CheckboxListTile(
             value: item.selected,

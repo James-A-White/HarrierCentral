@@ -620,6 +620,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         Positioned(
           top: KENNEL_PIN_SIZE / 13.3333333,
           child: KennelLogo(
+            kennelId: kennelId,
             kennelLogoUrl: kennelLogo,
             kennelShortName: kennelShortName,
             logoHeight: KENNEL_PIN_SIZE / 2.0,

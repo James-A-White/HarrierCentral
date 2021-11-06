@@ -135,6 +135,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       width: MediaQuery.of(context).size.width - 40,
                                       child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
                                   KennelLogo(
+                                    //kennelId: widget.kennelAggregateItem.kennel.kennelId,
                                     kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
                                     kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
                                     logoHeight: 200.0,
@@ -163,6 +164,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         width: MediaQuery.of(context).size.width - 40,
                                         child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
                                     KennelLogo(
+                                      //kennelId: widget.kennelAggregateItem.kennel.kennelId,
                                       kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
                                       kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
                                       logoHeight: 200.0,
@@ -622,6 +624,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   Positioned(
                                                     top: 14,
                                                     child: KennelLogo(
+                                                      //kennelId: widget.kennelAggregateItem.kennel.kennelId,
                                                       kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
                                                       kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
                                                       logoHeight: 60.0,

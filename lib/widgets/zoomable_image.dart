@@ -16,6 +16,7 @@ class ZoomableImagePage2 extends StatelessWidget {
     this.assetImage,
     this.assetImageText,
     this.margin,
+    this.kennelId,
   }) : super(key: key);
 
   final platform.File file;
@@ -26,6 +27,7 @@ class ZoomableImagePage2 extends StatelessWidget {
   final String assetImage;
   final String assetImageText;
   final num margin;
+  final String kennelId;
 
   @override
   Widget build(BuildContext context) {
@@ -44,53 +46,87 @@ class ZoomableImagePage2 extends StatelessWidget {
       //key: scaffoldKey,
       appBar: appBar,
       body: Container(
-          padding: EdgeInsets.all(margin ?? 0.0),
-          decoration: background,
-          child: file != null
-              ? PhotoView(
-                  imageProvider: FileImage(file),
-                  minScale: 0.1,
-                  maxScale: 100.0,
-                  backgroundDecoration: background,
-                  // backgroundColor: Colors.transparent,
-                )
-              : imageUrl != null
-                  ? PhotoView(
-                      imageProvider: CachedNetworkImageProvider(imageUrl),
-
-                      // NetworkImage(
-                      //   imageUrl,
-                      // ),
-                      minScale: 0.1,
-                      maxScale: 100.0,
-                      backgroundDecoration: background,
-                      // backgroundColor: Colors.transparent,
-                    )
-                  : Stack(alignment: Alignment.center, children: <Widget>[
-                      PhotoView(
-                        imageProvider: AssetImage(
-                          assetImage,
-                        ),
+        padding: EdgeInsets.all(margin ?? 0.0),
+        decoration: background,
+        //height: 500.0,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(15.0),
+                child: file != null
+                    ? PhotoView(
+                        imageProvider: FileImage(file),
                         minScale: 0.1,
                         maxScale: 100.0,
                         backgroundDecoration: background,
                         // backgroundColor: Colors.transparent,
+                      )
+                    : imageUrl != null
+                        ? PhotoView(
+                            imageProvider: CachedNetworkImageProvider(imageUrl),
+
+                            // NetworkImage(
+                            //   imageUrl,
+                            // ),
+                            minScale: 0.1,
+                            maxScale: 100.0,
+                            backgroundDecoration: background,
+                            // backgroundColor: Colors.transparent,
+                          )
+                        : Stack(
+                            alignment: Alignment.center,
+                            children: <Widget>[
+                              PhotoView(
+                                imageProvider: AssetImage(
+                                  assetImage,
+                                ),
+                                minScale: 0.1,
+                                maxScale: 100.0,
+                                backgroundDecoration: background,
+                                // backgroundColor: Colors.transparent,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: G0<DeviceInfo>().deviceWidth / 6, right: G0<DeviceInfo>().deviceWidth / 6),
+                                child: AutoSizeText(
+                                  (assetImageText ?? '').toLowerCase().contains('my runs')
+                                      ? ''
+                                      : // TODO(James): find a more elegant way of doing this
+                                      '${assetImageText ?? ''}'
+                                          '',
+                                  style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  minFontSize: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
+              ),
+            ),
+            if (kennelId != null) ...<Widget>[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: ElevatedButton(
+                  child: Text('View Kennel', style: buttonLabelStyleMedium),
+                  onPressed: () async {
+                    final KennelListAggregate kennel = await QueryKennels.getSingleKennel(kennelId);
+
+                    await Navigator.of(context).push<dynamic>(
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(left: G0<DeviceInfo>().deviceWidth / 6, right: G0<DeviceInfo>().deviceWidth / 6),
-                        child: AutoSizeText(
-                          (assetImageText ?? '').toLowerCase().contains('my runs')
-                              ? ''
-                              : // TODO(James): find a more elegant way of doing this
-                              '${assetImageText ?? ''}'
-                                  '',
-                          style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          minFontSize: 1.0,
-                        ),
-                      ),
-                    ])),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

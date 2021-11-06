@@ -7,6 +7,7 @@ class AreWeAtRunResult {
   String eventId;
   String eventName;
   String eventImage;
+  String kennelId;
   String kennelLogo;
   String kennelShortName;
   num eventNumber;
@@ -66,6 +67,7 @@ class CommonQueries {
           case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLongitude} else e.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as lon,
           e.${G0<TableModel>().eventsTableHelper.colEventImage} as eventImage,
           e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
+          k.${G0<TableModel>().kennelsTableHelper.colKennelId} as kennelId,
           k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
           (julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24 as deltaHours,
@@ -111,6 +113,7 @@ class CommonQueries {
               result.eventId = queryResults[i]['eventId'];
               result.eventName = queryResults[i]['eventName'];
               result.eventImage = queryResults[i]['eventImage'];
+              result.kennelId = queryResults[i]['kennelId'];
               result.kennelLogo = queryResults[i]['kennelLogo'];
               result.eventNumber = queryResults[i]['eventNumber'];
               result.kennelShortName = queryResults[i]['kennelShortName'];

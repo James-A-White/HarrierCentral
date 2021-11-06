@@ -1,4 +1,5 @@
 // @dart=2.11
+import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
 class KennelListQueryExtenstions {
@@ -157,6 +158,33 @@ class QueryKennels {
       }
     }
     return filteredKennels;
+  }
+
+  static Future<KennelListAggregate> getSingleKennel(String kennelId) async {
+    bool isHomeKennel = false;
+    if (kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+      isHomeKennel = true;
+    }
+
+    KennelListAggregate kennel;
+    final String hasherId = getStringPref(StringPrefsEnum.userId);
+    final List<Map<String, dynamic>> results =
+        await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
+
+    if (results.isNotEmpty) {
+      final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+
+      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+      final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+      final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[0]);
+      extensionsItem.distToKennel = dist;
+      extensionsItem.followingRequested = -1;
+      extensionsItem.notificationsRequested = -1;
+      extensionsItem.emailAlertRequested = -1;
+
+      kennel = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem, isHomeKennel: isHomeKennel);
+    }
+    return kennel;
   }
 
   static Future<List<Map<String, dynamic>>> queryKennels(EnumKennelQueryType queryType, EnumKennelQueryContext queryContext, {String hasherId, String kennelId}) async {

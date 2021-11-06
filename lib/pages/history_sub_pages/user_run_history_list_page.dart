@@ -437,6 +437,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         margin: const EdgeInsets.only(right: 12.0),
                         height: 90,
                         child: KennelLogo(
+                          kennelId: widget.kennelInfo.kennelId,
                           kennelLogoUrl: widget.kennelInfo.kennelLogo,
                           kennelShortName: widget.kennelInfo.kennelShortName,
                           logoHeight: 60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
