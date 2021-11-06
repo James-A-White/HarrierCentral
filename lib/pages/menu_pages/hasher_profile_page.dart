@@ -334,8 +334,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           await setStringPref(StringPrefsEnum.email, _emailController.text);
           await setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
         }
-        final dynamic jsonResult = json.decode(responseBody);
-        final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
+
+        HashersModel h;
+        final List<dynamic> jsonResult = json.decode(responseBody);
+
+        // look through the returned results and find the
+        // hasher we just edited. Usually only one
+        // hasher will be returned, but there could be
+        // edge cases where more than one Hasher record
+        // is returned.
+        for (int i = 0; i < jsonResult.length; i++) {
+          if (jsonResult[i][0].containsKey('hasherId')) {
+            for (int j = 0; j < jsonResult[i].length; j++) {
+              if (jsonResult[i][j]['hasherId'].toString().toLowerCase() == _hasher.hasherId.toLowerCase()) {
+                h = HashersModel.fromJson(jsonResult[i][0]);
+              }
+            }
+          }
+        }
 
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           await setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
@@ -408,17 +424,19 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             _hasher.lastName = val;
           },
         ),
-        TextFormField(
-          autocorrect: false,
-          //initialValue: hasher.email,
-          controller: _emailController,
-          decoration: const InputDecoration(labelText: 'Email'),
-          keyboardType: TextInputType.emailAddress,
-          validator: Utilities.validateEmail,
-          onSaved: (String val) {
-            _email = val;
-          },
-        ),
+        if (widget.pageType == EnumMyProfilePageType.myProfile) ...<Widget>[
+          TextFormField(
+            autocorrect: false,
+            //initialValue: hasher.email,
+            controller: _emailController,
+            decoration: const InputDecoration(labelText: 'Email'),
+            keyboardType: TextInputType.emailAddress,
+            validator: Utilities.validateEmail,
+            onSaved: (String val) {
+              _email = val;
+            },
+          ),
+        ],
         TextFormField(
           autocorrect: false,
           //initialValue: hasher.hashName,

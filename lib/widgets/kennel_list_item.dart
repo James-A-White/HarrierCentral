@@ -71,9 +71,9 @@ class KennelListItemState extends State<KennelsListItem> {
                             ? Colors.grey
                             : widget.kennelItem.extensions.followingRequested != -1
                                 ? Colors.blue
-                                : widget.kennelItem.hkm.following == 1
+                                : widget.kennelItem.hkm.following == KENNEL_IS_FOLLOWING
                                     ? Colors.green
-                                    : widget.kennelItem.hkm.following == 2
+                                    : widget.kennelItem.hkm.following == KENNEL_IS_BLOCKED
                                         ? Colors.red
                                         : Colors.yellow[800]),
                     tooltip: 'Select to follow a Kennel',

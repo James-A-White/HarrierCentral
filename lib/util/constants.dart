@@ -16,6 +16,10 @@ const int LOGIN_IS_DELAYED_WARNING_2 = 15;
 const int LOGIN_TIMEOUT = 20;
 const int DEFAULT_HTTP_TIMEOUT = 10;
 
+const int KENNEL_IS_FOLLOWING = 1;
+const int KENNEL_IS_BLOCKED = 2;
+const int KENNEL_IS_AUTO = 0;
+
 // const num ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT = 48;
 // const num GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN = 10000;
 
@@ -45,6 +49,7 @@ const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
 
+const String BASE_KENNEL_LOGOS_URL = 'https://harriercentral.blob.core.windows.net/harrier/';
 const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
 const String BASE_EVENT_IMAGE_URL = 'https://harriercentral.blob.core.windows.net/event-images/';
 const String BASE_RECEIPTS_URL = 'https://harriercentral.blob.core.windows.net/receipts/';

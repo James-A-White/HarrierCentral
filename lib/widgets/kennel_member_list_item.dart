@@ -74,33 +74,40 @@ class KennelMemberListItem extends StatelessWidget {
                     ),
                   );
                 },
-                child: kennelMember.photo.startsWith('http')
-                    ? CachedNetworkImage(
-                        imageUrl: kennelMember.photo,
-                        //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
-                        //errorWidget: const  Icon(Icons.error),
-                        // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: UniqueKey()),
-
-                        // TODO(James): Replace avatar icon with missing image icon
-                        errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
-                        //fadeOutDuration:  Duration(seconds: 1),
-                        fadeInDuration: const Duration(milliseconds: 0),
+                child: kennelMember.photo == null
+                    ? const Image(
                         width: PROFILE_PIC_SIZE,
                         height: PROFILE_PIC_SIZE,
-                        fit: BoxFit.fill)
-                    : kennelMember.photo.startsWith('bundle')
-                        ? Image(
+                        fit: BoxFit.fill,
+                        image: AssetImage('images/avatars/avatar-2.jpg'),
+                      )
+                    : kennelMember.photo.startsWith('http')
+                        ? CachedNetworkImage(
+                            imageUrl: kennelMember.photo,
+                            //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
+                            //errorWidget: const  Icon(Icons.error),
+                            // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: UniqueKey()),
+
+                            // TODO(James): Replace avatar icon with missing image icon
+                            errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
+                            //fadeOutDuration:  Duration(seconds: 1),
+                            fadeInDuration: const Duration(milliseconds: 0),
                             width: PROFILE_PIC_SIZE,
                             height: PROFILE_PIC_SIZE,
-                            fit: BoxFit.fill,
-                            image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
-                          )
-                        : const Image(
-                            width: PROFILE_PIC_SIZE,
-                            height: PROFILE_PIC_SIZE,
-                            fit: BoxFit.fill,
-                            image: AssetImage('images/avatars/avatar-2.jpg'),
-                          ),
+                            fit: BoxFit.fill)
+                        : kennelMember.photo.startsWith('bundle')
+                            ? Image(
+                                width: PROFILE_PIC_SIZE,
+                                height: PROFILE_PIC_SIZE,
+                                fit: BoxFit.fill,
+                                image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                              )
+                            : const Image(
+                                width: PROFILE_PIC_SIZE,
+                                height: PROFILE_PIC_SIZE,
+                                fit: BoxFit.fill,
+                                image: AssetImage('images/avatars/avatar-2.jpg'),
+                              ),
               ),
             ),
             Container(

@@ -49,6 +49,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   bool _showFilters = false;
   bool _showKennels = true;
 
+  static double KENNEL_PIN_SIZE = 100.0;
+
   @override
   void initState() {
     _homeKennelLat = getNumPref(NumPrefsEnum.homeKennelLat);
@@ -536,9 +538,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
               final latlng.LatLng ll = latlng.LatLng(lat + .0, lon + .0);
               final Marker marker = Marker(
-                  width: 120.0,
-                  height: 120.0,
-                  anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)),
+                  width: KENNEL_PIN_SIZE,
+                  height: KENNEL_PIN_SIZE,
+                  anchorPos: AnchorPos.exactly(Anchor(KENNEL_PIN_SIZE / 2.0, KENNEL_PIN_SIZE)),
                   point: ll,
                   builder: (BuildContext ctx) => buildKennelMarker(
                         _filteredKennels[i]['logo'],
@@ -616,11 +618,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
         Image.asset('images/icons/grey_square_pin.png'),
         Positioned(
-          top: 9,
+          top: KENNEL_PIN_SIZE / 13.3333333,
           child: KennelLogo(
             kennelLogoUrl: kennelLogo,
             kennelShortName: kennelShortName,
-            logoHeight: 60.0,
+            logoHeight: KENNEL_PIN_SIZE / 2.0,
             leftPadding: 0.0,
             zoomGesture: KennelLogoZoomGesture.none,
           ),
@@ -722,7 +724,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   ),
 
                   MarkerClusterLayerOptions(
-                    maxClusterRadius: 60,
+                    maxClusterRadius: 20,
                     size: const Size(50, 50),
                     fitBoundsOptions: const FitBoundsOptions(
                       padding: EdgeInsets.all(50),
