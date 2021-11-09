@@ -2,28 +2,6 @@
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
-// import 'dart:core';
-
-// import 'package:cached_network_image/cached_network_image.dart';
-// import 'package:flutter/material.dart';
-
-// import 'package:flutter_linkify/flutter_linkify.dart';
-// import 'package:ive_flutter_core/widgets/zoomable_image_page.dart';
-
-// import 'package:auto_size_text/auto_size_text.dart';
-// import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-// import 'package:harrier_central/data/hc3_services/events_service.dart';
-// import 'package:harrier_central/util/constants.dart';
-// import 'package:harrier_central/util/globals.dart';
-
-// import 'package:url_launcher/url_launcher.dart';
-
-// import 'package:harrier_central/util/utilities.dart';
-// import 'package:ive_flutter_core/widgets/fancy_divider.dart';
-
-// import 'package:harrier_central/util/styles.dart';
-// import 'package:ive_flutter_core/util/core_utilities.dart';
-
 class RunDetails extends StatelessWidget {
   const RunDetails(
     this.event,
@@ -714,26 +692,4 @@ class RunDetails extends StatelessWidget {
       ),
     );
   }
-
-  // String getEventText(EventModel event) {
-  //   String result = '';
-  //   switch (event.eventGeographicScope) {
-  //     case 1:
-  //       result = 'Local event';
-  //       break;
-  //     case 2:
-  //       result = 'Regional event';
-  //       break;
-  //     case 3:Int32x4.xxxw
-  //       result = 'Nash hash';
-  //       break;
-  //     case 4:
-  //       result = 'Inter hash';
-  //       break;
-  //     case 5:
-  //       result = 'World interhash / global event';
-  //       break;
-  //   }
-  //   return result;
-  // }
 }
