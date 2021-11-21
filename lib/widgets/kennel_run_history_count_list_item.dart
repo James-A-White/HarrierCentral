@@ -25,12 +25,14 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
               MaterialPageRoute<dynamic>(
                 builder: (BuildContext context) {
                   return UserRunHistoryListPage(
-                    kennelInfo: kennelInfo,
-                  );
+                      kennelInfo: kennelInfo,
+                      refreshKennelInfo: () {
+                        return refreshCounters(kennelInfo.kennelId);
+                      });
                 },
               ),
             ).then((void _) {
-              refreshCounters();
+              refreshCounters(kennelInfo.kennelId);
             });
           },
           child: Row(

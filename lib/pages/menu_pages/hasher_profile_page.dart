@@ -109,13 +109,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
           SELECT 
             h.*,
-            hkm.historicalPackRunCount,
-            hkm.historicalHaringCount,
-            hkm.historicalCountIsEstimate
-            FROM hashers h
-            LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
-            WHERE h.hasherId = "${widget.hasherId}"
-          
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+            FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.kennel)} h
+            LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = "${widget.kennelId}" AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "${widget.hasherId}"
+            WHERE h.${G0<TableModel>().hashersTableHelper.colHasherId} = "${widget.hasherId}"
           ''';
 
           break;
@@ -138,7 +137,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         _emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
         _hashNameController.text = _hasher.hashName;
         _newPhoto = _hasher.photo; // if we have returned from the photo chooser, don't overwrite
-        _previousRunCountController.text = (_hkmData?.historicalPackRunCount ?? 0).toString();
+        _previousRunCountController.text = (_hkmData?.historicalTotalRunCount ?? 0).toString();
         _previousHaringCountController.text = (_hkmData?.historicalHaringCount ?? 0).toString();
         _historicalCountIsEstimate = (_hkmData?.historicalCountIsEstimate ?? 0) == 1;
 
@@ -248,7 +247,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (_newPhoto != _hasher?.photo ?? '') {
       isDirty = true;
     }
-    if (_previousRunCountController.text != (_hkmData?.historicalPackRunCount ?? 0).toString()) {
+    if (_previousRunCountController.text != (_hkmData?.historicalTotalRunCount ?? 0).toString()) {
       isDirty = true;
     }
     if (_previousHaringCountController.text != (_hkmData?.historicalHaringCount ?? 0).toString()) {
@@ -323,7 +322,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           photo: _newPhoto,
           eventId: widget.eventId,
           kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
-          historicalPackRunCount: _previousRunCountController.text,
+          historicalTotalRunCount: _previousRunCountController.text,
           historicalHaringCount: _previousHaringCountController.text,
           historicalCountIsEstimate: _historicalCountIsEstimate,
           preferences: _distancePreference + _autoRunPreference,

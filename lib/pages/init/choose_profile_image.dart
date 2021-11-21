@@ -403,9 +403,6 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
       final HashersService srv = HashersService();
 
-      // final Future<dynamic> apiCall =
-      //     srv.addEditUser(targetUserId: userId, firstName: '', lastName: '', email: '', hashName: '', photo: profileImageUrl, eventId: GUID_EMPTY, kennelId: GUID_EMPTY, historicalPackRunCount: '', historicalHaringCount: '', historicalCountIsEstimate: false, followKennelOnAddNewUser: 0);
-
       final String responseBody = await srv.changeProfilePicture(targetUserId: userId, photo: profileImageUrl);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {

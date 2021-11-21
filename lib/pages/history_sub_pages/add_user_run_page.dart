@@ -129,7 +129,7 @@
 //     if (newPhoto != hasher?.photo ?? '') {
 //       isDirty = true;
 //     }
-//     if (previousRunCountController.text != (hkmData?.historicalPackRunCount ?? 0).toString()) {
+//     if (previousRunCountController.text != (hkmData?.historicalTotalRunCount ?? 0).toString()) {
 //       isDirty = true;
 //     }
 //     if (previousHaringCountController.text != (hkmData?.historicalHaringCount ?? 0).toString()) {
@@ -192,7 +192,7 @@
 // //             photo: newPhoto,
 // //             eventId: widget.eventId,
 // //             kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
-// //             historicalPackRunCount: previousRunCountController.text,
+// //            historicalTotalRunCount: previousRunCountController.text,
 // //             historicalHaringCount: previousHaringCountController.text,
 // //             historicalCountIsEstimate: historicalCountIsEstimate,
 // //             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);

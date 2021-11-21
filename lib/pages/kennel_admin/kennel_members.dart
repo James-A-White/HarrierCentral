@@ -508,6 +508,17 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                             child: KennelMemberListItem(
                                 kennelListAggregate: widget.kennelListAggregate,
                                 kennelMember: snapshot.data[index],
+                                refreshRunCountsCallback: (bool refreshThisUserData) async {
+                                  // if the user of this device is changing their own run
+                                  // counts, make sure to also refresh the HKM users
+                                  // table so the run history page is accurate
+                                  if (refreshThisUserData) {
+                                    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherKennelMapTable, true);
+                                  }
+                                  await refreshKennelMembersFromTable(true);
+                                  await _refreshCounters(true);
+                                  setState(() {});
+                                },
                                 modifyMembershipCallback: (EnumMemberPopupActions retVal) {
                                   switch (retVal) {
                                     case EnumMemberPopupActions.addOneMonth:

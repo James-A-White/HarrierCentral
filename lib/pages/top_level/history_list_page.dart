@@ -18,7 +18,7 @@ class HistoryListResults {
     this.kennelShortName,
     this.kennelId,
     this.kennelLogo,
-    this.historicalPackRunCount,
+    this.historicalTotalRunCount,
     this.historicalHaringCount,
     this.historicalCountIsEstimate,
   });
@@ -30,7 +30,7 @@ class HistoryListResults {
   final String kennelId;
   final String kennelLogo;
   final int historicalHaringCount;
-  final int historicalPackRunCount;
+  final int historicalTotalRunCount;
   final int historicalCountIsEstimate;
 
   static HistoryListResults fromMap(Map<String, dynamic> map) {
@@ -38,7 +38,7 @@ class HistoryListResults {
         totalRunsThisKennel: map['totalRunsThisKennel'],
         totalHaringThisKennel: map['totalHaringThisKennel'],
         kennelId: map['kennelId'],
-        historicalPackRunCount: map['historicalPackRunCount'],
+        historicalTotalRunCount: map['historicalTotalRunCount'],
         historicalHaringCount: map['historicalHaringCount'],
         historicalCountIsEstimate: map['historicalCountIsEstimate'],
         kennelLogo: map['kennelLogo'],
@@ -55,7 +55,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   int _totalRuns = 0;
   int _totalHaring = 0;
 
-  List<HistoryListResults> runCountsList = <HistoryListResults>[];
+  List<HistoryListResults> _runCountsList = <HistoryListResults>[];
 
   @override
   void initState() {
@@ -68,35 +68,22 @@ class HistoryListPageState extends State<HistoryListPage> {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String query = '''  
-          SELECT count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now') then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalPackRunCount},0) as totalRunsThisKennel,
-          count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare} = 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now') then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as totalHaringThisKennel,
+          SELECT 
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} + hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},0) as totalRunsThisKennel,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} + ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},0) as totalHaringThisKennel,
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelId},
           k.${G0<TableModel>().kennelsTableHelper.colKennelLogo},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalPackRunCount},0) as historicalPackRunCount,
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as historicalHaringCount,
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as historicalCountIsEstimate
-          FROM kennels k
-          LEFT OUTER JOIN hasherEventMap hem on 
-            k.${G0<TableModel>().kennelsTableHelper.colKennelId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
-            AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
-            AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1
-          LEFT OUTER JOIN hasherKennelMap hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          WHERE 
-            (hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1
-            OR (SELECT count(case when hem2.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20 then 1 else null end) 
-              FROM hasherEventMap hem2 
-              WHERE 
-                hem2.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
-                AND hem2.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1  
-                AND k.${G0<TableModel>().kennelsTableHelper.colKennelId} = hem2.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} 
-                ) > 0)
-          GROUP BY k.${G0<TableModel>().kennelsTableHelper.colKennelId}, k.${G0<TableModel>().kennelsTableHelper.colKennelLogo},k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},k.${G0<TableModel>().kennelsTableHelper.colKennelName}
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           ORDER BY totalRunsThisKennel desc
           ''';
 
-    runCountsList = <HistoryListResults>[];
+    _runCountsList = <HistoryListResults>[];
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
@@ -107,7 +94,7 @@ class HistoryListPageState extends State<HistoryListPage> {
         final HistoryListResults hlrItem = HistoryListResults.fromMap(results[i]);
         _totalHaring += hlrItem.totalHaringThisKennel;
         _totalRuns += hlrItem.totalRunsThisKennel;
-        runCountsList.add(hlrItem);
+        _runCountsList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
           setState(() {
@@ -136,12 +123,18 @@ class HistoryListPageState extends State<HistoryListPage> {
       _isLoading = true;
     });
 
-    await G0<TableModel>()
-        .syncUserDataService
-        .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+        SyncUserDataService.flagHasherEventMapTable |
+            SyncUserDataService.flagHasherKennelMapTable |
+            SyncUserDataService.flagNarrowEventsTable |
+            SyncUserDataService.flagKennelsTable,
+        true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Hasher data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
@@ -154,7 +147,7 @@ class HistoryListPageState extends State<HistoryListPage> {
           margin: const EdgeInsets.only(top: 100),
           decoration: Backgrounds.defaultHcBackgroundLight(),
           padding: const EdgeInsets.only(top: 0.0),
-          child: runCountsList.isEmpty
+          child: _runCountsList.isEmpty
               ? const Center(child: Text('No runs logged yet.'))
               : RefreshIndicator(
                   onRefresh: _handleRefresh,
@@ -167,7 +160,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
                           //itemCount: runCountsList.length + 1,
-                          itemCount: runCountsList.length,
+                          itemCount: _runCountsList.length,
                           padding: const EdgeInsets.only(top: 20),
                           itemExtent: 100.0,
                           itemBuilder: (BuildContext context, int index) {
@@ -178,10 +171,15 @@ class HistoryListPageState extends State<HistoryListPage> {
                             // } else {
 
                             return KennelRunHistoryCountListItem(
-                              //kennelInfo: runCountsList[index - 1],
-                              kennelInfo: runCountsList[index],
-                              refreshCounters: () {
-                                refreshRunHistoryFromTable(true);
+                              kennelInfo: _runCountsList[index],
+                              refreshCounters: (String kennelId) async {
+                                await refreshRunHistoryFromTable(true);
+                                if ((kennelId != null) && (kennelId.isNotEmpty)) {
+                                  for (int i = 0; i < _runCountsList.length; i++)
+                                    if (_runCountsList[i].kennelId == kennelId) {
+                                      return _runCountsList[i];
+                                    }
+                                }
                               },
                             );
                             //}
@@ -213,7 +211,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                   children: <Widget>[
                     ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: _photo),
                     const SizedBox(width: 20),
-                    (runCountsList == null || runCountsList.isEmpty)
+                    (_runCountsList == null || _runCountsList.isEmpty)
                         ? Container()
                         : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                             const Text(

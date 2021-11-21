@@ -20,10 +20,7 @@ class HasherKennelMapModel implements BaseModel {
       this.appAccessFlags,
       this.hcTotalRunCount,
       this.hcHaringCount,
-      this.currentPackRunCount,
-      this.currentHaringCount,
       this.historicalTotalRunCount,
-      this.historicalPackRunCount,
       this.historicalHaringCount,
       this.historicalCountIsEstimate,
       this.dateOfLastRun,
@@ -52,10 +49,7 @@ class HasherKennelMapModel implements BaseModel {
   final int appAccessFlags;
   final int hcTotalRunCount;
   final int hcHaringCount;
-  final int currentPackRunCount; // deprecated
-  final int currentHaringCount; // deprecated
   final int historicalTotalRunCount;
-  final int historicalPackRunCount;
   final int historicalHaringCount;
   final int historicalCountIsEstimate;
   final DateTime dateOfLastRun;
@@ -126,10 +120,7 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   final String colAppAccessFlags = 'appAccessFlags';
   final String colHcTotalRunCount = 'hcTotalRunCount';
   final String colHcHaringCount = 'hcHaringCount';
-  final String colCurrentPackRunCount = 'currentPackRunCount'; // deprecated
-  final String colCurrentHaringCount = 'currentHaringCount'; // deprecated
   final String colHistoricalTotalRunCount = 'historicalTotalRunCount';
-  final String colHistoricalPackRunCount = 'historicalPackRunCount'; // deprecated
   final String colHistoricalHaringCount = 'historicalHaringCount';
   final String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
   final String colDateOfLastRun = 'dateOfLastRun';
@@ -158,10 +149,7 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
             $colAppAccessFlags INT,
             $colHcTotalRunCount INT,
             $colHcHaringCount INT,
-            $colCurrentPackRunCount INT, 
-            $colCurrentHaringCount INT,
             $colHistoricalTotalRunCount INT,
-            $colHistoricalPackRunCount INT,
             $colHistoricalHaringCount INT,
             $colHistoricalCountIsEstimate INT,
             $colDateOfLastRun TEXT,

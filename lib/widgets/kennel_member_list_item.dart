@@ -19,12 +19,14 @@ class KennelMemberListItem extends StatelessWidget {
     @required this.kennelMember,
     @required this.modifyMembershipCallback,
     @required this.toggleEmailPreferenceCallback,
+    @required this.refreshRunCountsCallback,
   }) : super(key: key);
 
   final KennelListAggregate kennelListAggregate;
   final KennelMembersResults kennelMember;
   final Function modifyMembershipCallback;
   final Function toggleEmailPreferenceCallback;
+  final Function refreshRunCountsCallback;
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +46,16 @@ class KennelMemberListItem extends StatelessWidget {
             ),
           ),
         )
-            .then((HashersModel result) {
+            .then((HashersModel result) async {
           if (result != null) {
+            bool refreshThisUserData = false;
             kennelMember.dispName = result.dispName;
             kennelMember.photo = result.photo;
+            if (result.hasherId == getStringPref(StringPrefsEnum.userId)) {
+              refreshThisUserData = true;
+            }
+
+            await refreshRunCountsCallback(refreshThisUserData);
           }
         });
       },

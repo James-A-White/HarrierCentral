@@ -25,9 +25,14 @@ import 'package:harrier_central/imports.dart';
 // import 'package:harrier_central/util/secure_prefs.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
-  const UserRunHistoryListPage({Key key, @required this.kennelInfo}) : super(key: key);
+  const UserRunHistoryListPage({
+    Key key,
+    @required this.kennelInfo,
+    @required this.refreshKennelInfo,
+  }) : super(key: key);
 
   final HistoryListResults kennelInfo;
+  final Function refreshKennelInfo;
 
   @override
   UserRunHistoryPageState createState() => UserRunHistoryPageState();
@@ -82,6 +87,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   List<UserRunHistoryResults> runCountsList = <UserRunHistoryResults>[];
   final String userId = getStringPref(StringPrefsEnum.userId);
 
+  HistoryListResults _kennelInfo;
+
   @override
   void initState() {
     refreshRunHistoryFromTable(true);
@@ -109,7 +116,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$userId"
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
-          AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennelInfo.kennelId}" 
+          AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
           AND e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now')
         UNION
           SELECT 
@@ -126,7 +133,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${widget.kennelInfo.kennelId}" 
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now')
           ORDER BY eventStartDatetime desc
           
@@ -173,7 +180,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
               title: Text(
-                'My runs for ${widget.kennelInfo.kennelShortName}',
+                'My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}',
                 style: const TextStyle(
                   color: Colors.white,
                 ),
@@ -211,7 +218,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   onTap: () {
                     G0<TableModel>()
                         .hasherEventMapService
-                        .sendRunCountReportByEmail(kennelId: widget.kennelInfo.kennelId, kennelName: widget.kennelInfo.kennelName)
+                        .sendRunCountReportByEmail(kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId, kennelName: (_kennelInfo ?? widget.kennelInfo).kennelName)
                         .then((Map<String, String> result) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
@@ -273,12 +280,19 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     });
 
     //final bool result = await G0<TableModel>()
-    await G0<TableModel>()
-        .syncUserDataService
-        .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+        SyncUserDataService.flagHasherEventMapTable |
+            SyncUserDataService.flagNarrowEventsTable |
+            SyncUserDataService.flagKennelsTable |
+            SyncUserDataService.flagHasherKennelMapTable,
+        true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('User data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);
+    _kennelInfo = await widget.refreshKennelInfo();
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   // bool _isLoading = true;
@@ -384,6 +398,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   int myRunCount = 0;
   int myHaringCount = 0;
 
+  // TODO(James): Update this to simply pull data already provided by the server
   void updateMyRunCounts() {
     int haringCount = 0;
     int runCount = 0;
@@ -395,8 +410,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       if (runCountsList[i].attendenceState >= 20) {
         runCount++;
       }
-      runCountsList[i].totalHaringThisKennel = haringCount + widget.kennelInfo.historicalHaringCount;
-      runCountsList[i].totalRunsThisKennel = runCount + widget.kennelInfo.historicalPackRunCount;
+      runCountsList[i].totalHaringThisKennel = haringCount + (_kennelInfo ?? widget.kennelInfo).historicalHaringCount;
+      runCountsList[i].totalRunsThisKennel = runCount + (_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount;
     }
 
     myRunCount = runCount;
@@ -437,9 +452,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         margin: const EdgeInsets.only(right: 12.0),
                         height: 90,
                         child: KennelLogo(
-                          kennelId: widget.kennelInfo.kennelId,
-                          kennelLogoUrl: widget.kennelInfo.kennelLogo,
-                          kennelShortName: widget.kennelInfo.kennelShortName,
+                          kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId,
+                          kennelLogoUrl: (_kennelInfo ?? widget.kennelInfo).kennelLogo,
+                          kennelShortName: (_kennelInfo ?? widget.kennelInfo).kennelShortName,
                           logoHeight: 60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                           leftPadding: 5.0,
                         ),
@@ -450,7 +465,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             AutoSizeText(
-                              widget.kennelInfo.kennelName,
+                              (_kennelInfo ?? widget.kennelInfo).kennelName,
                               //'Super fucking long text thats sure to overflow and more',
                               //'999',
                               overflow: TextOverflow.ellipsis,
@@ -479,10 +494,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               style: numberStyle,
                               textAlign: TextAlign.center,
                             ),
-                            widget.kennelInfo.historicalPackRunCount == 0
+                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount ?? 0) == 0
                                 ? Container()
                                 : AutoSizeText(
-                                    'Historical run count: ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalPackRunCount}',
+                                    'Historical run count: ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount}',
                                     //'Super fucking long text thats sure to overflow and more',
                                     //'999',
                                     overflow: TextOverflow.ellipsis,
@@ -491,10 +506,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     style: numberStyle,
                                     textAlign: TextAlign.center,
                                   ),
-                            widget.kennelInfo.historicalPackRunCount == 0
+                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount ?? 0) == 0
                                 ? Container()
                                 : AutoSizeText(
-                                    'Historical haring coung ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalHaringCount}',
+                                    'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount ?? 0}',
                                     //'Super fucking long text thats sure to overflow and more',
                                     //'999',
                                     overflow: TextOverflow.ellipsis,
@@ -706,7 +721,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             },
                             child: UserEventListItem(
                               item: item,
-                              kennelShortName: widget.kennelInfo.kennelShortName,
+                              kennelShortName: (_kennelInfo ?? widget.kennelInfo).kennelShortName,
                             ),
                           ),
                         );
