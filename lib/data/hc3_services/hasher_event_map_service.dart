@@ -17,6 +17,10 @@ class HasherEventMapModel implements BaseModel {
       this.isHare,
       this.eventNotificationPreference,
       this.eventEmailAlertPreference,
+      this.totalHaring,
+      this.totalHaringThisKennel,
+      this.totalRuns,
+      this.totalRunsThisKennel,
       this.eventCountOverride,
       this.virginVisitorType,
       this.displayName,
@@ -48,6 +52,10 @@ class HasherEventMapModel implements BaseModel {
   int isHare;
   int eventNotificationPreference;
   int eventEmailAlertPreference;
+  int totalHaring;
+  int totalHaringThisKennel;
+  int totalRuns;
+  int totalRunsThisKennel;
   final num eventCountOverride;
   final num virginVisitorType;
   final String displayName;
@@ -102,6 +110,11 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
   final String colIsHare = 'isHare';
   final String colEventNotificationPreference = 'eventNotificationPreference';
   final String colEventEmailAlertPreference = 'eventEmailAlertPreference';
+  final String colTotalHaring = 'totalHaring';
+  final String colTotalHaringThisKennel = 'totalHaringThisKennel';
+  final String colTotalRuns = 'totalRuns';
+  final String colTotalRunsThisKennel = 'totalRunsThisKennel';
+
   final String colEventCountOverride = 'eventCountOverride';
   final String colVirginVisitorType = 'virginVisitorType';
   final String colDisplayName = 'displayName';
@@ -132,6 +145,12 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
             $colIsHare INT,
             $colEventNotificationPreference INT,
             $colEventEmailAlertPreference INT,
+
+            $colTotalHaring INT,
+            $colTotalHaringThisKennel INT,
+            $colTotalRuns INT,
+            $colTotalRunsThisKennel INT,
+
             $colEventCountOverride NUM,
             $colVirginVisitorType NUM,
             $colDisplayName TEXT,

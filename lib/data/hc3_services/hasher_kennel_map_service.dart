@@ -18,8 +18,11 @@ class HasherKennelMapModel implements BaseModel {
       this.authorizedDeviceCount,
       this.userRoleFlags,
       this.appAccessFlags,
+      this.hcTotalRunCount,
+      this.hcHaringCount,
       this.currentPackRunCount,
       this.currentHaringCount,
+      this.historicalTotalRunCount,
       this.historicalPackRunCount,
       this.historicalHaringCount,
       this.historicalCountIsEstimate,
@@ -47,8 +50,11 @@ class HasherKennelMapModel implements BaseModel {
   final int authorizedDeviceCount;
   final int userRoleFlags;
   final int appAccessFlags;
-  final int currentPackRunCount;
-  final int currentHaringCount;
+  final int hcTotalRunCount;
+  final int hcHaringCount;
+  final int currentPackRunCount; // deprecated
+  final int currentHaringCount; // deprecated
+  final int historicalTotalRunCount;
   final int historicalPackRunCount;
   final int historicalHaringCount;
   final int historicalCountIsEstimate;
@@ -118,9 +124,12 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   final String colAuthorizedDeviceCount = 'authorizedDeviceCount';
   final String colUserRoleFlags = 'userRoleFlags';
   final String colAppAccessFlags = 'appAccessFlags';
-  final String colCurrentPackRunCount = 'currentPackRunCount';
-  final String colCurrentHaringCount = 'currentHaringCount';
-  final String colHistoricalPackRunCount = 'historicalPackRunCount';
+  final String colHcTotalRunCount = 'hcTotalRunCount';
+  final String colHcHaringCount = 'hcHaringCount';
+  final String colCurrentPackRunCount = 'currentPackRunCount'; // deprecated
+  final String colCurrentHaringCount = 'currentHaringCount'; // deprecated
+  final String colHistoricalTotalRunCount = 'historicalTotalRunCount';
+  final String colHistoricalPackRunCount = 'historicalPackRunCount'; // deprecated
   final String colHistoricalHaringCount = 'historicalHaringCount';
   final String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
   final String colDateOfLastRun = 'dateOfLastRun';
@@ -147,8 +156,11 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
             $colAuthorizedDeviceCount INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
-            $colCurrentPackRunCount INT,
+            $colHcTotalRunCount INT,
+            $colHcHaringCount INT,
+            $colCurrentPackRunCount INT, 
             $colCurrentHaringCount INT,
+            $colHistoricalTotalRunCount INT,
             $colHistoricalPackRunCount INT,
             $colHistoricalHaringCount INT,
             $colHistoricalCountIsEstimate INT,

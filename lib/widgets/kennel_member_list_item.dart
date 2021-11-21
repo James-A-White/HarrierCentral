@@ -121,18 +121,28 @@ class KennelMemberListItem extends StatelessWidget {
                     Row(
                       children: <Widget>[
                         Expanded(
-                          child: Text(
-                            kennelMember.dispName,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())
-                                    ? 'AvenirNextCondensedDemiBold'
-                                    : 'AvenirNextCondensed',
-                                fontStyle: FontStyle.normal,
-                                fontSize: 22.0,
-                                height: 1.0),
-                            textAlign: TextAlign.left,
-                          ),
+                          child: Row(children: <Widget>[
+                            Text(
+                              kennelMember.dispName,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())
+                                      ? 'AvenirNextCondensedDemiBold'
+                                      : 'AvenirNextCondensed',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 22.0,
+                                  height: 1.0),
+                              textAlign: TextAlign.left,
+                            ),
+                            const SizedBox(width: 10.0),
+                            if (kennelMember.appAccess.isAdmin) ...<Widget>[
+                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(FontAwesome.gear, color: Colors.blue[800], size: 24.0))
+                            ],
+                            //if (kennelMember.appAccess.isAdmin && kennelMember.mismanagement.isOnMismanagement) ...<Widget>[const SizedBox(width: 10.0)],
+                            if (kennelMember.mismanagement.isOnMismanagement) ...<Widget>[
+                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(MaterialCommunityIcons.account_tie, color: Colors.blue[800], size: 24.0))
+                            ],
+                          ]),
                         ),
                       ],
                     ),
@@ -152,6 +162,16 @@ class KennelMemberListItem extends StatelessWidget {
                         ? Container()
                         : Text(
                             'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
+                            style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                            textAlign: TextAlign.center,
+                          ),
+                    (((kennelMember.hcHaringCount ?? 0) == 0) &&
+                            ((kennelMember.hcTotalRunCount ?? 0) == 0) &&
+                            ((kennelMember.historicalHaringCount ?? 0) == 0) &&
+                            ((kennelMember.historicalTotalRunCount ?? 0) == 0))
+                        ? Container()
+                        : Text(
+                            'Runs: ${(kennelMember.hcTotalRunCount ?? 0) + (kennelMember.historicalTotalRunCount ?? 0)}, Haring: ${(kennelMember.hcHaringCount ?? 0) + (kennelMember.historicalHaringCount ?? 0)}',
                             style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                             textAlign: TextAlign.center,
                           ),
@@ -183,11 +203,6 @@ class KennelMemberListItem extends StatelessWidget {
                                     TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                                 textAlign: TextAlign.center,
                               ),
-                    Row(children: <Widget>[
-                      if (kennelMember.appAccess.isAdmin) ...<Widget>[Icon(FontAwesome.gear, color: Colors.blue[800], size: 24.0)],
-                      if (kennelMember.appAccess.isAdmin && kennelMember.mismanagement.isOnMismanagement) ...<Widget>[const SizedBox(width: 10.0)],
-                      if (kennelMember.mismanagement.isOnMismanagement) ...<Widget>[Icon(MaterialCommunityIcons.account_tie, color: Colors.blue[800], size: 24.0)],
-                    ]),
                   ],
                 )),
             Column(children: <Widget>[

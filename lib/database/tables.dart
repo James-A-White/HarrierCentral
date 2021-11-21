@@ -69,6 +69,34 @@ class Tables {
     ''',
         appliedAtInt: 0),
 
+    MigrationsModel(
+        dbVersion: 365,
+        migrationText: ''' 
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
+      
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} INT;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} INT;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} INT;
+
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
+
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaring} INT;
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} INT;
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRuns} INT;
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} INT;
+
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaring} INT;
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} INT;
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRuns} INT;
+      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} INT;
+
+    ''',
+        appliedAtInt: 0),
+
     // // MIGRATION 222
     // MigrationsModel(dbVersion: 222, migrationText: '''
     //         ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;

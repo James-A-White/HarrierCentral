@@ -20,6 +20,10 @@ class KennelMembersResults {
       this.following,
       this.kennelId,
       this.dateOfLastRun,
+      this.historicalTotalRunCount,
+      this.historicalHaringCount,
+      this.hcHaringCount,
+      this.hcTotalRunCount,
       this.kennelEmailAlertPreference,
       this.membershipExpirationDate,
       this.memberSince,
@@ -40,6 +44,10 @@ class KennelMembersResults {
   final int following;
   final String kennelId;
   final DateTime dateOfLastRun;
+  final int hcTotalRunCount;
+  final int hcHaringCount;
+  final int historicalTotalRunCount;
+  final int historicalHaringCount;
   int kennelEmailAlertPreference;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
@@ -59,16 +67,20 @@ class KennelMembersResults {
       nameForSort: map['nameForSort'],
       photo: map['photo'],
       following: map['following'],
-      kennelShortName: map['kennelShortName'],
-      appAccessFlags: map['appAccessFlags'],
-      mismanagementRoles: map['mismanagementRoles'],
-      // homeKennelName: map['homeKennelName'],
       kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
+      hcTotalRunCount: map['hcTotalRunCount'],
+      hcHaringCount: map['hcHaringCount'],
+      historicalTotalRunCount: map['historicalTotalRunCount'],
+      historicalHaringCount: map['historicalHaringCount'],
       kennelEmailAlertPreference: map['kennelEmailAlertPreference'],
       membershipExpirationDate: (map['membershipExpirationDate'] == null) ? null : DateTime.parse(map['membershipExpirationDate'].toString().substring(0, 19)),
       memberSince: (map['memberSince'] == null) ? null : DateTime.parse(map['memberSince'].toString().substring(0, 19)),
       membershipDurationInMonths: map['membershipDurationInMonths'],
+      appAccessFlags: map['appAccessFlags'],
+      mismanagementRoles: map['mismanagementRoles'],
+      kennelShortName: map['kennelShortName'],
+      // homeKennelName: map['homeKennelName'],
     );
     return item;
   }
@@ -177,6 +189,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMemberSince},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},          
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
           k.${G0<TableModel>().kennelsTableHelper.colMembershipDurationInMonths},
