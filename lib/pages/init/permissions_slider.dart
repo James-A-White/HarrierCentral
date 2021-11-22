@@ -171,25 +171,34 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         });
   }
 
+  bool _permissionRequestInProgress = false;
+
   Future<void> _requestPermissions() async {
-    if (activeTab == 0) {
-      final PermissionStatus ps = await Permission.locationWhenInUse.request();
-      if (ps.isGranted) {
-        await Utilities.subscribeToGeoLocationStream();
+    if (!_permissionRequestInProgress) {
+      _permissionRequestInProgress = true;
+      if (activeTab == 0) {
+        final PermissionStatus ps = await Permission.locationWhenInUse.request();
+        if (ps.isGranted) {
+          await Utilities.subscribeToGeoLocationStream();
+        }
+
+        activeTab = 1;
+        goToTab(1);
+      } else if (activeTab == 1) {
+        await Permission.camera.request().isGranted;
+        await Permission.photos.request().isGranted;
+
+        activeTab = 2;
+        goToTab(2);
+      } else if (activeTab == 2) {
+        final NotificationSupport notifications = NotificationSupport();
+        // ignore: unawaited_futures
+        await notifications.configureNotifications(false);
+
+        activeTab = 3;
+        goToTab(3);
       }
-      activeTab = 1;
-      goToTab(1);
-    } else if (activeTab == 1) {
-      await Permission.camera.request().isGranted;
-      await Permission.photos.request().isGranted;
-      activeTab = 2;
-      goToTab(2);
-    } else if (activeTab == 2) {
-      final NotificationSupport notifications = NotificationSupport();
-      // ignore: unawaited_futures
-      await notifications.configureNotifications(false);
-      activeTab = 3;
-      goToTab(3);
+      _permissionRequestInProgress = false;
     }
   }
 
@@ -241,10 +250,10 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       IveCoreUtilities.showAlert(
               context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
-          .then((bool allow) {
+          .then((bool allow) async {
         if (allow) {
           final NotificationSupport notifications = NotificationSupport();
-          notifications.configureNotifications(false);
+          await notifications.configureNotifications(false);
         }
         goToTab(3);
       });
