@@ -1153,12 +1153,12 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       address = rda.event.locationOneLineDesc;
     }
 
-    if ((address != null) && (address.isNotEmpty)) {
+    if ((latStr != '') && (lonStr != '')) {
+      url = latStr + ',' + lonStr;
+    } else if ((address != null) && (address.isNotEmpty)) {
       address = address.replaceAll(' ', '+');
       address = Uri.encodeComponent(address);
       url = address;
-    } else if ((latStr != '') && (lonStr != '')) {
-      url = latStr + ',' + lonStr;
     } else {
       await IveCoreUtilities.showAlert(
           context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');

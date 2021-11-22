@@ -48,6 +48,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   String _searchRunsAndKennelsText;
   bool _showFilters = false;
   bool _showKennels = true;
+  bool _trueNorthLock = true;
 
   static double KENNEL_PIN_SIZE = 100.0;
 
@@ -540,7 +541,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               final Marker marker = Marker(
                   width: KENNEL_PIN_SIZE,
                   height: KENNEL_PIN_SIZE,
-                  anchorPos: AnchorPos.exactly(Anchor(KENNEL_PIN_SIZE / 2.0, KENNEL_PIN_SIZE)),
+                  anchorPos: AnchorPos.exactly(Anchor(KENNEL_PIN_SIZE / 2.0, 0.0)),
                   point: ll,
                   builder: (BuildContext ctx) => buildKennelMarker(
                         _filteredKennels[i]['logo'],
@@ -685,6 +686,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
+                  interactiveFlags: _trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
                   center: (widget.kennel?.kennelLatitude != null)
                       ? latlng.LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
                       : ((_mapCenterOption == centerOnCurrentLocation.value) || (_homeKennelLat == null) || (_homeKennelLon == null))
@@ -699,12 +701,36 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 ),
                 layers: <LayerOptions>[
                   TileLayerOptions(
-                      urlTemplate:
-                          //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                      //subdomains: ['a', 'b', 'c']),
-                      subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-
+                    urlTemplate:
+                        //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                    //subdomains: ['a', 'b', 'c']),
+                    subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3'],
+                  ),
+                  MarkerLayerOptions(
+                    markers: <Marker>[
+                      if (G0<AppModel>().hasLocationPermissions) ...<Marker>[
+                        Marker(
+                          height: 50.0,
+                          width: 50.0,
+                          point: latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+                          builder: (BuildContext ctx) => Container(
+                            padding: const EdgeInsets.all(1.0),
+                            height: 50.0,
+                            width: 50.0,
+                            child: IgnorePointer(
+                              ignoring: true,
+                              child: Image.asset(
+                                'images/other/map_current_location.png',
+                                height: 50.0,
+                                width: 50.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                   MarkerClusterLayerOptions(
                     maxClusterRadius: 60,
                     size: const Size(40, 40),
@@ -747,6 +773,46 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
                   // )
                 ],
+              ),
+              if (G0<AppModel>().hasLocationPermissions) ...<Widget>[
+                Positioned(
+                  right: 10.0,
+                  top: 60.0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _mapController.move(
+                          latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+                          13.0,
+                        );
+                      });
+                    },
+                    child: SizedBox(
+                      height: 50.0,
+                      width: 50.0,
+                      child: Image.asset('images/other/set_map_to_current_location.png'),
+                    ),
+                  ),
+                ),
+              ],
+              Positioned(
+                left: 10.0,
+                top: 60.0,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _trueNorthLock = !_trueNorthLock;
+                      if (_trueNorthLock) {
+                        _mapController.rotate(0.0);
+                      }
+                    });
+                  },
+                  child: SizedBox(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset(_trueNorthLock ? 'images/other/set_map_to_true_north_lock.png' : 'images/other/set_map_rotation_enabled.png'),
+                  ),
+                ),
               ),
               Positioned(
                   left: 10.0,

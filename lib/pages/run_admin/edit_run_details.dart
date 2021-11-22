@@ -57,6 +57,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   int _usersCanEditRunAttendence;
   bool _isPromotedEvent = false;
   int _eventGeographicScope = 1;
+  bool _trueNorthLock = true;
 
   //Future<File> _imageFromCamera;
   Future<File> _imageFromGallery;
@@ -1003,6 +1004,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 (latlng.LatLng newPosition) {
                   _mapCenter = newPosition;
                 },
+                _trueNorthLock,
                 _mapKey,
               ),
               if ((_mapCenter.latitude == CLEAR_LATLONG) || (_mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
@@ -1106,6 +1108,22 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
               ],
               Positioned(
                 left: 10.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _trueNorthLock = !_trueNorthLock;
+                    });
+                  },
+                  child: SizedBox(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset(_trueNorthLock ? 'images/other/set_map_to_true_north_lock.png' : 'images/other/set_map_rotation_enabled.png'),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 10.0,
                 right: 10.0,
                 bottom: 80.0,
                 child: _isUpdating
@@ -1149,7 +1167,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 final EventsService nSvc = EventsService();
                                 // check to see if "no location" is set. If so, don't overwrite it
                                 if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG)) {
-                                  _mapCenter = _mapKey.currentState.mapController.center;
+                                  _mapCenter = _mapKey.currentState._mapController.center;
                                 }
                                 final String eventId = await nSvc.addEditEvent(
                                   eventId: _eventAggregate.event.eventId,
@@ -1742,6 +1760,7 @@ class MyFlutterMap extends StatefulWidget {
     this.maxZoom,
     this.zoom,
     this.mapMoved,
+    this.trueNorthLock,
     Key key,
   ) : super(key: key);
 
@@ -1752,20 +1771,24 @@ class MyFlutterMap extends StatefulWidget {
   final num maxZoom;
   final num zoom;
   final Function mapMoved;
+  final bool trueNorthLock;
 
   @override
   MyFlutterMapState createState() => MyFlutterMapState();
 }
 
 class MyFlutterMapState extends State<MyFlutterMap> {
-  final MapController mapController = MapController();
+  final MapController _mapController = MapController();
 
   latlng.LatLng _oldCenter;
+  bool _oldTrueNorthLock = true;
+  bool _mapControllerAvailable = false;
 
   @override
   void initState() {
     _oldCenter = widget.mapCenter;
-
+    _oldTrueNorthLock = widget.trueNorthLock;
+    _mapControllerAvailable = false;
     super.initState();
   }
 
@@ -1777,18 +1800,37 @@ class MyFlutterMapState extends State<MyFlutterMap> {
       mapCenterPoint = widget.kennelLocation;
     }
 
-    if (_oldCenter != mapCenterPoint) {
-      mapController.move(mapCenterPoint, mapController.zoom);
+    if (_mapControllerAvailable && (_oldCenter != mapCenterPoint)) {
+      _mapController.move(mapCenterPoint, _mapController.zoom);
       _oldCenter = mapCenterPoint;
     }
+
+    if (_mapControllerAvailable && (_oldTrueNorthLock != widget.trueNorthLock)) {
+      _oldTrueNorthLock = widget.trueNorthLock;
+      if (widget.trueNorthLock) {
+        _mapController.rotate(0.0);
+      }
+    }
+
+    _mapControllerAvailable = true;
     return FlutterMap(
-      mapController: mapController,
-      options: MapOptions(
-        center: mapCenterPoint,
-        zoom: widget.zoom,
-        minZoom: widget.minZoom,
-        maxZoom: widget.maxZoom,
-      ),
+      mapController: _mapController,
+      options: widget.trueNorthLock
+          ? MapOptions(
+              interactiveFlags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
+              center: mapCenterPoint,
+              zoom: widget.zoom,
+              minZoom: widget.minZoom,
+              maxZoom: widget.maxZoom,
+              rotation: 0.0,
+            )
+          : MapOptions(
+              interactiveFlags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
+              center: mapCenterPoint,
+              zoom: widget.zoom,
+              minZoom: widget.minZoom,
+              maxZoom: widget.maxZoom,
+            ),
       layers: <LayerOptions>[
         TileLayerOptions(
             urlTemplate:
@@ -1798,24 +1840,26 @@ class MyFlutterMapState extends State<MyFlutterMap> {
             subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
         MarkerLayerOptions(
           markers: <Marker>[
-            Marker(
-              height: 50.0,
-              width: 50.0,
-              point: latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
-              builder: (BuildContext ctx) => Container(
-                padding: const EdgeInsets.all(1.0),
+            if (G0<AppModel>().hasLocationPermissions) ...<Marker>[
+              Marker(
                 height: 50.0,
                 width: 50.0,
-                child: IgnorePointer(
-                  ignoring: true,
-                  child: Image.asset(
-                    'images/other/map_current_location.png',
-                    height: 50.0,
-                    width: 50.0,
+                point: latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+                builder: (BuildContext ctx) => Container(
+                  padding: const EdgeInsets.all(1.0),
+                  height: 50.0,
+                  width: 50.0,
+                  child: IgnorePointer(
+                    ignoring: true,
+                    child: Image.asset(
+                      'images/other/map_current_location.png',
+                      height: 50.0,
+                      width: 50.0,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
             if (widget.eventLocation != null) ...<Marker>[
               Marker(
                 width: 120.0,
