@@ -21,6 +21,7 @@ class HistoryListResults {
     this.historicalTotalRunCount,
     this.historicalHaringCount,
     this.historicalCountIsEstimate,
+    this.following,
   });
 
   final int totalRunsThisKennel;
@@ -32,6 +33,7 @@ class HistoryListResults {
   final int historicalHaringCount;
   final int historicalTotalRunCount;
   final int historicalCountIsEstimate;
+  final int following;
 
   static HistoryListResults fromMap(Map<String, dynamic> map) {
     final HistoryListResults item = HistoryListResults(
@@ -43,7 +45,8 @@ class HistoryListResults {
         historicalCountIsEstimate: map['historicalCountIsEstimate'],
         kennelLogo: map['kennelLogo'],
         kennelName: map['kennelName'],
-        kennelShortName: map['kennelShortName']);
+        kennelShortName: map['kennelShortName'],
+        following: map['following']);
     return item;
   }
 }
@@ -77,7 +80,8 @@ class HistoryListPageState extends State<HistoryListPage> {
           k.${G0<TableModel>().kennelsTableHelper.colKennelLogo},
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colFollowing}
           FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           ORDER BY totalRunsThisKennel desc
@@ -94,7 +98,9 @@ class HistoryListPageState extends State<HistoryListPage> {
         final HistoryListResults hlrItem = HistoryListResults.fromMap(results[i]);
         _totalHaring += hlrItem.totalHaringThisKennel;
         _totalRuns += hlrItem.totalRunsThisKennel;
-        _runCountsList.add(hlrItem);
+        if (((hlrItem.totalRunsThisKennel ?? 0) > 0) || (hlrItem.following == 1)) {
+          _runCountsList.add(hlrItem);
+        }
 
         if (forceRefresh && (i == results.length - 1)) {
           setState(() {
