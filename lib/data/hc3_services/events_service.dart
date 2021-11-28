@@ -26,6 +26,7 @@ class EventModel implements BaseModel {
       this.canEditRunAttendence,
       this.eventImage,
       this.eventDescription,
+      this.eventUrl,
       this.locationOneLineDesc,
       this.locationPostCode,
       this.locationCity,
@@ -75,6 +76,7 @@ class EventModel implements BaseModel {
   final num canEditRunAttendence;
   String eventImage;
   final String eventDescription;
+  final String eventUrl;
   final String locationOneLineDesc;
   final String locationPostCode;
   final String locationCity;
@@ -145,6 +147,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colCanEditRunAttendence = 'canEditRunAttendence';
   final String colEventImage = 'eventImage';
   final String colEventDescription = 'eventDescription';
+  final String colEventUrl = 'eventUrl';
   final String colLocationOneLineDesc = 'locationOneLineDesc';
   final String colLocationPostCode = 'locationPostCode';
   final String colLocationCity = 'locationCity';
@@ -196,6 +199,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colCanEditRunAttendence NUM,
             $colEventImage TEXT,
             $colEventDescription TEXT,
+            $colEventUrl TEXT,
             $colLocationOneLineDesc TEXT,
             $colLocationPostCode TEXT,
             $colLocationCity TEXT,

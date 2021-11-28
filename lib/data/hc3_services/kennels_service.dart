@@ -19,6 +19,9 @@ class KennelsModel implements BaseModel {
       this.kennelCoverPhoto,
       this.kennelWebsiteUrl,
       this.defaultEventCurrencyType,
+      this.integrationType,
+      this.inboundIntegrationId,
+      this.kennelEventsUrl,
       this.kennelStatus,
       this.canEditRunAttendence,
       this.allowNegativeCredit,
@@ -75,6 +78,11 @@ class KennelsModel implements BaseModel {
   final String kennelCoverPhoto;
   final String kennelWebsiteUrl;
   final String defaultEventCurrencyType;
+
+  final String integrationType;
+  final int inboundIntegrationId;
+  final String kennelEventsUrl;
+
   final int kennelStatus;
   final int canEditRunAttendence;
   final int allowNegativeCredit;
@@ -151,6 +159,9 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   final String colKennelCoverPhoto = 'kennelCoverPhoto';
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
+  final String colIntegrationType = 'integrationType';
+  final String colInboundIntegrationId = 'inboundIntegrationId';
+  final String colKennelEventsUrl = 'kennelEventsUrl';
   final String colKennelStatus = 'kennelStatus';
   final String colCanEditRunAttendence = 'canEditRunAttendence';
   final String colAllowNegativeCredit = 'allowNegativeCredit';
@@ -208,6 +219,9 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colKennelCoverPhoto TEXT,
             $colKennelWebsiteUrl TEXT,
             $colDefaultEventCurrencyType TEXT,
+            $colIntegrationType TEXT,
+            $colInboundIntegrationId INT,
+            $colKennelEventsUrl TEXT,
             $colKennelStatus INT,
             $colCanEditRunAttendence INT,
             $colAllowNegativeCredit INT,

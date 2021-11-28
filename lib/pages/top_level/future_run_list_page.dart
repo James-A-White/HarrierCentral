@@ -13,14 +13,14 @@ class FutureRunsListPage extends StatefulWidget {
 class FutureRunListPageState extends State<FutureRunsListPage> {
   int pageIndex = 1;
   List<RunDetailsAggregate> _allRuns;
-  List<RunDetailsAggregate> filteredRuns;
+  List<RunDetailsAggregate> _filteredRuns;
 
-  FocusNode searchFocusNode = FocusNode();
-  TextEditingController searchController = TextEditingController();
-  String searchRunsText;
-  bool searchAllRuns = false;
-  ScrollController scrollController = ScrollController(initialScrollOffset: 100.0);
-  bool showFilters = false;
+  final FocusNode _searchFocusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchRunsText;
+  bool _searchAllRuns = false;
+  final ScrollController _scrollController = ScrollController(initialScrollOffset: 100.0);
+  //bool _showFilters = false;
 
   @override
   Widget build(BuildContext context) {
@@ -74,8 +74,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   @override
   void initState() {
     IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
-    searchController.text = '';
-    searchRunsText = '';
+    _searchController.text = '';
+    _searchRunsText = '';
 
     _refreshFromBackend().then((void _) {
       _refreshFromTable(true).then((void _) {
@@ -85,7 +85,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     super.initState();
   }
 
-  Widget searchBar() {
+  Widget _searchBar() {
     return Container(
       height: 100,
       color: Colors.white,
@@ -96,9 +96,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Row(
             children: <Widget>[
               Checkbox(
-                value: searchAllRuns,
+                value: _searchAllRuns,
                 onChanged: (bool value) {
-                  searchAllRuns = !searchAllRuns;
+                  _searchAllRuns = !_searchAllRuns;
                   _refreshFromTable(true).then((void _) {
                     setState(() {});
                   });
@@ -124,12 +124,12 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       autocorrect: false,
                       onChanged: (String text) {
                         setState(() {
-                          searchRunsText = text;
-                          filterRuns();
+                          _searchRunsText = text;
+                          _filterRuns();
                         });
                       },
-                      focusNode: searchFocusNode,
-                      controller: searchController,
+                      focusNode: _searchFocusNode,
+                      controller: _searchController,
                       keyboardType: TextInputType.text,
                       style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                       decoration: const InputDecoration(
@@ -149,10 +149,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
                       child: const Text('X'),
                       onPressed: () {
-                        searchController.text = '';
-                        searchRunsText = '';
+                        _searchController.text = '';
+                        _searchRunsText = '';
                         setState(() {
-                          filterRuns();
+                          _filterRuns();
                         });
                       },
                     ),
@@ -168,8 +168,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   Future<void> _refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (_allRuns == null) || (_allRuns.isEmpty)) {
-      _allRuns = await QueryRuns.getRunDetailsAggregates(searchAllRuns);
-      filterRuns();
+      _allRuns = await QueryRuns.getRunDetailsAggregates(_searchAllRuns);
+      _filterRuns();
       setState(() {});
     }
     return;
@@ -287,8 +287,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   /// For example: "AH3 + FILTH, not Wednesday + Thursday" will show all
   /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
   ///
-  void filterRuns() {
-    filteredRuns = QueryRuns.doRunsFilter(searchRunsText, _allRuns);
+  void _filterRuns() {
+    _filteredRuns = QueryRuns.doRunsFilter(_searchRunsText, _allRuns);
 
     //buildRunMarkers();
     setState(() {});
@@ -331,11 +331,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               ],
             )
           : NestedScrollView(
-              controller: scrollController,
+              controller: _scrollController,
               headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
                 return <Widget>[
                   SliverList(
-                    delegate: SliverChildListDelegate(<Widget>[searchBar()]),
+                    delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
                   ),
                 ];
               },
@@ -346,16 +346,16 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
                   physics: const AlwaysScrollableScrollPhysics(),
                   //padding: const EdgeInsets.only( bottom: 40.0),
-                  itemCount: filteredRuns.length,
+                  itemCount: _filteredRuns.length,
                   itemBuilder: (BuildContext context, int index) {
                     return RunListItem(
-                      futureRun: filteredRuns[index],
+                      futureRun: _filteredRuns[index],
                       onItemTapped: () {
                         Navigator.push<dynamic>(
                           this.context,
                           MaterialPageRoute<dynamic>(
                             builder: (BuildContext context) => RunDetailsPage(
-                              futureRun: filteredRuns[index],
+                              futureRun: _filteredRuns[index],
                               refreshPage: () async {
                                 // WARNING!!!!  We need to return the filtered run based
                                 // on it's ID and not the index
@@ -363,7 +363,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                 //await _refreshFromBackend(clearLocalTables: false);
                                 await _refreshFromTable(true);
                                 //filterRuns();
-                                return filteredRuns[index];
+                                return _filteredRuns[index];
                               },
                             ),
                           ),

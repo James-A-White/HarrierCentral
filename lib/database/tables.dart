@@ -97,6 +97,18 @@ class Tables {
     ''',
         appliedAtInt: 0),
 
+    MigrationsModel(
+        dbVersion: 366,
+        migrationText: ''' 
+      ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEventUrl} TEXT;
+      
+      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colIntegrationType} TEXT;
+      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colInboundIntegrationId} INT;
+      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colKennelEventsUrl} TEXT;
+
+      ''',
+        appliedAtInt: 0),
+
     // // MIGRATION 222
     // MigrationsModel(dbVersion: 222, migrationText: '''
     //         ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;

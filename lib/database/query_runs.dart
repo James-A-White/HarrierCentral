@@ -164,14 +164,14 @@ class QueryRuns {
             || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},"") 
             || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelName},"")   
             || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventDescription},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colHares},'')
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCity},'')
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCountry},'')
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationOneLineDesc},'')
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationPostCode},'')
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationRegion},'')
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationStreet},'')
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationSubRegion},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colHares},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCity},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCountry},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationOneLineDesc},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationPostCode},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationRegion},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationStreet},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationSubRegion},"")
             || " " || case when evt.${G0<TableModel>().eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${G0<TableModel>().eventsTableHelper.colEventNumber} as TEXT) END
             || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
             || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName}
