@@ -64,8 +64,8 @@ class _LoginPageState extends State<ThirdPartyLogin> {
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
         child: _isLoading
-            ? Center(
-                child: HcCircularProgressIndicator(key: UniqueKey()),
+            ? const Center(
+                child: HcCircularProgressIndicator(key: Key('532270149')),
               )
             : _isLoggedIn
                 ? _displayUserData(_profileData)
@@ -283,8 +283,8 @@ class _LoginPageState extends State<ThirdPartyLogin> {
             ),
           ],
 
-          FancyDivider(
-            key: UniqueKey(),
+          const FancyDivider(
+            key: Key('16692236'),
             innerColor: Colors.white,
             topMargin: 35.0,
             bottomMargin: 15.0,

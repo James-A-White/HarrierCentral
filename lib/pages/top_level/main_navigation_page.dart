@@ -323,7 +323,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                     if (snapshot.hasData) {
                       return FlippableBox(
-                        key: UniqueKey(),
+                        key: const Key('66193020'),
                         front: front(),
                         // ignore: avoid_unnecessary_containers
                         back: Container(
@@ -432,7 +432,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   }),
             ),
             bottomNavigationBar: FlippableBox(
-              key: UniqueKey(),
+              key: const Key('667701326'),
               // ignore: avoid_unnecessary_containers
               front: Container(
                 child: FancyBottomNavigation(

@@ -123,10 +123,10 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
             // ),
           ),
 
-          FancyDivider(
+          const FancyDivider(
             topMargin: 50.0,
             bottomMargin: 30.0,
-            key: UniqueKey(),
+            key: Key('4445103966'),
             innerColor: Colors.white,
           ),
 

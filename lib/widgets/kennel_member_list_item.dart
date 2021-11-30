@@ -72,7 +72,7 @@ class KennelMemberListItem extends StatelessWidget {
                     context,
                     MaterialPageRoute<void>(
                       builder: (BuildContext context) => ZoomableImagePage2(
-                          key: UniqueKey(),
+                          key: const Key('36601939'),
                           pageTitle: kennelMember.dispName,
                           imageUrl: kennelMember.photo.startsWith('http') ? kennelMember.photo : null,
                           assetImage: kennelMember.photo.contains('bundle://') ? 'images/avatars/' + kennelMember.photo.replaceAll('bundle://', '') + '.jpg' : null,
@@ -92,9 +92,9 @@ class KennelMemberListItem extends StatelessWidget {
                     : kennelMember.photo.startsWith('http')
                         ? CachedNetworkImage(
                             imageUrl: kennelMember.photo,
-                            //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
+                            //placeholder: HcCircularProgressIndicator(key: Key('yyyyyyy')),
                             //errorWidget: const  Icon(Icons.error),
-                            // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: UniqueKey()),
+                            // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: Key('yyyyyyy')),
 
                             // TODO(James): Replace avatar icon with missing image icon
                             errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
@@ -336,7 +336,7 @@ class KennelMemberListItem extends StatelessWidget {
                     }
 
                     final MultipleChoicePopup popup = MultipleChoicePopup(
-                      key: UniqueKey(),
+                      key: const Key('69691039'),
                       title: 'Membership options',
                       buttons: buttons,
                       cancelButtonTitle: 'Cancel',

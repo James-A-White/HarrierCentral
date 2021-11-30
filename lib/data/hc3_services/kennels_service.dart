@@ -20,7 +20,7 @@ class KennelsModel implements BaseModel {
       this.kennelWebsiteUrl,
       this.defaultEventCurrencyType,
       this.integrationType,
-      this.inboundIntegrationId,
+      this.kennelInboundIntegrationId,
       this.kennelEventsUrl,
       this.kennelStatus,
       this.canEditRunAttendence,
@@ -80,7 +80,7 @@ class KennelsModel implements BaseModel {
   final String defaultEventCurrencyType;
 
   final String integrationType;
-  final int inboundIntegrationId;
+  final int kennelInboundIntegrationId;
   final String kennelEventsUrl;
 
   final int kennelStatus;
@@ -160,7 +160,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
   final String colIntegrationType = 'integrationType';
-  final String colInboundIntegrationId = 'inboundIntegrationId';
+  final String colKennelInboundIntegrationId = 'kennelInboundIntegrationId';
   final String colKennelEventsUrl = 'kennelEventsUrl';
   final String colKennelStatus = 'kennelStatus';
   final String colCanEditRunAttendence = 'canEditRunAttendence';
@@ -220,7 +220,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colKennelWebsiteUrl TEXT,
             $colDefaultEventCurrencyType TEXT,
             $colIntegrationType TEXT,
-            $colInboundIntegrationId INT,
+            $colKennelInboundIntegrationId INT,
             $colKennelEventsUrl TEXT,
             $colKennelStatus INT,
             $colCanEditRunAttendence INT,

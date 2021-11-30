@@ -13,6 +13,7 @@ class EventModel implements BaseModel {
       this.isCountedRun,
       this.isPromotedEvent,
       this.eventGeographicScope,
+      this.eventInboundIntegrationId,
       this.eventNumber,
       this.eventName,
       this.hcLatitude,
@@ -63,6 +64,7 @@ class EventModel implements BaseModel {
   final int isCountedRun;
   final int isPromotedEvent;
   final int eventGeographicScope;
+  final int eventInboundIntegrationId;
   final int eventNumber;
   final String eventName;
   final num hcLatitude;
@@ -134,6 +136,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colIsCountedRun = 'isCountedRun';
   final String colIsPromotedEvent = 'isPromotedEvent';
   final String colEventGeographicScope = 'eventGeographicScope';
+  final String colEventInboundIntegrationId = 'eventInboundIntegrationId';
   final String colEventNumber = 'eventNumber';
   final String colEventName = 'eventName';
   final String colHcLatitude = 'hcLatitude';
@@ -186,6 +189,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colIsCountedRun INT,
             $colIsPromotedEvent INT,
             $colEventGeographicScope INT,
+            $colEventInboundIntegrationId INT,
             $colEventNumber INT,
             $colEventName TEXT,
             $colHcLatitude NUM,

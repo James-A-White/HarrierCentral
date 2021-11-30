@@ -32,7 +32,7 @@ class KennelLogo extends StatelessWidget {
           //     ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png').toLowerCase();
           //print(s);
           return ZoomableImagePage2(
-            key: UniqueKey(),
+            key: const Key('11126697697'),
             file: null,
             assetImage: kennelLogoUrl.contains('bundle://')
                 ? ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png')

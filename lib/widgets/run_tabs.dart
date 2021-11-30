@@ -166,6 +166,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       widget.futureRun.paymentUrl,
       true,
       widget.futureRun.extensions.isMapAndDistanceValid,
+      eventUrlWithKennelBackup: widget.futureRun.event.eventUrl ?? widget.futureRun.kennel.kennelEventsUrl,
       isMember: widget.futureRun.extensions.isMember,
       isPaid: widget.futureRun.extensions.isPaid,
       rsvpState: widget.futureRun.extensions.rsvpState,
@@ -497,7 +498,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             color: Colors.grey[300],
                             width: 70.0,
                             height: 70.0,
-                            child: Padding(padding: const EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: UniqueKey()))),
+                            child: const Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
                           )
                         : GestureDetector(
                             onTap: () {
@@ -505,7 +506,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 context,
                                 MaterialPageRoute<void>(
                                   builder: (BuildContext context) => ZoomableImagePage2(
-                                      key: UniqueKey(),
+                                      key: const Key('39392001'),
                                       pageTitle: _thePackList[index].hasher.dispName,
                                       imageUrl: _thePackList[index].hasher.photo.startsWith('http') ? _thePackList[index].hasher.photo : null,
                                       assetImage: _thePackList[index].hasher.photo.contains('bundle://')

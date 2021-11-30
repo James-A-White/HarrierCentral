@@ -71,7 +71,7 @@
 //       body: Container(
 //         decoration: Backgrounds.defaultHcBackground(),
 //         child: isLoading
-//             ? HcCircularProgressIndicator(key: UniqueKey())
+//             ? HcCircularProgressIndicator(key: Key('yyyyyyy'))
 //             : Stack(
 //                 alignment: AlignmentDirectional.center,
 //                 children: <Widget>[
@@ -206,7 +206,7 @@
 //                   padding: const EdgeInsets.only(top: 10, left: 20.0, right: 20.0, bottom: 25.0),
 //                   child: Text('Use this if you have received an invite code from a Hash group.', textAlign: TextAlign.center, style: smallHeadingStyle),
 //                 ),
-//                 Container(padding: const EdgeInsets.only(top: 15), width: MediaQuery.of(context).size.width, child: FancyDivider(key: UniqueKey(),innerColor: Colors.white)),
+//                 Container(padding: const EdgeInsets.only(top: 15), width: MediaQuery.of(context).size.width, child: FancyDivider(key: Key('xxxxxxxx'),innerColor: Colors.white)),
 //               ],
 //             ),
 //           ),
@@ -320,7 +320,7 @@
 //                   padding: const EdgeInsets.only(top: 10, left: 20.0, right: 20.0, bottom: 25.0),
 //                   child: Text('Use this to transfer your Harrier Central account to a new phone.', textAlign: TextAlign.center, style: smallHeadingStyle),
 //                 ),
-//                 Container(padding: const EdgeInsets.only(top: 15), width: MediaQuery.of(context).size.width, child: FancyDivider(key: UniqueKey(),innerColor: Colors.white)),
+//                 Container(padding: const EdgeInsets.only(top: 15), width: MediaQuery.of(context).size.width, child: FancyDivider(key: Key('xxxxxxxx'),innerColor: Colors.white)),
 //               ],
 //             ),
 //           ),

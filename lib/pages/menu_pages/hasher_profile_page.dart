@@ -588,7 +588,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 child: profileFormUi(),
                                               ),
                                             ),
-                                            FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                                            const FancyDivider(key: Key('11203961'), innerColor: Colors.white),
                                             Container(
                                               height: 220,
                                               color: Colors.white,
@@ -657,8 +657,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 ? Container()
                                                 : Column(
                                                     children: <Widget>[
-                                                      FancyDivider(
-                                                        key: UniqueKey(),
+                                                      const FancyDivider(
+                                                        key: Key('422030201'),
                                                         innerColor: Colors.white,
                                                         topMargin: 30.0,
                                                         bottomMargin: 20.0,
@@ -759,8 +759,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 ? Container()
                                                 : Column(
                                                     children: <Widget>[
-                                                      FancyDivider(
-                                                        key: UniqueKey(),
+                                                      const FancyDivider(
+                                                        key: Key('51344451'),
                                                         innerColor: Colors.white,
                                                         topMargin: 45.0,
                                                         bottomMargin: 20.0,
@@ -935,8 +935,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ? Container()
                                         : Column(
                                             children: <Widget>[
-                                              FancyDivider(
-                                                key: UniqueKey(),
+                                              const FancyDivider(
+                                                key: Key('882552302'),
                                                 innerColor: Colors.white,
                                                 bottomMargin: 20.0,
                                               ),
@@ -978,8 +978,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         : Column(
                                             crossAxisAlignment: CrossAxisAlignment.stretch,
                                             children: <Widget>[
-                                              FancyDivider(
-                                                key: UniqueKey(),
+                                              const FancyDivider(
+                                                key: Key('612233999'),
                                                 innerColor: Colors.white,
                                                 bottomMargin: 20.0,
                                               ),
@@ -1009,7 +1009,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 ),
                                               ),
                                               // FancyDivider(
-                                              //   key: UniqueKey(),
+                                              //   key: Key('xxxxxxx'),
                                               //   innerColor: Colors.white,
                                               //   bottomMargin: 20.0,
                                               // ),
@@ -1046,8 +1046,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: <Widget>[
-                                          FancyDivider(
-                                            key: UniqueKey(),
+                                          const FancyDivider(
+                                            key: Key('8552133039'),
                                             innerColor: Colors.white,
                                             topMargin: 30.0,
                                             bottomMargin: 20.0,
@@ -1148,8 +1148,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: <Widget>[
-                                          FancyDivider(
-                                            key: UniqueKey(),
+                                          const FancyDivider(
+                                            key: Key('655522013'),
                                             innerColor: Colors.white,
                                             topMargin: 30.0,
                                             bottomMargin: 20.0,

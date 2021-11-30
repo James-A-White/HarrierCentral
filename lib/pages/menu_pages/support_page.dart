@@ -140,8 +140,8 @@ class SupportPageState extends State<SupportPage> {
                                 _displayInstructions(context);
                               },
                             ),
-                            FancyDivider(
-                              key: UniqueKey(),
+                            const FancyDivider(
+                              key: Key('7911393501'),
                               innerColor: Colors.white,
                               topMargin: 20.0,
                               bottomMargin: 20.0,
@@ -157,8 +157,8 @@ class SupportPageState extends State<SupportPage> {
                               style: largeText,
                               textAlign: TextAlign.center,
                             ),
-                            FancyDivider(
-                              key: UniqueKey(),
+                            const FancyDivider(
+                              key: Key('6624334671'),
                               innerColor: Colors.white,
                               topMargin: 40.0,
                               bottomMargin: 30.0,

@@ -4,6 +4,51 @@ import 'package:intl/intl.dart';
 
 enum FilterEventsPageType { past, future }
 
+class LiteEventModel {
+  LiteEventModel({
+    this.eventId,
+    this.isVisible,
+    this.isCountedRun,
+    this.absoluteEventNumber,
+    this.externalIntegrationId,
+    this.eventName,
+    this.eventNumber,
+    this.eventStartDatetime,
+    this.eventInboundIntegrationId,
+    this.appAccessFlags,
+    this.canEditRunAttendance,
+  });
+
+  factory LiteEventModel.fromJson(Map<String, dynamic> json) {
+    return LiteEventModel(
+      eventId: json[G0<TableModel>().eventsTableHelper.colEventId] as String,
+      isVisible: json[G0<TableModel>().eventsTableHelper.colIsVisible] as int,
+      isCountedRun: json[G0<TableModel>().eventsTableHelper.colIsCountedRun] as int,
+      absoluteEventNumber: json[G0<TableModel>().eventsTableHelper.colAbsoluteEventNumber] as int,
+      externalIntegrationId: json[G0<TableModel>().eventsTableHelper.colEventFacebookId] as String,
+      eventName: json[G0<TableModel>().eventsTableHelper.colEventName] as String,
+      eventNumber: json[G0<TableModel>().eventsTableHelper.colEventNumber] as int,
+      eventStartDatetime:
+          json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] == null ? null : DateTime.parse(json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] as String),
+      eventInboundIntegrationId: json[G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId] as int,
+      appAccessFlags: json[G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags] as int,
+      canEditRunAttendance: json[G0<TableModel>().eventsTableHelper.colCanEditRunAttendence] as int,
+    );
+  }
+
+  final String eventId;
+  final int isVisible;
+  final int isCountedRun;
+  final int absoluteEventNumber;
+  final String externalIntegrationId;
+  final String eventName;
+  final int eventNumber;
+  final DateTime eventStartDatetime;
+  final int eventInboundIntegrationId;
+  final int appAccessFlags;
+  final int canEditRunAttendance;
+}
+
 class AddEditEventsPage extends StatefulWidget {
   const AddEditEventsPage({Key key, @required this.kennel, @required this.pageType}) : super(key: key);
 
@@ -70,10 +115,10 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   //PageController _pageController;
   AnimationController _animationController;
 
-  List<Map<String, dynamic>> _allEventsSqlResult = <Map<String, dynamic>>[];
+  final List<LiteEventModel> _allEvents = <LiteEventModel>[];
   List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
-  final ValueNotifier<List<Map<String, dynamic>>> _selectedEvents = ValueNotifier<List<Map<String, dynamic>>>(<Map<String, dynamic>>[]);
-  final Map<DateTime, List<Map<String, dynamic>>> _calendarEvents = <DateTime, List<Map<String, dynamic>>>{};
+  final ValueNotifier<List<LiteEventModel>> _selectedEvents = ValueNotifier<List<LiteEventModel>>(<LiteEventModel>[]);
+  final Map<DateTime, List<LiteEventModel>> _calendarEvents = <DateTime, List<LiteEventModel>>{};
   Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(null);
 
   //PageController _pageController;
@@ -151,38 +196,41 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       final String sql = ''' 
 
           SELECT
-            evt.eventId,
-            evt.isVisible,
-            evt.isCountedRun,
-            evt.absoluteEventNumber,
-            evt.eventFacebookId,
-            evt.eventName,
-            evt.eventNumber,
-            evt.eventStartDatetime,
-            hkm.appAccessFlags,
-            evt.canEditRunAttendence
+            evt.${G0<TableModel>().eventsTableHelper.colEventId},
+            evt.${G0<TableModel>().eventsTableHelper.colIsVisible},
+            evt.${G0<TableModel>().eventsTableHelper.colIsCountedRun},
+            evt.${G0<TableModel>().eventsTableHelper.colAbsoluteEventNumber},
+            evt.${G0<TableModel>().eventsTableHelper.colEventFacebookId},
+            evt.${G0<TableModel>().eventsTableHelper.colEventName},
+            evt.${G0<TableModel>().eventsTableHelper.colEventNumber},
+            evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime},
+            evt.${G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId},
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
+            evt.${G0<TableModel>().eventsTableHelper.colCanEditRunAttendence}
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
-          INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
-          WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
-          AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','localtime'))
+          INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}" and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"
+          WHERE evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}"
+          AND date(datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now','localtime'))
           ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${G0<TableModel>().eventsTableHelper.colEventNumber} $sortOrder
         
           ''';
 
-      _allEventsSqlResult = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> allEventsSqlResult = await G0<Database>().rawQuery(sql);
 
       _calendarEvents.clear();
+      _allEvents.clear();
       if (_selectedEvents.value != null) {
         _selectedEvents.value.clear();
       }
 
-      for (int i = 0; i < _allEventsSqlResult.length; i++) {
-        final Map<String, dynamic> event = _allEventsSqlResult[i];
-        DateTime eventDate = DateTime.tryParse(event['eventStartDatetime']);
+      for (int i = 0; i < allEventsSqlResult.length; i++) {
+        final LiteEventModel event = LiteEventModel.fromJson(allEventsSqlResult[i]);
+        _allEvents.add(event);
+        DateTime eventDate = event.eventStartDatetime;
         if (eventDate != null) {
           eventDate = _toDateOnly(eventDate);
           if (_calendarEvents[eventDate] == null) {
-            _calendarEvents[eventDate] = <Map<String, dynamic>>[];
+            _calendarEvents[eventDate] = <LiteEventModel>[];
           }
           _calendarEvents[eventDate].add(event);
 
@@ -298,7 +346,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             ),
           ),
         ),
-        body: _isLoading ? HcCircularProgressIndicator(key: UniqueKey()) : _buildListView());
+        body: _isLoading ? const HcCircularProgressIndicator(key: Key('9844430132')) : _buildListView());
   }
 
   Future<void> _handleRefresh() async {
@@ -435,7 +483,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: <Widget>[_calendarView(), _listView(_allEventsSqlResult)],
+                  children: <Widget>[_calendarView(), _listView(_allEvents)],
                 ),
               ),
             ],
@@ -449,9 +497,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         ElevatedButton(
           child: Text('Edit run', style: buttonLabelStyleMedium),
           onPressed: () async {
-            final dynamic rawEvent = _calendarEvents[_toDateOnly(_selectedDay.value)][0];
-            if ((rawEvent != null) && (rawEvent['eventId'] != null)) {
-              RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent['eventId'], getStringPref(StringPrefsEnum.userId));
+            final LiteEventModel rawEvent = _calendarEvents[_toDateOnly(_selectedDay.value)][0];
+            if ((rawEvent != null) && (rawEvent.eventId != null)) {
+              RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent.eventId, getStringPref(StringPrefsEnum.userId));
 
               await Navigator.push<dynamic>(
                   context,
@@ -543,7 +591,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     }
   }
 
-  Widget _listView(List<Map<String, dynamic>> listEvents) {
+  Widget _listView(List<LiteEventModel> listEvents) {
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: listEvents?.length ?? 0,
@@ -555,23 +603,23 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       //itemExtent: 58.0,
       //shrinkWrap: true,
       itemBuilder: (BuildContext context, int index) {
-        final Map<String, dynamic> event = listEvents[index];
+        final LiteEventModel event = listEvents[index];
         return Dismissible(
-          key: Key(event['eventId']),
+          key: Key(event.eventId),
           confirmDismiss: (DismissDirection direction) {
-            if ((event['appAccessFlags'] & authCanManageRuns) != 0) {
+            if ((event.appAccessFlags & authCanManageRuns) != 0) {
               setState(() {
                 // swipe from right to left to indicate that
                 // the hasher either attended the run as a pack
                 // member or as a hare
                 final bool isVisible = direction == DismissDirection.endToStart;
-                _updateEvent(eventId: event['eventId'], isVisible: isVisible);
+                _updateEvent(eventId: event.eventId, isVisible: isVisible);
               });
             }
             return Future<bool>.value(false);
           },
           background: Container(
-              color: ((event['appAccessFlags'] & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.red,
+              color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.red,
               child: Row(children: const <Widget>[
                 Padding(
                   padding: EdgeInsets.only(left: 10.0),
@@ -586,7 +634,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 )
               ])),
           secondaryBackground: Container(
-            color: ((event['appAccessFlags'] & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.green,
+            color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.green,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: const <Widget>[
@@ -614,16 +662,16 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               final EnumEventFilterType<int> ft = retVal;
               switch (ft) {
                 case eventFilterType_showEvent:
-                  await _updateEvent(eventId: event['eventId'], isVisible: true);
+                  await _updateEvent(eventId: event.eventId, isVisible: true);
                   break;
                 case eventFilterType_hideEvent:
-                  await _updateEvent(eventId: event['eventId'], isVisible: false);
+                  await _updateEvent(eventId: event.eventId, isVisible: false);
                   break;
                 case eventFilterType_countEvent:
-                  await _updateEvent(eventId: event['eventId'], isCountedRun: true);
+                  await _updateEvent(eventId: event.eventId, isCountedRun: true);
                   break;
                 case eventFilterType_doNotCountEvent:
-                  await _updateEvent(eventId: event['eventId'], isCountedRun: false);
+                  await _updateEvent(eventId: event.eventId, isCountedRun: false);
                   break;
                 case eventFilterType_setRunNumber:
                   await setRunNumber(event, context);
@@ -656,8 +704,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     );
   }
 
-  Future<void> setRunNumber(Map<String, dynamic> event, BuildContext context) async {
-    final RunNumberPopup newEventPopup = RunNumberPopup(runNumber: event['absoluteEventNumber']);
+  Future<void> setRunNumber(LiteEventModel event, BuildContext context) async {
+    final RunNumberPopup newEventPopup = RunNumberPopup(runNumber: event.absoluteEventNumber);
 
     final Map<String, String> x = await showDialog<Map<String, String>>(
         context: context,
@@ -676,7 +724,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         rn = int.parse(runNumber);
       }
 
-      await _updateEvent(eventId: event['eventId'], asboluteEventNumber: rn);
+      await _updateEvent(eventId: event.eventId, asboluteEventNumber: rn);
     }
   }
 
@@ -896,9 +944,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                       : Colors.grey.shade200
                                   : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
                                       ? Colors.red.shade100
-                                      : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                                      : _calendarEvents[_toDateOnly(date)][0].isVisible == 0
                                           ? Colors.grey.shade300
-                                          : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                                          : _calendarEvents[_toDateOnly(date)][0].isCountedRun == 1
                                               ? Colors.green.shade100
                                               : Colors.yellow.shade200,
                               border: _toDateOnly(date) != _toDateOnly(_focusedDay.value)
@@ -948,9 +996,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                               child: Icon(
                                 FontAwesome.circle,
                                 size: 8.0,
-                                color: events[i]['isVisible'] == 0
+                                color: events[i].isVisible == 0
                                     ? Colors.grey
-                                    : events[i]['isCountedRun'] == 0
+                                    : events[i].isCountedRun == 0
                                         ? Colors.red
                                         : Colors.blue.shade700,
                               ),

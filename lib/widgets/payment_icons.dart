@@ -64,8 +64,8 @@ class PaymentIcons extends StatelessWidget {
               )
             : Column(
                 children: <Widget>[
-                  FancyDivider(
-                    key: UniqueKey(),
+                  const FancyDivider(
+                    key: Key('9818283'),
                     innerColor: Colors.white,
                     topMargin: 40.0,
                     bottomMargin: 10.0,
@@ -150,7 +150,7 @@ class PaymentIcons extends StatelessWidget {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-      key: UniqueKey(),
+      key: const Key('6610393912'),
       title: 'Payment options',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',

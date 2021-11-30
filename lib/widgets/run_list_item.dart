@@ -251,12 +251,13 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   (widget.futureRun.event.hares ?? '') == ''
-                                      ? Text(
-                                          'RSVP to Hare this run!',
-                                          style: TextStyle(color: Colors.red.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                          textAlign: TextAlign.left,
-                                          overflow: TextOverflow.ellipsis,
-                                        )
+                                      ? const SizedBox()
+                                      // Text(
+                                      //     'RSVP to Hare this run!',
+                                      //     style: TextStyle(color: Colors.red.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                      //     textAlign: TextAlign.left,
+                                      //     overflow: TextOverflow.ellipsis,
+                                      //   )
                                       : Text(
                                           'Hares: ' + widget.futureRun.event.hares,
                                           style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
@@ -388,7 +389,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
-        key: UniqueKey(),
+        key: const Key('01019395'),
         title: 'Run Options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
@@ -518,7 +519,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
-        key: UniqueKey(),
+        key: const Key('233030391'),
         title: 'Run Options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
@@ -605,7 +606,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-      key: UniqueKey(),
+      key: const Key('661039301'),
       title: 'Notification options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
@@ -707,7 +708,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-      key: UniqueKey(),
+      key: const Key('321039395'),
       title: 'Email options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',

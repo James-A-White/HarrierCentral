@@ -329,8 +329,8 @@ class KennelsListPageState extends State<KennelsListPage> {
       extendBody: true,
       floatingActionButton: getKennelFab(),
       body: G0<TableModel>().globalKennelMainPageList == null
-          ? Center(
-              child: HcCircularProgressIndicator(key: UniqueKey()),
+          ? const Center(
+              child: HcCircularProgressIndicator(key: Key('3320159590')),
             )
           : Container(
               decoration: Backgrounds.defaultHcBackground(),

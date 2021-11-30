@@ -270,7 +270,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                   child: formUi(),
                                                 ),
                                               ),
-                                              FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                                              const FancyDivider(key: Key('121678443'), innerColor: Colors.white),
                                               const SizedBox(height: 20),
                                               ElevatedButton(
                                                 onPressed: () {
@@ -298,7 +298,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                             context,
                                             MaterialPageRoute<void>(
                                               builder: (BuildContext context) => ZoomableImagePage2(
-                                                key: UniqueKey(),
+                                                key: const Key('66610301'),
                                                 file: _imageFromCamera ?? _imageFromCache,
                                                 pageTitle: 'Zoomable Receipt',
                                                 appBarBackgroundColor: themeAppBarBackground,

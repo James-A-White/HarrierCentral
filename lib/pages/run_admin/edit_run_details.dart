@@ -610,10 +610,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                         //crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           _isUpdating
-                              ? SizedBox(
+                              ? const SizedBox(
                                   height: 70.0,
                                   width: 70.0,
-                                  child: HcCircularProgressIndicator(key: UniqueKey()),
+                                  child: HcCircularProgressIndicator(key: Key('112096562')),
                                 )
                               : SizedBox(
                                   width: 162.0,
@@ -805,10 +805,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             );
           } else {
             return _isUpdating
-                ? SizedBox(
+                ? const SizedBox(
                     height: 70.0,
                     width: 70.0,
-                    child: HcCircularProgressIndicator(key: UniqueKey()),
+                    child: HcCircularProgressIndicator(key: Key('6669001123')),
                   )
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1127,10 +1127,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 right: 10.0,
                 bottom: 80.0,
                 child: _isUpdating
-                    ? SizedBox(
+                    ? const SizedBox(
                         height: 70.0,
                         width: 70.0,
-                        child: HcCircularProgressIndicator(key: UniqueKey()),
+                        child: HcCircularProgressIndicator(key: Key('655931031')),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1666,10 +1666,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                         //crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           _isUpdating
-                              ? SizedBox(
+                              ? const SizedBox(
                                   height: 70.0,
                                   width: 70.0,
-                                  child: HcCircularProgressIndicator(key: UniqueKey()),
+                                  child: HcCircularProgressIndicator(key: Key('3444910299')),
                                 )
                               : SizedBox(
                                   width: 300.0,

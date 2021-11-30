@@ -295,7 +295,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           ];
 
                           final MultipleChoicePopup popup = MultipleChoicePopup(
-                            key: UniqueKey(),
+                            key: const Key('661135667'),
                             title: 'Follow ${widget.kennelItem.kennel.kennelName}',
                             buttons: buttons,
                             cancelButtonTitle: 'Cancel',
@@ -384,7 +384,7 @@ class KennelListItemState extends State<KennelsListItem> {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-      key: UniqueKey(),
+      key: const Key('001939741'),
       title: 'Notification options for this Kennel',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
@@ -508,7 +508,7 @@ class KennelListItemState extends State<KennelsListItem> {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-      key: UniqueKey(),
+      key: const Key('66010398690'),
       title: 'Email options for this Kennel',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',

@@ -116,8 +116,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             ),
           ),
           body: _isLoading
-              ? Center(
-                  child: HcCircularProgressIndicator(key: UniqueKey()),
+              ? const Center(
+                  child: HcCircularProgressIndicator(key: Key('16637721')),
                 )
               : Container(
                   height: MediaQuery.of(context).size.height,
@@ -142,9 +142,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     leftPadding: 0.0,
                                     zoomGesture: KennelLogoZoomGesture.tap,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 45.0, bottom: 15.0),
-                                    child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 45.0, bottom: 15.0),
+                                    child: FancyDivider(key: Key('23423413'), innerColor: Colors.white),
                                   ),
                                   Padding(
                                       padding: const EdgeInsets.only(top: 20, bottom: 5),
@@ -173,9 +173,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     ),
                                   ],
                                 ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 50.0, bottom: 25.0),
-                            child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                            child: FancyDivider(key: Key('16613234'), innerColor: Colors.white),
                           ),
                           !_isAdmin
                               ? Container()
@@ -557,9 +557,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         ),
                                       ],
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 50.0, bottom: 25.0),
-                                      child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                                      child: FancyDivider(key: Key('5511334'), innerColor: Colors.white),
                                     ),
                                   ],
                                 ),
@@ -578,9 +578,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         }
                                       },
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 50.0, bottom: 25.0),
-                                      child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                                      child: FancyDivider(key: Key('11939302'), innerColor: Colors.white),
                                     ),
                                   ],
                                 )
@@ -800,7 +800,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   : Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[
-                                        FancyDivider(key: UniqueKey(), innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0),
+                                        const FancyDivider(key: Key('55139201'), innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0),
                                         for (String item in _mismanagement) mmRow(item)
                                       ],
                                     ),
@@ -810,7 +810,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       crossAxisAlignment: CrossAxisAlignment.center,
                                       children: <Widget>[
-                                        FancyDivider(key: UniqueKey(), innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0),
+                                        const FancyDivider(key: Key('11344366'), innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0),
                                         Center(
                                           child: Padding(
                                             padding: const EdgeInsets.only(bottom: 15.0),
@@ -831,8 +831,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   ? Container()
                                   : Column(
                                       children: <Widget>[
-                                        FancyDivider(
-                                          key: UniqueKey(),
+                                        const FancyDivider(
+                                          key: Key('123435661'),
                                           innerColor: Colors.white,
                                           topMargin: 30.0,
                                           bottomMargin: 15.0,

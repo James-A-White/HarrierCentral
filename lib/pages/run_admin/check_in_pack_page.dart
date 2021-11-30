@@ -864,7 +864,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-      key: UniqueKey(),
+      key: const Key('6919321235'),
       title: 'Common filter options',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
@@ -1037,7 +1037,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ]),
       appBar: _getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : (widget?.eventAggregate?.event?.eventName ?? '') + ' Check In'),
       body: _isLoading
-          ? HcCircularProgressIndicator(key: UniqueKey())
+          ? const HcCircularProgressIndicator(key: Key('430320291'))
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
               SizedBox(height: MediaQuery.of(context).size.height, width: 10),
               (_filteredList == null || _filteredList.isEmpty)
@@ -1147,7 +1147,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
-        key: UniqueKey(),
+        key: const Key('4555116132'),
         title: 'Payment options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
@@ -1296,7 +1296,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   context,
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) => ZoomableImagePage2(
-                        key: UniqueKey(),
+                        key: const Key('511203069'),
                         pageTitle: packMember.nameForDisplay,
                         imageUrl: packMember.photo.startsWith('http') ? packMember.photo : null,
                         assetImage: packMember.photo.contains('bundle://') ? 'images/avatars/' + packMember.photo.replaceAll('bundle://', '') + '.jpg' : null,

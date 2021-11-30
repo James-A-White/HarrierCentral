@@ -413,7 +413,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                   future: filteredKennelMemberListFuture,
                   builder: (BuildContext context, AsyncSnapshot<List<KennelMembersResults>> snapshot) {
                     if (snapshot?.data == null) {
-                      return HcCircularProgressIndicator(key: UniqueKey());
+                      return const HcCircularProgressIndicator(key: Key('75223930'));
                     } else {
                       return _getKennelMemberList(snapshot);
                     }

@@ -18,6 +18,7 @@ class RunDetails extends StatelessWidget {
     this.isPaid = 0,
     this.rsvpState = 0,
     this.processPayment,
+    this.eventUrlWithKennelBackup,
   }) : super(key: key);
 
   final EventModel event;
@@ -33,6 +34,7 @@ class RunDetails extends StatelessWidget {
   final int isPaid;
   final int rsvpState;
   final Function processPayment;
+  final String eventUrlWithKennelBackup;
 
   static const int flexLeft = 30;
   static const int flexRight = 70;
@@ -54,7 +56,7 @@ class RunDetails extends StatelessWidget {
                           context,
                           MaterialPageRoute<void>(
                             builder: (BuildContext context) => ZoomableImagePage2(
-                              key: UniqueKey(),
+                              key: const Key('50201112'),
                               pageTitle: 'Zoomable Event Image',
                               imageUrl: event.eventImage,
                               appBarBackgroundColor: themeAppBarBackground,
@@ -74,18 +76,18 @@ class RunDetails extends StatelessWidget {
                 )
               : Container(),
           ((event.eventImage ?? '').isNotEmpty && event.eventImage.startsWith('http'))
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 32.0, bottom: 0.0),
-                  child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+              ? const Padding(
+                  padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
+                  child: FancyDivider(key: Key('666177323'), innerColor: Colors.white),
                 )
               : Container(),
           Padding(
             padding: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
             child: AutoSizeText(event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 40.0, bottom: 10.0),
-            child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
+          const Padding(
+            padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
+            child: FancyDivider(key: Key('61566713'), innerColor: Colors.white),
           ),
           Text('Event details', style: headingStyle),
           const SizedBox(
@@ -590,7 +592,7 @@ class RunDetails extends StatelessWidget {
           //     ? Container()
           //     : const Padding(
           //         padding: EdgeInsets.only(top: 32.0),
-          //         child: FancyDivider(key: UniqueKey(),innerColor: Colors.white),
+          //         child: FancyDivider(key: Key('xxxxxxxx'),innerColor: Colors.white),
           //       ),
           // (paymentLinkUrl == '')
           //     ? Container()
@@ -611,8 +613,8 @@ class RunDetails extends StatelessWidget {
               ? Container()
               : Column(
                   children: <Widget>[
-                    FancyDivider(
-                      key: UniqueKey(),
+                    const FancyDivider(
+                      key: Key('1156920939'),
                       innerColor: Colors.white,
                       topMargin: 30.0,
                       bottomMargin: 10.0,
@@ -644,8 +646,8 @@ class RunDetails extends StatelessWidget {
                 ),
           (event.eventDescription ?? '') == ''
               ? Container()
-              : FancyDivider(
-                  key: UniqueKey(),
+              : const FancyDivider(
+                  key: Key('67020392'),
                   innerColor: Colors.white,
                   topMargin: 30.0,
                 ),
@@ -666,9 +668,14 @@ class RunDetails extends StatelessWidget {
                     },
                   ),
                 ),
-          if ((event.eventFacebookId ?? '') != '') ...<Widget>[
-            FancyDivider(
-              key: UniqueKey(),
+          // for the Facebook button, we want to check
+          // if the actual eventUrl is empty without
+          // considering the Kennel Events URL
+          if (((event.eventFacebookId ?? '') != '') &&
+              (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) &&
+              ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
+            const FancyDivider(
+              key: Key('40019292'),
               innerColor: Colors.white,
               topMargin: 30.0,
             ),
@@ -683,6 +690,28 @@ class RunDetails extends StatelessWidget {
                     await launch(linkUrl);
                   } else {
                     await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
+                  }
+                },
+              ),
+            ),
+          ],
+          //
+          if ((eventUrlWithKennelBackup != null) && (eventUrlWithKennelBackup.isNotEmpty)) ...<Widget>[
+            const FancyDivider(
+              key: Key('592930192'),
+              innerColor: Colors.white,
+              topMargin: 30.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
+              child: ElevatedButton(
+                style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                child: Image.asset('images/icons/visit_run_on_web.png', height: 60.0, width: 325.0),
+                onPressed: () async {
+                  if (await canLaunch(eventUrlWithKennelBackup)) {
+                    await launch(eventUrlWithKennelBackup);
+                  } else {
+                    await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
                   }
                 },
               ),

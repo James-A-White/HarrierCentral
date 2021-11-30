@@ -104,7 +104,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                   child: Text('Quick Send Email', style: buttonTextStyle),
                 ),
                 const SizedBox(height: 10),
-                FancyDivider(key: UniqueKey(), innerColor: Colors.white, useTextOr: true),
+                const FancyDivider(key: Key('155030392'), innerColor: Colors.white, useTextOr: true),
                 const SizedBox(height: 20),
                 Text(
                   'Compose custom email',
@@ -242,7 +242,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 //               child: formUi(),
                 //             ),
                 //           ),
-                //           FancyDivider(key: UniqueKey(),innerColor: Colors.white),
+                //           FancyDivider(key: Key('xxxxxxxx'),innerColor: Colors.white),
                 //           const SizedBox(height: 20),
 
                 //         ],

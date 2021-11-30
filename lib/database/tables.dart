@@ -103,9 +103,15 @@ class Tables {
       ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEventUrl} TEXT;
       
       ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colIntegrationType} TEXT;
-      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colInboundIntegrationId} INT;
+      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colKennelInboundIntegrationId} INT DEFAULT 0 NOT NULL;
       ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colKennelEventsUrl} TEXT;
+      ''',
+        appliedAtInt: 0),
 
+    MigrationsModel(
+        dbVersion: 378,
+        migrationText: ''' 
+      ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId} INT DEFAULT 0 NOT NULL;
       ''',
         appliedAtInt: 0),
 

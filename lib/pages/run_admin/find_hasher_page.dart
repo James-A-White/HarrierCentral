@@ -99,7 +99,7 @@ class FindHasherPageState extends State<FindHasherPage> {
           searchBar(),
           Expanded(
             child: (_isLoading == true)
-                ? Center(child: HcCircularProgressIndicator(key: UniqueKey()))
+                ? const Center(child: HcCircularProgressIndicator(key: Key('559501910')))
                 : HasherListView(
                     hasherList: filteredList,
                     pageType: widget.pageType,
@@ -452,9 +452,9 @@ class HasherListView extends StatelessWidget {
                     color: Colors.grey[300],
                     width: 70.0,
                     height: 70.0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Center(child: HcCircularProgressIndicator(key: UniqueKey())),
+                    child: const Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: Center(child: HcCircularProgressIndicator(key: Key('3330495910'))),
                     ),
                   )
                 : Dismissible(

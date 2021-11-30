@@ -91,7 +91,7 @@
 //           ),
 //         ),
 //         FancyDivider(
-//           key: UniqueKey(),
+//           key: Key('xxxxxxx'),
 //           innerColor: Colors.white,
 //           topMargin: 10.0,
 //           bottomMargin: 20.0,
