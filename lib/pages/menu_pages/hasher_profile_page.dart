@@ -345,7 +345,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         for (int i = 0; i < jsonResult.length; i++) {
           if (jsonResult[i][0].containsKey('hasherId')) {
             for (int j = 0; j < jsonResult[i].length; j++) {
-              if (jsonResult[i][j]['hasherId'].toString().toLowerCase() == _hasher.hasherId.toLowerCase()) {
+              if ((jsonResult[i][j]['firstName'].toString().toLowerCase() == _hasher.firstName.toLowerCase()) &&
+                  (jsonResult[i][j]['hashName'].toString().toLowerCase() == _hasher.hashName.toLowerCase())) {
                 h = HashersModel.fromJson(jsonResult[i][0]);
               }
             }
@@ -423,7 +424,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             _hasher.lastName = val;
           },
         ),
-        if (widget.pageType == EnumMyProfilePageType.myProfile) ...<Widget>[
+        if ((widget.pageType == EnumMyProfilePageType.myProfile) || (widget.pageType == EnumMyProfilePageType.newHasherProfile)) ...<Widget>[
           TextFormField(
             autocorrect: false,
             //initialValue: hasher.email,

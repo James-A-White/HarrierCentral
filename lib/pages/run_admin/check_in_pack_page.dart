@@ -359,6 +359,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           _packList = <CheckInPackModel>[];
           for (int i = 0; i < results.length; i++) {
             final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
+            if (item.nameForDisplay.toLowerCase().startsWith('placeholder user')) {
+              continue;
+            }
             _packList.add(item);
           }
 
