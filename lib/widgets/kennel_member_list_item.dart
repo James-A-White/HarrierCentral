@@ -130,17 +130,20 @@ class KennelMemberListItem extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                           child: Row(children: <Widget>[
-                            Text(
-                              kennelMember.dispName,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())
-                                      ? 'AvenirNextCondensedDemiBold'
-                                      : 'AvenirNextCondensed',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 22.0,
-                                  height: 1.0),
-                              textAlign: TextAlign.left,
+                            Expanded(
+                              child: AutoSizeText(
+                                kennelMember.dispName,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())
+                                        ? 'AvenirNextCondensedDemiBold'
+                                        : 'AvenirNextCondensed',
+                                    fontStyle: FontStyle.normal,
+                                    fontSize: 22.0,
+                                    height: 1.0),
+                                textAlign: TextAlign.left,
+                              ),
                             ),
                             const SizedBox(width: 10.0),
                             if (kennelMember.appAccess.isAdmin) ...<Widget>[
