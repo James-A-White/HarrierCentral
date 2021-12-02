@@ -257,6 +257,7 @@ class PaymentsService {
       'paymentProvider': paymentProvider ?? '',
       'appDomainType': appDomainStr,
       'paymentReference': paymentReference,
+      'transactionTimestamp': DateTime.now().toString(),
     });
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_payment', body);

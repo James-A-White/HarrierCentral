@@ -191,7 +191,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     //print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
-  Future<List<dynamic>> payForEvent(PaymentAggregate item, int paymentType, num amount, {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
+  Future<List<dynamic>> _payForEvent(PaymentAggregate item, int paymentType, num amount, {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
         widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event);
@@ -412,7 +412,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                               filteredList[index].extensions.isLoading = true;
                                             });
                                             if (needsConfirm) {
-                                              payForEvent(filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
+                                              _payForEvent(filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
                                                 _refreshListsFromTable().then((void _) {
                                                   setState(() {
                                                     refreshTotals();
@@ -549,7 +549,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           builder: (BuildContext context) {
             return popup;
           }).then((dynamic payForExtras) {
-        payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
+        _payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
           _refreshListsFromTable().then((void _) {
             setState(() {
               refreshTotals();
@@ -561,7 +561,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       });
     } else {
       // there are no extras so just pay for the run without any extras dialog
-      payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForRunOnly).then((List<dynamic> results) {
+      _payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForRunOnly).then((List<dynamic> results) {
         _refreshListsFromTable().then((void _) {
           setState(() {
             refreshTotals();
@@ -645,7 +645,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                 setState(() {
                   item.extensions.isLoading = true;
                 });
-                payForEvent(item, paymentNotPaid.value, 0).then((List<dynamic> results) {
+                _payForEvent(item, paymentNotPaid.value, 0).then((List<dynamic> results) {
                   _refreshListsFromTable().then((void _) {
                     setState(() {
                       refreshTotals();
@@ -656,7 +656,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                 setState(() {
                   item.extensions.isLoading = true;
                 });
-                payForEvent(item, paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
+                _payForEvent(item, paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
                   _refreshListsFromTable().then((void _) {
                     setState(() {
                       refreshTotals();
