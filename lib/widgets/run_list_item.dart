@@ -78,7 +78,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     return Icon(rawIcon, size: 26.0, color: color);
   }
 
-  Future<void> setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
+  Future<void> _setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
     setState(() {
       widget.futureRun.extensions.rsvpState = -1;
     });
@@ -132,7 +132,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               ),
               GestureDetector(
                 onTap: () {
-                  showRsvpOptionsPopup(context);
+                  _showRsvpOptionsPopup(context);
                 },
                 child: Padding(padding: const EdgeInsets.only(right: 9.0), child: getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
               ),
@@ -298,7 +298,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                               color: Colors.black54,
                               splashColor: Theme.of(context).highlightColor,
                               onPressed: () {
-                                showAllOptionsPopup(context);
+                                _showAllOptionsPopup(context);
                               },
                             ),
                           ],
@@ -351,7 +351,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     );
   }
 
-  void showRsvpOptionsPopup(BuildContext context) {
+  void _showRsvpOptionsPopup(BuildContext context) {
     if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -401,17 +401,18 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
             return popup;
-          }).then((dynamic retVal) {
+          }).then((dynamic retVal) async {
         if (retVal is EnumRsvpState) {
-          setRsvpState(retVal, false);
+          await _setRsvpState(retVal, false);
         } else if (retVal is EnumIsHare) {
-          setRsvpState(rsvpYes, true);
+          final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares);
+          await _setRsvpState(rsvpYes, willHare);
         }
       });
     }
   }
 
-  void showAllOptionsPopup(BuildContext context) {
+  void _showAllOptionsPopup(BuildContext context) {
     if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -531,15 +532,16 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
             return popup;
-          }).then((dynamic retVal) {
+          }).then((dynamic retVal) async {
         if (retVal is EnumEmailAlertState) {
           setEmailAlertState(retVal);
         } else if (retVal is EnumNotificationState) {
           setNotificationState(retVal);
         } else if (retVal is EnumRsvpState) {
-          setRsvpState(retVal, false);
+          await _setRsvpState(retVal, false);
         } else if (retVal is EnumIsHare) {
-          setRsvpState(rsvpYes, true);
+          final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares);
+          await _setRsvpState(rsvpYes, willHare);
         }
       });
     }

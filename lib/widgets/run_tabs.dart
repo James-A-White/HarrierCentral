@@ -417,7 +417,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           alignment: Alignment.center,
                           splashColor: Colors.greenAccent,
                           onPressed: () {
-                            _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
+                            Utilities.promptForHare(context, widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
                               if (willHare) {
                                 setState(() {
                                   if (_thisUserIndex >= 0) {
@@ -775,7 +775,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               label: 'I will hare',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () async {
-                final bool willHare = await _promptForHare(widget.futureRun.event.hares ?? '');
+                final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares ?? '');
                 if (willHare) {
                   setState(() {
                     if (_thisUserIndex >= 0) {
@@ -1184,39 +1184,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     } else {
       throw 'Could not launch url';
     }
-  }
-
-  Future<bool> _promptForHare(String hareList) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Will you Hare this run?'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Please confirm that you are signing up to hare this run' + ((hareList == null) ? '.' : ' with ' + hareList)),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('No Thanks!'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text('Yes, I\'ll Hare!'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }
 
