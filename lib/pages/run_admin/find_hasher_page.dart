@@ -17,10 +17,8 @@ class FindHasherPage extends StatefulWidget {
 }
 
 class FindHasherPageState extends State<FindHasherPage> {
-  GlobalKey hasherListBox = GlobalKey();
-
-  List<HashersModel> hasherList;
-  List<HashersModel> filteredList;
+  List<HashersModel> _hasherList;
+  List<HashersModel> _filteredList;
 
   bool _isLoading = true;
 
@@ -35,13 +33,13 @@ class FindHasherPageState extends State<FindHasherPage> {
     svc
         .selectAllFromLocalDb(G0<Database>(), G0<TableModel>().hashersTableHelper, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))
         .then((List<BaseModel> list) {
-      hasherList = list.cast<HashersModel>();
+      _hasherList = list.cast<HashersModel>();
       setState(() {
-        if (hasherList != null) {
-          hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
-          filteredList = hasherList;
+        if (_hasherList != null) {
+          _hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
+          _filteredList = _hasherList;
         } else {
-          filteredList = null;
+          _filteredList = null;
         }
 
         _isLoading = false;
@@ -51,11 +49,11 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   void filterHasherList(String filterText) {
     setState(() {
-      if (hasherList != null) {
+      if (_hasherList != null) {
         if (filterText.isEmpty) {
-          filteredList = hasherList;
+          _filteredList = _hasherList;
         } else {
-          filteredList = hasherList
+          _filteredList = _hasherList
               .where((dynamic user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase()))
               .toList();
         }
@@ -96,12 +94,12 @@ class FindHasherPageState extends State<FindHasherPage> {
       ),
       body: Column(
         children: <Widget>[
-          searchBar(),
+          _searchBar(),
           Expanded(
             child: (_isLoading == true)
                 ? const Center(child: HcCircularProgressIndicator(key: Key('559501910')))
                 : HasherListView(
-                    hasherList: filteredList,
+                    hasherList: _filteredList,
                     pageType: widget.pageType,
                     searchController: searchController,
                     kennelId: widget.kennelId,
@@ -113,7 +111,7 @@ class FindHasherPageState extends State<FindHasherPage> {
     );
   }
 
-  Widget searchBar() {
+  Widget _searchBar() {
     return Container(
       decoration: const BoxDecoration(
         // border: new Border.all(width: 1.0, color: Colors.black),
@@ -196,7 +194,7 @@ class HasherListView extends StatelessWidget {
   final String kennelId;
   final String eventId;
 
-  Future<int> promptForHasherType(BuildContext context, HashersModel newHasher) {
+  Future<int> _promptForHasherType(BuildContext context, HashersModel newHasher) {
     return showDialog<int>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -216,58 +214,59 @@ class HasherListView extends StatelessWidget {
               ),
             ),
             actions: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(right: 15.0),
-                child: SizedBox(
-                  width: 63.0,
-                  height: 50.0,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(primary: Colors.red),
-                    child: const Text('Cancel'),
-                    onPressed: () {
-                      Navigator.of(context).pop(-1);
-                    },
-                  ),
-                ),
+              // Padding(
+              //   padding: const EdgeInsets.only(right: 15.0),
+              //   child: ElevatedButton(
+              //     style: ElevatedButton.styleFrom(primary: Colors.red),
+              //     child: Text(
+              //       'Cancel',
+              //       textAlign: TextAlign.center,
+              //       style: textStyleButton,
+              //     ),
+              //     onPressed: () {
+              //       Navigator.of(context).pop(-1);
+              //     },
+              //   ),
+              // ),
+
+              TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop(-1);
+                },
               ),
-              SizedBox(
-                width: 70.0,
-                height: 50.0,
-                child: ElevatedButton(
-                  child: const Text(
-                    'Add as\r\nVisitor',
-                    textAlign: TextAlign.center,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop(enumKnownVisitor.value);
-                  },
-                ),
+
+              TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text('Add'),
+                onPressed: () {
+                  Navigator.of(context).pop(enumHasher.value);
+                },
               ),
-              SizedBox(
-                width: 60.0,
-                height: 50.0,
-                child: ElevatedButton(
-                  child: const Text(
-                    'Add',
-                    textAlign: TextAlign.center,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop(enumHasher.value);
-                  },
-                ),
-              ),
+
+              // ElevatedButton(
+              //   child: Text(
+              //     'Add',
+              //     textAlign: TextAlign.center,
+              //     style: textStyleButton,
+              //   ),
+              //   onPressed: () {
+              //     Navigator.of(context).pop(enumHasher.value);
+              //   },
+              // ),
             ],
           );
         });
   }
 
-  Widget listItem(BuildContext context, int index) {
+  Widget _listItem(BuildContext context, int index) {
     return InkWell(
       //splashColor: Colors.red,
       highlightColor: Colors.red,
       onTap: () {
         if (pageType == FindHasherPageType.addHasherToRun) {
-          return promptForHasherType(context, hasherList[index]).then((int doAddHasher) {
+          return _promptForHasherType(context, hasherList[index]).then((int doAddHasher) {
             if (doAddHasher != -1) {
               final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
               Navigator.of(context).pop(result);
@@ -350,7 +349,7 @@ class HasherListView extends StatelessWidget {
     );
   }
 
-  Widget getAddHasherBlock(BuildContext context) {
+  Widget _getAddHasherBlock(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.push<HashersModel>(
@@ -368,7 +367,7 @@ class HasherListView extends StatelessWidget {
         ).then((HashersModel newHasher) {
           if (newHasher != null) {
             if (pageType == FindHasherPageType.addHasherToRun) {
-              promptForHasherType(context, newHasher).then((int doAddHasher) {
+              _promptForHasherType(context, newHasher).then((int doAddHasher) {
                 if (doAddHasher != -1) {
                   final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher, 'virginVisitorType': doAddHasher};
                   Navigator.of(context).pop(result);
@@ -445,7 +444,7 @@ class HasherListView extends StatelessWidget {
         itemCount: (hasherList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
         itemBuilder: (BuildContext context, int index) {
           if ((index == (hasherList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
-            return getAddHasherBlock(context);
+            return _getAddHasherBlock(context);
           } else {
             return ((hasherList == null) || (hasherList.isEmpty))
                 ? Container(
@@ -505,7 +504,7 @@ class HasherListView extends StatelessWidget {
                     onDismissed: (DismissDirection direction) {
                       //print(direction.toString() + ' NOTE: We should never reach this point');
                     },
-                    child: listItem(context, index),
+                    child: _listItem(context, index),
                   );
           }
         });

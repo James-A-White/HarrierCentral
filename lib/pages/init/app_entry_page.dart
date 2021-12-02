@@ -42,16 +42,27 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     String facebookAccessToken;
 
     if (fbTokenUpdateDelta.inDays > 30) {
-      final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+      final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
 
-      if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
-        final LoginResult loginResult = await FacebookAuth.instance.login();
-        if ((loginResult != null) && (loginResult.status == LoginStatus.success)) {
-          final AccessToken accessToken = loginResult.accessToken;
-          facebookAccessToken = accessToken?.token;
-          if (facebookAccessToken != null) {
-            await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-            await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+      final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
+
+      if (daysSinceCancellation.inDays > 30) {
+        final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+
+        if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
+          final LoginResult loginResult = await FacebookAuth.instance.login();
+          if (loginResult != null) {
+            if (loginResult.status == LoginStatus.success) {
+              final AccessToken accessToken = loginResult.accessToken;
+              facebookAccessToken = accessToken?.token;
+              if (facebookAccessToken != null) {
+                await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+                await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+                await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
+              }
+            } else if (loginResult.status == LoginStatus.cancelled) {
+              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
+            }
           }
         }
       }

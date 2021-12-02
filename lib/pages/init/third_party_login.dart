@@ -198,6 +198,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
       await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.token);
       await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
       await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+      await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
 
       await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, ''); // facebook does not have an auth code
       await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.token);
@@ -226,7 +227,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
     } else {
       switch (loginResult.status) {
         case LoginStatus.cancelled:
-          //print('login cancelled');
+          await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
           _onLoginStatusChanged(false);
           break;
         case LoginStatus.failed:

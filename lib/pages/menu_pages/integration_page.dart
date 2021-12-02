@@ -191,6 +191,7 @@
 //       await setStringPref(StringPrefsEnum.facebookId, accessToken.userId);
 //       await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
 //       await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+//       await setDatePref(DatePrefsEnum.fbLoginCancelled, null);
 
 //       onLoginStatusChanged(true, profData: userData, accessToken: accessToken.token);
 //     } on FacebookAuthException catch (e) {
