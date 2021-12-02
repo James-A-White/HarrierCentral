@@ -207,10 +207,10 @@ class QueryRuns {
           as searchRunsText
           ''';
 
-  static List<RunDetailsAggregate> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> _allRuns) {
+  static List<RunDetailsAggregate> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
-    if (_allRuns != null) {
-      filteredRuns.addAll(_allRuns);
+    if (allRuns != null) {
+      //filteredRuns.addAll(allRuns);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchRunsText != null) && (searchRunsText.isNotEmpty)) {
@@ -228,7 +228,7 @@ class QueryRuns {
 
           ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-          filteredRuns = filteredRuns.where((RunDetailsAggregate a) {
+          filteredRuns = allRuns.where((RunDetailsAggregate a) {
             for (String orItem in orItems) {
               if (orItem.trim().isEmpty) {
                 continue;
@@ -241,6 +241,8 @@ class QueryRuns {
             return negate;
           }).toList();
         }
+      } else {
+        filteredRuns.addAll(allRuns);
       }
     }
     return filteredRuns;

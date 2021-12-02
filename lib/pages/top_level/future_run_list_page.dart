@@ -170,6 +170,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     if (forceRefresh || (_allRuns == null) || (_allRuns.isEmpty)) {
       _allRuns = await QueryRuns.getRunDetailsAggregates(_searchAllRuns);
       _filterRuns();
+
       setState(() {});
     }
     return;
@@ -290,8 +291,28 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void _filterRuns() {
     _filteredRuns = QueryRuns.doRunsFilter(_searchRunsText, _allRuns);
 
+    _filteredRuns.sort((RunDetailsAggregate a, RunDetailsAggregate b) {
+      int result = _toDateOnly(a.event.eventStartDatetime).compareTo(_toDateOnly(b.event.eventStartDatetime));
+      // if the runs are on the same day then try to sort by distance
+      // if there are no distances because location services are off, then sort by Kennel name
+      if (result == 0) {
+        if ((a.extensions.distToEvent != null) && (b.extensions.distToEvent != null)) {
+          final num distA = a.extensions.latitude == null ? 99999999 : a.extensions.distToEvent;
+          final num distB = b.extensions.latitude == null ? 99999999 : b.extensions.distToEvent;
+          result = distA.compareTo(distB);
+        } else {
+          result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
+        }
+      }
+      return result;
+    });
+
     //buildRunMarkers();
     setState(() {});
+  }
+
+  DateTime _toDateOnly(DateTime dt) {
+    return DateTime(dt.year, dt.month, dt.day);
   }
 
   Widget _buildListView() {
