@@ -591,6 +591,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     }
   }
 
+  String _itemBeingUpdatedId = '';
+
   Widget _listView(List<LiteEventModel> listEvents) {
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -655,38 +657,50 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           onDismissed: (DismissDirection direction) {
             //print(direction.toString() + ' NOTE: We should never reach this point');
           },
-          child: FilterEventListItem(
-            event: event,
-            kennelShortName: widget.kennel.kennel.kennelShortName,
-            updateEvent: (dynamic retVal) async {
-              final EnumEventFilterType<int> ft = retVal;
-              switch (ft) {
-                case eventFilterType_showEvent:
-                  await _updateEvent(eventId: event.eventId, isVisible: true);
-                  break;
-                case eventFilterType_hideEvent:
-                  await _updateEvent(eventId: event.eventId, isVisible: false);
-                  break;
-                case eventFilterType_countEvent:
-                  await _updateEvent(eventId: event.eventId, isCountedRun: true);
-                  break;
-                case eventFilterType_doNotCountEvent:
-                  await _updateEvent(eventId: event.eventId, isCountedRun: false);
-                  break;
-                case eventFilterType_setRunNumber:
-                  await setRunNumber(event, context);
-                  break;
-                case eventFilterType_refreshOnly:
-                  await _refreshSqlTablesFromBackend(false);
-                  await _refreshEventFromTables(true);
-                  _refreshList();
-                  break;
-              }
+          child: Stack(
+            children: <Widget>[
+              if (_itemBeingUpdatedId == event.eventId) ...<Widget>[const HcCircularProgressIndicator(key: Key('5050202'))],
+              Opacity(
+                opacity: _itemBeingUpdatedId == event.eventId ? 0.4 : 1,
+                child: FilterEventListItem(
+                  event: event,
+                  kennelShortName: widget.kennel.kennel.kennelShortName,
+                  updateEvent: (dynamic retVal) async {
+                    setState(() {
+                      _itemBeingUpdatedId = event.eventId;
+                    });
 
-              // setState(() {
-              //
-              // });
-            },
+                    final EnumEventFilterType<int> ft = retVal;
+                    switch (ft) {
+                      case eventFilterType_showEvent:
+                        await _updateEvent(eventId: event.eventId, isVisible: true);
+                        break;
+                      case eventFilterType_hideEvent:
+                        await _updateEvent(eventId: event.eventId, isVisible: false);
+                        break;
+                      case eventFilterType_countEvent:
+                        await _updateEvent(eventId: event.eventId, isCountedRun: true);
+                        break;
+                      case eventFilterType_doNotCountEvent:
+                        await _updateEvent(eventId: event.eventId, isCountedRun: false);
+                        break;
+                      case eventFilterType_setRunNumber:
+                        await setRunNumber(event, context);
+                        break;
+                      case eventFilterType_refreshOnly:
+                        await _refreshSqlTablesFromBackend(false);
+                        await _refreshEventFromTables(true);
+                        _refreshList();
+                        break;
+                    }
+
+                    setState(() {
+                      _itemBeingUpdatedId = '';
+                    });
+                  },
+                ),
+              ),
+            ],
           ),
         );
 
