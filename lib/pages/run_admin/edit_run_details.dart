@@ -41,6 +41,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   final FocusNode _focusNodeEventName = FocusNode();
   final FocusNode _focusNodeEventDescription = FocusNode();
   final FocusNode _focusNodeLocationOneLineDesc = FocusNode();
+  final FocusNode _focusNodeHares = FocusNode();
 
   final TextEditingController _eventDatetimeController = TextEditingController();
   final TextEditingController _eventNameController = TextEditingController();
@@ -51,6 +52,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   final TextEditingController _eventPriceForNonMembersController = TextEditingController();
   final TextEditingController _eventPriceForExtrasController = TextEditingController();
   final TextEditingController _extrasDescriptionController = TextEditingController();
+  final TextEditingController _haresController = TextEditingController();
 
   bool _isVisible = true;
   bool _isCountedRun = true;
@@ -83,12 +85,14 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     _eventPriceForNonMembersController.dispose();
     _eventPriceForExtrasController.dispose();
     _extrasDescriptionController.dispose();
+    _haresController.dispose();
 
     _focusNodeAbsoluteEventNumber.dispose();
     _focusNodeEventPriceForMembers.dispose();
     _focusNodeEventPriceForNonMembers.dispose();
     _focusNodeEventPriceForExtras.dispose();
     _focusNodeExtrasDescription.dispose();
+    _focusNodeHares.dispose();
     super.dispose();
   }
 
@@ -98,6 +102,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       _eventDescriptionController.text = _eventAggregate.event.eventDescription;
       _eventDatetimeController.text = _eventAggregate.event.eventStartDatetime.toString();
       _locationOneLineDescController.text = _eventAggregate.event.locationOneLineDesc;
+      _haresController.text = _eventAggregate.event.hares;
 
       _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
       _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toString() ?? '';
@@ -366,6 +371,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : num.tryParse(_absoluteEventNumberController.text),
             eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : num.tryParse(_eventPriceForExtrasController.text),
             extrasDescription: _extrasDescriptionController.text.isEmpty ? '<none>' : _extrasDescriptionController.text,
+            hares: _haresController.text,
             isCountedRun: _isCountedRun,
             isVisible: _isVisible,
             isPromotedEvent: _isPromotedEvent,
@@ -419,6 +425,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
         ),
         KeyboardActionsItem(
           focusNode: _focusNodeExtrasDescription,
+        ),
+        KeyboardActionsItem(
+          focusNode: _focusNodeHares,
         ),
 
         // KeyboardActionsItem(
@@ -1281,6 +1290,50 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
                         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      child: Text(
+                        'Enter hares here. These names will be presented in addition to anyone who has RSVPed as a Hare using the app',
+                        style: mediumTextBlack,
+                      ),
+                    ),
+                    Container(
+                      color: _focusNodeHares.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      child: TextFormField(
+                        // onChanged: (String text) {
+                        //   if ((text == null) || (text.isEmpty)) {
+                        //     _absoluteEventNumberController.text = '<auto>';
+                        //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
+                        //     _absoluteEventNumberController.text = _absoluteEventNumberController.text.replaceAll('<auto>', '');
+                        //     _absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: _absoluteEventNumberController.text.length));
+                        //   }
+                        // },
+                        maxLines: 1,
+                        focusNode: _focusNodeHares,
+                        controller: _haresController,
+                        // validator: (String val) {
+                        //   if (val.isEmpty) {
+                        //     return 'Please provide an event number or leave blank for auto numbering';
+                        //   } else {
+                        //     return null;
+                        //   }
+                        // },
+                        //keyboardType: const TextInputType.(),
+                        textCapitalization: TextCapitalization.sentences,
+                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        decoration: InputDecoration(
+                          labelText: 'Hares',
+                          fillColor: Colors.red,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: const BorderSide(),
+                          ),
+                          hintText: '<enter Hares here>',
+                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        ),
                       ),
                     ),
                     Container(

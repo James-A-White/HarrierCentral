@@ -308,6 +308,7 @@ class EventsService extends BaseService {
     String extrasDescription,
     String locationOneLineDesc,
     String eventImageUrl,
+    String hares,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return '';
@@ -398,6 +399,10 @@ class EventsService extends BaseService {
 
     if (eventDescription != null) {
       bodyMap.addAll(<String, String>{'eventDescription': eventDescription});
+    }
+
+    if (hares != null) {
+      bodyMap.addAll(<String, String>{'hares': hares});
     }
 
     if (locationOneLineDesc != null) {
