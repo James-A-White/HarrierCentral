@@ -823,7 +823,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ),
                                           ),
                                         ),
-                                        for (RunDetailsAggregate item in _allRuns) runRow(item),
+                                        for (RunDetailsAggregate item in _allRuns) _runRow(item),
                                         const SizedBox(height: 15.0)
                                       ],
                                     ),
@@ -918,7 +918,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     }
   }
 
-  Widget runRow(RunDetailsAggregate s) {
+  Widget _runRow(RunDetailsAggregate s) {
     return RunListItem(
       futureRun: s,
       onItemTapped: () {

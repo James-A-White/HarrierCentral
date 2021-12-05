@@ -203,30 +203,30 @@ class QueryKennels {
       
         SELECT  
           k.*, 
-          hkm.hkmId, 
-          hkm.kennelNotificationPreference,
-          hkm.kennelEmailAlertPreference,
-          COALESCE(hkm.following,0) as following,
-          COALESCE(hkm.appAccessFlags,0) as appAccessFlags,
-          c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location,
-          c.cityName as cityName,
-          r.regionName as regionName,
-          r.regionAbbreviation as regionAbbreviation,
-          n.countryName as countryName,
-          (SELECT min(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime >= datetime('now','localtime') ) as nextRunDate,
-          (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
-          n.digitsAfterDecimal,
-          n.currencySymbol,
-          COALESCE(k.DistancePreference,n.DistancePreference,0) as distanceUnitsPref,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},c.${G0<TableModel>().citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},c.${G0<TableModel>().citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHkmId}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelNotificationPreference},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as following,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},0) as appAccessFlags,
+          c.${G0<TableModel>().citiesTableHelper.colCityName} || ', ' || CASE WHEN n.${G0<TableModel>().countriesTableHelper.colShowRegion} = 1 THEN r.${G0<TableModel>().regionsTableHelper.colRegionName} || ', ' ELSE '' END || n.${G0<TableModel>().countriesTableHelper.colCountryName} as location,
+          c.${G0<TableModel>().citiesTableHelper.colCityName} as cityName,
+          r.${G0<TableModel>().regionsTableHelper.colRegionName} as regionName,
+          r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation} as regionAbbreviation,
+          n.${G0<TableModel>().countriesTableHelper.colCountryName} as countryName,
+          (SELECT min(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} >= datetime('now','localtime') ) as nextRunDate,
+          (SELECT max(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= datetime('now','localtime') ) as lastRunDate,
+          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal}) as ${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},
+          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol}) as ${G0<TableModel>().countriesTableHelper.colCurrencySymbol},
+          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colDistancePreference},n.${G0<TableModel>().countriesTableHelper.colDistancePreference},0) as distanceUnitsPref,
+          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},c.${G0<TableModel>().citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
+          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},c.${G0<TableModel>().citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
           $searchKennelsField
           FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
           INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
           INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
           INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
-          LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = k.kennelId and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$hasherId"
+          LEFT OUTER JOIN $hkmTable hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$hasherId"
           ''';
 
     final String whereClauseForSingleKenenel = '''
