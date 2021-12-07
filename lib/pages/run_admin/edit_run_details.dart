@@ -294,7 +294,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     }
   }
 
-  Future<void> _useFacebookDetails() async {
+  Future<void> _useExternalSourceDetails() async {
     setState(() {
       _isUpdating = true;
     });
@@ -310,10 +310,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       _setTextFields();
       final SnackBar snackBar = SnackBar(
         duration: const Duration(seconds: 3),
-        content: const Text(
-          'Run details being synced from Facebook',
+        content: Text(
+          'Run details being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
           textAlign: TextAlign.center,
-          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+          style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
         ),
         backgroundColor: Colors.blue.shade700,
       );
@@ -464,8 +464,12 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
-                      child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
-                          textAlign: TextAlign.center, style: headingStyle20Black),
+                      child: Text(
+                          _eventAggregate.event.useFbRunDetails == 1
+                              ? 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                              : 'Run data from Harrier Central',
+                          textAlign: TextAlign.center,
+                          style: headingStyle20Black),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
@@ -613,66 +617,67 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        //crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          _isUpdating
-                              ? const SizedBox(
-                                  height: 70.0,
-                                  width: 70.0,
-                                  child: HcCircularProgressIndicator(key: Key('112096562')),
-                                )
-                              : SizedBox(
-                                  width: 162.0,
-                                  child: ElevatedButton(
-                                    child: Text(widget.isNewRun ? 'Next' : 'Save Details', style: buttonLabelStyleMedium),
-                                    onPressed: () async {
-                                      if (_detailsFormKey.currentState.validate()) {
-                                        await _updateRunDetails(true);
-
-                                        if (widget.isNewRun) {
-                                          // this delay is required to ensure that the _isUpdating setState
-                                          // to function properly
-                                          _tabController.animateTo(1);
-                                        } else {
-                                          final SnackBar snackBar = SnackBar(
-                                            duration: const Duration(seconds: 3),
-                                            content: const Text(
-                                              'Run details have been saved',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                            ),
-                                            backgroundColor: Colors.blue.shade700,
-                                          );
-                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                        }
-                                        await Future<void>.delayed(const Duration(milliseconds: 500));
-                                        setState(() {
-                                          _isUpdating = false;
-                                        });
-                                      }
-                                    },
-                                  ),
-                                ),
-                          if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                            const SizedBox(width: 10.0),
-                            SizedBox(
-                              width: 162.0,
-                              child: ElevatedButton(
-                                child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                                onPressed: () {
-                                  setState(() {
-                                    _useFacebookDetails();
-                                  });
-                                },
-                              ),
-                            ),
-                          ]
-                        ],
+                      margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
+                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      child: Text(
+                          _eventAggregate.event.useFbRunDetails == 1
+                              ? 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                              : 'Run data from Harrier Central',
+                          textAlign: TextAlign.center,
+                          style: headingStyle20Black),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[100],
+                        border: Border.all(width: 2.0),
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       ),
                     ),
+                    const SizedBox(height: 20.0),
+                    _isUpdating
+                        ? const SizedBox(
+                            height: 70.0,
+                            width: 70.0,
+                            child: HcCircularProgressIndicator(key: Key('112096562')),
+                          )
+                        : ElevatedButton(
+                            child: Text(widget.isNewRun ? 'Next' : 'Save changes to Harrier Central', style: buttonLabelStyleMedium),
+                            onPressed: () async {
+                              if (_detailsFormKey.currentState.validate()) {
+                                await _updateRunDetails(true);
+
+                                if (widget.isNewRun) {
+                                  // this delay is required to ensure that the _isUpdating setState
+                                  // to function properly
+                                  _tabController.animateTo(1);
+                                } else {
+                                  final SnackBar snackBar = SnackBar(
+                                    duration: const Duration(seconds: 3),
+                                    content: const Text(
+                                      'Run details have been saved',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                    ),
+                                    backgroundColor: Colors.blue.shade700,
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                }
+                                await Future<void>.delayed(const Duration(milliseconds: 500));
+                                setState(() {
+                                  _isUpdating = false;
+                                });
+                              }
+                            },
+                          ),
+                    if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                      ElevatedButton(
+                        child: Text('Copy data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
+                        onPressed: () {
+                          setState(() {
+                            _useExternalSourceDetails();
+                          });
+                        },
+                      ),
+                    ],
+                    const SizedBox(height: 80.0),
                   ],
                 ),
               ],
@@ -765,7 +770,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                       ),
-                      child: Text('Use image from Facebook', style: buttonLabelStyleMedium),
+                      child: Text('Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
                       onPressed: () async {
                         setState(() {
                           _isUpdating = true;
@@ -781,10 +786,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                           _isUpdating = false;
                           final SnackBar snackBar = SnackBar(
                             duration: const Duration(seconds: 3),
-                            content: const Text(
-                              'Image is being synced from Facebook',
+                            content: Text(
+                              'Image is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                              style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
                             ),
                             backgroundColor: Colors.blue.shade700,
                           );
@@ -863,7 +868,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                           style: ElevatedButton.styleFrom(
                                             minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                                           ),
-                                          child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                                          child: Text('Use ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
                                           onPressed: () async {
                                             setState(() {
                                               _isUpdating = true;
@@ -879,10 +884,10 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                               _isUpdating = false;
                                               final SnackBar snackBar = SnackBar(
                                                 duration: const Duration(seconds: 3),
-                                                content: const Text(
-                                                  'Image is being synced from Facebook',
+                                                content: Text(
+                                                  'Image is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                                                   textAlign: TextAlign.center,
-                                                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                                  style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
                                                 ),
                                                 backgroundColor: Colors.blue.shade700,
                                               );
@@ -1050,8 +1055,12 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 bottom: 40.0,
                 child: Container(
                   padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                  child: Text(_eventAggregate.event.useFbLatLon == 1 ? 'Location from Facebook' : 'Location from Harrier Central',
-                      textAlign: TextAlign.center, style: headingStyle20Black),
+                  child: Text(
+                      _eventAggregate.event.useFbLatLon == 1
+                          ? 'Location from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                          : 'Location from Harrier Central',
+                      textAlign: TextAlign.center,
+                      style: headingStyle20Black),
                   decoration: BoxDecoration(
                     color: Colors.yellow[100],
                     border: Border.all(width: 2.0),
@@ -1218,7 +1227,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                           if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                             const SizedBox(width: 20.0),
                             ElevatedButton(
-                              child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                              child: Text('Use ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
                               onPressed: () async {
                                 setState(() {
                                   _isUpdating = true;
@@ -1231,17 +1240,24 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
                                 _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
                                 setState(() {
-                                  _mapCenter = latlng.LatLng(
-                                    _eventAggregate.extensions.latitude,
-                                    _eventAggregate.extensions.longitude,
-                                  );
+                                  if ((_eventAggregate?.extensions?.latitude == null) || (_eventAggregate?.extensions?.longitude == null)) {
+                                    _mapCenter = latlng.LatLng(
+                                      _eventAggregate.kennel.kennelLatitude,
+                                      _eventAggregate.kennel.kennelLongitude,
+                                    );
+                                  } else {
+                                    _mapCenter = latlng.LatLng(
+                                      _eventAggregate.extensions.latitude,
+                                      _eventAggregate.extensions.longitude,
+                                    );
+                                  }
                                   _isUpdating = false;
                                   final SnackBar snackBar = SnackBar(
                                     duration: const Duration(seconds: 3),
-                                    content: const Text(
-                                      'Location is being synced from Facebook',
+                                    content: Text(
+                                      'Location is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
                                     ),
                                     backgroundColor: Colors.blue.shade700,
                                   );
@@ -1284,8 +1300,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
-                      child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
-                          textAlign: TextAlign.center, style: headingStyle20Black),
+                      child: Text('Run data from Harrier Central', textAlign: TextAlign.center, style: headingStyle20Black),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),

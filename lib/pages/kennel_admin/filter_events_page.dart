@@ -666,11 +666,12 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                   event: event,
                   kennelShortName: widget.kennel.kennel.kennelShortName,
                   updateEvent: (dynamic retVal) async {
+                    final EnumEventFilterType<int> ft = retVal;
+                    //print(ft);
                     setState(() {
                       _itemBeingUpdatedId = event.eventId;
                     });
 
-                    final EnumEventFilterType<int> ft = retVal;
                     switch (ft) {
                       case eventFilterType_showEvent:
                         await _updateEvent(eventId: event.eventId, isVisible: true);

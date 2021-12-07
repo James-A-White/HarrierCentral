@@ -696,7 +696,9 @@ class RunDetails extends StatelessWidget {
             ),
           ],
           //
-          if ((eventUrlWithKennelBackup != null) && (eventUrlWithKennelBackup.isNotEmpty)) ...<Widget>[
+          if (!(((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK)) &&
+              (eventUrlWithKennelBackup != null) &&
+              (eventUrlWithKennelBackup.isNotEmpty)) ...<Widget>[
             const FancyDivider(
               key: Key('592930192'),
               innerColor: Colors.white,
