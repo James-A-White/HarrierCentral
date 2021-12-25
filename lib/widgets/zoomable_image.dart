@@ -1,7 +1,6 @@
 // @dart=2.11
 
 import 'dart:io' as platform;
-import 'package:flutter/material.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -56,7 +55,7 @@ class ZoomableImagePage2 extends StatelessWidget {
           children: <Widget>[
             Expanded(
               child: Padding(
-                padding: EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(15.0),
                 child: file != null
                     ? PhotoView(
                         imageProvider: FileImage(file),

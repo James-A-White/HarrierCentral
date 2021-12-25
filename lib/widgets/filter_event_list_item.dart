@@ -44,12 +44,40 @@ class FilterEventListItem extends StatelessWidget {
                             backgroundBlendMode: BlendMode.saturation,
                           ),
                     child: Opacity(
-                        opacity: event.isVisible == 1 ? 1.0 : 0.5,
-                        child: Image.asset(
-                          'images/icons/integration_icon_${event.eventInboundIntegrationId}.png',
-                          height: iconSize,
-                          width: iconSize,
-                        )),
+                      opacity: event.isVisible == 1 ? 1.0 : 0.5,
+                      child: Stack(
+                        children: <Widget>[
+                          Image.asset(
+                            event.eventInboundIntegrationId <= 2 ? 'images/icons/integration_icon_${event.eventInboundIntegrationId}.png' : 'images/icons/integration_icon_x.png',
+                            height: iconSize,
+                            width: iconSize,
+                          ),
+                          if (event.eventInboundIntegrationId > 2) ...<Widget>[
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              top: 2.5,
+                              child: Text(
+                                event.eventInboundIntegrationId == 5
+                                    ? 'Berlin Website'
+                                    : event.eventInboundIntegrationId == 3
+                                        ? 'San\r\nDiego'
+                                        : 'External Source',
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontFamily: 'AvenirNextBold',
+                                  height: 1.0,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10.0,
+                                ),
+                              ),
+                            ),
+                          ]
+                        ],
+                      ),
+                    ),
                   ),
 
             Expanded(
