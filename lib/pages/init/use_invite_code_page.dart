@@ -1,6 +1,5 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/widgets/email_popup.dart';
 
 class UseInviteCodePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
