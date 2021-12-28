@@ -18,6 +18,14 @@ void main() {
   runApp(
     Phoenix(
       child: MaterialApp(
+        builder: (BuildContext context, Widget child) {
+          final MediaQueryData mediaQueryData = MediaQuery.of(context);
+          final num scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.25);
+          return MediaQuery(
+            child: child,
+            data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
+          );
+        },
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[

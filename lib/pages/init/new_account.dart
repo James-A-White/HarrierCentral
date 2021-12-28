@@ -72,97 +72,108 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
 
       return Container(
         padding: const EdgeInsets.all(15),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            Text(
-              'Select an option to configure Harrier Central',
-              style: localHeadingStyle,
-              textAlign: TextAlign.center,
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: Colors.white,
-                  border: Border.all(
-                    color: Colors.red.shade900,
-                    width: 2, //                   <--- border width here
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(
+                'Select an option to configure Harrier Central',
+                style: localHeadingStyle,
+                textAlign: TextAlign.center,
+              ),
+
+              GestureDetector(
+                onTap: () {
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(5.0),
+                  padding: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    color: Colors.white,
+                    border: Border.all(
+                      color: Colors.red.shade900,
+                      width: 2, //                   <--- border width here
+                    ),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Image(
+                        width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                        height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                        fit: BoxFit.fill,
+                        image: const AssetImage('images/icons/pencil.png'),
+                      ),
+                      const SizedBox(height: 1, width: 10),
+                      Expanded(
+                        child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text('Create New Account', style: localTitleStyle),
+                          Text(
+                            'Provide information to create a new Harrier Central account if you are not already in the system',
+                            style: localBodyStyle,
+                            //softWrap: true,
+                          ),
+                        ]),
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  children: <Widget>[
-                    Image(
-                      width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                      height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                      fit: BoxFit.fill,
-                      image: const AssetImage('images/icons/inviteCode.png'),
-                    ),
-                    const SizedBox(height: 1, width: 10),
-                    Expanded(
-                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                        Text('Use Invite Code', style: localTitleStyle),
-                        Text(
-                          'Use the invite code provided by your kennel to create or reconnect to your Harrier Central account',
-                          style: localBodyStyle,
-                          //softWrap: true,
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
               ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const ThirdPartyLogin(true)),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: Colors.white,
-                  border: Border.all(
-                    color: Colors.red.shade900,
-                    width: 2, //                   <--- border width here
+              GestureDetector(
+                onTap: () {
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(5.0),
+                  padding: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    color: Colors.white,
+                    border: Border.all(
+                      color: Colors.red.shade900,
+                      width: 2, //                   <--- border width here
+                    ),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Image(
+                        width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                        height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                        fit: BoxFit.fill,
+                        image: const AssetImage('images/icons/inviteCode.png'),
+                      ),
+                      const SizedBox(height: 1, width: 10),
+                      Expanded(
+                        child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text('Use Invite Code', style: localTitleStyle),
+                          Text(
+                            'Use the invite code provided by your kennel to create or reconnect to your Harrier Central account',
+                            style: localBodyStyle,
+                            //softWrap: true,
+                          ),
+                        ]),
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  children: <Widget>[
-                    Image(
-                      width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                      height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                      fit: BoxFit.fill,
-                      image: const AssetImage('images/init/3rd_party.png'),
-                    ),
-                    const SizedBox(height: 1, width: 10),
-                    Expanded(
-                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                        Text('Use Third Party', style: localTitleStyle),
-                        Text(
-                          'Create a new Harrier Central account or connect to your existing account using a third-party login provider',
-                          style: localBodyStyle,
-                          //softWrap: true,
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
               ),
-            ),
-            IveCoreUtilities.styleForDisabled(
-                Container(
+              GestureDetector(
+                onTap: () {
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(builder: (BuildContext context) => const ThirdPartyLogin(true)),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(5.0),
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20.0),
@@ -178,14 +189,14 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                         width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
                         height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
                         fit: BoxFit.fill,
-                        image: const AssetImage('images/icons/qrPhone.png'),
+                        image: const AssetImage('images/init/3rd_party.png'),
                       ),
                       const SizedBox(height: 1, width: 10),
                       Expanded(
                         child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          Text('Transfer app', style: localTitleStyle),
+                          Text('Use Third Party', style: localTitleStyle),
                           Text(
-                            'Use a QR code to transfer your Harrier Central account to this phone from another phone',
+                            'Create a new Harrier Central account or connect to your existing account using a third-party login provider',
                             style: localBodyStyle,
                             //softWrap: true,
                           ),
@@ -194,48 +205,44 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                     ],
                   ),
                 ),
-                borderRadius: 20.0),
-            GestureDetector(
-              onTap: () {
-                Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: Colors.white,
-                  border: Border.all(
-                    color: Colors.red.shade900,
-                    width: 2, //                   <--- border width here
-                  ),
-                ),
-                child: Row(
-                  children: <Widget>[
-                    Image(
-                      width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                      height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                      fit: BoxFit.fill,
-                      image: const AssetImage('images/icons/pencil.png'),
-                    ),
-                    const SizedBox(height: 1, width: 10),
-                    Expanded(
-                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                        Text('Create New Account', style: localTitleStyle),
-                        Text(
-                          'Provide information to create a new Harrier Central account if you are not already in the system',
-                          style: localBodyStyle,
-                          //softWrap: true,
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
               ),
-            ),
-          ],
+              // IveCoreUtilities.styleForDisabled(
+              //     Container(
+              //       padding: const EdgeInsets.all(10),
+              //       decoration: BoxDecoration(
+              //         borderRadius: BorderRadius.circular(20.0),
+              //         color: Colors.white,
+              //         border: Border.all(
+              //           color: Colors.red.shade900,
+              //           width: 2, //                   <--- border width here
+              //         ),
+              //       ),
+              //       child: Row(
+              //         children: <Widget>[
+              //           Image(
+              //             width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+              //             height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+              //             fit: BoxFit.fill,
+              //             image: const AssetImage('images/icons/qrPhone.png'),
+              //           ),
+              //           const SizedBox(height: 1, width: 10),
+              //           Expanded(
+              //             child:
+              //                 Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+              //               Text('Transfer app', style: localTitleStyle),
+              //               Text(
+              //                 'Use a QR code to transfer your Harrier Central account to this phone from another phone',
+              //                 style: localBodyStyle,
+              //                 //softWrap: true,
+              //               ),
+              //             ]),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //     borderRadius: 20.0),
+            ],
+          ),
         ),
       );
     });

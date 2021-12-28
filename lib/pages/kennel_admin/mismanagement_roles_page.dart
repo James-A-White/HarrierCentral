@@ -43,7 +43,7 @@ class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
                       // getOption('Is on mismanagement', mmRoles.getMismanagementState(mmRoleIsOnMm), (bool value) {
                       //   mmRoles.setMismanagementState(mmRoleIsOnMm, value);
                       // }),
-                      getOption('General manager (GM)', mmRoles.getMismanagementState(mmRoleFlagGm), (bool value) {
+                      getOption('Grand Master/Mistress (GM)', mmRoles.getMismanagementState(mmRoleFlagGm), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagGm, value);
                       }),
                       getOption('Vice GM', mmRoles.getMismanagementState(mmRoleFlagVgm), (bool value) {
@@ -73,17 +73,16 @@ class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
                       getOption('Trail Master', mmRoles.getMismanagementState(mmRoleFlagTrailMaster), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagTrailMaster, value);
                       }),
-
                       getOption('Chief Scribe', mmRoles.getMismanagementState(mmRoleFlagScribe), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagScribe, value);
                       }),
                       getOption('Web Meister', mmRoles.getMismanagementState(mmRoleFlagWebMeister), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagWebMeister, value);
                       }),
-                      getOption('Hash Hugs (female)', mmRoles.getMismanagementState(mmRoleFlagHashHo), (bool value) {
+                      getOption('Hash Harlot', mmRoles.getMismanagementState(mmRoleFlagHashHo), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagHashHo, value);
                       }),
-                      getOption('Hash Hugs (male)', mmRoles.getMismanagementState(mmRoleFlagHashHugs), (bool value) {
+                      getOption('Hash Hugs', mmRoles.getMismanagementState(mmRoleFlagHashHugs), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagHashHugs, value);
                       }),
                       getOption('Haberdasher', mmRoles.getMismanagementState(mmRoleFlagHaberdasher), (bool value) {
@@ -95,7 +94,7 @@ class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
                       getOption('Hash Trash (newsletter)', mmRoles.getMismanagementState(mmRoleFlagHashTrash), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagHashTrash, value);
                       }),
-                      getOption('Hash Bank', mmRoles.getMismanagementState(mmRoleFlagHashBank), (bool value) {
+                      getOption('Banker Wanker', mmRoles.getMismanagementState(mmRoleFlagHashBank), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagHashBank, value);
                       }),
                       getOption('Event Meister', mmRoles.getMismanagementState(mmRoleFlagEventMeister), (bool value) {
@@ -103,6 +102,15 @@ class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
                       }),
                       getOption('Hash Communications', mmRoles.getMismanagementState(mmRoleFlagCommunications), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagCommunications, value);
+                      }),
+                      getOption('Bash Master', mmRoles.getMismanagementState(mmRoleFlagBashMaster), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagBashMaster, value);
+                      }),
+                      getOption('Bash Money Master', mmRoles.getMismanagementState(mmRoleFlagBashMoney), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagBashMoney, value);
+                      }),
+                      getOption('Cunning Linguist (Translator)', mmRoles.getMismanagementState(mmRoleFlagTranslator), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagTranslator, value);
                       }),
                       getOption('<Other not listed>', mmRoles.getMismanagementState(mmRoleFlagOther), (bool value) {
                         mmRoles.setMismanagementState(mmRoleFlagOther, value);

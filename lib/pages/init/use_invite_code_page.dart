@@ -102,14 +102,14 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                const SizedBox(
-                  width: 46,
-                  height: 10,
-                ),
-                Text(
-                  'Please enter your\r\ninvite code',
-                  style: localHeadingStyle,
-                  textAlign: TextAlign.center,
+                SizedBox(width: 46.0),
+                Expanded(
+                  child: Text(
+                    'Please enter your invite code',
+                    maxLines: 3,
+                    style: localHeadingStyle,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 GestureDetector(
                   onTap: () async {

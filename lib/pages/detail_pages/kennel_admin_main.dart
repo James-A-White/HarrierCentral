@@ -317,7 +317,20 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     MaterialPageRoute<dynamic>(
                                                       builder: (BuildContext context) => _kennelMembersList,
                                                     ),
-                                                  );
+                                                  ).then((void _) async {
+                                                    final KennelListAggregate kennelAggregate = await QueryKennels.getSingleKennel(widget.kennelAggregateItem.kennel.kennelId);
+
+                                                    setState(() {
+                                                      if ((kennelAggregate.kennel.kennelMismanagementTeam == null) ||
+                                                          (kennelAggregate.kennel.kennelMismanagementTeam.trim().isEmpty)) {
+                                                        _mismanagement = null;
+                                                      } else {
+                                                        _mismanagement = kennelAggregate.kennel.kennelMismanagementTeam.contains('\r')
+                                                            ? kennelAggregate.kennel.kennelMismanagementTeam.split('\r')
+                                                            : kennelAggregate.kennel.kennelMismanagementTeam.split('\n');
+                                                      }
+                                                    });
+                                                  });
                                                 }
                                               },
                                             ),

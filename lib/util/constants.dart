@@ -202,7 +202,12 @@ const int mmRoleFlagHashTrash = 0x00020000;
 const int mmRoleFlagHashBank = 0x00040000;
 const int mmRoleFlagEventMeister = 0x00080000;
 const int mmRoleFlagCommunications = 0x00100000;
+
 const int mmRoleFlagOther = 0x00200000;
+
+const int mmRoleFlagBashMaster = 0x00400000;
+const int mmRoleFlagBashMoney = 0x00800000;
+const int mmRoleFlagTranslator = 0x01000000;
 
 const int mmRoleAllFlags = 0x002fffff;
 
