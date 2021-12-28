@@ -404,7 +404,7 @@ class RunDetails extends StatelessWidget {
                             child: Text(
                               G0<AppModel>().hasLocationPermissions
                                   ? distToEvent >= 0
-                                      ? Utilities.getDistance(distToEvent, context, isMetric: distancePreference == 0) + ' from here'
+                                      ? Utilities.getDistance(distToEvent, context, isMetric: (distancePreference & 0x01) == 0) + ' from here'
                                       : '<unknown>'
                                   : '',
                               style: listValueStyle,
