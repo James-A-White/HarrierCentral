@@ -12,6 +12,7 @@ class AreWeAtRunResult {
   String kennelShortName;
   num eventNumber;
   num distanceInMeters;
+  num deltaHours;
   int attendenceState;
   bool selected;
 }
@@ -30,7 +31,7 @@ class CommonQueries {
           (julianday(eventStartDatetime) - julianday('now','localtime')) * 24 as deltaHours
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
           WHERE e.kennelId = "$kennelId"
-          ORDER BY abs(julianday('now') - julianday(eventStartDatetime)) ASC
+          ORDER BY abs(julianday('now','localtime') - julianday(eventStartDatetime)) ASC
           
           ''';
 
@@ -75,9 +76,11 @@ class CommonQueries {
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId}
-          WHERE ABS((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
+          WHERE 
+          ((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
+          AND ((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
-          ORDER BY abs(julianday('now') - julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) ASC
+          ORDER BY abs(julianday('now','localtime') - julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) ASC
           
           ''';
 
@@ -116,6 +119,7 @@ class CommonQueries {
               result.kennelId = queryResults[i]['kennelId'];
               result.kennelLogo = queryResults[i]['kennelLogo'];
               result.eventNumber = queryResults[i]['eventNumber'];
+              result.deltaHours = queryResults[i]['deltaHours'];
               result.kennelShortName = queryResults[i]['kennelShortName'];
               result.distanceInMeters = dist;
               result.attendenceState = queryResults[i]['attendenceState'];
