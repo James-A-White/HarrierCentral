@@ -13,8 +13,16 @@ class AreWeAtRunResult {
   num eventNumber;
   num distanceInMeters;
   num deltaHours;
+  num kennelCredit;
+  num memberPrice;
+  num nonMemberPrice;
+  num extrasCost;
   int attendenceState;
+  int digitsAfterDecimal;
+  String currencySymbol;
   bool selected;
+  DateTime membershipExpirationDate;
+  String extrasDescription;
 }
 
 class CommonQueries {
@@ -59,9 +67,9 @@ class CommonQueries {
 
     try {
       final String userId = getStringPref(StringPrefsEnum.userId);
+      const String dollarSign = r'$^';
 
       final String sql = ''' 
-
           SELECT e.${G0<TableModel>().eventsTableHelper.colEventId},
           e.${G0<TableModel>().eventsTableHelper.colEventName},
           case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else e.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as lat,
@@ -71,11 +79,21 @@ class CommonQueries {
           k.${G0<TableModel>().kennelsTableHelper.colKennelId} as kennelId,
           k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},'2000-01-01') as membershipExpirationDate,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras},0) as extrasCost,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colExtrasDescription},'') as extrasDescription,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForNonMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
           (julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24 as deltaHours,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId}
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId" AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = e.${G0<TableModel>().eventsTableHelper.colKennelId}
           WHERE 
           ((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
           AND ((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
@@ -120,9 +138,17 @@ class CommonQueries {
               result.kennelLogo = queryResults[i]['kennelLogo'];
               result.eventNumber = queryResults[i]['eventNumber'];
               result.deltaHours = queryResults[i]['deltaHours'];
+              result.kennelCredit = queryResults[i]['kennelCredit'];
+              result.memberPrice = queryResults[i]['memberPrice'];
+              result.nonMemberPrice = queryResults[i]['nonMemberPrice'];
+              result.extrasCost = queryResults[i]['extrasCost'];
+              result.extrasDescription = queryResults[i]['extrasDescription'];
               result.kennelShortName = queryResults[i]['kennelShortName'];
               result.distanceInMeters = dist;
               result.attendenceState = queryResults[i]['attendenceState'];
+              result.membershipExpirationDate = DateTime.tryParse(queryResults[i]['membershipExpirationDate']) ?? DateTime(2000, 1, 1);
+              result.currencySymbol = queryResults[i]['curSym'];
+              result.digitsAfterDecimal = queryResults[i]['digAfterDec'];
               result.selected = false;
 
               // NOTE: Event images can either be full URLs or they can be partial URLs in the case

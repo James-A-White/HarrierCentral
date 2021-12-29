@@ -146,6 +146,18 @@ const EnumYesNo<int> enumYesNo_Yes = EnumYesNo<int>(1);
 
 //////////////////////////
 
+class EnumCheckinOptions<int> extends HcEnum<int> {
+  const EnumCheckinOptions(int val) : super(val);
+}
+
+const EnumCheckinOptions<int> enumCheckInOption_Cancel = EnumCheckinOptions<int>(-1);
+const EnumCheckinOptions<int> enumCheckInOption_No = EnumCheckinOptions<int>(0);
+const EnumCheckinOptions<int> enumCheckInOption_Yes = EnumCheckinOptions<int>(1);
+const EnumCheckinOptions<int> enumCheckInOption_YesAndPay = EnumCheckinOptions<int>(2);
+const EnumCheckinOptions<int> enumCheckInOption_YesAndPayPlusExtras = EnumCheckinOptions<int>(3);
+
+//////////////////////////
+
 class EnumIsHare<int> extends HcEnum<int> {
   const EnumIsHare(int val) : super(val);
 }

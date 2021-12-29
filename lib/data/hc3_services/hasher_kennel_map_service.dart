@@ -23,6 +23,7 @@ class HasherKennelMapModel implements BaseModel {
       this.historicalTotalRunCount,
       this.historicalHaringCount,
       this.historicalCountIsEstimate,
+      this.kennelCredit,
       this.dateOfLastRun,
       this.membershipExpirationDate,
       this.memberSince,
@@ -52,6 +53,7 @@ class HasherKennelMapModel implements BaseModel {
   final int historicalTotalRunCount;
   final int historicalHaringCount;
   final int historicalCountIsEstimate;
+  final num kennelCredit;
   final DateTime dateOfLastRun;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
@@ -123,6 +125,7 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   final String colHistoricalTotalRunCount = 'historicalTotalRunCount';
   final String colHistoricalHaringCount = 'historicalHaringCount';
   final String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
+  final String colKennelCredit = 'kennelCredit';
   final String colDateOfLastRun = 'dateOfLastRun';
   final String colMembershipExpirationDate = 'membershipExpirationDate';
   final String colMemberSince = 'memberSince';
@@ -152,6 +155,7 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
             $colHistoricalTotalRunCount INT,
             $colHistoricalHaringCount INT,
             $colHistoricalCountIsEstimate INT,
+            $colKennelCredit NUM,
             $colDateOfLastRun TEXT,
             $colMembershipExpirationDate TEXT,
             $colMemberSince TEXT,

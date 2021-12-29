@@ -2,17 +2,23 @@
 import 'package:harrier_central/imports.dart';
 
 class ConfirmAutoCheckinPopup extends StatefulWidget {
-  const ConfirmAutoCheckinPopup(
-      {Key key,
-      @required this.title,
-      @required this.kennelLogo,
-      @required this.eventName,
-      @required this.eventImage,
-      @required this.cancelButtonTitle,
-      @required this.okButtonTitle,
-      @required this.kennelShortName,
-      @required this.eventNumber})
-      : super(key: key);
+  const ConfirmAutoCheckinPopup({
+    Key key,
+    @required this.title,
+    @required this.kennelLogo,
+    @required this.eventName,
+    @required this.eventImage,
+    @required this.cancelButtonTitle,
+    @required this.okButtonTitle,
+    @required this.kennelShortName,
+    @required this.eventNumber,
+    @required this.kennelCredit,
+    @required this.eventPrice,
+    @required this.extrasCost,
+    @required this.extrasDescription,
+    @required this.currencySymbol,
+    @required this.digitsAfterDecimal,
+  }) : super(key: key);
 
   final String title;
   final String kennelLogo;
@@ -22,6 +28,12 @@ class ConfirmAutoCheckinPopup extends StatefulWidget {
   final String okButtonTitle;
   final String kennelShortName;
   final num eventNumber;
+  final num kennelCredit;
+  final num eventPrice;
+  final num extrasCost;
+  final String extrasDescription;
+  final int digitsAfterDecimal;
+  final String currencySymbol;
 
   @override
   _ConfirmAutoCheckinPopupState createState() => _ConfirmAutoCheckinPopupState();
@@ -63,19 +75,55 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                 style: TextButton.styleFrom(backgroundColor: Colors.red),
                 child: Text(widget.cancelButtonTitle),
                 onPressed: () {
-                  Navigator.of(context).pop(enumYesNo_Cancel);
+                  Navigator.of(context).pop(enumCheckInOption_Cancel);
                 },
               ),
               TextButton(
                 style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
-                child: Text(widget.okButtonTitle),
+                child: Text(widget.eventPrice <= widget.kennelCredit ? 'Check in only' : widget.okButtonTitle),
                 onPressed: () {
-                  Navigator.of(context).pop(enumYesNo_Yes);
+                  Navigator.of(context).pop(enumCheckInOption_Yes);
                 },
               ),
             ],
           ),
-        )
+        ),
+        if (widget.eventPrice <= widget.kennelCredit) ...<Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Column(
+              children: <Widget>[
+                Text(
+                    'You have ${IveCoreUtilities.getFormattedMoney(widget.kennelCredit ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} of Hash Credit remaining. Would you like to pay ${IveCoreUtilities.getFormattedMoney(widget.eventPrice ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} from credit for this run?'),
+                TextButton(
+                  style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                  child: const Text('Pay for run with credit'),
+                  onPressed: () {
+                    Navigator.of(context).pop(enumCheckInOption_YesAndPay);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+        if ((widget.extrasCost > 0) && ((widget.eventPrice + widget.extrasCost) <= widget.kennelCredit)) ...<Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Column(
+              children: <Widget>[
+                Text(
+                    'You have ${IveCoreUtilities.getFormattedMoney(widget.kennelCredit ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} of Hash Credit remaining. Would you like to pay ${IveCoreUtilities.getFormattedMoney(widget.eventPrice ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} for the run and ${IveCoreUtilities.getFormattedMoney(widget.extrasCost ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} for the ${widget.extrasDescription} from credit?'),
+                TextButton(
+                  style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                  child: Text('Pay for run and ${widget.extrasDescription} with credit'),
+                  onPressed: () {
+                    Navigator.of(context).pop(enumCheckInOption_YesAndPayPlusExtras);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ]
 
           //  <Widget>[

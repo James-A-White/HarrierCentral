@@ -152,16 +152,22 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           cancelButtonTitle: 'No',
           kennelShortName: result.kennelShortName,
           eventNumber: result.eventNumber,
+          kennelCredit: result.kennelCredit,
+          extrasCost: result.extrasCost,
+          eventPrice: result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice,
+          extrasDescription: result.extrasDescription,
+          digitsAfterDecimal: result.digitsAfterDecimal,
+          currencySymbol: result.currencySymbol,
         );
 
-        final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
+        final EnumCheckinOptions<int> retVal = await showDialog<EnumCheckinOptions<int>>(
             context: context,
             barrierDismissible: false, // user must tap button!
             builder: (BuildContext context) {
               return popup;
             });
 
-        if (retVal == enumYesNo_Yes) {
+        if (retVal == enumCheckInOption_Yes) {
           await _checkInAtEvent(result.eventId, userId);
         }
       }
