@@ -570,6 +570,60 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         ),
                                       ],
                                     ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                          child: SizedBox(
+                                            width: 110,
+                                            height: 110,
+                                            child: Connection.styleForConnected(
+                                              G0<AppModel>().connectionStatus,
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                                                ),
+                                                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(left: 0, top: 4),
+                                                    child: Icon(MaterialCommunityIcons.email_newsletter, color: Colors.white, size: 55),
+                                                  ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 10, right: 10, top: 7),
+                                                    child: Text(
+                                                      'Email invite codes',
+                                                      textAlign: TextAlign.center,
+                                                      style: buttonLabelStyleSmall,
+                                                    ),
+                                                  ),
+                                                ]),
+                                                onPressed: () async {
+                                                  if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                    final bool isPreviewBool = await promptForSending(context);
+
+                                                    if (isPreviewBool != null) {
+                                                      IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+
+                                                      final EmailReportsService svc = EmailReportsService();
+                                                      final Map<String, String> result = await svc.sendKennelInvitesByEmail(
+                                                          kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                          kennelName: widget.kennelAggregateItem.kennel.kennelName,
+                                                          isPreview: isPreviewBool ? 'Yes' : 'No');
+
+                                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+                                                      await IveCoreUtilities.showAlert(
+                                                          context, result['result'].toLowerCase().startsWith('fail') ? 'Failed' : 'Success', result['result'], 'OK');
+                                                    }
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                     const Padding(
                                       padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
                                       child: FancyDivider(key: Key('5511334'), innerColor: Colors.white),
@@ -895,6 +949,46 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         ribbonImage: 'images/icons/offline_mode.png',
       ),
     ]);
+  }
+
+  static Future<bool> promptForSending(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Send invite codes'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text(
+                    'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(null);
+              },
+            ),
+            TextButton(
+              child: const Text('Preview'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            TextButton(
+              child: const Text('Send'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget mmRow(String s) {

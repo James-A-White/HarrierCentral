@@ -65,6 +65,7 @@ const String EMAIL_RUN_DETAILS_TO_PACK_API_URL = 'https://hcazurefunctions7.azur
 const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
 const String EMAIL_RUN_REPORT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
 const String EMAIL_KENNEL_RUN_STATS_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
+const String EMAIL_KENNEL_INVITE_CODES_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
 const String EMAIL_INVITE_CODE_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
