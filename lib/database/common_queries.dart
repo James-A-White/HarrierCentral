@@ -81,7 +81,7 @@ class CommonQueries {
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
+          case when k.${G0<TableModel>().kennelsTableHelper.colAllowSelfPayment} != 0 then coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) else 0 end as kennelCredit,
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},'2000-01-01') as membershipExpirationDate,
           coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras},0) as extrasCost,
           coalesce(e.${G0<TableModel>().eventsTableHelper.colExtrasDescription},'') as extrasDescription,

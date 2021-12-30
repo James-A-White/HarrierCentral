@@ -60,33 +60,15 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
           padding: const EdgeInsets.only(top: 15.0, bottom: 5.0),
           child: ((widget.eventNumber != null) && (widget.eventNumber != 0))
               ? Text(
-                  'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName} (Run #${widget.eventNumber})',
+                  (widget.eventPrice <= widget.kennelCredit)
+                      ? 'Check in to ${widget.kennelShortName}\'s ${widget.eventName} (Run #${widget.eventNumber})'
+                      : 'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName} (Run #${widget.eventNumber})',
                 )
               : Text(
-                  'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName}',
+                  (widget.eventPrice <= widget.kennelCredit)
+                      ? 'Check in to ${widget.kennelShortName}\'s ${widget.eventName}'
+                      : 'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName}',
                 ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.red),
-                child: Text(widget.cancelButtonTitle),
-                onPressed: () {
-                  Navigator.of(context).pop(enumCheckInOption_Cancel);
-                },
-              ),
-              TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
-                child: Text(widget.eventPrice <= widget.kennelCredit ? 'Check in only' : widget.okButtonTitle),
-                onPressed: () {
-                  Navigator.of(context).pop(enumCheckInOption_Yes);
-                },
-              ),
-            ],
-          ),
         ),
         if (widget.eventPrice <= widget.kennelCredit) ...<Widget>[
           Padding(
@@ -97,7 +79,9 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                     'You have ${IveCoreUtilities.getFormattedMoney(widget.kennelCredit ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} of Hash Credit remaining. Would you like to pay ${IveCoreUtilities.getFormattedMoney(widget.eventPrice ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} from credit for this run?'),
                 TextButton(
                   style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
-                  child: const Text('Pay for run with credit'),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Text('Check in and pay ${IveCoreUtilities.getFormattedMoney(widget.eventPrice ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)}')),
                   onPressed: () {
                     Navigator.of(context).pop(enumCheckInOption_YesAndPay);
                   },
@@ -112,10 +96,14 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
             child: Column(
               children: <Widget>[
                 Text(
-                    'You have ${IveCoreUtilities.getFormattedMoney(widget.kennelCredit ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} of Hash Credit remaining. Would you like to pay ${IveCoreUtilities.getFormattedMoney(widget.eventPrice ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} for the run and ${IveCoreUtilities.getFormattedMoney(widget.extrasCost ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} for the ${widget.extrasDescription} from credit?'),
+                    'You can also pay an additional ${IveCoreUtilities.getFormattedMoney(widget.extrasCost ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)} for ${widget.extrasDescription} from credit.'),
                 TextButton(
                   style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
-                  child: Text('Pay for run and ${widget.extrasDescription} with credit'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Text(
+                        'Check in and pay ${IveCoreUtilities.getFormattedMoney((widget.eventPrice + widget.extrasCost) ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)}'),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop(enumCheckInOption_YesAndPayPlusExtras);
                   },
@@ -124,6 +112,38 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
             ),
           ),
         ],
+        if (widget.eventPrice <= widget.kennelCredit) ...<Widget>[
+          const Padding(
+              padding: EdgeInsets.only(top: 10.0),
+              child: Text(
+                'Would you like to check in without paying?',
+              )),
+        ],
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.red),
+                child: Text(widget.cancelButtonTitle),
+                onPressed: () {
+                  Navigator.of(context).pop(enumCheckInOption_Cancel);
+                },
+              ),
+              TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: Text(widget.okButtonTitle),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(enumCheckInOption_Yes);
+                },
+              ),
+            ],
+          ),
+        ),
       ]
 
           //  <Widget>[

@@ -169,6 +169,29 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
         if (retVal == enumCheckInOption_Yes) {
           await _checkInAtEvent(result.eventId, userId);
+        } else if (retVal == enumCheckInOption_YesAndPay) {
+          final PaymentsService paySrv = PaymentsService();
+          await paySrv.payForEvent(
+            result.eventId,
+            userId,
+            GUID_EMPTY,
+            paymentHashCredit.value,
+            result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice,
+            attendenceAtHash.value,
+            payForRunOnly,
+            AppDomainType.user,
+          );
+        } else if (retVal == enumCheckInOption_YesAndPayPlusExtras) {
+          final PaymentsService paySrv = PaymentsService();
+          await paySrv.payForEvent(
+              result.eventId,
+              userId,
+              GUID_EMPTY,
+              paymentHashCredit.value,
+              result.extrasCost + (result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice),
+              attendenceAtHash.value,
+              payForRunAndExtras,
+              AppDomainType.user);
         }
       }
     } else if (resultList.length > 1) {
