@@ -108,7 +108,11 @@ class SyncKennelAdminService {
       final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_kennel_admin_data', body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
-        await updateSqlTablesWithResultsFromBackendApiCall(responseBody, informUser: informUser);
+        await updateSqlTablesWithResultsFromBackendApiCall(
+          // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
+          responseBody.replaceAll('\u2029', ''),
+          informUser: informUser,
+        );
       }
     }
     return true;

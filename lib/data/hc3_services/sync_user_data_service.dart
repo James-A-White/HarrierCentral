@@ -178,7 +178,11 @@ class SyncUserDataService {
       final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data', body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
-        await updateSqlTablesWithResultsFromBackendApiCall(responseBody, informUser: informUser);
+        // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
+        await updateSqlTablesWithResultsFromBackendApiCall(
+          responseBody.replaceAll('\u2029', ''),
+          informUser: informUser,
+        );
         //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
         await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
       }
