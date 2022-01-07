@@ -70,7 +70,7 @@ dependencies:
   # qr_flutter: ^2.1.0+55 # updated from 2.0.0 on 8 Jun 19
   shared_preferences: ^2.0.7 # upgraded Sep 21 21 from 0.5.12+4 # updated Jan 20 from 0.5.7+3 # upgraded Jun 21 20 from 0.5.6+3 # upgraded 7 Apr 20 from 0.5.6+2 # upgraded Feb 25 2020 from 0.5.6+1 # upgraded Feb 02 from ^0.5.6 # upgraded Dec 19 from ^0.5.4+3 # upgraded Nov 10 from ^0.5.3+4 #updated from ^0.5.3+1 on Jul 29 # updated from 0.5.2 on 8 Jun 19
   sign_in_with_apple: ^3.2.0 # upgraded Sep 21 21 from 2.5.4
-  sumup: ^0.2.5
+  sumup: ^0.2.6
   table_calendar: ^3.0.2 # upgraded Sep 21 21 from 2.3.3
   tinycolor: ^1.0.3 # updated Jan 20 from 1.0.2
   url_launcher: ^6.0.15 # upgraded Sep 21 21 from 6.0.3 # upgraded Mar 30 21 from 5.7.10 # downgraded Mar 29 21 from 6.0.2  # upgraded Mar 23 21 from 5.7.10 # updated Jan 20 from 5.4.11 # upgraded Jun 21 20 from 5.4.2 # upgraded Feb 25 2020 from 5.4.1 # upgraded Dec 19 from ^5.2.5 # upgraded Nov 10 from 5.1.2 # updated on 11 Sep from 5.1.1 #updated from ^5.0.3 on 29 Jul # updated from 5.0.2 on 8 Jun 19
