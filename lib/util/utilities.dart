@@ -132,7 +132,9 @@ class Utilities {
 
     IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
     if ((permission == LocationPermission.always) || (permission == LocationPermission.whileInUse)) {
-      G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(desiredAccuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50).listen((Position position) {
+      G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50),
+      ).listen((Position position) {
         if (position != null) {
           G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
           G0<DeviceInfo>().deviceLon = position.longitude + 0.0;

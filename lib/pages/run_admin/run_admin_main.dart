@@ -10,7 +10,7 @@ class RunAdminAggregate {
   });
 
   final RunDetailQueryExtensions extensions;
-  final EventModel event;
+  EventModel event;
   final KennelsModel kennel;
 }
 
@@ -26,6 +26,7 @@ class RunDetailQueryExtensions {
     this.latitude,
     this.longitude,
     this.isMapAndDistanceValid,
+    this.paymentAmountStr,
   });
 
   final int appAccessFlags;
@@ -41,6 +42,7 @@ class RunDetailQueryExtensions {
   num latitude;
   num longitude;
   bool isMapAndDistanceValid;
+  String paymentAmountStr;
 
   bool isLoading = false;
 
@@ -56,6 +58,7 @@ class RunDetailQueryExtensions {
       latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
       longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
       isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
+      paymentAmountStr: '',
     );
     return item;
   }

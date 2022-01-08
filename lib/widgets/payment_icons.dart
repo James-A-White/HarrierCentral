@@ -201,94 +201,96 @@ class PaymentIcons extends StatelessWidget {
     }
 
     return GestureDetector(
-        onTap: () {
+        onTap: () async {
           // temporarily replace the payment value token (if one exists) with a number
           // just so we can get a valid URL for testing. This will not be the actual value
           // sent to the bank, that is done lower down in this method once we've calculated
           // the total amount to be paid.
-          final String modifiedUrl = url.replaceAll('<payment amount>', '5.0');
-          canLaunch(modifiedUrl).then((bool canLaunch) async {
-            if (canLaunch) {
-              // OK, we have a good URL, so let's figure out how much the hasher needs to pay
+          // final String modifiedUrl = url.replaceAll('/<payment amount>', '');
 
-              // start with the extras
-              EnumPayForExtras<int> didPayForExtras = payForRunOnly;
+          // FUCK ANDRIOD - canLaunch doesn't work properly on Android, so I'm commenting it out for now
+          // canLaunch(modifiedUrl).then((bool canLaunch) async {
+          //   if (canLaunch) {
+          // OK, we have a good URL, so let's figure out how much the hasher needs to pay
 
-              String extrasStr = '';
-              num extrasPrice = event.eventPriceForExtras ?? 0;
-              final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
-              final num eventPrice =
-                  (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers) ?? 0;
+          // start with the extras
+          EnumPayForExtras<int> didPayForExtras = payForRunOnly;
 
-              if (extrasPrice > 0) {
-                // if there are extras, show the extras dialog
-                final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
-                if (x == followTypeCancel) {
-                  return;
-                } else {
-                  if (x == payForRunOnly) {
-                    // if the user wants to pay only for the run, don't process extras, so set the value to zero
-                    extrasPrice = 0;
-                  } else {
-                    didPayForExtras = payForRunAndExtras;
-                  }
-                }
-              }
+          String extrasStr = '';
+          num extrasPrice = event.eventPriceForExtras ?? 0;
+          final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
+          final num eventPrice =
+              (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers) ?? 0;
 
-              if (extrasPrice > 0) {
-                // build the string if we need to
-                extrasStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol) + ' charge for ${event.extrasDescription}';
-              }
-
-              final num total = surcharge + eventPrice + extrasPrice;
-
-              // build the other strings for the total price and event prices
-              final String totalStr = IveCoreUtilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
-              final String eventPriceStr = IveCoreUtilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
-
-              String surchargeStr = '';
-              if (surcharge > 0) {
-                // if there is a surcharge, build the surcharge string
-                surchargeStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol) + ' surcharge for $paymentProvider';
-              }
-
-              // show the alert so the user knows how much to pay
-              final bool result = await IveCoreUtilities.showAlert(
-                  context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
-                  showCancelButton: true, cancelButtonText: 'Cancel');
-
-              if (result) {
-                // now launch into the payment provider
-                await launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.')));
-                if (kennel.allowSelfPayment == 0) {
-                  await IveCoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
-                } else {
-                  // show the alert so the user knows how much to pay
-                  final bool result2 = await IveCoreUtilities.showAlert(
-                    context,
-                    'Were you able to pay?',
-                    'Were you able to complete a payment of $totalStr using $paymentProvider',
-                    'Yes',
-                    showCancelButton: true,
-                    cancelButtonText: 'No',
-                  );
-                  if (result2) {
-                    //rsvpState = -1;
-                    stateSetter(-1, -1); // call setState on the parent
-                    final List<dynamic> adHocItems = await payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider);
-                    // rsvpState = adHocItems[0]['rsvpState'];
-                    // isPaid = 1;
-                    stateSetter(adHocItems[0]['rsvpState'], 1);
-                  } else {
-                    await IveCoreUtilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
-                  }
-                }
-              }
+          if (extrasPrice > 0) {
+            // if there are extras, show the extras dialog
+            final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
+            if (x == followTypeCancel) {
+              return;
             } else {
-              await IveCoreUtilities.showAlert(context, 'Bad payment URL',
-                  'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
+              if (x == payForRunOnly) {
+                // if the user wants to pay only for the run, don't process extras, so set the value to zero
+                extrasPrice = 0;
+              } else {
+                didPayForExtras = payForRunAndExtras;
+              }
             }
-          });
+          }
+
+          if (extrasPrice > 0) {
+            // build the string if we need to
+            extrasStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol) + ' charge for ${event.extrasDescription}';
+          }
+
+          final num total = surcharge + eventPrice + extrasPrice;
+
+          // build the other strings for the total price and event prices
+          final String totalStr = IveCoreUtilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
+          final String eventPriceStr = IveCoreUtilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
+
+          String surchargeStr = '';
+          if (surcharge > 0) {
+            // if there is a surcharge, build the surcharge string
+            surchargeStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol) + ' surcharge for $paymentProvider';
+          }
+
+          // show the alert so the user knows how much to pay
+          final bool result = await IveCoreUtilities.showAlert(
+              context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
+              showCancelButton: true, cancelButtonText: 'Cancel');
+
+          if (result) {
+            // now launch into the payment provider
+            await launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.')));
+            if (kennel.allowSelfPayment == 0) {
+              await IveCoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
+            } else {
+              // show the alert so the user knows how much to pay
+              final bool result2 = await IveCoreUtilities.showAlert(
+                context,
+                'Were you able to pay?',
+                'Were you able to complete a payment of $totalStr using $paymentProvider',
+                'Yes',
+                showCancelButton: true,
+                cancelButtonText: 'No',
+              );
+              if (result2) {
+                //rsvpState = -1;
+                stateSetter(-1, -1); // call setState on the parent
+                final List<dynamic> adHocItems = await payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider);
+                // rsvpState = adHocItems[0]['rsvpState'];
+                // isPaid = 1;
+                stateSetter(adHocItems[0]['rsvpState'], 1);
+              } else {
+                await IveCoreUtilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+              }
+            }
+          }
+          // } else {
+          //   await IveCoreUtilities.showAlert(context, 'Bad payment URL',
+          //       'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
+          // }
+          //});
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),

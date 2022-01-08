@@ -124,6 +124,33 @@ class Tables {
       ''',
         appliedAtInt: 0),
 
+    MigrationsModel(
+        dbVersion: 380,
+        migrationText: ''' 
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription} TEXT NOT NULL;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription} TEXT NOT NULL;
+      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription} TEXT NOT NULL;
+      
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM NOT NULL;
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM NOT NULL;
+      
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountPercent} INT NOT NULL;
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountPercent} INT NOT NULL;
+      
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountDescription} TEXT NOT NULL;
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountDescription} TEXT NOT NULL;
+      
+      ''',
+        appliedAtInt: 0),
+
     // // MIGRATION 222
     // MigrationsModel(dbVersion: 222, migrationText: '''
     //         ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;

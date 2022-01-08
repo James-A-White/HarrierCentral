@@ -29,6 +29,9 @@ PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) {
     doPayForExtras: json['doPayForExtras'] as int,
     surcharge: json['surcharge'] as num,
     paymentProvider: json['paymentProvider'] as String,
+    discountAmount: json['discountAmount'] as num,
+    discountPercent: json['discountPercent'] as int,
+    discountDescription: json['discountDescription'] as String,
     removed: json['removed'] as int,
     updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),
   );
@@ -55,6 +58,9 @@ Map<String, dynamic> _$PaymentsModelToJson(PaymentsModel instance) => <String, d
       'doPayForExtras': instance.doPayForExtras,
       'surcharge': instance.surcharge,
       'paymentProvider': instance.paymentProvider,
+      'discountAmount': instance.discountAmount,
+      'discountPercent': instance.discountPercent,
+      'discountDescription': instance.discountDescription,
       'removed': instance.removed,
       'updatedAt': instance.updatedAt?.toIso8601String(),
     };

@@ -717,6 +717,9 @@ class PaymentReportState extends State<PaymentReportPage> {
             IveCoreUtilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
         final String extrasPriceStr =
             IveCoreUtilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String discountAmountStr =
+            IveCoreUtilities.getFormattedMoney(item?.payment?.discountAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String discountPercentStr = '${(item?.payment?.discountPercent ?? 0).toStringAsFixed(0)}%';
 
         return AlertDialog(
           title: const Text('Payment Detail'),
@@ -800,6 +803,69 @@ class PaymentReportState extends State<PaymentReportPage> {
                       ),
                       flex: flexRight),
                 ]),
+                if ((item?.payment?.discountAmount ?? 0) != 0) ...<Widget>[
+                  Row(children: <Widget>[
+                    const Expanded(
+                      child: Text(
+                        'Discount:',
+                        style: headingStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      flex: flexLeft,
+                    ),
+                    const SizedBox(width: spacer, height: 10.0),
+                    Expanded(
+                        child: Text(
+                          discountAmountStr,
+                          style: bodyStyle,
+                        ),
+                        flex: flexRight),
+                  ]),
+                ],
+                if ((item?.payment?.discountAmount ?? 0) != 0) ...<Widget>[
+                  Row(children: <Widget>[
+                    const Expanded(
+                      child: Text(
+                        'Discount:',
+                        style: headingStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      flex: flexLeft,
+                    ),
+                    const SizedBox(width: spacer, height: 10.0),
+                    Expanded(
+                        child: Text(
+                          discountPercentStr,
+                          style: bodyStyle,
+                        ),
+                        flex: flexRight),
+                  ]),
+                ],
+                if ((item.payment.discountDescription ?? '').isNotEmpty && ((item.payment.discountAmount != 0) || (item.payment.discountPercent != 0))) ...<Widget>[
+                  Row(children: <Widget>[
+                    const Expanded(
+                      child: Text(
+                        'Description:',
+                        style: headingStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      flex: flexLeft,
+                    ),
+                    const SizedBox(width: spacer, height: 10.0),
+                    Expanded(
+                        child: Text(
+                          item.payment.discountDescription,
+                          style: bodyStyle,
+                        ),
+                        flex: flexRight),
+                  ]),
+                ],
                 item.extensions.extrasPrice == 0
                     ? Container()
                     : Row(children: <Widget>[

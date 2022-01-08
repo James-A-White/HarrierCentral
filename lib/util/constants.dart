@@ -88,7 +88,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 379;
+const int DB_VERSION = 380;
 
 const num CLEAR_LATLONG = -2.0;
 
@@ -210,7 +210,7 @@ const int mmRoleFlagBashMaster = 0x00400000;
 const int mmRoleFlagBashMoney = 0x00800000;
 const int mmRoleFlagTranslator = 0x01000000;
 
-const int mmRoleAllFlags = 0x002fffff;
+const int mmRoleAllFlags = 0x01ffffff;
 
 class Mismanagement {
   Mismanagement(

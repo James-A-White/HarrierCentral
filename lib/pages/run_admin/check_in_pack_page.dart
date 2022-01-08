@@ -17,6 +17,8 @@ class CheckInPackModel {
       this.virginVisitorType,
       this.rsvpState,
       this.attendenceState,
+      this.discountPercent,
+      this.discountAmount,
       this.rsvpStateIndicator,
       this.attendenceStateIndicator,
       this.paidStateIndicator,
@@ -39,6 +41,8 @@ class CheckInPackModel {
   final int virginVisitorType;
   final int rsvpState;
   final int attendenceState;
+  final int discountPercent;
+  final num discountAmount;
   Future<int> rsvpStateIndicator;
   Future<int> attendenceStateIndicator;
   Future<int> paidStateIndicator;
@@ -65,6 +69,8 @@ class CheckInPackModel {
         attendenceState: map['attendenceState'],
         rsvpStateIndicator: Future<int>.value(map['rsvpState']),
         attendenceStateIndicator: map['rsvpState'] != rsvpYes.value ? Future<int>.value(0) : Future<int>.value(map['attendenceState']),
+        discountAmount: map['discountAmount'],
+        discountPercent: map['discountPercent'],
         paidStateIndicator: map['attendenceState'] >= attendenceAtHash.value ? Future<int>.value(map['isPaid']) : Future<int>.value(-1),
         hcTotalRunCount: map['hcTotalRunCount'],
         hcHaringCount: map['hcHaringCount'],
@@ -200,6 +206,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             0 as attendenceState,
             null as hemUpdatedAt,
             null as payUpdatedAt,
+            0 as discountAmount,
+            0 as discountPercent,
             0 as credit
           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
           ORDER BY nameForSort
@@ -226,24 +234,27 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
           SELECT 
             -- get all of the members of a Kennel and display them
-            h.hasherId,
-            hem.hemId,
-            case when (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime')) then 1 else 0 end as isMember,
-            coalesce(hem.isHare,0) as isHare,
-            CASE WHEN pay.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
-            coalesce(h.dispName,h.hashName,coalesce(h.firstName,"") || " " || coalesce(h.lastName,"")) as nameForDisplay,
-            lower(" " || coalesce(h.hashName,"") || " " || coalesce(h.dispName,"") || " " || coalesce(h.firstName,"") || " " || coalesce(h.lastName,"")) as nameForSort,
-            coalesce(pay.paymentType,0) as paymentType,
-            coalesce(pay.creditAmount,0) as creditAmount,
-            h.photo,
+            h.${G0<TableModel>().hashersTableHelper.colHasherId} as hasherId,
+            hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
+            case when (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) then 1 else 0 end as isMember,
+            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
+            CASE WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL THEN 0 ELSE 1 END as isPaid, 
+            coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"")) as nameForDisplay,
+            lower(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"")) as nameForSort,
+            coalesce(pay.${G0<TableModel>().paymentsTableHelper.colPaymentType},0) as paymentType,
+            coalesce(pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount},0) as creditAmount,
+            h.${G0<TableModel>().hashersTableHelper.colPhoto} as photo,
             0 as virginVisitorType,
-            coalesce(hem.rsvpState,0) as rsvpState,
-            coalesce(hem.attendenceState,0) as attendenceState,
-            hem.updatedAt as hemUpdatedAt,
-            pay.updatedAt as payUpdatedAt,
+            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
+            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+            hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} as hemUpdatedAt,
+            pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} as payUpdatedAt,
             coalesce(credits.currentBalance,0) as credit,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} as discountAmount,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} as discountPercent,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} as hcTotalRunCount,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} as hcHaringCount
+          
           FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hkm.userId
           LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
@@ -284,6 +295,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hem2.updatedAt as hemUpdatedAt,
             pay2.updatedAt as payUpdatedAt,
             0 as credit,
+            0 as ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
+            0 as ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
             null as ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
             null as ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}
             FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 
@@ -309,6 +322,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hem3.updatedAt as hemUpdatedAt,
             pay3.updatedAt as payUpdatedAt,
             coalesce(credits3.currentBalance,0) as credit,
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} as discountAmount,
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} as discountPercent,
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}
             FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
@@ -1074,10 +1089,17 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   // }
 
   SnackBar _buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, CheckInPackModel packMember) {
+    num amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+
+    amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+    amountOwed -= packMember.discountAmount;
+    amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
+
     final SnackBar snackbar = PaymentSnackBar(
       context: context,
       eventAggregate: widget.eventAggregate,
       packMember: packMember,
+      amountOwed: amountOwed,
       onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) {
         if (rsvpState != -1) {
           setState(() {
@@ -1113,7 +1135,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return snackbar;
   }
 
-  Future<void> _payForEvent(BuildContext context, ScaffoldState scaffoldState, int paymentType, CheckInPackModel packMember, num otherAmount) async {
+  Future<void> _payForEvent(
+    BuildContext context,
+    ScaffoldState scaffoldState,
+    int paymentType,
+    CheckInPackModel packMember,
+    num otherAmount,
+  ) async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     dynamic payForExtras = payForRunOnly;
 

@@ -26,6 +26,9 @@ class PaymentsModel implements BaseModel {
     this.doPayForExtras,
     this.surcharge,
     this.paymentProvider,
+    this.discountAmount,
+    this.discountPercent,
+    this.discountDescription,
     this.removed,
     this.updatedAt,
   });
@@ -54,6 +57,9 @@ class PaymentsModel implements BaseModel {
   final int doPayForExtras;
   final num surcharge;
   final String paymentProvider;
+  final num discountAmount;
+  final int discountPercent;
+  final String discountDescription;
   final int removed;
   final DateTime updatedAt;
 }
@@ -110,6 +116,9 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
   final String colConfirmedDate = 'confirmedDate';
   final String colConfirmedBy = 'confirmedBy';
   final String colPaymentReference = 'paymentReference';
+  final String colDiscountAmount = 'discountAmount';
+  final String colDiscountPercent = 'discountPercent';
+  final String colDiscountDescription = 'discountDescription';
   final String colNotes = 'notes';
   final String colDoPayForExtras = 'doPayForExtras';
   final String colSurcharge = 'surcharge';
@@ -142,7 +151,9 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
             $colDoPayForExtras INT,
             $colSurcharge NUM,
             $colPaymentProvider TEXT,
-
+            $colDiscountAmount NUM NOT NULL,
+            $colDiscountPercent INT NOT NULL,
+            $colDiscountDescription TEXT NOT NULL,
             $colRemoved INT,
             $colUpdatedAt TEXT,
             $colUpdatedAtValue NUM NULL
