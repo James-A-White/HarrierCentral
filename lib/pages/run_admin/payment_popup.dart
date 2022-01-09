@@ -243,7 +243,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
         selectedValue = value;
       });
     } else {
-      const OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup();
+      final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(widget.amount, widget.decimalDigits, widget.currencySymbol);
 
       final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
           context: context,

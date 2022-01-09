@@ -566,7 +566,7 @@ class PaymentSnackBar extends SnackBar {
   // }
 
   void payOther(CheckInPackModel packMember, BuildContext context) {
-    const OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup();
+    final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(amountOwed, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym);
 
     final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
