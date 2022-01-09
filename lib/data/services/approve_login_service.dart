@@ -112,7 +112,7 @@ class ApproveLoginService {
     // finally, if the response times out again, continue with offline mode
     resp ??= await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
 
-    if (resp == null) {
+    if ((resp == null) || (resp.body == null) || (resp.body.length < 10) || ((resp.statusCode < 200) && (resp.statusCode >= 300))) {
       return null;
     }
 

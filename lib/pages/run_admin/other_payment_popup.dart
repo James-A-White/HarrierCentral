@@ -244,7 +244,9 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
           style: TextButton.styleFrom(backgroundColor: Colors.red),
           child: const Text('Cancel'),
           onPressed: () {
-            Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
+            Navigator.of(context).pop(<String, String>{
+              'action': 'cancel',
+            });
           },
         ),
         //   ),
@@ -257,7 +259,14 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Cash'),
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': paymentCashOtherAmount.value.toString(), 'amount': _specialPriceTextController.text});
+              Navigator.of(context).pop(<String, dynamic>{
+                'action': 'process',
+                'type': paymentCashOtherAmount.value,
+                'specialPriceAmount': _specialPriceEnabled ? num.tryParse(_specialPriceTextController.text) : null,
+                'specialPriceReason': _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                'topUpAmount': _topUpCreditEnabled ? num.tryParse(_topUpTextController.text) : null,
+                'totalAmountDue': _totalDue
+              });
             }),
         // ),
         // Container(
@@ -268,7 +277,16 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Bank transfer'),
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': paymentBankTransferOtherAmount.value.toString(), 'amount': _specialPriceTextController.text});
+              Navigator.of(context).pop(
+                <String, dynamic>{
+                  'action': 'process',
+                  'type': paymentBankTransferOtherAmount.value,
+                  'specialPriceAmount': _specialPriceEnabled ? num.tryParse(_specialPriceTextController.text) : null,
+                  'specialPriceReason': _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                  'topUpAmount': _topUpCreditEnabled ? num.tryParse(_topUpTextController.text) : null,
+                  'totalAmountDue': _totalDue
+                },
+              );
             }),
         // ),
       ],

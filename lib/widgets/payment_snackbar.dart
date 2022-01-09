@@ -430,8 +430,8 @@ class PaymentSnackBar extends SnackBar {
                                     iconSize: 30.0,
                                     alignment: Alignment.topCenter,
                                     splashColor: Colors.greenAccent,
-                                    onPressed: () {
-                                      payOther(packMember, context);
+                                    onPressed: () async {
+                                      await _payOther(packMember, context);
                                     },
                                   ),
                                   Text(
@@ -565,28 +565,23 @@ class PaymentSnackBar extends SnackBar {
   //       futureRun.currencySymbol);
   // }
 
-  void payOther(CheckInPackModel packMember, BuildContext context) {
+  Future<void> _payOther(CheckInPackModel packMember, BuildContext context) async {
     final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(amountOwed, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym);
 
-    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+    final Map<String, dynamic> userInput = await showDialog<Map<String, dynamic>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return otherPaymentPopup;
         });
 
-    dlg.then((Map<String, String> x) {
-      final String amount = x['amount'];
-      final String type = x['type'];
+    final String action = userInput['action'];
 
-      if (type != 'cancel') {
-        final num amountNumeric = num.tryParse(amount);
-        final int typeNumeric = int.tryParse(type);
+    if (action == 'process') {
+      // print(
+      //     'type=$type, totalDue=${totalDue ?? -1}, topUpAmount=${topUpAmount ?? -1}, specialPriceAmount=${specialPriceAmount ?? -1}, specialPriceReason=${specialPriceReason ?? 'null'}');
 
-        if ((amountNumeric != null) && (typeNumeric != null)) {
-          onPaidCallback(packMember, typeNumeric, otherAmount: amountNumeric);
-        }
-      }
-    });
+      onPaidCallback(packMember, userInput['type'], userInput: userInput);
+    }
   }
 }

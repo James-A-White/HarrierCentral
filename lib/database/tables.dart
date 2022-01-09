@@ -148,6 +148,9 @@ class Tables {
       ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
       ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
       
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colSpecialRunPriceReason} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colSpecialRunPriceReason} TEXT DEFAULT "" NOT NULL;
+
       ''',
         appliedAtInt: 0),
 

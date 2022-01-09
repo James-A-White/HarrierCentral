@@ -29,6 +29,7 @@ class PaymentsModel implements BaseModel {
     this.discountAmount,
     this.discountPercent,
     this.discountDescription,
+    this.specialRunPriceReason,
     this.removed,
     this.updatedAt,
   });
@@ -60,6 +61,7 @@ class PaymentsModel implements BaseModel {
   final num discountAmount;
   final int discountPercent;
   final String discountDescription;
+  final String specialRunPriceReason;
   final int removed;
   final DateTime updatedAt;
 }
@@ -119,6 +121,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
   final String colDiscountAmount = 'discountAmount';
   final String colDiscountPercent = 'discountPercent';
   final String colDiscountDescription = 'discountDescription';
+  final String colSpecialRunPriceReason = 'specialRunPriceReason';
   final String colNotes = 'notes';
   final String colDoPayForExtras = 'doPayForExtras';
   final String colSurcharge = 'surcharge';
@@ -154,6 +157,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
             $colDiscountAmount NUM NOT NULL,
             $colDiscountPercent INT NOT NULL,
             $colDiscountDescription TEXT NOT NULL,
+            $colSpecialRunPriceReason TEXT NOT NULL,
             $colRemoved INT,
             $colUpdatedAt TEXT,
             $colUpdatedAtValue NUM NULL
@@ -191,6 +195,8 @@ class PaymentsService {
     num surcharge,
     String paymentProvider,
     String paymentReference,
+    num specialRunPrice,
+    String specialRunPriceReason,
   }) async {
     List<dynamic> results = <dynamic>[];
 
@@ -249,7 +255,7 @@ class PaymentsService {
 
     final String appDomainStr = appDomainType.toString();
 
-    final String body = jsonEncode(<String, String>{
+    final Map<String, String> bodyMap = <String, String>{
       'userId': userId,
       'accessToken': accessToken,
       'userIdWhoPaid': hasherId,
@@ -269,7 +275,16 @@ class PaymentsService {
       'appDomainType': appDomainStr,
       'paymentReference': paymentReference,
       'transactionTimestamp': DateTime.now().toString(),
-    });
+    };
+
+    if (specialRunPrice != null) {
+      bodyMap.addAll(<String, String>{
+        'specialRunPrice': specialRunPrice.toString(),
+        'specialRunPriceReason': specialRunPriceReason,
+      });
+    }
+
+    final String body = jsonEncode(bodyMap);
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_payment', body);
 

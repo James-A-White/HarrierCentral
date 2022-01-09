@@ -824,6 +824,29 @@ class PaymentReportState extends State<PaymentReportPage> {
                       ),
                       flex: flexRight),
                 ]),
+                if ((item?.payment?.specialRunPriceReason != null) && (item.payment.specialRunPriceReason.isNotEmpty)) ...<Widget>[
+                  Row(
+                    children: <Widget>[
+                      const Expanded(
+                        child: Text(
+                          'Reason:',
+                          style: headingStyle,
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        flex: flexLeft,
+                      ),
+                      const SizedBox(width: spacer, height: 10.0),
+                      Expanded(
+                          child: Text(
+                            item.payment.specialRunPriceReason,
+                            style: bodyStyle,
+                          ),
+                          flex: flexRight),
+                    ],
+                  ),
+                ],
                 if ((item?.payment?.discountAmount ?? 0) != 0) ...<Widget>[
                   Row(children: <Widget>[
                     const Expanded(

@@ -1116,7 +1116,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         _updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
-      onPaidCallback: (CheckInPackModel packMember, int paymentType, {num otherAmount = -1}) {
+      onPaidCallback: (CheckInPackModel packMember, int paymentType, {Map<String, dynamic> userInput}) {
+        final num totalDue = userInput == null ? null : userInput['totalAmountDue'];
+        //final num topUpAmount = userInput['topUpAmount'];
+        final num specialPriceAmount = userInput == null ? null : userInput['specialPriceAmount'] ?? amountOwed;
+        final String specialPriceReason = userInput == null ? null : userInput['specialPriceReason'];
+
         setState(() {
           packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
@@ -1127,7 +1132,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           scaffoldState,
           paymentType,
           packMember,
-          otherAmount,
+          totalDue,
+          specialRunPrice: specialPriceAmount,
+          specialRunPriceReason: specialPriceReason,
         );
       },
     );
@@ -1140,8 +1147,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     ScaffoldState scaffoldState,
     int paymentType,
     CheckInPackModel packMember,
-    num otherAmount,
-  ) async {
+    num otherAmount, {
+    num specialRunPrice,
+    String specialRunPriceReason,
+  }) async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     dynamic payForExtras = payForRunOnly;
 
@@ -1192,7 +1201,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           });
     }
 
-    final List<dynamic> results = await _processPayment(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras);
+    final List<dynamic> results = await _processPayment(
+      packMember,
+      paymentType,
+      otherAmount: otherAmount,
+      doPayForExtras: payForExtras,
+      specialRunPrice: specialRunPrice,
+      specialRunPriceReason: specialRunPriceReason,
+    );
     if (results != null) {
       if ((results[0]['terminalWasUsedForPayment'] == null) || (!results[0]['terminalWasUsedForPayment'])) {
         BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
@@ -1202,7 +1218,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     await _refreshCounters(true);
   }
 
-  Future<List<dynamic>> _processPayment(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
+  Future<List<dynamic>> _processPayment(
+    CheckInPackModel packMember,
+    int paymentType, {
+    num otherAmount = -1,
+    EnumPayForExtras<int> doPayForExtras = payForRunOnly,
+    num specialRunPrice,
+    String specialRunPriceReason,
+  }) async {
     bool paymentCancelled = false;
     bool terminalWasUsedForPayment = false;
 
@@ -1215,7 +1238,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final String hemId = packMember.hemId;
     final String hasherId = packMember.hasherId;
     num amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-    if (otherAmount != -1) {
+    if ((otherAmount != null) && (otherAmount != -1)) {
       amount = otherAmount;
     }
 
@@ -1292,6 +1315,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         doPayForExtras,
         AppDomainType.event,
         paymentReference: paymentReference,
+        specialRunPrice: specialRunPrice,
+        specialRunPriceReason: specialRunPriceReason,
       );
 
       if ((result != null) && (result.isNotEmpty)) {
