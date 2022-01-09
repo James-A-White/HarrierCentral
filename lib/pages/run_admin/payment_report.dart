@@ -77,8 +77,8 @@ class PaymentReportPage extends StatefulWidget {
 class PaymentReportState extends State<PaymentReportPage> {
   PaymentReportState();
 
-  List<PaymentAggregate> paymentsList = <PaymentAggregate>[];
-  List<PaymentAggregate> filteredList = <PaymentAggregate>[];
+  final List<PaymentAggregate> _paymentsList = <PaymentAggregate>[];
+  final List<PaymentAggregate> _filteredList = <PaymentAggregate>[];
 
   bool _isLoading = true;
 
@@ -144,16 +144,16 @@ class PaymentReportState extends State<PaymentReportPage> {
 
     final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
 
-    paymentsList.clear();
+    _paymentsList.clear();
 
     for (int i = 0; i < results.length; i++) {
       final PaymentsModel paymentItem = G0<TableModel>().paymentsTableHelper.fromMap(results[i]);
       final PaymentQueryExtensions extensions = PaymentQueryExtensions.fromMap(results[i]);
       final PaymentAggregate item = PaymentAggregate(payment: paymentItem, extensions: extensions);
 
-      paymentsList.add(item);
+      _paymentsList.add(item);
       if (i == results.length - 1) {
-        paymentsList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
+        _paymentsList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
         applyFilter();
         setState(() {});
       }
@@ -211,7 +211,8 @@ class PaymentReportState extends State<PaymentReportPage> {
   }
 
   void applyFilter() {
-    filteredList = paymentsList
+    _filteredList.clear();
+    _filteredList.addAll(_paymentsList
         .where((PaymentAggregate evt) =>
             ((filterValue & 1) != 0 && ((evt.payment.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
             ((filterValue & 2) != 0 && (evt.payment.paymentType == paymentCash.value)) ||
@@ -220,9 +221,9 @@ class PaymentReportState extends State<PaymentReportPage> {
             ((filterValue & 16) != 0 && (evt.payment.paymentType == paymentBankTransfer.value)) ||
             ((filterValue & 32) != 0 && (evt.payment.paymentType == paymentBankTransferOtherAmount.value)) ||
             ((filterValue & 64) != 0 && (evt.payment.paymentType == paymentHashCredit.value)))
-        .toList();
+        .toList());
 
-    filteredList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
+    _filteredList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -399,7 +400,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 10.0),
-                      child: filteredList.isEmpty
+                      child: _filteredList.isEmpty
                           ? const Center(child: Text('No transactions available.'))
                           : RefreshIndicator(
                               onRefresh: _refreshSqlTablesFromBackend,
@@ -410,22 +411,25 @@ class PaymentReportState extends State<PaymentReportPage> {
                                   color: Colors.black45,
                                 ),
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: filteredList.length,
+                                itemCount: _filteredList.length + 1,
                                 itemBuilder: (BuildContext context, int index) {
-                                  final bool needsConfirm = ((filteredList[index].payment.paymentType == paymentBankTransfer.value) ||
-                                          (filteredList[index].payment.paymentType == paymentBankTransferOtherAmount.value)) &&
-                                      (filteredList[index].payment.confirmedBy == null);
-                                  return (((filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value) && !needsConfirm)
-                                      ? listItem(filteredList[index], context)
+                                  if (index == _filteredList.length) {
+                                    return Container(height: 100);
+                                  }
+                                  final bool needsConfirm = ((_filteredList[index].payment.paymentType == paymentBankTransfer.value) ||
+                                          (_filteredList[index].payment.paymentType == paymentBankTransferOtherAmount.value)) &&
+                                      (_filteredList[index].payment.confirmedBy == null);
+                                  return (((_filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value) && !needsConfirm)
+                                      ? listItem(_filteredList[index], context)
                                       : Dismissible(
                                           key: Key(index.toString()),
                                           confirmDismiss: (DismissDirection direction) {
                                             //print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
                                             setState(() {
-                                              filteredList[index].extensions.isLoading = true;
+                                              _filteredList[index].extensions.isLoading = true;
                                             });
                                             if (needsConfirm) {
-                                              _payForEvent(filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
+                                              _payForEvent(_filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
                                                 _refreshListsFromTable().then((void _) {
                                                   setState(() {
                                                     refreshTotals();
@@ -433,11 +437,11 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 });
                                               });
                                             } else {
-                                              final num paymentAmount = (filteredList[index].extensions.isMember != 0)
-                                                  ? filteredList[index].extensions.eventPriceForMembers
-                                                  : filteredList[index].extensions.eventPriceForNonMembers;
+                                              final num paymentAmount = (_filteredList[index].extensions.isMember != 0)
+                                                  ? _filteredList[index].extensions.eventPriceForMembers
+                                                  : _filteredList[index].extensions.eventPriceForNonMembers;
                                               showExtrasDialog(context, _scaffoldKey.currentState,
-                                                  direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, filteredList[index], paymentAmount);
+                                                  direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, _filteredList[index], paymentAmount);
                                             }
                                             return Future<bool>.value(false);
                                           },
@@ -466,7 +470,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Text(
-                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
                                                           style: const TextStyle(
                                                               fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
@@ -496,7 +500,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Text(
-                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
                                                           style: const TextStyle(
                                                               fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
@@ -504,7 +508,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                           onDismissed: (DismissDirection direction) {
                                             //print(direction.toString() + ' NOTE: We should never reach this point');
                                           },
-                                          child: listItem(filteredList[index], context),
+                                          child: listItem(_filteredList[index], context),
                                         );
                                 },
                               ),

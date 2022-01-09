@@ -27,12 +27,40 @@ class PaymentReportListItem extends StatelessWidget {
         children: <Widget>[
           SizedBox(
             width: MediaQuery.of(context).size.width,
-            child: Stack(
-              //fit: StackFit.expand,
+            child: Row(
               children: <Widget>[
-                Positioned(
-                  right: paymentReportItem.extensions.isLoading ? 6.0 : 10.0,
-                  top: paymentReportItem.extensions.isLoading ? 2.5 : 7.0,
+                const SizedBox(width: 10.0),
+                Expanded(
+                  child: AutoSizeText(
+                    paymentReportItem.extensions.paidByName,
+                    maxLines: 3,
+                    //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
+                    style: TextStyle(
+                        fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 22.0,
+                        height: 1.0),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  amountPaid,
+                  style: TextStyle(
+                      color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) ||
+                                  (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) &&
+                              (paymentReportItem.payment.confirmedBy == null))
+                          ? Colors.red
+                          : Colors.black,
+                      fontFamily: 'AvenirNextCondensedDemiBold',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 22.0,
+                      height: 1.0),
+                  textAlign: TextAlign.right,
+                ),
+                const SizedBox(width: 10),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 5.0),
                   child: paymentReportItem.extensions.isLoading
                       ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
                       : Image.asset('images/icons/payment_type_${paymentReportItem.payment.paymentType ?? paymentNotPaid.value}.png',
@@ -40,38 +68,7 @@ class PaymentReportListItem extends StatelessWidget {
                           width: 30.0,
                           color: (paymentReportItem.payment.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
                 ),
-                Positioned(
-                  left: 10.0,
-                  top: 11.5,
-                  child: Text(
-                    paymentReportItem.extensions.paidByName,
-                    //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
-                    style: TextStyle(
-                        fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 22.0,
-                        height: 1.0),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Positioned(
-                  right: 50.0,
-                  top: 14.0,
-                  child: Text(
-                    amountPaid,
-                    style: TextStyle(
-                        color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) ||
-                                    (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) &&
-                                (paymentReportItem.payment.confirmedBy == null))
-                            ? Colors.red
-                            : Colors.black,
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 22.0,
-                        height: 1.0),
-                    textAlign: TextAlign.right,
-                  ),
-                ),
+                const SizedBox(width: 10),
               ],
             ),
           ),
