@@ -216,11 +216,9 @@ class KennelMemberListItem extends StatelessWidget {
                               ),
                     if ((kennelMember.kennelCredit ?? 0) != 0) ...<Widget>[
                       Text(
-                        kennelMember.kennelCredit >= 0
-                            ? 'Credit available: '
-                            : 'Funds owed: ' +
-                                IveCoreUtilities.getFormattedMoney(
-                                    kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal, kennelListAggregate.kennel.currencySymbol),
+                        (kennelMember.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
+                            IveCoreUtilities.getFormattedMoney(
+                                kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal, kennelListAggregate.kennel.currencySymbol),
                         style: TextStyle(
                             fontFamily: 'AvenirNextDemiBold',
                             fontStyle: FontStyle.normal,

@@ -262,9 +262,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
           style: TextButton.styleFrom(backgroundColor: Colors.red),
           child: const Text('Cancel'),
           onPressed: () {
-            Navigator.of(context).pop(<String, String>{
-              'action': 'cancel',
-            });
+            Navigator.of(context).pop(OtherPaymentPopupResult('cancel', -1, null, null, null, null));
           },
         ),
         //   ),
