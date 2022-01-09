@@ -1116,11 +1116,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         _updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
-      onPaidCallback: (CheckInPackModel packMember, int paymentType, {Map<String, dynamic> userInput}) {
-        final num totalDue = userInput == null ? null : userInput['totalAmountDue'];
+      onPaidCallback: (CheckInPackModel packMember, int paymentType, {OtherPaymentPopupResult userInput}) {
+        final num totalDue = userInput == null ? null : userInput.totalAmount;
         //final num topUpAmount = userInput['topUpAmount'];
-        final num specialPriceAmount = userInput == null ? null : userInput['specialPriceAmount'] ?? amountOwed;
-        final String specialPriceReason = userInput == null ? null : userInput['specialPriceReason'];
+        final num specialPriceAmount = userInput == null ? null : userInput.specialPriceAmount ?? amountOwed;
+        final String specialPriceReason = userInput == null ? null : userInput.specialPriceReason;
 
         setState(() {
           packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);

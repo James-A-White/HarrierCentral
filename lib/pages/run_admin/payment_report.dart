@@ -162,7 +162,7 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   List<Map<String, dynamic>> paymentTotals;
 
-  void refreshTotals() {
+  Future<void> refreshTotals() async {
     paymentTotals = <Map<String, dynamic>>[];
 
     try {
@@ -192,22 +192,26 @@ class PaymentReportState extends State<PaymentReportPage> {
 
           ''';
 
-      G0<Database>().rawQuery(sql).then((List<Map<String, dynamic>> results) {
-        setState(() {
-          paymentTotals = results;
-        });
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      setState(() {
+        paymentTotals = results;
       });
     } catch (e) {
       //print(e);
     }
-
-    //print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
-  Future<List<dynamic>> _payForEvent(PaymentAggregate item, int paymentType, num amount, {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
+  Future<List<dynamic>> _payForEvent(
+    PaymentAggregate item,
+    int paymentType,
+    num amount, {
+    EnumPayForExtras<int> doPayForExtras = payForRunOnly,
+    OtherPaymentPopupResult otherPaymentPopupResult,
+  }) {
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
-        widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event);
+        widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event,
+        specialRunPrice: otherPaymentPopupResult?.specialPriceAmount, specialRunPriceReason: otherPaymentPopupResult?.specialPriceReason);
   }
 
   void applyFilter() {
@@ -423,24 +427,21 @@ class PaymentReportState extends State<PaymentReportPage> {
                                       ? listItem(_filteredList[index], context)
                                       : Dismissible(
                                           key: Key(index.toString()),
-                                          confirmDismiss: (DismissDirection direction) {
+                                          confirmDismiss: (DismissDirection direction) async {
                                             //print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
                                             setState(() {
                                               _filteredList[index].extensions.isLoading = true;
                                             });
                                             if (needsConfirm) {
-                                              _payForEvent(_filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
-                                                _refreshListsFromTable().then((void _) {
-                                                  setState(() {
-                                                    refreshTotals();
-                                                  });
-                                                });
-                                              });
+                                              await _payForEvent(_filteredList[index], paymentConfirmBankTransfer.value, -1);
+                                              await _refreshListsFromTable();
+                                              await refreshTotals();
+                                              setState(() {});
                                             } else {
                                               final num paymentAmount = (_filteredList[index].extensions.isMember != 0)
                                                   ? _filteredList[index].extensions.eventPriceForMembers
                                                   : _filteredList[index].extensions.eventPriceForNonMembers;
-                                              showExtrasDialog(context, _scaffoldKey.currentState,
+                                              await showExtrasDialog(context, _scaffoldKey.currentState,
                                                   direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, _filteredList[index], paymentAmount);
                                             }
                                             return Future<bool>.value(false);
@@ -519,7 +520,14 @@ class PaymentReportState extends State<PaymentReportPage> {
               ));
   }
 
-  void showExtrasDialog(BuildContext context, ScaffoldState scaffoldState, int paymentType, PaymentAggregate packMember, num otherAmount) {
+  Future<void> showExtrasDialog(
+    BuildContext context,
+    ScaffoldState scaffoldState,
+    int paymentType,
+    PaymentAggregate packMember,
+    num paymentAmount, {
+    OtherPaymentPopupResult otherPaymentPopupResult,
+  }) async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     if (((paymentType == paymentFreeRun.value) ||
             (paymentType == paymentCash.value) ||
@@ -560,32 +568,46 @@ class PaymentReportState extends State<PaymentReportPage> {
         cancelButtonReturnValue: followTypeCancel,
       );
 
-      showDialog<dynamic>(
+      final dynamic payForExtras = await showDialog<dynamic>(
           context: context,
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
             return popup;
-          }).then((dynamic payForExtras) {
-        _payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
-          _refreshListsFromTable().then((void _) {
-            setState(() {
-              refreshTotals();
-              BankTransferQr.showBankTransferSnackbar(
-                  widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
-            });
           });
-        });
+      final List<dynamic> results = await _payForEvent(
+        packMember,
+        paymentType,
+        paymentAmount,
+        doPayForExtras: payForExtras,
+        otherPaymentPopupResult: otherPaymentPopupResult,
+      );
+      await _refreshListsFromTable();
+      await refreshTotals();
+      setState(() {
+        BankTransferQr.showBankTransferSnackbar(
+          widget.eventAggregate,
+          results,
+          paymentType,
+          context,
+          packMember.extensions.paidByName,
+          packMember.extensions.isMember,
+          paymentAmount,
+        );
       });
     } else {
       // there are no extras so just pay for the run without any extras dialog
-      _payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForRunOnly).then((List<dynamic> results) {
-        _refreshListsFromTable().then((void _) {
-          setState(() {
-            refreshTotals();
-            BankTransferQr.showBankTransferSnackbar(
-                widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
-          });
-        });
+      final List<dynamic> results = await _payForEvent(
+        packMember,
+        paymentType,
+        paymentAmount,
+        doPayForExtras: payForRunOnly,
+        otherPaymentPopupResult: otherPaymentPopupResult,
+      );
+      await _refreshListsFromTable();
+      await refreshTotals();
+      setState(() {
+        BankTransferQr.showBankTransferSnackbar(
+            widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, paymentAmount);
       });
     }
   }
@@ -613,7 +635,7 @@ class PaymentReportState extends State<PaymentReportPage> {
         currencySymbol: widget.eventAggregate.extensions.curSym,
         digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
         paymentReportItem: item,
-        onTap: () {
+        onTap: () async {
           ScaffoldMessenger.of(topContext).hideCurrentSnackBar();
           if ((item.payment.paymentType == null) || (item.payment.paymentType == paymentNotPaid.value)) {
             num amountOwed = item.extensions.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
@@ -632,60 +654,57 @@ class PaymentReportState extends State<PaymentReportPage> {
               // },
             );
 
-            final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
+            final PaymentPopupResult ppResult = await showDialog<PaymentPopupResult>(
                 context: context,
                 barrierDismissible: false, // user must tap button!
                 builder: (BuildContext context) {
                   return pp;
                 });
 
-            dlg.then(
-              (PaymentPopupResult paymentValue) {
-                if (paymentValue.transactionType != -1) {
-                  setState(() {
-                    item.extensions.isLoading = true;
-                  });
+            if (ppResult.transactionType != -1) {
+              setState(() {
+                item.extensions.isLoading = true;
+              });
 
-                  //final num paymentAmount = (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers;
-                  showExtrasDialog(context, _scaffoldKey.currentState, paymentValue.transactionType, item, paymentValue.transactionValue);
+              //final num paymentAmount = (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers;
+              await showExtrasDialog(
+                context,
+                _scaffoldKey.currentState,
+                ppResult.transactionType,
+                item,
+                ppResult.transactionValue,
+                otherPaymentPopupResult: ppResult.otherPayment,
+              );
 
-                  // payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
-                  //   _refreshListsFromTable().then((void _) {
-                  //     setState(() {
-                  //       refreshTotals();
-                  //       BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
-                  //     });
-                  //   });
-                  // });
-                }
-              },
-            );
+              // payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
+              //   _refreshListsFromTable().then((void _) {
+              //     setState(() {
+              //       refreshTotals();
+              //       BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
+              //     });
+              //   });
+              // });
+            }
           } else {
-            _displayPaymentDetails(item, context).then((String action) {
-              if (action == 'cancel') {
-                setState(() {
-                  item.extensions.isLoading = true;
-                });
-                _payForEvent(item, paymentNotPaid.value, 0).then((List<dynamic> results) {
-                  _refreshListsFromTable().then((void _) {
-                    setState(() {
-                      refreshTotals();
-                    });
-                  });
-                });
-              } else if (action == 'confirm') {
-                setState(() {
-                  item.extensions.isLoading = true;
-                });
-                _payForEvent(item, paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
-                  _refreshListsFromTable().then((void _) {
-                    setState(() {
-                      refreshTotals();
-                    });
-                  });
-                });
-              }
-            });
+            final String action = await _displayPaymentDetails(item, context);
+
+            if (action == 'cancel') {
+              setState(() {
+                item.extensions.isLoading = true;
+              });
+              await _payForEvent(item, paymentNotPaid.value, 0);
+              await _refreshListsFromTable();
+              await refreshTotals();
+              setState(() {});
+            } else if (action == 'confirm') {
+              setState(() {
+                item.extensions.isLoading = true;
+              });
+              await _payForEvent(item, paymentConfirmBankTransfer.value, -1);
+              await _refreshListsFromTable();
+              await refreshTotals();
+              setState(() {});
+            }
           }
         },
       ),
@@ -735,7 +754,13 @@ class PaymentReportState extends State<PaymentReportPage> {
         const num spacer = 6.0;
 
         final String amountStr =
-            IveCoreUtilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+            IveCoreUtilities.getFormattedMoney(item?.payment?.debitAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        String topUpStr;
+
+        final double topUpAmount = (item?.payment?.creditAmount ?? 0) - (item?.payment?.debitAmount ?? 0) + .0;
+        if (topUpAmount != 0) {
+          topUpStr = IveCoreUtilities.getFormattedMoney(topUpAmount, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        }
         final String extrasPriceStr =
             IveCoreUtilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
         final String discountAmountStr =
@@ -841,6 +866,29 @@ class PaymentReportState extends State<PaymentReportPage> {
                       Expanded(
                           child: Text(
                             item.payment.specialRunPriceReason,
+                            style: bodyStyle,
+                          ),
+                          flex: flexRight),
+                    ],
+                  ),
+                ],
+                if (topUpStr != null) ...<Widget>[
+                  Row(
+                    children: <Widget>[
+                      const Expanded(
+                        child: Text(
+                          'Top up:',
+                          style: headingStyle,
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        flex: flexLeft,
+                      ),
+                      const SizedBox(width: spacer, height: 10.0),
+                      Expanded(
+                          child: Text(
+                            topUpStr,
                             style: bodyStyle,
                           ),
                           flex: flexRight),

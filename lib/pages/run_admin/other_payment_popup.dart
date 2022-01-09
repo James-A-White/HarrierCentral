@@ -1,6 +1,24 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
+class OtherPaymentPopupResult {
+  OtherPaymentPopupResult(
+    this.action,
+    this.transType,
+    this.specialPriceAmount,
+    this.specialPriceReason,
+    this.topUpAmount,
+    this.totalAmount,
+  );
+
+  final String action;
+  final int transType;
+  final double specialPriceAmount;
+  final String specialPriceReason;
+  final double topUpAmount;
+  final double totalAmount;
+}
+
 class OtherPaymentPopup extends StatefulWidget {
   const OtherPaymentPopup(this.normalPrice, this.decimalDigits, this.currencySymbol, {Key key}) : super(key: key);
 
@@ -37,18 +55,18 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
     super.initState();
   }
 
-  num _totalDue = 0;
+  double _totalDue = 0;
 
   void _recalculateTotal() {
     setState(() {
       if (_specialPriceEnabled) {
-        _totalDue = num.tryParse(_specialPriceTextController.value.text) ?? 0;
+        _totalDue = double.tryParse(_specialPriceTextController.value.text) ?? 0;
       } else {
         _totalDue = widget.normalPrice;
       }
 
       if (_topUpCreditEnabled) {
-        _totalDue += num.tryParse(_topUpTextController.value.text) ?? 0;
+        _totalDue += double.tryParse(_topUpTextController.value.text) ?? 0;
       }
     });
   }
@@ -259,14 +277,16 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Cash'),
             onPressed: () {
-              Navigator.of(context).pop(<String, dynamic>{
-                'action': 'process',
-                'type': paymentCashOtherAmount.value,
-                'specialPriceAmount': _specialPriceEnabled ? num.tryParse(_specialPriceTextController.text) : null,
-                'specialPriceReason': _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                'topUpAmount': _topUpCreditEnabled ? num.tryParse(_topUpTextController.text) : null,
-                'totalAmountDue': _totalDue
-              });
+              final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                'process',
+                paymentCashOtherAmount.value,
+                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text) : null,
+                _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text) : null,
+                _totalDue,
+              );
+
+              Navigator.of(context).pop(result);
             }),
         // ),
         // Container(
@@ -277,15 +297,16 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Bank transfer'),
             onPressed: () {
+              final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                'process',
+                paymentBankTransferOtherAmount.value,
+                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text) : null,
+                _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text) : null,
+                _totalDue,
+              );
               Navigator.of(context).pop(
-                <String, dynamic>{
-                  'action': 'process',
-                  'type': paymentBankTransferOtherAmount.value,
-                  'specialPriceAmount': _specialPriceEnabled ? num.tryParse(_specialPriceTextController.text) : null,
-                  'specialPriceReason': _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                  'topUpAmount': _topUpCreditEnabled ? num.tryParse(_topUpTextController.text) : null,
-                  'totalAmountDue': _totalDue
-                },
+                result,
               );
             }),
         // ),

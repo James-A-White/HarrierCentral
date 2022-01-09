@@ -568,20 +568,15 @@ class PaymentSnackBar extends SnackBar {
   Future<void> _payOther(CheckInPackModel packMember, BuildContext context) async {
     final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(amountOwed, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym);
 
-    final Map<String, dynamic> userInput = await showDialog<Map<String, dynamic>>(
+    final OtherPaymentPopupResult userInput = await showDialog<OtherPaymentPopupResult>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return otherPaymentPopup;
         });
 
-    final String action = userInput['action'];
-
-    if (action == 'process') {
-      // print(
-      //     'type=$type, totalDue=${totalDue ?? -1}, topUpAmount=${topUpAmount ?? -1}, specialPriceAmount=${specialPriceAmount ?? -1}, specialPriceReason=${specialPriceReason ?? 'null'}');
-
-      onPaidCallback(packMember, userInput['type'], userInput: userInput);
+    if (userInput.action == 'process') {
+      onPaidCallback(packMember, userInput.transType, userInput: userInput);
     }
   }
 }

@@ -458,9 +458,11 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
         final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
 
-        final String eventId = await CommonQueries.getClosestEventInTime(scanData);
-        if (num.tryParse(eventId) != null) {
-          final num hoursUntilNextEvent = num.tryParse(eventId);
+        // the eventId variable can either have the number of hours
+        // to the closest event or an actual eventId for one event
+        final String queryResult = await CommonQueries.getClosestEventInTime(scanData);
+        if (double.tryParse(queryResult) != null) {
+          final num hoursUntilNextEvent = double.tryParse(queryResult);
           setState(() {
             if (hoursUntilNextEvent > 24) {
               _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
@@ -477,7 +479,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             }
           });
         } else {
-          if (eventId == EMPTY_RESULT) {
+          if (queryResult == EMPTY_RESULT) {
             setState(() {
               _onScreenMessage = 'There is no event for this Kennel at this time';
             });
@@ -486,7 +488,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
             final List<dynamic> adHocData = await G0<TableModel>()
                 .hasherEventMapService
-                .joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value);
+                .joinEvent(queryResult, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value);
 
             setState(() {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {

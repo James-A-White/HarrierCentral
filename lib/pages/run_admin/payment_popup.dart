@@ -2,10 +2,11 @@
 import 'package:harrier_central/imports.dart';
 
 class PaymentPopupResult {
-  PaymentPopupResult({this.transactionType, this.transactionValue});
+  PaymentPopupResult({this.transactionType, this.transactionValue, this.otherPayment});
 
   final int transactionType;
   final num transactionValue;
+  final OtherPaymentPopupResult otherPayment;
 }
 
 class PaymentPopup extends StatefulWidget {
@@ -35,9 +36,8 @@ class PaymentPopup extends StatefulWidget {
 }
 
 class _PaymentPopupState extends State<PaymentPopup> {
-  int selectedValue = 1;
-  num otherAmount;
-  int otherTransType;
+  int _selectedValue = 1;
+  OtherPaymentPopupResult _otherPaymentResult;
 
   // @override
   // void initState() {
@@ -58,7 +58,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 1,
-                    groupValue: selectedValue,
+                    groupValue: _selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   const Text(
@@ -69,7 +69,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 2,
-                    groupValue: selectedValue,
+                    groupValue: _selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   const Text(
@@ -80,7 +80,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 3,
-                    groupValue: selectedValue,
+                    groupValue: _selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
@@ -91,7 +91,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 4,
-                    groupValue: selectedValue,
+                    groupValue: _selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
@@ -104,7 +104,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                   Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                     Radio<int>(
                       value: 6,
-                      groupValue: selectedValue,
+                      groupValue: _selectedValue,
                       onChanged: _handleRadioValueChange1,
                     ),
                     Column(
@@ -188,14 +188,18 @@ class _PaymentPopupState extends State<PaymentPopup> {
           child: ElevatedButton(
             child: const Text('Process'),
             onPressed: () {
-              num resultAmount = widget.amount;
-              int resultTransType = selectedValue;
-              if (selectedValue == PaymentPopup.otherAmountRowId) {
-                resultAmount = otherAmount;
-                resultTransType = otherTransType;
+              if (_selectedValue != PaymentPopup.otherAmountRowId) {
+                _otherPaymentResult = null;
               }
 
-              final PaymentPopupResult result = PaymentPopupResult(transactionType: resultTransType, transactionValue: resultAmount);
+              final num resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
+              final int resultTransType = _selectedValue;
+
+              final PaymentPopupResult result = PaymentPopupResult(
+                transactionType: _otherPaymentResult?.transType ?? resultTransType,
+                transactionValue: resultAmount,
+                otherPayment: _otherPaymentResult,
+              );
               Navigator.of(context).pop(result);
             },
           ),
@@ -207,14 +211,14 @@ class _PaymentPopupState extends State<PaymentPopup> {
   Widget otherAmountRow() {
     return GestureDetector(
       onTap: () {
-        if (selectedValue == PaymentPopup.otherAmountRowId) {
+        if (_selectedValue == PaymentPopup.otherAmountRowId) {
           _handleRadioValueChange1(PaymentPopup.otherAmountRowId);
         }
       },
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         Radio<int>(
           value: PaymentPopup.otherAmountRowId,
-          groupValue: selectedValue,
+          groupValue: _selectedValue,
           onChanged: _handleRadioValueChange1,
         ),
         Column(
@@ -225,10 +229,11 @@ class _PaymentPopupState extends State<PaymentPopup> {
               'Other Amount',
               style: TextStyle(fontSize: 16.0),
             ),
-            otherTransType == null
+            _otherPaymentResult == null
                 ? const SizedBox(height: 1, width: 1)
                 : Text(
-                    '${IveCoreUtilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((otherTransType == 5) ? ' cash' : ' bank transfer'),
+                    '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' +
+                        ((_otherPaymentResult.transType == 5) ? ' cash' : ' bank transfer'),
                     style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                   ),
           ],
@@ -237,39 +242,29 @@ class _PaymentPopupState extends State<PaymentPopup> {
     );
   }
 
-  void _handleRadioValueChange1(int value) {
+  Future<void> _handleRadioValueChange1(int value) async {
     if (value != PaymentPopup.otherAmountRowId) {
       setState(() {
-        selectedValue = value;
+        _selectedValue = value;
       });
     } else {
       final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(widget.amount, widget.decimalDigits, widget.currencySymbol);
 
-      final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+      final OtherPaymentPopupResult result = await showDialog<OtherPaymentPopupResult>(
           context: context,
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
             return otherPaymentPopup;
           });
 
-      dlg.then((Map<String, String> x) {
-        final String amount = x['amount'];
-        final String type = x['type'];
-
-        if (type != 'cancel') {
-          final num amountNumeric = num.tryParse(amount);
-          final int typeNumeric = int.tryParse(type);
-
-          if ((amountNumeric != null) && (typeNumeric != null)) {
-            otherTransType = typeNumeric;
-            otherAmount = amountNumeric;
-
-            setState(() {
-              selectedValue = value;
-            });
-          }
-        }
-      });
+      if (result.action != 'cancel') {
+        setState(() {
+          _otherPaymentResult = result;
+          _selectedValue = value;
+        });
+      } else {
+        _otherPaymentResult = null;
+      }
     }
   }
 }
