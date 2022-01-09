@@ -1565,6 +1565,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   Widget _buildPackListView() {
     //print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');
+
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollNotification) {
         if (scrollNotification is UserScrollNotification) {
@@ -1592,6 +1593,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               return _getAddHasherBlock();
             } else {
               final CheckInPackModel packMember = _filteredList[index];
+
+              num amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+
+              amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+              amountOwed -= packMember.discountAmount;
+              amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
+
+              String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+
               final Key key = Key(index.toString());
               //if (index == 0) {
               return Slidable(
@@ -1676,8 +1686,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 10.0),
-                                    child: Text(
-                                        '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank Transfer',
+                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : amountOwedStr + '\r\n'}Bank Transfer',
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                                   ),
@@ -1701,8 +1710,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(top: 10.0),
-                                child: Text(
-                                    '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Contactless',
+                                child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : amountOwedStr + '\r\n'}Contactless',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                               ),
@@ -1787,8 +1795,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 5.0),
-                                  child: Text(
-                                      '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
+                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : amountOwedStr + '\r\n'}Cash',
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                                 ),

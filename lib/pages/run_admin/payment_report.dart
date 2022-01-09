@@ -24,6 +24,9 @@ class PaymentQueryExtensions {
     this.confByName,
     this.extrasPrice,
     this.extrasDescription,
+    this.discountAmount,
+    this.discountPercent,
+    this.discountDescription,
   });
 
   final String pkHemId;
@@ -36,21 +39,28 @@ class PaymentQueryExtensions {
   final String confByName;
   final num extrasPrice;
   final String extrasDescription;
+  final num discountAmount;
+  final int discountPercent;
+  final String discountDescription;
 
   bool isLoading = false;
 
   static PaymentQueryExtensions fromMap(Map<String, dynamic> map) {
     final PaymentQueryExtensions item = PaymentQueryExtensions(
-        pkHemId: map['pkHemId'],
-        paidByName: map['paidByName'],
-        paidToName: map['paidToName'],
-        isMember: map['isMember'],
-        creditAvailable: map['creditAvailable'],
-        eventPriceForMembers: map['eventPriceForMembers'],
-        eventPriceForNonMembers: map['eventPriceForNonMembers'],
-        confByName: map['confByName'],
-        extrasDescription: map['extrasDescription'],
-        extrasPrice: map['extrasPrice']);
+      pkHemId: map['pkHemId'],
+      paidByName: map['paidByName'],
+      paidToName: map['paidToName'],
+      isMember: map['isMember'],
+      creditAvailable: map['creditAvailable'],
+      eventPriceForMembers: map['eventPriceForMembers'],
+      eventPriceForNonMembers: map['eventPriceForNonMembers'],
+      confByName: map['confByName'],
+      extrasDescription: map['extrasDescription'],
+      extrasPrice: map['extrasPrice'],
+      discountAmount: map['discountAmount'],
+      discountPercent: map['discountPercent'],
+      discountDescription: map['discountDescription'],
+    );
     return item;
   }
 }
@@ -110,7 +120,10 @@ class PaymentReportState extends State<PaymentReportPage> {
           hem.hemId as pkHemId,
           COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>') as paidByName,
           COALESCE(paidTo.dispName,'<hasher not found>') as paidToName,
-          COALESCE(hkm.isMember,0) as isMember,
+          CASE WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},'') as discountDescription,
           COALESCE(credits.currentBalance,0) as creditAvailable,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
@@ -599,8 +612,12 @@ class PaymentReportState extends State<PaymentReportPage> {
         onTap: () {
           ScaffoldMessenger.of(topContext).hideCurrentSnackBar();
           if ((item.payment.paymentType == null) || (item.payment.paymentType == paymentNotPaid.value)) {
+            num amountOwed = item.extensions.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+            amountOwed -= item.extensions.discountAmount;
+            amountOwed -= amountOwed * (item.extensions.discountPercent / 100.0);
+
             final PaymentPopup pp = PaymentPopup(
-              amount: (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers,
+              amount: amountOwed,
               creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
               creditRemaining: item.extensions.creditAvailable,
               currencySymbol: widget.eventAggregate.extensions.curSym,

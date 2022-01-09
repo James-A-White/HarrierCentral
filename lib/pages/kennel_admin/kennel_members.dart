@@ -32,6 +32,7 @@ class KennelMembersResults {
       this.kennelShortName,
       this.appAccessFlags,
       this.mismanagementRoles,
+      this.kennelCredit,
 
       // this.homeKennelName,
       // this.homeKennelBeingUpdated = false,
@@ -58,6 +59,7 @@ class KennelMembersResults {
   bool memberInfoBeingUpdated;
   //bool homeKennelBeingUpdated;
   String kennelShortName;
+  num kennelCredit;
   //String homeKennelName;
 
   static KennelMembersResults fromMap(Map<String, dynamic> map) {
@@ -80,6 +82,7 @@ class KennelMembersResults {
       appAccessFlags: map['appAccessFlags'],
       mismanagementRoles: map['mismanagementRoles'],
       kennelShortName: map['kennelShortName'],
+      kennelCredit: map['kennelCredit'],
       // homeKennelName: map['homeKennelName'],
     );
     return item;
@@ -195,6 +198,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},
           k.${G0<TableModel>().kennelsTableHelper.colMembershipDurationInMonths},
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelId}

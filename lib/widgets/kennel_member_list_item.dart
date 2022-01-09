@@ -169,13 +169,13 @@ class KennelMemberListItem extends StatelessWidget {
                     //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                     //         textAlign: TextAlign.left,
                     //       ),
-                    kennelMember.dateOfLastRun == null
-                        ? Container()
-                        : Text(
-                            'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
-                            style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
-                            textAlign: TextAlign.center,
-                          ),
+                    if (kennelMember.dateOfLastRun != null) ...<Widget>[
+                      Text(
+                        'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
+                        style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                     (((kennelMember.hcHaringCount ?? 0) == 0) &&
                             ((kennelMember.hcTotalRunCount ?? 0) == 0) &&
                             ((kennelMember.historicalHaringCount ?? 0) == 0) &&
@@ -214,6 +214,18 @@ class KennelMemberListItem extends StatelessWidget {
                                     TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                                 textAlign: TextAlign.center,
                               ),
+                    if ((kennelMember.kennelCredit ?? 0) != 0) ...<Widget>[
+                      Text(
+                        'Credit available: ' +
+                            IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit, kennelListAggregate.kennel.digitsAfterDecimal, kennelListAggregate.kennel.currencySymbol),
+                        style: TextStyle(
+                            fontFamily: 'AvenirNextDemiBold',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 16.0,
+                            height: 1.0,
+                            color: kennelMember.kennelCredit >= 0 ? Colors.green.shade900 : Colors.red.shade900),
+                      ),
+                    ]
                   ],
                 )),
             Column(children: <Widget>[

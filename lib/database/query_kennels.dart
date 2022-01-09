@@ -204,6 +204,13 @@ class QueryKennels {
         SELECT  
           k.*, 
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHkmId}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}, 
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun}, 
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelNotificationPreference},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as following,

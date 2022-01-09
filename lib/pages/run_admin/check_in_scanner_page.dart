@@ -205,14 +205,19 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       //_toggleScanning();
     });
 
-    _controller.scannedDataStream.listen((Barcode scanData) {
-      setState(() {
-        _result = scanData.code;
-        _toggleScanning();
-        _onCodeRead(_result);
-      });
+    _controller.scannedDataStream.listen((Barcode scanData) async {
+      _result = scanData.code;
+      // "debounce" the listener to discard multiple scans
+      // that happen within a 5 second window.
+      if ((_lastScan == null) || (_lastScan.difference(DateTime.now()).inSeconds.abs() > 5)) {
+        _lastScan = DateTime.now();
+        await _toggleScanning();
+        await _onCodeRead(_result);
+      }
     });
   }
+
+  DateTime _lastScan;
 
   @override
   void reassemble() {
@@ -232,29 +237,33 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     }
   }
 
-  Future<void> _toggleScanning() async {
+  Future<void> _toggleScanning({bool doScanning}) async {
     if (_controller != null) {
-      setState(() {
-        if (_isScanning) {
-          _controller.pauseCamera();
-          _isScanning = false;
+      if (_isScanning && ((doScanning == null) || !doScanning)) {
+        await _controller.pauseCamera();
+        _isScanning = false;
+        setState(() {
           _onScreenMessage = 'Scanning paused';
-          _state = EQrScannerState.waitingForScan;
-        } else {
-          _controller.resumeCamera();
+        });
+        _state = EQrScannerState.waitingForScan;
+      } else {
+        if ((doScanning == null) || doScanning) {
+          await _controller.resumeCamera();
           _isScanning = true;
-          _onScreenMessage = 'Looking for QR Code';
+          setState(() {
+            _onScreenMessage = 'Looking for QR Code';
+          });
           _state = EQrScannerState.scanning;
         }
-      });
+      }
     }
   }
 
   Future<void> _onCodeRead(dynamic scanResult) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
+    final AudioCache audioPlayer = AudioCache(prefix: 'assets/sounds/');
     // ignore: unawaited_futures
-    audioPlayer.play('camera.mp3');
+    await audioPlayer.play('camera.mp3');
 
     final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user);
 
@@ -286,51 +295,57 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
             virginVisitorType: enumHasher.value,
             userQrCode: prefix + content);
 
-        setState(() {
-          if ((adHocData != null) && (adHocData.isNotEmpty)) {
-            final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-            IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
-            //
-            if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
-              //scanUserBarcode();
-              // Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
-              //   scanUserBarcode();
-              // });
-            } else {
-              final PaymentPopup pp = PaymentPopup(
-                amount: amount,
-                creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-                creditRemaining: 0,
-                currencySymbol: widget.eventAggregate.extensions.curSym,
-                hemId: adHocData[0]['hasherEventMapId'],
-                decimalDigits: widget.eventAggregate.extensions.digAfterDec,
-                // valueChanged: (num value) {
-                //   finalValue = value;
-                // },
-              );
+        if ((adHocData != null) && (adHocData.isNotEmpty)) {
+          num amountOwed = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
 
-              final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
-                  context: context,
-                  barrierDismissible: false, // user must tap button!
-                  builder: (BuildContext context) {
-                    return pp;
-                  });
+          final num discountAmount = adHocData[0]['discountAmount'];
+          final int discountPercent = adHocData[0]['discountPercent'];
+          //final String discountDescription = adHocData[0]['discountDescription'];
 
-              dlg.then(
-                (PaymentPopupResult popupResult) {
-                  if (popupResult.transactionType != -1) {
-                    setState(() {
-                      _onScreenMessage = 'Please wait, processing payment';
-                    });
+          amountOwed -= discountAmount;
+          amountOwed -= amountOwed * (discountPercent / 100.0);
 
-                    payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
-                  }
-                },
-              );
+          IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
+          //
+          if ((adHocData[0]['isPaid'] != 0) || (amountOwed <= 0)) {
+            //scanUserBarcode();
+            // Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
+            //   scanUserBarcode();
+            // });
+          } else {
+            final PaymentPopup pp = PaymentPopup(
+              amount: amountOwed,
+              creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+              creditRemaining: 0,
+              currencySymbol: widget.eventAggregate.extensions.curSym,
+              hemId: adHocData[0]['hasherEventMapId'],
+              decimalDigits: widget.eventAggregate.extensions.digAfterDec,
+              // valueChanged: (num value) {
+              //   finalValue = value;
+              // },
+            );
+
+            final PaymentPopupResult popupResult = await showDialog<PaymentPopupResult>(
+                context: context,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return pp;
+                });
+
+            if (popupResult.transactionType != -1) {
+              setState(() {
+                _onScreenMessage = 'Please wait, processing payment';
+              });
+
+              await payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
             }
           }
+        }
+        setState(() {
           _onScreenMessage = 'Processing Complete';
         });
+        await Future<void>.delayed(const Duration(seconds: 2));
+        await _toggleScanning(doScanning: true);
       }
     }
 
@@ -383,58 +398,55 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     // });
   }
 
-  void payForEvent(String hemId, int paymentType, num amount) {
+  Future<void> payForEvent(String hemId, int paymentType, num amount) async {
     final PaymentsService paySrv = PaymentsService();
-    final Future<List<dynamic>> retVal =
-        paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly, AppDomainType.event);
-    retVal.then(
-      (List<dynamic> paymentResult) {
-        if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
-          final int paymentType = paymentResult[0]['paymentType'];
-          final String amountPaid =
-              IveCoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+    final List<dynamic> paymentResult =
+        await paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly, AppDomainType.event);
 
-          _onScreenMessage = paymentResult[0]['hasherWhoPaid'];
+    if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
+      final int paymentType = paymentResult[0]['paymentType'];
+      final String amountPaid =
+          IveCoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
-          if (paymentResult[0]['attendenceState'] == attendenceAtHash.value) {
-            _onScreenMessage += ' is checked in and';
-          } else if (paymentResult[0]['attendenceState'] == attendenceOnIn.value) {
-            _onScreenMessage += ' is On Inn and';
-          }
+      _onScreenMessage = paymentResult[0]['hasherWhoPaid'];
 
-          switch (paymentType) {
-            case 1:
-              _onScreenMessage += ' has not paid and needs to pay for the Hash';
-              break;
-            case 2:
-              _onScreenMessage += ' enjoyed a FREE Hash today';
-              break;
-            case 3:
-              _onScreenMessage += ' has paid $amountPaid in cash';
-              break;
-            case 4:
-              _onScreenMessage += ' has paid $amountPaid by bank transfer';
-              break;
-            case 5:
-              _onScreenMessage += ' has paid $amountPaid in cash';
-              break;
-            case 6:
-              _onScreenMessage += ' has paid $amountPaid using Hash credit';
-              break;
-            case 7:
-              _onScreenMessage += ' has paid $amountPaid by bank transfer';
-              break;
-            default:
-              break;
-          }
-          setState(() {});
+      if (paymentResult[0]['attendenceState'] == attendenceAtHash.value) {
+        _onScreenMessage += ' is checked in and';
+      } else if (paymentResult[0]['attendenceState'] == attendenceOnIn.value) {
+        _onScreenMessage += ' is On Inn and';
+      }
 
-          Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
-            //scanUserBarcode();
-          });
-        }
-      },
-    );
+      switch (paymentType) {
+        case 1:
+          _onScreenMessage += ' has not paid and needs to pay for the Hash';
+          break;
+        case 2:
+          _onScreenMessage += ' enjoyed a FREE Hash today';
+          break;
+        case 3:
+          _onScreenMessage += ' has paid $amountPaid in cash';
+          break;
+        case 4:
+          _onScreenMessage += ' has paid $amountPaid by bank transfer';
+          break;
+        case 5:
+          _onScreenMessage += ' has paid $amountPaid in cash';
+          break;
+        case 6:
+          _onScreenMessage += ' has paid $amountPaid using Hash credit';
+          break;
+        case 7:
+          _onScreenMessage += ' has paid $amountPaid by bank transfer';
+          break;
+        default:
+          break;
+      }
+      setState(() {});
+
+      await Future<void>.delayed(const Duration(seconds: 3));
+
+      await _toggleScanning(doScanning: true);
+    }
   }
 
   // Future<dynamic> stopScanning() async {

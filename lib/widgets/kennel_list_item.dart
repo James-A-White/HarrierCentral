@@ -1,5 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 class KennelsListItem extends StatefulWidget {
   const KennelsListItem({Key key, @required this.kennelItem, @required this.kennelSelected, @required this.kennelFollowingUpdated}) : super(key: key);
@@ -229,12 +230,44 @@ class KennelListItemState extends State<KennelsListItem> {
                             widget.kennelItem.extensions.location,
                             style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                           ),
-                          G0<AppModel>().hasLocationPermissions
-                              ? Text(
-                                  '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: _distancePreference == 2)} from here',
-                                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
-                                )
-                              : Container(),
+                          if (G0<AppModel>().hasLocationPermissions) ...<Widget>[
+                            Text(
+                              '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: _distancePreference == 2)} from here',
+                              style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                            )
+                          ],
+                          if ((widget.kennelItem.hkm.hcTotalRunCount ?? 0) != 0) ...<Widget>[
+                            Text(
+                              'Runs: ' +
+                                  (widget.kennelItem.hkm.historicalCountIsEstimate == 0 ? '' : '~') +
+                                  (widget.kennelItem.hkm.hcTotalRunCount + widget.kennelItem.hkm.historicalTotalRunCount).toString() +
+                                  ', Times hared: ' +
+                                  (widget.kennelItem.hkm.hcHaringCount + widget.kennelItem.hkm.historicalHaringCount).toString(),
+                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
+                            ),
+                          ],
+                          if (widget.kennelItem.hkm.dateOfLastRun != null) ...<Widget>[
+                            Text(
+                              'Last run: ' +
+                                  (widget.kennelItem.hkm.dateOfLastRun.year != DateTime.now().year
+                                      ? DateFormat('E, MMM d, yyyy h:mm a').format(widget.kennelItem.hkm.dateOfLastRun)
+                                      : DateFormat('E, MMM d h:mm a').format(widget.kennelItem.hkm.dateOfLastRun)),
+                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
+                            ),
+                          ],
+                          if ((widget.kennelItem.hkm.kennelCredit ?? 0) != 0) ...<Widget>[
+                            Text(
+                              'Credit available: ' +
+                                  IveCoreUtilities.getFormattedMoney(
+                                      widget.kennelItem.hkm.kennelCredit, widget.kennelItem.kennel.digitsAfterDecimal, widget.kennelItem.kennel.currencySymbol),
+                              style: TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 16.0,
+                                  height: 1.0,
+                                  color: widget.kennelItem.hkm.kennelCredit >= 0 ? Colors.green.shade900 : Colors.red.shade900),
+                            ),
+                          ],
                         ],
                       ),
                     ),

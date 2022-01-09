@@ -16,9 +16,7 @@ class PaymentPopup extends StatefulWidget {
       @required this.amount,
       @required this.creditRemaining,
       @required this.creditAllowed,
-      @required this.decimalDigits
-      // @required this.valueChanged
-      })
+      @required this.decimalDigits})
       : super(key: key);
 
   final String hemId;
