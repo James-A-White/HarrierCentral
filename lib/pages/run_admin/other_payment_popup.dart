@@ -60,13 +60,13 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
   void _recalculateTotal() {
     setState(() {
       if (_specialPriceEnabled) {
-        _totalDue = double.tryParse(_specialPriceTextController.value.text) ?? 0;
+        _totalDue = double.tryParse(_specialPriceTextController.value.text.replaceAll(',', '.')) ?? 0;
       } else {
         _totalDue = widget.normalPrice;
       }
 
       if (_topUpCreditEnabled) {
-        _totalDue += double.tryParse(_topUpTextController.value.text) ?? 0;
+        _totalDue += double.tryParse(_topUpTextController.value.text.replaceAll(',', '.')) ?? 0;
       }
     });
   }
@@ -75,182 +75,184 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Other payment options'),
-      content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-        Stack(
-          children: <Widget>[
-            //const SizedBox(height: 10.0, width: 10),
-            Container(
-              margin: const EdgeInsets.only(top: 23.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                color: Colors.white,
-                border: Border.all(
-                  color: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade300,
-                  width: 2, //                   <--- border width here
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+          Stack(
+            children: <Widget>[
+              //const SizedBox(height: 10.0, width: 10),
+              Container(
+                margin: const EdgeInsets.only(top: 23.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: Colors.white,
+                  border: Border.all(
+                    color: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade300,
+                    width: 2, //                   <--- border width here
+                  ),
+                ),
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 20.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Text(
+                          'If you want to offer a Hasher a special price for this run, enter that amount here. You can also enter an optional note why you offered this price.',
+                          style: TextStyle(color: _specialPriceEnabled ? Colors.black : Colors.grey.shade500)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: TextField(
+                        autofocus: true,
+                        enabled: _specialPriceEnabled,
+                        focusNode: _specialPriceFocusNode,
+                        controller: _specialPriceTextController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          // icon: Icon(
+                          //   FontAwesome.money,
+                          //   color: Colors.white,
+                          // ),
+                          hintText: 'Enter special price',
+                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: TextField(
+                        autofocus: true,
+                        autocorrect: false,
+                        enabled: _specialPriceEnabled,
+                        focusNode: _specialPriceReasonFocusNode,
+                        controller: _specialPriceReasonTextController,
+                        keyboardType: TextInputType.text,
+                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          // icon: Icon(
+                          //   FontAwesome.money,
+                          //   color: Colors.white,
+                          // ),
+                          hintText: 'Enter reason',
+                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Column(
-                children: <Widget>[
-                  const SizedBox(height: 20.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Text(
-                        'If you want to offer a Hasher a special price for this run, enter that amount here. You can also enter an optional note why you offered this price.',
-                        style: TextStyle(color: _specialPriceEnabled ? Colors.black : Colors.grey.shade500)),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: TextField(
-                      autofocus: true,
-                      enabled: _specialPriceEnabled,
-                      focusNode: _specialPriceFocusNode,
-                      controller: _specialPriceTextController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        // icon: Icon(
-                        //   FontAwesome.money,
-                        //   color: Colors.white,
-                        // ),
-                        hintText: 'Enter special price',
-                        hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+              Positioned(
+                top: 0,
+                left: 13,
+                child: Container(
+                  color: Colors.white,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Checkbox(
+                        fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
+                        onChanged: (bool val) {
+                          setState(() {
+                            _recalculateTotal();
+                            _specialPriceEnabled = !_specialPriceEnabled;
+                            if (!_specialPriceEnabled) {
+                              _specialPriceTextController.value = TextEditingValue(text: widget.normalPrice.toStringAsFixed(widget.decimalDigits));
+                            }
+                          });
+                        },
+                        value: _specialPriceEnabled,
                       ),
-                    ),
+                      const Text('Special run price'),
+                      const SizedBox(width: 10.0),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: TextField(
-                      autofocus: true,
-                      autocorrect: false,
-                      enabled: _specialPriceEnabled,
-                      focusNode: _specialPriceReasonFocusNode,
-                      controller: _specialPriceReasonTextController,
-                      keyboardType: TextInputType.text,
-                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        // icon: Icon(
-                        //   FontAwesome.money,
-                        //   color: Colors.white,
-                        // ),
-                        hintText: 'Enter reason',
-                        hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            Positioned(
-              top: 0,
-              left: 13,
-              child: Container(
-                color: Colors.white,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+            ],
+          ),
+          const SizedBox(height: 13.0),
+          const Divider(
+            thickness: 1.0,
+          ),
+          Stack(
+            children: <Widget>[
+              const SizedBox(height: 170.0, width: 10),
+              Container(
+                margin: const EdgeInsets.only(top: 23.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: Colors.white,
+                  border: Border.all(
+                    color: _topUpCreditEnabled ? Colors.red.shade900 : Colors.grey.shade300,
+                    width: 2, //                   <--- border width here
+                  ),
+                ),
+                child: Column(
                   children: <Widget>[
-                    Checkbox(
-                      fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
-                      onChanged: (bool val) {
-                        setState(() {
+                    const SizedBox(height: 20.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Text('Enter an additional amount of money here to add to a Hasher\'s credit balance.',
+                          style: TextStyle(color: _topUpCreditEnabled ? Colors.black : Colors.grey.shade500)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: TextField(
+                        autofocus: true,
+                        enabled: _topUpCreditEnabled,
+                        focusNode: _topUpFocusNode,
+                        controller: _topUpTextController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _topUpCreditEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          // icon: Icon(
+                          //   FontAwesome.money,
+                          //   color: Colors.white,
+                          // ),
+                          hintText: 'Enter top up amount',
+                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _topUpCreditEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 13,
+                child: Container(
+                  color: Colors.white,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Checkbox(
+                        fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
+                        onChanged: (bool val) {
                           _recalculateTotal();
-                          _specialPriceEnabled = !_specialPriceEnabled;
-                          if (!_specialPriceEnabled) {
-                            _specialPriceTextController.value = TextEditingValue(text: widget.normalPrice.toStringAsFixed(widget.decimalDigits));
-                          }
-                        });
-                      },
-                      value: _specialPriceEnabled,
-                    ),
-                    const Text('Special run price'),
-                    const SizedBox(width: 10.0),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 13.0),
-        const Divider(
-          thickness: 1.0,
-        ),
-        Stack(
-          children: <Widget>[
-            const SizedBox(height: 170.0, width: 10),
-            Container(
-              margin: const EdgeInsets.only(top: 23.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                color: Colors.white,
-                border: Border.all(
-                  color: _topUpCreditEnabled ? Colors.red.shade900 : Colors.grey.shade300,
-                  width: 2, //                   <--- border width here
-                ),
-              ),
-              child: Column(
-                children: <Widget>[
-                  const SizedBox(height: 20.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Text('Enter an additional amount of money here to add to a Hasher\'s credit balance.',
-                        style: TextStyle(color: _topUpCreditEnabled ? Colors.black : Colors.grey.shade500)),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: TextField(
-                      autofocus: true,
-                      enabled: _topUpCreditEnabled,
-                      focusNode: _topUpFocusNode,
-                      controller: _topUpTextController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _topUpCreditEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        // icon: Icon(
-                        //   FontAwesome.money,
-                        //   color: Colors.white,
-                        // ),
-                        hintText: 'Enter top up amount',
-                        hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _topUpCreditEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                          setState(() {
+                            _topUpCreditEnabled = !_topUpCreditEnabled;
+                          });
+                        },
+                        value: _topUpCreditEnabled,
                       ),
-                    ),
+                      const Text('Top up credit'),
+                      const SizedBox(width: 10.0),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            Positioned(
-              top: 0,
-              left: 13,
-              child: Container(
-                color: Colors.white,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Checkbox(
-                      fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
-                      onChanged: (bool val) {
-                        _recalculateTotal();
-                        setState(() {
-                          _topUpCreditEnabled = !_topUpCreditEnabled;
-                        });
-                      },
-                      value: _topUpCreditEnabled,
-                    ),
-                    const Text('Top up credit'),
-                    const SizedBox(width: 10.0),
-                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0),
-          child: Text('Total due: ${IveCoreUtilities.getFormattedMoney(_totalDue, widget.decimalDigits, widget.currencySymbol)}',
-              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: Colors.grey.shade700)),
-        ),
-      ]),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15.0),
+            child: Text('Total due: ${IveCoreUtilities.getFormattedMoney(_totalDue, widget.decimalDigits, widget.currencySymbol)}',
+                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: Colors.grey.shade700)),
+          ),
+        ]),
+      ),
       actions: <Widget>[
         // Padding(
         //   padding: const EdgeInsets.only(right: 0.0),
@@ -278,9 +280,9 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
               final OtherPaymentPopupResult result = OtherPaymentPopupResult(
                 'process',
                 paymentCashOtherAmount.value,
-                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text) : null,
+                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
                 _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text) : null,
+                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
                 _totalDue,
               );
 
@@ -298,9 +300,9 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
               final OtherPaymentPopupResult result = OtherPaymentPopupResult(
                 'process',
                 paymentBankTransferOtherAmount.value,
-                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text) : null,
+                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
                 _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text) : null,
+                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
                 _totalDue,
               );
               Navigator.of(context).pop(

@@ -462,7 +462,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         // to the closest event or an actual eventId for one event
         final String queryResult = await CommonQueries.getClosestEventInTime(scanData);
         if (double.tryParse(queryResult) != null) {
-          final num hoursUntilNextEvent = double.tryParse(queryResult);
+          final num hoursUntilNextEvent = double.tryParse(queryResult.replaceAll(',', '.'));
           setState(() {
             if (hoursUntilNextEvent > 24) {
               _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';

@@ -105,9 +105,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       _haresController.text = _eventAggregate.event.hares;
 
       _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
-      _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toString() ?? '';
-      _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toString() ?? '';
-      _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toString() ?? '';
+      _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec ?? 2) ?? '';
+      _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec ?? 2) ?? '';
+      _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toStringAsFixed(_eventAggregate.extensions.digAfterDec ?? 2) ?? '';
       _extrasDescriptionController.text = _eventAggregate.event.extrasDescription ?? '';
       _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
     }
@@ -342,9 +342,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
           useFbRunDetails: 0,
           isCountedRun: _eventAggregate.event.isCountedRun == 1,
           kennelId: _eventAggregate.event.kennelId,
-          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForMembersController.text),
-          eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForNonMembersController.text),
-          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : double.tryParse(_eventPriceForExtrasController.text),
+          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForMembersController.text.replaceAll(',', '.')),
+          eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForNonMembersController.text.replaceAll(',', '.')),
+          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : double.tryParse(_eventPriceForExtrasController.text.replaceAll(',', '.')),
         );
 
         _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
@@ -364,12 +364,12 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
           final EventsService nSvc = EventsService();
           final String eventId = await nSvc.addEditEvent(
             eventId: _eventAggregate.event.eventId,
-            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForMembersController.text),
-            eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForNonMembersController.text),
+            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForMembersController.text.replaceAll(',', '.')),
+            eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForNonMembersController.text.replaceAll(',', '.')),
             // note for "auto" the value we send to the server is '0' because this will
             // remove any previous absoluteEventNumber that is stored there
-            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : double.tryParse(_absoluteEventNumberController.text),
-            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : double.tryParse(_eventPriceForExtrasController.text),
+            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : double.tryParse(_absoluteEventNumberController.text.replaceAll(',', '.')),
+            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : double.tryParse(_eventPriceForExtrasController.text.replaceAll(',', '.')),
             extrasDescription: _extrasDescriptionController.text.isEmpty ? '<none>' : _extrasDescriptionController.text,
             hares: _haresController.text,
             isCountedRun: _isCountedRun,
