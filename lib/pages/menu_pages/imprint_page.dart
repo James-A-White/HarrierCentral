@@ -138,7 +138,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('© 2020, InnoVet Europe\r\nAll rights reserved', style: bodyStyle),
+                      Text('© ${DateTime.now().year}, InnoVet Europe\r\nAll rights reserved', style: bodyStyle),
                     ],
                   ),
                   Row(
