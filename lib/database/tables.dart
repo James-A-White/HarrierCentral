@@ -1,6 +1,7 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
+// TODO(James): Add an "All" category to AppDomainType for tables that exist across all appDomains
 enum AppDomainType { user, event, kennel }
 //enum TableType { baseTable, hemUser, hemEventAdmin, hkmUser, hkmEventAdmin, hkmKennelAdmin, paymentsUser, paymentsEvent }
 

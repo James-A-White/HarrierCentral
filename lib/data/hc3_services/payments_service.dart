@@ -197,6 +197,7 @@ class PaymentsService {
     String paymentReference,
     num specialRunPrice,
     String specialRunPriceReason,
+    bool useSpecialPriceAsDefault,
   }) async {
     List<dynamic> results = <dynamic>[];
 
@@ -281,6 +282,7 @@ class PaymentsService {
       bodyMap.addAll(<String, String>{
         'specialRunPrice': specialRunPrice.toString(),
         'specialRunPriceReason': specialRunPriceReason,
+        'useSpecialPriceAsDefault': (useSpecialPriceAsDefault ? 1 : 0).toString(),
       });
     }
 

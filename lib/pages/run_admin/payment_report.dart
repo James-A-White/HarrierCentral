@@ -24,9 +24,9 @@ class PaymentQueryExtensions {
     this.confByName,
     this.extrasPrice,
     this.extrasDescription,
-    this.discountAmount,
-    this.discountPercent,
-    this.discountDescription,
+    this.discountAmountAvailable,
+    this.discountPercentAvailable,
+    this.discountAvailableDescription,
   });
 
   final String pkHemId;
@@ -39,9 +39,9 @@ class PaymentQueryExtensions {
   final String confByName;
   final num extrasPrice;
   final String extrasDescription;
-  final num discountAmount;
-  final int discountPercent;
-  final String discountDescription;
+  final num discountAmountAvailable;
+  final int discountPercentAvailable;
+  final String discountAvailableDescription;
 
   bool isLoading = false;
 
@@ -57,9 +57,9 @@ class PaymentQueryExtensions {
       confByName: map['confByName'],
       extrasDescription: map['extrasDescription'],
       extrasPrice: map['extrasPrice'],
-      discountAmount: map['discountAmount'],
-      discountPercent: map['discountPercent'],
-      discountDescription: map['discountDescription'],
+      discountAmountAvailable: map['discountAmountAvailable'],
+      discountPercentAvailable: map['discountPercentAvailable'],
+      discountAvailableDescription: map['discountAvailableDescription'],
     );
     return item;
   }
@@ -121,9 +121,9 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>') as paidByName,
           COALESCE(paidTo.dispName,'<hasher not found>') as paidToName,
           CASE WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},'') as discountDescription,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmountAvailable,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercentAvailable,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},'') as discountAvailableDescription,
           COALESCE(credits.currentBalance,0) as creditAvailable,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
@@ -133,7 +133,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
           INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e on e.eventId = hem.eventId
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
           LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hem.userId
           LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} paidTo on paidTo.hasherId = pay.paidTo
@@ -210,8 +210,18 @@ class PaymentReportState extends State<PaymentReportPage> {
   }) {
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
-        widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event,
-        specialRunPrice: otherPaymentPopupResult?.specialPriceAmount, specialRunPriceReason: otherPaymentPopupResult?.specialPriceReason);
+      widget.eventAggregate.event.eventId,
+      GUID_EMPTY,
+      item.extensions.pkHemId,
+      paymentType,
+      amount,
+      attendenceAtHash.value,
+      doPayForExtras,
+      AppDomainType.event,
+      specialRunPrice: otherPaymentPopupResult?.specialPriceAmount,
+      specialRunPriceReason: otherPaymentPopupResult?.specialPriceReason,
+      useSpecialPriceAsDefault: otherPaymentPopupResult?.useSpecialPriceAsDefault ?? false,
+    );
   }
 
   void applyFilter() {
@@ -441,7 +451,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                               final num paymentAmount = (_filteredList[index].extensions.isMember != 0)
                                                   ? _filteredList[index].extensions.eventPriceForMembers
                                                   : _filteredList[index].extensions.eventPriceForNonMembers;
-                                              await showExtrasDialog(context, _scaffoldKey.currentState,
+                                              await _showExtrasDialog(context, _scaffoldKey.currentState,
                                                   direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, _filteredList[index], paymentAmount);
                                             }
                                             return Future<bool>.value(false);
@@ -520,7 +530,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               ));
   }
 
-  Future<void> showExtrasDialog(
+  Future<void> _showExtrasDialog(
     BuildContext context,
     ScaffoldState scaffoldState,
     int paymentType,
@@ -639,8 +649,8 @@ class PaymentReportState extends State<PaymentReportPage> {
           ScaffoldMessenger.of(topContext).hideCurrentSnackBar();
           if ((item.payment.paymentType == null) || (item.payment.paymentType == paymentNotPaid.value)) {
             num amountOwed = item.extensions.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
-            amountOwed -= item.extensions.discountAmount;
-            amountOwed -= amountOwed * (item.extensions.discountPercent / 100.0);
+            amountOwed -= item.extensions.discountAmountAvailable;
+            amountOwed -= amountOwed * (item.extensions.discountPercentAvailable / 100.0);
 
             final PaymentPopup pp = PaymentPopup(
               amount: amountOwed,
@@ -667,7 +677,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               });
 
               //final num paymentAmount = (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers;
-              await showExtrasDialog(
+              await _showExtrasDialog(
                 context,
                 _scaffoldKey.currentState,
                 ppResult.transactionType,

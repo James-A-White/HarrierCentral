@@ -261,6 +261,20 @@ class _PaymentPopupState extends State<PaymentPopup> {
         setState(() {
           _otherPaymentResult = result;
           _selectedValue = value;
+
+          if (_selectedValue != PaymentPopup.otherAmountRowId) {
+            _otherPaymentResult = null;
+          }
+
+          final num resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
+          final int resultTransType = _selectedValue;
+
+          final PaymentPopupResult ppResult = PaymentPopupResult(
+            transactionType: _otherPaymentResult?.transType ?? resultTransType,
+            transactionValue: resultAmount,
+            otherPayment: _otherPaymentResult,
+          );
+          Navigator.of(context).pop(ppResult);
         });
       } else {
         _otherPaymentResult = null;

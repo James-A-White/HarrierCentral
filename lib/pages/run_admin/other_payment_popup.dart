@@ -9,6 +9,7 @@ class OtherPaymentPopupResult {
     this.specialPriceReason,
     this.topUpAmount,
     this.totalAmount,
+    this.useSpecialPriceAsDefault,
   );
 
   final String action;
@@ -17,6 +18,7 @@ class OtherPaymentPopupResult {
   final String specialPriceReason;
   final double topUpAmount;
   final double totalAmount;
+  final bool useSpecialPriceAsDefault;
 }
 
 class OtherPaymentPopup extends StatefulWidget {
@@ -42,9 +44,11 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
 
   bool _topUpCreditEnabled = false;
   bool _specialPriceEnabled = false;
+  bool _specialPriceIsDefaultForUser = false;
 
   @override
   void initState() {
+    _specialPriceTextController.value = TextEditingValue(text: widget.normalPrice.toStringAsFixed(widget.decimalDigits));
     _specialPriceTextController.addListener(() {
       _recalculateTotal();
     });
@@ -138,6 +142,40 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                           hintText: 'Enter reason',
                           hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
                         ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Theme(
+                            data: ThemeData(
+                              //primarySwatch: Colors.blue,
+                              unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
+                            ),
+                            child: Checkbox(
+                              fillColor: MaterialStateProperty.resolveWith<Color>(
+                                (Set<MaterialState> states) {
+                                  if (states.contains(MaterialState.disabled)) {
+                                    return Colors.grey.shade300;
+                                  }
+                                  return Colors.red.shade900;
+                                },
+                              ),
+                              onChanged: _specialPriceEnabled
+                                  ? (bool val) {
+                                      setState(() {
+                                        _specialPriceIsDefaultForUser = !_specialPriceIsDefaultForUser;
+                                      });
+                                    }
+                                  : null,
+                              value: _specialPriceIsDefaultForUser,
+                            ),
+                          ),
+                          Text('Set for future runs', style: TextStyle(color: _specialPriceEnabled ? Colors.black : Colors.grey.shade300)),
+                          const SizedBox(width: 10.0),
+                        ],
                       ),
                     ),
                   ],
@@ -264,7 +302,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
           style: TextButton.styleFrom(backgroundColor: Colors.red),
           child: const Text('Cancel'),
           onPressed: () {
-            Navigator.of(context).pop(OtherPaymentPopupResult('cancel', -1, null, null, null, null));
+            Navigator.of(context).pop(OtherPaymentPopupResult('cancel', -1, null, null, null, null, _specialPriceIsDefaultForUser));
           },
         ),
         //   ),
@@ -284,6 +322,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                 _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
                 _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
                 _totalDue,
+                _specialPriceIsDefaultForUser,
               );
 
               Navigator.of(context).pop(result);
@@ -304,6 +343,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                 _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
                 _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
                 _totalDue,
+                _specialPriceIsDefaultForUser,
               );
               Navigator.of(context).pop(
                 result,

@@ -1116,18 +1116,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         _updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
-      onPaidCallback: (CheckInPackModel packMember, int paymentType, {OtherPaymentPopupResult userInput}) {
+      onPaidCallback: (CheckInPackModel packMember, int paymentType, {OtherPaymentPopupResult userInput}) async {
         final num totalDue = userInput == null ? null : userInput.totalAmount;
         //final num topUpAmount = userInput['topUpAmount'];
         final num specialPriceAmount = userInput == null ? null : userInput.specialPriceAmount ?? amountOwed;
         final String specialPriceReason = userInput == null ? null : userInput.specialPriceReason;
+        final bool useSpecialPriceAsDefault = userInput == null ? null : userInput.useSpecialPriceAsDefault;
 
         setState(() {
           packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
           packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
         });
-        _payForEvent(
+        await _payForEvent(
           context,
           scaffoldState,
           paymentType,
@@ -1135,6 +1136,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           totalDue,
           specialRunPrice: specialPriceAmount,
           specialRunPriceReason: specialPriceReason,
+          useSpecialPriceAsDefault: useSpecialPriceAsDefault,
         );
       },
     );
@@ -1150,6 +1152,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     num otherAmount, {
     num specialRunPrice,
     String specialRunPriceReason,
+    bool useSpecialPriceAsDefault,
   }) async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     dynamic payForExtras = payForRunOnly;
@@ -1208,6 +1211,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       doPayForExtras: payForExtras,
       specialRunPrice: specialRunPrice,
       specialRunPriceReason: specialRunPriceReason,
+      useSpecialPriceAsDefault: useSpecialPriceAsDefault,
     );
     if (results != null) {
       if ((results[0]['terminalWasUsedForPayment'] == null) || (!results[0]['terminalWasUsedForPayment'])) {
@@ -1225,6 +1229,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     EnumPayForExtras<int> doPayForExtras = payForRunOnly,
     num specialRunPrice,
     String specialRunPriceReason,
+    bool useSpecialPriceAsDefault = false,
   }) async {
     bool paymentCancelled = false;
     bool terminalWasUsedForPayment = false;
@@ -1317,6 +1322,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         paymentReference: paymentReference,
         specialRunPrice: specialRunPrice,
         specialRunPriceReason: specialRunPriceReason,
+        useSpecialPriceAsDefault: useSpecialPriceAsDefault,
       );
 
       if ((result != null) && (result.isNotEmpty)) {

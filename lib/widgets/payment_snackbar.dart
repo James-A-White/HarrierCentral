@@ -366,8 +366,8 @@ class PaymentSnackBar extends SnackBar {
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
                               splashColor: Colors.greenAccent,
-                              onPressed: () {
-                                onPaidCallback(packMember, paymentCash.value);
+                              onPressed: () async {
+                                await onPaidCallback(packMember, paymentCash.value);
                               },
                             ),
                             Text(
@@ -395,8 +395,8 @@ class PaymentSnackBar extends SnackBar {
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
                               splashColor: Colors.greenAccent,
-                              onPressed: () {
-                                onPaidCallback(packMember, paymentFreeRun.value);
+                              onPressed: () async {
+                                await onPaidCallback(packMember, paymentFreeRun.value);
                               },
                             ),
                             const Text(
@@ -468,8 +468,8 @@ class PaymentSnackBar extends SnackBar {
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
                               splashColor: Colors.greenAccent,
-                              onPressed: () {
-                                onPaidCallback(packMember, paymentBankTransfer.value);
+                              onPressed: () async {
+                                await onPaidCallback(packMember, paymentBankTransfer.value);
                               },
                             ),
                             Text(
@@ -498,8 +498,8 @@ class PaymentSnackBar extends SnackBar {
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
                               splashColor: Colors.greenAccent,
-                              onPressed: () {
-                                onPaidCallback(packMember, paymentNotPaid.value);
+                              onPressed: () async {
+                                await onPaidCallback(packMember, paymentNotPaid.value);
                               },
                             ),
                             const Text(
@@ -529,8 +529,8 @@ class PaymentSnackBar extends SnackBar {
                                     iconSize: 30.0,
                                     alignment: Alignment.topCenter,
                                     splashColor: Colors.greenAccent,
-                                    onPressed: () {
-                                      onPaidCallback(packMember, paymentHashCredit.value);
+                                    onPressed: () async {
+                                      await onPaidCallback(packMember, paymentHashCredit.value);
                                     },
                                   ),
                                   Text(
@@ -576,7 +576,7 @@ class PaymentSnackBar extends SnackBar {
         });
 
     if (userInput.action == 'process') {
-      onPaidCallback(packMember, userInput.transType, userInput: userInput);
+      await onPaidCallback(packMember, userInput.transType, userInput: userInput);
     }
   }
 }
