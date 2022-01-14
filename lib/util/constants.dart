@@ -250,7 +250,14 @@ const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 
 // NOTE: The order of these strings should match with the integrationId values in the HC.Integration
 // table in the main DB
-const List<String> integrationPlatformNames = <String>['Harrier Central', 'Facebook', 'Google In', 'San Diego DB', 'Google Out'];
+const List<String> integrationPlatformNames = <String>[
+  'Harrier Central',
+  'Facebook',
+  'Google In',
+  'San Diego DB',
+  'Google Out',
+  'Berlin H3',
+];
 
 // const String normalTable = 'normal'; // this is not used, but is added to make the code more clear
 // const String hemUserTable = 'hasherEventMap';

@@ -311,7 +311,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       final SnackBar snackBar = SnackBar(
         duration: const Duration(seconds: 3),
         content: Text(
-          'Run details being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+          _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
+              ? 'Run details being synced from external source'
+              : 'Run details being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
           textAlign: TextAlign.center,
           style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
         ),
@@ -466,7 +468,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
                       child: Text(
                           _eventAggregate.event.useFbRunDetails == 1
-                              ? 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                              ? _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
+                                  ? 'Run data from external source'
+                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                               : 'Run data from Harrier Central',
                           textAlign: TextAlign.center,
                           style: headingStyle20Black),
@@ -621,7 +625,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
                       child: Text(
                           _eventAggregate.event.useFbRunDetails == 1
-                              ? 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                              ? _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
+                                  ? 'Run data from external source'
+                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                               : 'Run data from Harrier Central',
                           textAlign: TextAlign.center,
                           style: headingStyle20Black),
@@ -669,7 +675,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                           ),
                     if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                       ElevatedButton(
-                        child: Text('Copy data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
+                        child: Text(
+                            'Copy data from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                            style: buttonLabelStyleMedium),
                         onPressed: () {
                           setState(() {
                             _useExternalSourceDetails();
@@ -868,7 +876,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                           style: ElevatedButton.styleFrom(
                                             minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                                           ),
-                                          child: Text('Use ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
+                                          child: Text(
+                                              'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                              style: buttonLabelStyleMedium),
                                           onPressed: () async {
                                             setState(() {
                                               _isUpdating = true;
@@ -885,7 +895,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                               final SnackBar snackBar = SnackBar(
                                                 duration: const Duration(seconds: 3),
                                                 content: Text(
-                                                  'Image is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                                  'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                                                   textAlign: TextAlign.center,
                                                   style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
                                                 ),
@@ -1057,7 +1067,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                   padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
                   child: Text(
                       _eventAggregate.event.useFbLatLon == 1
-                          ? 'Location from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                          ? 'Location from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                           : 'Location from Harrier Central',
                       textAlign: TextAlign.center,
                       style: headingStyle20Black),
@@ -1226,44 +1236,52 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                           ),
                           if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                             const SizedBox(width: 20.0),
-                            ElevatedButton(
-                              child: Text('Use ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
-                              onPressed: () async {
-                                setState(() {
-                                  _isUpdating = true;
-                                });
-                                final EventsService nSvc = EventsService();
-                                final String eventId = await nSvc.addEditEvent(
-                                  eventId: _eventAggregate.event.eventId,
-                                  useFbLatLon: 1,
-                                );
-
-                                _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                                setState(() {
-                                  if ((_eventAggregate?.extensions?.latitude == null) || (_eventAggregate?.extensions?.longitude == null)) {
-                                    _mapCenter = latlng.LatLng(
-                                      _eventAggregate.kennel.kennelLatitude,
-                                      _eventAggregate.kennel.kennelLongitude,
-                                    );
-                                  } else {
-                                    _mapCenter = latlng.LatLng(
-                                      _eventAggregate.extensions.latitude,
-                                      _eventAggregate.extensions.longitude,
-                                    );
-                                  }
-                                  _isUpdating = false;
-                                  final SnackBar snackBar = SnackBar(
-                                    duration: const Duration(seconds: 3),
-                                    content: Text(
-                                      'Location is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                    ),
-                                    backgroundColor: Colors.blue.shade700,
+                            Expanded(
+                              child: ElevatedButton(
+                                child: AutoSizeText(
+                                  'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                  style: buttonLabelStyleMedium,
+                                  minFontSize: 3.0,
+                                  maxLines: 1,
+                                  //overflow: TextOverflow.ellipsis,
+                                ),
+                                onPressed: () async {
+                                  setState(() {
+                                    _isUpdating = true;
+                                  });
+                                  final EventsService nSvc = EventsService();
+                                  final String eventId = await nSvc.addEditEvent(
+                                    eventId: _eventAggregate.event.eventId,
+                                    useFbLatLon: 1,
                                   );
-                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                });
-                              },
+
+                                  _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                  setState(() {
+                                    if ((_eventAggregate?.extensions?.latitude == null) || (_eventAggregate?.extensions?.longitude == null)) {
+                                      _mapCenter = latlng.LatLng(
+                                        _eventAggregate.kennel.kennelLatitude,
+                                        _eventAggregate.kennel.kennelLongitude,
+                                      );
+                                    } else {
+                                      _mapCenter = latlng.LatLng(
+                                        _eventAggregate.extensions.latitude,
+                                        _eventAggregate.extensions.longitude,
+                                      );
+                                    }
+                                    _isUpdating = false;
+                                    final SnackBar snackBar = SnackBar(
+                                      duration: const Duration(seconds: 3),
+                                      content: Text(
+                                        'Location is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                      ),
+                                      backgroundColor: Colors.blue.shade700,
+                                    );
+                                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  });
+                                },
+                              ),
                             ),
                           ]
                         ],
