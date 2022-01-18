@@ -24,6 +24,9 @@ class CheckInPackModel {
       this.paidStateIndicator,
       this.hcTotalRunCount,
       this.hcHaringCount,
+      this.historicalTotalRunCount,
+      this.historicalHaringCount,
+      this.historicalCountIsEstimate,
       this.hemUpdatedAt,
       this.payUpdatedAt,
       this.credit});
@@ -48,6 +51,9 @@ class CheckInPackModel {
   Future<int> paidStateIndicator;
   final int hcTotalRunCount;
   final int hcHaringCount;
+  final int historicalTotalRunCount;
+  final int historicalHaringCount;
+  final int historicalCountIsEstimate;
   final String hemUpdatedAt;
   final String payUpdatedAt;
   final num credit;
@@ -74,6 +80,9 @@ class CheckInPackModel {
         paidStateIndicator: map['attendenceState'] >= attendenceAtHash.value ? Future<int>.value(map['isPaid']) : Future<int>.value(-1),
         hcTotalRunCount: map['hcTotalRunCount'],
         hcHaringCount: map['hcHaringCount'],
+        historicalTotalRunCount: map['historicalTotalRunCount'],
+        historicalHaringCount: map['historicalHaringCount'],
+        historicalCountIsEstimate: map['historicalCountIsEstimate'],
         hemUpdatedAt: map['hemUpdatedAt'],
         payUpdatedAt: map['payUpdatedAt'],
         credit: map['credit']);
@@ -253,8 +262,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} as discountAmount,
             hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} as discountPercent,
             hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} as hcTotalRunCount,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} as hcHaringCount
-          
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} as hcHaringCount,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} as historicalTotalRunCount,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} as historicalHaringCount,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate} as historicalCountIsEstimate
           FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hkm.userId
           LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
@@ -298,7 +309,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             0 as ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
             0 as ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
             null as ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}
+            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
+            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
+            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
             FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 
             INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h2 on h2.hasherId = hem2.userId
             LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
@@ -325,7 +339,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} as discountAmount,
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} as discountPercent,
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+            
             FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
             INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h3 on h3.hasherId = hem3.userId
             LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
@@ -414,7 +432,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               ((_filterValues[5] == 0) || (_filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (_filterValues[5] == 1 && (a.isMember ?? 0) == 1)) &&
               ((_filterValues[6] == 0) ||
                   (_filterValues[6] == -1) ||
-                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.hcHaringCount ?? 0) + (a.hcTotalRunCount ?? 0))))))
+                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount ?? 0) + (a.hcTotalRunCount ?? 0))))))
           .toList();
     } else {
       _filteredList = <CheckInPackModel>[];
@@ -477,7 +495,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
       if (_packList != null) {
         final List<CheckInPackModel> specialRunNumbers =
-            _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.hcHaringCount ?? 0) + (a.hcTotalRunCount ?? 0)))).toList();
+            _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount ?? 0) + (a.hcTotalRunCount ?? 0)))).toList();
         _drinkCount = specialRunNumbers.length;
       } else {
         _drinkCount = 0;
@@ -1523,15 +1541,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 : Positioned(
                     right: 4,
                     bottom: 17,
-                    child: Text('Hared = ${packMember.hcHaringCount}', style: _getRunLabelStyle(packMember.hcTotalRunCount + packMember.hcHaringCount, packMember.attendenceState)),
+                    child: Text('Hared = ${packMember.hcHaringCount + (packMember.historicalHaringCount ?? 0)}',
+                        style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
                   ),
             packMember.hcTotalRunCount == null
                 ? Container()
                 : Positioned(
                     right: 4,
                     bottom: 1,
-                    child: Text('Runs = ${packMember.hcTotalRunCount + packMember.hcHaringCount}',
-                        style: _getRunLabelStyle(packMember.hcTotalRunCount + packMember.hcHaringCount, packMember.attendenceState)),
+                    child: Text('Total Runs = ${packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)}',
+                        style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
                   ),
           ],
         ),

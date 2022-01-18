@@ -602,11 +602,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                               backgroundColor: Colors.blue,
                                               radius: 10.0,
                                             )
-                                          : _thePackList[index]?.hem?.rsvpState ?? 0 == 1
+                                          : (_thePackList[index]?.hem?.rsvpState ?? 0) == 1
                                               ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
-                                              : _thePackList[index]?.hem?.rsvpState ?? 0 == 2
+                                              : (_thePackList[index]?.hem?.rsvpState ?? 0) == 2
                                                   ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
-                                                  : _thePackList[index]?.hem?.isHare ?? 0 == 0
+                                                  : (_thePackList[index]?.hem?.isHare ?? 0) == 0
                                                       ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
                                                       : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
                                     ],

@@ -248,7 +248,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
         _selectedValue = value;
       });
     } else {
-      final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(widget.amount, widget.decimalDigits, widget.currencySymbol);
+      final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(widget.amount, widget.decimalDigits, widget.currencySymbol, widget.creditAllowed != 0);
 
       final OtherPaymentPopupResult result = await showDialog<OtherPaymentPopupResult>(
           context: context,

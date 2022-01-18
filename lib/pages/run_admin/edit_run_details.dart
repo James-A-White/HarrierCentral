@@ -370,7 +370,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForNonMembersController.text.replaceAll(',', '.')),
             // note for "auto" the value we send to the server is '0' because this will
             // remove any previous absoluteEventNumber that is stored there
-            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : double.tryParse(_absoluteEventNumberController.text.replaceAll(',', '.')),
+            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : int.tryParse(_absoluteEventNumberController.text),
             eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : double.tryParse(_eventPriceForExtrasController.text.replaceAll(',', '.')),
             extrasDescription: _extrasDescriptionController.text.isEmpty ? '<none>' : _extrasDescriptionController.text,
             hares: _haresController.text,

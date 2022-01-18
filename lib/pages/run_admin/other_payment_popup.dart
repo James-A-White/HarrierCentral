@@ -22,11 +22,12 @@ class OtherPaymentPopupResult {
 }
 
 class OtherPaymentPopup extends StatefulWidget {
-  const OtherPaymentPopup(this.normalPrice, this.decimalDigits, this.currencySymbol, {Key key}) : super(key: key);
+  const OtherPaymentPopup(this.normalPrice, this.decimalDigits, this.currencySymbol, this.showCreditTopup, {Key key}) : super(key: key);
 
   final num normalPrice;
   final int decimalDigits;
   final String currencySymbol;
+  final bool showCreditTopup;
 
   @override
   _OtherPaymentPopupState createState() => _OtherPaymentPopupState();
@@ -111,7 +112,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                         focusNode: _specialPriceFocusNode,
                         controller: _specialPriceTextController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
+                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 20.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           // icon: Icon(
@@ -119,7 +120,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                           //   color: Colors.white,
                           // ),
                           hintText: 'Enter special price',
-                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 20.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
                         ),
                       ),
                     ),
@@ -132,7 +133,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                         focusNode: _specialPriceReasonFocusNode,
                         controller: _specialPriceReasonTextController,
                         keyboardType: TextInputType.text,
-                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
+                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 20.0, color: _specialPriceEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           // icon: Icon(
@@ -140,44 +141,46 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                           //   color: Colors.white,
                           // ),
                           hintText: 'Enter reason',
-                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 20.0, color: _specialPriceEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Theme(
-                            data: ThemeData(
-                              //primarySwatch: Colors.blue,
-                              unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
-                            ),
-                            child: Checkbox(
-                              fillColor: MaterialStateProperty.resolveWith<Color>(
-                                (Set<MaterialState> states) {
-                                  if (states.contains(MaterialState.disabled)) {
-                                    return Colors.grey.shade300;
-                                  }
-                                  return Colors.red.shade900;
-                                },
+                    if (widget.showCreditTopup) ...<Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Theme(
+                              data: ThemeData(
+                                //primarySwatch: Colors.blue,
+                                unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
                               ),
-                              onChanged: _specialPriceEnabled
-                                  ? (bool val) {
-                                      setState(() {
-                                        _specialPriceIsDefaultForUser = !_specialPriceIsDefaultForUser;
-                                      });
+                              child: Checkbox(
+                                fillColor: MaterialStateProperty.resolveWith<Color>(
+                                  (Set<MaterialState> states) {
+                                    if (states.contains(MaterialState.disabled)) {
+                                      return Colors.grey.shade300;
                                     }
-                                  : null,
-                              value: _specialPriceIsDefaultForUser,
+                                    return Colors.red.shade900;
+                                  },
+                                ),
+                                onChanged: _specialPriceEnabled
+                                    ? (bool val) {
+                                        setState(() {
+                                          _specialPriceIsDefaultForUser = !_specialPriceIsDefaultForUser;
+                                        });
+                                      }
+                                    : null,
+                                value: _specialPriceIsDefaultForUser,
+                              ),
                             ),
-                          ),
-                          Text('Set for future runs', style: TextStyle(color: _specialPriceEnabled ? Colors.black : Colors.grey.shade300)),
-                          const SizedBox(width: 10.0),
-                        ],
+                            Text('Set for future runs', style: TextStyle(color: _specialPriceEnabled ? Colors.black : Colors.grey.shade300)),
+                            const SizedBox(width: 10.0),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -210,80 +213,82 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
               ),
             ],
           ),
-          const SizedBox(height: 13.0),
-          const Divider(
-            thickness: 1.0,
-          ),
-          Stack(
-            children: <Widget>[
-              const SizedBox(height: 170.0, width: 10),
-              Container(
-                margin: const EdgeInsets.only(top: 23.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  color: Colors.white,
-                  border: Border.all(
-                    color: _topUpCreditEnabled ? Colors.red.shade900 : Colors.grey.shade300,
-                    width: 2, //                   <--- border width here
-                  ),
-                ),
-                child: Column(
-                  children: <Widget>[
-                    const SizedBox(height: 20.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: Text('Enter an additional amount of money here to add to a Hasher\'s credit balance.',
-                          style: TextStyle(color: _topUpCreditEnabled ? Colors.black : Colors.grey.shade500)),
+          if (widget.showCreditTopup) ...<Widget>[
+            const SizedBox(height: 13.0),
+            const Divider(
+              thickness: 1.0,
+            ),
+            Stack(
+              children: <Widget>[
+                const SizedBox(height: 170.0, width: 10),
+                Container(
+                  margin: const EdgeInsets.only(top: 23.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Colors.white,
+                    border: Border.all(
+                      color: _topUpCreditEnabled ? Colors.red.shade900 : Colors.grey.shade300,
+                      width: 2, //                   <--- border width here
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: TextField(
-                        autofocus: true,
-                        enabled: _topUpCreditEnabled,
-                        focusNode: _topUpFocusNode,
-                        controller: _topUpTextController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _topUpCreditEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          // icon: Icon(
-                          //   FontAwesome.money,
-                          //   color: Colors.white,
-                          // ),
-                          hintText: 'Enter top up amount',
-                          hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: _topUpCreditEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(height: 20.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Text('Enter an additional amount of money here to add to a Hasher\'s credit balance.',
+                            style: TextStyle(color: _topUpCreditEnabled ? Colors.black : Colors.grey.shade500)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: TextField(
+                          autofocus: true,
+                          enabled: _topUpCreditEnabled,
+                          focusNode: _topUpFocusNode,
+                          controller: _topUpTextController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 20.0, color: _topUpCreditEnabled ? Colors.grey.shade700 : Colors.grey.shade300),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            // icon: Icon(
+                            //   FontAwesome.money,
+                            //   color: Colors.white,
+                            // ),
+                            hintText: 'Enter top up amount',
+                            hintStyle: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 20.0, color: _topUpCreditEnabled ? Colors.grey.shade500 : Colors.grey.shade300),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 0,
-                left: 13,
-                child: Container(
-                  color: Colors.white,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Checkbox(
-                        fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
-                        onChanged: (bool val) {
-                          _recalculateTotal();
-                          setState(() {
-                            _topUpCreditEnabled = !_topUpCreditEnabled;
-                          });
-                        },
-                        value: _topUpCreditEnabled,
-                      ),
-                      const Text('Top up credit'),
-                      const SizedBox(width: 10.0),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
+                Positioned(
+                  top: 0,
+                  left: 13,
+                  child: Container(
+                    color: Colors.white,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Checkbox(
+                          fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
+                          onChanged: (bool val) {
+                            _recalculateTotal();
+                            setState(() {
+                              _topUpCreditEnabled = !_topUpCreditEnabled;
+                            });
+                          },
+                          value: _topUpCreditEnabled,
+                        ),
+                        const Text('Top up credit'),
+                        const SizedBox(width: 10.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0),
             child: Text('Total due: ${IveCoreUtilities.getFormattedMoney(_totalDue, widget.decimalDigits, widget.currencySymbol)}',
