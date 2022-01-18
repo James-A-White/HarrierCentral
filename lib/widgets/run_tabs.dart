@@ -502,21 +502,23 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           )
                         : GestureDetector(
                             onTap: () {
-                              Navigator.push<void>(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (BuildContext context) => ZoomableImagePage2(
-                                      key: const Key('39392001'),
-                                      pageTitle: _thePackList[index].hasher.dispName,
-                                      imageUrl: _thePackList[index].hasher.photo.startsWith('http') ? _thePackList[index].hasher.photo : null,
-                                      assetImage: _thePackList[index].hasher.photo.contains('bundle://')
-                                          ? 'images/avatars/' + _thePackList[index].hasher.photo.replaceAll('bundle://', '') + '.jpg'
-                                          : null,
-                                      appBarBackgroundColor: themeAppBarBackground,
-                                      background: Backgrounds.defaultHcBackground(),
-                                      margin: 20.0),
-                                ),
-                              );
+                              if (_thePackList[index].hasher.hasherId != null) {
+                                Navigator.push<void>(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (BuildContext context) => ZoomableImagePage2(
+                                        key: const Key('39392001'),
+                                        pageTitle: _thePackList[index].hasher.dispName,
+                                        imageUrl: _thePackList[index].hasher.photo.startsWith('http') ? _thePackList[index].hasher.photo : null,
+                                        assetImage: _thePackList[index].hasher.photo.contains('bundle://')
+                                            ? 'images/avatars/' + _thePackList[index].hasher.photo.replaceAll('bundle://', '') + '.jpg'
+                                            : null,
+                                        appBarBackgroundColor: themeAppBarBackground,
+                                        background: Backgrounds.defaultHcBackground(),
+                                        margin: 20.0),
+                                  ),
+                                );
+                              }
                             },
                             // onTap: () {
                             //   String actionText = '';
@@ -556,23 +558,35 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             // },
                             child: Stack(
                               children: <Widget>[
-                                _thePackList[index].hasher.photo.startsWith('http')
-                                    ? CachedNetworkImage(
-                                        imageUrl: _thePackList[index].hasher.photo, fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
-                                    : _thePackList[index].hasher.photo.startsWith('bundle')
-                                        ? Image(
+                                _thePackList[index].hasher.hasherId == null
+                                    ? const Image(
+                                        width: 300.0,
+                                        height: 300.0,
+                                        fit: BoxFit.fill,
+                                        image: AssetImage(
+                                          'images/avatars/avatar-0.jpg',
+                                        ))
+                                    : _thePackList[index].hasher.photo.startsWith('http')
+                                        ? CachedNetworkImage(
+                                            imageUrl: _thePackList[index].hasher.photo,
+                                            fadeInDuration: const Duration(milliseconds: 0),
                                             width: 300.0,
                                             height: 300.0,
-                                            fit: BoxFit.fill,
-                                            image: AssetImage(
-                                                ('images/avatars/' + _thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
-                                          )
-                                        : const Image(
-                                            width: 300.0,
-                                            height: 300.0,
-                                            fit: BoxFit.fill,
-                                            image: AssetImage('images/avatars/avatar-2.jpg'),
-                                          ),
+                                            fit: BoxFit.fill)
+                                        : _thePackList[index].hasher.photo.startsWith('bundle')
+                                            ? Image(
+                                                width: 300.0,
+                                                height: 300.0,
+                                                fit: BoxFit.fill,
+                                                image: AssetImage(
+                                                    ('images/avatars/' + _thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                                              )
+                                            : const Image(
+                                                width: 300.0,
+                                                height: 300.0,
+                                                fit: BoxFit.fill,
+                                                image: AssetImage('images/avatars/avatar-2.jpg'),
+                                              ),
                                 Positioned(
                                   right: 1.0,
                                   bottom: 1.0,
@@ -583,16 +597,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         backgroundColor: Colors.white,
                                         radius: 11.0,
                                       ),
-                                      (_thePackList[index].hem.rsvpState ?? 0) <= 0
+                                      (_thePackList[index]?.hem?.rsvpState ?? 0) <= 0
                                           ? const CircleAvatar(
                                               backgroundColor: Colors.blue,
                                               radius: 10.0,
                                             )
-                                          : _thePackList[index].hem.rsvpState == 1
+                                          : _thePackList[index]?.hem?.rsvpState ?? 0 == 1
                                               ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
-                                              : _thePackList[index].hem.rsvpState == 2
+                                              : _thePackList[index]?.hem?.rsvpState ?? 0 == 2
                                                   ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
-                                                  : _thePackList[index].hem.isHare == 0
+                                                  : _thePackList[index]?.hem?.isHare ?? 0 == 0
                                                       ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
                                                       : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
                                     ],
