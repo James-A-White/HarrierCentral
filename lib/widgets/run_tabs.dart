@@ -33,6 +33,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   bool isAdmin = true;
   //bool _isLoading = true;
 
+  latlng.LatLng _mapCenter;
+
+  bool _trueNorthLock = true;
+
   List<PackListAggregate> _thePackList;
   Map<String, dynamic> _packCount = <String, dynamic>{};
 
@@ -140,6 +144,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         });
       }
     });
+
+    _mapCenter = latlng.LatLng(
+        widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0, widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0);
+
     super.initState();
   }
 
@@ -148,6 +156,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     _tabController.dispose();
     super.dispose();
   }
+
+  final GlobalKey<MyFlutterMapState> _mapKey = GlobalKey<MyFlutterMapState>();
 
   int flexLeft = 27;
   int flexRight = 73;
@@ -664,47 +674,99 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[
-            FlutterMap(
-              options: MapOptions(
-                center: latlng.LatLng(
-                  widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
-                  widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
-                ),
-                zoom: 15.0,
-                minZoom: 1.0,
-                maxZoom: 18.0,
-              ),
-              layers: <LayerOptions>[
-                TileLayerOptions(
-                    urlTemplate:
-                        //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                    //subdomains: ['a', 'b', 'c']),
-                    subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-                MarkerLayerOptions(
-                  markers: <Marker>[
-                    if (widget.futureRun.extensions.isMapAndDistanceValid) ...<Marker>[
-                      Marker(
-                        width: 120.0,
-                        height: 120.0,
-                        point: latlng.LatLng(
-                          widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
-                          widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
-                        ),
-                        builder: (BuildContext ctx) => GestureDetector(
-                          onTap: () => _launchMaps(widget.futureRun),
-                          child: Container(
-                            padding: const EdgeInsets.only(bottom: 58.0),
-                            child: Image.asset('images/icons/map_pin_foot.png'),
-                            //child: FlutterLogo(colors: Colors.purple),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                )
-              ],
+            // FlutterMap(
+            //   mapController: _mapController,
+            //   options: MapOptions(
+            //     interactiveFlags: _trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
+            //     center: latlng.LatLng(
+            //       widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
+            //       widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
+            //     ),
+            //     zoom: 15.0,
+            //     minZoom: 1.0,
+            //     maxZoom: 18.0,
+            //   ),
+            //   layers: <LayerOptions>[
+            //     TileLayerOptions(
+            //         urlTemplate:
+            //             //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            //             'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+            //         //subdomains: ['a', 'b', 'c']),
+            //         subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+            //     MarkerLayerOptions(
+            //       markers: <Marker>[
+            //         if (widget.futureRun.extensions.isMapAndDistanceValid) ...<Marker>[
+            //           Marker(
+            //             width: 120.0,
+            //             height: 120.0,
+            //             point: latlng.LatLng(
+            //               widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
+            //               widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0,
+            //             ),
+            //             builder: (BuildContext ctx) => GestureDetector(
+            //               onTap: () => _launchMaps(widget.futureRun),
+            //               child: Container(
+            //                 padding: const EdgeInsets.only(bottom: 58.0),
+            //                 child: Image.asset('images/icons/map_pin_foot.png'),
+            //                 //child: FlutterLogo(colors: Colors.purple),
+            //               ),
+            //             ),
+            //           ),
+            //         ],
+            //       ],
+            //     )
+            //   ],
+            // ),
+            MyFlutterMap(
+              widget.futureRun.extensions.latitude == null ? null : latlng.LatLng(widget.futureRun.extensions.latitude + .0, widget.futureRun.extensions.longitude + .0),
+              _mapCenter,
+              latlng.LatLng(widget.futureRun.kennel.kennelLatitude + .0, widget.futureRun.kennel.kennelLongitude + .0),
+              1.0,
+              18.0,
+              14.0,
+              (latlng.LatLng newPosition) {
+                _mapCenter = newPosition;
+              },
+              _trueNorthLock,
+              _mapKey,
             ),
+            Positioned(
+              left: 10.0,
+              top: 10.0,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _trueNorthLock = !_trueNorthLock;
+                  });
+                },
+                child: SizedBox(
+                  height: 50.0,
+                  width: 50.0,
+                  child: Image.asset(_trueNorthLock ? 'images/other/set_map_to_true_north_lock.png' : 'images/other/set_map_rotation_enabled.png'),
+                ),
+              ),
+            ),
+
+            // TODO(James): UnFuck this!
+            // if (widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
+            //   Positioned(
+            //     right: 10.0,
+            //     top: 10.0,
+            //     child: GestureDetector(
+            //       onTap: () {
+            //         _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
+            //             widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0);
+
+            //         setState(() {});
+            //       },
+            //       child: SizedBox(
+            //         height: 50.0,
+            //         width: 50.0,
+            //         child: Image.asset('images/other/set_map_to_event_location.png'),
+            //       ),
+            //     ),
+            //   ),
+            // ],
             if (!widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
               Container(color: Colors.black54),
               Container(
