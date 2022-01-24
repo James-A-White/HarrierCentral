@@ -320,6 +320,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
               currencySymbol: widget.eventAggregate.extensions.curSym,
               hemId: adHocData[0]['hasherEventMapId'],
               decimalDigits: widget.eventAggregate.extensions.digAfterDec,
+              allowDefaultPricing: adHocData[0]['isMember'] == 1,
               // valueChanged: (num value) {
               //   finalValue = value;
               // },

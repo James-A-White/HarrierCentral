@@ -27,6 +27,7 @@ class PaymentQueryExtensions {
     this.discountAmountAvailable,
     this.discountPercentAvailable,
     this.discountAvailableDescription,
+    this.isFollowing,
   });
 
   final String pkHemId;
@@ -41,6 +42,7 @@ class PaymentQueryExtensions {
   final String extrasDescription;
   final num discountAmountAvailable;
   final int discountPercentAvailable;
+  final int isFollowing;
   final String discountAvailableDescription;
 
   bool isLoading = false;
@@ -57,6 +59,7 @@ class PaymentQueryExtensions {
       confByName: map['confByName'],
       extrasDescription: map['extrasDescription'],
       extrasPrice: map['extrasPrice'],
+      isFollowing: map['isFollowing'],
       discountAmountAvailable: map['discountAmountAvailable'],
       discountPercentAvailable: map['discountPercentAvailable'],
       discountAvailableDescription: map['discountAvailableDescription'],
@@ -124,6 +127,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmountAvailable,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercentAvailable,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},'') as discountAvailableDescription,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as isFollowing,
           COALESCE(credits.currentBalance,0) as creditAvailable,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
@@ -659,6 +663,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               currencySymbol: widget.eventAggregate.extensions.curSym,
               hemId: item.extensions.pkHemId,
               decimalDigits: widget.eventAggregate.extensions.digAfterDec,
+              allowDefaultPricing: (item.extensions.isMember != 0) || (item.extensions.isFollowing != 0),
               // valueChanged: (num value) {
               //   finalValue = value;
               // },

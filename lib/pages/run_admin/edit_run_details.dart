@@ -1025,11 +1025,11 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 1.0,
                 18.0,
                 14.0,
-                (latlng.LatLng newPosition) {
-                  _mapCenter = newPosition;
-                },
                 _trueNorthLock,
                 _mapKey,
+                mapMoved: (latlng.LatLng newPosition) {
+                  _mapCenter = newPosition;
+                },
               ),
               if ((_mapCenter.latitude == CLEAR_LATLONG) || (_mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
                 GestureDetector(
@@ -1195,7 +1195,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 final EventsService nSvc = EventsService();
                                 // check to see if "no location" is set. If so, don't overwrite it
                                 if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG)) {
-                                  _mapCenter = _mapKey.currentState._mapController.center;
+                                  _mapCenter = _mapKey.currentState.mapController.center;
                                 }
                                 final String eventId = await nSvc.addEditEvent(
                                   eventId: _eventAggregate.event.eventId,
@@ -1835,135 +1835,4 @@ class CheckboxFormField extends FormField<bool> {
                 controlAffinity: ListTileControlAffinity.leading,
               );
             });
-}
-
-class MyFlutterMap extends StatefulWidget {
-  const MyFlutterMap(
-    this.eventLocation,
-    this.mapCenter,
-    this.kennelLocation,
-    this.minZoom,
-    this.maxZoom,
-    this.zoom,
-    this.mapMoved,
-    this.trueNorthLock,
-    Key key,
-  ) : super(key: key);
-
-  final latlng.LatLng eventLocation;
-  final latlng.LatLng mapCenter;
-  final latlng.LatLng kennelLocation;
-  final num minZoom;
-  final num maxZoom;
-  final num zoom;
-  final Function mapMoved;
-  final bool trueNorthLock;
-
-  @override
-  MyFlutterMapState createState() => MyFlutterMapState();
-}
-
-class MyFlutterMapState extends State<MyFlutterMap> {
-  final MapController _mapController = MapController();
-
-  latlng.LatLng _oldCenter;
-  bool _oldTrueNorthLock = true;
-  bool _mapControllerAvailable = false;
-
-  @override
-  void initState() {
-    _oldCenter = widget.mapCenter;
-    _oldTrueNorthLock = widget.trueNorthLock;
-    _mapControllerAvailable = false;
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // only move the map if the center has changed
-    latlng.LatLng mapCenterPoint = widget.mapCenter;
-    if ((mapCenterPoint.latitude == CLEAR_LATLONG) && (mapCenterPoint.longitude == CLEAR_LATLONG)) {
-      mapCenterPoint = widget.kennelLocation;
-    }
-
-    if (_mapControllerAvailable && (_oldCenter != mapCenterPoint)) {
-      _mapController.move(mapCenterPoint, _mapController.zoom);
-      _oldCenter = mapCenterPoint;
-    }
-
-    if (_mapControllerAvailable && (_oldTrueNorthLock != widget.trueNorthLock)) {
-      _oldTrueNorthLock = widget.trueNorthLock;
-      if (widget.trueNorthLock) {
-        _mapController.rotate(0.0);
-      }
-    }
-
-    _mapControllerAvailable = true;
-    return FlutterMap(
-      mapController: _mapController,
-      options: widget.trueNorthLock
-          ? MapOptions(
-              interactiveFlags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
-              center: mapCenterPoint,
-              zoom: widget.zoom,
-              minZoom: widget.minZoom,
-              maxZoom: widget.maxZoom,
-              rotation: 0.0,
-            )
-          : MapOptions(
-              interactiveFlags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
-              center: mapCenterPoint,
-              zoom: widget.zoom,
-              minZoom: widget.minZoom,
-              maxZoom: widget.maxZoom,
-            ),
-      layers: <LayerOptions>[
-        TileLayerOptions(
-            urlTemplate:
-                //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-            //subdomains: ['a', 'b', 'c']),
-            subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-        MarkerLayerOptions(
-          markers: <Marker>[
-            if (G0<AppModel>().hasLocationPermissions) ...<Marker>[
-              Marker(
-                height: 50.0,
-                width: 50.0,
-                point: latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
-                builder: (BuildContext ctx) => Container(
-                  padding: const EdgeInsets.all(1.0),
-                  height: 50.0,
-                  width: 50.0,
-                  child: IgnorePointer(
-                    ignoring: true,
-                    child: Image.asset(
-                      'images/other/map_current_location.png',
-                      height: 50.0,
-                      width: 50.0,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            if (widget.eventLocation != null) ...<Marker>[
-              Marker(
-                width: 120.0,
-                height: 120.0,
-                point: widget.eventLocation,
-                builder: (BuildContext ctx) => GestureDetector(
-                  //onTap: () => _launchMaps(widget.futureRun.event),
-                  child: Container(
-                    padding: const EdgeInsets.only(bottom: 58.0),
-                    child: Image.asset('images/icons/map_pin_foot.png'),
-                    //child: FlutterLogo(colors: Colors.purple),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        )
-      ],
-    );
-  }
 }

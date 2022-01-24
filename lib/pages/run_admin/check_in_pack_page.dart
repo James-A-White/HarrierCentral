@@ -3,33 +3,35 @@
 import 'package:harrier_central/imports.dart';
 
 class CheckInPackModel {
-  CheckInPackModel(
-      {this.hasherId,
-      this.hemId,
-      this.isMember,
-      this.isHare,
-      this.isPaid,
-      this.nameForDisplay,
-      this.nameForSort,
-      this.paymentType,
-      this.creditAmount,
-      this.photo,
-      this.virginVisitorType,
-      this.rsvpState,
-      this.attendenceState,
-      this.discountPercent,
-      this.discountAmount,
-      this.rsvpStateIndicator,
-      this.attendenceStateIndicator,
-      this.paidStateIndicator,
-      this.hcTotalRunCount,
-      this.hcHaringCount,
-      this.historicalTotalRunCount,
-      this.historicalHaringCount,
-      this.historicalCountIsEstimate,
-      this.hemUpdatedAt,
-      this.payUpdatedAt,
-      this.credit});
+  CheckInPackModel({
+    this.hasherId,
+    this.hemId,
+    this.isMember,
+    this.isHare,
+    this.isPaid,
+    this.nameForDisplay,
+    this.nameForSort,
+    this.paymentType,
+    this.creditAmount,
+    this.photo,
+    this.virginVisitorType,
+    this.rsvpState,
+    this.attendenceState,
+    this.discountPercent,
+    this.discountAmount,
+    this.rsvpStateIndicator,
+    this.attendenceStateIndicator,
+    this.paidStateIndicator,
+    this.hcTotalRunCount,
+    this.hcHaringCount,
+    this.historicalTotalRunCount,
+    this.historicalHaringCount,
+    this.historicalCountIsEstimate,
+    this.hemUpdatedAt,
+    this.payUpdatedAt,
+    this.credit,
+    this.isFollowing,
+  });
 
   final String hasherId;
   final String hemId;
@@ -57,6 +59,7 @@ class CheckInPackModel {
   final String hemUpdatedAt;
   final String payUpdatedAt;
   final num credit;
+  final int isFollowing;
 
   static CheckInPackModel fromMap(Map<String, dynamic> map) {
     final CheckInPackModel item = CheckInPackModel(
@@ -85,6 +88,7 @@ class CheckInPackModel {
         historicalCountIsEstimate: map['historicalCountIsEstimate'],
         hemUpdatedAt: map['hemUpdatedAt'],
         payUpdatedAt: map['payUpdatedAt'],
+        isFollowing: map['isFollowing'],
         credit: map['credit']);
     return item;
   }
@@ -202,7 +206,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             -- get all hashers
             h.hasherId,
             null as hemId,
-            0 as isMember,
+            coalesce(case when (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) then 1 else 0 end,0) as isMember,
+            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as isFollowing,
             0 as isHare,
             0 as isPaid, 
             coalesce(h.dispName,h.hashName,coalesce(h.firstName,"") || " " || coalesce(h.lastName,"")) as nameForDisplay,
@@ -215,10 +220,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             0 as attendenceState,
             null as hemUpdatedAt,
             null as payUpdatedAt,
-            0 as discountAmount,
-            0 as discountPercent,
+            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
+            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
             0 as credit
           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
           ORDER BY nameForSort
           ''';
 
@@ -246,6 +252,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             h.${G0<TableModel>().hashersTableHelper.colHasherId} as hasherId,
             hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
             case when (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) then 1 else 0 end as isMember,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} as isFollowing,
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
             CASE WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL THEN 0 ELSE 1 END as isPaid, 
             coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"")) as nameForDisplay,
@@ -259,8 +266,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} as hemUpdatedAt,
             pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} as payUpdatedAt,
             coalesce(credits.currentBalance,0) as credit,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} as discountAmount,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} as discountPercent,
+            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
+            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
             hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} as hcTotalRunCount,
             hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} as hcHaringCount,
             hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} as historicalTotalRunCount,
@@ -293,6 +300,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             null as hasherId,
             coalesce(hem2.hemId,"00000000-0000-0000-0000-000000000000") as hemId,
             0 as isMember,
+            0 as isFollowing,
             hem2.isHare as isHare,
             CASE WHEN pay2.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
@@ -323,6 +331,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hem3.userId as hasherId,
             hem3.hemId as hemId,
             0 as isMember,
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} as isFollowing,
             hem3.isHare as isHare,
             CASE WHEN pay3.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             coalesce(h3.dispName,h3.hashName,coalesce(h3.firstName,"") || " " || coalesce(h3.lastName,"")) as nameForDisplay,    
@@ -336,8 +345,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hem3.updatedAt as hemUpdatedAt,
             pay3.updatedAt as payUpdatedAt,
             coalesce(credits3.currentBalance,0) as credit,
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} as discountAmount,
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} as discountPercent,
+            coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
+            coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},

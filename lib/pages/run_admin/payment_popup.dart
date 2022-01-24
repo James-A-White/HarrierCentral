@@ -10,15 +10,16 @@ class PaymentPopupResult {
 }
 
 class PaymentPopup extends StatefulWidget {
-  const PaymentPopup(
-      {Key key,
-      @required this.hemId,
-      @required this.currencySymbol,
-      @required this.amount,
-      @required this.creditRemaining,
-      @required this.creditAllowed,
-      @required this.decimalDigits})
-      : super(key: key);
+  const PaymentPopup({
+    Key key,
+    @required this.hemId,
+    @required this.currencySymbol,
+    @required this.amount,
+    @required this.creditRemaining,
+    @required this.creditAllowed,
+    @required this.decimalDigits,
+    @required this.allowDefaultPricing,
+  }) : super(key: key);
 
   final String hemId;
   final String currencySymbol;
@@ -26,6 +27,7 @@ class PaymentPopup extends StatefulWidget {
   final num creditRemaining;
   final int creditAllowed;
   final int decimalDigits;
+  final bool allowDefaultPricing;
 
   static const int otherAmountRowId = 10;
 
@@ -248,7 +250,13 @@ class _PaymentPopupState extends State<PaymentPopup> {
         _selectedValue = value;
       });
     } else {
-      final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(widget.amount, widget.decimalDigits, widget.currencySymbol, widget.creditAllowed != 0);
+      final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(
+        widget.amount,
+        widget.decimalDigits,
+        widget.currencySymbol,
+        widget.creditAllowed != 0,
+        widget.allowDefaultPricing,
+      );
 
       final OtherPaymentPopupResult result = await showDialog<OtherPaymentPopupResult>(
           context: context,

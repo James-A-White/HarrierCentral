@@ -724,11 +724,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               1.0,
               18.0,
               14.0,
-              (latlng.LatLng newPosition) {
-                _mapCenter = newPosition;
-              },
               _trueNorthLock,
               _mapKey,
+              mapMoved: (latlng.LatLng newPosition) {
+                _mapCenter = newPosition;
+              },
+              markerClicked: () {
+                _launchMaps(widget.futureRun);
+              },
             ),
             Positioned(
               left: 10.0,
@@ -747,26 +750,41 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               ),
             ),
 
-            // TODO(James): UnFuck this!
-            // if (widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
-            //   Positioned(
-            //     right: 10.0,
-            //     top: 10.0,
-            //     child: GestureDetector(
-            //       onTap: () {
-            //         _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
-            //             widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0);
+            if (widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
+              Positioned(
+                right: 10.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0,
+                        widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0);
 
-            //         setState(() {});
-            //       },
-            //       child: SizedBox(
-            //         height: 50.0,
-            //         width: 50.0,
-            //         child: Image.asset('images/other/set_map_to_event_location.png'),
-            //       ),
-            //     ),
-            //   ),
-            // ],
+                    setState(() {});
+                  },
+                  child: SizedBox(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset('images/other/set_map_to_event_location.png'),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 70.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon);
+                    });
+                  },
+                  child: SizedBox(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset('images/other/set_map_to_current_location.png'),
+                  ),
+                ),
+              ),
+            ],
             if (!widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
               Container(color: Colors.black54),
               Container(

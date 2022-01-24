@@ -22,12 +22,13 @@ class OtherPaymentPopupResult {
 }
 
 class OtherPaymentPopup extends StatefulWidget {
-  const OtherPaymentPopup(this.normalPrice, this.decimalDigits, this.currencySymbol, this.showCreditTopup, {Key key}) : super(key: key);
+  const OtherPaymentPopup(this.normalPrice, this.decimalDigits, this.currencySymbol, this.showCreditTopup, this.allowDefaultPricing, {Key key}) : super(key: key);
 
   final num normalPrice;
   final int decimalDigits;
   final String currencySymbol;
   final bool showCreditTopup;
+  final bool allowDefaultPricing;
 
   @override
   _OtherPaymentPopupState createState() => _OtherPaymentPopupState();
@@ -145,7 +146,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                         ),
                       ),
                     ),
-                    if (widget.showCreditTopup) ...<Widget>[
+                    if (widget.allowDefaultPricing) ...<Widget>[
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 0.0),
                         child: Row(

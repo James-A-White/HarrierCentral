@@ -564,7 +564,13 @@ class PaymentSnackBar extends SnackBar {
   // }
 
   Future<void> _payOther(CheckInPackModel packMember, BuildContext context) async {
-    final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(amountOwed, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym, packMember.isMember != 0);
+    final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(
+      amountOwed,
+      eventAggregate.extensions.digAfterDec,
+      eventAggregate.extensions.curSym,
+      packMember.isMember != 0,
+      (packMember.isMember != 0) || (packMember.isFollowing != 0),
+    );
 
     final OtherPaymentPopupResult userInput = await showDialog<OtherPaymentPopupResult>(
         context: context,
