@@ -85,7 +85,7 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   bool _isLoading = true;
 
-  int filterValue = 127;
+  int _filterValue = 127;
 
   @override
   void initState() {
@@ -164,17 +164,19 @@ class PaymentReportState extends State<PaymentReportPage> {
     }
   }
 
-  List<Map<String, dynamic>> paymentTotals;
+  List<Map<String, dynamic>> _paymentTotals;
+  double _totalCollected = 0;
+  int _transactionCount = 0;
 
   Future<void> refreshTotals() async {
-    paymentTotals = <Map<String, dynamic>>[];
+    _paymentTotals = <Map<String, dynamic>>[];
 
     try {
       final String sql = '''
 
           select 0 as paymentType, (SELECT COUNT(*) from ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
           WHERE  hem.attendenceState >= 20
-          AND hem.hemId not in (SELECT hemId from ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
+          AND hem.hemId not in (SELECT hemId from ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) ) as count, 0.0 as totalCollected
             
           UNION
           select paymentType, 
@@ -198,7 +200,19 @@ class PaymentReportState extends State<PaymentReportPage> {
 
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
       setState(() {
-        paymentTotals = results;
+        _paymentTotals = results;
+        _totalCollected = 0;
+        _transactionCount = 0;
+        for (Map<String, dynamic> n in _paymentTotals) {
+          if (n.containsKey('paymentType') && (n['paymentType'] > 1)) {
+            if ((n.containsKey('totalCollected')) && (n['totalCollected'] != null)) {
+              _totalCollected += n['totalCollected'];
+            }
+            if ((n.containsKey('count')) && (n['count'] != null)) {
+              _transactionCount += n['count'];
+            }
+          }
+        }
       });
     } catch (e) {
       //print(e);
@@ -232,13 +246,13 @@ class PaymentReportState extends State<PaymentReportPage> {
     _filteredList.clear();
     _filteredList.addAll(_paymentsList
         .where((PaymentAggregate evt) =>
-            ((filterValue & 1) != 0 && ((evt.payment.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
-            ((filterValue & 2) != 0 && (evt.payment.paymentType == paymentCash.value)) ||
-            ((filterValue & 4) != 0 && (evt.payment.paymentType == paymentCashOtherAmount.value)) ||
-            ((filterValue & 8) != 0 && (evt.payment.paymentType == paymentFreeRun.value)) ||
-            ((filterValue & 16) != 0 && (evt.payment.paymentType == paymentBankTransfer.value)) ||
-            ((filterValue & 32) != 0 && (evt.payment.paymentType == paymentBankTransferOtherAmount.value)) ||
-            ((filterValue & 64) != 0 && (evt.payment.paymentType == paymentHashCredit.value)))
+            ((_filterValue & 1) != 0 && ((evt.payment.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
+            ((_filterValue & 2) != 0 && (evt.payment.paymentType == paymentCash.value)) ||
+            ((_filterValue & 4) != 0 && (evt.payment.paymentType == paymentCashOtherAmount.value)) ||
+            ((_filterValue & 8) != 0 && (evt.payment.paymentType == paymentFreeRun.value)) ||
+            ((_filterValue & 16) != 0 && (evt.payment.paymentType == paymentBankTransfer.value)) ||
+            ((_filterValue & 32) != 0 && (evt.payment.paymentType == paymentBankTransferOtherAmount.value)) ||
+            ((_filterValue & 64) != 0 && (evt.payment.paymentType == paymentHashCredit.value)))
         .toList());
 
     _filteredList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
@@ -260,55 +274,59 @@ class PaymentReportState extends State<PaymentReportPage> {
             ),
           ),
         ),
-        floatingActionButton: SpeedDial(
-          // both default to 16
-          // marginEnd: 18,
-          // marginBottom: 20,
-          animatedIcon: AnimatedIcons.menu_close,
-          animatedIconTheme: const IconThemeData(size: 22.0),
-          // this is ignored if animatedIcon is non null
-          // child:const  Icon(Icons.add),
-          visible: true,
-          curve: Curves.bounceIn,
-          overlayColor: Colors.black,
-          overlayOpacity: 0.5,
-          onOpen: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-          //onClose: () => //print('DIAL CLOSED'),
-          tooltip: 'Speed Dial',
-          heroTag: 'speed-dial-hero-tag',
-          backgroundColor: Colors.red.shade900,
-          foregroundColor: Colors.white,
-          elevation: 8.0,
-          shape: const CircleBorder(),
-          children: <SpeedDialChild>[
-            SpeedDialChild(
-              child: const Icon(Icons.mail_outline),
-              backgroundColor: Colors.green,
-              label: 'Email me payment report',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () async {
-                final Map<String, String> result =
-                    await G0<TableModel>().paymentsService.sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName);
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                if (result['result'].toLowerCase().startsWith('success')) {
-                  await IveCoreUtilities.showAlert(
-                      context,
-                      'E-mail successfully sent',
-                      'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                      'OK');
-                } else {
-                  await IveCoreUtilities.showAlert(context, 'Error sending report',
-                      'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
-                }
+        floatingActionButton: Container(
+          margin: const EdgeInsets.only(bottom: 25.0),
+          child: SpeedDial(
+            // both default to 16
+            // marginEnd: 18,
+            // marginBottom: 20,
+            animatedIcon: AnimatedIcons.menu_close,
+            animatedIconTheme: const IconThemeData(size: 22.0),
+            // this is ignored if animatedIcon is non null
+            // child:const  Icon(Icons.add),
+            visible: true,
+            curve: Curves.bounceIn,
+            overlayColor: Colors.black,
+            overlayOpacity: 0.5,
+            onOpen: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+            //onClose: () => //print('DIAL CLOSED'),
+            tooltip: 'Speed Dial',
+            heroTag: 'speed-dial-hero-tag',
+            backgroundColor: Colors.red.shade900,
+            foregroundColor: Colors.white,
+            elevation: 8.0,
+            shape: const CircleBorder(),
+            children: <SpeedDialChild>[
+              SpeedDialChild(
+                child: const Icon(Icons.mail_outline),
+                backgroundColor: Colors.green,
+                label: 'Email me payment report',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () async {
+                  final Map<String, String> result = await G0<TableModel>()
+                      .paymentsService
+                      .sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName);
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  if (result['result'].toLowerCase().startsWith('success')) {
+                    await IveCoreUtilities.showAlert(
+                        context,
+                        'E-mail successfully sent',
+                        'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                        'OK');
+                  } else {
+                    await IveCoreUtilities.showAlert(context, 'Error sending report',
+                        'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+                  }
 
-                IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Payment Report being processed...', durationInSeconds: 10);
-              },
-            ),
-          ],
+                  IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Payment Report being processed...', durationInSeconds: 10);
+                },
+              ),
+            ],
+          ),
         ),
-        body: (_isLoading || (paymentTotals == null) || (paymentTotals.isEmpty))
+        body: (_isLoading || (_paymentTotals == null) || (_paymentTotals.isEmpty))
             ? const HcCircularProgressIndicator(key: Key('112209596'))
             : Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -335,8 +353,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                           children: <Widget>[
                             PaymentTotalsCell(
                               creditAmount: 0,
-                              counter: paymentTotals[0]['count'] + paymentTotals[paymentNotPaid.value]['count'],
-                              color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
+                              counter: _paymentTotals[0]['count'] + _paymentTotals[paymentNotPaid.value]['count'],
+                              color: (_filterValue & 1) != 0 ? Colors.red : Colors.black26,
                               paymentRecordType: paymentNotPaid,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -345,9 +363,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentCash.value]['totalCollected'],
-                              counter: paymentTotals[paymentCash.value]['count'],
-                              color: (filterValue & 2) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: _paymentTotals[paymentCash.value]['totalCollected'],
+                              counter: _paymentTotals[paymentCash.value]['count'],
+                              color: (_filterValue & 2) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCash,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -356,9 +374,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
-                              counter: paymentTotals[paymentBankTransfer.value]['count'],
-                              color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: _paymentTotals[paymentBankTransfer.value]['totalCollected'],
+                              counter: _paymentTotals[paymentBankTransfer.value]['count'],
+                              color: (_filterValue & 16) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransfer,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -367,9 +385,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
-                              counter: paymentTotals[paymentFreeRun.value]['count'],
-                              color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: _paymentTotals[paymentFreeRun.value]['totalCollected'],
+                              counter: _paymentTotals[paymentFreeRun.value]['count'],
+                              color: (_filterValue & 8) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentFreeRun,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -378,9 +396,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
-                              counter: paymentTotals[paymentHashCredit.value]['count'],
-                              color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: _paymentTotals[paymentHashCredit.value]['totalCollected'],
+                              counter: _paymentTotals[paymentHashCredit.value]['count'],
+                              color: (_filterValue & 64) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentHashCredit,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -389,9 +407,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
-                              counter: paymentTotals[paymentCashOtherAmount.value]['count'],
-                              color: (filterValue & 4) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: _paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
+                              counter: _paymentTotals[paymentCashOtherAmount.value]['count'],
+                              color: (_filterValue & 4) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCashOtherAmount,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -400,9 +418,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
-                              counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
-                              color: (filterValue & 32) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: _paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
+                              counter: _paymentTotals[paymentBankTransferOtherAmount.value]['count'],
+                              color: (_filterValue & 32) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransferOtherAmount,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -530,6 +548,43 @@ class PaymentReportState extends State<PaymentReportPage> {
                             ),
                     ),
                   ),
+                  Container(
+                    height: 110,
+                    width: 9999.0,
+                    padding: const EdgeInsets.only(
+                      top: 14.0,
+                      left: 20.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Total transactions: $_transactionCount',
+                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0),
+                        ),
+                        Text(
+                          'Total collected: ${IveCoreUtilities.getFormattedMoney(
+                            _totalCollected,
+                            widget.eventAggregate.extensions.digAfterDec,
+                            widget.eventAggregate.extensions.curSym,
+                          )}',
+                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0),
+                        ),
+                      ],
+                    ),
+                    decoration: const BoxDecoration(
+                      // border: new Border.all(width: 1.0, color: Colors.black),
+                      //shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Color.fromARGB(70, 0, 0, 0),
+                          offset: Offset(0.0, -6.0),
+                          blurRadius: 10.0,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ));
   }
@@ -627,14 +682,14 @@ class PaymentReportState extends State<PaymentReportPage> {
   }
 
   void filterTapped(int positionFlag) {
-    if (filterValue == 127) {
-      filterValue = positionFlag;
+    if (_filterValue == 127) {
+      _filterValue = positionFlag;
     } else {
-      filterValue = filterValue ^ positionFlag;
+      _filterValue = _filterValue ^ positionFlag;
     }
 
-    if (filterValue == 0) {
-      filterValue = 127;
+    if (_filterValue == 0) {
+      _filterValue = 127;
     }
 
     applyFilter();
