@@ -353,8 +353,8 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       }
     } else {
       if (_eventAggregate.event.eventId == null) {
-        await IveCoreUtilities.showAlert(context, 'Please save Details first',
-            'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
+        await IveCoreUtilities.showAlert(
+            context, 'Please save Details first', 'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
         _tabController.animateTo(0);
       } else {
         if (_otherDetailsFormKey.currentState.validate()) {
@@ -976,8 +976,8 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
   Future<void> _getImageFromGallery(ImageSource source) async {
     if (_eventAggregate.event.eventId == null) {
-      await IveCoreUtilities.showAlert(context, 'Please save Details first',
-          'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
+      await IveCoreUtilities.showAlert(
+          context, 'Please save Details first', 'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
 
       _tabController.animateTo(0);
     } else {
@@ -989,7 +989,8 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
           //   _imageTypeSelection = _previousImageTypeSelection;
           // });
         } else {
-          final Future<File> img = ImageCropper.cropImage(
+          final ImageCropper ic = ImageCropper();
+          final Future<File> img = ic.cropImage(
               sourcePath: image.path,
               //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
               //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
@@ -1184,8 +1185,8 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                             ),
                             onPressed: () async {
                               if (_eventAggregate?.event?.eventId == null) {
-                                await IveCoreUtilities.showAlert(context, 'Please save details first',
-                                    'When creating a new event, please save the information on the Details tab before saving the location', 'OK');
+                                await IveCoreUtilities.showAlert(
+                                    context, 'Please save details first', 'When creating a new event, please save the information on the Details tab before saving the location', 'OK');
 
                                 _tabController.animateTo(0);
                               } else {

@@ -83,11 +83,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
-      await IveCoreUtilities.showAlert(
-          context,
-          'Network Error',
-          'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.',
-          'Quit');
+      await IveCoreUtilities.showAlert(context, 'Network Error',
+          'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.', 'Quit');
       exit(0);
     } else if (loginResult == null) {
       G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
@@ -127,8 +124,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                 String userName;
 
                 final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
-                final Map<String, String> result = await apiCall;
+
+                final Map<String, String> result = await srv.authorizeDevice(context, resetCode.toUpperCase());
 
                 setState(() {
                   //isLoading = false;

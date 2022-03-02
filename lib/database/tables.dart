@@ -188,6 +188,7 @@ class Tables {
   }
 
   static Future<void> createIndexes(Database db, int version, Function informUser, String clientAppIdentifier) async {
+    int xxx = 0;
     await G0<TableModel>().hashersTableHelper.createIndexes(db, version, AppDomainType.user);
     await G0<TableModel>().citiesTableHelper.createIndexes(db, version, AppDomainType.user);
     await G0<TableModel>().regionsTableHelper.createIndexes(db, version, AppDomainType.user);

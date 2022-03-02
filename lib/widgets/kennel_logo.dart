@@ -28,15 +28,11 @@ class KennelLogo extends StatelessWidget {
       context,
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          // final String s =
-          //     ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png').toLowerCase();
-          //print(s);
           return ZoomableImagePage2(
             key: const Key('11126697697'),
             file: null,
             assetImage: kennelLogoUrl.contains('bundle://')
-                ? ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png')
-                    .toLowerCase()
+                ? ((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png').toLowerCase()
                 : null,
             assetImageText: kennelLogoUrl.contains('bundle://') ? kennelShortName : null,
 
@@ -70,8 +66,7 @@ class KennelLogo extends StatelessWidget {
           margin: EdgeInsets.only(left: leftPadding ?? 0, right: rightPadding ?? 0),
           child: kennelLogoUrl.contains('bundle://')
               ? Stack(alignment: Alignment.center, children: <Widget>[
-                  Image.asset(((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png')
-                      .toLowerCase()),
+                  Image.asset(((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png').toLowerCase()),
                   Padding(
                     padding: EdgeInsets.only(left: logoHeight / 6, right: logoHeight / 6),
                     child: AutoSizeText(

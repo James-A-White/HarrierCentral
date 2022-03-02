@@ -198,25 +198,18 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                               top: 0,
                               left: 0,
                               child: getImageSourceButton(
-                                  label: 'Camera',
-                                  iosIcon: 'images/icons/ios_camera.png',
-                                  androidIcon: 'images/icons/android_camera.png',
-                                  selectedImageType: SelectedImageTypeEnum.fromCamera),
+                                  label: 'Camera', iosIcon: 'images/icons/ios_camera.png', androidIcon: 'images/icons/android_camera.png', selectedImageType: SelectedImageTypeEnum.fromCamera),
                             ),
                             Positioned(
                               top: 0,
                               right: 0,
                               child: getImageSourceButton(
-                                  label: 'Gallery',
-                                  iosIcon: 'images/icons/ios_gallery.png',
-                                  androidIcon: 'images/icons/android_gallery.png',
-                                  selectedImageType: SelectedImageTypeEnum.fromGallery),
+                                  label: 'Gallery', iosIcon: 'images/icons/ios_gallery.png', androidIcon: 'images/icons/android_gallery.png', selectedImageType: SelectedImageTypeEnum.fromGallery),
                             ),
                             Positioned(
                               bottom: 0,
                               left: 0,
-                              child: getImageSourceButton(
-                                  label: 'Avatar', iosIcon: 'images/icons/avatar.png', androidIcon: 'images/icons/avatar.png', selectedImageType: SelectedImageTypeEnum.avatar),
+                              child: getImageSourceButton(label: 'Avatar', iosIcon: 'images/icons/avatar.png', androidIcon: 'images/icons/avatar.png', selectedImageType: SelectedImageTypeEnum.avatar),
                             ),
                             Positioned(
                               bottom: 0,
@@ -549,7 +542,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       final File profilePhotoFile = File(documentDirectory.path + '/temp.jpg');
       profilePhotoFile.writeAsBytesSync(response.bodyBytes);
 
-      _imageFromFacebook = ImageCropper.cropImage(
+      final ImageCropper ic = ImageCropper();
+      _imageFromFacebook = ic.cropImage(
           sourcePath: profilePhotoFile.path,
           aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
           aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
@@ -573,7 +567,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
               _imageTypeSelection = _previousImageTypeSelection;
             });
           } else {
-            final Future<File> img = ImageCropper.cropImage(
+            final ImageCropper ic = ImageCropper();
+            final Future<File> img = ic.cropImage(
                 sourcePath: image.path,
                 aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
                 aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],

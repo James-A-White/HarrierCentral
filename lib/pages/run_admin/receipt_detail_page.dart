@@ -77,8 +77,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _upload(File imageFile, String fileName) {
-    final Uri uri = Uri.parse(
-        '$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D');
+    final Uri uri = Uri.parse('$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D');
 
     final Request request = Request('PUT', uri);
 
@@ -142,8 +141,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
         Navigator.of(context).pop();
       } else {
-        await IveCoreUtilities.showAlert(context, 'Error uploading receipt',
-            'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+        await IveCoreUtilities.showAlert(
+            context, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
       }
     } else {
 //    If all data are not valid then start auto validation.
@@ -200,7 +199,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
     final XFile image = await ImagePicker().pickImage(source: ImageSource.camera);
 
-    return ImageCropper.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
+    final ImageCropper ic = ImageCropper();
+    return ic.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
   }
 
   @override
@@ -219,8 +219,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         key: _scaffoldKey,
         appBar: appBar,
         body: _isLoading
-            ? Container(
-                height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+            ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
             : Column(
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
