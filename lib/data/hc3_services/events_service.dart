@@ -7,6 +7,7 @@ part 'events_service.g.dart';
 class EventModel implements BaseModel {
   EventModel(
       {this.eventId,
+      this.publicEventId,
       this.eventStartDatetime,
       this.kennelId,
       this.isVisible,
@@ -22,6 +23,7 @@ class EventModel implements BaseModel {
       this.fbLongitude,
       this.eventPriceForMembers,
       this.eventPriceForNonMembers,
+      this.evtDisseminateAllowWebLinks,
       this.eventFacebookId,
       this.absoluteEventNumber,
       this.canEditRunAttendence,
@@ -58,6 +60,7 @@ class EventModel implements BaseModel {
   Map<String, dynamic> toJson() => _$EventModelToJson(this);
 
   final String eventId;
+  final String publicEventId;
   final DateTime eventStartDatetime;
   final String kennelId;
   final int isVisible;
@@ -73,6 +76,7 @@ class EventModel implements BaseModel {
   final num fbLongitude;
   final num eventPriceForMembers;
   final num eventPriceForNonMembers;
+  final int evtDisseminateAllowWebLinks;
   final String eventFacebookId;
   final num absoluteEventNumber;
   final num canEditRunAttendence;
@@ -130,6 +134,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   final String colEventId = 'eventId';
+  final String colPublicEventId = 'publicEventId';
   final String colEventStartDatetime = 'eventStartDatetime';
   final String colKennelId = 'kennelId';
   final String colIsVisible = 'isVisible';
@@ -145,6 +150,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colFbLongitude = 'fbLongitude';
   final String colEventPriceForMembers = 'eventPriceForMembers';
   final String colEventPriceForNonMembers = 'eventPriceForNonMembers';
+  final String colEvtDisseminateAllowWebLinks = 'evtDisseminateAllowWebLinks';
   final String colEventFacebookId = 'eventFacebookId';
   final String colAbsoluteEventNumber = 'absoluteEventNumber';
   final String colCanEditRunAttendence = 'canEditRunAttendence';
@@ -183,6 +189,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colId INTEGER PRIMARY KEY,
 
             $colEventId TEXT NOT NULL,
+            $colPublicEventId TEXT NOT NULL,
             $colEventStartDatetime TEXT,
             $colKennelId TEXT NOT NULL,
             $colIsVisible INT,
@@ -198,6 +205,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colFbLongitude NUM,
             $colEventPriceForMembers NUM,
             $colEventPriceForNonMembers NUM,
+            $colEvtDisseminateAllowWebLinks INT,
             $colEventFacebookId TEXT,
             $colAbsoluteEventNumber NUM,
             $colCanEditRunAttendence NUM,

@@ -62,8 +62,21 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
   await G0.isReady<Database>();
 
   await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllDataWithoutHashersOrEvents, false, informUser: informUser);
-  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, false, informUser: informUser);
   await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, false, informUser: informUser);
+
+  // Hashers come in groups of 1000, so
+  // loop through until we don't get anymore
+  // new Hashers
+  final HashersService srv = HashersService();
+
+  int prevCount = -1;
+  int count = 0;
+
+  while (prevCount != count) {
+    prevCount = count;
+    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, false, informUser: informUser);
+    count = await srv.countUsers();
+  }
 
   if (_createIndexes) {
     await Tables.createIndexes(G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);

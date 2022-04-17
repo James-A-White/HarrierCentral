@@ -671,14 +671,37 @@ class RunDetails extends StatelessWidget {
           // for the Facebook button, we want to check
           // if the actual eventUrl is empty without
           // considering the Kennel Events URL
-          if (((event.eventFacebookId ?? '') != '') &&
-              (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) &&
-              ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
+
+          if ((((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ||
+              ((event.evtDisseminateAllowWebLinks == 1) || (kennel.disseminateAllowWebLinks == 1))) ...<Widget>[
             const FancyDivider(
               key: Key('40019292'),
               innerColor: Colors.white,
               topMargin: 30.0,
             ),
+          ],
+
+          if ((event.evtDisseminateAllowWebLinks == 1) || (kennel.disseminateAllowWebLinks == 1)) ...<Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+              child: ElevatedButton(
+                // style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                child: Text(
+                  'Copy HC Web link',
+                  style: buttonTextStyle,
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));
+                  await IveCoreUtilities.showAlert(context, 'Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
+                },
+              ),
+            ),
+          ],
+
+          if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(
@@ -699,11 +722,6 @@ class RunDetails extends StatelessWidget {
           if (!(((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK)) &&
               (eventUrlWithKennelBackup != null) &&
               (eventUrlWithKennelBackup.isNotEmpty)) ...<Widget>[
-            const FancyDivider(
-              key: Key('592930192'),
-              innerColor: Colors.white,
-              topMargin: 30.0,
-            ),
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(

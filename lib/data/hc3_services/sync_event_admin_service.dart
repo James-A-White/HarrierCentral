@@ -67,16 +67,10 @@ class SyncEventAdminService {
             G0<TableModel>().paymentsTableHelper,
             G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event),
           );
-      await G0<TableModel>()
-          .baseService
-          .clearTable(G0<Database>(), G0<TableModel>().hasherEventMapTableHelper, G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event));
-      await G0<TableModel>()
-          .baseService
-          .clearTable(G0<Database>(), G0<TableModel>().hasherKennelMapTableHelper, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event));
+      await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().hasherEventMapTableHelper, G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event));
+      await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().hasherKennelMapTableHelper, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event));
       await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().receiptsTableHelper, G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event));
-      await G0<TableModel>()
-          .baseService
-          .clearTable(G0<Database>(), G0<TableModel>().kennelCreditsTableHelper, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
+      await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().kennelCreditsTableHelper, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
@@ -126,24 +120,20 @@ class SyncEventAdminService {
       // the table and add one second to it
       await getLastUpdatedTimes(flags);
 
-      final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
-      final DateTime narrowEventsUpdatedAfter = _narrowEventsLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
+      final DateTime hasherEventMapUpdatedAfter =
+          _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+      final DateTime hasherKennelMapUpdatedAfter =
+          _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+      final DateTime narrowEventsUpdatedAfter =
+          _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
       final DateTime paymentsUpdatedAfter =
           _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
       final DateTime receiptsUpdatedAfter =
           _receiptsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
       final DateTime hashersUpdatedAfter =
           _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
-      final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+      final DateTime kennelCreditsUpdatedAfter =
+          _kennelCreditsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {

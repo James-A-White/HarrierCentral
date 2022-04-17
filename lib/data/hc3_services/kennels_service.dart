@@ -7,6 +7,7 @@ part 'kennels_service.g.dart';
 class KennelsModel implements BaseModel {
   KennelsModel(
       {this.kennelId,
+      this.publicKennelId,
       this.cityId,
       this.regionId,
       this.countryId,
@@ -16,6 +17,7 @@ class KennelsModel implements BaseModel {
       this.kennelDescription,
       this.kennelLogo,
       this.kennelPinColor,
+      this.disseminateAllowWebLinks,
       this.kennelCoverPhoto,
       this.kennelWebsiteUrl,
       this.defaultEventCurrencyType,
@@ -66,6 +68,7 @@ class KennelsModel implements BaseModel {
   Map<String, dynamic> toJson() => _$KennelsModelToJson(this);
 
   final String kennelId;
+  final String publicKennelId;
   final String cityId;
   final String regionId;
   final String countryId;
@@ -75,6 +78,7 @@ class KennelsModel implements BaseModel {
   final String kennelDescription;
   final String kennelLogo;
   final int kennelPinColor;
+  final int disseminateAllowWebLinks;
   final String kennelCoverPhoto;
   final String kennelWebsiteUrl;
   final String defaultEventCurrencyType;
@@ -147,6 +151,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   final String colKennelId = 'kennelId';
+  final String colPublicKennelId = 'publicKennelId';
   final String colCityId = 'cityId';
   final String colRegionId = 'regionId';
   final String colCountryId = 'countryId';
@@ -156,6 +161,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   final String colKennelDescription = 'kennelDescription';
   final String colKennelLogo = 'kennelLogo';
   final String colKennelPinColor = 'kennelPinColor';
+  final String colDisseminateAllowWebLinks = 'disseminateAllowWebLinks';
   final String colKennelCoverPhoto = 'kennelCoverPhoto';
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
@@ -205,8 +211,8 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
-
             $colKennelId TEXT NOT NULL,
+            $colPublicKennelId TEXT NOT NULL,
             $colCityId TEXT NOT NULL,
             $colRegionId TEXT NOT NULL,
             $colCountryId TEXT NOT NULL,
@@ -216,6 +222,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colKennelDescription TEXT,
             $colKennelLogo TEXT,
             $colKennelPinColor INT,
+            $colDisseminateAllowWebLinks INT DEFAULT 0 NOT NULL,
             $colKennelCoverPhoto TEXT,
             $colKennelWebsiteUrl TEXT,
             $colDefaultEventCurrencyType TEXT,

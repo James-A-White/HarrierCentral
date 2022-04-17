@@ -136,6 +136,18 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
 class HashersService extends BaseService {
   // ============ Functions go here =============
 
+  Future<int> countUsers() async {
+    final String tableName = G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user);
+
+    final String query = '''
+          SELECT COUNT(*) as Total
+          FROM $tableName
+          ''';
+
+    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+    return results[0]['Total'];
+  }
+
   Future<String> addEditUser(
       {String targetUserId,
       String firstName,
@@ -194,9 +206,7 @@ class HashersService extends BaseService {
       final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
             G0<Database>(),
             G0<TableModel>().hasherKennelMapTableHelper,
-            G0<TableModel>()
-                .hasherKennelMapTableHelper
-                .getTableName(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? AppDomainType.event : AppDomainType.kennel),
+            G0<TableModel>().hasherKennelMapTableHelper.getTableName(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? AppDomainType.event : AppDomainType.kennel),
             G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
           );
       hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);

@@ -10,6 +10,7 @@ part of 'kennels_service.dart';
 KennelsModel _$KennelsModelFromJson(Map<String, dynamic> json) {
   return KennelsModel(
     kennelId: json['kennelId'] as String,
+    publicKennelId: json['publicKennelId'] as String,
     cityId: json['cityId'] as String,
     regionId: json['regionId'] as String,
     countryId: json['countryId'] as String,
@@ -19,6 +20,7 @@ KennelsModel _$KennelsModelFromJson(Map<String, dynamic> json) {
     kennelDescription: json['kennelDescription'] as String,
     kennelLogo: json['kennelLogo'] as String,
     kennelPinColor: json['kennelPinColor'] as int,
+    disseminateAllowWebLinks: json['disseminateAllowWebLinks'] as int,
     kennelCoverPhoto: json['kennelCoverPhoto'] as String,
     kennelWebsiteUrl: json['kennelWebsiteUrl'] as String,
     defaultEventCurrencyType: json['defaultEventCurrencyType'] as String,
@@ -68,6 +70,7 @@ KennelsModel _$KennelsModelFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$KennelsModelToJson(KennelsModel instance) => <String, dynamic>{
       'kennelId': instance.kennelId,
+      'publicKennelId': instance.publicKennelId,
       'cityId': instance.cityId,
       'regionId': instance.regionId,
       'countryId': instance.countryId,
@@ -77,6 +80,7 @@ Map<String, dynamic> _$KennelsModelToJson(KennelsModel instance) => <String, dyn
       'kennelDescription': instance.kennelDescription,
       'kennelLogo': instance.kennelLogo,
       'kennelPinColor': instance.kennelPinColor,
+      'disseminateAllowWebLinks': instance.disseminateAllowWebLinks,
       'kennelCoverPhoto': instance.kennelCoverPhoto,
       'kennelWebsiteUrl': instance.kennelWebsiteUrl,
       'defaultEventCurrencyType': instance.defaultEventCurrencyType,

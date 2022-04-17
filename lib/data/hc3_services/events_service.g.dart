@@ -10,6 +10,7 @@ part of 'events_service.dart';
 EventModel _$EventModelFromJson(Map<String, dynamic> json) {
   return EventModel(
     eventId: json['eventId'] as String,
+    publicEventId: json['publicEventId'] as String,
     eventStartDatetime: json['eventStartDatetime'] == null ? null : DateTime.parse(json['eventStartDatetime'] as String),
     kennelId: json['kennelId'] as String,
     isVisible: json['isVisible'] as int,
@@ -25,6 +26,7 @@ EventModel _$EventModelFromJson(Map<String, dynamic> json) {
     fbLongitude: json['fbLongitude'] as num,
     eventPriceForMembers: json['eventPriceForMembers'] as num,
     eventPriceForNonMembers: json['eventPriceForNonMembers'] as num,
+    evtDisseminateAllowWebLinks: json['evtDisseminateAllowWebLinks'] as int,
     eventFacebookId: json['eventFacebookId'] as String,
     absoluteEventNumber: json['absoluteEventNumber'] as num,
     canEditRunAttendence: json['canEditRunAttendence'] as num,
@@ -60,6 +62,7 @@ EventModel _$EventModelFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$EventModelToJson(EventModel instance) => <String, dynamic>{
       'eventId': instance.eventId,
+      'publicEventId': instance.publicEventId,
       'eventStartDatetime': instance.eventStartDatetime?.toIso8601String(),
       'kennelId': instance.kennelId,
       'isVisible': instance.isVisible,
@@ -75,6 +78,7 @@ Map<String, dynamic> _$EventModelToJson(EventModel instance) => <String, dynamic
       'fbLongitude': instance.fbLongitude,
       'eventPriceForMembers': instance.eventPriceForMembers,
       'eventPriceForNonMembers': instance.eventPriceForNonMembers,
+      'evtDisseminateAllowWebLinks': instance.evtDisseminateAllowWebLinks,
       'eventFacebookId': instance.eventFacebookId,
       'absoluteEventNumber': instance.absoluteEventNumber,
       'canEditRunAttendence': instance.canEditRunAttendence,
