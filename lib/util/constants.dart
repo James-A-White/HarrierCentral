@@ -268,7 +268,7 @@ const List<String> integrationPlatformNames = <String>[
 // const String eventPaymentsTable = 'Payments';
 // const String userPaymentsTable = 'userPayments';
 
-const Map<String, int> runTags = <String, int>{
+const Map<String, int> runTags1 = <String, int>{
   'Normal run': 0x00000001,
   'Red Dress run': 0x00000002,
   'Full Moon run': 0x00000004,
@@ -300,5 +300,38 @@ const Map<String, int> runTags = <String, int>{
   'Bring cash on trail': 0x10000000,
   'Bag drop available': 0x20000000,
   'AGM': 0x40000000,
-  'Multi-day event': 0x80000000,
+};
+
+const Map<String, int> runTags2 = <String, int>{
+  'Multi-day event': 0x00000001,
+  'No dogs allowed': 0x00000002,
+  'Family hash': 0x00000004,
+  'Bring dry clothes': 0x00000008,
+  'Short trail': 0x00000010,
+  'Parking available': 0x00000020,
+  'No parking available': 0x00000040,
+  'Camping Hash': 0x00000080,
+  'No bag drop available': 0x00000100,
+  'Drinking practice': 0x00000200,
+  // 'Walker trail': 0x00000400,
+  // 'Runner trail': 0x00000800,
+  // 'Long run trail': 0x00001000,
+  // 'Pub crawl': 0x00002000,
+  // 'On after': 0x00004000,
+  // 'Baby jogger friendly': 0x00008000,
+  // 'Shiggy run': 0x00010000,
+  // 'Accessible by public transport': 0x00020000,
+  // 'Bike Hash': 0x00040000,
+  // 'City run': 0x00080000,
+  // 'Live hare': 0x00100000,
+  // 'Dead hare': 0x00200000,
+  // 'Nighttime run': 0x00400000,
+  // 'Steep hills': 0x00800000,
+  // 'Charity event': 0x01000000,
+  // 'Dog friendly': 0x02000000,
+  // 'Pick-up Hash': 0x04000000,
+  // 'Catch the Hare': 0x08000000,
+  // 'Bring cash on trail': 0x10000000,
+  // 'Bag drop available': 0x20000000,
+  // 'AGM': 0x40000000,
 };
