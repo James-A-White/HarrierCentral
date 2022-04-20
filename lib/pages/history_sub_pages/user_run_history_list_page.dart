@@ -117,7 +117,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
-          AND e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now')
+          AND e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
         UNION
           SELECT 
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} as eventId,
@@ -134,7 +134,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now')
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
           ORDER BY eventStartDatetime desc
           
           ''';
@@ -222,11 +222,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         .then((Map<String, String> result) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
-                        IveCoreUtilities.showAlert(
-                            context,
-                            'E-mail successfully sent',
-                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                            'OK');
+                        IveCoreUtilities.showAlert(context, 'E-mail successfully sent',
+                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
                     IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
@@ -238,17 +235,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    G0<TableModel>()
-                        .hasherEventMapService
-                        .sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels')
-                        .then((Map<String, String> result) {
+                    G0<TableModel>().hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
-                        IveCoreUtilities.showAlert(
-                            context,
-                            'E-mail successfully sent',
-                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                            'OK');
+                        IveCoreUtilities.showAlert(context, 'E-mail successfully sent',
+                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
                     IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
@@ -281,11 +272,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     //final bool result = await G0<TableModel>()
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagHasherEventMapTable |
-            SyncUserDataService.flagNarrowEventsTable |
-            SyncUserDataService.flagKennelsTable |
-            SyncUserDataService.flagHasherKennelMapTable,
-        true);
+        SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('User data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);
@@ -389,11 +376,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0);
 
-  static TextStyle numberStyle =
-      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
+  static TextStyle numberStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
 
-  static TextStyle boldTitleStyle =
-      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
+  static TextStyle boldTitleStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
 
   int myRunCount = 0;
   int myHaringCount = 0;
