@@ -182,10 +182,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       }
 
       await G0<TableModel>().syncEventAdminService.updateFromBackend(
-          SyncEventAdminService.flagHashersTable |
-              SyncEventAdminService.flagPaymentsTable |
-              SyncEventAdminService.flagHasherEventMapTable |
-              SyncEventAdminService.flagHasherKennelMapTable,
+          SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable,
           true,
           widget.eventAggregate.event.eventId);
       //final String resultStr = result ? 'successfully' : 'unsuccessfully';
@@ -859,10 +856,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Hashers not here yet',
-        'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          const Icon(FontAwesome.check_circle, color: Colors.green)
-        ],
+        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
         'returnValue': FilterOptions.hashersNotHereYet
       },
       <String, dynamic>{
@@ -1195,8 +1189,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
 
       final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-      final String runPlusExtrasPriceStr =
-          IveCoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runPlusExtrasPriceStr = IveCoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -1434,12 +1427,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               left: LIST_ITEM_LEFT_MARGIN + 2.0,
               top: 9.0,
               child: Text(packMember.nameForDisplay,
-                  style: TextStyle(
-                      fontFamily: (packMember.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 25.0,
-                      height: 1.0)),
+                  style: TextStyle(fontFamily: (packMember.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
             ),
+
+            //(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)
+
+            if ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)))) ...<Widget>[
+              Positioned(right: 8.0, top: 9.0, child: Image.asset('images/icons/beer_mug.png'), width: 35.0, height: 35.0),
+            ],
+
             // Positioned(
             //   left: LIST_ITEM_LEFT_MARGIN + 2.0,
             //   top: 32.0,
@@ -1659,7 +1655,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               amountOwed -= packMember.discountAmount;
               amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
 
-              String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+              final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
               final Key key = Key(index.toString());
               //if (index == 0) {
