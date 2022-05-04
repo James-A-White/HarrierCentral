@@ -61,8 +61,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     if (forceRefresh || (_allRuns == null) || (_allRuns.isEmpty)) {
       //final Geolocator locator = Geolocator();
 
-      final List<Map<String, dynamic>> results =
-          await QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId);
+      final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId);
 
       _allRuns = <RunDetailsAggregate>[];
       for (int i = 0; i < results.length; i++) {
@@ -321,8 +320,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     final KennelListAggregate kennelAggregate = await QueryKennels.getSingleKennel(widget.kennelAggregateItem.kennel.kennelId);
 
                                                     setState(() {
-                                                      if ((kennelAggregate.kennel.kennelMismanagementTeam == null) ||
-                                                          (kennelAggregate.kennel.kennelMismanagementTeam.trim().isEmpty)) {
+                                                      if ((kennelAggregate.kennel.kennelMismanagementTeam == null) || (kennelAggregate.kennel.kennelMismanagementTeam.trim().isEmpty)) {
                                                         _mismanagement = null;
                                                       } else {
                                                         _mismanagement = kennelAggregate.kennel.kennelMismanagementTeam.contains('\r')
@@ -613,8 +611,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
                                                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-                                                      await IveCoreUtilities.showAlert(
-                                                          context, result['result'].toLowerCase().startsWith('fail') ? 'Failed' : 'Success', result['result'], 'OK');
+                                                      await IveCoreUtilities.showAlert(context, result['result'].toLowerCase().startsWith('fail') ? 'Failed' : 'Success', result['result'], 'OK');
                                                     }
                                                   }
                                                 },
@@ -722,8 +719,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     onChanged: (num val) {
                                       // setState(() {
                                       if (_mapController != null) {
-                                        _mapController.move(
-                                            latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
+                                        _mapController.move(latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
                                       }
                                       setState(() {
                                         _sliderValue = val;
@@ -1009,7 +1005,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  flex: 4,
+                  flex: 50,
                 ),
                 Expanded(
                     child: Text(
@@ -1019,7 +1015,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: 6),
+                    flex: 50),
               ],
             );
     }

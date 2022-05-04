@@ -1367,7 +1367,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
       },
-      child: SizedBox(
+      child: Container(
+        color: ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0))))
+            ? Colors.amber.shade100
+            : Colors.white,
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[

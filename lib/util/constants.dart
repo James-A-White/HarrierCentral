@@ -209,8 +209,10 @@ const int mmRoleFlagOther = 0x00200000;
 const int mmRoleFlagBashMaster = 0x00400000;
 const int mmRoleFlagBashMoney = 0x00800000;
 const int mmRoleFlagTranslator = 0x01000000;
+const int mmRoleFlagSocialMediaWhore = 0x02000000;
+const int mmRoleFlagDownDownMaster = 0x04000000;
 
-const int mmRoleAllFlags = 0x01ffffff;
+const int mmRoleAllFlags = 0x07ffffff;
 
 class Mismanagement {
   Mismanagement(
