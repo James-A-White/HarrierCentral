@@ -36,6 +36,7 @@ enum StringPrefsEnum {
   thirdPartyLoginType,
   thirdPartyEmail,
   paymentTerminalAccountKey,
+  thirdPartyForceTokenRefresh,
 }
 
 enum NumPrefsEnum {

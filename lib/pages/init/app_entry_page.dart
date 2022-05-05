@@ -37,39 +37,10 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
-    final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
-    String facebookAccessToken;
-
-    if (fbTokenUpdateDelta.inDays > 30) {
-      final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
-
-      final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
-
-      if (daysSinceCancellation.inDays > 30) {
-        final String facebookId = getStringPref(StringPrefsEnum.facebookId);
-
-        if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
-          final LoginResult loginResult = await FacebookAuth.instance.login();
-          if (loginResult != null) {
-            if (loginResult.status == LoginStatus.success) {
-              final AccessToken accessToken = loginResult.accessToken;
-              facebookAccessToken = accessToken?.token;
-              if (facebookAccessToken != null) {
-                await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-                await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
-                await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
-              }
-            } else if (loginResult.status == LoginStatus.cancelled) {
-              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
-            }
-          }
-        }
-      }
-    }
+    String facebookAccessToken = await _checkFacebookLogin();
 
     final ApproveLoginService svc = ApproveLoginService();
-    final ApproveLoginModel loginResult = await svc.approveLogin(context, facebookAccessToken);
+    ApproveLoginModel loginResult = await svc.approveLogin(context, facebookAccessToken);
 
     if (loginResult != null) {
       await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
@@ -78,6 +49,21 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
       await setIntPref(IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
       await setStringPref(StringPrefsEnum.email, loginResult.email);
       await setStringPref(StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
+
+      if ((loginResult.thirdPartyForceTokenRefresh.year != 2000) && (loginResult.thirdPartyForceTokenRefresh.toString() != getStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh))) {
+        await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
+
+        await IveCoreUtilities.showAlert(
+            context,
+            'Facebook Login Required',
+            'Our system indicates that you are an admin of a Facebook Group that uses Facebook integration.\r\n\r\nIt appears as though the Facebook Authorization Token we have in our system for your group has expired.\r\n\r\nTo refresh the token, Harrier Central will now ask you to log in to Facebook. Once you log in, your token will be refreshed and Facebook integration will continue to work for your Kennel.\r\n\r\nIf you have questions, please contact us at connect@harriercentral.com.',
+            'OK');
+
+        await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime(2020));
+        await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
+        facebookAccessToken = await _checkFacebookLogin();
+        loginResult = await svc.approveLogin(context, facebookAccessToken);
+      }
     }
 
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
@@ -158,6 +144,40 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     }
 
     //// return Future<void>(() {});((){});
+  }
+
+  Future<String> _checkFacebookLogin() async {
+    final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
+    final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
+    String facebookAccessToken;
+
+    if (fbTokenUpdateDelta.inDays > 30) {
+      final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
+
+      final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
+
+      if (daysSinceCancellation.inDays > 30) {
+        final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+
+        if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
+          final LoginResult loginResult = await FacebookAuth.instance.login();
+          if (loginResult != null) {
+            if (loginResult.status == LoginStatus.success) {
+              final AccessToken accessToken = loginResult.accessToken;
+              facebookAccessToken = accessToken?.token;
+              if (facebookAccessToken != null) {
+                await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+                await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+                await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
+              }
+            } else if (loginResult.status == LoginStatus.cancelled) {
+              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
+            }
+          }
+        }
+      }
+    }
+    return facebookAccessToken;
   }
 
   Future<bool> _displayAlert(BuildContext context, String alertText, String alertTitle) async {

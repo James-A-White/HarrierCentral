@@ -15,7 +15,8 @@ class ApproveLoginModel {
       this.imageRootUrl,
       this.isBetaTester,
       this.email,
-      this.homeKennelId});
+      this.homeKennelId,
+      this.thirdPartyForceTokenRefresh});
 
   String apiVersion;
   int approvalCode;
@@ -30,6 +31,7 @@ class ApproveLoginModel {
   int isBetaTester;
   String email;
   String homeKennelId;
+  DateTime thirdPartyForceTokenRefresh;
 
   static ApproveLoginModel itemFromJson(String jsonResult) {
     final List<ApproveLoginModel> items = <ApproveLoginModel>[];
@@ -53,6 +55,7 @@ class ApproveLoginModel {
           isBetaTester: jsonItem['isBetaTester'],
           email: jsonItem['email'],
           homeKennelId: jsonItem['homeKennelId'],
+          thirdPartyForceTokenRefresh: DateTime.parse(jsonItem['thirdPartyForceTokenRefresh'] ?? '2000-01-01 19:00:00'),
         );
 
         items.add(item);
