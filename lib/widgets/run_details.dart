@@ -609,7 +609,7 @@ class RunDetails extends StatelessWidget {
           //           child: Text('Pay for Hash', style: buttonTextStyle),
           //         ),
           //       ),
-          (event.tags1 ?? 0) == 0
+          (event.tags1 ?? 0) == 0 && (event.tags2 ?? 0) == 0
               ? Container()
               : Column(
                   children: <Widget>[
@@ -639,7 +639,7 @@ class RunDetails extends StatelessWidget {
                                   margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
                                 ),
                         for (int i = 0; i < runTags2.length; i++)
-                          ((runTags1.values.elementAt(i) ?? 0) & event.tags2) == 0
+                          ((runTags2.values.elementAt(i) ?? 0) & event.tags2) == 0
                               ? Container()
                               : // TODO(James): Figure out how to do this without adding empty containers
                               Container(
@@ -683,7 +683,9 @@ class RunDetails extends StatelessWidget {
           // if the actual eventUrl is empty without
           // considering the Kennel Events URL
 
-          if ((((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ||
+          if ((((event.eventFacebookId ?? '') != '') &&
+                  (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) &&
+                  ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ||
               ((event.evtDisseminateAllowWebLinks == 1) || (kennel.disseminateAllowWebLinks == 1))) ...<Widget>[
             const FancyDivider(
               key: Key('40019292'),
@@ -712,7 +714,9 @@ class RunDetails extends StatelessWidget {
             ),
           ],
 
-          if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
+          if (((event.eventFacebookId ?? '') != '') &&
+              (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) &&
+              ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(
