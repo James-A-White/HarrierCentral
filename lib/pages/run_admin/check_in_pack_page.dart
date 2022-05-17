@@ -1308,10 +1308,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
         //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
 
-        final SumupPaymentRequest request = SumupPaymentRequest(payment, info: <String, String>{
+        final SumupPaymentRequest request = SumupPaymentRequest(payment);
+
+        request.info = <String, String>{
           'hashName': 'packMember.nameForDisplay',
           'foreignTransId': paymentReference,
-        });
+        };
 
         final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
         if ((checkoutResult == null) || (!checkoutResult.success)) {

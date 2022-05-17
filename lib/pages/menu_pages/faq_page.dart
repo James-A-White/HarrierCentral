@@ -160,8 +160,8 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (await canLaunch(link.url)) {
-                        await launch(link.url);
+                      if (await canLaunchUrl(Uri(path: link.url))) {
+                        await launchUrl(Uri(path: link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -181,8 +181,8 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (await canLaunch(link.url)) {
-                        await launch(link.url);
+                      if (await canLaunchUrl(Uri(path: link.url))) {
+                        await launchUrl(Uri(path: link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -202,14 +202,13 @@ class _FaqPageContentState extends State<FaqPageContent> {
                   Text('\r\n5. Other', style: sectionStyle),
                   Text('\r\n5.1. I have other questions, how can I get them answered?', style: headingStyle),
                   Linkify(
-                    text:
-                        'The best way to get your questions answered is to contact us at:\r\n\r\nconnect@harriercentral.com.\r\n\r\nYou can also use the button below to open our web contact form.',
+                    text: 'The best way to get your questions answered is to contact us at:\r\n\r\nconnect@harriercentral.com.\r\n\r\nYou can also use the button below to open our web contact form.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (await canLaunch(link.url)) {
-                        await launch(link.url);
+                      if (await canLaunchUrl(Uri(path: link.url))) {
+                        await launchUrl(Uri(path: link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -224,7 +223,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                           padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                         ),
                         onPressed: () async {
-                          await launch('https://harriercentral.com/index.php/contact/');
+                          await launchUrl(Uri(path: 'https://harriercentral.com/index.php/contact/'));
                         },
                         child: Text('Contact us', style: textStyleButton),
                       ),

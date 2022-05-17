@@ -160,7 +160,7 @@ export 'package:package_info/package_info.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
 export 'package:permission_handler/permission_handler.dart';
-export 'package:qonversion_flutter/qonversion_flutter.dart';
+// export 'package:qonversion_flutter/qonversion_flutter.dart';
 export 'package:qr_code_scanner/qr_code_scanner.dart';
 export 'package:qr_flutter/qr_flutter.dart';
 export 'package:shared_preferences/shared_preferences.dart';

@@ -107,8 +107,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     // DANGER - need to look into definition of ClientApp
     _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool dummy) async {
-      final NotificationSupport notifications = NotificationSupport();
-      await notifications.configureNotifications(true);
+      // final NotificationSupport notifications = NotificationSupport();
+      // await notifications.configureNotifications(true);
       // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
       //   final String resultStr = result ? 'successfully' : 'unsuccessfully';
       //   //print('Master data synchronized $resultStr');
@@ -140,9 +140,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     if (resultList.length == 1) {
       final AreWeAtRunResult result = resultList[0];
-      if ((result.eventId != EMPTY_RESULT) &&
-          (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) &&
-          (result.attendenceState < attendenceAtHash.value)) {
+      if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) && (result.attendenceState < attendenceAtHash.value)) {
         final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
           title: 'Check-in to Run',
           eventImage: result.eventImage,

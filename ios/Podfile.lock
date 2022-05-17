@@ -3,53 +3,18 @@ PODS:
     - Flutter
   - device_info (0.0.1):
     - Flutter
-  - FBAEMKit (12.3.2):
-    - FBSDKCoreKit_Basics (= 12.3.2)
-  - FBSDKCoreKit (12.3.2):
-    - FBAEMKit (= 12.3.2)
-    - FBSDKCoreKit_Basics (= 12.3.2)
-  - FBSDKCoreKit_Basics (12.3.2)
-  - FBSDKLoginKit (12.3.2):
-    - FBSDKCoreKit (= 12.3.2)
-  - Firebase/CoreOnly (8.14.0):
-    - FirebaseCore (= 8.14.0)
-  - Firebase/Messaging (8.14.0):
-    - Firebase/CoreOnly
-    - FirebaseMessaging (~> 8.14.0)
-  - firebase_core (1.14.0):
-    - Firebase/CoreOnly (= 8.14.0)
-    - Flutter
-  - firebase_messaging (11.2.12):
-    - Firebase/Messaging (= 8.14.0)
-    - firebase_core
-    - Flutter
-  - FirebaseCore (8.14.0):
-    - FirebaseCoreDiagnostics (~> 8.0)
-    - GoogleUtilities/Environment (~> 7.7)
-    - GoogleUtilities/Logger (~> 7.7)
-  - FirebaseCoreDiagnostics (8.14.0):
-    - GoogleDataTransport (~> 9.1)
-    - GoogleUtilities/Environment (~> 7.7)
-    - GoogleUtilities/Logger (~> 7.7)
-    - nanopb (~> 2.30908.0)
-  - FirebaseInstallations (8.14.0):
-    - FirebaseCore (~> 8.0)
-    - GoogleUtilities/Environment (~> 7.7)
-    - GoogleUtilities/UserDefaults (~> 7.7)
-    - PromisesObjC (< 3.0, >= 1.2)
-  - FirebaseMessaging (8.14.0):
-    - FirebaseCore (~> 8.0)
-    - FirebaseInstallations (~> 8.0)
-    - GoogleDataTransport (~> 9.1)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
-    - GoogleUtilities/Environment (~> 7.7)
-    - GoogleUtilities/Reachability (~> 7.7)
-    - GoogleUtilities/UserDefaults (~> 7.7)
-    - nanopb (~> 2.30908.0)
+  - FBAEMKit (13.2.0):
+    - FBSDKCoreKit_Basics (= 13.2.0)
+  - FBSDKCoreKit (13.2.0):
+    - FBAEMKit (= 13.2.0)
+    - FBSDKCoreKit_Basics (= 13.2.0)
+  - FBSDKCoreKit_Basics (13.2.0)
+  - FBSDKLoginKit (13.2.0):
+    - FBSDKCoreKit (= 13.2.0)
   - Flutter (1.0.0)
-  - flutter_facebook_auth (3.5.3):
-    - FBSDKCoreKit (~> 12.3.2)
-    - FBSDKLoginKit (~> 12.3.2)
+  - flutter_facebook_auth (4.3.0):
+    - FBSDKCoreKit (~> 13)
+    - FBSDKLoginKit (~> 13)
     - Flutter
   - flutter_image_compress (0.0.1):
     - Flutter
@@ -61,27 +26,6 @@ PODS:
   - FMDB/standard (2.7.5)
   - geolocator_apple (1.2.0):
     - Flutter
-  - GoogleDataTransport (9.1.2):
-    - GoogleUtilities/Environment (~> 7.2)
-    - nanopb (~> 2.30908.0)
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/AppDelegateSwizzler (7.7.0):
-    - GoogleUtilities/Environment
-    - GoogleUtilities/Logger
-    - GoogleUtilities/Network
-  - GoogleUtilities/Environment (7.7.0):
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.7.0):
-    - GoogleUtilities/Environment
-  - GoogleUtilities/Network (7.7.0):
-    - GoogleUtilities/Logger
-    - "GoogleUtilities/NSData+zlib"
-    - GoogleUtilities/Reachability
-  - "GoogleUtilities/NSData+zlib (7.7.0)"
-  - GoogleUtilities/Reachability (7.7.0):
-    - GoogleUtilities/Logger
-  - GoogleUtilities/UserDefaults (7.7.0):
-    - GoogleUtilities/Logger
   - image_cropper (0.0.4):
     - Flutter
     - TOCropViewController (~> 2.6.1)
@@ -100,26 +44,14 @@ PODS:
     - Mantle/extobjc (= 2.2.0)
   - Mantle/extobjc (2.2.0)
   - MTBBarcodeScanner (5.0.11)
-  - nanopb (2.30908.0):
-    - nanopb/decode (= 2.30908.0)
-    - nanopb/encode (= 2.30908.0)
-  - nanopb/decode (2.30908.0)
-  - nanopb/encode (2.30908.0)
   - package_info (0.0.1):
     - Flutter
   - path_provider_ios (0.0.1):
     - Flutter
   - pdf_viewer_plugin (0.0.1):
     - Flutter
-  - "permission_handler (5.1.0+2)":
+  - permission_handler_apple (9.0.4):
     - Flutter
-  - PromisesObjC (2.1.0)
-  - Qonversion (2.18.3):
-    - Qonversion/Main (= 2.18.3)
-  - Qonversion/Main (2.18.3)
-  - qonversion_flutter (4.3.1):
-    - Flutter
-    - Qonversion (= 2.18.3)
   - qr_code_scanner (0.2.0):
     - Flutter
     - MTBBarcodeScanner
@@ -136,10 +68,10 @@ PODS:
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
-  - sumup (0.2.6):
+  - sumup (0.5.0):
     - Flutter
-    - SumUpSDK (= 4.1.1)
-  - SumUpSDK (4.1.1)
+    - SumUpSDK (= 4.2.0)
+  - SumUpSDK (4.2.0)
   - TOCropViewController (2.6.1)
   - url_launcher_ios (0.0.1):
     - Flutter
@@ -151,8 +83,6 @@ PODS:
 DEPENDENCIES:
   - audioplayers (from `.symlinks/plugins/audioplayers/ios`)
   - device_info (from `.symlinks/plugins/device_info/ios`)
-  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
-  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
   - flutter_facebook_auth (from `.symlinks/plugins/flutter_facebook_auth/ios`)
   - flutter_image_compress (from `.symlinks/plugins/flutter_image_compress/ios`)
@@ -162,8 +92,7 @@ DEPENDENCIES:
   - package_info (from `.symlinks/plugins/package_info/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - pdf_viewer_plugin (from `.symlinks/plugins/pdf_viewer_plugin/ios`)
-  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
-  - qonversion_flutter (from `.symlinks/plugins/qonversion_flutter/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
   - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
@@ -179,20 +108,10 @@ SPEC REPOS:
     - FBSDKCoreKit
     - FBSDKCoreKit_Basics
     - FBSDKLoginKit
-    - Firebase
-    - FirebaseCore
-    - FirebaseCoreDiagnostics
-    - FirebaseInstallations
-    - FirebaseMessaging
     - FMDB
-    - GoogleDataTransport
-    - GoogleUtilities
     - libwebp
     - Mantle
     - MTBBarcodeScanner
-    - nanopb
-    - PromisesObjC
-    - Qonversion
     - SDWebImage
     - SDWebImageWebPCoder
     - SumUpSDK
@@ -203,10 +122,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/audioplayers/ios"
   device_info:
     :path: ".symlinks/plugins/device_info/ios"
-  firebase_core:
-    :path: ".symlinks/plugins/firebase_core/ios"
-  firebase_messaging:
-    :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
   flutter_facebook_auth:
@@ -225,10 +140,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_ios/ios"
   pdf_viewer_plugin:
     :path: ".symlinks/plugins/pdf_viewer_plugin/ios"
-  permission_handler:
-    :path: ".symlinks/plugins/permission_handler/ios"
-  qonversion_flutter:
-    :path: ".symlinks/plugins/qonversion_flutter/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
   qr_code_scanner:
     :path: ".symlinks/plugins/qr_code_scanner/ios"
   shared_preferences_ios:
@@ -249,50 +162,37 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   audioplayers: 455322b54050b30ea4b1af7cd9e9d105f74efa8c
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
-  FBAEMKit: 955ca52eba8219c20f90774e8c6ff8bc7b3192a3
-  FBSDKCoreKit: 678f64eda3f0ff25c189c2ebbfe87b1d96a85a6d
-  FBSDKCoreKit_Basics: 6bee7c1f0932432901781203fa5e587ec5099148
-  FBSDKLoginKit: 56d55e23fe66a6db045826190b0b4dbc0e1ca0a0
-  Firebase: 7e8fe528c161b9271d365217a74c16aaf834578e
-  firebase_core: b0b382f1497ab407aceb25e41e3036c8798c1609
-  firebase_messaging: 34dd10d1aa6d8f40d03660eeacd0452d62eec7aa
-  FirebaseCore: b84a44ee7ba999e0f9f76d198a9c7f60a797b848
-  FirebaseCoreDiagnostics: fd0c8490f34287229c1d6c103d3a55f81ec85712
-  FirebaseInstallations: 7d1d967a307c12f1aadd76844fc321cef699b1ce
-  FirebaseMessaging: 5ebc42d281567658a2cb72b9ef3506e4a1a1a6e4
+  FBAEMKit: c2b2895363b7e57192013d1dc49fdf498b28624c
+  FBSDKCoreKit: 58139803d861e72c7661dc875611a759352a55ac
+  FBSDKCoreKit_Basics: 1ffc68326a5ece051d85574f02a0adcf27c2a5f2
+  FBSDKLoginKit: 19e2a878556c2ee4f20486dc406e582783cd7578
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  flutter_facebook_auth: 9fb37e24281c7f13198d03708bad164c2a20fb53
+  flutter_facebook_auth: a030aef1c2552fdc7cb090acc716ac836e3bb63c
   flutter_image_compress: fd2b476345226e1a10ea352fa306af95704642c1
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   geolocator_apple: cc556e6844d508c95df1e87e3ea6fa4e58c50401
-  GoogleDataTransport: 629c20a4d363167143f30ea78320d5a7eb8bd940
-  GoogleUtilities: e0913149f6b0625b553d70dae12b49fc62914fd1
   image_cropper: 60c2789d1f1a78c873235d4319ca0c34a69f2d98
   image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
-  nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
   pdf_viewer_plugin: 45fc2233c590780ca0ca623a1f575e4bd0a72b3a
-  permission_handler: ccb20a9fad0ee9b1314a52b70b76b473c5f8dab0
-  PromisesObjC: 99b6f43f9e1044bd87a95a60beff28c2c44ddb72
-  Qonversion: a80bf4c9ddaa689b0982a35c6f1d84c4870d0f02
-  qonversion_flutter: 570ac2bd7ac0bb2d86dd3e1e248eeb0331d89f1b
+  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   qr_code_scanner: bb67d64904c3b9658ada8c402e8b4d406d5d796e
   SDWebImage: 0905f1b7760fc8ac4198cae0036600d67478751e
   SDWebImageWebPCoder: f93010f3f6c031e2f8fb3081ca4ee6966c539815
   shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
   sign_in_with_apple: f3bf75217ea4c2c8b91823f225d70230119b8440
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
-  sumup: 5c24bc595db41939b4147249d0a8eb1fdcbb4068
-  SumUpSDK: 2278a183933ad71d814ac535896524f2056f7bbf
+  sumup: dbdbf7ca0a9594537be6cf678daae5883004aa76
+  SumUpSDK: e7205e6b062a7c12c78cac0c67da7dd3ac098fcc
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   url_launcher_ios: 839c58cdb4279282219f5e248c3321761ff3c4de
   video_player_avfoundation: e489aac24ef5cf7af82702979ed16f2a5ef84cff
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
-PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+PODFILE CHECKSUM: 7368163408c647b7eb699d0d788ba6718e18fb8d
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

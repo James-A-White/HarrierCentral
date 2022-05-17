@@ -635,8 +635,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       style: bodyStyle,
                                       linkStyle: bodyStyleYellow,
                                       onOpen: (LinkableElement link) async {
-                                        if (await canLaunch(link.url)) {
-                                          await launch(link.url);
+                                        if (await canLaunchUrl(Uri(path: link.url))) {
+                                          await launchUrl(Uri(path: link.url));
                                         } else {
                                           await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                                         }
@@ -921,7 +921,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ]),
                                               onPressed: () {
                                                 if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  launch(widget.kennelAggregateItem.kennel.kennelWebsiteUrl);
+                                                  launchUrl(Uri(path: widget.kennelAggregateItem.kennel.kennelWebsiteUrl));
                                                 }
                                               },
                                             ),
@@ -1073,15 +1073,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
     final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';
     final String appleUrl = 'https://maps.apple.com/?sll=$lat,$lon';
-    if (await canLaunch('comgooglemaps://')) {
+    if (await canLaunchUrl(Uri(path: 'comgooglemaps://'))) {
       //print('launching com googleUrl');
-      await launch(googleAppUrl);
-    } else if (await canLaunch(googleWebUrl)) {
+      await launchUrl(Uri(path: googleAppUrl));
+    } else if (await canLaunchUrl(Uri(path: googleWebUrl))) {
       //print('launching apple url');
-      await launch(googleWebUrl);
-    } else if (await canLaunch(appleUrl)) {
+      await launchUrl(Uri(path: googleWebUrl));
+    } else if (await canLaunchUrl(Uri(path: appleUrl))) {
       //print('launching apple url');
-      await launch(appleUrl);
+      await launchUrl(Uri(path: appleUrl));
     } else {
       throw 'Could not launch url';
     }

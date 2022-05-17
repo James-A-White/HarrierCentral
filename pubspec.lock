@@ -114,11 +114,13 @@ packages:
     source: hosted
     version: "8.3.0"
   cached_network_image:
-    dependency: "direct main"
+    dependency: "direct overridden"
     description:
-      name: cached_network_image
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: cached_network_image
+      ref: ff72f00f142f13d889d7549e013af91cb0b523ab
+      resolved-ref: ff72f00f142f13d889d7549e013af91cb0b523ab
+      url: "https://github.com/XuannThucc/flutter_cached_network_image.git"
+    source: git
     version: "3.2.0"
   cached_network_image_platform_interface:
     dependency: transitive
@@ -231,7 +233,7 @@ packages:
       name: date_time_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.0"
+    version: "2.1.0"
   device_info:
     dependency: "direct main"
     description:
@@ -249,9 +251,11 @@ packages:
   fancy_bottom_navigation:
     dependency: "direct main"
     description:
-      name: fancy_bottom_navigation
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: bd294908b5ffd9875dbdab62467472fc68a15c59
+      resolved-ref: bd294908b5ffd9875dbdab62467472fc68a15c59
+      url: "https://github.com/tunitowen/fancy_bottom_navigation.git"
+    source: git
     version: "0.3.3"
   ffi:
     dependency: transitive
@@ -267,55 +271,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.2"
-  firebase_core:
-    dependency: "direct main"
-    description:
-      name: firebase_core
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.16.0"
-  firebase_core_platform_interface:
-    dependency: transitive
-    description:
-      name: firebase_core_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.3.0"
-  firebase_core_web:
-    dependency: transitive
-    description:
-      name: firebase_core_web
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.6.3"
-  firebase_messaging:
-    dependency: "direct main"
-    description:
-      name: firebase_messaging
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "11.3.0"
-  firebase_messaging_platform_interface:
-    dependency: transitive
-    description:
-      name: firebase_messaging_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.4.0"
-  firebase_messaging_web:
-    dependency: transitive
-    description:
-      name: firebase_messaging_web
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.3.0"
   fixnum:
     dependency: transitive
     description:
       name: fixnum
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -390,7 +352,7 @@ packages:
       name: flutter_lints
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.4"
+    version: "2.0.1"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
@@ -451,7 +413,7 @@ packages:
       name: flutter_speed_dial
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.1.0"
+    version: "6.0.0"
   flutter_spinkit:
     dependency: transitive
     description:
@@ -491,7 +453,7 @@ packages:
       name: freezed_annotation
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "2.0.3"
   frontend_server_client:
     dependency: transitive
     description:
@@ -671,20 +633,20 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "225a84ad5ffa4c9958fa62511452114227d9d181"
-      resolved-ref: "225a84ad5ffa4c9958fa62511452114227d9d181"
+      ref: "878f1a0425a5106f3e49cc4c56a5e4a176023f0c"
+      resolved-ref: "878f1a0425a5106f3e49cc4c56a5e4a176023f0c"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
-    version: "1.1.2"
+    version: "1.1.3"
   ive_flutter_core_mobile:
     dependency: "direct main"
     description:
       path: "."
-      ref: "2f22beac53e1aa15ed89446ff69e9ca83935791f"
-      resolved-ref: "2f22beac53e1aa15ed89446ff69e9ca83935791f"
+      ref: e6cb43e60a9c0e18feadb5eefb43d88db9437020
+      resolved-ref: e6cb43e60a9c0e18feadb5eefb43d88db9437020
       url: "https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git"
     source: git
-    version: "1.1.4"
+    version: "1.1.5"
   js:
     dependency: transitive
     description:
@@ -712,7 +674,7 @@ packages:
       name: keyboard_actions
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.4.7"
+    version: "4.0.0"
   keyboard_avoider:
     dependency: "direct main"
     description:
@@ -740,7 +702,7 @@ packages:
       name: lints
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.1"
+    version: "2.0.0"
   lists:
     dependency: transitive
     description:
@@ -894,7 +856,21 @@ packages:
       name: permission_handler
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "8.3.0"
+    version: "9.2.0"
+  permission_handler_android:
+    dependency: transitive
+    description:
+      name: permission_handler_android
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "9.0.2+1"
+  permission_handler_apple:
+    dependency: transitive
+    description:
+      name: permission_handler_apple
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "9.0.4"
   permission_handler_platform_interface:
     dependency: transitive
     description:
@@ -902,6 +878,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.7.0"
+  permission_handler_windows:
+    dependency: transitive
+    description:
+      name: permission_handler_windows
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   petitparser:
     dependency: transitive
     description:
@@ -986,13 +969,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.0"
-  qonversion_flutter:
-    dependency: "direct main"
-    description:
-      name: qonversion_flutter
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.3.1"
   qr:
     dependency: transitive
     description:
@@ -1003,10 +979,12 @@ packages:
   qr_code_scanner:
     dependency: "direct main"
     description:
-      name: qr_code_scanner
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.6.1"
+      path: "."
+      ref: "0feca6f15042c279ff575c559a3430df917b623d"
+      resolved-ref: "0feca6f15042c279ff575c559a3430df917b623d"
+      url: "https://github.com/juliuscanute/qr_code_scanner.git"
+    source: git
+    version: "0.7.0"
   qr_flutter:
     dependency: transitive
     description:
@@ -1193,14 +1171,14 @@ packages:
       name: string_scanner
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   sumup:
     dependency: "direct main"
     description:
       name: sumup
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.6"
+    version: "0.5.0"
   synchronized:
     dependency: transitive
     description:
@@ -1263,7 +1241,7 @@ packages:
       name: typed_data
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.3.0"
+    version: "1.3.1"
   unicode:
     dependency: transitive
     description:
@@ -1473,7 +1451,7 @@ packages:
       name: yaml
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.1.0"
+    version: "3.1.1"
 sdks:
-  dart: ">=2.17.0-0 <3.0.0"
+  dart: ">=2.17.0-206.0.dev <3.0.0"
   flutter: ">=3.0.0"

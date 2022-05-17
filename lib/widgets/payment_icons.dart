@@ -219,8 +219,7 @@ class PaymentIcons extends StatelessWidget {
           String extrasStr = '';
           num extrasPrice = event.eventPriceForExtras ?? 0;
           final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
-          final num eventPrice =
-              (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers) ?? 0;
+          final num eventPrice = (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers) ?? 0;
 
           if (extrasPrice > 0) {
             // if there are extras, show the extras dialog
@@ -255,13 +254,12 @@ class PaymentIcons extends StatelessWidget {
           }
 
           // show the alert so the user knows how much to pay
-          final bool result = await IveCoreUtilities.showAlert(
-              context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
+          final bool result = await IveCoreUtilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
               showCancelButton: true, cancelButtonText: 'Cancel');
 
           if (result) {
             // now launch into the payment provider
-            await launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.')));
+            await launchUrl(Uri(path: url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))));
             if (kennel.allowSelfPayment == 0) {
               await IveCoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
             } else {

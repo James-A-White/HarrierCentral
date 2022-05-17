@@ -238,11 +238,7 @@ class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigCont
       tip: .0,
     );
 
-    final SumupPaymentRequest request = SumupPaymentRequest(payment, info: <String, String>{
-      'AccountId': 'taxi0334',
-      'From': 'Paris',
-      'To': 'Berlin',
-    });
+    final SumupPaymentRequest request = SumupPaymentRequest(payment);
 
     await Sumup.checkout(request);
   }

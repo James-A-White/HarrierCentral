@@ -268,9 +268,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                       ((widget.futureRun.extensions.distToEvent ?? -1.0) >= 0) &&
                                       (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
                                     Text(
-                                      Utilities.getDistance(widget.futureRun.extensions.distToEvent, context,
-                                              isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0) +
-                                          ' from here',
+                                      Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0) + ' from here',
                                       style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
@@ -356,10 +354,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
-          'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.check_circle, color: Colors.green)
-          ],
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
           'returnValue': rsvpYes
         },
         <String, dynamic>{
@@ -372,10 +367,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         },
         <String, dynamic>{
           'title': 'I won\'t make it',
-          'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.times_circle, color: Colors.red)
-          ],
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
           'returnValue': rsvpNo
         },
         <String, dynamic>{
@@ -417,10 +409,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
-          'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.check_circle, color: Colors.green)
-          ],
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
           'returnValue': rsvpYes
         },
         <String, dynamic>{
@@ -433,10 +422,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         },
         <String, dynamic>{
           'title': 'I won\'t make it',
-          'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.times_circle, color: Colors.red)
-          ],
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
           'returnValue': rsvpNo
         },
         <String, dynamic>{
@@ -644,11 +630,11 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           )
           .then((List<dynamic> results) {
         setState(() {
-          final NotificationSupport notifications = NotificationSupport();
-          notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
-          // TODO(James): Fix this to reflect true value of what is in the DB not just the value
-          // provided to the function
-          widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
+          // final NotificationSupport notifications = NotificationSupport();
+          // notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
+          // // TODO(James): Fix this to reflect true value of what is in the DB not just the value
+          // // provided to the function
+          // widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
         });
       });
     }

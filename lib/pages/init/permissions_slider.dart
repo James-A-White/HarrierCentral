@@ -191,9 +191,9 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         activeTab = 2;
         goToTab(2);
       } else if (activeTab == 2) {
-        final NotificationSupport notifications = NotificationSupport();
-        // ignore: unawaited_futures
-        await notifications.configureNotifications(false);
+        // final NotificationSupport notifications = NotificationSupport();
+        // // ignore: unawaited_futures
+        // await notifications.configureNotifications(false);
 
         activeTab = 3;
         goToTab(3);
@@ -230,8 +230,8 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      IveCoreUtilities.showAlert(context, 'Camera Preference',
-              'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
+      IveCoreUtilities.showAlert(
+              context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
         if (allow) {
@@ -247,13 +247,12 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      IveCoreUtilities.showAlert(
-              context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
+      IveCoreUtilities.showAlert(context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
         if (allow) {
-          final NotificationSupport notifications = NotificationSupport();
-          await notifications.configureNotifications(false);
+          // final NotificationSupport notifications = NotificationSupport();
+          // await notifications.configureNotifications(false);
         }
         goToTab(3);
       });

@@ -34,13 +34,11 @@ class MyFlutterMap extends StatefulWidget {
 class MyFlutterMapState extends State<MyFlutterMap> {
   final MapController mapController = MapController();
 
-  latlng.LatLng _oldCenter;
   bool _oldTrueNorthLock = true;
   bool _mapControllerAvailable = false;
 
   @override
   void initState() {
-    _oldCenter = widget.mapCenter;
     _oldTrueNorthLock = widget.trueNorthLock;
     _mapControllerAvailable = false;
     // mapController.mapEventStream.listen((MapEvent event) {
@@ -59,7 +57,6 @@ class MyFlutterMapState extends State<MyFlutterMap> {
 
     if (_mapControllerAvailable && (mapController.center != mapCenterPoint)) {
       mapController.move(mapCenterPoint, mapController.zoom);
-      _oldCenter = mapCenterPoint;
     }
 
     if (_mapControllerAvailable && (_oldTrueNorthLock != widget.trueNorthLock)) {

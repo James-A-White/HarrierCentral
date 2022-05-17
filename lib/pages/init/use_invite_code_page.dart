@@ -102,7 +102,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                SizedBox(width: 46.0),
+                const SizedBox(width: 46.0),
                 Expanded(
                   child: Text(
                     'Please enter your invite code',

@@ -50,6 +50,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   bool _showKennels = true;
   bool _trueNorthLock = true;
 
+  // ignore: non_constant_identifier_names
   static double KENNEL_PIN_SIZE = 100.0;
 
   @override
@@ -561,8 +562,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     }
   }
 
-  Widget buildRunMarker(String eventId, DateTime eventStartDatetime, String eventName,
-      {int attendenceState, int rsvpState, int isHare, int kennelPinColor, int eventScope, int isCountedRun}) {
+  Widget buildRunMarker(String eventId, DateTime eventStartDatetime, String eventName, {int attendenceState, int rsvpState, int isHare, int kennelPinColor, int eventScope, int isCountedRun}) {
     return GestureDetector(
       onTap: () {
         _getSingleRun(eventId).then((RunDetailsAggregate run) {
@@ -593,8 +593,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         //final Geolocator locator = Geolocator();
 
         final String hasherId = getStringPref(StringPrefsEnum.userId);
-        final List<Map<String, dynamic>> results =
-            await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
+        final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
         if (results.isNotEmpty) {
           final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);

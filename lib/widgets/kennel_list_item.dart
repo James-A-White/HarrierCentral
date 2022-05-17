@@ -93,8 +93,8 @@ class KennelListItemState extends State<KennelsListItem> {
                         setState(() {});
                         srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
                           setState(() {
-                            widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
-                                queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                            widget.kennelFollowingUpdated(
+                                queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                           });
                         });
                       }
@@ -106,9 +106,7 @@ class KennelListItemState extends State<KennelsListItem> {
               !widget.kennelItem.isHomeKennel
                   ? Container()
                   : Container(
-                      child: widget.kennelItem.extensions.followingRequested != -1
-                          ? Icon(delayIcon, size: 35, color: Colors.blue)
-                          : Icon(FontAwesome.home, size: 35, color: Colors.red[900]),
+                      child: widget.kennelItem.extensions.followingRequested != -1 ? Icon(delayIcon, size: 35, color: Colors.blue) : Icon(FontAwesome.home, size: 35, color: Colors.red[900]),
                       alignment: Alignment.topLeft,
                       padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
                     ),
@@ -355,8 +353,8 @@ class KennelListItemState extends State<KennelsListItem> {
                                   .then((List<dynamic> queryResults) {
                                 setState(() {
                                   setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId ?? '' : '').then((void _) {
-                                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
-                                        queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                                    widget.kennelFollowingUpdated(
+                                        queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                                   });
                                 });
                               });
@@ -442,8 +440,8 @@ class KennelListItemState extends State<KennelsListItem> {
               setState(() {
                 widget.kennelFollowingUpdated(
                     queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
-                final NotificationSupport notifications = NotificationSupport();
-                notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
+                // final NotificationSupport notifications = NotificationSupport();
+                // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
               });
             });
           }
