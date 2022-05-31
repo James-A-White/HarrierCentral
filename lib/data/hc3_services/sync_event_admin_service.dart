@@ -160,7 +160,8 @@ class SyncEventAdminService {
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(
           // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
-          responseBody.replaceAll('\u2029', ''),
+          // NOTE: x2028 also causes mobile apps to crash and we need to figure out a better way to filter for these.
+          responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
           informUser: informUser,
         );
       }

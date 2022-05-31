@@ -276,8 +276,7 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
               //'QR Code for xxx',
               textAlign: TextAlign.center,
               maxLines: 1,
-              style: TextStyle(
-                  fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
             ),
 
             // Positioned(
@@ -325,9 +324,9 @@ enum EQrScannerState { waitingForScan, scanning, isProcessing, qrNotRecognized, 
 class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   String _onScreenMessage = 'Scanning paused';
 
-  QRViewController _controller;
+  final MobileScannerController _controller = MobileScannerController();
   EQrScannerState _state = EQrScannerState.waitingForScan;
-  bool _isScanning = false;
+  bool _isScanning = true;
   // bool _isProcessing = false;
   // bool _dataRecorded = false;
 
@@ -355,7 +354,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
   void dispose() {
     _isScanning = false;
     if (_controller != null) {
-      _controller.stopCamera();
+      _controller.stop();
       _controller.dispose();
     }
 
@@ -363,164 +362,176 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    _toggleScanning(doScanning: false).then((_) {
+      setState(() {});
+    });
+  }
+
+  @override
   void reassemble() {
     super.reassemble();
     if (_controller != null) {
       if (Platform.isAndroid) {
-        _controller.pauseCamera();
-        _isScanning = false;
-        _onScreenMessage = 'Scanning paused';
-        _state = EQrScannerState.waitingForScan;
+        _controller.stop().then((_) {
+          _isScanning = false;
+          _onScreenMessage = 'Scanning paused';
+          _state = EQrScannerState.waitingForScan;
+        });
       } else if (Platform.isIOS) {
-        _controller.resumeCamera();
-        _isScanning = true;
-        _onScreenMessage = 'Looking for QR Code';
-        _state = EQrScannerState.scanning;
+        _controller.start().then((_) {
+          _isScanning = true;
+          _onScreenMessage = 'Looking for QR Code';
+          _state = EQrScannerState.scanning;
+        });
       }
     }
   }
 
-  Future<void> _toggleScanning() async {
+  Future<void> _toggleScanning({bool doScanning}) async {
     if (_controller != null) {
-      setState(() {
-        if (_isScanning) {
-          _controller.pauseCamera();
+      if (_isScanning && ((doScanning == null) || !doScanning)) {
+        await _controller.stop();
+        setState(() {
           _isScanning = false;
           _onScreenMessage = 'Scanning paused';
           _state = EQrScannerState.waitingForScan;
-        } else {
-          _controller.resumeCamera();
-          _isScanning = true;
-          _onScreenMessage = 'Looking for QR Code';
-          _state = EQrScannerState.scanning;
+        });
+      } else {
+        if ((doScanning == null) || doScanning) {
+          await _controller.start();
+          setState(() {
+            _isScanning = true;
+            _onScreenMessage = 'Looking for QR Code';
+            _state = EQrScannerState.scanning;
+          });
         }
-      });
+      }
     }
   }
 
-  //   // return Future<void>(() {});(() {});
-  // }
+  DateTime _lastScan;
 
   Future<void> _onCodeRead(dynamic scanResult) async {
-    final AudioCache audioPlayer = AudioCache(prefix: 'assets/sounds/');
-    // ignore: unawaited_futures
-    audioPlayer.play('camera.mp3');
+    if (_isScanning) {
+      if ((_lastScan == null) || (DateTime.now().difference(_lastScan)).inSeconds > 3) {
+        _lastScan = DateTime.now();
+        await _toggleScanning(doScanning: false);
 
-    setState(() {
-      _onScreenMessage = 'Processing QR Scan';
-      _state = EQrScannerState.isProcessing;
-    });
-    //await stopScanning();
-
-    //final Map<String,String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user | Utilities.qrScanTypeFlag_kennelRunEnd| Utilities.qrScanTypeFlag_kennelRunStart| Utilities.qrScanTypeFlag_runStart| Utilities.qrScanTypeFlag_runEnd);
-    final Map<String, String> result = Utilities.validateScan(
-        scanResult,
-        //Utilities.qrScanTypeFlag_user |
-        Utilities.qrScanTypeFlag_runStart |
-            Utilities.qrScanTypeFlag_runEnd |
-            Utilities.qrScanTypeFlag_kennelRunEnd |
-            Utilities.qrScanTypeFlag_kennelRunStart |
-            Utilities.qrScanTypeFlag_authenticateWebPortal);
-
-    if (result['validScan'] == 'false') {
-      setState(() {
-        _state = EQrScannerState.qrNotRecognized;
-        _onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
-      });
-    } else {
-      final String prefix = result['prefix'];
-      final String scanData = result['content'];
-
-      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
-        final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
-
-        final String userId = getStringPref(StringPrefsEnum.userId);
-
-        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
-              scanData,
-              userId,
-              null,
-              AppDomainType.user,
-              rsvpState: rsvpYes.value,
-              attendenceState: attendenceState,
-              isHare: isHareNo.value,
-              virginVisitorType: enumHasher.value,
-            );
+        final AudioCache audioPlayer = AudioCache(prefix: 'assets/sounds/');
+        // ignore: unawaited_futures
+        audioPlayer.play('camera.mp3');
 
         setState(() {
-          _state = EQrScannerState.dataRecorded;
-          if ((adHocData != null) && (adHocData.isNotEmpty)) {
-            _onScreenMessage = adHocData[0]['userMessage'];
-          } else {
-            _onScreenMessage = 'Processing Complete';
-          }
+          _onScreenMessage = 'Processing QR Scan';
+          _state = EQrScannerState.isProcessing;
         });
-      } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
-        final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
+        //await stopScanning();
 
-        // the eventId variable can either have the number of hours
-        // to the closest event or an actual eventId for one event
-        final String queryResult = await CommonQueries.getClosestEventInTime(scanData);
-        if (double.tryParse(queryResult) != null) {
-          final num hoursUntilNextEvent = double.tryParse(queryResult.replaceAll(',', '.'));
+        //final Map<String,String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user | Utilities.qrScanTypeFlag_kennelRunEnd| Utilities.qrScanTypeFlag_kennelRunStart| Utilities.qrScanTypeFlag_runStart| Utilities.qrScanTypeFlag_runEnd);
+        final Map<String, String> result = Utilities.validateScan(
+            scanResult,
+            //Utilities.qrScanTypeFlag_user |
+            Utilities.qrScanTypeFlag_runStart |
+                Utilities.qrScanTypeFlag_runEnd |
+                Utilities.qrScanTypeFlag_kennelRunEnd |
+                Utilities.qrScanTypeFlag_kennelRunStart |
+                Utilities.qrScanTypeFlag_authenticateWebPortal);
+
+        if (result['validScan'] == 'false') {
           setState(() {
-            if (hoursUntilNextEvent > 24) {
-              _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
-            } else {
-              if (hoursUntilNextEvent >= 2) {
-                _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
-              } else {
-                _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' +
-                            NumberFormat('###').format(hoursUntilNextEvent * 60) !=
-                        '1'
-                    ? 's'
-                    : '';
-              }
-            }
+            _state = EQrScannerState.qrNotRecognized;
+            _onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
           });
         } else {
-          if (queryResult == EMPTY_RESULT) {
-            setState(() {
-              _onScreenMessage = 'There is no event for this Kennel at this time';
-            });
-          } else {
+          final String prefix = result['prefix'];
+          final String scanData = result['content'];
+
+          if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
+            final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
+
             final String userId = getStringPref(StringPrefsEnum.userId);
 
-            final List<dynamic> adHocData = await G0<TableModel>()
-                .hasherEventMapService
-                .joinEvent(queryResult, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value);
+            final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
+                  scanData,
+                  userId,
+                  null,
+                  AppDomainType.user,
+                  rsvpState: rsvpYes.value,
+                  attendenceState: attendenceState,
+                  isHare: isHareNo.value,
+                  virginVisitorType: enumHasher.value,
+                );
 
             setState(() {
+              _state = EQrScannerState.dataRecorded;
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 _onScreenMessage = adHocData[0]['userMessage'];
               } else {
                 _onScreenMessage = 'Processing Complete';
               }
             });
+          } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
+            final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
+
+            // the eventId variable can either have the number of hours
+            // to the closest event or an actual eventId for one event
+            final String queryResult = await CommonQueries.getClosestEventInTime(scanData);
+            if (double.tryParse(queryResult) != null) {
+              final num hoursUntilNextEvent = double.tryParse(queryResult.replaceAll(',', '.'));
+              setState(() {
+                if (hoursUntilNextEvent > 24) {
+                  _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
+                } else {
+                  if (hoursUntilNextEvent >= 2) {
+                    _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
+                  } else {
+                    _onScreenMessage =
+                        'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' + NumberFormat('###').format(hoursUntilNextEvent * 60) !=
+                                '1'
+                            ? 's'
+                            : '';
+                  }
+                }
+              });
+            } else {
+              if (queryResult == EMPTY_RESULT) {
+                setState(() {
+                  _onScreenMessage = 'There is no event for this Kennel at this time';
+                });
+              } else {
+                final String userId = getStringPref(StringPrefsEnum.userId);
+
+                final List<dynamic> adHocData = await G0<TableModel>()
+                    .hasherEventMapService
+                    .joinEvent(queryResult, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value);
+
+                setState(() {
+                  if ((adHocData != null) && (adHocData.isNotEmpty)) {
+                    _onScreenMessage = adHocData[0]['userMessage'];
+                  } else {
+                    _onScreenMessage = 'Processing Complete';
+                  }
+                });
+              }
+            }
+          } else if (prefix == QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN) {
+            final AuthenticateWebPortalService svc = AuthenticateWebPortalService();
+            final SingleResultModel returnValue = await svc.authenticateWebPortal(scanData);
+
+            setState(() {
+              if ((returnValue != null) && (returnValue.result != null) && (returnValue.result.isNotEmpty)) {
+                _onScreenMessage = returnValue.result;
+              } else {
+                _onScreenMessage = 'Processing Complete';
+              }
+            });
           }
         }
-      } else if (prefix == QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN) {
-        final AuthenticateWebPortalService svc = AuthenticateWebPortalService();
-        final SingleResultModel returnValue = await svc.authenticateWebPortal(scanData);
-
-        setState(() {
-          if ((returnValue != null) && (returnValue.result != null) && (returnValue.result.isNotEmpty)) {
-            _onScreenMessage = returnValue.result;
-          } else {
-            _onScreenMessage = 'Processing Complete';
-          }
-        });
       }
     }
-
-    // final ProcessQrScanService srv = ProcessQrScanService();
-    // final Future<ProcessQrScanModel> apiCall =
-    //     srv.processQrScan('', scanResult, 'UserScan', '', '', '');
-    // apiCall.then((ProcessQrScanModel result) {
-    //   setState(() => barcode = result.resultStr1);
-    // });
-
-    // return Future<void>(() {});(() {});
   }
 
   // Future<dynamic> stopScanning() async {
@@ -576,26 +587,24 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
   //   //     .showSnackBar(SnackBar(content: Text(message)));
   // }
 
-  String _result;
+  // void _onQRViewCreated(QRViewController controller) {
+  //   _controller = controller;
+  //   setState(() {
+  //     _isScanning = true;
+  //     _onScreenMessage = 'Looking for QR Code';
+  //     _state = EQrScannerState.scanning;
+  //   });
 
-  void _onQRViewCreated(QRViewController controller) {
-    _controller = controller;
-    setState(() {
-      _isScanning = true;
-      _onScreenMessage = 'Looking for QR Code';
-      _state = EQrScannerState.scanning;
-    });
-
-    _controller.scannedDataStream.listen((Barcode scanData) async {
-      await _controller.pauseCamera();
-      setState(() {
-        _isScanning = false;
-        _result = scanData.code;
-      });
-      await _onCodeRead(_result);
-      setState(() {});
-    });
-  }
+  //   _controller.scannedDataStream.listen((Barcode scanData) async {
+  //     await _controller.pauseCamera();
+  //     setState(() {
+  //       _isScanning = false;
+  //       _result = scanData.code;
+  //     });
+  //     await _onCodeRead(_result);
+  //     setState(() {});
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -616,8 +625,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             //'Use this scanner to scan the QR codes at theor end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
             textAlign: TextAlign.justify,
             maxLines: 4,
-            style:
-                TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceMaxScaleFactor, height: 1.0),
+            style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceMaxScaleFactor, height: 1.0),
           ),
         ),
 
@@ -635,7 +643,13 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
                   padding: const EdgeInsets.all(11.0),
                   child: AspectRatio(
                     aspectRatio: 1.0,
-                    child: QRView(key: _qrKey, onQRViewCreated: _onQRViewCreated),
+                    child: MobileScanner(
+                      key: _qrKey,
+                      controller: _controller,
+                      onDetect: (Barcode barcode, MobileScannerArguments args) async {
+                        await _onCodeRead(barcode.rawValue);
+                      },
+                    ),
                   ),
                 ),
                 if ((!_isScanning) && (_state == EQrScannerState.waitingForScan)) ...<Widget>[
