@@ -15,7 +15,7 @@ dependencies:
   crypto: ^3.0.1  
   cupertino_icons: ^1.0.3  
   date_time_picker: 2.0.0  # NOTE: There's a bug in 2.1.0 with AM/PM selection so stick with 2.0.0
-  device_info: ^2.0.2
+  device_info_plus: ^3.2.3
   # fancy_bottom_navigation: ^0.3.3  
   fancy_bottom_navigation:
     git:
@@ -35,7 +35,7 @@ dependencies:
   flutter_map: ^0.14.0  
   flutter_map_marker_cluster: ^0.4.0 
   flutter_phoenix: ^1.0.0  
-  flutter_slidable: ^0.6.0 # 1.3.0
+  flutter_slidable: ^0.6.0  # 1.3.0
   flutter_speed_dial: ^6.0.0 
   flutter_staggered_grid_view: ^0.6.1 
   flutter_swiper: ^1.1.6
@@ -44,7 +44,7 @@ dependencies:
   get_it: ^7.2.0 
   google_api_availability: ^3.0.1 
   http: ^0.13.3
-  image_cropper: ^1.4.1 # 2.0.3
+  image_cropper: ^1.4.1    # 2.0.3
   image_picker: ^0.8.4+1
   intro_slider: ^3.0.5
   ive_flutter_core:
@@ -59,7 +59,7 @@ dependencies:
   keyboard_avoider: ^0.1.2
   meta: ^1.7.0 
   mobile_scanner: ^2.0.0
-  package_info: ^2.0.2 
+  package_info_plus: ^1.4.2
   pdf_viewer_plugin: ^2.0.1
   permission_handler: ^9.2.0 
   # photo_view: ^0.4.2
@@ -77,7 +77,6 @@ dependencies:
   table_calendar: ^3.0.2 
   tinycolor: ^1.0.3 
   url_launcher: ^6.0.15 
-  utf: ^0.9.0+5
   # video_player: ^1.0.1 
 
   # # flip_panel: ^1.0.0
@@ -228,4 +227,17 @@ flutter:
         - asset: fonts/AvenirNextCondensedBold.ttf
         - asset: fonts/AvenirNextCondensedBoldItalic.ttf
           style: italic
+
+
+
+
+
+  #           date_time_picker: 2.0.0 -> ^2.1.0
+  # flutter_slidable: ^0.6.0 -> ^1.3.0
+  # image_cropper: ^1.4.1 -> ^2.0.3
+
+  # discontinued
+  # utf
+  # package_info
+  # device_info
  
