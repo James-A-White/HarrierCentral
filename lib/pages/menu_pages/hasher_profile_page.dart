@@ -88,8 +88,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       // TODO(James): Make this AppDomainType correct
       switch (widget.dataContext) {
         case EnumDataContext.event:
-          await G0<TableModel>().syncEventAdminService.updateFromBackend(
-              SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
+          await G0<TableModel>()
+              .syncEventAdminService
+              .updateFromBackend(SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
@@ -99,9 +100,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
-          await G0<TableModel>()
-              .syncKennelAdminService
-              .updateFromBackend(SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
+          await G0<TableModel>().syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
@@ -376,8 +375,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           await IveCoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
         }
       } else {
-        await IveCoreUtilities.showAlert(
-            context, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
+        await IveCoreUtilities.showAlert(context, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
       }
     } else {
 //    If all data are not valid then start auto validation.
@@ -542,10 +540,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             key: scaffoldKey,
             appBar: appBar,
             body: _isLoading
-                ? Container(
-                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
-                    decoration: Backgrounds.defaultHcBackground(),
-                    child: _buildCircularProgressIndicator())
+                ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
                     height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
@@ -571,8 +566,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                       textAlign: TextAlign.center,
                                     ),
                                     Container(
-                                      padding: EdgeInsets.only(
-                                          top: 30.0, left: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30, right: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30),
+                                      padding: EdgeInsets.only(top: 30.0, left: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30, right: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30),
                                       child: Center(
                                         child: Column(
                                           children: <Widget>[
@@ -751,7 +745,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                       'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
                                                                       'OK');
                                                                 },
-                                                                child: Text('Enable Location Svcs', style: buttonTextStyle),
+                                                                child: Text('Enable Location Svcs', style: textStyleButton),
                                                               ),
                                                             ),
                                                     ],
@@ -919,7 +913,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                       'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
                                                                       'OK');
                                                                 },
-                                                                child: Text('Enable Location Svcs', style: buttonTextStyle),
+                                                                child: Text('Enable Location Svcs', style: textStyleButton),
                                                               ),
                                                             ),
                                                     ],
@@ -1211,7 +1205,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                         _updateProfile();
                       }
                     },
-                    child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: buttonTextStyle),
+                    child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: textStyleButton),
                   ),
                 ),
                 height: 60,

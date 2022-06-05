@@ -100,9 +100,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     });
 
     await G0<TableModel>().syncEventAdminService.updateFromBackend(
-        SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable,
-        true,
-        widget.eventAggregate.event.eventId);
+        SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Payments data synchronized $resultStr');
 
@@ -305,16 +303,12 @@ class PaymentReportState extends State<PaymentReportPage> {
                 label: 'Email me payment report',
                 labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () async {
-                  final Map<String, String> result = await G0<TableModel>()
-                      .paymentsService
-                      .sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName);
+                  final Map<String, String> result =
+                      await G0<TableModel>().paymentsService.sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName);
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   if (result['result'].toLowerCase().startsWith('success')) {
-                    await IveCoreUtilities.showAlert(
-                        context,
-                        'E-mail successfully sent',
-                        'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                        'OK');
+                    await IveCoreUtilities.showAlert(context, 'E-mail successfully sent',
+                        'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                   } else {
                     await IveCoreUtilities.showAlert(context, 'Error sending report',
                         'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
@@ -452,9 +446,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                                   if (index == _filteredList.length) {
                                     return Container(height: 100);
                                   }
-                                  final bool needsConfirm = ((_filteredList[index].payment.paymentType == paymentBankTransfer.value) ||
-                                          (_filteredList[index].payment.paymentType == paymentBankTransferOtherAmount.value)) &&
-                                      (_filteredList[index].payment.confirmedBy == null);
+                                  final bool needsConfirm =
+                                      ((_filteredList[index].payment.paymentType == paymentBankTransfer.value) || (_filteredList[index].payment.paymentType == paymentBankTransferOtherAmount.value)) &&
+                                          (_filteredList[index].payment.confirmedBy == null);
                                   return (((_filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value) && !needsConfirm)
                                       ? listItem(_filteredList[index], context)
                                       : Dismissible(
@@ -473,8 +467,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                                               final num paymentAmount = (_filteredList[index].extensions.isMember != 0)
                                                   ? _filteredList[index].extensions.eventPriceForMembers
                                                   : _filteredList[index].extensions.eventPriceForNonMembers;
-                                              await _showExtrasDialog(context, _scaffoldKey.currentState,
-                                                  direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, _filteredList[index], paymentAmount);
+                                              await _showExtrasDialog(context, _scaffoldKey.currentState, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value,
+                                                  _filteredList[index], paymentAmount);
                                             }
                                             return Future<bool>.value(false);
                                           },
@@ -489,8 +483,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     const Padding(
                                                       padding: EdgeInsets.only(left: 15.0),
                                                       child: Text('Confirm Bank Transfer',
-                                                          style: TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ]))
                                               : Container(
@@ -504,8 +497,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Text(
                                                           '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
-                                                          style: const TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
                                           secondaryBackground: needsConfirm
@@ -519,8 +511,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     const Padding(
                                                       padding: EdgeInsets.only(right: 15.0),
                                                       child: Text('Confirm bank transfer',
-                                                          style: TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ]))
                                               : Container(
@@ -534,8 +525,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Text(
                                                           '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
-                                                          style: const TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
                                           onDismissed: (DismissDirection direction) {
@@ -609,8 +599,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
 
       final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-      final String runPlusExtrasPriceStr =
-          IveCoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runPlusExtrasPriceStr = IveCoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -675,8 +664,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       await _refreshListsFromTable();
       await refreshTotals();
       setState(() {
-        BankTransferQr.showBankTransferSnackbar(
-            widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, paymentAmount);
+        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, paymentAmount);
       });
     }
   }
@@ -823,18 +811,15 @@ class PaymentReportState extends State<PaymentReportPage> {
         const int flexRight = 63;
         const num spacer = 6.0;
 
-        final String amountStr =
-            IveCoreUtilities.getFormattedMoney(item?.payment?.debitAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String amountStr = IveCoreUtilities.getFormattedMoney(item?.payment?.debitAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
         String topUpStr;
 
         final double topUpAmount = (item?.payment?.creditAmount ?? 0) - (item?.payment?.debitAmount ?? 0) + .0;
         if (topUpAmount != 0) {
           topUpStr = IveCoreUtilities.getFormattedMoney(topUpAmount, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
         }
-        final String extrasPriceStr =
-            IveCoreUtilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-        final String discountAmountStr =
-            IveCoreUtilities.getFormattedMoney(item?.payment?.discountAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String extrasPriceStr = IveCoreUtilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String discountAmountStr = IveCoreUtilities.getFormattedMoney(item?.payment?.discountAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
         final String discountPercentStr = '${(item?.payment?.discountPercent ?? 0).toStringAsFixed(0)}%';
 
         return AlertDialog(
@@ -1143,8 +1128,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              IveCoreUtilities.getFormattedMoney(
-                                  item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
+                              IveCoreUtilities.getFormattedMoney(item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
                               style: bodyStyle,
                             ),
                             flex: flexRight),
@@ -1225,21 +1209,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                               BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, item.extensions.isMember != 0,
                                   packMemberNameForDisplay: item.extensions.paidByName, remitString: remittanceInfo, remitAmount: item.payment.creditAmount);
                             },
-                            child: Text('Show Payment QR Code', style: buttonTextStyle),
+                            child: Text('Show Payment QR', style: textStyleButton),
                           ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Center(
-                    child: (((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value)) ||
-                            (item.payment.confirmedBy != null))
+                    child: (((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value)) || (item.payment.confirmedBy != null))
                         ? Container()
                         : ElevatedButton(
                             onPressed: () {
                               Navigator.of(context, rootNavigator: true).pop('confirm');
                             },
-                            child: Text('Confirm Bank Transfer', style: buttonTextStyle),
+                            child: Text('Confirm Bank Transfer', style: textStyleButton),
                           ),
                   ),
                 )

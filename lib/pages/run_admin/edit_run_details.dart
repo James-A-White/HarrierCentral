@@ -999,9 +999,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             compressFormat: ImageCompressFormat.jpg,
             compressQuality: 50);
 
-        final File file = File.fromRawPath(await croppedFile.readAsBytes());
-        _imageFromGallery = Future<File>.value(file);
-        setState(() {});
+        setState(() {
+          _imageFromGallery = Future<File>.value(File(croppedFile.path));
+        });
       }
     }
   }

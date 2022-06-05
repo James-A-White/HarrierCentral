@@ -62,11 +62,10 @@ class _AppAccessPageState extends State<AppAccessPage> {
                         ),
                         onPressed: () {
                           // if appAccessFlags = 1 that means this person has no admin privileges, so set all to zero while at the same time preserving the superAdmin bit, otherwise set the authIsAdmin flag
-                          final int access =
-                              (appAccess.appAccessFlags & authAllFlags) <= 1 ? (appAccess.appAccessFlags & authIsSuperAdmin) : appAccess.appAccessFlags | authIsAdmin;
+                          final int access = (appAccess.appAccessFlags & authAllFlags) <= 1 ? (appAccess.appAccessFlags & authIsSuperAdmin) : appAccess.appAccessFlags | authIsAdmin;
                           Navigator.of(context).pop(access);
                         },
-                        child: Text('Save changes', style: buttonTextStyle),
+                        child: Text('Save changes', style: textStyleButton),
                       ),
                     ],
                   ),

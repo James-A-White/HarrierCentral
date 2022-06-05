@@ -588,27 +588,6 @@ class RunDetails extends StatelessWidget {
                   },
                 ),
 
-          // (paymentLinkUrl == '')
-          //     ? Container()
-          //     : const Padding(
-          //         padding: EdgeInsets.only(top: 32.0),
-          //         child: FancyDivider(key: Key('xxxxxxxx'),innerColor: Colors.white),
-          //       ),
-          // (paymentLinkUrl == '')
-          //     ? Container()
-          //     : Padding(
-          //         padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
-          //         child: ElevatedButton(
-          //           onPressed: () async {
-          //             if (await canLaunchUrl(Uri(path:paymentLinkUrl))) {
-          //               await launchUrl(Uri(path:paymentLinkUrl);
-          //             } else {
-          //               await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
-          //             }
-          //           },
-          //           child: Text('Pay for Hash', style: buttonTextStyle),
-          //         ),
-          //       ),
           (event.tags1 ?? 0) == 0 && (event.tags2 ?? 0) == 0
               ? Container()
               : Column(
@@ -699,7 +678,7 @@ class RunDetails extends StatelessWidget {
                 // style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
                 child: Text(
                   'Copy HC Web link',
-                  style: buttonTextStyle,
+                  style: textStyleButton,
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,

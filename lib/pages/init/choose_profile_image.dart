@@ -582,11 +582,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // final Uint8List bytes = await croppedFile.readAsBytes();
       // final File file = File.fromRawPath(bytes);
 
-      if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-        _imageFromCamera = Future<File>.value(File(croppedFile.path));
-      } else {
-        _imageFromGallery = Future<File>.value(File(croppedFile.path));
-      }
+      setState(() {
+        if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
+          _imageFromCamera = Future<File>.value(File(croppedFile.path));
+        } else {
+          _imageFromGallery = Future<File>.value(File(croppedFile.path));
+        }
+      });
     }
   }
 

@@ -203,8 +203,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
     final CroppedFile croppedFile = await ic.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
 
-    final File file = File.fromRawPath(await croppedFile.readAsBytes());
-    return file;
+    return File(croppedFile.path);
   }
 
   @override
@@ -283,7 +282,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                     });
                                                   });
                                                 },
-                                                child: Text('Scan Receipt', style: buttonTextStyle),
+                                                child: Text('Scan Receipt', style: textStyleButton),
                                               )
                                             ],
                                           ),
@@ -361,7 +360,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                             width: 150,
                             child: ElevatedButton(
                               onPressed: _uploadReceipt,
-                              child: Text('Save receipt', style: buttonTextStyle),
+                              child: Text('Save receipt', style: textStyleButton),
                             ),
                           ),
                         ],

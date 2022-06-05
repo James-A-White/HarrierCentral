@@ -101,7 +101,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                   onPressed: () {
                     sendEmail(context, '');
                   },
-                  child: Text('Quick Send Email', style: buttonTextStyle),
+                  child: Text('Quick Send Email', style: textStyleButton),
                 ),
                 const SizedBox(height: 10),
                 const FancyDivider(key: Key('155030392'), innerColor: Colors.white, useTextOr: true),
@@ -215,7 +215,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
                     sendEmail(context, bodyController.text);
                   },
-                  child: Text('Send Email', style: buttonTextStyle),
+                  child: Text('Send Email', style: textStyleButton),
                 ),
                 //),
                 // Positioned(
@@ -293,8 +293,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   }
 
   Future<void> sendEmail(BuildContext context, String emailBody) async {
-    final bool doEmail = await IveCoreUtilities.showAlert(
-        context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK',
+    final bool doEmail = await IveCoreUtilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK',
         showCancelButton: true);
 
     if (doEmail) {
@@ -303,8 +302,8 @@ class EmailEditorPageState extends State<EmailEditorPage> {
       if (result['result'].toLowerCase().startsWith('success')) {
         await IveCoreUtilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
       } else {
-        await IveCoreUtilities.showAlert(context, 'Error sending emails',
-            'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+        await IveCoreUtilities.showAlert(
+            context, 'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
       }
 
       IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
