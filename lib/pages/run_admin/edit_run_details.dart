@@ -982,26 +982,27 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
       _tabController.animateTo(0);
     } else {
       final XFile image = await ImagePicker().pickImage(source: source);
-      setState(() {
-        if (image == null) {
-          // setState(() {
-          //   _selectedRadioValue = _previouslySelectedRadioValue;
-          //   _imageTypeSelection = _previousImageTypeSelection;
-          // });
-        } else {
-          final ImageCropper ic = ImageCropper();
-          final Future<File> img = ic.cropImage(
-              sourcePath: image.path,
-              //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-              //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-              maxWidth: 1000,
-              maxHeight: 1000,
-              compressFormat: ImageCompressFormat.jpg,
-              compressQuality: 50);
 
-          _imageFromGallery = img;
-        }
-      });
+      if (image == null) {
+        // setState(() {
+        //   _selectedRadioValue = _previouslySelectedRadioValue;
+        //   _imageTypeSelection = _previousImageTypeSelection;
+        // });
+      } else {
+        final ImageCropper ic = ImageCropper();
+        final CroppedFile croppedFile = await ic.cropImage(
+            sourcePath: image.path,
+            //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+            //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
+            maxWidth: 1000,
+            maxHeight: 1000,
+            compressFormat: ImageCompressFormat.jpg,
+            compressQuality: 50);
+
+        final File file = File.fromRawPath(await croppedFile.readAsBytes());
+        _imageFromGallery = Future<File>.value(file);
+        setState(() {});
+      }
     }
   }
 

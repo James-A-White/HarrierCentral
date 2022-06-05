@@ -200,7 +200,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     final XFile image = await ImagePicker().pickImage(source: ImageSource.camera);
 
     final ImageCropper ic = ImageCropper();
-    return ic.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
+
+    final CroppedFile croppedFile = await ic.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
+
+    final File file = File.fromRawPath(await croppedFile.readAsBytes());
+    return file;
   }
 
   @override

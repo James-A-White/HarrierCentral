@@ -440,6 +440,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   (_filterValues[6] == -1) ||
                   (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount ?? 0) + (a.hcTotalRunCount ?? 0))))))
           .toList();
+
+      _filteredList.sort((CheckInPackModel a, CheckInPackModel b) => a.nameForDisplay.compareTo(b.nameForDisplay));
     } else {
       _filteredList = <CheckInPackModel>[];
       _filteredList.addAll(_packList);
@@ -1370,7 +1372,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         }
       },
       child: Container(
-        color: ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0))))
+        color: ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0))))
             ? Colors.amber.shade100
             : Colors.white,
         width: MediaQuery.of(context).size.width,
@@ -1437,7 +1439,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
             //(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)
 
-            if ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)))) ...<Widget>[
+            if ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0)))) ...<Widget>[
               Positioned(right: 8.0, top: 9.0, child: Image.asset('images/icons/beer_mug.png'), width: 35.0, height: 35.0),
             ],
 
@@ -1570,7 +1572,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   TextStyle _getRunLabelStyle(int numRuns, int attendenceState) {
     if (attendenceState >= attendenceAtHash.value) {
-      if (_checkSpecialRun(numRuns)) {
+      if (_checkSpecialRun(numRuns ?? 0)) {
         return mediumTextRed;
       }
     }
@@ -1578,7 +1580,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   bool _checkSpecialRun(int runCount) {
+    runCount ??= 0;
     bool result = false;
+    if (runCount == 0) {
+      result = true;
+    }
     if (runCount == 1) {
       result = true;
     }

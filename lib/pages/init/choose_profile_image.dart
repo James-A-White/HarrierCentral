@@ -255,8 +255,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                               // )
                               : Container(
                                   margin: const EdgeInsets.all(6.0),
-                                  height: 400,
-                                  width: 400,
+                                  // height: 400,
+                                  // width: 400,
                                   // Positioned(
                                   // left: 30,
                                   // right: 30,
@@ -543,7 +543,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       profilePhotoFile.writeAsBytesSync(response.bodyBytes);
 
       final ImageCropper ic = ImageCropper();
-      _imageFromFacebook = ic.cropImage(
+      final CroppedFile croppedFile = await ic.cropImage(
           sourcePath: profilePhotoFile.path,
           aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
           aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
@@ -552,41 +552,74 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 50);
 
+      final File file = File.fromRawPath(await croppedFile.readAsBytes());
+      _imageFromGallery = Future<File>.value(file);
+
       await _imageFromFacebook;
       setState(() {});
     }
   }
 
-  void _getImageFromCameraOrGallery(ImageSource source) {
-    setState(() {
-      ImagePicker().pickImage(source: source).then((XFile image) {
-        setState(() {
-          if (image == null) {
-            setState(() {
-              _selectedRadioValue = _previouslySelectedRadioValue;
-              _imageTypeSelection = _previousImageTypeSelection;
-            });
-          } else {
-            final ImageCropper ic = ImageCropper();
-            final Future<File> img = ic.cropImage(
-                sourcePath: image.path,
-                aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-                aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-                maxWidth: 300,
-                maxHeight: 300,
-                compressFormat: ImageCompressFormat.jpg,
-                compressQuality: 50);
+  Future<void> _getImageFromCameraOrGallery(ImageSource source) async {
+    final XFile image = await ImagePicker().pickImage(source: source);
 
-            if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-              _imageFromCamera = img;
-            } else {
-              _imageFromGallery = img;
-            }
-          }
-        });
+    if (image == null) {
+      setState(() {
+        _selectedRadioValue = _previouslySelectedRadioValue;
+        _imageTypeSelection = _previousImageTypeSelection;
       });
-    });
+    } else {
+      final ImageCropper ic = ImageCropper();
+      final CroppedFile croppedFile = await ic.cropImage(
+          sourcePath: image.path,
+          aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+          aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
+          maxWidth: 300,
+          maxHeight: 300,
+          compressFormat: ImageCompressFormat.jpg,
+          compressQuality: 50);
+
+      // final Uint8List bytes = await croppedFile.readAsBytes();
+      // final File file = File.fromRawPath(bytes);
+
+      if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
+        _imageFromCamera = Future<File>.value(File(croppedFile.path));
+      } else {
+        _imageFromGallery = Future<File>.value(File(croppedFile.path));
+      }
+    }
   }
+
+  // void _getImageFromCameraOrGallery(ImageSource source) {
+  //   setState(() {
+  //     ImagePicker().pickImage(source: source).then((XFile image) {
+  //       setState(() {
+  //         if (image == null) {
+  //           setState(() {
+  //             _selectedRadioValue = _previouslySelectedRadioValue;
+  //             _imageTypeSelection = _previousImageTypeSelection;
+  //           });
+  //         } else {
+  //           final ImageCropper ic = ImageCropper();
+  //           final Future<File> img = ic.cropImage(
+  //               sourcePath: image.path,
+  //               aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+  //               aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
+  //               maxWidth: 300,
+  //               maxHeight: 300,
+  //               compressFormat: ImageCompressFormat.jpg,
+  //               compressQuality: 50);
+
+  //           if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
+  //             _imageFromCamera = img;
+  //           } else {
+  //             _imageFromGallery = img;
+  //           }
+  //         }
+  //       });
+  //     });
+  //   });
+  // }
 
   Widget _previewImage() {
     return FutureBuilder<File>(
