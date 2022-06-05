@@ -1669,7 +1669,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
               final Key key = Key(index.toString());
-              //if (index == 0) {
+
               return Slidable(
                 key: key,
                 controller: _slidableController,
@@ -1685,7 +1685,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                       _useTerminalForPayment = false;
                     }
                     if (packMember.isPaid != 1) {
-                      //print(actionType.toString() + ' ' + index.toString());
                       _payForEvent(
                         context,
                         _scaffoldKey.currentState,
@@ -1708,14 +1707,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
                   child: const SlidableDrawerDismissal(),
                   onDismissed: (SlideActionType actionType) {
-                    // _showSnackBar(
-                    //     context,
-                    //     actionType == SlideActionType.primary
-                    //         ? 'Dismiss Archive'
-                    //         : 'Dimiss Delete');
-                    setState(() {
-                      //items.removeAt(index);
-                    });
+                    setState(() {});
                   },
                 ),
                 actions: <Widget>[
@@ -1786,19 +1778,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         onTap: () {
                           _useTerminalForPayment = true;
                           _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
-                          // final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
-                          // final SumupPluginResponse resp = await Sumup.init(affiliateKey);
-
-                          // bool isLoggedIn = await Sumup.isLoggedIn;
-                          // if (!isLoggedIn) {
-                          //   final SumupPluginResponse resp2 = await Sumup.login();
-                          //   int xxx = 0;
-                          // }
-
-                          // isLoggedIn = await Sumup.isLoggedIn;
-                          // if (isLoggedIn) {
-                          //   _doTransaction();
-                          // }
                         }),
                   ],
                 ],
@@ -1871,123 +1850,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   ),
                 ],
               );
-              //}
-              // else {
-              //   return Dismissible(
-              //     child: listItem(context, packMember),
-              //     key: key,
-              //     confirmDismiss: (DismissDirection direction) {
-              //       if (packMember.isPaid != 1) {
-              //         //print(direction.toString() + ' ' + index.toString());
-              //         showExtrasDialog(
-              //             context, _scaffoldKey.currentState, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, packMember, -1);
-              //       } else {
-              //         if (direction == DismissDirection.endToStart) {
-              //           updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
-              //         }
-              //       }
-              //       return Future<bool>.value(false);
-              //     },
-              //     background: packMember.isPaid == 1
-              //         ? Container(
-              //             color: Colors.grey,
-              //             child: Row(
-              //               children: const <Widget>[
-              //                 Padding(
-              //                   padding: EdgeInsets.only(left: 15.0),
-              //                   child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
-              //                 ),
-              //                 Padding(
-              //                   padding: EdgeInsets.only(left: 15.0),
-              //                   child: Text(
-              //                     'Already paid',
-              //                     style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-              //                   ),
-              //                 ),
-              //               ],
-              //             ),
-              //           )
-              //         : Container(
-              //             color: Colors.blue,
-              //             child: Row(
-              //               children: <Widget>[
-              //                 Padding(
-              //                   padding: const EdgeInsets.only(left: 15.0),
-              //                   child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
-              //                 ),
-              //                 Padding(
-              //                   padding: const EdgeInsets.only(left: 15.0),
-              //                   child: Text(
-              //                       '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
-              //                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-              //                 ),
-              //               ],
-              //             ),
-              //           ),
-              //     secondaryBackground: packMember.isPaid == 1
-              //         ? packMember.attendenceState >= attendenceOnIn.value
-              //             ? Container(
-              //                 color: Colors.grey,
-              //                 child: Row(
-              //                   mainAxisAlignment: MainAxisAlignment.end,
-              //                   children: const <Widget>[
-              //                     Padding(
-              //                       padding: EdgeInsets.only(right: 15.0),
-              //                       child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
-              //                     ),
-              //                     Padding(
-              //                       padding: EdgeInsets.only(right: 15.0),
-              //                       child: Text(
-              //                         'Already marked On-In',
-              //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-              //                       ),
-              //                     ),
-              //                   ],
-              //                 ),
-              //               )
-              //             : Container(
-              //                 color: Colors.amber[800],
-              //                 child: Row(
-              //                   mainAxisAlignment: MainAxisAlignment.end,
-              //                   children: const <Widget>[
-              //                     Padding(
-              //                       padding: EdgeInsets.only(right: 15.0),
-              //                       child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
-              //                     ),
-              //                     Padding(
-              //                       padding: EdgeInsets.only(right: 15.0),
-              //                       child: Text(
-              //                         'Record as On-In',
-              //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-              //                       ),
-              //                     ),
-              //                   ],
-              //                 ),
-              //               )
-              //         : Container(
-              //             color: Colors.green,
-              //             child: Row(
-              //               mainAxisAlignment: MainAxisAlignment.end,
-              //               children: <Widget>[
-              //                 Padding(
-              //                   padding: const EdgeInsets.only(right: 15.0),
-              //                   child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
-              //                 ),
-              //                 Padding(
-              //                   padding: const EdgeInsets.only(right: 15.0),
-              //                   child: Text(
-              //                       '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
-              //                       textAlign: TextAlign.right,
-              //                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-              //                 ),
-              //               ],
-              //             ),
-              //           ),
-              //     onDismissed: (DismissDirection direction) {
-              //       //print(direction.toString() + ' NOTE: We should never reach this point');
-              //     },
-              //   );
-              // }
             }
           },
         ),
