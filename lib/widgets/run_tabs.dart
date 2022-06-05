@@ -1195,15 +1195,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       appleUrl = 'https://maps.apple.com/?sll=$latStr,$lonStr';
     }
 
-    if (await canLaunchUrl(Uri(path: 'comgooglemaps://'))) {
+    if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
       //print('launching com googleUrl');
-      await launchUrl(Uri(path: googleAppUrl));
-    } else if (await canLaunchUrl(Uri(path: googleWebUrl))) {
+      await launchUrl(Uri.parse(googleAppUrl));
+    } else if (Uri.parse(googleAppUrl).isAbsolute) {
       //print('launching Google web url');
-      await launchUrl(Uri(path: googleWebUrl));
-    } else if ((appleUrl.isNotEmpty) && (await canLaunchUrl(Uri(path: appleUrl)))) {
+      await launchUrl(Uri.parse(googleWebUrl));
+    } else if ((appleUrl.isNotEmpty) && (Uri.parse(appleUrl).isAbsolute)) {
       //print('launching apple url');
-      await launchUrl(Uri(path: appleUrl));
+      await launchUrl(Uri.parse(appleUrl));
     } else {
       throw 'Could not launch url';
     }

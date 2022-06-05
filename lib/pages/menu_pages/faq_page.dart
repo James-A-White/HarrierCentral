@@ -160,8 +160,8 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (await canLaunchUrl(Uri(path: link.url))) {
-                        await launchUrl(Uri(path: link.url));
+                      if (Uri.parse(link.url).isAbsolute) {
+                        await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -181,8 +181,8 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (await canLaunchUrl(Uri(path: link.url))) {
-                        await launchUrl(Uri(path: link.url));
+                      if (Uri.parse(link.url).isAbsolute) {
+                        await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -207,8 +207,8 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (await canLaunchUrl(Uri(path: link.url))) {
-                        await launchUrl(Uri(path: link.url));
+                      if (Uri.parse(link.url).isAbsolute) {
+                        await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -223,7 +223,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                           padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                         ),
                         onPressed: () async {
-                          await launchUrl(Uri(path: 'https://harriercentral.com/index.php/contact/'));
+                          await launchUrl(Uri.parse('https://harriercentral.com/index.php/contact/'));
                         },
                         child: Text('Contact us', style: textStyleButton),
                       ),

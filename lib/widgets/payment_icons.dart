@@ -259,7 +259,7 @@ class PaymentIcons extends StatelessWidget {
 
           if (result) {
             // now launch into the payment provider
-            await launchUrl(Uri(path: url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))));
+            await launchUrl(Uri.parse(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))));
             if (kennel.allowSelfPayment == 0) {
               await IveCoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
             } else {

@@ -635,8 +635,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       style: bodyStyle,
                                       linkStyle: bodyStyleYellow,
                                       onOpen: (LinkableElement link) async {
-                                        if (await canLaunchUrl(Uri(path: link.url))) {
-                                          await launchUrl(Uri(path: link.url));
+                                        if (Uri.parse(link.url).isAbsolute) {
+                                          await launchUrl(Uri.parse(link.url));
                                         } else {
                                           await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                                         }
@@ -921,7 +921,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ]),
                                               onPressed: () {
                                                 if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  launchUrl(Uri(path: widget.kennelAggregateItem.kennel.kennelWebsiteUrl));
+                                                  launchUrl(Uri.parse(widget.kennelAggregateItem.kennel.kennelWebsiteUrl));
                                                 }
                                               },
                                             ),
@@ -1073,15 +1073,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
     final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';
     final String appleUrl = 'https://maps.apple.com/?sll=$lat,$lon';
-    if (await canLaunchUrl(Uri(path: 'comgooglemaps://'))) {
+    if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
       //print('launching com googleUrl');
-      await launchUrl(Uri(path: googleAppUrl));
-    } else if (await canLaunchUrl(Uri(path: googleWebUrl))) {
+      await launchUrl(Uri.parse(googleAppUrl));
+    } else if (Uri.parse(googleAppUrl).isAbsolute) {
       //print('launching apple url');
-      await launchUrl(Uri(path: googleWebUrl));
-    } else if (await canLaunchUrl(Uri(path: appleUrl))) {
+      await launchUrl(Uri.parse(googleWebUrl));
+    } else if (Uri.parse(appleUrl).isAbsolute) {
       //print('launching apple url');
-      await launchUrl(Uri(path: appleUrl));
+      await launchUrl(Uri.parse(appleUrl));
     } else {
       throw 'Could not launch url';
     }

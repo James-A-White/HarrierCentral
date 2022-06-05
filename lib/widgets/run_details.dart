@@ -650,8 +650,8 @@ class RunDetails extends StatelessWidget {
                     style: bodyStyle,
                     linkStyle: bodyStyleYellow,
                     onOpen: (LinkableElement link) async {
-                      if (await canLaunchUrl(Uri(path: link.url))) {
-                        await launchUrl(Uri(path: link.url));
+                      if (Uri.parse(link.url).isAbsolute) {
+                        await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -699,8 +699,8 @@ class RunDetails extends StatelessWidget {
                 child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
                 onPressed: () async {
                   final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
-                  if (await canLaunchUrl(Uri(path: linkUrl))) {
-                    await launchUrl(Uri(path: linkUrl));
+                  if (Uri.parse(linkUrl).isAbsolute) {
+                    await launchUrl(Uri.parse(linkUrl));
                   } else {
                     await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
                   }
@@ -718,8 +718,8 @@ class RunDetails extends StatelessWidget {
                 style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
                 child: Image.asset('images/icons/visit_run_on_web.png', height: 60.0, width: 325.0),
                 onPressed: () async {
-                  if (await canLaunchUrl(Uri(path: eventUrlWithKennelBackup))) {
-                    await launchUrl(Uri(path: eventUrlWithKennelBackup));
+                  if (Uri.parse(eventUrlWithKennelBackup).isAbsolute) {
+                    await launchUrl(Uri.parse(eventUrlWithKennelBackup));
                   } else {
                     await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
                   }
