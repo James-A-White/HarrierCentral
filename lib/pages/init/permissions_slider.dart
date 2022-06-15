@@ -178,6 +178,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       _permissionRequestInProgress = true;
       if (activeTab == 0) {
         final PermissionStatus ps = await Permission.locationWhenInUse.request();
+
         if (ps.isGranted) {
           await Utilities.subscribeToGeoLocationStream();
         }
@@ -186,6 +187,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         goToTab(1);
       } else if (activeTab == 1) {
         await Permission.camera.request().isGranted;
+        await Future<void>.delayed(const Duration(milliseconds: 1000));
         await Permission.photos.request().isGranted;
 
         activeTab = 2;
