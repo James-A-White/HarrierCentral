@@ -181,7 +181,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
               const SizedBox(height: 35, width: 10),
               if (!isLoading) ...<Widget>[
                 TextButton(
-                  child: const Text('Get Started!'),
+                  child: Text('Get Started!', style: textStyleButton),
                   onPressed: () async {
                     if (userDetailsUi.validateForm()) {
                       // If the form is valid, display a snackbar. In the real world,

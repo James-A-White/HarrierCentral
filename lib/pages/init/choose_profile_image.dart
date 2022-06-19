@@ -272,7 +272,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                       child: TextButton(
                         style: TextButton.styleFrom(backgroundColor: _imageTypeSelection == SelectedImageTypeEnum.none ? Colors.grey : Colors.red.shade900),
                         //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
-                        child: const Text('Next'),
+                        child: Text('Next', style: textStyleButton),
                         onPressed: () {
                           if (_imageTypeSelection != SelectedImageTypeEnum.none) {
                             _processAndContinue();

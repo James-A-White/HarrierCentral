@@ -232,7 +232,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     textAlign: TextAlign.center,
                   )
                 : TextButton(
-                    child: const Text('Get Started!'),
+                    child: Text('Get Started!', style: textStyleButton),
                     onPressed: () async {
                       if (_formKey.currentState.validate()) {
                         // If the form is valid, display a snackbar. In the real world,
