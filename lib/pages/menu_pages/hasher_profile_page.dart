@@ -1201,7 +1201,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                           Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
-                                              'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. This action cannot be undone.',
+                                              'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.',
                                               style: bodyStyle,
                                               textAlign: TextAlign.center,
                                             ),
@@ -1221,7 +1221,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       await IveCoreUtilities.showAlert(
                                                               context,
                                                               'Delete Account',
-                                                              'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nThis action is permanent and cannot be reversed. Please proceed with caution.',
+                                                              'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING: THIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
                                                               'Delete Account',
                                                               showCancelButton: true,
                                                               cancelButtonText: 'Keep Account')
@@ -1229,7 +1229,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         if (result) {
                                                           await Future<void>.delayed(const Duration(milliseconds: 1500));
                                                           await IveCoreUtilities.showAlert(context, 'Delete Account',
-                                                                  'Just to double check since this cannot be undone. Are you sure you want to permanently delete your account?', 'Delete Account',
+                                                                  'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?', 'Delete Account',
                                                                   showCancelButton: true, cancelButtonText: 'Keep Account')
                                                               .then((bool result2) async {
                                                             if (result2) {
@@ -1240,14 +1240,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 await IveCoreUtilities.showAlert(
                                                                   context,
                                                                   'Successful',
-                                                                  'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app will restart after you hit OK.',
+                                                                  'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
                                                                   'OK',
                                                                 );
                                                               } else {
                                                                 await IveCoreUtilities.showAlert(
                                                                   context,
                                                                   'Contact us',
-                                                                  'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted the Harrier Central app will restart.',
+                                                                  'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
                                                                   'OK',
                                                                 );
                                                               }
