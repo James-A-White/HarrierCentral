@@ -101,7 +101,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                             uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref |
                                 HasherProfilePage.flagUiElement_autoDisplayRunsDistance |
                                 HasherProfilePage.flagUiElement_logOutAndRefreshButton |
-                                HasherProfilePage.flagUiElement_refresh3rdPartyLogin);
+                                HasherProfilePage.flagUiElement_refresh3rdPartyLogin |
+                                HasherProfilePage.flagUiElement_gdprDeleteAccount);
                       },
                     ),
                   );
