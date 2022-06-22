@@ -351,6 +351,15 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
   //
 
   @override
+  void initState() {
+    super.initState();
+
+    _toggleScanning(doScanning: false).then((_) {
+      setState(() {});
+    });
+  }
+
+  @override
   void dispose() {
     _isScanning = false;
     if (_controller != null) {
@@ -359,15 +368,6 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
     }
 
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _toggleScanning(doScanning: false).then((_) {
-      setState(() {});
-    });
   }
 
   @override
@@ -533,78 +533,6 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       }
     }
   }
-
-  // Future<dynamic> stopScanning() async {
-  //   controller.stopScanning();
-  //   await controller.dispose();
-  //   controller = null;
-  // }
-
-  // Widget _cameraPreviewWidget() {
-  //   return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
-  //     return Container(
-  //       padding: const EdgeInsets.all(9.0),
-  //       height: constraint.biggest.height,
-  //       width: constraint.biggest.height,
-  //       child: (controller == null) ? Container() : QRReaderPreview(controller),
-  //     );
-  //   });
-  // }
-
-  // Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
-  //   if (controller != null) {
-  //     await controller.dispose();
-  //   }
-  //   controller = QRReaderController(cameraDescription, ResolutionPreset.high, <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
-
-  //   // If the controller is updated then update the UI.
-  //   controller.addListener(() {
-  //     if (mounted) {
-  //       setState(() {});
-  //     }
-  //     if (controller.value.hasError) {
-  //       showInSnackBar('Camera error ${controller.value.errorDescription}');
-  //     }
-  //   });
-
-  //   try {
-  //     await controller.initialize();
-  //   } on QRReaderException catch (e) {
-  //     //logError(e.code, e.description);
-  //     showInSnackBar('Error: ${e.code}\n${e.description}');
-  //   }
-
-  //   if (mounted) {
-  //     setState(() {});
-  //     controller.startScanning();
-  //   }
-
-  //   // return Future<void>(() {});(() {});
-  // }
-
-  // void showInSnackBar(String message) {
-  //   // _scaffoldKey.currentState
-  //   //     .showSnackBar(SnackBar(content: Text(message)));
-  // }
-
-  // void _onQRViewCreated(QRViewController controller) {
-  //   _controller = controller;
-  //   setState(() {
-  //     _isScanning = true;
-  //     _onScreenMessage = 'Looking for QR Code';
-  //     _state = EQrScannerState.scanning;
-  //   });
-
-  //   _controller.scannedDataStream.listen((Barcode scanData) async {
-  //     await _controller.pauseCamera();
-  //     setState(() {
-  //       _isScanning = false;
-  //       _result = scanData.code;
-  //     });
-  //     await _onCodeRead(_result);
-  //     setState(() {});
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {

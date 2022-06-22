@@ -40,7 +40,7 @@ class KennelMemberListItem extends StatelessWidget {
               dataContext: EnumDataContext.kennel,
               pageType: EnumMyProfilePageType.anyHasherProfile,
               hasherId: kennelMember.hasherId,
-              uiElementsToDisplay: HasherProfilePage.flagUiElement_inviteCode,
+              uiElementsToDisplay: HasherProfilePage.flagUiElement_previousRunCount | HasherProfilePage.flagUiElement_getInviteCodeButton,
               kennelShortName: kennelMember.kennelShortName,
               kennelId: kennelMember.kennelId,
             ),
@@ -136,9 +136,7 @@ class KennelMemberListItem extends StatelessWidget {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                    fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())
-                                        ? 'AvenirNextCondensedDemiBold'
-                                        : 'AvenirNextCondensed',
+                                    fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now()) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed',
                                     fontStyle: FontStyle.normal,
                                     fontSize: 22.0,
                                     height: 1.0),
@@ -189,12 +187,7 @@ class KennelMemberListItem extends StatelessWidget {
                     kennelMember.memberInfoBeingUpdated ?? false
                         ? Text(
                             '<Updating membership>',
-                            style: TextStyle(
-                                fontFamily: 'AvenirNextMedium',
-                                fontStyle: FontStyle.normal,
-                                fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                                height: 1.0,
-                                color: Colors.blue),
+                            style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0, color: Colors.blue),
                             textAlign: TextAlign.center,
                           )
                         : kennelMember.membershipExpirationDate == null
@@ -202,23 +195,18 @@ class KennelMemberListItem extends StatelessWidget {
                                 ? Container()
                                 : Text(
                                     '(following this Kennel)',
-                                    style: TextStyle(
-                                        fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                                    style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                                     textAlign: TextAlign.center,
                                   )
                             : Text(
-                                kennelMember.membershipExpirationDate.year >= 2100
-                                    ? 'Permanent Member'
-                                    : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate)}',
-                                style:
-                                    TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                                kennelMember.membershipExpirationDate.year >= 2100 ? 'Permanent Member' : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate)}',
+                                style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                                 textAlign: TextAlign.center,
                               ),
                     if ((kennelMember.kennelCredit ?? 0) != 0) ...<Widget>[
                       Text(
                         (kennelMember.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
-                            IveCoreUtilities.getFormattedMoney(
-                                kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal, kennelListAggregate.kennel.currencySymbol),
+                            IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal, kennelListAggregate.kennel.currencySymbol),
                         style: TextStyle(
                             fontFamily: 'AvenirNextDemiBold',
                             fontStyle: FontStyle.normal,

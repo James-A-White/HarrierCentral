@@ -60,23 +60,33 @@ class UseInviteCodePageContent extends StatefulWidget {
 }
 
 class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
-  TextEditingController inviteCodeTextController;
-  InputDecoration inviteCodeDecoration;
-  final FocusNode inviteCodeFocusNode = FocusNode();
+  TextEditingController _inviteCodeTextController;
+  InputDecoration _inviteCodeDecoration;
+  final FocusNode _inviteCodeFocusNode = FocusNode();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool isLoading = false;
+  bool _isLoading = false;
 
-  bool includeInGlobalHashDirectory = true;
+  bool _showQrScanner = false;
 
-  String emailAddress = '';
+  bool _includeInGlobalHashDirectory = true;
+
+  String _emailAddress = '';
+
+  String _lastQrCode = '';
+
+  final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR123');
+
+  final MobileScannerController _controller = MobileScannerController();
+  // EQrScannerState _state = EQrScannerState.waitingForScan;
+  // bool _isScanning = true;
 
   @override
   void initState() {
     super.initState();
 
-    inviteCodeTextController = TextEditingController();
-    inviteCodeDecoration = InputDecoration(
+    _inviteCodeTextController = TextEditingController();
+    _inviteCodeDecoration = InputDecoration(
       labelText: 'Invite Code',
       fillColor: Colors.red,
       border: OutlineInputBorder(
@@ -84,6 +94,36 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
         borderSide: const BorderSide(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    if (_controller != null) {
+      _controller.stop();
+      _controller.dispose();
+    }
+
+    super.dispose();
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (_controller != null) {
+      if (Platform.isAndroid) {
+        _controller.stop().then((_) {
+          // _isScanning = false;
+          // _onScreenMessage = 'Scanning paused';
+          // _state = EQrScannerState.waitingForScan;
+        });
+      } else if (Platform.isIOS) {
+        _controller.start().then((_) {
+          // _isScanning = true;
+          // _onScreenMessage = 'Looking for QR Code';
+          // _state = EQrScannerState.scanning;
+        });
+      }
+    }
   }
 
   @override
@@ -116,7 +156,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     await IveCoreUtilities.showAlert(
                         context,
                         'What is an "Invite Code"?',
-                        'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
+                        'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nYou can ask any Harrier Central admin from your Home Kennel to provide you with your invite code using their Harrier Central app.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
                         'OK');
                   },
                   child: Container(
@@ -136,22 +176,61 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 color: Colors.yellow[100],
                 child: Column(
                   children: <Widget>[
-                    TextFormField(
-                      autocorrect: false,
-                      textCapitalization: TextCapitalization.characters,
-                      controller: inviteCodeTextController,
-                      focusNode: inviteCodeFocusNode,
-                      decoration: inviteCodeDecoration,
-                      validator: (String val) {
-                        if (val.length != 6) {
-                          return 'Invite codes are six characters';
-                        } else {
-                          return null;
-                        }
-                      },
-                      keyboardType: TextInputType.text,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Colors.red.shade900),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: TextFormField(
+                            autocorrect: false,
+                            textCapitalization: TextCapitalization.characters,
+                            controller: _inviteCodeTextController,
+                            focusNode: _inviteCodeFocusNode,
+                            decoration: _inviteCodeDecoration,
+                            validator: (String val) {
+                              if (val.length != 6) {
+                                return 'Invite codes are six characters';
+                              } else {
+                                return null;
+                              }
+                            },
+                            keyboardType: TextInputType.text,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Colors.red.shade900),
+                          ),
+                        ),
+                        const SizedBox(width: 15.0),
+                        TextButton(
+                            child: const Icon(MaterialCommunityIcons.qrcode_scan, color: Colors.white),
+                            style: TextButton.styleFrom(padding: const EdgeInsets.all(8.0), minimumSize: Size.zero, alignment: Alignment.center),
+                            onPressed: () async {
+                              setState(() {
+                                _showQrScanner = !_showQrScanner;
+                                if (_showQrScanner) {
+                                  _lastQrCode = '';
+                                  _controller.start();
+                                } else {
+                                  _controller.stop();
+                                }
+                              });
+                            }),
+                      ],
+                    ),
+                    Visibility(
+                      visible: _showQrScanner,
+                      maintainState: true,
+                      child: Container(
+                        padding: const EdgeInsets.all(11.0),
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: MobileScanner(
+                            allowDuplicates: true,
+                            key: _qrKey,
+                            controller: _controller,
+                            onDetect: (Barcode barcode, MobileScannerArguments args) async {
+                              await _onCodeRead(barcode.rawValue);
+                            },
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 20, width: 10),
                     Row(
@@ -162,10 +241,10 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           width: 25,
                           color: Colors.yellow[100],
                           child: Checkbox(
-                            value: includeInGlobalHashDirectory,
+                            value: _includeInGlobalHashDirectory,
                             onChanged: (bool value) {
                               setState(() {
-                                includeInGlobalHashDirectory = value;
+                                _includeInGlobalHashDirectory = value;
                                 // checkDirty();
                               });
                             },
@@ -200,7 +279,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         style: TextButton.styleFrom(backgroundColor: Colors.transparent, primary: Colors.red.shade800),
                         onPressed: () async {
                           final EmailPopup emailPopup = EmailPopup(
-                            initialEmailAddress: emailAddress,
+                            initialEmailAddress: _emailAddress,
                           );
 
                           final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
@@ -215,7 +294,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           final String type = x['type'];
 
                           if (type != 'cancel') {
-                            emailAddress = email;
+                            _emailAddress = email;
                             final String userMessage = await HashersService.sendInviteCodeByEmail(email);
                             await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Instructions', userMessage, 'OK');
                           }
@@ -225,7 +304,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               ),
             ),
             const SizedBox(height: 35, width: 10),
-            isLoading
+            _isLoading
                 ? Text(
                     'Please wait...',
                     style: localHeadingStyle,
@@ -238,15 +317,15 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         // If the form is valid, display a snackbar. In the real world,
                         // you'd often call a server or save the information in a database.
                         setState(() {
-                          isLoading = true;
+                          _isLoading = true;
                         });
 
                         final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                        final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(),
-                            includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                        final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + _inviteCodeTextController.text.toUpperCase(),
+                            includeInGlobalHashDirectory: _includeInGlobalHashDirectory ? 1 : 0);
 
                         setState(() {
-                          isLoading = false;
+                          _isLoading = false;
                         });
 
                         if (result['result'] != 'failed') {
@@ -277,5 +356,23 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
         ),
       );
     });
+  }
+
+  Future<void> _onCodeRead(String scanResult) async {
+    if (_showQrScanner && (_lastQrCode != scanResult)) {
+      _lastQrCode = scanResult;
+      final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_resetCode);
+      await _controller.stop();
+      setState(() {
+        _showQrScanner = false;
+      });
+
+      if (result['validScan'] == 'false') {
+        await IveCoreUtilities.showAlert(
+            context, 'Wrong QR Code', 'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
+      } else {
+        _inviteCodeTextController.text = scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');
+      }
+    }
   }
 }

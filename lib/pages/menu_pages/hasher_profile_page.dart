@@ -1,5 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/data/services/gdpr_delete_service.dart';
+import 'package:harrier_central/data/services/get_invite_code_service.dart';
 import 'package:harrier_central/imports.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
@@ -29,12 +30,13 @@ class HasherProfilePage extends StatefulWidget {
   final String hashNameFromSearch;
 
   static const int flagUiElement_followKennel = 0x00000001;
-  static const int flagUiElement_inviteCode = 0x00000002;
+  static const int flagUiElement_previousRunCount = 0x00000002;
   static const int flagUiElement_distancePref = 0x00000004;
   static const int flagUiElement_autoDisplayRunsDistance = 0x00000008;
   static const int flagUiElement_logOutAndRefreshButton = 0x00000010;
   static const int flagUiElement_refresh3rdPartyLogin = 0x00000020;
   static const int flagUiElement_gdprDeleteAccount = 0x00000040;
+  static const int flagUiElement_getInviteCodeButton = 0x00000080;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -970,7 +972,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode == 0)
+                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_previousRunCount == 0)
                                         ? Container()
                                         : Column(
                                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1005,38 +1007,64 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   child: runCountUi(),
                                                 ),
                                               ),
-                                              // FancyDivider(
-                                              //   key: Key('xxxxxxx'),
-                                              //   innerColor: Colors.white,
-                                              //   bottomMargin: 20.0,
-                                              // ),
-                                              // Text(
-                                              //   'Invite code:',
-                                              //   style: headingStyle,
-                                              //   textAlign: TextAlign.center,
-                                              // ),
-                                              // const SizedBox(
-                                              //   height: 10,
-                                              //   width: 10,
-                                              // ),
-                                              // Text(
-                                              //   (hasher?.resetCode ?? '').replaceAll(QR_PREFIX_USER_RESET_CODE, ''),
-                                              //   style: largeText,
-                                              //   textAlign: TextAlign.center,
-                                              // ),
-                                              // Container(
-                                              //   margin: const EdgeInsets.only(top: 20),
-                                              //   // height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                              //   // width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                              //   child: QrImage(
-                                              //       backgroundColor: Colors.white,
-                                              //       padding: const EdgeInsets.all(20.0),
-                                              //       data: hasher?.resetCode ?? '',
-                                              //       //data: 'testing123',
-                                              //       version: 4,
-                                              //       //size: 200.0,
-                                              //       errorCorrectionLevel: 3),
-                                              // ),
+                                            ],
+                                          ),
+                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_getInviteCodeButton == 0)
+                                        ? Container()
+                                        : Column(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: <Widget>[
+                                              const FancyDivider(
+                                                key: Key('4542543'),
+                                                innerColor: Colors.white,
+                                                bottomMargin: 20.0,
+                                                topMargin: 10.0,
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 15, bottom: 40),
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                  children: <Widget>[
+                                                    Connection.styleForConnected(
+                                                      G0<AppModel>().connectionStatus,
+                                                      ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                          padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                        ),
+                                                        onPressed: () async {
+                                                          final GetInviteCodeService svc = GetInviteCodeService();
+                                                          final SingleResultModel result = await svc.getInviteCode(widget.hasherId);
+
+                                                          if (result.result.startsWith(QR_PREFIX_USER_RESET_CODE)) {
+                                                            final QrPopup pp = QrPopup(
+                                                              key: const Key('43930293'),
+                                                              dialogTitle: 'The invite code for ${_hasher.dispName} is: \r\n\r\n${result.result.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
+                                                              qrText: result.result,
+                                                            );
+
+                                                            await showDialog<void>(
+                                                                context: context,
+                                                                barrierDismissible: false, // user must tap button!
+                                                                builder: (BuildContext context) {
+                                                                  return pp;
+                                                                });
+                                                          } else {
+                                                            await IveCoreUtilities.showAlert(
+                                                                context,
+                                                                'Code Not Available',
+                                                                'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
+                                                                'OK');
+                                                          }
+                                                        },
+                                                        child: Text(
+                                                          'Get invite code',
+                                                          style: textStyleButton,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ],
                                           ),
                                     if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_logOutAndRefreshButton != 0) ...<Widget>[
