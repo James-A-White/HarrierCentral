@@ -351,7 +351,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     if (snapshot.hasData) {
                       return FlippableBox(
                         key: const Key('66193020'),
-                        front: front(),
+                        front: _front(),
                         // ignore: avoid_unnecessary_containers
                         back: Container(
                           child: Swiper(
@@ -506,7 +506,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               back: Container(height: 0, width: 0),
               isFlipped: _isFlipped,
             ),
-            drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
+            drawer: DrawerMenu(
+              scaffoldKey: _scaffoldKey,
+              futureRunsListKey: futureRunsListPageKey,
+            ),
           ),
         ),
         OfflineModeRibbon(
@@ -518,7 +521,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     );
   }
 
-  Container front() {
+  Container _front() {
     // ignore: avoid_unnecessary_containers
     return Container(
       child: Center(

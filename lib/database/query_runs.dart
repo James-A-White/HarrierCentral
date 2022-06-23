@@ -24,6 +24,7 @@ class RunDetailsQueryExtensions {
     this.latitude,
     this.longitude,
     this.isMapAndDistanceValid,
+    this.runClassification,
   });
 
   final num daysUntilEvent;
@@ -45,6 +46,7 @@ class RunDetailsQueryExtensions {
   num latitude;
   num longitude;
   bool isMapAndDistanceValid;
+  int runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
 
   static String getSearchDateString(DateTime eventStartDateTime) {
     final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
@@ -131,6 +133,7 @@ class RunDetailsQueryExtensions {
       latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
       longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
       isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
+      runClassification: map['runClassification'] == null ? 3 : map['runClassification'], // default to other run
     );
     return item;
   }
@@ -151,6 +154,7 @@ class RunDetailsAggregate {
 }
 
 enum EnumRunQueryType { topRunsPage, kennelDetailPage, singleRun }
+
 enum EnumRunQueryContext { user, kennelAdmin, eventAdmin }
 
 class QueryRuns {
@@ -207,8 +211,8 @@ class QueryRuns {
           as searchRunsText
           ''';
 
-  static List<RunDetailsAggregate> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> allRuns) {
-    List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
+  static List<dynamic> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> allRuns) {
+    List<dynamic> filteredRuns = <dynamic>[];
     if (allRuns != null) {
       //filteredRuns.addAll(allRuns);
 
@@ -345,6 +349,17 @@ class QueryRuns {
         meters = meters * MILES_TO_METERS / 1000;
       }
 
+      if (((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) && (extensionsItem.distToEvent < meters)) {
+        // if the run is close, it's a class 1 run
+        extensionsItem.runClassification = 1;
+      } else if (extensionsItem.following == 1) {
+        // if user is following a Kennel, it's a class 2 run
+        extensionsItem.runClassification = 2;
+      } else {
+        // otherwise it's a class 3 run
+        extensionsItem.runClassification = 3;
+      }
+
       if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
         final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
         runs.add(item);
@@ -353,8 +368,7 @@ class QueryRuns {
     return runs;
   }
 
-  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext,
-      {String kennelId, bool searchAllRuns = true, String eventId}) async {
+  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext, {String kennelId, bool searchAllRuns = true, String eventId}) async {
     String hkmTable;
     String hemTable;
     String paymentsTable;

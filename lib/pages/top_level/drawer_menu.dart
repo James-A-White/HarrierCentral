@@ -5,9 +5,10 @@ import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
 import 'package:harrier_central/pages/menu_pages/payment_terminal_config_page.dart';
 
 class DrawerMenu extends StatefulWidget {
-  const DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
+  const DrawerMenu({Key key, this.scaffoldKey, this.futureRunsListKey}) : super(key: key);
 
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final GlobalKey<FutureRunListPageState> futureRunsListKey;
 
   @override
   DrawerMenuState createState() => DrawerMenuState();
@@ -106,6 +107,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                       },
                     ),
                   );
+                  if (futureRunsListPageKey != null) {
+                    await futureRunsListPageKey.currentState.refreshFromTable(true);
+                  }
                 },
               ),
               // ListTile(

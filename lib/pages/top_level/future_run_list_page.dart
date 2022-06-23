@@ -13,14 +13,13 @@ class FutureRunsListPage extends StatefulWidget {
 class FutureRunListPageState extends State<FutureRunsListPage> {
   int pageIndex = 1;
   List<RunDetailsAggregate> _allRuns;
-  List<RunDetailsAggregate> _filteredRuns;
+  List<dynamic> _filteredRuns;
 
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   String _searchRunsText;
   bool _searchAllRuns = false;
   final ScrollController _scrollController = ScrollController(initialScrollOffset: 100.0);
-  //bool _showFilters = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   Future<void> forceRefreshFromTableExternal() async {
-    await _refreshFromTable(true);
+    await refreshFromTable(true);
   }
 
   Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
@@ -66,7 +65,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         //| SyncUserDataService.flagPaymentsTable,
         false);
 
-    await _refreshFromTable(true);
+    await refreshFromTable(true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events user data synchronized $resultStr');
   }
@@ -78,7 +77,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     _searchRunsText = '';
 
     _refreshFromBackend().then((void _) {
-      _refreshFromTable(true).then((void _) {
+      refreshFromTable(true).then((void _) {
         setState(() {});
       });
     });
@@ -99,7 +98,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 value: _searchAllRuns,
                 onChanged: (bool value) {
                   _searchAllRuns = !_searchAllRuns;
-                  _refreshFromTable(true).then((void _) {
+                  refreshFromTable(true).then((void _) {
                     setState(() {});
                   });
                 },
@@ -166,117 +165,15 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  Future<void> _refreshFromTable(bool forceRefresh) async {
+  Future<void> refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (_allRuns == null) || (_allRuns.isEmpty)) {
-      _allRuns = await QueryRuns.getRunDetailsAggregates(_searchAllRuns);
+      _allRuns = await QueryRuns.getRunDetailsAggregates(true);
       _filterRuns();
 
       setState(() {});
     }
     return;
   }
-
-  // Future<List<RunDetailsAggregate>> _refreshFromTable() async {
-  //   final List<RunDetailsAggregate> runs = <RunDetailsAggregate>[];
-
-  //   //final Geolocator locator = Geolocator();
-
-  //   IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
-  //   final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns);
-
-  //   IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
-
-  //   for (int i = 0; i < results.length; i++) {
-  //     final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
-  //     final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-
-  //     num dist;
-  //     if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
-  //       dist = Geolocator.distanceBetween(
-  //         G0<DeviceInfo>().deviceLat,
-  //         G0<DeviceInfo>().deviceLon,
-  //         results[i]['latitude'] + .0,
-  //         results[i]['longitude'] + .0,
-  //       );
-  //     } else {
-  //       dist = Geolocator.distanceBetween(
-  //         G0<DeviceInfo>().deviceLat,
-  //         G0<DeviceInfo>().deviceLon,
-  //         kennelItem.kennelLatitude + .0,
-  //         kennelItem.kennelLongitude + .0,
-  //       );
-  //     }
-
-  //     final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
-  //     extensionsItem.distToEvent = dist;
-
-  //     String paymentLinkUrl = '';
-
-  //     if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-  //       paymentLinkUrl = eventItem.eventPaymentUrl;
-  //     } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-  //       paymentLinkUrl = kennelItem.kennelPaymentUrl;
-  //     }
-
-  //     // final num julianNow = results[i]['nowJulian'];
-  //     // final num eventJulian = results[i]['eventJulian'];
-
-  //     //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
-
-  //     num meters = 0;
-  //     final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
-
-  //     switch (userDistPrefs) {
-  //       case hasherPref_0:
-  //         meters = 0;
-  //         break;
-  //       case hasherPref_10:
-  //         meters = 10000;
-  //         break;
-  //       case hasherPref_25:
-  //         meters = 25000;
-  //         break;
-  //       case hasherPref_50:
-  //         meters = 50000;
-  //         break;
-  //       case hasherPref_75:
-  //         meters = 75000;
-  //         break;
-  //       case hasherPref_100:
-  //         meters = 100000;
-  //         break;
-  //       case hasherPref_150:
-  //         meters = 150000;
-  //         break;
-  //       case hasherPref_200:
-  //         meters = 200000;
-  //         break;
-  //       default:
-  //         meters = 50000;
-  //         break;
-  //     }
-
-  //     // if the user has set their preferences to miles or
-  //     // the user has set their preferences to "auto" and the
-  //     // distance preference associated with the kennel is miles
-  //     // then convert our range for runs from meters to miles.
-  //     if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
-  //       meters = meters * MILES_TO_METERS / 1000;
-  //     }
-
-  //     if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
-  //       final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-  //       runs.add(item);
-  //     }
-  //     if (i == results.length - 1) {
-  //       IveCoreUtilities.logTiming('Filter start', G0<AppModel>().appStartTime);
-  //       filterRuns();
-  //       setState(() {});
-  //       IveCoreUtilities.logTiming('Filter end', G0<AppModel>().appStartTime);
-  //     }
-  //   }
-  //   return runs;
-  // }
 
   /// filterRuns() provides a complex filtering (search) option
   /// where the plus sign (+) is used as a logical OR allowing
@@ -291,23 +188,36 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void _filterRuns() {
     _filteredRuns = QueryRuns.doRunsFilter(_searchRunsText, _allRuns);
 
-    _filteredRuns.sort((RunDetailsAggregate a, RunDetailsAggregate b) {
-      int result = _toDateOnly(a.event.eventStartDatetime).compareTo(_toDateOnly(b.event.eventStartDatetime));
-      // if the runs are on the same day then try to sort by distance
-      // if there are no distances because location services are off, then sort by Kennel name
+    _filteredRuns.sort((dynamic a, dynamic b) {
+      // start by sorting by run classification, closest runs should be listed first, then runs
+      // from Kennels the user is following, then the rest
+      int result = a.extensions.runClassification.compareTo(b.extensions.runClassification);
+
       if (result == 0) {
-        if ((a.extensions.distToEvent != null) && (b.extensions.distToEvent != null)) {
-          final num distA = a.extensions.latitude == null ? 99999999 : a.extensions.distToEvent;
-          final num distB = b.extensions.latitude == null ? 99999999 : b.extensions.distToEvent;
-          result = distA.compareTo(distB);
-        } else {
-          result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
+        result = _toDateOnly(a.event.eventStartDatetime).compareTo(_toDateOnly(b.event.eventStartDatetime));
+        // if the runs are on the same day then try to sort by distance
+        // if there are no distances because location services are off, then sort by Kennel name
+        if (result == 0) {
+          if ((a.extensions.distToEvent != null) && (b.extensions.distToEvent != null)) {
+            final num distA = a.extensions.latitude == null ? 99999999 : a.extensions.distToEvent;
+            final num distB = b.extensions.latitude == null ? 99999999 : b.extensions.distToEvent;
+            result = distA.compareTo(distB);
+          } else {
+            result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
+          }
         }
       }
       return result;
     });
 
-    //buildRunMarkers();
+    for (int i = _filteredRuns.length - 1; i > 0; i--) {
+      if (_filteredRuns[i].extensions.runClassification != _filteredRuns[i - 1].extensions.runClassification) {
+        _filteredRuns.insert(i, _filteredRuns[i].extensions.runClassification);
+      }
+    }
+
+    _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
+
     setState(() {});
   }
 
@@ -369,36 +279,89 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   //padding: const EdgeInsets.only( bottom: 40.0),
                   itemCount: _filteredRuns.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return RunListItem(
-                      futureRun: _filteredRuns[index],
-                      onItemTapped: () {
-                        Navigator.push<dynamic>(
-                          this.context,
-                          MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => RunDetailsPage(
-                              futureRun: _filteredRuns[index],
-                              refreshPage: () async {
-                                // WARNING!!!!  We need to return the filtered run based
-                                // on it's ID and not the index
+                    if (_filteredRuns[index] is int) {
+                      return Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 2.0),
+                        color: themeButtonColors,
+                        height: 40.0,
+                        alignment: Alignment.center,
+                        child: Text(
+                          _filteredRuns[index] == 1
+                              ? 'All runs within ' + _getDistancePreferenceString()
+                              : _filteredRuns[index] == 2
+                                  ? 'Runs from Kennels I follow'
+                                  : 'All other upcoming runs',
+                          textAlign: TextAlign.center,
+                          style: titleStyle,
+                        ),
+                      );
+                    } else {
+                      return RunListItem(
+                        futureRun: _filteredRuns[index],
+                        onItemTapped: () {
+                          Navigator.push<dynamic>(
+                            this.context,
+                            MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) => RunDetailsPage(
+                                futureRun: _filteredRuns[index],
+                                refreshPage: () async {
+                                  // WARNING!!!!  We need to return the filtered run based
+                                  // on it's ID and not the index
 
-                                //await _refreshFromBackend(clearLocalTables: false);
-                                await _refreshFromTable(true);
-                                //filterRuns();
-                                return _filteredRuns[index];
-                              },
+                                  //await _refreshFromBackend(clearLocalTables: false);
+                                  await refreshFromTable(true);
+                                  //filterRuns();
+                                  return _filteredRuns[index];
+                                },
+                              ),
                             ),
-                          ),
-                        ).then((void _) {
-                          _refreshFromBackend(clearLocalTables: false).then((void _) {
-                            setState(() {});
+                          ).then((void _) {
+                            _refreshFromBackend(clearLocalTables: false).then((void _) {
+                              setState(() {});
+                            });
                           });
-                        });
-                      },
-                    );
+                        },
+                      );
+                    }
                   },
                 ),
               ),
             ),
     );
+  }
+
+  String _getDistancePreferenceString() {
+    final int distance = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
+
+    final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
+
+    String result = 'No distance';
+
+    switch (distance) {
+      case hasherPref_10:
+        result = '10' + units;
+        break;
+      case hasherPref_25:
+        result = '25' + units;
+        break;
+      case hasherPref_50:
+        result = '50' + units;
+        break;
+      case hasherPref_75:
+        result = '75' + units;
+        break;
+      case hasherPref_100:
+        result = '100' + units;
+        break;
+      case hasherPref_150:
+        result = '150' + units;
+        break;
+      case hasherPref_200:
+        result = '200' + units;
+        break;
+    }
+
+    return result;
   }
 }
