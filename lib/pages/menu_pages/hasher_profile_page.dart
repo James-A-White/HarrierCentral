@@ -1249,7 +1249,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       await IveCoreUtilities.showAlert(
                                                               context,
                                                               'Delete Account',
-                                                              'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING: THIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
+                                                              'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
                                                               'Delete Account',
                                                               showCancelButton: true,
                                                               cancelButtonText: 'Keep Account')
