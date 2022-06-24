@@ -211,7 +211,7 @@ class QueryRuns {
           as searchRunsText
           ''';
 
-  static List<dynamic> doRunsFilter(String searchRunsText, List<RunDetailsAggregate> allRuns) {
+  static List<dynamic> doRunsFilter(String searchRunsText, List<dynamic> allRuns) {
     List<dynamic> filteredRuns = <dynamic>[];
     if (allRuns != null) {
       //filteredRuns.addAll(allRuns);
@@ -232,7 +232,7 @@ class QueryRuns {
 
           ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-          filteredRuns = allRuns.where((RunDetailsAggregate a) {
+          filteredRuns = allRuns.where((dynamic a) {
             for (String orItem in orItems) {
               if (orItem.trim().isEmpty) {
                 continue;
@@ -252,12 +252,12 @@ class QueryRuns {
     return filteredRuns;
   }
 
-  static Future<List<RunDetailsAggregate>> getRunDetailsAggregates(
+  static Future<List<dynamic>> getRunDetailsAggregates(
     bool searchAllRuns, {
     String eventId,
     EnumRunQueryType queryType = EnumRunQueryType.topRunsPage,
   }) async {
-    final List<RunDetailsAggregate> runs = <RunDetailsAggregate>[];
+    final List<dynamic> runs = <dynamic>[];
 
     //final Geolocator locator = Geolocator();
 
@@ -333,8 +333,11 @@ class QueryRuns {
         case hasherPref_150:
           meters = 150000;
           break;
-        case hasherPref_200:
-          meters = 200000;
+        case hasherPref_250:
+          meters = 250000;
+          break;
+        case hasherPref_500:
+          meters = 500000;
           break;
         default:
           meters = 50000;
@@ -345,8 +348,8 @@ class QueryRuns {
       // the user has set their preferences to "auto" and the
       // distance preference associated with the kennel is miles
       // then convert our range for runs from meters to miles.
-      if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
-        meters = meters * MILES_TO_METERS / 1000;
+      if (((userDistPrefs & hasherPref_distanceMeasuredIn) == 3) || (((userDistPrefs & hasherPref_distanceMeasuredIn) == 0) && (extensionsItem.distanceUnitsPref == 3))) {
+        meters = meters * MILES_TO_METERS / 1000; // this calculation is correct!
       }
 
       if (((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) && (extensionsItem.distToEvent < meters)) {
@@ -468,6 +471,7 @@ class QueryRuns {
 
     final String whereClauseForTopRunsPage = '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+            AND coalesce(hkm.following,0) != 2
             AND (
                   "${searchAllRuns.toString()}" == "true"
                   OR

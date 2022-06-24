@@ -800,7 +800,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             Row(
                                                               children: <Widget>[
                                                                 Radio<int>(
-                                                                  value: 4,
+                                                                  value: hasherPref_10,
                                                                   groupValue: _autoRunPreference,
                                                                   onChanged: _handleRadioValueChange2,
                                                                 ),
@@ -813,7 +813,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             Row(
                                                               children: <Widget>[
                                                                 Radio<int>(
-                                                                  value: 8,
+                                                                  value: hasherPref_25,
                                                                   groupValue: _autoRunPreference,
                                                                   onChanged: _handleRadioValueChange2,
                                                                 ),
@@ -826,7 +826,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             Row(
                                                               children: <Widget>[
                                                                 Radio<int>(
-                                                                  value: 12,
+                                                                  value: hasherPref_50,
                                                                   groupValue: _autoRunPreference,
                                                                   onChanged: _handleRadioValueChange2,
                                                                 ),
@@ -839,7 +839,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             Row(
                                                               children: <Widget>[
                                                                 Radio<int>(
-                                                                  value: 16,
+                                                                  value: hasherPref_75,
                                                                   groupValue: _autoRunPreference,
                                                                   onChanged: _handleRadioValueChange2,
                                                                 ),
@@ -852,7 +852,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             Row(
                                                               children: <Widget>[
                                                                 Radio<int>(
-                                                                  value: 20,
+                                                                  value: hasherPref_100,
                                                                   groupValue: _autoRunPreference,
                                                                   onChanged: _handleRadioValueChange2,
                                                                 ),
@@ -865,7 +865,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             Row(
                                                               children: <Widget>[
                                                                 Radio<int>(
-                                                                  value: 24,
+                                                                  value: hasherPref_150,
                                                                   groupValue: _autoRunPreference,
                                                                   onChanged: _handleRadioValueChange2,
                                                                 ),
@@ -878,12 +878,25 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             Row(
                                                               children: <Widget>[
                                                                 Radio<int>(
-                                                                  value: 28,
+                                                                  value: hasherPref_250,
                                                                   groupValue: _autoRunPreference,
                                                                   onChanged: _handleRadioValueChange2,
                                                                 ),
                                                                 Text(
-                                                                  '200 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  '250 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                  style: const TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio<int>(
+                                                                  value: hasherPref_500,
+                                                                  groupValue: _autoRunPreference,
+                                                                  onChanged: _handleRadioValueChange2,
+                                                                ),
+                                                                Text(
+                                                                  '500 ' + getDistancePreferenceAsString(_distancePreference),
                                                                   style: const TextStyle(fontSize: 16.0),
                                                                 ),
                                                               ],

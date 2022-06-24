@@ -12,13 +12,12 @@ class FutureRunsListPage extends StatefulWidget {
 
 class FutureRunListPageState extends State<FutureRunsListPage> {
   int pageIndex = 1;
-  List<RunDetailsAggregate> _allRuns;
+  List<dynamic> _allRuns;
   List<dynamic> _filteredRuns;
 
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   String _searchRunsText;
-  bool _searchAllRuns = false;
   final ScrollController _scrollController = ScrollController(initialScrollOffset: 100.0);
 
   @override
@@ -86,29 +85,29 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   Widget _searchBar() {
     return Container(
-      height: 100,
+      height: 50,
       color: Colors.white,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Checkbox(
-                value: _searchAllRuns,
-                onChanged: (bool value) {
-                  _searchAllRuns = !_searchAllRuns;
-                  refreshFromTable(true).then((void _) {
-                    setState(() {});
-                  });
-                },
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text('Search all runs', style: headingStyleBlack.copyWith(fontSize: 18.0)),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: <Widget>[
+          //     Checkbox(
+          //       value: _searchAllRuns,
+          //       onChanged: (bool value) {
+          //         _searchAllRuns = !_searchAllRuns;
+          //         refreshFromTable(true).then((void _) {
+          //           setState(() {});
+          //         });
+          //       },
+          //     ),
+          //     Padding(
+          //       padding: const EdgeInsets.only(top: 4.0),
+          //       child: Text('Search all runs', style: headingStyleBlack.copyWith(fontSize: 18.0)),
+          //     ),
+          //   ],
+          // ),
           const Divider(
             height: 2.0,
             thickness: 2.0,
@@ -216,7 +215,15 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       }
     }
 
-    _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
+    if (_filteredRuns.isNotEmpty) {
+      // make sure the "All runs within..." bar always shows
+      if (_filteredRuns[0].extensions.runClassification != 1) {
+        _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
+        _filteredRuns.insert(0, 1);
+      } else {
+        _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
+      }
+    }
 
     setState(() {});
   }
@@ -263,11 +270,20 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             )
           : NestedScrollView(
               controller: _scrollController,
+              floatHeaderSlivers: true,
               headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
                 return <Widget>[
-                  SliverList(
-                    delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
-                  ),
+                  // SliverList(
+                  //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
+                  // ),
+                  SliverAppBar(
+                    floating: true,
+                    titleSpacing: 0.0,
+                    title: Container(
+                      height: 54.0,
+                      child: _searchBar(),
+                    ),
+                  )
                 ];
               },
               body: RefreshIndicator(
@@ -286,14 +302,33 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                         color: themeButtonColors,
                         height: 40.0,
                         alignment: Alignment.center,
-                        child: Text(
-                          _filteredRuns[index] == 1
-                              ? 'All runs within ' + _getDistancePreferenceString()
-                              : _filteredRuns[index] == 2
-                                  ? 'Runs from Kennels I follow'
-                                  : 'All other upcoming runs',
-                          textAlign: TextAlign.center,
-                          style: titleStyle,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            if ((_filteredRuns[index] == 1) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                              const SizedBox(width: 36.0),
+                            ],
+                            Text(
+                              _filteredRuns[index] == 1
+                                  ? 'All runs within ' + _getDistancePreferenceString()
+                                  : _filteredRuns[index] == 2
+                                      ? 'Runs from Kennels I follow'
+                                      : 'All other upcoming runs',
+                              textAlign: TextAlign.center,
+                              style: titleStyle,
+                            ),
+                            if ((_filteredRuns[index] == 1) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                              GestureDetector(
+                                onTap: () {
+                                  _showConfigureDistancePopup();
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Icon(FontAwesome.gear, size: 28.0),
+                                ),
+                              )
+                            ]
+                          ],
                         ),
                       );
                     } else {
@@ -331,6 +366,172 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
+  void _showConfigureDistancePopup() {
+    final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
+
+    final String switchUnits = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' miles' : ' kilometers';
+
+    const TextStyle ts = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0);
+
+    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'title': 'Switch to ' + switchUnits,
+        'icon': <Widget>[
+          Container(height: 30, width: 45, decoration: BoxDecoration(color: Colors.green.shade800, shape: BoxShape.rectangle)),
+          const Icon(MaterialCommunityIcons.map_marker_distance, color: Colors.white)
+        ],
+        'returnValue': 9999
+      },
+      <String, dynamic>{
+        'title': 'Runs within 10' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('10', style: ts)
+        ],
+        'returnValue': hasherPref_10
+      },
+      <String, dynamic>{
+        'title': 'Runs within 25' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('25', style: ts)
+        ],
+        'returnValue': hasherPref_25
+      },
+      <String, dynamic>{
+        'title': 'Runs within 50' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('50', style: ts)
+        ],
+        'returnValue': hasherPref_50
+      },
+      <String, dynamic>{
+        'title': 'Runs within 75' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('75', style: ts)
+        ],
+        'returnValue': hasherPref_75
+      },
+      <String, dynamic>{
+        'title': 'Runs within 100' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('100', style: ts)
+        ],
+        'returnValue': hasherPref_100
+      },
+      <String, dynamic>{
+        'title': 'Runs within 150' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('150', style: ts)
+        ],
+        'returnValue': hasherPref_150
+      },
+      <String, dynamic>{
+        'title': 'Runs within 250' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('250', style: ts)
+        ],
+        'returnValue': hasherPref_250
+      },
+      <String, dynamic>{
+        'title': 'Runs within 500' + units,
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+          ),
+          const Text('500', style: ts)
+        ],
+        'returnValue': hasherPref_500
+      },
+    ];
+
+    final MultipleChoicePopup popup = MultipleChoicePopup(
+      key: const Key('5030202'),
+      title: 'Distance Options',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
+    );
+
+    showDialog<dynamic>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        }).then((dynamic retVal) async {
+      if (retVal == 9999) {
+        if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+          final HashersService srv = HashersService();
+
+          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
+          final int distanceMeasuredIn = ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3) ? 2 : 3;
+
+          final int distance = hasherPreferences & hasherPref_distanceForAutoDisplay;
+
+          await srv.addEditUser(
+            targetUserId: getStringPref(StringPrefsEnum.userId),
+            preferences: distanceMeasuredIn + distance,
+          );
+
+          await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
+          await refreshFromTable(true);
+        }
+      } else if ((!(retVal is EnumFollowType)) && (retVal >= hasherPref_10) && (retVal <= hasherPref_500)) {
+        if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+          final HashersService srv = HashersService();
+
+          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
+          final int distanceMeasuredIn = hasherPreferences & hasherPref_distanceMeasuredIn;
+          //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
+
+          await srv.addEditUser(
+            targetUserId: getStringPref(StringPrefsEnum.userId),
+            preferences: distanceMeasuredIn + retVal,
+          );
+
+          await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
+
+          await refreshFromTable(true);
+        }
+      }
+    });
+  }
+
   String _getDistancePreferenceString() {
     final int distance = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
 
@@ -357,8 +558,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       case hasherPref_150:
         result = '150' + units;
         break;
-      case hasherPref_200:
-        result = '200' + units;
+      case hasherPref_250:
+        result = '250' + units;
+        break;
+      case hasherPref_500:
+        result = '500' + units;
         break;
     }
 

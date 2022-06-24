@@ -107,7 +107,7 @@ const String QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN = 'UWP:';
 const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
 
 const int hasherPref_distanceMeasuredIn = 0x00000003;
-const int hasherPref_distanceForAutoDisplay = 0x0000001C;
+const int hasherPref_distanceForAutoDisplay = 0x0000003C;
 
 const int hasherPref_0 = 0 * 4;
 const int hasherPref_10 = 1 * 4;
@@ -116,7 +116,8 @@ const int hasherPref_50 = 3 * 4;
 const int hasherPref_75 = 4 * 4;
 const int hasherPref_100 = 5 * 4;
 const int hasherPref_150 = 6 * 4;
-const int hasherPref_200 = 7 * 4;
+const int hasherPref_250 = 7 * 4;
+const int hasherPref_500 = 8 * 4;
 
 const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
