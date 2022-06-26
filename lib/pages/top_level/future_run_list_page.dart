@@ -310,7 +310,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                             ],
                             Text(
                               _filteredRuns[index] == 1
-                                  ? 'All runs within ' + _getDistancePreferenceString()
+                                  ? _getDistancePreferenceString()
                                   : _filteredRuns[index] == 2
                                       ? 'Runs from Kennels I follow'
                                       : 'All other upcoming runs',
@@ -478,11 +478,23 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         ],
         'returnValue': hasherPref_500
       },
+      <String, dynamic>{
+        'title': 'Disable auto display',
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 45,
+            decoration: BoxDecoration(color: Colors.red, shape: BoxShape.rectangle),
+          ),
+          Text('Off', style: ts.copyWith(color: Colors.white))
+        ],
+        'returnValue': hasherPref_0
+      },
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
       key: const Key('5030202'),
-      title: 'Distance Options',
+      title: 'Auto display runs',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
       cancelButtonReturnValue: followTypeCancel,
@@ -511,7 +523,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
           await refreshFromTable(true);
         }
-      } else if ((!(retVal is EnumFollowType)) && (retVal >= hasherPref_10) && (retVal <= hasherPref_500)) {
+      } else if ((!(retVal is EnumFollowType)) && (retVal >= hasherPref_0) && (retVal <= hasherPref_500)) {
         if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
           final HashersService srv = HashersService();
 
@@ -537,32 +549,38 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
 
-    String result = 'No distance';
+    String result = 'Auto show runs ';
 
     switch (distance) {
+      case hasherPref_0:
+        result = 'Press gear to setup →';
+        break;
       case hasherPref_10:
-        result = '10' + units;
+        result += '10' + units;
         break;
       case hasherPref_25:
-        result = '25' + units;
+        result += '25' + units;
         break;
       case hasherPref_50:
-        result = '50' + units;
+        result += '50' + units;
         break;
       case hasherPref_75:
-        result = '75' + units;
+        result += '75' + units;
         break;
       case hasherPref_100:
-        result = '100' + units;
+        result += '100' + units;
         break;
       case hasherPref_150:
-        result = '150' + units;
+        result += '150' + units;
         break;
       case hasherPref_250:
-        result = '250' + units;
+        result += '250' + units;
         break;
       case hasherPref_500:
-        result = '500' + units;
+        result += '500' + units;
+        break;
+      default:
+        result = 'Distance not configured';
         break;
     }
 

@@ -3,4 +3,5 @@
     <string name="app_name">Harrier Central</string>
     <string name="facebook_app_id">373948579725920</string>
     <string name="fb_login_protocol_scheme">fb373948579725920</string>
+    <string name="facebook_client_token">45a4323b02d1889e387bab1f174ace21</string>
 </resources>

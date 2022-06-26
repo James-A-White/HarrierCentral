@@ -9,7 +9,7 @@ class AuthorizeDeviceService {
 
     if (Platform.isAndroid) {
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId = androidInfo.androidId.toUpperCase();
+      deviceId = (androidInfo.androidId ?? '<no Android Id>').toUpperCase();
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       deviceId = iosInfo.identifierForVendor.toUpperCase();

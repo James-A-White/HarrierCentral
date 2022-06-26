@@ -21,12 +21,13 @@ class ApproveLoginService {
 
     if (Platform.isAndroid) {
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId = androidInfo.androidId.toUpperCase();
-      deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
+      deviceId = (androidInfo.androidId ?? '<no Android ID>').toUpperCase();
+      deviceType = '${androidInfo.model ?? '<no Android model>'} / device: ${androidInfo.device ?? '<no Android device'}';
       deviceName = '<unknown>';
-      systemName = androidInfo.host;
-      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
-      manufacturer = androidInfo.brand;
+      systemName = androidInfo.host ?? '<no Android system name>';
+      systemVersion =
+          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release ?? '<no Android release>'} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
+      manufacturer = androidInfo.brand ?? '<no Android brand>';
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       deviceId = iosInfo.identifierForVendor.toUpperCase();
