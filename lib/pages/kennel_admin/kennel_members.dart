@@ -109,7 +109,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   Future<List<dynamic>> _kennelMemberListFuture = Future<List<dynamic>>.value(<dynamic>[]);
   Future<List<dynamic>> _filteredKennelMemberListFuture = Future<List<dynamic>>.value(<dynamic>[]);
-  final List<dynamic> _allHashers = <dynamic>[];
 
   final GlobalKey _packListBoxKey = GlobalKey();
 
@@ -119,7 +118,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   Animation<RelativeRect> _hasherListAnimation;
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
-  String _searchTypeText;
   bool _showFilter = false;
   final List<int> _filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
 
@@ -127,9 +125,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   static const int FILTER_IS_FOLLOWING = 1;
   static const int FILTER_IS_HOME_KENNEL = 2;
   static const int FILTER_RUNS_IN_LAST_YEAR = 3;
-
-  final TextStyle _localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
-  final TextStyle _localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
 
   String _searchText = '';
 
@@ -197,9 +192,12 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           k.${G0<TableModel>().kennelsTableHelper.colMembershipDurationInMonths},
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          ,case when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} >= date('now') then 1
-          when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1 then 3
-          else 5 end as memberFollowingStatus
+          ,case 
+            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} >= date('now') then 1
+            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} is not null then 2
+            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1 then 3
+            else 4
+          end as memberFollowingStatus
           FROM hashers h
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} 
           LEFT OUTER JOIN kennels k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
@@ -462,6 +460,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                             String memberType = '';
                             if (snapshot.data[index] == 1) {
                               memberType = 'Members';
+                            } else if (snapshot.data[index] == 2) {
+                              memberType = 'Has runs with this Kennel';
                             } else if (snapshot.data[index] == 3) {
                               memberType = 'Followers';
                             } else {
