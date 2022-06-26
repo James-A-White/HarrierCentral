@@ -536,7 +536,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                               const SizedBox(width: 8.0),
                                               Expanded(
                                                   child: Container(
-                                                padding: EdgeInsets.only(top: 7.0),
+                                                padding: const EdgeInsets.only(top: 7.0),
                                                 child: Text(e.hasher.dispName,
                                                     style: const TextStyle(
                                                       fontFamily: 'AvenirNextCondensedMedium',
@@ -551,37 +551,42 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         })
                                     : SingleChildScrollView(
                                         controller: _scrollController,
-                                        child: StaggeredGrid.count(
-                                          mainAxisSpacing: 8.0,
-                                          crossAxisSpacing: 8.0,
-                                          crossAxisCount: 4,
-                                          axisDirection: AxisDirection.down,
-                                          children: _thePackList.map((PackListAggregate e) {
-                                            return StaggeredGridTile.count(
-                                              crossAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                              mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  if (e.hasher.hasherId != null) {
-                                                    Navigator.push<void>(
-                                                      context,
-                                                      MaterialPageRoute<void>(
-                                                        builder: (BuildContext context) => ZoomableImagePage2(
-                                                            key: const Key('39392001'),
-                                                            pageTitle: e.hasher.dispName,
-                                                            imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
-                                                            assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/' + e.hasher.photo.replaceAll('bundle://', '') + '.jpg' : null,
-                                                            appBarBackgroundColor: themeAppBarBackground,
-                                                            background: Backgrounds.defaultHcBackground(),
-                                                            margin: 20.0),
-                                                      ),
-                                                    );
-                                                  }
-                                                },
-                                                child: _hasherPhoto(e, true),
-                                              ),
-                                            );
-                                          }).toList(),
+                                        child: Column(
+                                          children: <Widget>[
+                                            StaggeredGrid.count(
+                                              mainAxisSpacing: 8.0,
+                                              crossAxisSpacing: 8.0,
+                                              crossAxisCount: 4,
+                                              axisDirection: AxisDirection.down,
+                                              children: _thePackList.map((PackListAggregate e) {
+                                                return StaggeredGridTile.count(
+                                                  crossAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
+                                                  mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      if (e.hasher.hasherId != null) {
+                                                        Navigator.push<void>(
+                                                          context,
+                                                          MaterialPageRoute<void>(
+                                                            builder: (BuildContext context) => ZoomableImagePage2(
+                                                                key: const Key('39392001'),
+                                                                pageTitle: e.hasher.dispName,
+                                                                imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
+                                                                assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/' + e.hasher.photo.replaceAll('bundle://', '') + '.jpg' : null,
+                                                                appBarBackgroundColor: themeAppBarBackground,
+                                                                background: Backgrounds.defaultHcBackground(),
+                                                                margin: 20.0),
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    child: _hasherPhoto(e, true),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                            ),
+                                            const SizedBox(height: 100.0),
+                                          ],
                                         ),
                                       ),
                               ),
@@ -1273,33 +1278,32 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     if ((latStr != '') && (lonStr != '')) {
       url = latStr + ',' + lonStr;
+      await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
     } else if ((address != null) && (address.isNotEmpty)) {
-      address = address.replaceAll(' ', '+');
-      address = Uri.encodeComponent(address);
-      url = address;
+      await MapsLauncher.launchQuery(address);
     } else {
       await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
     }
 
-    final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
-    final String googleAppUrl = 'comgooglemaps://?q=$url';
-    String appleUrl = '';
-    if ((latStr.isNotEmpty) && (lonStr.isNotEmpty)) {
-      appleUrl = 'https://maps.apple.com/?sll=$latStr,$lonStr';
-    }
+    // final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
+    // final String googleAppUrl = 'comgooglemaps://?q=$url';
+    // String appleUrl = '';
+    // if ((latStr.isNotEmpty) && (lonStr.isNotEmpty)) {
+    //   appleUrl = 'https://maps.apple.com/?sll=$latStr,$lonStr';
+    // }
 
-    if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
-      //print('launching com googleUrl');
-      await launchUrl(Uri.parse(googleAppUrl));
-    } else if (Uri.parse(googleAppUrl).isAbsolute) {
-      //print('launching Google web url');
-      await launchUrl(Uri.parse(googleWebUrl));
-    } else if ((appleUrl.isNotEmpty) && (Uri.parse(appleUrl).isAbsolute)) {
-      //print('launching apple url');
-      await launchUrl(Uri.parse(appleUrl));
-    } else {
-      throw 'Could not launch url';
-    }
+    // if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
+    //   //print('launching com googleUrl');
+    //   await launchUrl(Uri.parse(googleAppUrl));
+    // } else if (Uri.parse(googleAppUrl).isAbsolute) {
+    //   //print('launching Google web url');
+    //   await launchUrl(Uri.parse(googleWebUrl));
+    // } else if ((appleUrl.isNotEmpty) && (Uri.parse(appleUrl).isAbsolute)) {
+    //   //print('launching apple url');
+    //   await launchUrl(Uri.parse(appleUrl));
+    // } else {
+    //   throw 'Could not launch url';
+    // }
   }
 }
 

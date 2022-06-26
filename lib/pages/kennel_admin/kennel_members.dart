@@ -194,9 +194,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           ,case 
             when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} >= date('now') then 1
-            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} is not null then 2
-            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1 then 3
-            else 4
+            when ((hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} is not null) AND (hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-182 day'))) then 2
+            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} is not null then 3
+            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1 then 4
+            else 5
           end as memberFollowingStatus
           FROM hashers h
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} 
@@ -459,11 +460,13 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                           if (snapshot.data[index] is int) {
                             String memberType = '';
                             if (snapshot.data[index] == 1) {
-                              memberType = 'Members';
+                              memberType = 'Kennel Members';
                             } else if (snapshot.data[index] == 2) {
-                              memberType = 'Has runs with this Kennel';
+                              memberType = 'Recent runs with this Kennel';
                             } else if (snapshot.data[index] == 3) {
-                              memberType = 'Followers';
+                              memberType = 'Has runs with this Kennel';
+                            } else if (snapshot.data[index] == 4) {
+                              memberType = 'Follows this Kennel';
                             } else {
                               memberType = 'Others';
                             }
