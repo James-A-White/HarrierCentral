@@ -23,12 +23,14 @@ class PackListAggregate {
   final HashersModel hasher;
 }
 
-class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
-  final List<Tab> tabs = <Tab>[];
+class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
+  final List<Tab> _tabs = <Tab>[];
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   GlobalKey packListBox = GlobalKey();
+
+  final ScrollController _scrollController = ScrollController();
 
   bool isAdmin = true;
   //bool _isLoading = true;
@@ -51,13 +53,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Pack member data synchronized $resultStr');
 
-    await refreshPackListFromTable(false);
+    await refreshPackListFromTable();
     await refreshPackCountFromTable(true);
   }
 
   int _thisUserIndex = -1;
 
-  Future<void> refreshPackListFromTable(bool callSetState) async {
+  Future<void> refreshPackListFromTable() async {
     final String query = ''' 
         SELECT  
           hem.*,
@@ -76,15 +78,22 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         final HasherEventMapModel packItem = G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
         final HashersModel hasherItem = HashersModel.fromJson(results[i]);
         _thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
-        if (packItem.userId == userId) {
-          _thisUserIndex = i;
-        }
-        if (callSetState && (i == results.length - 1)) {
-          setState(() {});
-        }
       }
     } catch (e) {
       //print(e);
+    }
+
+    _thePackList.sort(
+      (PackListAggregate a, PackListAggregate b) => a.hasher.dispName.compareTo(b.hasher.dispName),
+    );
+
+    _thisUserIndex = -1;
+
+    for (int i = 0; i < _thePackList.length; i++) {
+      if (_thePackList[i].hasher.hasherId == userId) {
+        _thisUserIndex = i;
+        break;
+      }
     }
   }
 
@@ -116,13 +125,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   }
 
   void _initTabs() {
-    tabs.clear();
-    tabs.add(const Tab(text: 'Details'));
-    tabs.add(const Tab(text: 'RSVP'));
-    tabs.add(const Tab(text: 'Map'));
+    _tabs.clear();
+    _tabs.add(const Tab(text: 'Details'));
+    _tabs.add(const Tab(text: 'RSVP'));
+    _tabs.add(const Tab(text: 'Map'));
   }
 
   TabController _tabController;
+  TabController _gridListTabController;
 
   //final GetPackService _getPackService = GetPackService();
 
@@ -130,14 +140,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
+    //_scrollController.createScrollPosition(physics, context, oldPosition) = 0;
     _refreshHemTableFromBackend(false);
     _initTabs();
-    _tabController = TabController(vsync: this, length: tabs.length);
+    _tabController = TabController(vsync: this, length: _tabs.length);
+    _gridListTabController = TabController(vsync: this, length: 2);
     _tabController.addListener(() async {
-      if (fabIsVisible != (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
+      if (fabIsVisible != (_tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
         setState(() {
-          fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
-          if (tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
+          fabIsVisible = _tabs[_tabController.index].text.toLowerCase() == 'rsvp';
+          if (_tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
             //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
             _refreshHemTableFromBackend(false);
           }
@@ -463,104 +475,185 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         const Expanded(flex: 100, child: SizedBox()),
                       ],
                     )
-                  : Container(
-                      key: packListBox,
-                      color: const Color.fromARGB(60, 255, 255, 255),
-                      margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
-                      padding: const EdgeInsets.all(8.0),
-                      width: MediaQuery.of(context).size.width,
-                      child: Scrollbar(
-                        child: RefreshIndicator(
-                          onRefresh: () => _refreshHemTableFromBackend(true),
-                          child: StaggeredGrid.count(
-                            mainAxisSpacing: 8.0,
-                            crossAxisSpacing: 8.0,
-                            crossAxisCount: 4,
-                            axisDirection: AxisDirection.down,
-                            children: _thePackList.map((PackListAggregate e) {
-                              return StaggeredGridTile.count(
-                                crossAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (e.hasher.hasherId != null) {
-                                      Navigator.push<void>(
-                                        context,
-                                        MaterialPageRoute<void>(
-                                          builder: (BuildContext context) => ZoomableImagePage2(
-                                              key: const Key('39392001'),
-                                              pageTitle: e.hasher.dispName,
-                                              imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
-                                              assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/' + e.hasher.photo.replaceAll('bundle://', '') + '.jpg' : null,
-                                              appBarBackgroundColor: themeAppBarBackground,
-                                              background: Backgrounds.defaultHcBackground(),
-                                              margin: 20.0),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: Stack(
-                                    children: <Widget>[
-                                      e.hasher.hasherId == null
-                                          ? const Image(
-                                              width: 300.0,
-                                              height: 300.0,
-                                              fit: BoxFit.fill,
-                                              image: AssetImage(
-                                                'images/avatars/avatar-0.jpg',
-                                              ))
-                                          : e.hasher.photo.startsWith('http')
-                                              ? CachedNetworkImage(imageUrl: e.hasher.photo, fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
-                                              : e.hasher.photo.startsWith('bundle')
-                                                  ? Image(
-                                                      width: 300.0,
-                                                      height: 300.0,
-                                                      fit: BoxFit.fill,
-                                                      image: AssetImage(('images/avatars/' + e.hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
-                                                    )
-                                                  : const Image(
-                                                      width: 300.0,
-                                                      height: 300.0,
-                                                      fit: BoxFit.fill,
-                                                      image: AssetImage('images/avatars/avatar-2.jpg'),
-                                                    ),
-                                      Positioned(
-                                        right: 1.0,
-                                        bottom: 1.0,
-                                        child: Stack(
-                                          alignment: AlignmentDirectional.center,
-                                          children: <Widget>[
-                                            const CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 11.0,
-                                            ),
-                                            (e?.hem?.rsvpState ?? 0) <= 0
-                                                ? const CircleAvatar(
-                                                    backgroundColor: Colors.blue,
-                                                    radius: 10.0,
-                                                  )
-                                                : (e?.hem?.rsvpState ?? 0) == 1
-                                                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
-                                                    : (e?.hem?.rsvpState ?? 0) == 2
-                                                        ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
-                                                        : (e?.hem?.isHare ?? 0) == 0
-                                                            ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
-                                                            : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                  : Column(
+                      children: <Widget>[
+                        Container(
+                          padding: const EdgeInsets.all(8.0),
+                          width: 140.0,
+                          child: TabBar(
+                            onTap: (void _) {
+                              setState(() {});
+                            },
+                            labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0),
+                            unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0),
+                            isScrollable: false,
+                            unselectedLabelColor: Colors.white,
+                            labelColor: Colors.white,
+                            //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                            indicatorSize: TabBarIndicatorSize.label,
+                            indicator: BubbleTabIndicator(
+                              indicatorHeight: 40.0,
+                              indicatorColor: Colors.red.shade900,
+                              tabBarIndicatorSize: TabBarIndicatorSize.label,
+                              indicatorRadius: 20.0,
+                            ),
+                            tabs: const <Tab>[
+                              Tab(icon: Icon(MaterialCommunityIcons.format_list_bulleted_square)),
+                              Tab(icon: Icon(MaterialCommunityIcons.view_grid_outline)),
+                            ],
+                            controller: _gridListTabController,
                           ),
                         ),
-                      ),
+                        Expanded(
+                          child: Container(
+                            key: packListBox,
+                            color: const Color.fromARGB(60, 255, 255, 255),
+                            margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
+                            padding: const EdgeInsets.all(8.0),
+                            width: MediaQuery.of(context).size.width,
+                            child: Scrollbar(
+                              controller: _scrollController,
+                              child: RefreshIndicator(
+                                onRefresh: () => _refreshHemTableFromBackend(true),
+                                child: _gridListTabController.index == 0
+                                    ? ListView.separated(
+                                        separatorBuilder: (BuildContext context, int index) => const Divider(
+                                              height: 3.0,
+                                              color: Colors.black45,
+                                              thickness: 1.5,
+                                            ),
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        controller: _scrollController,
+                                        itemCount: _thePackList.length,
+                                        itemBuilder: (BuildContext context, int index) {
+                                          final PackListAggregate e = _thePackList[index];
+
+                                          return Row(
+                                            children: <Widget>[
+                                              _rsvpIcon(e),
+                                              const SizedBox(width: 6.0),
+                                              Container(child: _hasherPhoto(e, false), height: 60, width: 60, padding: const EdgeInsets.all(4)),
+                                              const SizedBox(width: 8.0),
+                                              Expanded(
+                                                  child: Container(
+                                                padding: EdgeInsets.only(top: 7.0),
+                                                child: Text(e.hasher.dispName,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'AvenirNextCondensedMedium',
+                                                      fontStyle: FontStyle.normal,
+                                                      fontSize: 25.0,
+                                                      height: 1.0,
+                                                      color: Colors.white,
+                                                    )),
+                                              )),
+                                            ],
+                                          );
+                                        })
+                                    : SingleChildScrollView(
+                                        controller: _scrollController,
+                                        child: StaggeredGrid.count(
+                                          mainAxisSpacing: 8.0,
+                                          crossAxisSpacing: 8.0,
+                                          crossAxisCount: 4,
+                                          axisDirection: AxisDirection.down,
+                                          children: _thePackList.map((PackListAggregate e) {
+                                            return StaggeredGridTile.count(
+                                              crossAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
+                                              mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  if (e.hasher.hasherId != null) {
+                                                    Navigator.push<void>(
+                                                      context,
+                                                      MaterialPageRoute<void>(
+                                                        builder: (BuildContext context) => ZoomableImagePage2(
+                                                            key: const Key('39392001'),
+                                                            pageTitle: e.hasher.dispName,
+                                                            imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
+                                                            assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/' + e.hasher.photo.replaceAll('bundle://', '') + '.jpg' : null,
+                                                            appBarBackgroundColor: themeAppBarBackground,
+                                                            background: Backgrounds.defaultHcBackground(),
+                                                            margin: 20.0),
+                                                      ),
+                                                    );
+                                                  }
+                                                },
+                                                child: _hasherPhoto(e, true),
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
         ),
       ],
     ));
+  }
+
+  Stack _hasherPhoto(PackListAggregate e, bool isGrid) {
+    return Stack(
+      children: <Widget>[
+        e.hasher.hasherId == null
+            ? const Image(
+                width: 300.0,
+                height: 300.0,
+                fit: BoxFit.fill,
+                image: AssetImage(
+                  'images/avatars/avatar-0.jpg',
+                ))
+            : e.hasher.photo.startsWith('http')
+                ? CachedNetworkImage(imageUrl: e.hasher.photo, fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
+                : e.hasher.photo.startsWith('bundle')
+                    ? Image(
+                        width: 300.0,
+                        height: 300.0,
+                        fit: BoxFit.fill,
+                        image: AssetImage(('images/avatars/' + e.hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                      )
+                    : const Image(
+                        width: 300.0,
+                        height: 300.0,
+                        fit: BoxFit.fill,
+                        image: AssetImage('images/avatars/avatar-2.jpg'),
+                      ),
+        if (isGrid) ...<Widget>[
+          Positioned(
+            right: 1.0,
+            bottom: 1.0,
+            child: _rsvpIcon(e),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Stack _rsvpIcon(PackListAggregate e) {
+    return Stack(
+      alignment: AlignmentDirectional.center,
+      children: <Widget>[
+        const CircleAvatar(
+          backgroundColor: Colors.white,
+          radius: 11.0,
+        ),
+        (e?.hem?.rsvpState ?? 0) <= 0
+            ? const CircleAvatar(
+                backgroundColor: Colors.blue,
+                radius: 10.0,
+              )
+            : (e?.hem?.rsvpState ?? 0) == 1
+                ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
+                : (e?.hem?.rsvpState ?? 0) == 2
+                    ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
+                    : (e?.hem?.isHare ?? 0) == 0
+                        ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
+                        : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
+      ],
+    );
   }
 
   Future<void> _setRsvpHare() async {
@@ -861,7 +954,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
                           // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
                         ),
-                        tabs: tabs,
+                        tabs: _tabs,
                         controller: _tabController,
                       ),
                     ),
