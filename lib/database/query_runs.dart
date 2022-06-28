@@ -130,8 +130,8 @@ class RunDetailsQueryExtensions {
       emailAlertPreference: map['emailAlertPreference'],
       distanceUnitsPref: _distanceUnitsPref ?? map['distanceUnitsPref'],
       searchRunsText: map['searchRunsText'] + getSearchDateString(eventStartDateTime),
-      latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
-      longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
+      latitude: map['evtLat'] == null ? null : map['evtLat'] + 0.0,
+      longitude: map['evtLon'] == null ? null : map['evtLon'] + 0.0,
       isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
       runClassification: map['runClassification'] == null ? 3 : map['runClassification'], // default to other run
     );
@@ -274,21 +274,29 @@ class QueryRuns {
     for (int i = 0; i < results.length; i++) {
       final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+      final CitiesModel cityItem = G0<TableModel>().citiesTableHelper.fromMap(results[i]);
 
       num dist;
-      if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
+      if ((results[i]['evtLat'] != null) && (results[i]['evtLon'] != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat,
           G0<DeviceInfo>().deviceLon,
-          results[i]['latitude'] + .0,
-          results[i]['longitude'] + .0,
+          results[i]['evtLat'] + .0,
+          results[i]['evtLon'] + .0,
         );
-      } else {
+      } else if ((kennelItem.kennelLatitude != null) && (kennelItem.kennelLongitude != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat,
           G0<DeviceInfo>().deviceLon,
           kennelItem.kennelLatitude + .0,
           kennelItem.kennelLongitude + .0,
+        );
+      } else {
+        dist = Geolocator.distanceBetween(
+          G0<DeviceInfo>().deviceLat,
+          G0<DeviceInfo>().deviceLon,
+          cityItem.latitude + .0,
+          cityItem.longitude + .0,
         );
       }
 
@@ -352,7 +360,7 @@ class QueryRuns {
         meters = meters * MILES_TO_METERS / 1000; // this calculation is correct!
       }
 
-      if (((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) && (extensionsItem.distToEvent < meters)) {
+      if (extensionsItem.distToEvent < meters) {
         // if the run is close, it's a class 1 run
         extensionsItem.runClassification = 1;
       } else if (extensionsItem.following == 1) {
@@ -403,9 +411,10 @@ class QueryRuns {
         SELECT  
           evt.*,
           k.*,
+          c.*,
 
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as latitude,
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as longitude,
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as evtLat,
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as evtLon,
           case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
@@ -437,9 +446,10 @@ class QueryRuns {
         SELECT  
           evt.*,
           k.*,
+          c.*,
 
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as latitude,
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as longitude,
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as evtLat,
+          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else evt.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as evtLon,
           case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND evt.${G0<TableModel>().eventsTableHelper.colFbLatitude} IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,

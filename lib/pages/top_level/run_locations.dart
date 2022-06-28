@@ -38,8 +38,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   String _textDescription = 'Showing recent runs';
 
-  List<RunDetailsAggregate> _allRuns;
-  List<RunDetailsAggregate> _filteredRuns;
+  List<dynamic> _allRuns;
+  List<dynamic> _filteredRuns;
   List<Map<String, dynamic>> _allKennels;
   List<Map<String, dynamic>> _filteredKennels;
 
@@ -116,7 +116,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     width: 40,
                     child: TextButton(
                       style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-                      child: const Text('X'),
+                      child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
                       onPressed: () {
                         _searchController.text = '';
                         _searchRunsAndKennelsText = '';
@@ -340,8 +340,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       final num dist = Geolocator.distanceBetween(
         G0<DeviceInfo>().deviceLat,
         G0<DeviceInfo>().deviceLon,
-        results[0]['latitude'] + .0,
-        results[0]['longitude'] + .0,
+        results[0]['evtLat'] + .0,
+        results[0]['evtLon'] + .0,
       );
       final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);

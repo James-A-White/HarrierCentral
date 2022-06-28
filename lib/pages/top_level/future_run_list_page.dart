@@ -145,7 +145,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                     width: 40,
                     child: TextButton(
                       style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-                      child: const Text('X'),
+                      child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
                       onPressed: () {
                         _searchController.text = '';
                         _searchRunsText = '';
@@ -549,7 +549,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
 
-    String result = 'Auto show runs ';
+    String result = 'Runs within ';
 
     switch (distance) {
       case hasherPref_0:

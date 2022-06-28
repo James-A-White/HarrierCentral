@@ -30,9 +30,7 @@ class FindHasherPageState extends State<FindHasherPage> {
     //}
 
     final HashersService svc = HashersService();
-    svc
-        .selectAllFromLocalDb(G0<Database>(), G0<TableModel>().hashersTableHelper, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))
-        .then((List<BaseModel> list) {
+    svc.selectAllFromLocalDb(G0<Database>(), G0<TableModel>().hashersTableHelper, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)).then((List<BaseModel> list) {
       _hasherList = list.cast<HashersModel>();
       setState(() {
         if (_hasherList != null) {
@@ -53,9 +51,8 @@ class FindHasherPageState extends State<FindHasherPage> {
         if (filterText.isEmpty) {
           _filteredList = _hasherList;
         } else {
-          _filteredList = _hasherList
-              .where((dynamic user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase()))
-              .toList();
+          _filteredList =
+              _hasherList.where((dynamic user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase())).toList();
         }
       }
     });
@@ -159,7 +156,7 @@ class FindHasherPageState extends State<FindHasherPage> {
             child: TextButton(
               //color: Colors.red,
               style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-              child: const Text('X'),
+              child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
 
               onPressed: () {
                 // searchController.text = '';
@@ -479,8 +476,7 @@ class HasherListView extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 15.0),
-                            child: Text(leftToRightTitle,
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                            child: Text(leftToRightTitle, style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                           ),
                         ],
                       ),
@@ -497,8 +493,7 @@ class HasherListView extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(right: 15.0),
-                            child: Text(rightToLeftTitle,
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                            child: Text(rightToLeftTitle, style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                           )
                         ])),
                     onDismissed: (DismissDirection direction) {

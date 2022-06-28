@@ -684,7 +684,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           },
                           child: GestureDetector(
                             onTapUp: (TapUpDetails details) async {
-                              final List<RunDetailsAggregate> run = await QueryRuns.getRunDetailsAggregates(
+                              final List<dynamic> run = await QueryRuns.getRunDetailsAggregates(
                                 true,
                                 eventId: item.eventId,
                                 queryType: EnumRunQueryType.singleRun,

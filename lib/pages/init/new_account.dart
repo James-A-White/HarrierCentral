@@ -85,7 +85,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
 
               GestureDetector(
                 onTap: () {
-                  Navigator.push<dynamic>(
+                  Navigator.pushReplacement<dynamic, dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
                   );
@@ -126,7 +126,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.push<dynamic>(
+                  Navigator.pushReplacement<dynamic, dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()),
                   );
@@ -167,7 +167,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.push<dynamic>(
+                  Navigator.pushReplacement<dynamic, dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(builder: (BuildContext context) => const ThirdPartyLogin(true)),
                   );

@@ -175,7 +175,7 @@ class KennelsListPageState extends State<KennelsListPage> {
             width: 40,
             child: TextButton(
               style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-              child: const Text('X'),
+              child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
               onPressed: () {
                 _searchController.text = '';
                 _searchKennelsText = '';
@@ -391,8 +391,9 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
                                         // we have either all of the events for the kennel (if it is being followed) or only the
                                         // events from the normal time period for unfollowed kennels (currently one year in the past)
-                                        await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true,
-                                            forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId);
+                                        await G0<TableModel>()
+                                            .syncUserDataService
+                                            .updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true, forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId);
 
                                         setState(() {});
                                       },
@@ -412,8 +413,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         )
                                             .then((void _) async {
                                           await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                              SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable,
-                                              true);
+                                              SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable, true);
                                           //final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                           //print('Pack member data synchronized $resultStr');
                                           await _refreshFromTable(true);

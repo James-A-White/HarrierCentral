@@ -66,8 +66,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       _allRuns = <RunDetailsAggregate>[];
       for (int i = 0; i < results.length; i++) {
         num dist;
-        if ((results[i]['latitude'] != null) && (results[i]['longitude'] != null)) {
-          dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['latitude'] + .0, results[i]['longitude'] + .0);
+        if ((results[i]['evtLat'] != null) && (results[i]['evtLon'] != null)) {
+          dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[i]['evtLat'] + .0, results[i]['evtLon'] + .0);
         }
         final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
         final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);

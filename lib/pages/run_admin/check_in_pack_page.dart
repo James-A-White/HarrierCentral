@@ -748,7 +748,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 width: 40,
                 child: TextButton(
                   style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-                  child: const Text('X'),
+                  child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
                   onPressed: () {
                     _searchController.text = '';
                     _searchText = '';

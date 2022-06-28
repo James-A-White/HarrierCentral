@@ -224,11 +224,13 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                   Text(
                                     (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
                                         (widget.futureRun.extensions.daysUntilEvent <= 14
-                                            ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0
-                                                ? 'TODAY'
-                                                : widget.futureRun.extensions.daysUntilEvent.toInt() == 1
-                                                    ? 'Tomorrow'
-                                                    : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
+                                            ? widget.futureRun.extensions.daysUntilEvent.toInt() == -1
+                                                ? 'Yesterday'
+                                                : widget.futureRun.extensions.daysUntilEvent.toInt() == 0
+                                                    ? 'TODAY'
+                                                    : widget.futureRun.extensions.daysUntilEvent.toInt() == 1
+                                                        ? 'Tomorrow'
+                                                        : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
                                             : (widget.futureRun.extensions.daysUntilEvent <= 30)
                                                 ? 'in ' +
                                                     (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() +
@@ -273,7 +275,9 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                  ],
+                                  ] else
+                                    const Text('No location provided',
+                                        style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1)),
                                   if (widget.futureRun.event.eventGeographicScope > 1) ...<Widget>[
                                     Text(
                                       Utilities.getEventScopeText(widget.futureRun.event.eventGeographicScope),

@@ -248,8 +248,8 @@ class KennelListItemState extends State<KennelsListItem> {
                             Text(
                               'Last run: ' +
                                   (widget.kennelItem.hkm.dateOfLastRun.year != DateTime.now().year
-                                      ? DateFormat('E, MMM d, yyyy h:mm a').format(widget.kennelItem.hkm.dateOfLastRun)
-                                      : DateFormat('E, MMM d h:mm a').format(widget.kennelItem.hkm.dateOfLastRun)),
+                                      ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm.dateOfLastRun)
+                                      : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun)),
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
                             ),
                           ],
