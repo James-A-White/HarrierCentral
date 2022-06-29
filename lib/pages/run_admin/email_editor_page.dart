@@ -55,7 +55,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
-  TextStyle insertTokenButtonTextStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 16.0, height: 0.8);
+  TextStyle insertTokenButtonTextStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -146,30 +146,36 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     SizedBox(
-                      width: 130,
+                      width: 115,
                       child: ElevatedButton(
                         onPressed: () {
                           insertText('{my name}');
                         },
                         style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
-                        child: Text(
-                          'Insert\r\nYour\r\nname',
-                          style: insertTokenButtonTextStyle,
-                          textAlign: TextAlign.center,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'Insert\r\nyour name',
+                            style: insertTokenButtonTextStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),
                     SizedBox(
-                      width: 130,
+                      width: 155,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
                         onPressed: () {
                           insertText('{receipient name}');
                         },
-                        child: Text(
-                          'Insert\r\nRecipient\r\nName',
-                          style: insertTokenButtonTextStyle,
-                          textAlign: TextAlign.center,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'Insert recipient name',
+                            style: insertTokenButtonTextStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),
@@ -180,30 +186,36 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     SizedBox(
-                      width: 130,
+                      width: 115,
                       child: ElevatedButton(
                         onPressed: () {
                           insertText('{run details}');
                         },
                         style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
-                        child: Text(
-                          'Insert\r\nRun\r\nDetails',
-                          style: insertTokenButtonTextStyle,
-                          textAlign: TextAlign.center,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'Insert\r\nrun details',
+                            style: insertTokenButtonTextStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),
                     SizedBox(
-                      width: 130,
+                      width: 155,
                       child: ElevatedButton(
                         onPressed: () {
                           insertText('{run description}');
                         },
                         style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
-                        child: Text(
-                          'Insert\r\nRun\r\nDescription',
-                          style: insertTokenButtonTextStyle,
-                          textAlign: TextAlign.center,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'Insert run\r\ndescription',
+                            style: insertTokenButtonTextStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),
