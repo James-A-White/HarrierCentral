@@ -353,11 +353,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                       width: MediaQuery.of(context).size.width,
                       height: 60,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Container(
-                            margin: const EdgeInsets.only(right: 15),
-                            width: 150,
+                            //margin: const EdgeInsets.only(right: 15),
+                            width: 200,
                             child: ElevatedButton(
                               onPressed: _uploadReceipt,
                               child: Text('Save receipt', style: textStyleButton),
