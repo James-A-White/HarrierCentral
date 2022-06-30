@@ -15,6 +15,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   List<dynamic> _allRuns;
   List<dynamic> _filteredRuns;
 
+  bool _showRsvpInstructions = false;
+
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   String _searchRunsText;
@@ -185,6 +187,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
   ///
   void _filterRuns() {
+    _showRsvpInstructions = true;
     _filteredRuns = QueryRuns.doRunsFilter(_searchRunsText, _allRuns);
 
     _filteredRuns.sort((dynamic a, dynamic b) {
@@ -209,21 +212,47 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       return result;
     });
 
-    for (int i = _filteredRuns.length - 1; i > 0; i--) {
-      if (_filteredRuns[i].extensions.runClassification != _filteredRuns[i - 1].extensions.runClassification) {
-        _filteredRuns.insert(i, _filteredRuns[i].extensions.runClassification);
+    int lastInsertedClassification = 4;
+
+    final int listLength = _filteredRuns.length;
+
+    for (int i = listLength - 1; i >= 0; i--) {
+      if (_filteredRuns[i].extensions.runClassification == 1) {
+        _showRsvpInstructions = false;
+      }
+
+      int currentClassification = 1;
+      if (i > 0) {
+        currentClassification = _filteredRuns[i - 1].extensions.runClassification;
+      }
+
+      if (currentClassification != lastInsertedClassification) {
+        for (int j = lastInsertedClassification - currentClassification - 1; j >= 0; j--) {
+          _filteredRuns.insert(i, currentClassification + j + 1);
+        }
+
+        lastInsertedClassification = currentClassification;
       }
     }
 
-    if (_filteredRuns.isNotEmpty) {
-      // make sure the "All runs within..." bar always shows
-      if (_filteredRuns[0].extensions.runClassification != 1) {
-        _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
-        _filteredRuns.insert(0, 1);
-      } else {
-        _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
-      }
-    }
+    _filteredRuns.insert(0, 1);
+
+    // if (_filteredRuns.isNotEmpty) {
+    //   // make sure the "All runs within..." bar always shows
+
+    //   _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
+
+    //   if ((_filteredRuns[0] != 1) && (_filteredRuns[0] != 2)) {
+    //     _filteredRuns.insert(0, 2);
+    //   } else if ((_filteredRuns[0] == 1) && (_filteredRuns[0] != 2)) {
+
+    //     _filteredRuns.insert(1, 2);
+    //   }
+
+    //   if (_filteredRuns[0] != 1) {
+    //     _filteredRuns.insert(0, 1);
+    //   }
+    // }
 
     setState(() {});
   }
@@ -305,19 +334,42 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            if ((_filteredRuns[index] == 1) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                            if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                              const SizedBox(width: 36.0),
+                            ],
+                            if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
                               const SizedBox(width: 36.0),
                             ],
                             Text(
                               _filteredRuns[index] == 1
-                                  ? _getDistancePreferenceString()
+                                  ? _showRsvpInstructions
+                                      ? 'Learn about RSVPs →'
+                                      : 'My upcoming runs'
                                   : _filteredRuns[index] == 2
-                                      ? 'Runs from Kennels I follow'
-                                      : 'All other upcoming runs',
+                                      ? _getDistancePreferenceString()
+                                      : _filteredRuns[index] == 3
+                                          ? 'Runs from Kennels I follow'
+                                          : 'All other upcoming runs',
                               textAlign: TextAlign.center,
                               style: titleStyle,
                             ),
-                            if ((_filteredRuns[index] == 1) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                            if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
+                              GestureDetector(
+                                onTap: () async {
+                                  await IveCoreUtilities.showAlert(
+                                    context,
+                                    'Why should I RSVP?',
+                                    'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
+                                    'OK',
+                                  );
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Icon(FontAwesome.graduation_cap, size: 28.0),
+                                ),
+                              )
+                            ],
+                            if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
                               GestureDetector(
                                 onTap: () {
                                   _showConfigureDistancePopup();

@@ -360,15 +360,18 @@ class QueryRuns {
         meters = meters * MILES_TO_METERS / 1000; // this calculation is correct!
       }
 
-      if (extensionsItem.distToEvent < meters) {
-        // if the run is close, it's a class 1 run
+      if ((extensionsItem.rsvpState == 3) || (extensionsItem.rsvpState == 2)) {
+        // if the RSVP state is yes or maybe make it a class 1 run
         extensionsItem.runClassification = 1;
-      } else if (extensionsItem.following == 1) {
-        // if user is following a Kennel, it's a class 2 run
+      } else if (extensionsItem.distToEvent < meters) {
+        // if the run is close, it's a class 2 run
         extensionsItem.runClassification = 2;
-      } else {
-        // otherwise it's a class 3 run
+      } else if (extensionsItem.following == 1) {
+        // if user is following a Kennel, it's a class 3 run
         extensionsItem.runClassification = 3;
+      } else {
+        // otherwise it's a class 4 run
+        extensionsItem.runClassification = 4;
       }
 
       if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
