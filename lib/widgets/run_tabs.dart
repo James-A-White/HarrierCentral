@@ -528,25 +528,30 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         itemBuilder: (BuildContext context, int index) {
                                           final PackListAggregate e = _thePackList[index];
 
-                                          return Row(
-                                            children: <Widget>[
-                                              _rsvpIcon(e),
-                                              const SizedBox(width: 6.0),
-                                              Container(child: _hasherPhoto(e, false), height: 60, width: 60, padding: const EdgeInsets.all(4)),
-                                              const SizedBox(width: 8.0),
-                                              Expanded(
-                                                  child: Container(
-                                                padding: const EdgeInsets.only(top: 7.0),
-                                                child: Text(e.hasher.dispName,
-                                                    style: const TextStyle(
-                                                      fontFamily: 'AvenirNextCondensedMedium',
-                                                      fontStyle: FontStyle.normal,
-                                                      fontSize: 25.0,
-                                                      height: 1.0,
-                                                      color: Colors.white,
-                                                    )),
-                                              )),
-                                            ],
+                                          return GestureDetector(
+                                            onTap: () {
+                                              _getHasherZoomablePhoto(e);
+                                            },
+                                            child: Row(
+                                              children: <Widget>[
+                                                _rsvpIcon(e),
+                                                const SizedBox(width: 6.0),
+                                                Container(child: _hasherPhoto(e, false), height: 60, width: 60, padding: const EdgeInsets.all(4)),
+                                                const SizedBox(width: 8.0),
+                                                Expanded(
+                                                    child: Container(
+                                                  padding: const EdgeInsets.only(top: 7.0),
+                                                  child: Text(e.hasher.dispName,
+                                                      style: const TextStyle(
+                                                        fontFamily: 'AvenirNextCondensedMedium',
+                                                        fontStyle: FontStyle.normal,
+                                                        fontSize: 25.0,
+                                                        height: 1.0,
+                                                        color: Colors.white,
+                                                      )),
+                                                )),
+                                              ],
+                                            ),
                                           );
                                         })
                                     : SingleChildScrollView(
@@ -564,21 +569,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                   mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
                                                   child: GestureDetector(
                                                     onTap: () {
-                                                      if (e.hasher.hasherId != null) {
-                                                        Navigator.push<void>(
-                                                          context,
-                                                          MaterialPageRoute<void>(
-                                                            builder: (BuildContext context) => ZoomableImagePage2(
-                                                                key: const Key('39392001'),
-                                                                pageTitle: e.hasher.dispName,
-                                                                imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
-                                                                assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/' + e.hasher.photo.replaceAll('bundle://', '') + '.jpg' : null,
-                                                                appBarBackgroundColor: themeAppBarBackground,
-                                                                background: Backgrounds.defaultHcBackground(),
-                                                                margin: 20.0),
-                                                          ),
-                                                        );
-                                                      }
+                                                      _getHasherZoomablePhoto(e);
                                                     },
                                                     child: _hasherPhoto(e, true),
                                                   ),
@@ -598,6 +589,24 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         ),
       ],
     ));
+  }
+
+  Future<void> _getHasherZoomablePhoto(PackListAggregate e) async {
+    if (e.hasher.hasherId != null) {
+      await Navigator.push<void>(
+        context,
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => ZoomableImagePage2(
+              key: const Key('39392001'),
+              pageTitle: e.hasher.dispName,
+              imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
+              assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/' + e.hasher.photo.replaceAll('bundle://', '') + '.jpg' : null,
+              appBarBackgroundColor: themeAppBarBackground,
+              background: Backgrounds.defaultHcBackground(),
+              margin: 20.0),
+        ),
+      );
+    }
   }
 
   Stack _hasherPhoto(PackListAggregate e, bool isGrid) {
