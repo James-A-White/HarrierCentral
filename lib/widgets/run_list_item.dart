@@ -37,45 +37,34 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   //Future<Widget> _rsvpIcon;
 
   Widget getRsvpWidget(int rsvpState, int willHareState) {
-    IconData rawIcon;
-    Color color;
+    String iconFile;
     switch (rsvpState) {
       case 0:
+        iconFile = 'images/icons/checkbox_empty.png';
         break;
       case 1:
-        rawIcon = FontAwesome.times_circle;
-        color = Colors.red;
+        iconFile = 'images/icons/checkbox_no.png';
         break;
       case 2:
-        rawIcon = FontAwesome.question_circle;
-        color = Colors.orange;
+        iconFile = 'images/icons/checkbox_maybe.png';
         break;
       case 3:
         if (willHareState == 0) {
-          rawIcon = FontAwesome.check_circle;
-          color = Colors.green;
+          iconFile = 'images/icons/checkbox_yes.png';
         } else {
-          // if will hare, don't set anything. We'll handle this case below
+          iconFile = 'images/icons/checkbox_hare.png';
         }
         break;
       case -1:
-        rawIcon = delayIcon;
-        color = Colors.blue[800];
+        iconFile = 'wait';
         break;
     }
 
-    if (rawIcon == null) {
-      if ((rsvpState == 3) && (willHareState == 1)) {
-        return Padding(
-          padding: const EdgeInsets.only(top: 2.0, bottom: 2.0, right: 1.0),
-          child: Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 22.0, width: 22.0),
-        );
-      } else {
-        return Container();
-      }
+    if (iconFile == 'wait') {
+      return Icon(delayIcon, color: Colors.blue[800], size: 19.0);
     }
 
-    return Icon(rawIcon, size: 26.0, color: color);
+    return Image.asset(iconFile, height: 19.0, width: 19.0);
   }
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
@@ -117,10 +106,16 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         children: <Widget>[
           Row(
             children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  _showRsvpOptionsPopup(context);
+                },
+                child: Padding(padding: const EdgeInsets.only(left: 5.0, right: 5.0), child: getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
+              ),
               Expanded(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(top: 5.0, left: 10.0),
+                  padding: const EdgeInsets.only(top: 5.0, left: 5.0),
                   child: Text(
                     widget.futureRun.event.eventName,
                     style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, color: Colors.black, height: 1.0),
@@ -129,12 +124,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  _showRsvpOptionsPopup(context);
-                },
-                child: Padding(padding: const EdgeInsets.only(right: 9.0), child: getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
               ),
               Container(
                 padding: const EdgeInsets.only(right: 10),
@@ -358,27 +347,33 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
-          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
+          'icon': <Widget>[
+            Image.asset('images/icons/checkbox_yes.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+          ],
           'returnValue': rsvpYes
         },
         <String, dynamic>{
           'title': 'I might be there',
           'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.question_circle, color: Colors.orange)
+            Image.asset('images/icons/checkbox_maybe.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpMaybe
         },
         <String, dynamic>{
           'title': 'I won\'t make it',
-          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
+          'icon': <Widget>[
+            Image.asset('images/icons/checkbox_no.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+          ],
           'returnValue': rsvpNo
         },
         <String, dynamic>{
           'title': 'I\'ll hare!',
           'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.deepPurple, size: 26.0)
+            Image.asset('images/icons/checkbox_hare.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': isHareYes
         },
@@ -413,27 +408,33 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
-          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
+          'icon': <Widget>[
+            Image.asset('images/icons/checkbox_yes.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+          ],
           'returnValue': rsvpYes
         },
         <String, dynamic>{
           'title': 'I might be there',
           'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.question_circle, color: Colors.orange)
+            Image.asset('images/icons/checkbox_maybe.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpMaybe
         },
         <String, dynamic>{
           'title': 'I won\'t make it',
-          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
+          'icon': <Widget>[
+            Image.asset('images/icons/checkbox_no.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+          ],
           'returnValue': rsvpNo
         },
         <String, dynamic>{
           'title': 'I\'ll hare!',
           'icon': <Widget>[
-            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.deepPurple, size: 26.0)
+            Image.asset('images/icons/checkbox_hare.png', width: 30, height: 30),
+            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': isHareYes
         },

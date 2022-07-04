@@ -9,6 +9,7 @@ Color themeBackgroundColor = const Color.fromARGB(255, 61, 27, 142);
 Color themeLearnMoreLink = Colors.yellow;
 
 IconData delayIcon = MaterialCommunityIcons.progress_clock;
+const String delayIconAsset = 'images/icons/progress_clock.png';
 
 const num detailsFontSize = 16.0;
 const num detailLineSpace = 1.0;
@@ -16,8 +17,7 @@ const num detailLineSpaceForBold = 1.1;
 
 TextStyle listLabelStyle = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpace);
 
-TextStyle listValueStyle =
-    const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpaceForBold);
+TextStyle listValueStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpaceForBold);
 
 TextStyle bodyStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
 

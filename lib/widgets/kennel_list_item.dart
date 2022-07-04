@@ -43,66 +43,56 @@ class KennelListItemState extends State<KennelsListItem> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               InkWell(
-                onTap: () {
-                  // NOTE: leave this comment in for now. Ideally we would navigate
-                  // from here to the next page, but there was an intermittent bug
-                  // where the selected Kennel would change unexpectedly. This "hack" of
-                  // navigating from the parent is my attempt to fix it
-                  //
-                  // Navigator.of(context).push<dynamic>(
-                  //   MaterialPageRoute<dynamic>(
-                  //     builder: (BuildContext context)
-                  //       => KennelAdminMainPage(kennel: widget.kennel)
-                  //     ,
-                  //   ),
-                  // );
-                  widget.kennelSelected();
-                },
-                child: Container(
-                  child: IconButton(
-                    icon: Icon(
-                        widget.kennelItem.extensions.followingRequested != -1
-                            ? delayIcon
-                            : widget.kennelItem.hkm.following == 1
-                                ? const Icon(FontAwesome.check_circle).icon
-                                : widget.kennelItem.hkm.following == 2
-                                    ? const Icon(FontAwesome.times_circle).icon
-                                    : const Icon(FontAwesome.star).icon,
-                        color: G0<AppModel>().connectionStatus != EnumConnectionStatus.connected
-                            ? Colors.grey
-                            : widget.kennelItem.extensions.followingRequested != -1
-                                ? Colors.blue
-                                : widget.kennelItem.hkm.following == KENNEL_IS_FOLLOWING
-                                    ? Colors.green
-                                    : widget.kennelItem.hkm.following == KENNEL_IS_BLOCKED
-                                        ? Colors.red
-                                        : Colors.yellow[800]),
-                    tooltip: 'Select to follow a Kennel',
-                    iconSize: 35.0,
-                    alignment: Alignment.topCenter,
-                    splashColor: Colors.greenAccent,
-                    onPressed: () {
-                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
-                          message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
-                        final HasherKennelMapService srv = HasherKennelMapService();
-                        int followingRequested = widget.kennelItem.hkm.following + 1;
-                        if (followingRequested > 2) {
-                          followingRequested = 0;
-                        }
-                        widget.kennelItem.extensions.followingRequested = followingRequested;
-                        setState(() {});
-                        srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
-                          setState(() {
-                            widget.kennelFollowingUpdated(
-                                queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                  onTap: () {
+                    // NOTE: leave this comment in for now. Ideally we would navigate
+                    // from here to the next page, but there was an intermittent bug
+                    // where the selected Kennel would change unexpectedly. This "hack" of
+                    // navigating from the parent is my attempt to fix it
+                    //
+                    // Navigator.of(context).push<dynamic>(
+                    //   MaterialPageRoute<dynamic>(
+                    //     builder: (BuildContext context)
+                    //       => KennelAdminMainPage(kennel: widget.kennel)
+                    //     ,
+                    //   ),
+                    // );
+                    widget.kennelSelected();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+                            message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+                          final HasherKennelMapService srv = HasherKennelMapService();
+                          int followingRequested = widget.kennelItem.hkm.following + 1;
+                          if (followingRequested > 2) {
+                            followingRequested = 0;
+                          }
+                          widget.kennelItem.extensions.followingRequested = followingRequested;
+                          setState(() {});
+                          srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
+                            setState(() {
+                              widget.kennelFollowingUpdated(
+                                  queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                            });
                           });
-                        });
-                      }
-                    },
-                  ),
-                  alignment: Alignment.topCenter,
-                ),
-              ),
+                        }
+                      },
+                      child: Column(
+                        children: <Widget>[
+                          if (widget.kennelItem.extensions.followingRequested != -1)
+                            Image.asset(delayIconAsset, width: 24, height: 24)
+                          else if (widget.kennelItem.hkm.following == 1)
+                            Image.asset('images/icons/checkbox_yes.png', width: 24, height: 24)
+                          else if (widget.kennelItem.hkm.following == 2)
+                            Image.asset('images/icons/checkbox_no.png', width: 24, height: 24)
+                          else
+                            Image.asset('images/icons/checkbox_empty.png', width: 24, height: 24),
+                        ],
+                      ),
+                    ),
+                  )),
               !widget.kennelItem.isHomeKennel
                   ? Container()
                   : Container(
@@ -129,7 +119,7 @@ class KennelListItemState extends State<KennelsListItem> {
                   },
                   child: Container(
                     width: MediaQuery.of(context).size.width - 70,
-                    padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right: 5.0),
+                    padding: const EdgeInsets.only(top: 7.0, left: 5.0, bottom: 2.0, right: 5.0),
                     child: AutoSizeText(
                       widget.kennelItem.kennel.kennelName,
                       //'An extremely long kennel name for testing purposes',
@@ -283,26 +273,24 @@ class KennelListItemState extends State<KennelsListItem> {
                             <String, dynamic>{
                               'title': 'Always show runs',
                               'icon': <Widget>[
-                                Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                                const Icon(FontAwesome.check_circle, color: Colors.green)
+                                Image.asset('images/icons/checkbox_yes.png', width: 30, height: 30),
+                                Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
                               ],
                               'returnValue': followTypeFollow
                             },
                             <String, dynamic>{
                               'title': 'Never show runs',
                               'icon': <Widget>[
-                                Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                                const Icon(FontAwesome.times_circle, color: Colors.red)
+                                Image.asset('images/icons/checkbox_no.png', width: 30, height: 30),
+                                Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
                               ],
                               'returnValue': followTypeIgnore
                             },
                             <String, dynamic>{
                               'title': 'Show runs within ' + getDistanceString(),
                               'icon': <Widget>[
-                                const Icon(
-                                  FontAwesome.star,
-                                  color: Colors.yellow,
-                                ),
+                                Image.asset('images/icons/checkbox_empty.png', width: 30, height: 30),
+                                //Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
                               ],
                               'returnValue': followTypeAuto
                             },
