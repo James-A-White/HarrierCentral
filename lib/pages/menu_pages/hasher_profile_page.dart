@@ -170,6 +170,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   void initState() {
+    Permission.location.isGranted.then((bool isGranted) {
+      setState(() {
+        G0<AppModel>().hasLocationPermissions = isGranted;
+      });
+    });
+
     if (widget.hashNameFromSearch.isNotEmpty) {
       _hashNameController.text = widget.hashNameFromSearch;
     }
@@ -723,35 +729,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           ],
                                                         ),
                                                       ),
-                                                      G0<AppModel>().hasLocationPermissions
-                                                          ? Container()
-                                                          : Padding(
-                                                              padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
-                                                              child: ElevatedButton(
-                                                                onPressed: () async {
-                                                                  if (Platform.isIOS) {
-                                                                    if (await Permission.locationWhenInUse.isGranted) {
-                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                      G0<AppModel>().hasLocationPermissions = true;
-                                                                      await Utilities.subscribeToGeoLocationStream();
-                                                                    }
-                                                                  } else {
-                                                                    if (await Permission.location.isGranted) {
-                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                      G0<AppModel>().hasLocationPermissions = true;
-                                                                      await Utilities.subscribeToGeoLocationStream();
-                                                                    }
-                                                                  }
-
-                                                                  await IveCoreUtilities.showAlert(
-                                                                      context,
-                                                                      'Location preferences updated',
-                                                                      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
-                                                                      'OK');
-                                                                },
-                                                                child: Text('Enable Location Svcs', style: textStyleButton),
-                                                              ),
-                                                            ),
                                                     ],
                                                   ),
                                             (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_autoDisplayRunsDistance == 0)
@@ -764,179 +741,181 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         topMargin: 45.0,
                                                         bottomMargin: 20.0,
                                                       ),
-                                                      Container(
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.yellow[100],
-                                                          borderRadius: BorderRadius.circular(5.0),
-                                                        ),
-                                                        child: Column(
-                                                          children: <Widget>[
-                                                            const SizedBox(
-                                                              height: 20,
-                                                              width: 10,
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: 0,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                const Text(
-                                                                  'Do not auto show runs',
-                                                                  style: TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Text(
-                                                              'Or...\r\n...Automatically Show\r\nAll Runs Within...',
-                                                              textAlign: TextAlign.center,
-                                                              style: headingStyle20Black,
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 10,
-                                                              width: 10,
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_10,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '10 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_25,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '25 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_50,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '50 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_75,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '75 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_100,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '100 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_150,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '150 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_250,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '250 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio<int>(
-                                                                  value: hasherPref_500,
-                                                                  groupValue: _autoRunPreference,
-                                                                  onChanged: _handleRadioValueChange2,
-                                                                ),
-                                                                Text(
-                                                                  '500 ' + getDistancePreferenceAsString(_distancePreference),
-                                                                  style: const TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      G0<AppModel>().hasLocationPermissions
-                                                          ? Container()
-                                                          : Padding(
-                                                              padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
-                                                              child: ElevatedButton(
-                                                                onPressed: () async {
-                                                                  if (Platform.isIOS) {
-                                                                    if (await Permission.locationWhenInUse.isGranted) {
-                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                      G0<AppModel>().hasLocationPermissions = true;
-                                                                      await Utilities.subscribeToGeoLocationStream();
-                                                                    }
-                                                                  } else {
-                                                                    if (await Permission.location.isGranted) {
-                                                                      await setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                      G0<AppModel>().hasLocationPermissions = true;
-                                                                      await Utilities.subscribeToGeoLocationStream();
-                                                                    }
-                                                                  }
-
-                                                                  await IveCoreUtilities.showAlert(
-                                                                      context,
-                                                                      'Location preferences updated',
-                                                                      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
-                                                                      'OK');
-                                                                },
-                                                                child: Text('Enable Location Svcs', style: textStyleButton),
+                                                      if (G0<AppModel>().hasLocationPermissions)
+                                                        Container(
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.yellow[100],
+                                                            borderRadius: BorderRadius.circular(5.0),
+                                                          ),
+                                                          child: Column(
+                                                            children: <Widget>[
+                                                              const SizedBox(
+                                                                height: 20,
+                                                                width: 10,
                                                               ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 0,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Do not auto show runs',
+                                                                    style: TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Text(
+                                                                'Or...\r\n...Automatically Show\r\nAll Runs Within...',
+                                                                textAlign: TextAlign.center,
+                                                                style: headingStyle20Black,
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 10,
+                                                                width: 10,
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_10,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '10 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_25,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '25 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_50,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '50 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_75,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '75 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_100,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '100 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_150,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '150 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_250,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '250 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: hasherPref_500,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '500 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      if (!G0<AppModel>().hasLocationPermissions) ...<Widget>[
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: Text(
+                                                            'Distance to Runs',
+                                                            style: headingStyle,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: Text(
+                                                            'Harrier Central can help you find runs that are nearby. In order to do this, the app needs to have access to the phone\'s current location, but currently location is disabled for this app.\r\n\r\nTo start using the distance features of Harrier Central please press the "Use Location" button below and follow the prompts.',
+                                                            style: bodyStyle,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding: const EdgeInsets.only(top: 22.0, bottom: 0.0),
+                                                          child: ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                             ),
+                                                            onPressed: () async {
+                                                              await _enableLocationServices();
+                                                            },
+                                                            child: Text('Use Location', style: textStyleButton),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ],
                                                   ),
                                             const SizedBox(
-                                              height: 40,
+                                              height: 20,
                                               width: 40,
                                             )
                                           ],
@@ -1091,6 +1070,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             bottomMargin: 20.0,
                                           ),
                                           Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Reload Data',
+                                              style: headingStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
+                                              style: bodyStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
                                             padding: const EdgeInsets.only(top: 15, bottom: 15),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1104,7 +1099,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     onPressed: () async {
                                                       await IveCoreUtilities.showAlert(
                                                               context,
-                                                              'Refresh cache',
+                                                              'Reload Data',
                                                               'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
                                                               'Refresh cache',
                                                               showCancelButton: true,
@@ -1132,7 +1127,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       });
                                                     },
                                                     child: Text(
-                                                      'Refresh cache',
+                                                      'Reload Data',
                                                       style: textStyleButton,
                                                     ),
                                                   ),
@@ -1191,6 +1186,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             innerColor: Colors.white,
                                             topMargin: 30.0,
                                             bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Third Party Login',
+                                              style: headingStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
+                                              style: bodyStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
                                           ),
                                           Padding(
                                             padding: const EdgeInsets.only(top: 15, bottom: 15),
@@ -1355,5 +1366,54 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         ),
       ],
     );
+  }
+
+  Future<void> _enableLocationServices() async {
+    bool success = false;
+    {
+      final PermissionStatus ps = await Permission.location.request();
+
+      if (ps.isPermanentlyDenied) {
+        final bool openSettings = await IveCoreUtilities.showAlert(
+            context,
+            'Phone Settings',
+            'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+            'Open Settings',
+            showCancelButton: true,
+            cancelButtonText: 'Cancel');
+
+        if (openSettings) {
+          await openAppSettings();
+          success = await IveCoreUtilities.showAlert(context, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes', showCancelButton: true, cancelButtonText: 'No');
+        }
+      }
+
+      if ((ps.isGranted) || success) {
+        if (await Permission.location.serviceStatus.isEnabled) {
+          G0<AppModel>().hasLocationPermissions = true;
+          await Utilities.subscribeToGeoLocationStream().then((void _) async {
+            await IveCoreUtilities.showAlert(
+              context,
+              'Location Services Enabled',
+              'Location Services have been enabled.',
+              'OK',
+            );
+          });
+        }
+      } else {
+        await IveCoreUtilities.showAlert(
+            context,
+            'Location Services problem',
+            'Harrier Central was unable to confirm that Location Services have been enabled.\r\n\r\nPlease use the Settings panel to enable Location Services for Harrier Centra. Once you have done this, please close and restart Harrier Central.',
+            'Open Settings',
+            showCancelButton: true,
+            cancelButtonText: 'Cancel');
+
+        await openAppSettings();
+      }
+    }
+
+    await IveCoreUtilities.showAlert(context, 'Location preferences updated',
+        'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
   }
 }

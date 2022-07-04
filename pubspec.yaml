@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: ">=2.14.3 <3.0.0"
-  flutter: ^3.0.3
+  flutter: ^3.0.4
 
 dependencies:   
   audioplayers: 0.20.1 # had problem with low sound volume on iOS on version 1.0.0
@@ -50,7 +50,7 @@ dependencies:
   ive_flutter_core:
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core.git
-      ref: 2c0b8ec49193f769627b9e3f5e93261abec2b301 # Version 1.1.5
+      ref: aef146534e64b370750c1c6cbed5a8dc83090197 # Version 1.1.6
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git

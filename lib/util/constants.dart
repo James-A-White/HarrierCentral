@@ -106,6 +106,7 @@ const String QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN = 'UWP:';
 
 const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
 
+//const int dividerCodeForMultipleChoicePopup = -2;
 const int hasherPref_distanceMeasuredIn = 0x00000003;
 const int hasherPref_distanceForAutoDisplay = 0x0000003C;
 

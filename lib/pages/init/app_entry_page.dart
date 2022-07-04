@@ -23,6 +23,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
     G0<AppModel>().appStartTime = DateTime.now();
 
+    G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
+
     G0<DeviceInfo>().deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
     G0<DeviceInfo>().deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
     G0<DeviceInfo>().deviceMaxScaleFactor ??= max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);

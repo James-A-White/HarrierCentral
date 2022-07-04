@@ -177,10 +177,15 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     if (!_permissionRequestInProgress) {
       _permissionRequestInProgress = true;
       if (activeTab == 0) {
-        final PermissionStatus ps = await Permission.locationWhenInUse.request();
+        final PermissionStatus ps = await Permission.location.request();
 
         if (ps.isGranted) {
-          await Utilities.subscribeToGeoLocationStream();
+          if (await Permission.location.serviceStatus.isEnabled) {
+            G0<AppModel>().hasLocationPermissions = true;
+            await Utilities.subscribeToGeoLocationStream();
+          }
+        } else {
+          G0<AppModel>().hasLocationPermissions = false;
         }
 
         activeTab = 1;
@@ -221,7 +226,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
         if (allow) {
-          if (await Permission.location.request().isGranted) {
+          if (await Permission.locationWhenInUse.request().isGranted) {
             await Utilities.subscribeToGeoLocationStream();
             goToTab(1);
           }

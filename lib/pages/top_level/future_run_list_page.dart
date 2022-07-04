@@ -77,6 +77,12 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     _searchController.text = '';
     _searchRunsText = '';
 
+    Permission.location.isGranted.then((bool isGranted) {
+      setState(() {
+        G0<AppModel>().hasLocationPermissions = isGranted;
+      });
+    });
+
     _refreshFromBackend().then((void _) {
       refreshFromTable(true).then((void _) {
         setState(() {});
@@ -371,8 +377,55 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                             ],
                             if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
                               GestureDetector(
-                                onTap: () {
-                                  _showConfigureDistancePopup();
+                                onTap: () async {
+                                  bool success = false;
+
+                                  if (!await Permission.location.isGranted) {
+                                    final bool allow = await IveCoreUtilities.showAlert(
+                                        context,
+                                        'Location Services Required',
+                                        'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
+                                        'Yes',
+                                        showCancelButton: true,
+                                        cancelButtonText: 'No');
+
+                                    if (allow) {
+                                      final PermissionStatus ps = await Permission.location.request();
+
+                                      if (ps.isPermanentlyDenied) {
+                                        final bool openSettings = await IveCoreUtilities.showAlert(
+                                            context,
+                                            'Phone Settings',
+                                            'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+                                            'Open Settings',
+                                            showCancelButton: true,
+                                            cancelButtonText: 'Cancel');
+                                        if (openSettings) {
+                                          await openAppSettings();
+                                          success = await IveCoreUtilities.showAlert(context, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
+                                              showCancelButton: true, cancelButtonText: 'No');
+                                        }
+                                      }
+
+                                      if ((ps.isGranted) || success) {
+                                        if (await Permission.location.serviceStatus.isEnabled) {
+                                          G0<AppModel>().hasLocationPermissions = true;
+                                          await Utilities.subscribeToGeoLocationStream().then((void _) async {
+                                            await IveCoreUtilities.showAlert(
+                                              context,
+                                              'Location Services Enabled',
+                                              'Location Services have been enabled.',
+                                              'OK',
+                                            );
+
+                                            _showConfigureDistancePopup();
+                                          });
+                                        }
+                                      }
+                                    }
+                                  } else {
+                                    _showConfigureDistancePopup();
+                                  }
                                 },
                                 child: const Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -427,15 +480,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
-        'title': 'Switch to ' + switchUnits,
-        'icon': <Widget>[
-          Container(height: 30, width: 45, decoration: BoxDecoration(color: Colors.green.shade800, shape: BoxShape.rectangle)),
-          const Icon(MaterialCommunityIcons.map_marker_distance, color: Colors.white)
-        ],
-        'returnValue': 9999
-      },
-      <String, dynamic>{
-        'title': 'Runs within 10' + units,
+        'title': '10' + units,
         'icon': <Widget>[
           Container(
             height: 30,
@@ -447,7 +492,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_10
       },
       <String, dynamic>{
-        'title': 'Runs within 25' + units,
+        'title': '25' + units,
         'icon': <Widget>[
           Container(
             height: 30,
@@ -459,7 +504,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_25
       },
       <String, dynamic>{
-        'title': 'Runs within 50' + units,
+        'title': '50' + units,
         'icon': <Widget>[
           Container(
             height: 30,
@@ -471,7 +516,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_50
       },
       <String, dynamic>{
-        'title': 'Runs within 75' + units,
+        'title': '75' + units,
         'icon': <Widget>[
           Container(
             height: 30,
@@ -483,7 +528,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_75
       },
       <String, dynamic>{
-        'title': 'Runs within 100' + units,
+        'title': '100' + units,
         'icon': <Widget>[
           Container(
             height: 30,
@@ -495,7 +540,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_100
       },
       <String, dynamic>{
-        'title': 'Runs within 150' + units,
+        'title': '150' + units,
         'icon': <Widget>[
           Container(
             height: 30,
@@ -507,7 +552,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_150
       },
       <String, dynamic>{
-        'title': 'Runs within 250' + units,
+        'title': '250' + units,
         'icon': <Widget>[
           Container(
             height: 30,
@@ -518,17 +563,25 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         ],
         'returnValue': hasherPref_250
       },
+      // <String, dynamic>{
+      //   'title': '500' + units,
+      //   'icon': <Widget>[
+      //     Container(
+      //       height: 30,
+      //       width: 45,
+      //       decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+      //     ),
+      //     const Text('500', style: ts)
+      //   ],
+      //   'returnValue': hasherPref_500
+      // },
+      // pop in a divider
       <String, dynamic>{
-        'title': 'Runs within 500' + units,
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
-          ),
-          const Text('500', style: ts)
-        ],
-        'returnValue': hasherPref_500
+        'height': 0.0,
+        'thickness': 2.0,
+        'paddingTop': 2.0,
+        //'paddingBottom': 2.0,
+        'returnValue': null,
       },
       <String, dynamic>{
         'title': 'Disable auto display',
@@ -536,17 +589,25 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: BoxDecoration(color: Colors.red, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.rectangle),
           ),
           Text('Off', style: ts.copyWith(color: Colors.white))
         ],
         'returnValue': hasherPref_0
       },
+      <String, dynamic>{
+        'title': 'Switch to ' + switchUnits,
+        'icon': <Widget>[
+          Container(height: 30, width: 45, decoration: BoxDecoration(color: Colors.green.shade800, shape: BoxShape.rectangle)),
+          const Icon(MaterialCommunityIcons.map_marker_distance, color: Colors.white)
+        ],
+        'returnValue': 9999
+      },
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
       key: const Key('5030202'),
-      title: 'Auto display runs',
+      title: 'Display all runs within...',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
       cancelButtonReturnValue: followTypeCancel,
@@ -597,15 +658,19 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   String _getDistancePreferenceString() {
-    final int distance = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
+    int distancePref = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
 
     final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
 
+    if (!G0<AppModel>().hasLocationPermissions) {
+      distancePref = hasherPref_0;
+    }
+
     String result = 'Runs within ';
 
-    switch (distance) {
+    switch (distancePref) {
       case hasherPref_0:
-        result = 'Press gear to setup →';
+        result = 'Distance filter →';
         break;
       case hasherPref_10:
         result += '10' + units;

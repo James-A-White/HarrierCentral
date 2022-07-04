@@ -231,30 +231,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   Future<bool> _checkLocationPermissions() async {
-    bool hasLocPermission = true;
-
-    final LocationPermission permissions = await Geolocator.checkPermission();
-
-    //final perms.LocationPermissions permissions = perms.LocationPermissions();
-
-    if ((permissions != LocationPermission.always) && (permissions != LocationPermission.whileInUse)) {
-      hasLocPermission = false;
-    }
-
-    // perms.PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.location);
-    // if (locationPermission != perms.PermissionStatus.granted) {
-    //   locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationWhenInUse);
-    //   if (locationPermission != perms.PermissionStatus.granted) {
-    //     locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationAlways);
-    //     if (locationPermission != perms.PermissionStatus.granted) {
-    //       hasLocPermission = false;
-    //     }
-    //   }
-    // }
-
-    await setIntPref(IntPrefsEnum.hasLocationPermissions, hasLocPermission ? 1 : 0);
-    G0<AppModel>().hasLocationPermissions = hasLocPermission;
-    return hasLocPermission;
+    G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
+    return G0<AppModel>().hasLocationPermissions;
   }
 
   void informUser(String message) {

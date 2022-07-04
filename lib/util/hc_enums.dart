@@ -52,7 +52,7 @@ enum IntPrefsEnum {
   databaseVersion,
   hasherPreferences,
   //lastSuccessfulUserDataSyncInMs,
-  hasLocationPermissions,
+  //hasLocationPermissions,
   mapCenterOption,
   mapShowSearchBar,
   mapShowKennels,
