@@ -36,7 +36,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   //Future<Widget> _rsvpIcon;
 
-  Widget getRsvpWidget(int rsvpState, int willHareState) {
+  Widget _getRsvpWidget(int rsvpState, int willHareState) {
     String iconFile;
     switch (rsvpState) {
       case 0:
@@ -61,10 +61,10 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     }
 
     if (iconFile == 'wait') {
-      return Icon(delayIcon, color: Colors.blue[800], size: 19.0);
+      return Icon(delayIcon, color: Colors.blue[800], size: 24.0);
     }
 
-    return Image.asset(iconFile, height: 19.0, width: 19.0);
+    return Image.asset(iconFile, height: 24.0, width: 24.0);
   }
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
@@ -110,17 +110,19 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                 onTap: () {
                   _showRsvpOptionsPopup(context);
                 },
-                child: Padding(padding: const EdgeInsets.only(left: 5.0, right: 5.0), child: getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
+                child: Padding(
+                    padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0), child: _getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
               ),
               Expanded(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   padding: const EdgeInsets.only(top: 5.0, left: 5.0),
-                  child: Text(
+                  child: AutoSizeText(
                     widget.futureRun.event.eventName,
-                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, color: Colors.black, height: 1.0),
+                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.black, height: 1.0),
                     textAlign: TextAlign.left,
                     maxLines: 1,
+                    minFontSize: 18,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -151,7 +153,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                       padding: const EdgeInsets.only(right: 10),
                       child: GestureDetector(
                         onTap: () {
-                          showNotificationPopup(context);
+                          _showNotificationPopup(context);
                         },
                         child: widget.futureRun.extensions.notificationPreference == -1
                             ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
@@ -527,7 +529,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         if (retVal is EnumEmailAlertState) {
           setEmailAlertState(retVal);
         } else if (retVal is EnumNotificationState) {
-          setNotificationState(retVal);
+          _setNotificationState(retVal);
         } else if (retVal is EnumRsvpState) {
           await _setRsvpState(retVal, false);
         } else if (retVal is EnumIsHare) {
@@ -538,10 +540,10 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     }
   }
 
-  void showNotificationPopup(BuildContext context) {
+  void _showNotificationPopup(BuildContext context) {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
-        'title': 'Turn notifications\r\non',
+        'title': 'Notifications on',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
@@ -558,7 +560,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         'returnValue': notificationsOn,
       },
       <String, dynamic>{
-        'title': 'Turn notifications\r\noff',
+        'title': 'Notifications off',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
@@ -612,11 +614,11 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         builder: (BuildContext context) {
           return popup;
         }).then((dynamic retVal) {
-      setNotificationState(retVal);
+      _setNotificationState(retVal);
     });
   }
 
-  void setNotificationState(EnumNotificationState<int> retVal) {
+  void _setNotificationState(EnumNotificationState<int> retVal) {
     if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
       final String userId = getStringPref(StringPrefsEnum.userId);
       final EnumNotificationState<int> nState = retVal;
@@ -639,7 +641,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           // notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
           // // TODO(James): Fix this to reflect true value of what is in the DB not just the value
           // // provided to the function
-          // widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
+          widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
         });
       });
     }

@@ -43,6 +43,16 @@ void main() {
         home: const AppEntryPage(),
         routes: routes,
         theme: ThemeData(
+            // appBarTheme: const AppBarTheme(
+            //   systemOverlayStyle: SystemUiOverlayStyle(
+            //     // Status bar color
+            //     statusBarColor: Colors.red,
+
+            //     // Status bar brightness (optional)
+            //     statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
+            //     statusBarBrightness: Brightness.dark, // For iOS (dark icons)
+            //   ),
+            // ),
             primaryColor: Colors.grey.shade700,
             primaryColorDark: Colors.grey.shade900,
             primaryColorLight: Colors.grey.shade400,

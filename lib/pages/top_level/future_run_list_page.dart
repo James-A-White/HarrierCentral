@@ -73,6 +73,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   void initState() {
+    // const SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
+    //   statusBarColor: Colors.red,
+    //   statusBarIconBrightness: Brightness.dark,
+    //   statusBarBrightness: Brightness.dark,
+    // );
+    // SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
+
     IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
     _searchController.text = '';
     _searchRunsText = '';

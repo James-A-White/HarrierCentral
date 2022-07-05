@@ -858,11 +858,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 ),
                 body: runLocationsBody()),
       ),
-      OfflineModeRibbon(
-        showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-        lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-        ribbonImage: 'images/icons/offline_mode.png',
-      ),
+      // OfflineModeRibbon(
+      //   showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+      //   lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+      //   ribbonImage: 'images/icons/offline_mode.png',
+      // ),
     ]);
   }
 }

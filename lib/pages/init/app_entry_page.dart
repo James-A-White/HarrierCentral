@@ -11,7 +11,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
   AnimationController _iconAnimationController;
   CurvedAnimation _iconAnimation;
 
-  Future<void> handleStartup(BuildContext context) async {
+  Future<void> _handleStartup(BuildContext context) async {
     final PackageInfo p = await PackageInfo.fromPlatform();
     final String hcVersion = 'HC Ver: ${p.version}, Bld: ${p.buildNumber}';
 
@@ -33,16 +33,20 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     G0<DeviceInfo>().deviceWidth ??= MediaQuery.of(context).size.width;
     G0<DeviceInfo>().deviceHeight ??= MediaQuery.of(context).size.height;
 
-    // await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
+    final String userId = getStringPref(StringPrefsEnum.userId);
+
+    G0<AppModel>().connectionStatus = await InternetConnectionChecker().hasConnection ? EnumConnectionStatus.connected : EnumConnectionStatus.not_connected;
+
+    ApproveLoginModel loginResult;
+    String facebookAccessToken;
+    final ApproveLoginService svc = ApproveLoginService();
 
     await Utilities.subscribeToGeoLocationStream();
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
-
-    String facebookAccessToken = await _checkFacebookLogin();
-
-    final ApproveLoginService svc = ApproveLoginService();
-    ApproveLoginModel loginResult = await svc.approveLogin(context, facebookAccessToken);
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+      facebookAccessToken = await _checkFacebookLogin();
+      loginResult = await svc.approveLogin(context, facebookAccessToken);
+    }
 
     if (loginResult != null) {
       await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
@@ -84,6 +88,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
       await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
       return;
     } else {
+      // No userId was present, this must be the first time the app has been run
       const bool allowContinueFromMessage = true;
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
@@ -224,26 +229,23 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     super.dispose();
   }
 
-  Future<void> startTimeout() async {
+  Future<void> _startTimeout() async {
     await initPrefs();
     await Future<dynamic>.delayed(const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
-    await handleStartup(context);
+    await _handleStartup(context);
     return;
   }
 
-  //bool _visible = true;
   @override
   void initState() {
-    super.initState();
-
     _iconAnimationController = AnimationController(duration: const Duration(milliseconds: 3000), vsync: this);
-
     _iconAnimation = CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
     _iconAnimation.addListener(() => setState(() {}));
-
     _iconAnimationController.forward();
 
-    startTimeout();
+    _startTimeout();
+
+    super.initState();
   }
 
   @override

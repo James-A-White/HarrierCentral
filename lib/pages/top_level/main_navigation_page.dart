@@ -1,5 +1,4 @@
 // @dart=2.11
-import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
@@ -90,8 +89,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     _appBarText = _tabTitles[0];
 
-    super.initState();
-
     // final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false);
     // final String resultStr = result ? 'successfully' : 'unsuccessfully';
     // //print('Master data synchronized $resultStr');
@@ -131,6 +128,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
       return true;
     });
+
+    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((void _) {
+      FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
+    });
+
+    super.initState();
   }
 
   Future<void> _checkAreWeAtRunStart() async {
@@ -297,6 +300,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           child: Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
+              elevation: 3.0,
+              systemOverlayStyle: const SystemUiOverlayStyle(
+                statusBarColor: Colors.red, // <-- SEE HERE
+                statusBarIconBrightness: Brightness.dark, //<-- For Android SEE HERE (dark icons)
+                statusBarBrightness: Brightness.dark, //<-- For iOS SEE HERE (dark icons)
+              ),
               backgroundColor: themeAppBarBackground,
               title: Text(_appBarText),
               centerTitle: true,
