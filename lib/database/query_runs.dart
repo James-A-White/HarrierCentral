@@ -395,7 +395,7 @@ class QueryRuns {
         break;
       case EnumRunQueryContext.kennelAdmin:
         hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
-        //hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user);
         //paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
@@ -422,10 +422,10 @@ class QueryRuns {
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
-          0 as rsvpState,
-          0 as attendenceState,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           0 as isPaid,
-          0 as isHare,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
           case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
           coalesce(hkm.kennelNotificationPreference,0) as notificationPreference,
           coalesce(hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
@@ -442,6 +442,7 @@ class QueryRuns {
           INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
           INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
+          LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           ''';
     } else {
       queryBase = ''' 
@@ -457,10 +458,10 @@ class QueryRuns {
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
-          coalesce(hem.rsvpState,0) as rsvpState,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           CASE WHEN coalesce(pay.paymentType,0) >= 2 THEN 1 ELSE 0 END as isPaid,
-          coalesce(hem.isHare,0) as isHare,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
           case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
           coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
