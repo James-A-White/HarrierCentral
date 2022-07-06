@@ -3,10 +3,11 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class UserEventListItem extends StatelessWidget {
-  const UserEventListItem({Key key, @required this.item, @required this.kennelShortName}) : super(key: key);
+  const UserEventListItem({Key key, @required this.item, @required this.kennelShortName, @required this.setAttendenceStateCallback}) : super(key: key);
 
   final UserRunHistoryResults item;
   final String kennelShortName;
+  final Function setAttendenceStateCallback;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class UserEventListItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          item.isLoading
+          item.isUpdating
               ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
               : item.attendenceState < attendenceAtHash.value
                   ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
@@ -79,8 +80,7 @@ class UserEventListItem extends StatelessWidget {
                                     ' and #${item.totalHaringThisKennel} time haring',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style:
-                                        TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                    style: TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                                     textAlign: TextAlign.left,
                                   ),
                           ],
@@ -89,6 +89,18 @@ class UserEventListItem extends StatelessWidget {
               ),
             ),
           ),
+
+          if ((G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) && (item.canEditRunAttendence != 0)) ...<Widget>[
+            IconButton(
+              icon: const Icon(MaterialCommunityIcons.dots_vertical),
+              iconSize: Theme.of(context).iconTheme.size,
+              color: Colors.black54,
+              splashColor: Theme.of(context).highlightColor,
+              onPressed: () async {
+                await _showRunAttendencePopup(context);
+              },
+            ),
+          ],
           // Container(
           //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
           //   margin: const EdgeInsets.only(top: 7.0, bottom: 7.0),
@@ -99,5 +111,63 @@ class UserEventListItem extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showRunAttendencePopup(BuildContext context) async {
+    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+        <String, dynamic>{
+          'title': 'I was at this Hash',
+          'icon': <Widget>[
+            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+            const Icon(FontAwesome.check_circle, color: Colors.green, size: 28.0),
+          ],
+          'returnValue': 1
+        },
+        <String, dynamic>{
+          'title': 'I was not at this Hash',
+          'icon': <Widget>[
+            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+            const Icon(FontAwesome.times_circle, color: Colors.red, size: 28.0),
+          ],
+          'returnValue': 0
+        },
+        <String, dynamic>{
+          'title': 'I hared this Hash',
+          'icon': <Widget>[
+            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+            const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 24.0),
+          ],
+          'returnValue': 2
+        },
+      ];
+
+      final MultipleChoicePopup popup = MultipleChoicePopup(
+        key: const Key('01019395'),
+        title: 'Run Options',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+        cancelButtonReturnValue: followTypeCancel,
+      );
+
+      final int retVal = await showDialog<dynamic>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          });
+
+      switch (retVal) {
+        case 0:
+          await setAttendenceStateCallback(attendenceNo, isHareNo);
+          break;
+        case 1:
+          await setAttendenceStateCallback(attendenceAtHash, isHareNo);
+          break;
+        case 2:
+          await setAttendenceStateCallback(attendenceAtHash, isHareYes);
+          break;
+      }
+    }
   }
 }

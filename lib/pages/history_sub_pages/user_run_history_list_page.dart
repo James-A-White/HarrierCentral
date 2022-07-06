@@ -50,7 +50,7 @@ class UserRunHistoryResults {
       this.isHare,
       this.totalHaringThisKennel,
       this.totalRunsThisKennel,
-      this.isLoading});
+      this.isUpdating});
 
   final String eventId;
   final String eventName;
@@ -62,7 +62,7 @@ class UserRunHistoryResults {
   final int isHare;
   int totalRunsThisKennel;
   int totalHaringThisKennel;
-  bool isLoading;
+  bool isUpdating;
 
   static UserRunHistoryResults fromMap(Map<String, dynamic> map) {
     final UserRunHistoryResults item = UserRunHistoryResults(
@@ -83,6 +83,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   UserRunHistoryPageState();
 
   bool _isLoading = false;
+
+  bool _isUpdating = false;
 
   List<UserRunHistoryResults> runCountsList = <UserRunHistoryResults>[];
   final String userId = getStringPref(StringPrefsEnum.userId);
@@ -147,7 +149,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         final UserRunHistoryResults hlrItem = UserRunHistoryResults.fromMap(results[i]);
         hlrItem.totalHaringThisKennel = -1;
         hlrItem.totalRunsThisKennel = -1;
-        hlrItem.isLoading = false;
+        hlrItem.isUpdating = false;
         runCountsList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
@@ -524,66 +526,30 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
                         return Dismissible(
                           key: Key(item.eventId),
-                          confirmDismiss: (DismissDirection direction) {
+                          confirmDismiss: (DismissDirection direction) async {
                             if (item.canEditRunAttendence != 0) {
-                              setState(() {
-                                // swipe from right to left to indicate that
-                                // the hasher either attended the run as a pack
-                                // member or as a hare
-                                if (direction == DismissDirection.endToStart) {
-                                  // here, we're going from an attendence state of
-                                  // not at the Hash to being at the Hash,
-                                  // so assume that the person was not a hare
-                                  if (item.attendenceState < attendenceAtHash.value) {
-                                    item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-                                          item.eventId,
-                                          userId,
-                                          item.hemId,
-                                          AppDomainType.user,
-                                          rsvpState: rsvpYes.value,
-                                          attendenceState: attendenceAtHash.value,
-                                          isHare: isHareNo.value,
-                                        );
-
-                                    retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true).then((void _) {});
-                                    });
-                                  } else {
-                                    item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-                                          item.eventId,
-                                          userId,
-                                          item.hemId,
-                                          AppDomainType.user,
-                                          rsvpState: rsvpYes.value,
-                                          attendenceState: attendenceAtHash.value,
-                                          isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value,
-                                        );
-
-                                    retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true).then((void _) {});
-                                    });
-                                  }
+                              // swipe from right to left to indicate that
+                              // the hasher either attended the run as a pack
+                              // member or as a hare
+                              if (direction == DismissDirection.endToStart) {
+                                // here, we're going from an attendence state of
+                                // not at the Hash to being at the Hash,
+                                // so assume that the person was not a hare
+                                if (item.attendenceState < attendenceAtHash.value) {
+                                  item.isUpdating = true;
+                                  await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareNo);
                                 } else {
-                                  // swipe from left to right to
-                                  // indicate that the hasher did
-                                  // not participate in this event
-                                  final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-                                        item.eventId,
-                                        userId,
-                                        item.hemId,
-                                        AppDomainType.user,
-                                        rsvpState: rsvpNo.value,
-                                        attendenceState: attendenceNo.value,
-                                        isHare: isHareNo.value,
-                                      );
-
-                                  retVal.then((List<dynamic> adHocData) {
-                                    refreshRunHistoryFromTable(true).then((void _) {});
-                                  });
+                                  item.isUpdating = true;
+                                  await _setAttendenceState(item, rsvpYes, attendenceAtHash, item.isHare == 1 ? isHareNo : isHareYes);
                                 }
-                              });
+                              } else {
+                                // swipe from left to right to
+                                // indicate that the hasher did
+                                // not participate in this event
+                                await _setAttendenceState(item, rsvpNo, attendenceNo, isHareNo);
+                              }
+
+                              setState(() {});
                             }
                             return Future<bool>.value(false);
                           },
@@ -707,6 +673,25 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             child: UserEventListItem(
                               item: item,
                               kennelShortName: (_kennelInfo ?? widget.kennelInfo).kennelShortName,
+                              setAttendenceStateCallback: (EnumAttendenceState<int> attendenceState, EnumIsHare<int> isHare) async {
+                                setState(() {
+                                  item.isUpdating = true;
+                                });
+
+                                if (attendenceState == attendenceNo) {
+                                  await _setAttendenceState(item, rsvpNo, attendenceNo, isHareNo);
+                                } else {
+                                  if (isHare == isHareYes) {
+                                    await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareYes);
+                                  } else {
+                                    await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareNo);
+                                  }
+                                }
+
+                                setState(() {
+                                  item.isUpdating = false;
+                                });
+                              },
                             ),
                           ),
                         );
@@ -727,5 +712,19 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                 ],
               )),
     );
+  }
+
+  Future<void> _setAttendenceState(UserRunHistoryResults item, EnumRsvpState<int> rsvpState, EnumAttendenceState<int> attendenceState, EnumIsHare<int> isHare) async {
+    await G0<TableModel>().hasherEventMapService.joinEvent(
+          item.eventId,
+          userId,
+          item.hemId,
+          AppDomainType.user,
+          rsvpState: rsvpState.value,
+          attendenceState: attendenceState.value,
+          isHare: isHare.value,
+        );
+
+    await refreshRunHistoryFromTable(true);
   }
 }
