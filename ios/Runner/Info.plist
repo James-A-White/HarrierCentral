@@ -42,6 +42,8 @@
 	<string>45a4323b02d1889e387bab1f174ace21</string>
 	<key>FacebookAppID</key>
 	<string>373948579725920</string>
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<true/>
 	<key>FacebookDisplayName</key>
 	<string>Harrier Central</string>
 	<key>LSApplicationQueriesSchemes</key>

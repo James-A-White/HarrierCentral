@@ -278,8 +278,7 @@ class HasherEventMapService {
         );
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-    final DateTime hasherKennelMapUpdatedAfter =
-        _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
     final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
@@ -324,8 +323,69 @@ class HasherEventMapService {
     return adHocData;
   }
 
-  Future<List<dynamic>> joinEventAsVisitor(
-      String eventId, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber, AppDomainType appDomainType) async {
+  Future<List<dynamic>> rsvpForEvent(
+    String eventId,
+    String hasherId,
+    AppDomainType appDomainType,
+    int rsvpState,
+    int isHare,
+  ) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+      return null;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'rsvpForEvent');
+
+    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
+
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+
+    final Map<String, Object> bodyMap = <String, Object>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'eventId': eventId,
+      'hasherId': hasherId,
+      'isHare': isHare,
+      'rsvpState': rsvpState,
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
+    };
+
+    final String body = jsonEncode(bodyMap);
+
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_rsvp_for_event', body);
+
+    List<dynamic> adHocData = <dynamic>[];
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      if (appDomainType == AppDomainType.event) {
+        adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      } else if (appDomainType == AppDomainType.user) {
+        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      } else {
+        assert(false);
+      }
+    }
+
+    return adHocData;
+  }
+
+  Future<List<dynamic>> joinEventAsVisitor(String eventId, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber, AppDomainType appDomainType) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool

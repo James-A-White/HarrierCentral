@@ -1123,11 +1123,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       eventAggregate: widget.eventAggregate,
       packMember: packMember,
       amountOwed: amountOwed,
-      onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) {
+      onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) async {
         if (rsvpState != -1) {
           setState(() {
             packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           });
+          await _updateRsvpState(packMember, rsvpState, isHare);
         }
 
         if (attendenceState != -1) {
@@ -1135,9 +1136,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
             packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
           });
+          _updateAttendenceState(packMember, rsvpState, attendenceState, isHare);
         }
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        _updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
       onPaidCallback: (CheckInPackModel packMember, int paymentType, {OtherPaymentPopupResult userInput}) async {
         final num totalDue = userInput == null ? null : userInput.totalAmount;
@@ -1603,15 +1604,34 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return result;
   }
 
-  void _updateRsvpState(CheckInPackModel packMember, int rsvpState, int attendenceState, int isHare) {
+  Future<void> _updateRsvpState(CheckInPackModel packMember, int rsvpState, int isHare) async {
+    final String hasherId = packMember.hasherId;
+
+    print('rsvpState = ' + rsvpState.toString());
+
+    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
+          widget.eventAggregate.event.eventId,
+          hasherId,
+          AppDomainType.event,
+          rsvpState,
+          isHare,
+        );
+
+    final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+
+    if (serverMessage.isNotEmpty) {
+      await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+    }
+
+    await _refreshPackListFromTables(false);
+    await _refreshCounters(true);
+  }
+
+  Future<void> _updateAttendenceState(CheckInPackModel packMember, int rsvpState, int attendenceState, int isHare) async {
     final String hemId = packMember.hemId;
     final String hasherId = packMember.hasherId;
 
-    // setState(() {
-
-    // });
-
-    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+    await G0<TableModel>().hasherEventMapService.joinEvent(
           widget.eventAggregate.event.eventId,
           hasherId,
           hemId,
@@ -1622,11 +1642,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           virginVisitorType: -1,
         );
 
-    retVal.then((List<dynamic> adHocData) {
-      _refreshPackListFromTables(false).then((void _) {
-        _refreshCounters(true);
-      });
-    });
+    await _refreshPackListFromTables(false);
+    await _refreshCounters(true);
   }
 
   Widget _buildPackListView() {
@@ -1694,7 +1711,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                       );
                     } else {
                       if (actionType == SlideActionType.secondary) {
-                        _updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+                        _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
                       }
                     }
 

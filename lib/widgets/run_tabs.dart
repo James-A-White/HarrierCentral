@@ -90,7 +90,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _thisUserIndex = -1;
 
     for (int i = 0; i < _thePackList.length; i++) {
-      if (_thePackList[i].hasher.hasherId == userId) {
+      if (_thePackList[i].hasher.hasherId == _userId) {
         _thisUserIndex = i;
         break;
       }
@@ -136,7 +136,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   //final GetPackService _getPackService = GetPackService();
 
-  final String userId = getStringPref(StringPrefsEnum.userId);
+  final String _userId = getStringPref(StringPrefsEnum.userId);
 
   @override
   void initState() {
@@ -254,8 +254,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           iconSize: 35.0,
                           alignment: Alignment.topCenter,
                           splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            _setRsvpState(rsvpYes);
+                          onPressed: () async {
+                            await _setRsvpState(rsvpYes);
                           },
                           // ),
                           // Text(
@@ -318,8 +318,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           iconSize: 35.0,
                           alignment: Alignment.topCenter,
                           splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            _setRsvpState(rsvpMaybe);
+                          onPressed: () async {
+                            await _setRsvpState(rsvpMaybe);
                           },
                         ),
                       ],
@@ -379,8 +379,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           iconSize: 35.0,
                           alignment: Alignment.topCenter,
                           splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            _setRsvpState(rsvpNo);
+                          onPressed: () async {
+                            await _setRsvpState(rsvpNo);
                           },
                         ),
                       ],
@@ -682,21 +682,25 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       });
 
       //final String userId = getStringPref(StringPrefsEnum.userId);
-      await G0<TableModel>().hasherEventMapService.joinEvent(
+      final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
             widget.futureRun.event.eventId,
-            userId,
-            null,
+            _userId,
             AppDomainType.user,
-            rsvpState: rsvpYes.value,
-            attendenceState: attendenceNoChange.value,
-            isHare: isHareYes.value,
+            rsvpYes.value,
+            isHareYes.value,
           );
 
-      await _refreshHemTableFromBackend(false);
+      final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+
+      if (serverMessage.isNotEmpty) {
+        await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+      } else {
+        await _refreshHemTableFromBackend(false);
+      }
     }
   }
 
-  void _setRsvpState(EnumRsvpState<int> rsvpState) {
+  Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
     setState(() {
       if (_thisUserIndex >= 0) {
         _thePackList[_thisUserIndex].hem.rsvpState = -1;
@@ -706,20 +710,21 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     });
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
           widget.futureRun.event.eventId,
-          userId,
-          null,
+          _userId,
           AppDomainType.user,
-          rsvpState: rsvpState.value,
-          attendenceState: attendenceValue,
-          isHare: isHareNo.value,
+          rsvpState.value,
+          isHareNo.value,
         );
 
-    retVal.then((List<dynamic> adHocData) async {
+    final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+
+    if (serverMessage.isNotEmpty) {
+      await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+    } else {
       await _refreshHemTableFromBackend(false);
-    });
+    }
   }
 
   Widget buildMapView() {
@@ -848,8 +853,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ],
         ),
       ),
-      onPressed: () {
-        _setRsvpState(rsvpState);
+      onPressed: () async {
+        await _setRsvpState(rsvpState);
       },
     );
   }
@@ -900,8 +905,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               backgroundColor: Colors.red[800],
               label: 'I\'m not coming',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _setRsvpState(rsvpNo);
+              onTap: () async {
+                await _setRsvpState(rsvpNo);
               },
             ),
             SpeedDialChild(
@@ -909,8 +914,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               backgroundColor: Colors.orange,
               label: 'I might come',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _setRsvpState(rsvpMaybe);
+              onTap: () async {
+                await _setRsvpState(rsvpMaybe);
               },
             ),
             SpeedDialChild(
@@ -918,8 +923,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               backgroundColor: Colors.green,
               label: 'I\'m coming',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _setRsvpState(rsvpYes);
+              onTap: () async {
+                await _setRsvpState(rsvpYes);
               },
             ),
             SpeedDialChild(

@@ -73,26 +73,28 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     });
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
+    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
           widget.futureRun.event.eventId,
           userId,
-          null,
           AppDomainType.user,
-          rsvpState: rsvpState.value,
-          attendenceState: attendenceValue,
-          isHare: willHare ? isHareYes.value : isHareNo.value,
+          rsvpState.value,
+          willHare ? isHareYes.value : isHareNo.value,
         );
 
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
     final String hares = adHocData[0]['hares'] ?? '';
+    final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     setState(() {
       widget.futureRun.extensions.rsvpState = rsvpResult;
       widget.futureRun.extensions.isHare = willHareResult;
       widget.futureRun.event.hares = hares;
     });
+
+    if (serverMessage.isNotEmpty) {
+      await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+    }
   }
 
   @override
