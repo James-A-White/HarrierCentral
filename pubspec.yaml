@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: ">=2.14.3 <3.0.0"
-  flutter: ^3.0.4
+  flutter: ^3.0.3
 
 dependencies:   
   audioplayers: 0.20.1 # had problem with low sound volume on iOS on version 1.0.0
@@ -73,7 +73,7 @@ dependencies:
   #     url: https://github.com/juliuscanute/qr_code_scanner.git
   #     ref: 0feca6f15042c279ff575c559a3430df917b623d
   # qr_flutter: ^2.1.0+55 
-  
+  qr_code_scanner: ^1.0.0
   shared_preferences: ^2.0.7 
   sign_in_with_apple: ^4.0.0 
   sumup: ^0.5.0

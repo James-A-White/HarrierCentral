@@ -75,9 +75,17 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   String _lastQrCode = '';
 
+  String _result;
+
+  bool _isScanning = false;
+
+  DateTime _lastScan;
+
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR123');
 
-  final MobileScannerController _controller = MobileScannerController();
+  EQrScannerState _state = EQrScannerState.waitingForScan;
+
+  QRViewController _controller;
   // EQrScannerState _state = EQrScannerState.waitingForScan;
   // bool _isScanning = true;
 
@@ -99,7 +107,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   @override
   void dispose() {
     if (_controller != null) {
-      _controller.stop();
+      _controller.pauseCamera();
       _controller.dispose();
     }
 
@@ -111,13 +119,13 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     super.reassemble();
     if (_controller != null) {
       if (Platform.isAndroid) {
-        _controller.stop().then((_) {
+        _controller.pauseCamera().then((void _) {
           // _isScanning = false;
           // _onScreenMessage = 'Scanning paused';
           // _state = EQrScannerState.waitingForScan;
         });
       } else if (Platform.isIOS) {
-        _controller.start().then((_) {
+        _controller.resumeCamera().then((void _) {
           // _isScanning = true;
           // _onScreenMessage = 'Looking for QR Code';
           // _state = EQrScannerState.scanning;
@@ -206,9 +214,9 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                                 _showQrScanner = !_showQrScanner;
                                 if (_showQrScanner) {
                                   _lastQrCode = '';
-                                  _controller.start();
+                                  _controller.resumeCamera();
                                 } else {
-                                  _controller.stop();
+                                  _controller.pauseCamera();
                                 }
                               });
                             }),
@@ -221,13 +229,9 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         padding: const EdgeInsets.all(11.0),
                         child: AspectRatio(
                           aspectRatio: 1.0,
-                          child: MobileScanner(
-                            allowDuplicates: true,
+                          child: QRView(
                             key: _qrKey,
-                            controller: _controller,
-                            onDetect: (Barcode barcode, MobileScannerArguments args) async {
-                              await _onCodeRead(barcode.rawValue);
-                            },
+                            onQRViewCreated: _onQRViewCreated,
                           ),
                         ),
                       ),
@@ -362,7 +366,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     if (_showQrScanner && (_lastQrCode != scanResult)) {
       _lastQrCode = scanResult;
       final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_resetCode);
-      await _controller.stop();
+      await _controller.pauseCamera();
       setState(() {
         _showQrScanner = false;
       });
@@ -371,8 +375,47 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
         await IveCoreUtilities.showAlert(
             context, 'Wrong QR Code', 'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
       } else {
-        _inviteCodeTextController.text = scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');
+        setState(() {
+          _inviteCodeTextController.text = scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');
+        });
       }
     }
+  }
+
+  Future<void> _toggleScanning({bool doScanning}) async {
+    if (_controller != null) {
+      if (_isScanning && ((doScanning == null) || !doScanning)) {
+        await _controller.pauseCamera();
+        _isScanning = false;
+        _state = EQrScannerState.waitingForScan;
+      } else {
+        if ((doScanning == null) || doScanning) {
+          await _controller.resumeCamera();
+          _isScanning = true;
+          _state = EQrScannerState.scanning;
+        }
+      }
+    }
+  }
+
+  void _onQRViewCreated(QRViewController controller) {
+    _controller = controller;
+    setState(() {
+      // _isScanning = true;
+      // _onScreenMessage = 'Looking for QR Code';
+      // _state = EQrScannerState.scanning;
+      //_toggleScanning();
+    });
+
+    _controller.scannedDataStream.listen((Barcode scanData) async {
+      _result = scanData.code;
+      // "debounce" the listener to discard multiple scans
+      // that happen within a 5 second window.
+      if ((_lastScan == null) || (_lastScan.difference(DateTime.now()).inSeconds.abs() > 5)) {
+        _lastScan = DateTime.now();
+        await _toggleScanning();
+        await _onCodeRead(_result);
+      }
+    });
   }
 }
