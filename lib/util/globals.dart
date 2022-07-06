@@ -45,12 +45,17 @@ void _initTables() {
 bool _createIndexes = false;
 
 Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) async {
-  // print('****** > DB Setup step 1');
+  bool initialLoad = false;
+  if (getIntPref(IntPrefsEnum.databaseVersion) != DB_VERSION) {
+    initialLoad = true;
+  }
+
+  // print('******* > DB Setup step 1');
   G0<AppModel>().dbStatus = EdbStatus.opening;
   G0.registerSingletonAsync<Database>(() async {
-    // print('****** > DB Setup step 2');
+    // print('******* > DB Setup step 2');
     _initTables();
-    // print('****** > DB Setup step 3');
+    // print('******* > DB Setup step 3');
     return DBProvider.openOrInitDb(
       DB_NAME,
       DB_VERSION,
@@ -62,11 +67,11 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
     );
   });
 
-  // print('****** > DB Setup step 6');
+  // print('******* > DB Setup step 6');
 
   await G0.isReady<Database>();
 
-  // print('****** > DB Setup step 7');
+  // print('******* > DB Setup step 7');
 
   //await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllDataWithoutHashersOrEvents, false, informUser: informUser);
   await G0<TableModel>().syncUserDataService.updateFromBackend(
@@ -76,21 +81,21 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
         informUser: informUser,
       );
 
-  // // print('****** > DB Setup step 7.1');
+  // // print('******* > DB Setup step 7.1');
   // await G0<TableModel>().syncUserDataService.updateFromBackend(
   //       SyncUserDataService.flagKennelsTable,
   //       false,
   //       informUser: informUser,
   //     );
 
-  // // print('****** > DB Setup step 8');
+  // // print('******* > DB Setup step 8');
   // await G0<TableModel>().syncUserDataService.updateFromBackend(
   //       SyncUserDataService.flagNarrowEventsTable,
   //       false,
   //       informUser: informUser,
   //     );
 
-  // print('****** > DB Setup step 8.1');
+  // print('******* > DB Setup step 8.1');
   await G0<TableModel>().syncUserDataService.updateFromBackend(
         SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagHasherEventMapTable,
         false,
@@ -98,83 +103,100 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
         informUser: informUser,
       );
 
-  // print('****** > DB Setup step 9');
+  // print('******* > DB Setup step 9');
 
   // Hashers come in groups of 1000, so
   // loop through until we don't get anymore
   // new Hashers
 
-  int prevCount = -1;
-  int count = 0;
-  int incrementCounter = 1;
-
-  while (prevCount != count) {
-    prevCount = count;
+  if (!initialLoad) {
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagKennelsTable,
+          SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHashersTable | SyncUserDataService.flagNarrowEventsTable,
           false,
-          useV3forInitialLoading: true,
+          useV3forInitialLoading: false,
           informUser: informUser,
-          batchText: 'Batch ${incrementCounter.toString()}',
         );
-    count = await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
-    incrementCounter++;
+  } else {
+    int prevCount = -1;
+    int count = 0;
+    int incrementCounter = 1;
+
+    while (prevCount != count) {
+      prevCount = count;
+      await G0<TableModel>().syncUserDataService.updateFromBackend(
+            SyncUserDataService.flagKennelsTable,
+            false,
+            useV3forInitialLoading: true,
+            informUser: informUser,
+            batchText: 'Batch ${incrementCounter.toString()}',
+          );
+      count = await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
+      incrementCounter++;
+    }
+
+    await CommonQueries.deleteRemovedRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
+
+    prevCount = -1;
+    count = 0;
+    incrementCounter = 1;
+
+    while (prevCount != count) {
+      prevCount = count;
+      await G0<TableModel>().syncUserDataService.updateFromBackend(
+            SyncUserDataService.flagNarrowEventsTable,
+            false,
+            useV3forInitialLoading: true,
+            informUser: informUser,
+            batchText: 'Batch ${incrementCounter.toString()}',
+          );
+      count = await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
+      incrementCounter++;
+    }
+
+    await CommonQueries.deleteRemovedRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
+
+    prevCount = -1;
+    count = 0;
+    incrementCounter = 1;
+
+    while (prevCount != count) {
+      prevCount = count;
+      await G0<TableModel>().syncUserDataService.updateFromBackend(
+            SyncUserDataService.flagHashersTable,
+            false,
+            useV3forInitialLoading: true,
+            informUser: informUser,
+            batchText: 'Batch ${incrementCounter.toString()}',
+          );
+      count = await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
+      incrementCounter++;
+    }
+
+    await CommonQueries.deleteRemovedRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
   }
 
-  prevCount = -1;
-  count = 0;
-  incrementCounter = 1;
-
-  while (prevCount != count) {
-    prevCount = count;
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagNarrowEventsTable,
-          false,
-          useV3forInitialLoading: true,
-          informUser: informUser,
-          batchText: 'Batch ${incrementCounter.toString()}',
-        );
-    count = await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
-    incrementCounter++;
-  }
-
-  prevCount = -1;
-  count = 0;
-  incrementCounter = 1;
-
-  while (prevCount != count) {
-    prevCount = count;
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHashersTable,
-          false,
-          useV3forInitialLoading: true,
-          informUser: informUser,
-          batchText: 'Batch ${incrementCounter.toString()}',
-        );
-    count = await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
-    incrementCounter++;
-  }
-
-  // print('****** > DB Setup step 10');
+  // print('******* > DB Setup step 10');
 
   if (_createIndexes) {
     await Tables.createIndexes(G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);
+    // print('******* > DB Setup step 10.1');
     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+    // print('******* > DB Setup step 10.2');
   }
 
-  // print('****** > DB Setup step 11');
+  // print('******* > DB Setup step 11');
   G0<AppModel>().dbStatus = EdbStatus.opened;
 
-  // print('****** > DB Setup step 12');
+  // print('******* > DB Setup step 12');
   return true;
 }
 
 Future<void> _openDb(dynamic db, Function informUser, String clientAppIdentifier) async {}
 
 Future<void> _createTables(dynamic db, int version, Function informUser, String clientAppIdentifier) async {
-  // print('****** > DB Setup step 4');
+  // print('******* > DB Setup step 4');
   await Tables.createTables(db, version, informUser);
-  // print('****** > DB Setup step 5');
+  // print('******* > DB Setup step 5');
   _createIndexes = true;
 }
 

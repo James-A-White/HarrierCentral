@@ -1124,21 +1124,21 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       packMember: packMember,
       amountOwed: amountOwed,
       onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) async {
-        if (rsvpState != -1) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        if ((rsvpState != -1) && (attendenceState == -1)) {
           setState(() {
             packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           });
           await _updateRsvpState(packMember, rsvpState, isHare);
-        }
-
-        if (attendenceState != -1) {
+          setState(() {});
+        } else if (attendenceState != -1) {
           setState(() {
             packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
             packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
           });
-          _updateAttendenceState(packMember, rsvpState, attendenceState, isHare);
+          await _updateAttendenceState(packMember, rsvpState, attendenceState, isHare);
+          setState(() {});
         }
-        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
       },
       onPaidCallback: (CheckInPackModel packMember, int paymentType, {OtherPaymentPopupResult userInput}) async {
         final num totalDue = userInput == null ? null : userInput.totalAmount;

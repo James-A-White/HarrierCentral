@@ -39,6 +39,28 @@ class CommonQueries {
     return results[0]['Total'];
   }
 
+  static Future<int> countRemovedRecords(String tableName) async {
+    final String query = '''
+          SELECT COUNT(*) as Total
+          FROM $tableName
+          WHERE removed != 0
+          ''';
+
+    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+    return results[0]['Total'];
+  }
+
+  static Future<void> deleteRemovedRecords(String tableName) async {
+    final String query = '''
+          DELETE
+          FROM $tableName
+          WHERE removed != 0
+          ''';
+
+    await G0<Database>().rawQuery(query);
+    return;
+  }
+
   static Future<String> getClosestEventInTime(String kennelId) async {
     String result = EMPTY_RESULT;
     try {

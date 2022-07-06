@@ -104,10 +104,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     // DANGER - need to look into definition of ClientApp
 
-    // print('****** > Starting DB Setup');
+    // print('******* > Starting DB Setup');
 
-    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool _) async {
-      // print('****** > Finished DB Setup');
+    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool result) async {
+      // print('******* > Finished DB Setup');
       // final NotificationSupport notifications = NotificationSupport();
       // await notifications.configureNotifications(true);
       // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
@@ -117,18 +117,29 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       //   setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
       // create pages after database is loaded
+      // print('******* > Init 1');
+
       _futureRunsListPage = FutureRunsListPage();
+      // print('******* > Init 2');
       _kennelsListPage = KennelsListPage(key: _kennelLocationsPageKey);
+      // print('******* > Init 3');
       _historyListPage = HistoryListPage();
+      // print('******* > Init 4');
       //final UserQrCodePage userQrCodePage = const UserQrCodePage();
       _runAndKennelMapPage = RunAndKennelMapPage(key: _runAndKennelMapPageKey);
+      // print('******* > Init 5');
 
       setState(() {});
 
+      // print('******* > Init 6');
       final bool hasLoc = await _checkLocationPermissions();
+      // print('******* > Init 7');
       if (hasLoc) {
-        await _checkAreWeAtRunStart();
+        // print('******* > Init 8');
+        // ignore: unawaited_futures
+        _checkAreWeAtRunStart();
       }
+      // print('******* > Init 9');
 
       return true;
     });
