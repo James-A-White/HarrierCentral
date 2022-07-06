@@ -88,10 +88,7 @@ class SupportPageState extends State<SupportPage> {
           child: Scaffold(
             appBar: appBar,
             body: isLoading
-                ? Container(
-                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
-                    decoration: Backgrounds.defaultHcBackground(),
-                    child: _buildCircularProgressIndicator())
+                ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
                     height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
@@ -213,7 +210,11 @@ class SupportPageState extends State<SupportPage> {
                                             ),
                                             onPressed: () async {
                                               if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
+                                                await G0<TableModel>().syncUserDataService.updateFromBackend(
+                                                      SyncUserDataService.flagAllMasterData,
+                                                      false,
+                                                      useV3forInitialLoading: false,
+                                                    );
                                                 //final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                 //print('Master data synchronized $resultStr');
 
@@ -223,8 +224,7 @@ class SupportPageState extends State<SupportPage> {
                                                   });
 
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                  final Map<String, String> result =
-                                                      await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;
@@ -259,7 +259,11 @@ class SupportPageState extends State<SupportPage> {
                                             ),
                                             onPressed: () async {
                                               if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
+                                                await G0<TableModel>().syncUserDataService.updateFromBackend(
+                                                      SyncUserDataService.flagAllMasterData,
+                                                      false,
+                                                      useV3forInitialLoading: false,
+                                                    );
                                                 // final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                 // print('Master data synchronized $resultStr');
 
@@ -269,8 +273,7 @@ class SupportPageState extends State<SupportPage> {
                                                   });
 
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                  final Map<String, String> result =
-                                                      await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;

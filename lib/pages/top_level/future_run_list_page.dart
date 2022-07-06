@@ -62,9 +62,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     }
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
-        //| SyncUserDataService.flagPaymentsTable,
-        false);
+          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
+          //| SyncUserDataService.flagPaymentsTable,
+          false, useV3forInitialLoading: false,
+        );
 
     await refreshFromTable(true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';

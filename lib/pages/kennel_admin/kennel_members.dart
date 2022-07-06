@@ -545,7 +545,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                     // counts, make sure to also refresh the HKM users
                                     // table so the run history page is accurate
                                     if (refreshThisUserData) {
-                                      await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherKennelMapTable, true);
+                                      await G0<TableModel>().syncUserDataService.updateFromBackend(
+                                            SyncUserDataService.flagHasherKennelMapTable,
+                                            true,
+                                            useV3forInitialLoading: false,
+                                          );
                                     }
                                     await _refreshKennelMembersFromTable(true);
                                     await _refreshCounters(true);

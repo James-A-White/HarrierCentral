@@ -689,11 +689,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: e6cb43e60a9c0e18feadb5eefb43d88db9437020
-      resolved-ref: e6cb43e60a9c0e18feadb5eefb43d88db9437020
+      ref: "44d4375e36a2918681a96ea05ab66bb7e08d57d0"
+      resolved-ref: "44d4375e36a2918681a96ea05ab66bb7e08d57d0"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git"
     source: git
-    version: "1.1.5"
+    version: "1.1.6"
   js:
     dependency: transitive
     description:
@@ -1230,7 +1230,7 @@ packages:
       name: sqflite
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.2+1"
+    version: "2.0.3"
   sqflite_common:
     dependency: transitive
     description:

@@ -103,7 +103,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
 
     // DANGER - need to look into definition of ClientApp
-    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool dummy) async {
+
+    // print('****** > Starting DB Setup');
+
+    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool _) async {
+      // print('****** > Finished DB Setup');
       // final NotificationSupport notifications = NotificationSupport();
       // await notifications.configureNotifications(true);
       // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
@@ -301,10 +305,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             backgroundColor: Colors.white,
             appBar: AppBar(
               elevation: 3.0,
-              systemOverlayStyle: const SystemUiOverlayStyle(
-                statusBarColor: Colors.red, // <-- SEE HERE
-                statusBarIconBrightness: Brightness.dark, //<-- For Android SEE HERE (dark icons)
-                statusBarBrightness: Brightness.dark, //<-- For iOS SEE HERE (dark icons)
+              systemOverlayStyle: SystemUiOverlayStyle(
+                statusBarColor: themeStatusBarBackground, // <-- SEE HERE
+                statusBarIconBrightness: Brightness.light, //<-- For Android SEE HERE (dark icons)
+                statusBarBrightness: Brightness.light, //<-- For iOS SEE HERE (dark icons)
               ),
               backgroundColor: themeAppBarBackground,
               title: Text(_appBarText),

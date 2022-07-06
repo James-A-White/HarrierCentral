@@ -136,18 +136,6 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
 class HashersService extends BaseService {
   // ============ Functions go here =============
 
-  Future<int> countUsers() async {
-    final String tableName = G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user);
-
-    final String query = '''
-          SELECT COUNT(*) as Total
-          FROM $tableName
-          ''';
-
-    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
-    return results[0]['Total'];
-  }
-
   Future<String> addEditUser(
       {String targetUserId,
       String firstName,

@@ -75,10 +75,12 @@ class SyncUserDataService {
   Future<bool> updateFromBackend(
     int tablesToSync,
     bool forceRefresh, {
+    @required bool useV3forInitialLoading,
     String clientAppIdentifer,
     String singleRecordId,
     Function informUser,
     String forceReplicateAllRunsForKennel,
+    String batchText = '',
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
@@ -156,30 +158,55 @@ class SyncUserDataService {
 
       final String accessToken = IveCoreUtilities.generateToken(userId, 'syncUserData');
 
-      final String body = jsonEncode(<String, String>{
+      final Map<String, String> params = <String, String>{
         'userId': userId,
         'accessToken': accessToken,
-        'hashersUpdatedAfterV2': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
         'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
         'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
         'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
-        'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
         'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
         'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
-        'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
         //'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
         'paymentsUpdatedAfter': 'ignore',
         'forceReplicateAllRunsForKennel': forceReplicateAllRunsForKennel ?? 'ignore',
-      });
+      };
+
+      final List<BaseTableHelper> tables = <BaseTableHelper>[];
+      if ((tablesToSync & flagCitiesTable) != 0) {
+        tables.add(G0<TableModel>().citiesTableHelper);
+      }
+      if ((tablesToSync & flagRegionsTable) != 0) {
+        tables.add(G0<TableModel>().regionsTableHelper);
+      }
+      if ((tablesToSync & flagCountriesTable) != 0) {
+        tables.add(G0<TableModel>().countriesTableHelper);
+      }
+
+      if (useV3forInitialLoading) {
+        params.addAll(<String, String>{
+          'hashersUpdatedAfterV3':
+              (tablesToSync & flagHashersTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString(),
+          'kennelsUpdatedAfterV3':
+              (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString(),
+          'narrowEventsUpdatedAfterV3':
+              (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString(),
+        });
+      } else {
+        params.addAll(<String, String>{
+          'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
+          'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
+          'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
+        });
+      }
+
+      final String body = jsonEncode(params);
 
       final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data', body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
-        await updateSqlTablesWithResultsFromBackendApiCall(
-          responseBody.replaceAll('\u2029', ''),
-          informUser: informUser,
-        );
+        await updateSqlTablesWithResultsFromBackendApiCall(responseBody.replaceAll('\u2029', ''),
+            informUser: informUser, suppressDeletes: useV3forInitialLoading, batchText: batchText, tables: tables.isEmpty ? null : tables);
         //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
         await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
       }
@@ -199,7 +226,15 @@ class SyncUserDataService {
     G0<TableModel>().hasherEventMapTableHelper
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJson(jsonResults, _userTables, G0<Database>(), AppDomainType.user, informUser: informUser);
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
+    return G0<TableModel>().baseService.updateSqlTablesFromJson(
+          jsonResults,
+          tables ?? _userTables,
+          G0<Database>(),
+          AppDomainType.user,
+          informUser: informUser,
+          suppressDeletes: suppressDeletes,
+          batchText: batchText,
+        );
   }
 }

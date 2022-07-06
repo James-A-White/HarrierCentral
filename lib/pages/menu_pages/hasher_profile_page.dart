@@ -99,7 +99,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.user:
-          await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, true);
+          await G0<TableModel>().syncUserDataService.updateFromBackend(
+                SyncUserDataService.flagHashersTable,
+                true,
+                useV3forInitialLoading: false,
+              );
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
@@ -1101,7 +1105,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               context,
                                                               'Reload Data',
                                                               'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
-                                                              'Refresh cache',
+                                                              'Reload data',
                                                               showCancelButton: true,
                                                               cancelButtonText: 'Cancel')
                                                           .then((bool result) async {

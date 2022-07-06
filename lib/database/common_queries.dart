@@ -29,6 +29,16 @@ class CommonQueries {
   // the variable below is there to suppress a warning about defining classes with only static members
   int unusedVariableToSuppressWarning;
 
+  static Future<int> countRecords(String tableName) async {
+    final String query = '''
+          SELECT COUNT(*) as Total
+          FROM $tableName
+          ''';
+
+    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+    return results[0]['Total'];
+  }
+
   static Future<String> getClosestEventInTime(String kennelId) async {
     String result = EMPTY_RESULT;
     try {
@@ -109,15 +119,15 @@ class CommonQueries {
 
         bool hasValidPosition = false;
 
-        // start a 2-minute loop where we look for an updated position
+        // start a 6-minute loop where we look for an updated position
         while (escape < 120 && !hasValidPosition) {
           final DateTime lastLocationUpdate = getDatePref(DatePrefsEnum.lastLocationUpdate);
-          if (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() < 15) {
+          if ((lastLocationUpdate != null) && (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() < 15)) {
             hasValidPosition = true;
             continue;
           }
           escape++;
-          await Future<dynamic>.delayed(const Duration(seconds: 1));
+          await Future<dynamic>.delayed(const Duration(seconds: 3));
         }
 
         if (hasValidPosition) {

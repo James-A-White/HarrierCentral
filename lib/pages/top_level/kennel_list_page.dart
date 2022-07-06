@@ -391,9 +391,12 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
                                         // we have either all of the events for the kennel (if it is being followed) or only the
                                         // events from the normal time period for unfollowed kennels (currently one year in the past)
-                                        await G0<TableModel>()
-                                            .syncUserDataService
-                                            .updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true, forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId);
+                                        await G0<TableModel>().syncUserDataService.updateFromBackend(
+                                              SyncUserDataService.flagNarrowEventsTable,
+                                              true,
+                                              useV3forInitialLoading: false,
+                                              forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId,
+                                            );
 
                                         setState(() {});
                                       },
@@ -413,7 +416,10 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         )
                                             .then((void _) async {
                                           await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                              SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable, true);
+                                                SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable,
+                                                true,
+                                                useV3forInitialLoading: false,
+                                              );
                                           //final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                           //print('Pack member data synchronized $resultStr');
                                           await _refreshFromTable(true);
@@ -448,7 +454,11 @@ class KennelsListPageState extends State<KennelsListPage> {
       //print(e);
     }
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, true);
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable,
+          true,
+          useV3forInitialLoading: false,
+        );
     await _refreshFromTable(true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Kennel user data synchronized $resultStr');

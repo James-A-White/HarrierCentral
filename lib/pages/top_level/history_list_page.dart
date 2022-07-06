@@ -130,11 +130,10 @@ class HistoryListPageState extends State<HistoryListPage> {
     });
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagHasherEventMapTable |
-            SyncUserDataService.flagHasherKennelMapTable |
-            SyncUserDataService.flagNarrowEventsTable |
-            SyncUserDataService.flagKennelsTable,
-        true);
+          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
+          true,
+          useV3forInitialLoading: false,
+        );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Hasher data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);

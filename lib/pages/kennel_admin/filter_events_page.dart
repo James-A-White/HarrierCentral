@@ -28,8 +28,7 @@ class LiteEventModel {
       externalIntegrationId: json[G0<TableModel>().eventsTableHelper.colEventFacebookId] as String,
       eventName: json[G0<TableModel>().eventsTableHelper.colEventName] as String,
       eventNumber: json[G0<TableModel>().eventsTableHelper.colEventNumber] as int,
-      eventStartDatetime:
-          json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] == null ? null : DateTime.parse(json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] as String),
+      eventStartDatetime: json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] == null ? null : DateTime.parse(json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] as String),
       eventInboundIntegrationId: json[G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId] as int,
       appAccessFlags: json[G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags] as int,
       canEditRunAttendance: json[G0<TableModel>().eventsTableHelper.colCanEditRunAttendence] as int,
@@ -132,7 +131,11 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       });
     }
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagNarrowEventsTable,
+          true,
+          useV3forInitialLoading: false,
+        );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events data synchronized $resultStr');
 
@@ -354,7 +357,11 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       _isLoading = true;
     });
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagNarrowEventsTable,
+          true,
+          useV3forInitialLoading: false,
+        );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Receipts data synchronized $resultStr');
     await _refreshEventFromTables(true);
@@ -984,8 +991,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                   left: 1.0,
                                   child: Text(
                                     '${date.day}',
-                                    style: const TextStyle().copyWith(
-                                        fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
+                                    style:
+                                        const TextStyle().copyWith(fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
                                   ),
                                 ),
                                 if ((snapshot.hasData) && _toDateOnly(snapshot.data) == _toDateOnly(date)) ...<Widget>[

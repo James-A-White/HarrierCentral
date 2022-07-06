@@ -274,7 +274,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     //final bool result = await G0<TableModel>()
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, true);
+          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable,
+          true,
+          useV3forInitialLoading: false,
+        );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('User data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);
