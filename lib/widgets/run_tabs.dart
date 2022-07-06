@@ -690,12 +690,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             isHareYes.value,
           );
 
+      await _refreshHemTableFromBackend(false);
       final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
       if (serverMessage.isNotEmpty) {
         await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
-      } else {
-        await _refreshHemTableFromBackend(false);
       }
     }
   }
@@ -718,12 +717,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           isHareNo.value,
         );
 
+    await _refreshHemTableFromBackend(false);
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
       await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
-    } else {
-      await _refreshHemTableFromBackend(false);
     }
   }
 
