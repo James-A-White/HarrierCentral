@@ -144,12 +144,15 @@ class SyncUserDataService {
           _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
       // final DateTime paymentsUpdatedAfter =
       //     _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-      final DateTime hasherKennelMapUpdatedAfter =
-          _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
-      final DateTime hasherEventMapUpdatedAfter =
-          _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-      final DateTime narrowEventsUpdatedAfter =
-          _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
+      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+      final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+      final DateTime narrowEventsUpdatedAfter = _narrowEventsLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -164,7 +167,7 @@ class SyncUserDataService {
         'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
         'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
         'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'hasherKennelMapUpdatedAfter392': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
         'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
         //'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
         'paymentsUpdatedAfter': 'ignore',
@@ -184,12 +187,15 @@ class SyncUserDataService {
 
       if (useV3forInitialLoading) {
         params.addAll(<String, String>{
-          'hashersUpdatedAfterV3':
-              (tablesToSync & flagHashersTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString(),
-          'kennelsUpdatedAfterV3':
-              (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString(),
-          'narrowEventsUpdatedAfterV3':
-              (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString(),
+          'hashersUpdatedAfterV3': (tablesToSync & flagHashersTable) == 0
+              ? 'ignore'
+              : (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString(),
+          'kennelsUpdatedAfterV3': (tablesToSync & flagKennelsTable) == 0
+              ? 'ignore'
+              : (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString(),
+          'narrowEventsUpdatedAfterV3': (tablesToSync & flagNarrowEventsTable) == 0
+              ? 'ignore'
+              : (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString(),
         });
       } else {
         params.addAll(<String, String>{
@@ -226,7 +232,8 @@ class SyncUserDataService {
     G0<TableModel>().hasherEventMapTableHelper
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults,
+      {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
     return G0<TableModel>().baseService.updateSqlTablesFromJson(
           jsonResults,
           tables ?? _userTables,

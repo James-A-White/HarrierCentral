@@ -128,7 +128,11 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
             false,
             useV3forInitialLoading: true,
             informUser: informUser,
-            batchText: 'Batch ${incrementCounter.toString()}',
+            batchText: incrementCounter <= 3
+                ? 'Keg ${incrementCounter.toString()}'
+                : incrementCounter <= 5
+                    ? 'Keg ${incrementCounter.toString()} ~ getting dizzy ~'
+                    : 'Keg ${incrementCounter.toString()} ~~ which way is up ~~?',
           );
       count = await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
       incrementCounter++;
@@ -147,7 +151,11 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
             false,
             useV3forInitialLoading: true,
             informUser: informUser,
-            batchText: 'Batch ${incrementCounter.toString()}',
+            batchText: incrementCounter <= 3
+                ? 'Keg ${incrementCounter.toString()}'
+                : incrementCounter <= 5
+                    ? 'Keg ${incrementCounter.toString()} ~ I\'m so sexy! ~'
+                    : 'Keg ${incrementCounter.toString()} ~~ the floor is so nice! ~~?',
           );
       count = await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
       incrementCounter++;
@@ -166,7 +174,11 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
             false,
             useV3forInitialLoading: true,
             informUser: informUser,
-            batchText: 'Batch ${incrementCounter.toString()}',
+            batchText: incrementCounter <= 3
+                ? 'Keg ${incrementCounter.toString()}'
+                : incrementCounter <= 5
+                    ? 'Keg ${incrementCounter.toString()} ~ party time! ~'
+                    : 'Keg ${incrementCounter.toString()} ~~ where\'s my bed? ~~?',
           );
       count = await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
       incrementCounter++;
