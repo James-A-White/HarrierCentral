@@ -134,7 +134,6 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     await G0<TableModel>().syncUserDataService.updateFromBackend(
           SyncUserDataService.flagNarrowEventsTable,
           true,
-          useV3forInitialLoading: false,
           debugText: 'filter_events_page: Events',
         );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
@@ -361,7 +360,6 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     await G0<TableModel>().syncUserDataService.updateFromBackend(
           SyncUserDataService.flagNarrowEventsTable,
           true,
-          useV3forInitialLoading: false,
           debugText: 'filter_events_page: Events',
         );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';

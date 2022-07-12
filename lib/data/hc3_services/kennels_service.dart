@@ -131,6 +131,8 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   KennelsTableHelper() {
     remoteDbId = 'kennelId';
     humanReadableTableName = 'Kennels';
+    pageSize = SyncUserDataService.pageSize_kennelsTable;
+    tableFlag = SyncUserDataService.flagKennelsTable;
   }
 
   @override

@@ -132,7 +132,6 @@ class HistoryListPageState extends State<HistoryListPage> {
     await G0<TableModel>().syncUserDataService.updateFromBackend(
           SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
           true,
-          useV3forInitialLoading: false,
           debugText: 'history_list_page: HEM,HKM,Events,Kennels',
         );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';

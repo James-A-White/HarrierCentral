@@ -32,6 +32,7 @@ class KennelCreditsTableHelper extends BaseTableHelper with BaseFields {
   KennelCreditsTableHelper() {
     remoteDbId = 'kennelCreditId';
     humanReadableTableName = 'Kennels';
+    pageSize = 250;
   }
 
   // @override

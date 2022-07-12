@@ -213,7 +213,6 @@ class SupportPageState extends State<SupportPage> {
                                                 await G0<TableModel>().syncUserDataService.updateFromBackend(
                                                       SyncUserDataService.flagAllMasterData,
                                                       false,
-                                                      useV3forInitialLoading: false,
                                                       debugText: 'support_page: All master data',
                                                     );
                                                 //final String resultStr = result ? 'successfully' : 'unsuccessfully';
@@ -263,7 +262,6 @@ class SupportPageState extends State<SupportPage> {
                                                 await G0<TableModel>().syncUserDataService.updateFromBackend(
                                                       SyncUserDataService.flagAllMasterData,
                                                       false,
-                                                      useV3forInitialLoading: false,
                                                       debugText: 'support_page: All master data 2',
                                                     );
                                                 // final String resultStr = result ? 'successfully' : 'unsuccessfully';

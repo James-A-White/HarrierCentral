@@ -36,6 +36,8 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
   RegionsTableHelper() {
     remoteDbId = 'regionId';
     humanReadableTableName = 'Regions';
+    pageSize = SyncUserDataService.pageSize_regionsTable;
+    tableFlag = SyncUserDataService.flagRegionsTable;
   }
 
   @override

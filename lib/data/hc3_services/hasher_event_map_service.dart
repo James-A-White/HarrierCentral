@@ -79,6 +79,8 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
   HasherEventMapTableHelper() {
     remoteDbId = 'hemId';
     humanReadableTableName = 'Event Data';
+    pageSize = SyncUserDataService.pageSize_hemTable;
+    tableFlag = SyncUserDataService.flagHasherEventMapTable;
   }
 
   @override
@@ -314,7 +316,7 @@ class HasherEventMapService {
       if (appDomainType == AppDomainType.event) {
         adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else if (appDomainType == AppDomainType.user) {
-        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       } else {
         assert(false);
       }
@@ -376,7 +378,7 @@ class HasherEventMapService {
       if (appDomainType == AppDomainType.event) {
         adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else if (appDomainType == AppDomainType.user) {
-        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       } else {
         assert(false);
       }

@@ -276,7 +276,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     await G0<TableModel>().syncUserDataService.updateFromBackend(
           SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable,
           true,
-          useV3forInitialLoading: false,
           debugText: 'user_run_history_list_page: HEM, Events, Kennels',
         );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';

@@ -102,7 +102,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           await G0<TableModel>().syncUserDataService.updateFromBackend(
                 SyncUserDataService.flagHashersTable,
                 true,
-                useV3forInitialLoading: false,
                 debugText: 'hasher_profile_page: Hashers',
               );
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';

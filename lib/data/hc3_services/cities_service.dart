@@ -38,6 +38,8 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
   CitiesTableHelper() {
     remoteDbId = 'cityId';
     humanReadableTableName = 'Cities';
+    pageSize = SyncUserDataService.pageSize_citiesTable;
+    tableFlag = SyncUserDataService.flagCitiesTable;
   }
 
   @override

@@ -113,7 +113,9 @@ class EventModel implements BaseModel {
 class EventsTableHelper extends BaseTableHelper with BaseFields {
   EventsTableHelper() {
     remoteDbId = 'eventId';
-    humanReadableTableName = 'Events';
+    humanReadableTableName = 'Hash Events';
+    pageSize = SyncUserDataService.pageSize_eventsTable;
+    tableFlag = SyncUserDataService.flagNarrowEventsTable;
   }
 
   @override
@@ -438,7 +440,7 @@ class EventsService extends BaseService {
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_event', body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
     }
 
     final dynamic responseJson = jsonDecode(responseBody);

@@ -85,9 +85,8 @@ class SyncKennelAdminService {
           _kennelLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelLastUpdated + 1000);
       final DateTime hashersUpdatedAfter =
           _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
-      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+      final DateTime hasherKennelMapUpdatedAfter =
+          _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -125,6 +124,6 @@ class SyncKennelAdminService {
   ];
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJson(jsonResults, kennelTables, G0<Database>(), AppDomainType.kennel);
+    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(jsonResults, kennelTables, G0<Database>(), AppDomainType.kennel);
   }
 }

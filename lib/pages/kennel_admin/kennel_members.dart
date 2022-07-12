@@ -548,7 +548,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                       await G0<TableModel>().syncUserDataService.updateFromBackend(
                                             SyncUserDataService.flagHasherKennelMapTable,
                                             true,
-                                            useV3forInitialLoading: false,
                                             debugText: 'kennel_members: HKM',
                                           );
                                     }

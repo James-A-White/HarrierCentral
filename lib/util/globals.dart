@@ -71,136 +71,89 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
 
   await G0.isReady<Database>();
 
+  final Client client = Client();
+
   // print('******* > DB Setup step 7');
 
-  //await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagAllDataWithoutHashersOrEvents, false, informUser: informUser);
-  await G0<TableModel>().syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagCitiesTable | SyncUserDataService.flagRegionsTable | SyncUserDataService.flagCountriesTable,
-        false,
-        useV3forInitialLoading: false,
-        informUser: informUser,
-        debugText: 'Globals: Cities, Regions, Countries on launch',
-      );
-
-  // // print('******* > DB Setup step 7.1');
-  // await G0<TableModel>().syncUserDataService.updateFromBackend(
-  //       SyncUserDataService.flagKennelsTable,
-  //       false,
-  //       informUser: informUser,
-  //     );
-
-  // // print('******* > DB Setup step 8');
-  // await G0<TableModel>().syncUserDataService.updateFromBackend(
-  //       SyncUserDataService.flagNarrowEventsTable,
-  //       false,
-  //       informUser: informUser,
-  //     );
-
-  // print('******* > DB Setup step 8.1');
-  await G0<TableModel>().syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagHasherEventMapTable,
-        false,
-        useV3forInitialLoading: false,
-        informUser: informUser,
-        debugText: 'Globals: HEM, HKM on launch',
-      );
-
-  // print('******* > DB Setup step 9');
-
-  // Hashers come in groups of 1000, so
-  // loop through until we don't get anymore
-  // new Hashers
-
-  if (!initialLoad) {
+  try {
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHashersTable | SyncUserDataService.flagNarrowEventsTable,
+          SyncUserDataService.flagCitiesTable | SyncUserDataService.flagRegionsTable | SyncUserDataService.flagCountriesTable,
           false,
-          useV3forInitialLoading: false,
           informUser: informUser,
-          debugText: 'Globals: Kennels, Hashers, Events on launch - but not initial load',
+          debugText: 'Globals: Cities, Regions, Countries on launch',
+          batchText: 'Batch #',
+          client: client,
         );
-  } else {
-    int prevCount = -1;
-    int count = 0;
-    int incrementCounter = 1;
 
-    while (prevCount != count) {
-      prevCount = count;
-      await G0<TableModel>().syncUserDataService.updateFromBackend(
-            SyncUserDataService.flagKennelsTable,
-            false,
-            useV3forInitialLoading: true,
-            informUser: informUser,
-            batchText: incrementCounter <= 3
-                ? 'Keg ${incrementCounter.toString()}'
-                : incrementCounter <= 5
-                    ? 'Keg ${incrementCounter.toString()} ~ getting dizzy ~'
-                    : 'Keg ${incrementCounter.toString()} ~~ which way is up ~~?',
-            debugText: 'Globals: Kennels on initial load (incremental)',
-          );
-      count = await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
-      incrementCounter++;
-    }
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagHasherEventMapTable,
+          false,
+          informUser: informUser,
+          debugText: 'Globals: HEM on launch',
+          batchText: 'Batch #',
+          client: client,
+        );
 
-    await CommonQueries.deleteRemovedRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagHasherKennelMapTable,
+          false,
+          informUser: informUser,
+          debugText: 'Globals: HKM on launch',
+          batchText: 'Batch #',
+          client: client,
+        );
 
-    prevCount = -1;
-    count = 0;
-    incrementCounter = 1;
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagKennelsTable,
+          false,
+          informUser: informUser,
+          debugText: 'Globals: Kennels on launch',
+          batchText: 'Batch #',
+          client: client,
+        );
 
-    while (prevCount != count) {
-      prevCount = count;
-      await G0<TableModel>().syncUserDataService.updateFromBackend(
-            SyncUserDataService.flagNarrowEventsTable,
-            false,
-            useV3forInitialLoading: true,
-            informUser: informUser,
-            batchText: incrementCounter <= 3
-                ? 'Keg ${incrementCounter.toString()}'
-                : incrementCounter <= 5
-                    ? 'Keg ${incrementCounter.toString()} ~ I\'m so sexy! ~'
-                    : 'Keg ${incrementCounter.toString()} ~~ the floor is so nice! ~~?',
-            debugText: 'Globals: Events on initial load (incremental)',
-          );
-      count = await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
-      incrementCounter++;
-    }
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagHashersTable,
+          false,
+          informUser: informUser,
+          debugText: 'Globals: Hashers on launch',
+          batchText: 'Batch #',
+          client: client,
+        );
 
-    await CommonQueries.deleteRemovedRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
-
-    prevCount = -1;
-    count = 0;
-    incrementCounter = 1;
-
-    while (prevCount != count) {
-      prevCount = count;
-      await G0<TableModel>().syncUserDataService.updateFromBackend(
-            SyncUserDataService.flagHashersTable,
-            false,
-            useV3forInitialLoading: true,
-            informUser: informUser,
-            batchText: incrementCounter <= 3
-                ? 'Keg ${incrementCounter.toString()}'
-                : incrementCounter <= 5
-                    ? 'Keg ${incrementCounter.toString()} ~ party time! ~'
-                    : 'Keg ${incrementCounter.toString()} ~~ where\'s my bed? ~~?',
-            debugText: 'Hashers: Kennels on initial load (incremental)',
-          );
-      count = await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
-      incrementCounter++;
-    }
+    await G0<TableModel>().syncUserDataService.updateFromBackend(
+          SyncUserDataService.flagNarrowEventsTable,
+          false,
+          informUser: informUser,
+          debugText: 'Globals: Events on launch',
+          batchText: 'Batch #',
+          client: client,
+        );
 
     await CommonQueries.deleteRemovedRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
+
+    // print('******* > DB Setup step 10');
+
+    if (_createIndexes) {
+      await Tables.createIndexes(G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);
+      // print('******* > DB Setup step 10.1');
+      await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+      // print('******* > DB Setup step 10.2');
+    }
+  } finally {
+    client.close();
   }
 
-  // print('******* > DB Setup step 10');
-
-  if (_createIndexes) {
-    await Tables.createIndexes(G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);
-    // print('******* > DB Setup step 10.1');
-    await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-    // print('******* > DB Setup step 10.2');
-  }
+  String message = (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString();
+  print('Hashers count = ' + message);
+  message = (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString();
+  print('Events count = ' + message);
+  message = (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString();
+  print('Kennels count = ' + message);
+  message = (await CommonQueries.countRecords(G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user))).toString();
+  print('Hasher event map count = ' + message);
+  message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user))).toString();
+  print('Hasher kennel map count = ' + message);
 
   // print('******* > DB Setup step 11');
   G0<AppModel>().dbStatus = EdbStatus.opened;

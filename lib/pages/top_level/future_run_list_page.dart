@@ -64,7 +64,6 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     await G0<TableModel>().syncUserDataService.updateFromBackend(
           SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
           false,
-          useV3forInitialLoading: false,
           debugText: 'future_run_list_page: HEM, Events, Kennels',
         );
 

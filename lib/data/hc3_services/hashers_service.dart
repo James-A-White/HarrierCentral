@@ -49,6 +49,8 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
   HashersTableHelper() {
     remoteDbId = 'hasherId';
     humanReadableTableName = 'Hashers';
+    pageSize = SyncUserDataService.pageSize_hashersTable;
+    tableFlag = SyncUserDataService.flagHashersTable;
   }
 
   @override
@@ -256,7 +258,7 @@ class HashersService extends BaseService {
         if (((eventId == null) || (eventId == GUID_EMPTY)) && ((kennelId == null) || (kennelId == GUID_EMPTY))) {
           // we don't have either an eventId or a kennelId so all we need to do is update
           // the Hasher table
-          await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+          await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
         } else if ((eventId != null) && (eventId != GUID_EMPTY)) {
           // if we have an eventId we are definitely editing an event irrespective of whether or not
           // there is also a kennelId
@@ -405,7 +407,7 @@ class HashersService extends BaseService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {
-        await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+        await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       }
     }
 
@@ -427,7 +429,7 @@ class HashersService extends BaseService {
     // );
 
     if (!newUserForThisDevice) {
-      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
     }
 
     return responseBody;

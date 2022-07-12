@@ -19,6 +19,15 @@ class SyncUserDataService {
   static const int flagsAllData = 0x0003003f;
   static const int flagAllDataWithoutHashersOrEvents = 0x0003001e;
 
+  static const int pageSize_hashersTable = 1000;
+  static const int pageSize_citiesTable = 250;
+  static const int pageSize_regionsTable = 250;
+  static const int pageSize_countriesTable = 250;
+  static const int pageSize_kennelsTable = 250;
+  static const int pageSize_eventsTable = 250;
+  static const int pageSize_hkmTable = 250;
+  static const int pageSize_hemTable = 250;
+
   num _hashersLastUpdated;
   num _citiesLastUpdated;
   num _regionsLastUpdated;
@@ -75,115 +84,107 @@ class SyncUserDataService {
   Future<bool> updateFromBackend(
     int tablesToSync,
     bool forceRefresh, {
-    @required bool useV3forInitialLoading,
     String clientAppIdentifer,
     String singleRecordId,
     Function informUser,
     String forceReplicateAllRunsForKennel,
     String batchText = '',
     @required String debugText,
+    Client client,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
     }
 
-    print('***** ===== >' + debugText);
+    int batchNumber = 1;
 
-    DateTime startTime = DateTime.now();
-    print('updateFromBackEnd started = 0');
+    while (tablesToSync != 0) {
+      print('***** ===== >' + debugText);
 
-    if (forceRefresh || true) {
-      await getLastUpdatedTimes(tablesToSync);
+      final DateTime startTime = DateTime.now();
+      print('updateFromBackEnd started = 0');
 
-      final DateTime hashersUpdatedAfter =
-          _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
-      final DateTime citiesUpdatedAfter =
-          _citiesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
-      final DateTime regionsUpdatedAfter =
-          _regionsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
-      final DateTime countriesUpdatedAfter =
-          _countriesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
-      final DateTime kennelsUpdatedAfter =
-          _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
-      // final DateTime paymentsUpdatedAfter =
-      //     _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-      final DateTime hasherKennelMapUpdatedAfter =
-          _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
-      final DateTime hasherEventMapUpdatedAfter =
-          _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-      final DateTime narrowEventsUpdatedAfter =
-          _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
+      if (forceRefresh || true) {
+        await getLastUpdatedTimes(tablesToSync);
 
-      String userId = getStringPref(StringPrefsEnum.userId);
-      if ((userId ?? '').isEmpty) {
-        userId = GUID_EMPTY;
-      }
+        final DateTime hashersUpdatedAfter =
+            _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+        final DateTime citiesUpdatedAfter =
+            _citiesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
+        final DateTime regionsUpdatedAfter =
+            _regionsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
+        final DateTime countriesUpdatedAfter =
+            _countriesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
+        final DateTime kennelsUpdatedAfter =
+            _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+        // final DateTime paymentsUpdatedAfter =
+        //     _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+        final DateTime hasherKennelMapUpdatedAfter =
+            _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+        final DateTime hasherEventMapUpdatedAfter =
+            _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+        final DateTime narrowEventsUpdatedAfter =
+            _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
 
-      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncUserData');
+        String userId = getStringPref(StringPrefsEnum.userId);
+        if ((userId ?? '').isEmpty) {
+          userId = GUID_EMPTY;
+        }
 
-      final Map<String, String> params = <String, String>{
-        'userId': userId,
-        'accessToken': accessToken,
-        'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
-        'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
-        'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter392': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
-        'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
-        //'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
-        'paymentsUpdatedAfter': 'ignore',
-        'forceReplicateAllRunsForKennel': forceReplicateAllRunsForKennel ?? 'ignore',
-      };
+        final String accessToken = IveCoreUtilities.generateToken(userId, 'syncUserData392');
 
-      final List<BaseTableHelper> tables = <BaseTableHelper>[];
-      if ((tablesToSync & flagCitiesTable) != 0) {
-        tables.add(G0<TableModel>().citiesTableHelper);
-      }
-      if ((tablesToSync & flagRegionsTable) != 0) {
-        tables.add(G0<TableModel>().regionsTableHelper);
-      }
-      if ((tablesToSync & flagCountriesTable) != 0) {
-        tables.add(G0<TableModel>().countriesTableHelper);
-      }
-
-      if (useV3forInitialLoading) {
-        params.addAll(<String, String>{
-          'hashersUpdatedAfterV3':
-              (tablesToSync & flagHashersTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString(),
-          'kennelsUpdatedAfterV3':
-              (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString(),
-          'narrowEventsUpdatedAfterV3':
-              (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString(),
-        });
-      } else {
-        params.addAll(<String, String>{
+        final Map<String, String> params = <String, String>{
+          'userId': userId,
+          'accessToken': accessToken,
+          'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
+          'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
+          'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
+          'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+          'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
           'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
           'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
           'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
-        });
-      }
+          'forceReplicateAllRunsForKennel': forceReplicateAllRunsForKennel ?? 'ignore',
+        };
 
-      final String body = jsonEncode(params);
+        final List<BaseTableHelper> tables = <BaseTableHelper>[];
+        if ((tablesToSync & flagCitiesTable) != 0) {
+          tables.add(G0<TableModel>().citiesTableHelper);
+        }
+        if ((tablesToSync & flagRegionsTable) != 0) {
+          tables.add(G0<TableModel>().regionsTableHelper);
+        }
+        if ((tablesToSync & flagCountriesTable) != 0) {
+          tables.add(G0<TableModel>().countriesTableHelper);
+        }
 
-      print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+        final String body = jsonEncode(params);
 
-      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data', body);
+        print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-      print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+        final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data_392', body, client: client);
 
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
-        // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
-        await updateSqlTablesWithResultsFromBackendApiCall(responseBody.replaceAll('\u2029', ''),
-            informUser: informUser, suppressDeletes: useV3forInitialLoading, batchText: batchText, tables: tables.isEmpty ? null : tables);
-        //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
-        await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
-      } else {
-        print('XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX');
-      }
+        print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-      print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+        if (!responseBody.startsWith(ERROR_PREFIX)) {
+          // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
+          tablesToSync = await updateSqlTablesWithResultsFromApiWithPaging(responseBody.replaceAll('\u2029', ''),
+              informUser: informUser, suppressDeletes: true, batchText: batchText + ' ' + batchNumber.toString(), tables: tables.isEmpty ? null : tables);
+          //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
+          await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
 
-      if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
-        int xxx = 0;
+          if (tablesToSync != 0) {
+            batchNumber++;
+          }
+        } else {
+          print('XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX');
+        }
+
+        print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+
+        if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
+          int xxx = 0;
+        }
       }
     }
     return true;
@@ -201,8 +202,20 @@ class SyncUserDataService {
     G0<TableModel>().hasherEventMapTableHelper
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJson(
+  Future<List<dynamic>> updateSqlTablesWithResultsFromApiWithAdHocData(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
+    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(
+          jsonResults,
+          tables ?? _userTables,
+          G0<Database>(),
+          AppDomainType.user,
+          informUser: informUser,
+          suppressDeletes: suppressDeletes,
+          batchText: batchText,
+        );
+  }
+
+  Future<int> updateSqlTablesWithResultsFromApiWithPaging(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
+    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithPaging(
           jsonResults,
           tables ?? _userTables,
           G0<Database>(),

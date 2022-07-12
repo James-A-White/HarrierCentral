@@ -316,11 +316,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             backgroundColor: Colors.white,
             appBar: AppBar(
               elevation: 3.0,
-              systemOverlayStyle: SystemUiOverlayStyle(
-                statusBarColor: themeStatusBarBackground, // <-- SEE HERE
-                statusBarIconBrightness: Brightness.light, //<-- For Android SEE HERE (dark icons)
-                statusBarBrightness: Brightness.light, //<-- For iOS SEE HERE (dark icons)
-              ),
               backgroundColor: themeAppBarBackground,
               title: Text(_appBarText),
               centerTitle: true,

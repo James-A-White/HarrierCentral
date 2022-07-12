@@ -82,6 +82,8 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   HasherKennelMapTableHelper() {
     remoteDbId = 'hkmId';
     humanReadableTableName = 'Kennel';
+    pageSize = SyncUserDataService.pageSize_hkmTable;
+    tableFlag = SyncUserDataService.flagHasherKennelMapTable;
   }
 
   // @override
@@ -251,8 +253,7 @@ class HasherKennelMapService {
           G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
         );
 
-    final DateTime hasherKennelMapUpdatedAfter =
-        _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
     final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
@@ -284,7 +285,7 @@ class HasherKennelMapService {
         } else if (appDomainType == AppDomainType.kennel) {
           adHocData = await G0<TableModel>().syncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
         } else if (appDomainType == AppDomainType.user) {
-          adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+          adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
         } else {
           assert(false);
         }

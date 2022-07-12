@@ -50,6 +50,8 @@ class CountriesTableHelper extends BaseTableHelper with BaseFields {
   CountriesTableHelper() {
     remoteDbId = 'countryId';
     humanReadableTableName = 'Countries';
+    pageSize = SyncUserDataService.pageSize_countriesTable;
+    tableFlag = SyncUserDataService.flagCountriesTable;
   }
 
   @override

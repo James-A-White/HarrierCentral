@@ -48,6 +48,7 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   ReceiptsTableHelper() {
     remoteDbId = 'receiptId';
     humanReadableTableName = 'Receipts';
+    pageSize = 250;
   }
 
   // @override

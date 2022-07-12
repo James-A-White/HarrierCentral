@@ -70,6 +70,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
   PaymentsTableHelper() {
     remoteDbId = 'paymentId';
     humanReadableTableName = 'Payments';
+    pageSize = 250;
   }
 
   // @override
@@ -235,8 +236,7 @@ class PaymentsService {
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
-    final DateTime hasherKennelMapUpdatedAfter =
-        _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
     final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -294,7 +294,7 @@ class PaymentsService {
       if (appDomainType == AppDomainType.event) {
         results = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else {
-        results = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+        results = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       }
     }
     return results;

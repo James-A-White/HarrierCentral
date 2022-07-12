@@ -394,7 +394,6 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         await G0<TableModel>().syncUserDataService.updateFromBackend(
                                               SyncUserDataService.flagNarrowEventsTable,
                                               true,
-                                              useV3forInitialLoading: false,
                                               forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId,
                                               debugText: 'kennel_list_page: Events following delete (clear cache in App)',
                                             );
@@ -419,7 +418,6 @@ class KennelsListPageState extends State<KennelsListPage> {
                                           await G0<TableModel>().syncUserDataService.updateFromBackend(
                                                 SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable,
                                                 true,
-                                                useV3forInitialLoading: false,
                                                 debugText: 'kennel_list_page: HEM, HKM, Kennels',
                                               );
                                           //final String resultStr = result ? 'successfully' : 'unsuccessfully';
@@ -459,7 +457,6 @@ class KennelsListPageState extends State<KennelsListPage> {
     await G0<TableModel>().syncUserDataService.updateFromBackend(
           SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable,
           true,
-          useV3forInitialLoading: false,
           debugText: 'kennel_list_page: Kennels, HKM',
         );
     await _refreshFromTable(true);
