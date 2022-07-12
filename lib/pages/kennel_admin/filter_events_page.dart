@@ -135,6 +135,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           SyncUserDataService.flagNarrowEventsTable,
           true,
           useV3forInitialLoading: false,
+          debugText: 'filter_events_page: Events',
         );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events data synchronized $resultStr');
@@ -361,6 +362,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           SyncUserDataService.flagNarrowEventsTable,
           true,
           useV3forInitialLoading: false,
+          debugText: 'filter_events_page: Events',
         );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Receipts data synchronized $resultStr');

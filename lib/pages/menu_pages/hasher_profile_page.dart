@@ -103,6 +103,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 SyncUserDataService.flagHashersTable,
                 true,
                 useV3forInitialLoading: false,
+                debugText: 'hasher_profile_page: Hashers',
               );
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');

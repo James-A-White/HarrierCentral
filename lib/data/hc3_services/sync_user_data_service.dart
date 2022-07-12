@@ -81,55 +81,18 @@ class SyncUserDataService {
     Function informUser,
     String forceReplicateAllRunsForKennel,
     String batchText = '',
+    @required String debugText,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
     }
 
-    // final int hashersLastUpdate = (tablesToSync & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
-    // final int citiesLastUpdate = (tablesToSync & flagCitiesTable) == 0 ? null : getIntPref(CitiesTableHelper.lastUpdatedKey) ?? 0;
-    // final int regionsLastUpdate = (tablesToSync & flagRegionsTable) == 0 ? null : getIntPref(RegionsTableHelper.lastUpdatedKey) ?? 0;
-    // final int countriesLastUpdate = (tablesToSync & flagCountriesTable) == null ? 0 : getIntPref(CountriesTableHelper.lastUpdatedKey) ?? 0;
-    // final int kennelsLastUpdate = (tablesToSync & flagKennelsTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
-    // final int hasherKennelMapLastUpdate = (tablesToSync & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.user)) ?? 0;
-    // final int hasherEventMapLastUpdate = (tablesToSync & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.user)) ?? 0;
-    // final int narrowEventsLastUpdate = (tablesToSync & flagNarrowEventsTable) == 0 ? null : getIntPref(NarrowEventsTableHelper.lastUpdatedKey) ?? 0;
+    print('***** ===== >' + debugText);
 
-    if (forceRefresh || true)
+    DateTime startTime = DateTime.now();
+    print('updateFromBackEnd started = 0');
 
-    // ||
-    // ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HashersTableHelper.forceRequeryInterval) ||
-    // ((citiesLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - citiesLastUpdate) > CitiesTableHelper.forceRequeryInterval) ||
-    // ((regionsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - regionsLastUpdate) > RegionsTableHelper.forceRequeryInterval) ||
-    // ((countriesLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - countriesLastUpdate) > CountriesTableHelper.forceRequeryInterval) ||
-    // ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
-    // ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval) ||
-    // ((hasherEventMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherEventMapLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
-    // ((narrowEventsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - narrowEventsLastUpdate) > NarrowEventsTableHelper.forceRequeryInterval))
-
-    {
-      // check to see if we need to clear the cache
-      //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
-
-      // if (lastCacheClear == null) {
-      //   // if lastCacheClear is null that means we've never cleared the
-      //   // cache. This happens on startup. So, go ahead and set the lastCacheClear
-      //   // date to now and set lastCacheClear to now to prevent the
-      //   // cache from clearing immediatly upon startup
-      //   lastCacheClear = DateTime.now().millisecondsSinceEpoch;
-      //   setIntPref(CitiesTableHelper.lastCacheClearKey,
-      //       DateTime.now().millisecondsSinceEpoch);
-      // }
-
-      // if (lastCacheClear + CitiesTableHelper.cacheDuration <
-      //     DateTime.now().millisecondsSinceEpoch) {
-      //   //print(
-      //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-      //   await clearTable();
-      // }
-
-      // get the last updated time of any of the records in
-      // the table and add one second to it
+    if (forceRefresh || true) {
       await getLastUpdatedTimes(tablesToSync);
 
       final DateTime hashersUpdatedAfter =
@@ -144,15 +107,12 @@ class SyncUserDataService {
           _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
       // final DateTime paymentsUpdatedAfter =
       //     _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
-      final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-      final DateTime narrowEventsUpdatedAfter = _narrowEventsLastUpdated == null
-          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
-          : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
+      final DateTime hasherKennelMapUpdatedAfter =
+          _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+      final DateTime hasherEventMapUpdatedAfter =
+          _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+      final DateTime narrowEventsUpdatedAfter =
+          _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -187,15 +147,12 @@ class SyncUserDataService {
 
       if (useV3forInitialLoading) {
         params.addAll(<String, String>{
-          'hashersUpdatedAfterV3': (tablesToSync & flagHashersTable) == 0
-              ? 'ignore'
-              : (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString(),
-          'kennelsUpdatedAfterV3': (tablesToSync & flagKennelsTable) == 0
-              ? 'ignore'
-              : (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString(),
-          'narrowEventsUpdatedAfterV3': (tablesToSync & flagNarrowEventsTable) == 0
-              ? 'ignore'
-              : (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString(),
+          'hashersUpdatedAfterV3':
+              (tablesToSync & flagHashersTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString(),
+          'kennelsUpdatedAfterV3':
+              (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString(),
+          'narrowEventsUpdatedAfterV3':
+              (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString(),
         });
       } else {
         params.addAll(<String, String>{
@@ -207,7 +164,11 @@ class SyncUserDataService {
 
       final String body = jsonEncode(params);
 
+      print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+
       final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data', body);
+
+      print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
@@ -215,6 +176,14 @@ class SyncUserDataService {
             informUser: informUser, suppressDeletes: useV3forInitialLoading, batchText: batchText, tables: tables.isEmpty ? null : tables);
         //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
         await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
+      } else {
+        print('XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX');
+      }
+
+      print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+
+      if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
+        int xxx = 0;
       }
     }
     return true;
@@ -232,8 +201,7 @@ class SyncUserDataService {
     G0<TableModel>().hasherEventMapTableHelper
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults,
-      {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
     return G0<TableModel>().baseService.updateSqlTablesFromJson(
           jsonResults,
           tables ?? _userTables,

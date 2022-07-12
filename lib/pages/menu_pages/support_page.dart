@@ -214,6 +214,7 @@ class SupportPageState extends State<SupportPage> {
                                                       SyncUserDataService.flagAllMasterData,
                                                       false,
                                                       useV3forInitialLoading: false,
+                                                      debugText: 'support_page: All master data',
                                                     );
                                                 //final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                 //print('Master data synchronized $resultStr');
@@ -263,6 +264,7 @@ class SupportPageState extends State<SupportPage> {
                                                       SyncUserDataService.flagAllMasterData,
                                                       false,
                                                       useV3forInitialLoading: false,
+                                                      debugText: 'support_page: All master data 2',
                                                     );
                                                 // final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                 // print('Master data synchronized $resultStr');

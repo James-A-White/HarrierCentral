@@ -549,6 +549,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                             SyncUserDataService.flagHasherKennelMapTable,
                                             true,
                                             useV3forInitialLoading: false,
+                                            debugText: 'kennel_members: HKM',
                                           );
                                     }
                                     await _refreshKennelMembersFromTable(true);

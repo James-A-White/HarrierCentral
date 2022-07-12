@@ -79,6 +79,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
         false,
         useV3forInitialLoading: false,
         informUser: informUser,
+        debugText: 'Globals: Cities, Regions, Countries on launch',
       );
 
   // // print('******* > DB Setup step 7.1');
@@ -101,6 +102,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
         false,
         useV3forInitialLoading: false,
         informUser: informUser,
+        debugText: 'Globals: HEM, HKM on launch',
       );
 
   // print('******* > DB Setup step 9');
@@ -115,6 +117,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
           false,
           useV3forInitialLoading: false,
           informUser: informUser,
+          debugText: 'Globals: Kennels, Hashers, Events on launch - but not initial load',
         );
   } else {
     int prevCount = -1;
@@ -133,6 +136,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
                 : incrementCounter <= 5
                     ? 'Keg ${incrementCounter.toString()} ~ getting dizzy ~'
                     : 'Keg ${incrementCounter.toString()} ~~ which way is up ~~?',
+            debugText: 'Globals: Kennels on initial load (incremental)',
           );
       count = await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
       incrementCounter++;
@@ -156,6 +160,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
                 : incrementCounter <= 5
                     ? 'Keg ${incrementCounter.toString()} ~ I\'m so sexy! ~'
                     : 'Keg ${incrementCounter.toString()} ~~ the floor is so nice! ~~?',
+            debugText: 'Globals: Events on initial load (incremental)',
           );
       count = await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
       incrementCounter++;
@@ -179,6 +184,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
                 : incrementCounter <= 5
                     ? 'Keg ${incrementCounter.toString()} ~ party time! ~'
                     : 'Keg ${incrementCounter.toString()} ~~ where\'s my bed? ~~?',
+            debugText: 'Hashers: Kennels on initial load (incremental)',
           );
       count = await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
       incrementCounter++;
