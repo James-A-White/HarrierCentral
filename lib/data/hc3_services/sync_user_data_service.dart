@@ -100,10 +100,10 @@ class SyncUserDataService {
     int batchNumber = 1;
 
     while (tablesToSync != 0) {
-      print('***** ===== >' + debugText);
+      // print('***** ===== >' + debugText);
 
-      final DateTime startTime = DateTime.now();
-      print('updateFromBackEnd started = 0');
+      // final DateTime startTime = DateTime.now();
+      // print('updateFromBackEnd started = 0');
 
       if (forceRefresh || true) {
         await getLastUpdatedTimes(tablesToSync);
@@ -162,11 +162,11 @@ class SyncUserDataService {
 
         final String body = jsonEncode(params);
 
-        print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+        //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
         final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data_392', body, client: client);
 
-        print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+        //print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
         if (!responseBody.startsWith(ERROR_PREFIX)) {
           // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
@@ -182,11 +182,11 @@ class SyncUserDataService {
           print('XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX');
         }
 
-        print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+        //print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-        if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
-          int xxx = 0;
-        }
+        // if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
+        //   int xxx = 0;
+        // }
       }
     }
     return true;

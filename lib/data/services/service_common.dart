@@ -12,11 +12,11 @@ class ServiceCommon {
 
     Response response;
 
-    DateTime startTime = DateTime.now();
-    print('CCCCCC content sent = 0');
+    // DateTime startTime = DateTime.now();
+    // print('CCCCCC content sent = 0');
 
-    print(BASE_API_URL + procName);
-    print(requestBody);
+    // print(BASE_API_URL + procName);
+    // print(requestBody);
 
     if (client == null) {
       response = await post(Uri.parse(BASE_API_URL + procName), headers: <String, String>{'content-type': 'application/json'}, body: requestBody).catchError(
@@ -32,7 +32,7 @@ class ServiceCommon {
       );
     }
 
-    print('DDDDDDD data received = ' + DateTime.now().difference(startTime).inMilliseconds.toString());
+    // print('DDDDDDD data received = ' + DateTime.now().difference(startTime).inMilliseconds.toString());
 
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 

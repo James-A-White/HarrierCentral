@@ -146,7 +146,7 @@ class SyncEventAdminService {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncEventAdminData');
+      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncEventAdminData392');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
