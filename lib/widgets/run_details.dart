@@ -446,7 +446,36 @@ class RunDetails extends StatelessWidget {
                   ],
                 ),
               ],
-              if ((((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : event.locationPostCode + ' ') + (event.locationCity ?? '') != '') ...<Widget>[
+              if ((((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : event.locationPostCode + ' ') != '') ...<Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        'Post Code:',
+                        style: listLabelStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      flex: flexLeft,
+                    ),
+                    const SizedBox(
+                      height: spaceBetweenRows,
+                      width: spaceBetweenColumns,
+                    ),
+                    Expanded(
+                        child: Text(
+                          ((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : event.locationPostCode + ' ',
+                          style: listValueStyle,
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        flex: flexRight),
+                  ],
+                ),
+              ],
+              if ((event.locationCity ?? '') != '') ...<Widget>[
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -465,7 +494,7 @@ class RunDetails extends StatelessWidget {
                     ),
                     Expanded(
                         child: Text(
-                          (((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : event.locationPostCode + ' ') + (event.locationCity ?? ''),
+                          event.locationCity ?? '',
                           style: listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 1,
