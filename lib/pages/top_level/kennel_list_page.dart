@@ -358,6 +358,19 @@ class KennelsListPageState extends State<KennelsListPage> {
                                     padding: const EdgeInsets.only(left: 10.0, right: 10.0),
                                     child: KennelsListItem(
                                       kennelItem: _filteredList[index],
+                                      kennelEmailAndNotificationPrefsUpdated: (int notificationStatus, int emailAlertStatus) async {
+                                        setState(() {
+                                          _filteredList[index].extensions.notificationsRequested = -1;
+                                          _filteredList[index].extensions.emailAlertRequested = -1;
+                                          if (notificationStatus != null) {
+                                            _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                          }
+
+                                          if (emailAlertStatus != null) {
+                                            _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
+                                          }
+                                        });
+                                      },
                                       kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) async {
                                         _filteredList[index].extensions.followingRequested = -1;
                                         _filteredList[index].extensions.notificationsRequested = -1;

@@ -3,11 +3,18 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class KennelsListItem extends StatefulWidget {
-  const KennelsListItem({Key key, @required this.kennelItem, @required this.kennelSelected, @required this.kennelFollowingUpdated}) : super(key: key);
+  const KennelsListItem({
+    Key key,
+    @required this.kennelItem,
+    @required this.kennelSelected,
+    @required this.kennelFollowingUpdated,
+    @required this.kennelEmailAndNotificationPrefsUpdated,
+  }) : super(key: key);
 
   final KennelListAggregate kennelItem;
   final Function kennelSelected;
   final Function kennelFollowingUpdated;
+  final Function kennelEmailAndNotificationPrefsUpdated;
 
   @override
   KennelListItemState createState() => KennelListItemState();
@@ -121,7 +128,7 @@ class KennelListItemState extends State<KennelsListItem> {
                 padding: const EdgeInsets.only(right: 10),
                 child: GestureDetector(
                   onTap: () {
-                    showEmailPopup(context);
+                    _showEmailPopup(context);
                   },
                   child: widget.kennelItem.extensions.emailAlertRequested != -1
                       ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
@@ -407,13 +414,25 @@ class KennelListItemState extends State<KennelsListItem> {
       {
         if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
             message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
-          final HasherKennelMapService srv = HasherKennelMapService();
-          final int notificationStatus = retVal.value;
-          widget.kennelItem.extensions.notificationsRequested = notificationStatus;
+          widget.kennelItem.extensions.notificationsRequested = retVal.value;
           setState(() {});
-          final List<dynamic> queryResults = await srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, notificationState: notificationStatus);
 
-          widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+          final String userId = getStringPref(StringPrefsEnum.userId);
+          await G0<TableModel>()
+              .hasherKennelMapService
+              .setEmailAndNotificationPreferences(
+                widget.kennelItem.kennel.kennelId,
+                userId,
+                AppDomainType.user,
+                retVal,
+                emailAlertsUnchanged,
+              )
+              .then((List<dynamic> results) {
+            setState(() {
+              widget.kennelEmailAndNotificationPrefsUpdated(results[0]['notificationPreference'], null);
+            });
+          });
+
           // final NotificationSupport notifications = NotificationSupport();
           // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
 
@@ -468,7 +487,7 @@ class KennelListItemState extends State<KennelsListItem> {
     return distance + ' ' + unitsOfMeasure;
   }
 
-  void showEmailPopup(BuildContext context) {
+  void _showEmailPopup(BuildContext context) {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Turn email alerts on',
@@ -524,20 +543,26 @@ class KennelListItemState extends State<KennelsListItem> {
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return popup;
-        }).then((dynamic retVal) {
+        }).then((dynamic retVal) async {
       if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
         if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
             message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
-          final HasherKennelMapService srv = HasherKennelMapService();
-          final int emailAlertStatus = retVal.value;
-          widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
+          widget.kennelItem.extensions.emailAlertRequested = retVal.value;
           setState(() {});
-          srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
+
+          final String userId = getStringPref(StringPrefsEnum.userId);
+          await G0<TableModel>()
+              .hasherKennelMapService
+              .setEmailAndNotificationPreferences(
+                widget.kennelItem.kennel.kennelId,
+                userId,
+                AppDomainType.user,
+                notificationsUnchanged,
+                retVal,
+              )
+              .then((List<dynamic> results) {
             setState(() {
-              widget.kennelFollowingUpdated(
-                  queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
-              // final NotificationSupport notifications = NotificationSupport();
-              // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
+              widget.kennelEmailAndNotificationPrefsUpdated(null, results[0]['emailAlertPreference']);
             });
           });
         }

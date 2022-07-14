@@ -325,6 +325,69 @@ class HasherEventMapService {
     return adHocData;
   }
 
+  Future<List<dynamic>> setEmailAndNotificationPreferences(
+    String eventId,
+    String hasherId,
+    AppDomainType appDomainType,
+    EnumNotificationState<int> notificationPreference,
+    EnumEmailAlertState<int> emailPreference,
+  ) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+      return null;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEmailAndNotificationPrefs');
+
+    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
+
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+
+    final Map<String, Object> bodyMap = <String, Object>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'hasherId': hasherId,
+      'kennelId': null,
+      'eventId': eventId,
+      'emailPreference': emailPreference.value,
+      'notificationPreference': notificationPreference.value,
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
+    };
+
+    final String body = jsonEncode(bodyMap);
+
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_set_email_notification_prefs', body);
+
+    List<dynamic> adHocData = <dynamic>[];
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      if (appDomainType == AppDomainType.event) {
+        adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      } else if (appDomainType == AppDomainType.user) {
+        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
+      } else {
+        assert(false);
+      }
+    }
+
+    return adHocData;
+  }
+
   Future<List<dynamic>> rsvpForEvent(
     String eventId,
     String hasherId,

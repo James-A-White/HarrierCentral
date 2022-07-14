@@ -170,6 +170,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         break;
     }
 
+    String message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel))).toString();
+    print('HKM count = ' + message);
+
     final String query = ''' 
         SELECT 
           h.${G0<TableModel>().hashersTableHelper.colHasherId},
@@ -200,9 +203,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
             else 5
           end as memberFollowingStatus
           FROM hashers h
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} 
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
           LEFT OUTER JOIN kennels k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
           WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 
+          
           ORDER BY memberFollowingStatus,$orderBy
           
           ''';

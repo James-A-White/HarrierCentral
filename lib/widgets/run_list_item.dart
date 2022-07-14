@@ -215,6 +215,18 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                 //mainAxisSize: MainAxisSize.max,
                                 children: <Widget>[
                                   Text(
+                                    widget.futureRun.kennel.kennelName,
+                                    style: const TextStyle(
+                                      color: Color.fromARGB(255, 7, 12, 165),
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      fontSize: 15.0,
+                                      height: 1,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
                                     (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
                                         (widget.futureRun.extensions.daysUntilEvent <= 14
                                             ? widget.futureRun.extensions.daysUntilEvent.toInt() == -1
@@ -235,7 +247,13 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                                     : 'in ' +
                                                         (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() +
                                                         ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
-                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      fontSize: 15.0,
+                                      height: 1,
+                                    ),
                                     textAlign: TextAlign.left,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -529,7 +547,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             return popup;
           }).then((dynamic retVal) async {
         if (retVal is EnumEmailAlertState) {
-          setEmailAlertState(retVal);
+          _setEmailAlertState(retVal);
         } else if (retVal is EnumNotificationState) {
           _setNotificationState(retVal);
         } else if (retVal is EnumRsvpState) {
@@ -620,6 +638,31 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     });
   }
 
+  void _setEmailAlertState(EnumEmailAlertState<int> retVal) {
+    if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
+      final String userId = getStringPref(StringPrefsEnum.userId);
+      final EnumEmailAlertState<int> nState = retVal;
+      setState(() {
+        widget.futureRun.extensions.emailAlertPreference = -1;
+      });
+
+      G0<TableModel>()
+          .hasherEventMapService
+          .setEmailAndNotificationPreferences(
+            widget.futureRun.event.eventId,
+            userId,
+            AppDomainType.user,
+            notificationsUnchanged,
+            nState,
+          )
+          .then((List<dynamic> results) {
+        setState(() {
+          widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
+        });
+      });
+    }
+  }
+
   void _setNotificationState(EnumNotificationState<int> retVal) {
     if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
       final String userId = getStringPref(StringPrefsEnum.userId);
@@ -630,12 +673,12 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
       G0<TableModel>()
           .hasherEventMapService
-          .joinEvent(
+          .setEmailAndNotificationPreferences(
             widget.futureRun.event.eventId,
             userId,
-            null,
             AppDomainType.user,
-            notificationState: nState.value,
+            nState,
+            emailAlertsUnchanged,
           )
           .then((List<dynamic> results) {
         setState(() {
@@ -718,32 +761,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         builder: (BuildContext context) {
           return popup;
         }).then((dynamic retVal) {
-      setEmailAlertState(retVal);
+      _setEmailAlertState(retVal);
     });
-  }
-
-  void setEmailAlertState(EnumEmailAlertState<int> retVal) {
-    if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
-      final String userId = getStringPref(StringPrefsEnum.userId);
-      final EnumEmailAlertState<int> nState = retVal;
-      setState(() {
-        widget.futureRun.extensions.emailAlertPreference = -1;
-      });
-
-      G0<TableModel>()
-          .hasherEventMapService
-          .joinEvent(
-            widget.futureRun.event.eventId,
-            userId,
-            null,
-            AppDomainType.user,
-            emailAlertState: nState.value,
-          )
-          .then((List<dynamic> results) {
-        setState(() {
-          widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
-        });
-      });
-    }
   }
 }

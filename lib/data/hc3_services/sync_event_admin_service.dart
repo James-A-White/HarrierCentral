@@ -52,7 +52,13 @@ class SyncEventAdminService {
         : await getLastUpdatedTime(G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
   }
 
-  Future<bool> updateFromBackend(int flags, bool forceRefresh, String eventId, {Function informUser}) async {
+  Future<bool> updateFromBackend(
+    int flags,
+    bool forceRefresh,
+    String eventId, {
+    Function informUser,
+    bool usePaging = false,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
     }
@@ -148,14 +154,15 @@ class SyncEventAdminService {
         'eventId': eventId,
         'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
         'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter392': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
         'narrowEventsUpdatedAfter': (flags & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
         'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
         'receiptsUpdatedAfter': (flags & flagReceiptsTable) == 0 ? 'ignore' : receiptsUpdatedAfter.toString().substring(0, 19),
         'kennelCreditsUpdatedAfter': (flags & flagKennelCreditTable) == 0 ? 'ignore' : kennelCreditsUpdatedAfter.toString().substring(0, 19),
+        'usePaging': usePaging ? '1' : '0',
       });
 
-      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_event_admin_data', body);
+      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_event_admin_data_392', body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(

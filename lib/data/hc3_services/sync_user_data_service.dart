@@ -91,6 +91,7 @@ class SyncUserDataService {
     String batchText = '',
     @required String debugText,
     Client client,
+    bool usePaging = false,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
@@ -145,6 +146,7 @@ class SyncUserDataService {
           'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
           'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
           'forceReplicateAllRunsForKennel': forceReplicateAllRunsForKennel ?? 'ignore',
+          'usePaging': usePaging ? '1' : '0',
         };
 
         final List<BaseTableHelper> tables = <BaseTableHelper>[];

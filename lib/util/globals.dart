@@ -83,6 +83,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
           debugText: 'Globals: Cities, Regions, Countries on launch',
           batchText: 'Batch #',
           client: client,
+          usePaging: false,
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
@@ -92,6 +93,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
           debugText: 'Globals: HEM on launch',
           batchText: 'Batch #',
           client: client,
+          usePaging: false,
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
@@ -101,6 +103,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
           debugText: 'Globals: HKM on launch',
           batchText: 'Batch #',
           client: client,
+          usePaging: false,
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
@@ -110,6 +113,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
           debugText: 'Globals: Kennels on launch',
           batchText: 'Batch #',
           client: client,
+          usePaging: true,
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
@@ -119,6 +123,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
           debugText: 'Globals: Hashers on launch',
           batchText: 'Batch #',
           client: client,
+          usePaging: true,
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
@@ -128,6 +133,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
           debugText: 'Globals: Events on launch',
           batchText: 'Batch #',
           client: client,
+          usePaging: true,
         );
 
     await CommonQueries.deleteRemovedRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));

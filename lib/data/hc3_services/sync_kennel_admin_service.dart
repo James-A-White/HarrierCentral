@@ -31,7 +31,13 @@ class SyncKennelAdminService {
         : await getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel));
   }
 
-  Future<bool> updateFromBackend(int flags, bool forceRefresh, String kennelId, {Function informUser}) async {
+  Future<bool> updateFromBackend(
+    int flags,
+    bool forceRefresh,
+    String kennelId, {
+    Function informUser,
+    bool usePaging = false,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
     }
@@ -93,7 +99,7 @@ class SyncKennelAdminService {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncKennelAdminData');
+      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncKennelAdminData392');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
@@ -101,10 +107,11 @@ class SyncKennelAdminService {
         'kennelId': kennelId,
         'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
         'kennelsUpdatedAfter': (flags & flagKennelTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter392': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'usePaging': usePaging ? '1' : '0',
       });
 
-      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_kennel_admin_data', body);
+      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_kennel_admin_data_392', body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(
