@@ -104,8 +104,8 @@ class CommonQueries {
       final String sql = ''' 
           SELECT e.${G0<TableModel>().eventsTableHelper.colEventId},
           e.${G0<TableModel>().eventsTableHelper.colEventName},
-          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else e.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as lat,
-          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLongitude} else e.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as lon,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(e.${G0<TableModel>().eventsTableHelper.colFbLatitude},e.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as lat,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLongitude} else coalesce(e.${G0<TableModel>().eventsTableHelper.colFbLongitude},e.${G0<TableModel>().eventsTableHelper.colHcLongitude}) end as lon,
           e.${G0<TableModel>().eventsTableHelper.colEventImage} as eventImage,
           e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
           k.${G0<TableModel>().kennelsTableHelper.colKennelId} as kennelId,
@@ -303,9 +303,9 @@ class CommonQueries {
       final String sql = '''
           SELECT e.*,
           k.*,
-          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else e.${G0<TableModel>().eventsTableHelper.colFbLatitude} end as latitude,
-          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLongitude} else e.${G0<TableModel>().eventsTableHelper.colFbLongitude} end as longitude,
-          case when ((e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND e.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND e.${G0<TableModel>().eventsTableHelper.colFbLatitude} IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(e.${G0<TableModel>().eventsTableHelper.colFbLatitude},e.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as latitude,
+          case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLongitude} else coalesce(e.${G0<TableModel>().eventsTableHelper.colFbLongitude},e.${G0<TableModel>().eventsTableHelper.colHcLongitude}) end as longitude,
+          case when ((e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND e.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(e.${G0<TableModel>().eventsTableHelper.colFbLatitude},e.${G0<TableModel>().eventsTableHelper.colHcLatitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencyCode},c.${G0<TableModel>().countriesTableHelper.colCurrencyCode},"USD") as curCode,
