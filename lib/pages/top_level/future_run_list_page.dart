@@ -330,7 +330,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 ];
               },
               body: RefreshIndicator(
-                onRefresh: () => _refreshFromBackend(clearLocalTables: true),
+                onRefresh: () => _refreshFromBackend(clearLocalTables: false),
                 displacement: 40.0,
                 child: ListView.builder(
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
