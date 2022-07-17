@@ -124,7 +124,7 @@ class ApproveLoginService {
         await IveCoreUtilities.showAlert(
             context,
             'Unknown Server Error',
-            'The Harrier Central server is experiencing an unknown server error. Please report this to us at connect@harriercentral.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
+            'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at connect@harriercentral.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${resp.statusCode.toString()}',
             'Use Offline');
       }
 
