@@ -218,22 +218,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
 
-              ListTile(
-                leading: const Icon(MaterialCommunityIcons.cloud_download, color: textColor),
-                title: Text('App Download Links', style: _style),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      settings: const RouteSettings(),
-                      builder: (BuildContext context) {
-                        return const AppDownloadPage();
-                      },
-                    ),
-                  );
-                },
-              ),
+              // ListTile(
+              //   leading: const Icon(MaterialCommunityIcons.cloud_download, color: textColor),
+              //   title: Text('App Download Links', style: _style),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     Navigator.push<dynamic>(
+              //       context,
+              //       MaterialPageRoute<dynamic>(
+              //         settings: const RouteSettings(),
+              //         builder: (BuildContext context) {
+              //           return const AppDownloadPage();
+              //         },
+              //       ),
+              //     );
+              //   },
+              // ),
               if (Utilities.isOpeeOrTuna()) ...<Widget>[
                 ListTile(
                   leading: const Icon(FontAwesome.question_circle, color: textColor),

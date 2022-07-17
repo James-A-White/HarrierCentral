@@ -113,7 +113,21 @@ class ApproveLoginService {
     // finally, if the response times out again, continue with offline mode
     resp ??= await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
 
-    if ((resp == null) || (resp.body == null) || (resp.body.length < 10) || ((resp.statusCode < 200) && (resp.statusCode >= 300))) {
+    if ((resp == null) || (resp.body == null) || (resp.body.length < 10) || ((resp.statusCode < 200) || (resp.statusCode >= 300))) {
+      if (resp.reasonPhrase == 'Site Disabled') {
+        await IveCoreUtilities.showAlert(
+            context,
+            'Down for Maintenance',
+            'The Harrier Central server is temporarily offline for maintenance.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
+            'Use Offline');
+      } else {
+        await IveCoreUtilities.showAlert(
+            context,
+            'Unknown Server Error',
+            'The Harrier Central server is experiencing an unknown server error. Please report this to us at connect@harriercentral.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
+            'Use Offline');
+      }
+
       return null;
     }
 

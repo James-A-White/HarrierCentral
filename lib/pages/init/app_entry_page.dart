@@ -35,7 +35,53 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    G0<AppModel>().connectionStatus = await InternetConnectionChecker().hasConnection ? EnumConnectionStatus.connected : EnumConnectionStatus.not_connected;
+    final InternetConnectionChecker checker = InternetConnectionChecker();
+
+    while (!await checker.hasConnection) {
+      final bool useOffline = await IveCoreUtilities.showAlert(
+          context,
+          'Check Network',
+          'Harrier Central is unable to detect a network connection.\r\n\r\nPlease check the network connection on your phone and try again, or you can continue to use the app in Offline Mode.',
+          'Use Offline',
+          showCancelButton: true,
+          cancelButtonText: 'Try again');
+      if (useOffline) {
+        break;
+      }
+
+      await Future<void>.delayed(const Duration(seconds: 2));
+    }
+
+    if (await checker.hasConnection) {
+      G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
+
+      final List<AddressCheckOptions> addressesToCheck = <AddressCheckOptions>[];
+
+      final List<InternetAddress> hcAddress = await InternetAddress.lookup(BASE_URL);
+
+      for (InternetAddress address in hcAddress) {
+        final AddressCheckOptions aco = AddressCheckOptions(
+          address,
+          timeout: const Duration(milliseconds: 10000),
+          port: 80,
+        );
+        addressesToCheck.add(aco);
+      }
+
+      checker.addresses = addressesToCheck;
+
+      if (!await checker.hasConnection) {
+        await IveCoreUtilities.showAlert(
+            context,
+            'Server Offline',
+            'The Harrier Central App is able to access the network but is unable to connect to our backend server.\r\n\r\nThis can happen if there is a problem with the network or our service is down for maintenance.\r\n\r\nYou can use the app offline or close the app and try again later.',
+            'OK');
+
+        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+      }
+    } else {
+      G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+    }
 
     ApproveLoginModel loginResult;
     String facebookAccessToken;

@@ -54,7 +54,8 @@ const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
-const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
+const String BASE_URL = 'harrier.azurewebsites.net';
+const String BASE_API_URL = 'https://' + BASE_URL + '/api/';
 
 const String BASE_KENNEL_LOGOS_URL = 'https://harriercentral.blob.core.windows.net/harrier/';
 const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
