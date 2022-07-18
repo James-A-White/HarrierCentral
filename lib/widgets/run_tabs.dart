@@ -682,7 +682,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       });
 
       //final String userId = getStringPref(StringPrefsEnum.userId);
-      final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
+      final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
             widget.futureRun.event.eventId,
             _userId,
             AppDomainType.user,
@@ -709,7 +709,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     });
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
+    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
           widget.futureRun.event.eventId,
           _userId,
           AppDomainType.user,

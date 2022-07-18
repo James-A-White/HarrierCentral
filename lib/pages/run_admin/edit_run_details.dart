@@ -1764,6 +1764,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                   child: ElevatedButton(
                                     child: Text(widget.isNewRun ? 'Finish' : 'Save Other Information', style: buttonLabelStyleMedium),
                                     onPressed: () async {
+                                      setState(() {
+                                        _isUpdating = true;
+                                      });
                                       await _updateRunDetails(false);
 
                                       if (widget.isNewRun) {
@@ -1780,6 +1783,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                         );
                                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                       }
+                                      setState(() {
+                                        _isUpdating = false;
+                                      });
                                     },
                                   ),
                                 ),

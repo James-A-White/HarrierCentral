@@ -1123,7 +1123,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       eventAggregate: widget.eventAggregate,
       packMember: packMember,
       amountOwed: amountOwed,
-      onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) async {
+      onRsvpCallback: (
+        CheckInPackModel packMember, {
+        int rsvpState = -1,
+        int attendenceState = -1,
+        int isHare = -1,
+      }) async {
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         if ((rsvpState != -1) && (attendenceState == -1)) {
           setState(() {
@@ -1373,7 +1378,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         }
       },
       child: Container(
-        color: ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0))))
+        color: ((widget.eventAggregate.event.isCountedRun == 1) &&
+                (packMember.attendenceState >= attendenceAtHash.value) &&
+                (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0))))
             ? Colors.amber.shade100
             : Colors.white,
         width: MediaQuery.of(context).size.width,
@@ -1440,7 +1447,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
             //(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)
 
-            if ((packMember.attendenceState >= attendenceAtHash.value) && (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0)))) ...<Widget>[
+            if ((widget.eventAggregate.event.isCountedRun == 1) &&
+                (packMember.attendenceState >= attendenceAtHash.value) &&
+                (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0)))) ...<Widget>[
               Positioned(right: 8.0, top: 9.0, child: Image.asset('images/icons/beer_mug.png'), width: 35.0, height: 35.0),
             ],
 
@@ -1549,22 +1558,20 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   }),
             ),
 
-            (packMember.hcHaringCount == null) || (packMember.hcHaringCount == 0)
-                ? Container()
-                : Positioned(
-                    right: 4,
-                    bottom: 17,
-                    child: Text('Hared = ${packMember.hcHaringCount + (packMember.historicalHaringCount ?? 0)}',
-                        style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
-                  ),
-            packMember.hcTotalRunCount == null
-                ? Container()
-                : Positioned(
-                    right: 4,
-                    bottom: 1,
-                    child: Text('Total Runs = ${packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)}',
-                        style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
-                  ),
+            if ((packMember.hcHaringCount != null) && (packMember.hcHaringCount != 0))
+              Positioned(
+                right: 4,
+                bottom: 17,
+                child: Text('Hared = ${packMember.hcHaringCount + (packMember.historicalHaringCount ?? 0)}',
+                    style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
+              ),
+            if (packMember.hcTotalRunCount != null)
+              Positioned(
+                right: 4,
+                bottom: 1,
+                child: Text('Total Runs = ${packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)}',
+                    style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
+              ),
           ],
         ),
       ),
@@ -1572,12 +1579,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   TextStyle _getRunLabelStyle(int numRuns, int attendenceState) {
-    if (attendenceState >= attendenceAtHash.value) {
+    if (widget.eventAggregate.event.isCountedRun == 0) {
+      return mediumText.copyWith(color: Colors.grey);
+    } else if (attendenceState >= attendenceAtHash.value) {
       if (_checkSpecialRun(numRuns ?? 0)) {
         return mediumTextRed;
       }
     }
-    return mediumText;
+    return mediumText.copyWith(color: Colors.blue.shade800);
   }
 
   bool _checkSpecialRun(int runCount) {
@@ -1609,7 +1618,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
     print('rsvpState = ' + rsvpState.toString());
 
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
+    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
           widget.eventAggregate.event.eventId,
           hasherId,
           AppDomainType.event,
@@ -1628,18 +1637,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _updateAttendenceState(CheckInPackModel packMember, int rsvpState, int attendenceState, int isHare) async {
-    final String hemId = packMember.hemId;
-    final String hasherId = packMember.hasherId;
-
-    await G0<TableModel>().hasherEventMapService.joinEvent(
+    await G0<TableModel>().hasherEventMapService.setEventAttendence(
           widget.eventAggregate.event.eventId,
-          hasherId,
-          hemId,
+          packMember.hasherId,
           AppDomainType.event,
-          rsvpState: rsvpState,
-          attendenceState: attendenceState,
-          isHare: isHare,
-          virginVisitorType: -1,
+          attendenceState,
         );
 
     await _refreshPackListFromTables(false);

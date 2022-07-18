@@ -73,7 +73,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     });
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.rsvpForEvent(
+    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
           widget.futureRun.event.eventId,
           userId,
           AppDomainType.user,

@@ -64,7 +64,7 @@ class PaymentSnackBar extends SnackBar {
                           alignment: Alignment.topCenter,
                           splashColor: Colors.greenAccent,
                           onPressed: () {
-                            onRsvpCallback(packMember, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
+                            onRsvpCallback(packMember, rsvpState: rsvpNo.value, attendenceState: attendenceNoChange.value, isHare: isHareNo.value);
                             // packScopedModel.setRsvpState(
                             //     rsvpNo.value,
                             //     isHareNo.value,
@@ -104,7 +104,7 @@ class PaymentSnackBar extends SnackBar {
                           alignment: Alignment.topCenter,
                           splashColor: Colors.greenAccent,
                           onPressed: () {
-                            onRsvpCallback(packMember, rsvpState: rsvpMaybe.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
+                            onRsvpCallback(packMember, rsvpState: rsvpMaybe.value, attendenceState: attendenceNoChange.value, isHare: isHareNo.value);
                             // packScopedModel.setRsvpState(
                             //     rsvpMaybe.value,
                             //     isHareNo.value,
@@ -136,8 +136,7 @@ class PaymentSnackBar extends SnackBar {
                             'images/icons/check_icon.png',
                             height: 30.0,
                             width: 30.0,
-                            color: (((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)) &&
-                                    ((packMember.isHare == null) || (packMember.isHare == isHareNo.value)))
+                            color: (((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)) && ((packMember.isHare == null) || (packMember.isHare == isHareNo.value)))
                                 ? Colors.yellow
                                 : Colors.white,
                           ),
@@ -147,7 +146,12 @@ class PaymentSnackBar extends SnackBar {
                           alignment: Alignment.topCenter,
                           splashColor: Colors.greenAccent,
                           onPressed: () {
-                            onRsvpCallback(packMember, rsvpState: rsvpYes.value, isHare: isHareNo.value);
+                            onRsvpCallback(
+                              packMember,
+                              rsvpState: rsvpYes.value,
+                              isHare: isHareNo.value,
+                              attendenceState: attendenceNoChange.value,
+                            );
                           },
                         ),
                         const Text(
@@ -173,8 +177,7 @@ class PaymentSnackBar extends SnackBar {
                             'images/icons/hare_icon.png',
                             height: 30.0,
                             width: 30.0,
-                            color: (((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)) &&
-                                    ((packMember.isHare != null) && (packMember.isHare == isHareYes.value)))
+                            color: (((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)) && ((packMember.isHare != null) && (packMember.isHare == isHareYes.value)))
                                 ? Colors.yellow
                                 : Colors.white,
                           ),
@@ -228,9 +231,7 @@ class PaymentSnackBar extends SnackBar {
                             'images/icons/not_at_hash_icon.png',
                             height: 30.0,
                             width: 30.0,
-                            color: ((packMember.attendenceState == attendenceNo.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)))
-                                ? Colors.yellow
-                                : Colors.white,
+                            color: ((packMember.attendenceState == attendenceNo.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
                           ),
 
                           //tooltip: 'Select to follow a Kennel',
@@ -268,9 +269,8 @@ class PaymentSnackBar extends SnackBar {
                             'images/icons/runner_icon.png',
                             height: 30.0,
                             width: 30.0,
-                            color: ((packMember.attendenceState == attendenceAtHash.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)))
-                                ? Colors.yellow
-                                : Colors.white,
+                            color:
+                                ((packMember.attendenceState == attendenceAtHash.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
                           ),
 
                           //tooltip: 'Select to follow a Kennel',
@@ -308,9 +308,7 @@ class PaymentSnackBar extends SnackBar {
                             'images/icons/beer_icon.png',
                             height: 30.0,
                             width: 30.0,
-                            color: ((packMember.attendenceState == attendenceOnIn.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)))
-                                ? Colors.yellow
-                                : Colors.white,
+                            color: ((packMember.attendenceState == attendenceOnIn.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
                           ),
 
                           //tooltip: 'Select to follow a Kennel',
@@ -360,8 +358,7 @@ class PaymentSnackBar extends SnackBar {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             IconButton(
-                              icon: Image.asset('images/icons/payment_type_3.png',
-                                  height: 30.0, width: 30.0, color: packMember.paymentType == paymentCash.value ? Colors.yellow : Colors.white),
+                              icon: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: packMember.paymentType == paymentCash.value ? Colors.yellow : Colors.white),
                               //tooltip: 'Select to follow a Kennel',
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
@@ -389,8 +386,7 @@ class PaymentSnackBar extends SnackBar {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             IconButton(
-                              icon: Image.asset('images/icons/payment_type_2.png',
-                                  height: 30.0, width: 30.0, color: packMember.paymentType == paymentFreeRun.value ? Colors.yellow : Colors.white),
+                              icon: Image.asset('images/icons/payment_type_2.png', height: 30.0, width: 30.0, color: packMember.paymentType == paymentFreeRun.value ? Colors.yellow : Colors.white),
                               //tooltip: 'Select to follow a Kennel',
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
@@ -421,9 +417,7 @@ class PaymentSnackBar extends SnackBar {
                               icon: Image.asset('images/icons/payment_type_5.png',
                                   height: 30.0,
                                   width: 30.0,
-                                  color: ((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value))
-                                      ? Colors.yellow
-                                      : Colors.white),
+                                  color: ((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value)) ? Colors.yellow : Colors.white),
                               //tooltip: 'Select to follow a Kennel',
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
@@ -460,8 +454,8 @@ class PaymentSnackBar extends SnackBar {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             IconButton(
-                              icon: Image.asset('images/icons/payment_type_4.png',
-                                  height: 30.0, width: 30.0, color: packMember.paymentType == paymentBankTransfer.value ? Colors.yellow : Colors.white),
+                              icon:
+                                  Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: packMember.paymentType == paymentBankTransfer.value ? Colors.yellow : Colors.white),
                               //tooltip: 'Select to follow a Kennel',
                               iconSize: 30.0,
                               alignment: Alignment.topCenter,
