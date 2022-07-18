@@ -14,6 +14,8 @@ class HistoryListResults {
   HistoryListResults({
     this.totalRunsThisKennel,
     this.totalHaringThisKennel,
+    this.hcRunsThisKennel,
+    this.hcHaringThisKennel,
     this.kennelName,
     this.kennelShortName,
     this.kennelId,
@@ -26,6 +28,8 @@ class HistoryListResults {
 
   final int totalRunsThisKennel;
   final int totalHaringThisKennel;
+  final int hcRunsThisKennel;
+  final int hcHaringThisKennel;
   final String kennelName;
   final String kennelShortName;
   final String kennelId;
@@ -39,6 +43,8 @@ class HistoryListResults {
     final HistoryListResults item = HistoryListResults(
         totalRunsThisKennel: map['totalRunsThisKennel'],
         totalHaringThisKennel: map['totalHaringThisKennel'],
+        hcRunsThisKennel: map['hcRunsThisKennel'],
+        hcHaringThisKennel: map['hcHaringThisKennel'],
         kennelId: map['kennelId'],
         historicalTotalRunCount: map['historicalTotalRunCount'],
         historicalHaringCount: map['historicalHaringCount'],
@@ -74,6 +80,10 @@ class HistoryListPageState extends State<HistoryListPage> {
           SELECT 
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} + hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},0) as totalRunsThisKennel,
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} + ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},0) as totalHaringThisKennel,
+
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},0) as hcRunsThisKennel,
+          coalesce(${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},0) as hcHaringThisKennel,
+
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelId},

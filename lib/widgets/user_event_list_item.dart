@@ -73,7 +73,7 @@ class UserEventListItem extends StatelessWidget {
                       : Row(
                           children: <Widget>[
                             Text(
-                              'My ${kennelInfo.kennelShortName} run #${item.totalRunsThisKennel + kennelInfo.historicalTotalRunCount}',
+                              'My ${kennelInfo.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (kennelInfo?.historicalTotalRunCount ?? 0)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(color: Colors.green[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
@@ -82,7 +82,7 @@ class UserEventListItem extends StatelessWidget {
                             item.isHare == isHareNo.value
                                 ? Container()
                                 : Text(
-                                    ' and #${item.totalHaringThisKennel + kennelInfo.historicalHaringCount} time haring',
+                                    ' and #${(item.totalHaringThisKennel ?? 0) + (kennelInfo?.historicalHaringCount ?? 0)} time haring',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),

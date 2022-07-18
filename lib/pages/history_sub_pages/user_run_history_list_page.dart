@@ -122,6 +122,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$_userId"
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
+          AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
           AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
           AND e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
         UNION
@@ -141,6 +142,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$_userId"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRemoved} = 0 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
           ORDER BY eventStartDatetime desc
@@ -394,25 +396,25 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   int myRunCount = 0;
   int myHaringCount = 0;
 
-  // TODO(James): Update this to simply pull data already provided by the server
-  void _updateMyRunCounts() {
-    int haringCount = 0;
-    int runCount = 0;
+  // // TODO(James): Update this to simply pull data already provided by the server
+  // void _updateMyRunCounts() {
+  //   int haringCount = 0;
+  //   int runCount = 0;
 
-    for (int i = _runCountsList.length - 1; i >= 0; i--) {
-      if (_runCountsList[i].isHare == 1) {
-        haringCount++;
-      }
-      if (_runCountsList[i].attendenceState >= 20) {
-        runCount++;
-      }
-      _runCountsList[i].totalHaringThisKennel = haringCount + (_kennelInfo ?? widget.kennelInfo).historicalHaringCount;
-      _runCountsList[i].totalRunsThisKennel = runCount + (_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount;
-    }
+  //   for (int i = _runCountsList.length - 1; i >= 0; i--) {
+  //     if (_runCountsList[i].isHare == 1) {
+  //       haringCount++;
+  //     }
+  //     if (_runCountsList[i].attendenceState >= 20) {
+  //       runCount++;
+  //     }
+  //     _runCountsList[i].totalHaringThisKennel = haringCount + (_kennelInfo ?? widget.kennelInfo).historicalHaringCount;
+  //     _runCountsList[i].totalRunsThisKennel = runCount + (_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount;
+  //   }
 
-    myRunCount = runCount;
-    myHaringCount = haringCount;
-  }
+  //   myRunCount = runCount;
+  //   myHaringCount = haringCount;
+  // }
 
   Widget _buildListView() {
     return Container(
@@ -471,7 +473,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               textAlign: TextAlign.left,
                             ),
                             AutoSizeText(
-                              'My verified run count: ${myRunCount.toString()}',
+                              'My verified run count: ${(_kennelInfo ?? widget.kennelInfo).hcRunsThisKennel}',
                               //'Super fucking long text thats sure to overflow and more',
                               //'999',
                               overflow: TextOverflow.ellipsis,
@@ -481,7 +483,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               textAlign: TextAlign.center,
                             ),
                             AutoSizeText(
-                              'My verified haring count: ${myHaringCount.toString()}',
+                              'My verified haring count: ${(_kennelInfo ?? widget.kennelInfo).hcHaringThisKennel}',
                               //'Super fucking long text thats sure to overflow and more',
                               //'999',
                               overflow: TextOverflow.ellipsis,
@@ -557,6 +559,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 // not participate in this event
                                 await _setAttendenceState(item, rsvpNo, attendenceNo, isHareNo);
                               }
+
+                              _kennelInfo = await widget.refreshKennelInfo();
+
+                              // await historyListPageKey.currentState.refreshRunHistoryFromTable(true);
 
                               setState(() {});
                             }
