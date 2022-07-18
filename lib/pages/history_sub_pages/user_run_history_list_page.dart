@@ -74,6 +74,8 @@ class UserRunHistoryResults {
       hemId: map['hemId'],
       attendenceState: map['attendenceState'],
       isHare: map['isHare'],
+      totalRunsThisKennel: map['totalRunsThisKennel'],
+      totalHaringThisKennel: map['totalHaringThisKennel'],
     );
     return item;
   }
@@ -86,8 +88,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   bool _isUpdating = false;
 
-  List<UserRunHistoryResults> runCountsList = <UserRunHistoryResults>[];
-  final String userId = getStringPref(StringPrefsEnum.userId);
+  List<UserRunHistoryResults> _runCountsList = <UserRunHistoryResults>[];
+  final String _userId = getStringPref(StringPrefsEnum.userId);
 
   HistoryListResults _kennelInfo;
 
@@ -104,6 +106,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     // HEM record only in the second half of the UNION statement.
     final String query = ''' 
           SELECT
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
           e.${G0<TableModel>().eventsTableHelper.colEventId} as eventId,
           e.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
           e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
@@ -115,13 +119,15 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           FROM narrowEvents e
           INNER JOIN kennels k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           LEFT OUTER JOIN hasherEventMap hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$userId"
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$_userId"
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
           AND e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
         UNION
           SELECT 
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} as eventId,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventName} as eventName,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventNumber} as eventNumber,
@@ -133,7 +139,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           FROM hasherEventMap hem
           WHERE 
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$_userId"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
@@ -141,26 +147,26 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           
           ''';
 
-    runCountsList = <UserRunHistoryResults>[];
+    _runCountsList = <UserRunHistoryResults>[];
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
         final UserRunHistoryResults hlrItem = UserRunHistoryResults.fromMap(results[i]);
-        hlrItem.totalHaringThisKennel = -1;
-        hlrItem.totalRunsThisKennel = -1;
+        // hlrItem.totalHaringThisKennel = -1;
+        // hlrItem.totalRunsThisKennel = -1;
         hlrItem.isUpdating = false;
-        runCountsList.add(hlrItem);
+        _runCountsList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
-          updateMyRunCounts();
+          //_updateMyRunCounts();
           setState(() {
             _isLoading = false;
           });
         }
       }
     } catch (e) {
-      //print(e);
+      print(e);
     }
   }
 
@@ -389,19 +395,19 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   int myHaringCount = 0;
 
   // TODO(James): Update this to simply pull data already provided by the server
-  void updateMyRunCounts() {
+  void _updateMyRunCounts() {
     int haringCount = 0;
     int runCount = 0;
 
-    for (int i = runCountsList.length - 1; i >= 0; i--) {
-      if (runCountsList[i].isHare == 1) {
+    for (int i = _runCountsList.length - 1; i >= 0; i--) {
+      if (_runCountsList[i].isHare == 1) {
         haringCount++;
       }
-      if (runCountsList[i].attendenceState >= 20) {
+      if (_runCountsList[i].attendenceState >= 20) {
         runCount++;
       }
-      runCountsList[i].totalHaringThisKennel = haringCount + (_kennelInfo ?? widget.kennelInfo).historicalHaringCount;
-      runCountsList[i].totalRunsThisKennel = runCount + (_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount;
+      _runCountsList[i].totalHaringThisKennel = haringCount + (_kennelInfo ?? widget.kennelInfo).historicalHaringCount;
+      _runCountsList[i].totalRunsThisKennel = runCount + (_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount;
     }
 
     myRunCount = runCount;
@@ -412,7 +418,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
-      child: runCountsList.isEmpty
+      child: _runCountsList.isEmpty
           ? const Center(child: Text('No runs logged yet.'))
           : RefreshIndicator(
               onRefresh: _handleRefresh,
@@ -516,7 +522,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   Expanded(
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: runCountsList.length,
+                      itemCount: _runCountsList.length,
                       padding: const EdgeInsets.only(top: 5),
                       separatorBuilder: (BuildContext context, int index) => const Divider(
                         height: 1.0,
@@ -525,7 +531,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        final UserRunHistoryResults item = runCountsList[index];
+                        final UserRunHistoryResults item = _runCountsList[index];
 
                         return Dismissible(
                           key: Key(item.eventId),
@@ -675,7 +681,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             },
                             child: UserEventListItem(
                               item: item,
-                              kennelShortName: (_kennelInfo ?? widget.kennelInfo).kennelShortName,
+                              kennelInfo: _kennelInfo ?? widget.kennelInfo,
                               setAttendenceStateCallback: (EnumAttendenceState<int> attendenceState, EnumIsHare<int> isHare) async {
                                 setState(() {
                                   item.isUpdating = true;
@@ -717,14 +723,27 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     );
   }
 
-  Future<void> _setAttendenceState(UserRunHistoryResults item, EnumRsvpState<int> rsvpState, EnumAttendenceState<int> attendenceState, EnumIsHare<int> isHare) async {
-    await G0<TableModel>().hasherEventMapService.joinEvent(
+  Future<void> _setAttendenceState(
+    UserRunHistoryResults item,
+    EnumRsvpState<int> rsvpState,
+    EnumAttendenceState<int> attendenceState,
+    EnumIsHare<int> isHare,
+  ) async {
+    // await G0<TableModel>().hasherEventMapService.joinEvent(
+    //       item.eventId,
+    //       userId,
+    //       item.hemId,
+    //       AppDomainType.user,
+    //       rsvpState: rsvpState.value,
+    //       attendenceState: attendenceState.value,
+    //       isHare: isHare.value,
+    //     );
+
+    await G0<TableModel>().hasherEventMapService.setEventAttendence(
           item.eventId,
-          userId,
-          item.hemId,
+          _userId,
           AppDomainType.user,
-          rsvpState: rsvpState.value,
-          attendenceState: attendenceState.value,
+          attendenceState.value,
           isHare: isHare.value,
         );
 

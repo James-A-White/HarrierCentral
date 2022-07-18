@@ -3,10 +3,15 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class UserEventListItem extends StatelessWidget {
-  const UserEventListItem({Key key, @required this.item, @required this.kennelShortName, @required this.setAttendenceStateCallback}) : super(key: key);
+  const UserEventListItem({
+    Key key,
+    @required this.item,
+    @required this.kennelInfo,
+    @required this.setAttendenceStateCallback,
+  }) : super(key: key);
 
   final UserRunHistoryResults item;
-  final String kennelShortName;
+  final HistoryListResults kennelInfo;
   final Function setAttendenceStateCallback;
 
   @override
@@ -68,7 +73,7 @@ class UserEventListItem extends StatelessWidget {
                       : Row(
                           children: <Widget>[
                             Text(
-                              'My $kennelShortName run #${item.totalRunsThisKennel}',
+                              'My ${kennelInfo.kennelShortName} run #${item.totalRunsThisKennel + kennelInfo.historicalTotalRunCount}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(color: Colors.green[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
@@ -77,7 +82,7 @@ class UserEventListItem extends StatelessWidget {
                             item.isHare == isHareNo.value
                                 ? Container()
                                 : Text(
-                                    ' and #${item.totalHaringThisKennel} time haring',
+                                    ' and #${item.totalHaringThisKennel + kennelInfo.historicalHaringCount} time haring',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),

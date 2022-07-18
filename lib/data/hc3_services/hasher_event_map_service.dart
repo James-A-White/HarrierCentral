@@ -454,8 +454,9 @@ class HasherEventMapService {
     String eventId,
     String hasherId,
     AppDomainType appDomainType,
-    int attendenceState,
-  ) async {
+    int attendenceState, {
+    int isHare = 0,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -487,8 +488,10 @@ class HasherEventMapService {
       'eventId': eventId,
       'hasherId': hasherId,
       'attendenceState': attendenceState,
+      'isHare': isHare,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
+      'returnUserRecords': appDomainType == AppDomainType.user ? 1 : 0,
     };
 
     final String body = jsonEncode(bodyMap);
