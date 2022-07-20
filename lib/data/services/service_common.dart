@@ -32,8 +32,6 @@ class ServiceCommon {
       );
     }
 
-    // print('DDDDDDD data received = ' + DateTime.now().difference(startTime).inMilliseconds.toString());
-
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
     if (response == null) {
@@ -49,7 +47,7 @@ class ServiceCommon {
             final bool errorCallbackResult = await errorCallback(errorResult);
             returnValue = errorCallbackResult ? ERROR_HANDLED : ERROR_NOT_HANDLED;
           } else {
-            final bool alertResult = await IveCoreUtilities.showAlert(navigatorKey.currentContext, errorResult.errorTitle, errorResult.errorUserMessage, 'OK');
+            final bool alertResult = await IveCoreUtilities.showAlert(navigatorKey.currentContext, errorResult.errorTitle, errorResult.errorUserMessage.replaceAll('~', '\r\n'), 'OK');
 
             returnValue = alertResult ? ERROR_KEY_OK_BTN_PRESSED : ERROR_KEY_CANCEL_BTN_PRESSED;
           }

@@ -636,27 +636,23 @@ class RunDetails extends StatelessWidget {
                       children: <Widget>[
                         SizedBox(width: G0<DeviceInfo>().deviceWidth), // this is required to force the column to be the full width of the device
                         for (int i = 0; i < runTags1.length; i++)
-                          ((runTags1.values.elementAt(i) ?? 0) & event.tags1) == 0
-                              ? Container()
-                              : // TODO(James): Figure out how to do this without adding empty containers
-                              Container(
-                                  child: Text(
-                                    '•  ' + runTags1.keys.elementAt(i),
-                                    style: listValueStyle,
-                                  ),
-                                  margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
-                                ),
+                          if (((runTags1.values.elementAt(i) ?? 0) & event.tags1) != 0)
+                            Container(
+                              child: Text(
+                                '•  ' + runTags1.keys.elementAt(i),
+                                style: listValueStyle,
+                              ),
+                              margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
+                            ),
                         for (int i = 0; i < runTags2.length; i++)
-                          ((runTags2.values.elementAt(i) ?? 0) & event.tags2) == 0
-                              ? Container()
-                              : // TODO(James): Figure out how to do this without adding empty containers
-                              Container(
-                                  child: Text(
-                                    '•  ' + runTags2.keys.elementAt(i),
-                                    style: listValueStyle,
-                                  ),
-                                  margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
-                                )
+                          if (((runTags2.values.elementAt(i) ?? 0) & event.tags2) != 0)
+                            Container(
+                              child: Text(
+                                '•  ' + runTags2.keys.elementAt(i),
+                                style: listValueStyle,
+                              ),
+                              margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
+                            )
 
                         //for (dynamic tag in runTags) Text(tag.key)
                       ],
