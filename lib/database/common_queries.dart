@@ -130,6 +130,7 @@ class CommonQueries {
           ((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
           AND ((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+          AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
           ORDER BY abs(julianday('now','localtime') - julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) ASC
           
           ''';
@@ -200,7 +201,7 @@ class CommonQueries {
         }
       }
     } catch (e) {
-      //print(e);
+      print(e);
     }
     return resultList;
   }

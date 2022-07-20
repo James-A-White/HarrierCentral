@@ -530,17 +530,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ),
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
-        // final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-        //       widget.eventAggregate.event.eventId,
-        //       result['hasher'].hasherId,
-        //       null,
-        //       AppDomainType.event,
-        //       rsvpState: rsvpYes.value,
-        //       attendenceState: attendenceAtHash.value,
-        //       isHare: isHareNo.value,
-        //       virginVisitorType: result['virginVisitorType'],
-        //     );
-
         final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.setEventAttendence(
               widget.eventAggregate.event.eventId,
               result['hasher'].hasherId,

@@ -735,16 +735,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     EnumAttendenceState<int> attendenceState,
     EnumIsHare<int> isHare,
   ) async {
-    // await G0<TableModel>().hasherEventMapService.joinEvent(
-    //       item.eventId,
-    //       userId,
-    //       item.hemId,
-    //       AppDomainType.user,
-    //       rsvpState: rsvpState.value,
-    //       attendenceState: attendenceState.value,
-    //       isHare: isHare.value,
-    //     );
-
     await G0<TableModel>().hasherEventMapService.setEventAttendence(
           item.eventId,
           _userId,
