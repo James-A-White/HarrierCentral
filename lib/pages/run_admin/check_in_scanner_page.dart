@@ -287,17 +287,6 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         });
         final int attendenceState = _isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
-        // final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
-        //     widget.eventAggregate.event.eventId,
-        //     GUID_EMPTY, // normally the Hasher ID, but null when we are scanning
-        //     null,
-        //     AppDomainType.event,
-        //     rsvpState: rsvpYes.value,
-        //     attendenceState: attendenceState,
-        //     isHare: isHareNo.value,
-        //     virginVisitorType: enumHasher.value,
-        //     userQrCode: prefix + content);
-
         final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
               widget.eventAggregate.event.eventId,
               null, // result['hasher'].hasherId,

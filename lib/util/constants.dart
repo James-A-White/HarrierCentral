@@ -54,6 +54,8 @@ const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
+const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/#/';
+
 const String BASE_URL = 'harrier.azurewebsites.net';
 const String BASE_API_URL = 'https://' + BASE_URL + '/api/';
 
@@ -104,6 +106,8 @@ const String QR_PREFIX_USER_CODE = 'UQR:';
 const String QR_PREFIX_USER_SECRET_CODE = 'USC:';
 const String QR_PREFIX_USER_RESET_CODE = 'URC:';
 const String QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN = 'UWP:';
+const String QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START = 'RID?publicEventId=';
+const String QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END = 'RIE?re=';
 
 const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
 

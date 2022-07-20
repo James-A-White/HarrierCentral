@@ -232,98 +232,98 @@ class HasherEventMapService {
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
-  Future<List<dynamic>> joinEvent(
-    String eventId,
-    String hasherId,
-    String hasherEventMapId,
-    AppDomainType appDomainType, {
-    int rsvpState = -1,
-    int attendenceState = -1,
-    int isHare = -1,
-    int virginVisitorType = 0,
-    int notificationState = -1,
-    int emailAlertState = -1,
-    String userQrCode,
-  }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
-      return null;
-      // TODO(James): fix this so we can return a bool
-      //return false;
-    }
+  // Future<List<dynamic>> joinEvent(
+  //   String eventId,
+  //   String hasherId,
+  //   String hasherEventMapId,
+  //   AppDomainType appDomainType, {
+  //   int rsvpState = -1,
+  //   int attendenceState = -1,
+  //   int isHare = -1,
+  //   int virginVisitorType = 0,
+  //   int notificationState = -1,
+  //   int emailAlertState = -1,
+  //   String userQrCode,
+  // }) async {
+  //   if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+  //     return null;
+  //     // TODO(James): fix this so we can return a bool
+  //     //return false;
+  //   }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEvent');
+  //   final String userId = getStringPref(StringPrefsEnum.userId);
+  //   final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
-    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
-        );
-    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
-          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
-        );
-    final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().paymentsTableHelper,
-          G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
-          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
-        );
-    final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().kennelCreditsTableHelper,
-          G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
-          G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
-        );
+  //   final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+  //         G0<Database>(),
+  //         G0<TableModel>().hasherEventMapTableHelper,
+  //         G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
+  //         G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+  //       );
+  //   final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+  //         G0<Database>(),
+  //         G0<TableModel>().hasherKennelMapTableHelper,
+  //         G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
+  //         G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+  //       );
+  //   final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+  //         G0<Database>(),
+  //         G0<TableModel>().paymentsTableHelper,
+  //         G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
+  //         G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+  //       );
+  //   final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+  //         G0<Database>(),
+  //         G0<TableModel>().kennelCreditsTableHelper,
+  //         G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
+  //         G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
+  //       );
 
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+  //   final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+  //   final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+  //   final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+  //   final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
-    final Map<String, Object> bodyMap = <String, Object>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'eventId': eventId,
-      'hasherId': hasherId,
-      'hasherEventMapId': hasherEventMapId,
-      'isHare': isHare,
-      'rsvpState': rsvpState,
-      'attendenceState': attendenceState,
-      'virginVisitorType': virginVisitorType,
-      'notificationState': notificationState,
-      'emailAlertState': emailAlertState,
-      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
-      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
-      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
-      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
-    };
+  //   final Map<String, Object> bodyMap = <String, Object>{
+  //     'userId': userId,
+  //     'accessToken': accessToken,
+  //     'eventId': eventId,
+  //     'hasherId': hasherId,
+  //     'hasherEventMapId': hasherEventMapId,
+  //     'isHare': isHare,
+  //     'rsvpState': rsvpState,
+  //     'attendenceState': attendenceState,
+  //     'virginVisitorType': virginVisitorType,
+  //     'notificationState': notificationState,
+  //     'emailAlertState': emailAlertState,
+  //     'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+  //     'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
+  //     'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+  //     'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
+  //   };
 
-    if (userQrCode != null) {
-      bodyMap.addAll(<String, Object>{'userQrCode': userQrCode});
-    }
+  //   if (userQrCode != null) {
+  //     bodyMap.addAll(<String, Object>{'userQrCode': userQrCode});
+  //   }
 
-    final String body = jsonEncode(bodyMap);
+  //   final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event', body);
+  //   final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event', body);
 
-    List<dynamic> adHocData = <dynamic>[];
+  //   List<dynamic> adHocData = <dynamic>[];
 
-    if (!responseBody.startsWith(ERROR_PREFIX)) {
-      if (appDomainType == AppDomainType.event) {
-        adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
-      } else if (appDomainType == AppDomainType.user) {
-        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
-      } else {
-        assert(false);
-      }
-    }
+  //   if (!responseBody.startsWith(ERROR_PREFIX)) {
+  //     if (appDomainType == AppDomainType.event) {
+  //       adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+  //     } else if (appDomainType == AppDomainType.user) {
+  //       adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
+  //     } else {
+  //       assert(false);
+  //     }
+  //   }
 
-    return adHocData;
-  }
+  //   return adHocData;
+  // }
 
   Future<List<dynamic>> setEmailAndNotificationPreferences(
     String eventId,

@@ -20,6 +20,8 @@ class Utilities {
   static const int qrScanTypeFlag_kennelRunEnd = 0x00000020;
   static const int qrScanTypeFlag_resetCode = 0x00000040;
   static const int qrScanTypeFlag_authenticateWebPortal = 0x00000080;
+  static const int qrScanTypeFlag_runStartV2 = 0x00000100;
+  static const int qrScanTypeFlag_runEndV2 = 0x00000200;
 
   static int logCounter = 0;
 
@@ -30,17 +32,33 @@ class Utilities {
       scanText = scanText.replaceAll(BASE_HCWEB_MOBILE_URL, '');
     }
 
-    final int colonOffset = scanText.indexOf(':');
-    if (colonOffset != 3) {
+    if (scanText.contains(BASE_HASHRUNS_DOT_ORG_URL)) {
+      scanText = scanText.replaceAll(BASE_HASHRUNS_DOT_ORG_URL, '');
+    }
+
+    String prefix = '';
+    String content = '';
+
+    // this first option is for HC QR codes that are not URLs
+    if (scanText.indexOf(':') == 3) {
+      prefix = scanText.substring(0, 4).toUpperCase();
+      content = scanText.substring(4);
+    } else if (scanText.startsWith(QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START)) {
+      // these conditions cover HC QR codes that are also URLs
+      prefix = QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START;
+      content = scanText.replaceAll(QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START, '');
+    } else if (scanText.startsWith(QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END)) {
+      prefix = QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END;
+      content = scanText.replaceAll(QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END, '');
+    }
+
+    if (prefix.isEmpty) {
       result = <String, String>{'validScan': false.toString(), 'prefix': '', 'content': ''};
     } else {
-      final String prefix = scanText.substring(0, colonOffset + 1);
-      final String content = scanText.substring(4);
-
       int scanType = 0;
       bool validHcQr = true;
 
-      switch (prefix.toUpperCase()) {
+      switch (prefix) {
         case QR_PREFIX_USER_CODE:
           scanType = qrScanTypeFlag_user;
           break;
@@ -53,8 +71,14 @@ class Utilities {
         case QR_PREFIX_SPECIFIC_RUN_START:
           scanType = qrScanTypeFlag_runStart;
           break;
+        case QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START:
+          scanType = qrScanTypeFlag_runStartV2;
+          break;
         case QR_PREFIX_SPECIFIC_RUN_END:
           scanType = qrScanTypeFlag_runEnd;
+          break;
+        case QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END:
+          scanType = qrScanTypeFlag_runEndV2;
           break;
         case QR_PREFIX_KENNEL_GENERIC_RUN_START:
           scanType = qrScanTypeFlag_kennelRunStart;

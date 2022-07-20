@@ -4,14 +4,7 @@ import 'package:harrier_central/imports.dart';
 //import 'dart:math' as math;
 
 class EventQrCodePage extends StatefulWidget {
-  const EventQrCodePage(
-      {Key key,
-      @required this.kennelShortName,
-      @required this.qrContent,
-      @required this.title,
-      @required this.runStartPrefix,
-      @required this.runEndPrefix,
-      this.eventStartDatetime})
+  const EventQrCodePage({Key key, @required this.kennelShortName, @required this.qrContent, @required this.title, @required this.runStartPrefix, @required this.runEndPrefix, this.eventStartDatetime})
       : super(key: key);
 
   final String kennelShortName;
@@ -194,7 +187,14 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
 }
 
 class QrTab extends StatefulWidget {
-  const QrTab({Key key, @required this.isRunStart, @required this.qrContent, @required this.title, @required this.qrPrefix, this.eventStartDatetime}) : super(key: key);
+  const QrTab({
+    Key key,
+    @required this.isRunStart,
+    @required this.qrContent,
+    @required this.title,
+    @required this.qrPrefix,
+    this.eventStartDatetime,
+  }) : super(key: key);
 
   final bool isRunStart;
   final String qrPrefix;
@@ -296,36 +296,6 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 24.0, height: 1.0),
           ),
-
-          //               Text(
-//                 eventName,
-//                 textAlign: TextAlign.center,
-//                 style: const TextStyle(
-//                   color: Colors.white,
-//                     fontFamily: 'AvenirNextRegular',
-//                     fontStyle: FontStyle.normal,
-//                     fontSize: 28.0,
-//                     height: 1.0),
-//               ),
-//               Text(
-//                 DateFormat('E, MMM d \'at\' h:mm a').format(eventStartDatetime),
-//                 textAlign: TextAlign.center,
-//                 style: const TextStyle(
-//                   color: Colors.white,
-//                     fontFamily: 'AvenirNextRegular',
-//                     fontStyle: FontStyle.normal,
-//                     fontSize: 20.0,
-//                     height: 1.0),
-//               ),
-          // Positioned(
-          //   top: 127,
-
-          //   child: Container(
-          //                       color: Colors.white,
-          //     height: MediaQuery.of(context).size.width * 0.8,
-          //     width: MediaQuery.of(context).size.width * 0.8,
-          //   ),
-          // ),
           SizedBox(
             width: spacer / 3,
             height: spacer / 3,
@@ -336,12 +306,12 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
                 QrImage(
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.all(15.0),
-                    data: BASE_HCWEB_MOBILE_URL + widget.qrPrefix + widget.qrContent.toUpperCase(),
+                    data: BASE_HASHRUNS_DOT_ORG_URL + widget.qrPrefix + widget.qrContent,
                     // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
                     //data: 'testing123',
-                    version: 6,
+                    version: 5,
                     //size: 200.0,
-                    errorCorrectionLevel: 3),
+                    errorCorrectionLevel: QrErrorCorrectLevel.M),
               ],
             ),
           ),

@@ -299,9 +299,9 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
                           padding: const EdgeInsets.all(10.0),
                           data: BASE_HCWEB_MOBILE_URL + userQrCode,
                           //data: 'testing123',
-                          version: 4,
+                          version: 5,
                           //size: 200.0,
-                          errorCorrectionLevel: 3),
+                          errorCorrectionLevel: QrErrorCorrectLevel.M),
                     ]),
               ),
             ),
@@ -417,6 +417,8 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         //Utilities.qrScanTypeFlag_user |
         Utilities.qrScanTypeFlag_runStart |
             Utilities.qrScanTypeFlag_runEnd |
+            Utilities.qrScanTypeFlag_runStartV2 |
+            Utilities.qrScanTypeFlag_runEndV2 |
             Utilities.qrScanTypeFlag_kennelRunEnd |
             Utilities.qrScanTypeFlag_kennelRunStart |
             Utilities.qrScanTypeFlag_authenticateWebPortal);
@@ -430,20 +432,17 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       final String prefix = result['prefix'];
       final String scanData = result['content'];
 
-      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
-        final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
+      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END) || (prefix == QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START) || (prefix == QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END)) {
+        final int attendenceState = ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START)) ? attendenceAtHash.value : attendenceOnIn.value;
 
         final String userId = getStringPref(StringPrefsEnum.userId);
 
-        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
+        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
               scanData,
               userId,
-              null,
               AppDomainType.user,
-              rsvpState: rsvpYes.value,
-              attendenceState: attendenceState,
+              attendenceState,
               isHare: isHareNo.value,
-              virginVisitorType: enumHasher.value,
             );
 
         setState(() {
@@ -484,9 +483,13 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
           } else {
             final String userId = getStringPref(StringPrefsEnum.userId);
 
-            final List<dynamic> adHocData = await G0<TableModel>()
-                .hasherEventMapService
-                .joinEvent(queryResult, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value);
+            final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
+                  scanData,
+                  userId,
+                  AppDomainType.user,
+                  attendenceState,
+                  isHare: isHareNo.value,
+                );
 
             setState(() {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {

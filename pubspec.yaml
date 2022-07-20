@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 1.1.6+617
+version: 1.1.6+618
 publish_to: none
 
 environment:
@@ -67,11 +67,6 @@ dependencies:
   permission_handler: ^10.0.0
   # photo_view: ^0.4.2
   # qonversion_flutter: ^4.2.0 
-  # # qr_code_scanner: ^0.7.0 
-  # qr_code_scanner:
-  #   git:
-  #     url: https://github.com/juliuscanute/qr_code_scanner.git
-  #     ref: 0feca6f15042c279ff575c559a3430df917b623d
   # qr_flutter: ^2.1.0+55 
   qr_code_scanner: ^1.0.0
   shared_preferences: ^2.0.7 

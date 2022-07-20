@@ -154,16 +154,8 @@ class RunAdminPageState extends State<RunAdminPage> {
                       topMargin: 35.0,
                       bottomMargin: 5.0,
                     ),
-                    RunDetails(
-                        _eventAggregate.event,
-                        _eventAggregate.kennel,
-                        _eventAggregate.extensions.digAfterDec,
-                        _eventAggregate.extensions.curSym,
-                        _eventAggregate.extensions.distancePreference,
-                        _eventAggregate.extensions.distToEvent,
-                        _eventAggregate.extensions.paymentUrl,
-                        false,
-                        _eventAggregate.extensions.isMapAndDistanceValid,
+                    RunDetails(_eventAggregate.event, _eventAggregate.kennel, _eventAggregate.extensions.digAfterDec, _eventAggregate.extensions.curSym, _eventAggregate.extensions.distancePreference,
+                        _eventAggregate.extensions.distToEvent, _eventAggregate.extensions.paymentUrl, false, _eventAggregate.extensions.isMapAndDistanceValid,
                         eventUrlWithKennelBackup: _eventAggregate.event.eventUrl ?? _eventAggregate.kennel.kennelEventsUrl),
                   ],
                 ),
@@ -399,10 +391,10 @@ class RunAdminPageState extends State<RunAdminPage> {
                       MaterialPageRoute<dynamic>(
                           builder: (BuildContext context) => EventQrCodePage(
                               kennelShortName: _eventAggregate.kennel.kennelShortName,
-                              qrContent: _eventAggregate.event.eventId,
+                              qrContent: _eventAggregate.event.publicEventId,
                               title: _eventAggregate.event.eventName,
-                              runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
-                              runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                              runStartPrefix: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START,
+                              runEndPrefix: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END,
                               eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
                 },
               ),
