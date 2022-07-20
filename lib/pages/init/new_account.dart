@@ -115,7 +115,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                           Text('Create New Account', style: localTitleStyle),
                           Text(
                             'Provide information to create a new Harrier Central account if you are not already in the system',
-                            style: localBodyStyle,
+                            style: localBodyStyle.copyWith(fontSize: 16.0),
                             //softWrap: true,
                           ),
                         ]),
@@ -153,10 +153,10 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                       const SizedBox(height: 1, width: 10),
                       Expanded(
                         child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          Text('Use Invite Code', style: localTitleStyle),
+                          Text('Connect to Existing Account', style: localTitleStyle),
                           Text(
-                            'Use the invite code provided by your kennel to create or reconnect to your Harrier Central account',
-                            style: localBodyStyle,
+                            'Did your Kennel set up an account for you or have you reinstalled Harrier Central? If so click here to use an Invite Code to connect to your existing account.',
+                            style: localBodyStyle.copyWith(fontSize: 16.0),
                             //softWrap: true,
                           ),
                         ]),
@@ -196,8 +196,8 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                         child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                           Text('Use Third Party', style: localTitleStyle),
                           Text(
-                            'Create a new Harrier Central account or connect to your existing account using a third-party login provider',
-                            style: localBodyStyle,
+                            'Create a new Harrier Central account or connect to your existing account using a third-party login provider such as Apple or Facebook',
+                            style: localBodyStyle.copyWith(fontSize: 16.0),
                             //softWrap: true,
                           ),
                         ]),

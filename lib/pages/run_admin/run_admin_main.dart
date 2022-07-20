@@ -393,8 +393,10 @@ class RunAdminPageState extends State<RunAdminPage> {
                               kennelShortName: _eventAggregate.kennel.kennelShortName,
                               qrContent: _eventAggregate.event.publicEventId,
                               title: _eventAggregate.event.eventName,
-                              runStartPrefix: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START,
-                              runEndPrefix: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END,
+                              runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                              runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                              runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
+                              showRunLink: true,
                               eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
                 },
               ),

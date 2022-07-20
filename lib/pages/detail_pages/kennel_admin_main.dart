@@ -523,6 +523,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                               qrContent: widget.kennelAggregateItem.kennel.kennelId,
                                                               runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END,
                                                               runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
+                                                              runLink: '',
+                                                              showRunLink: false,
                                                               title: 'Any ' + widget.kennelAggregateItem.kennel.kennelShortName + ' run')));
                                                 },
                                               ),

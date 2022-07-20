@@ -106,8 +106,7 @@ const String QR_PREFIX_USER_CODE = 'UQR:';
 const String QR_PREFIX_USER_SECRET_CODE = 'USC:';
 const String QR_PREFIX_USER_RESET_CODE = 'URC:';
 const String QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN = 'UWP:';
-const String QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START = 'RID?publicEventId=';
-const String QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END = 'RIE?re=';
+const String QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK = 'RID?publicEventId=';
 
 const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
 

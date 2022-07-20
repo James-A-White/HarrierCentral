@@ -4,15 +4,26 @@ import 'package:harrier_central/imports.dart';
 //import 'dart:math' as math;
 
 class EventQrCodePage extends StatefulWidget {
-  const EventQrCodePage({Key key, @required this.kennelShortName, @required this.qrContent, @required this.title, @required this.runStartPrefix, @required this.runEndPrefix, this.eventStartDatetime})
-      : super(key: key);
+  const EventQrCodePage({
+    Key key,
+    @required this.kennelShortName,
+    @required this.qrContent,
+    @required this.title,
+    @required this.runStartPrefix,
+    @required this.runEndPrefix,
+    @required this.runLink,
+    @required this.showRunLink,
+    this.eventStartDatetime,
+  }) : super(key: key);
 
   final String kennelShortName;
   final String qrContent;
   final String title;
   final String runStartPrefix;
   final String runEndPrefix;
+  final String runLink;
   final DateTime eventStartDatetime;
+  final bool showRunLink;
 
   @override
   _EventQrCodePageState createState() => _EventQrCodePageState();
@@ -38,7 +49,7 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         title: const Text(
-          'QRs for start & end of Hash',
+          'QR codes for this Hash',
           style: TextStyle(
             color: Colors.white,
           ),
@@ -107,18 +118,32 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                     children: <Widget>[
                       QrTab(
                         isRunStart: true,
-                        qrPrefix: widget.runStartPrefix,
+                        qrPrefix: BASE_HCWEB_MOBILE_URL + widget.runStartPrefix,
                         qrContent: widget.qrContent,
                         title: widget.title,
+                        helpText: 'Print this QR code and make it available for Hashers to scan at the beginning of runs to check in at the run',
+                        subtitle: 'QR code for run start',
                         eventStartDatetime: widget.eventStartDatetime,
                       ),
                       QrTab(
                         isRunStart: false,
-                        qrPrefix: widget.runEndPrefix,
+                        qrPrefix: BASE_HCWEB_MOBILE_URL + widget.runEndPrefix,
                         qrContent: widget.qrContent,
                         title: widget.title,
+                        helpText: 'Print this QR code and make it available for Hashers to scan at the end of runs to record as On Inn',
+                        subtitle: 'QR code for run end',
                         eventStartDatetime: widget.eventStartDatetime,
-                      )
+                      ),
+                      if (widget.showRunLink)
+                        QrTab(
+                          isRunStart: false,
+                          qrPrefix: BASE_HASHRUNS_DOT_ORG_URL + widget.runLink,
+                          qrContent: widget.qrContent,
+                          title: widget.title,
+                          helpText: 'Print this QR code which contains a link to this run on www.hashruns.org',
+                          subtitle: 'Link to run on the web',
+                          eventStartDatetime: widget.eventStartDatetime,
+                        )
                     ],
                   ),
                 )),
@@ -182,6 +207,9 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
     if (tabs.isEmpty) {
       tabs.add(const Tab(text: 'Run Start'));
       tabs.add(const Tab(text: 'Run End'));
+      if (widget.showRunLink) {
+        tabs.add(const Tab(text: 'Run Link'));
+      }
     }
   }
 }
@@ -193,6 +221,8 @@ class QrTab extends StatefulWidget {
     @required this.qrContent,
     @required this.title,
     @required this.qrPrefix,
+    @required this.helpText,
+    @required this.subtitle,
     this.eventStartDatetime,
   }) : super(key: key);
 
@@ -200,6 +230,8 @@ class QrTab extends StatefulWidget {
   final String qrPrefix;
   final String qrContent;
   final String title;
+  final String helpText;
+  final String subtitle;
   final DateTime eventStartDatetime;
 
   @override
@@ -261,7 +293,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
             height: spacer / 3,
           ),
           Text(
-            'Print this code and make it available for Hashers to scan at the beginning and end of runs',
+            widget.helpText,
             textAlign: TextAlign.justify,
             style: TextStyle(
               color: Colors.white,
@@ -277,7 +309,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
           ),
           AutoSizeText(
             //widget.eventName,
-            widget.isRunStart ? 'QR code for run start at:' : 'QR code for run end at:',
+            widget.subtitle,
             maxLines: 1,
             minFontSize: 22.0,
             textAlign: TextAlign.center,
@@ -306,7 +338,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
                 QrImage(
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.all(15.0),
-                    data: BASE_HASHRUNS_DOT_ORG_URL + widget.qrPrefix + widget.qrContent,
+                    data: widget.qrPrefix + widget.qrContent,
                     // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
                     //data: 'testing123',
                     version: 5,

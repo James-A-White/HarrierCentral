@@ -417,8 +417,6 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         //Utilities.qrScanTypeFlag_user |
         Utilities.qrScanTypeFlag_runStart |
             Utilities.qrScanTypeFlag_runEnd |
-            Utilities.qrScanTypeFlag_runStartV2 |
-            Utilities.qrScanTypeFlag_runEndV2 |
             Utilities.qrScanTypeFlag_kennelRunEnd |
             Utilities.qrScanTypeFlag_kennelRunStart |
             Utilities.qrScanTypeFlag_authenticateWebPortal);
@@ -432,8 +430,8 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       final String prefix = result['prefix'];
       final String scanData = result['content'];
 
-      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END) || (prefix == QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START) || (prefix == QR_PREFIX_HASHRUNS_DOT_ORG_RUN_END)) {
-        final int attendenceState = ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_HASHRUNS_DOT_ORG_RUN_START)) ? attendenceAtHash.value : attendenceOnIn.value;
+      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
+        final int attendenceState = (prefix == QR_PREFIX_SPECIFIC_RUN_START) ? attendenceAtHash.value : attendenceOnIn.value;
 
         final String userId = getStringPref(StringPrefsEnum.userId);
 
