@@ -323,7 +323,7 @@ const Map<String, int> runTags2 = <String, int>{
   'No bag drop available': 0x00000100,
   'Drinking practice': 0x00000200,
   'Ballbreaker trail': 0x00000400,
-  'Short walk / old farts trail': 0x00000800,
+  'Short walk / Old Farts trail': 0x00000800,
   // 'Long run trail': 0x00001000,
   // 'Pub crawl': 0x00002000,
   // 'On after': 0x00004000,
