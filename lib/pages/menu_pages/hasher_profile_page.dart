@@ -77,7 +77,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     return false;
   }
 
-  Future<void> refreshUserDataFromTable(bool forceRefresh) async {
+  Future<void> _refreshUserDataFromTable(bool forceRefresh) async {
     String query = ''' 
         SELECT 
           h.*
@@ -185,7 +185,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     }
     // //print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
-      refreshUserDataFromTable(true);
+      _refreshUserDataFromTable(true);
       _photoPrefix = widget.hasherId;
     } else {
       if ((widget.kennelId != null) && (widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
@@ -345,6 +345,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           await setStringPref(StringPrefsEnum.email, _emailController.text);
           await setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
+          _hasherPreferences = _distancePreference + _autoRunPreference;
         }
 
         HashersModel h;
@@ -377,7 +378,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           await setStringPref(StringPrefsEnum.lastName, h.lastName);
         }
 
-        await refreshUserDataFromTable(true);
+        await _refreshUserDataFromTable(true);
         setState(() {
           _isLoading = false;
           checkDirty();
