@@ -486,6 +486,7 @@ class QueryRuns {
     final String whereClauseForTopRunsPage = '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND coalesce(hkm.following,0) != 2
+            AND evt.removed = 0
             AND (
                   "${searchAllRuns.toString()}" == "true"
                   OR
@@ -499,12 +500,14 @@ class QueryRuns {
     final String whereClauseForKennelDetailsPage = '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
+            AND evt.removed = 0
             ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
             LIMIT 10
           ''';
 
     final String whereClauseForSingleRun = '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventId} = "$eventId"
+            AND evt.removed = 0
           ''';
 
     String query = queryBase;
