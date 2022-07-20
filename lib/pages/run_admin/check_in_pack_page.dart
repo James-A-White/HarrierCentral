@@ -519,8 +519,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
   }
 
-  void _findHasher() {
-    Navigator.push<Map<String, dynamic>>(
+  Future<void> _findHasher() async {
+    final Map<String, dynamic> result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute<Map<String, dynamic>>(
         settings: const RouteSettings(),
@@ -528,22 +528,20 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           return FindHasherPage(FindHasherPageType.addHasherToRun, kennelId: widget.eventAggregate.event.kennelId, eventId: widget.eventAggregate.event.eventId);
         },
       ),
-    ).then((Map<String, dynamic> result) {
-      if ((result != null) && (result['hasher']?.hasherId != null)) {
-        final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.setEventAttendence(
-              widget.eventAggregate.event.eventId,
-              result['hasher'].hasherId,
-              AppDomainType.event,
-              attendenceAtHash.value,
-            );
+    );
 
-        retVal.then((List<dynamic> adHocData) {
-          _refreshPackListFromTables(false).then((void _) {
-            _refreshCounters(true);
-          });
-        });
-      }
-    });
+    if ((result != null) && (result['hasher']?.hasherId != null)) {
+      // this method returns adHoc data that we are ignoring
+      await G0<TableModel>().hasherEventMapService.setEventAttendence(
+            widget.eventAggregate.event.eventId,
+            result['hasher'].hasherId,
+            AppDomainType.event,
+            attendenceAtHash.value,
+          );
+
+      await _refreshPackListFromTables(false);
+      await _refreshCounters(true);
+    }
   }
 
   void _showVirginVisitorPopup(BuildContext parentContext) {
@@ -1039,7 +1037,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               backgroundColor: Colors.blue,
               label: 'Find Hasher and add',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () => _findHasher(),
+              onTap: () async => await _findHasher(),
             ),
             SpeedDialChild(
                 child: const Icon(MaterialCommunityIcons.message_video),

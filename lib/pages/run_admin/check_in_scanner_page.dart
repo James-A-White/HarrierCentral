@@ -287,16 +287,24 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         });
         final int attendenceState = _isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
-        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
-            widget.eventAggregate.event.eventId,
-            GUID_EMPTY, // normally the Hasher ID, but null when we are scanning
-            null,
-            AppDomainType.event,
-            rsvpState: rsvpYes.value,
-            attendenceState: attendenceState,
-            isHare: isHareNo.value,
-            virginVisitorType: enumHasher.value,
-            userQrCode: prefix + content);
+        // final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
+        //     widget.eventAggregate.event.eventId,
+        //     GUID_EMPTY, // normally the Hasher ID, but null when we are scanning
+        //     null,
+        //     AppDomainType.event,
+        //     rsvpState: rsvpYes.value,
+        //     attendenceState: attendenceState,
+        //     isHare: isHareNo.value,
+        //     virginVisitorType: enumHasher.value,
+        //     userQrCode: prefix + content);
+
+        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
+              widget.eventAggregate.event.eventId,
+              null, // result['hasher'].hasherId,
+              AppDomainType.event,
+              attendenceState,
+              qrScanText: prefix + content,
+            );
 
         if ((adHocData != null) && (adHocData.isNotEmpty)) {
           num amountOwed = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
@@ -361,7 +369,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
     if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
       final int paymentType = paymentResult[0]['paymentType'];
-      final String amountPaid = IveCoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String amountPaid = IveCoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'] ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
       _onScreenMessage = paymentResult[0]['hasherWhoPaid'];
 
@@ -398,7 +406,9 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       }
       setState(() {});
 
-      await Future<void>.delayed(const Duration(seconds: 3));
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      await Future<void>.delayed(const Duration(milliseconds: 4500));
 
       await _toggleScanning(doScanning: true);
     }

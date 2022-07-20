@@ -456,6 +456,7 @@ class HasherEventMapService {
     AppDomainType appDomainType,
     int attendenceState, {
     int isHare = 0,
+    String qrScanText,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
@@ -492,6 +493,7 @@ class HasherEventMapService {
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'returnUserRecords': appDomainType == AppDomainType.user ? 1 : 0,
+      'qrScanText': qrScanText == null ? '' : qrScanText,
     };
 
     final String body = jsonEncode(bodyMap);
