@@ -124,6 +124,9 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                         helpText: 'Print this QR code and make it available for Hashers to scan at the beginning of runs to check in at the run',
                         subtitle: 'QR code for run start',
                         eventStartDatetime: widget.eventStartDatetime,
+                        instructionTitle: 'Run Start QR Code',
+                        instructions:
+                            'This QR code can be scanned by Hashers to check in when they arrive at the start of a run.\r\n\r\nThis will automatically mark them as at the run, but will not mark them as paid. This is especially useful for Hashes with large packs.',
                       ),
                       QrTab(
                         isRunStart: false,
@@ -133,6 +136,9 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                         helpText: 'Print this QR code and make it available for Hashers to scan at the end of runs to record as On Inn',
                         subtitle: 'QR code for run end',
                         eventStartDatetime: widget.eventStartDatetime,
+                        instructionTitle: 'Run End QR Code',
+                        instructions:
+                            'This QR code can be scanned by Hashers to check in when they finish running the Hash trail.\r\n\r\nThis will automatically mark them as having finished the run.\r\n\r\nThis is especially useful for Hashes where it is important to account that everyone has arrived safely at the end of the run and ensure no one remains on trail.',
                       ),
                       if (widget.showRunLink)
                         QrTab(
@@ -143,6 +149,9 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                           helpText: 'Print this QR code which contains a link to this run on www.hashruns.org',
                           subtitle: 'Link to run on the web',
                           eventStartDatetime: widget.eventStartDatetime,
+                          instructionTitle: 'Run Link QR Code',
+                          instructions:
+                              'This QR code can be scanned by anyone to access this run\'s information on the Web.\r\n\r\nThis QR code will not work if the Kennel has not opted-in to have their runs published on www.hashruns.org.',
                         )
                     ],
                   ),
@@ -223,6 +232,8 @@ class QrTab extends StatefulWidget {
     @required this.qrPrefix,
     @required this.helpText,
     @required this.subtitle,
+    @required this.instructionTitle,
+    @required this.instructions,
     this.eventStartDatetime,
   }) : super(key: key);
 
@@ -232,6 +243,8 @@ class QrTab extends StatefulWidget {
   final String title;
   final String helpText;
   final String subtitle;
+  final String instructionTitle;
+  final String instructions;
   final DateTime eventStartDatetime;
 
   @override
@@ -248,14 +261,12 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: widget.isRunStart ? const Text('Run Start QR Code') : const Text('Run End QR Code'),
+          title: Text(widget.instructionTitle),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text(
-                  widget.isRunStart
-                      ? 'This QR code can be scanned by Hashers to check in when they arrive at the start of a run.\r\n\r\nThis will automatically mark them as at the run, but will not mark them as paid. This is especially useful for Hashes with large packs.'
-                      : 'This QR code can be scanned by Hashers to check in when they finish running the Hash trail.\r\n\r\nThis will automatically mark them as having finished the run.\r\n\r\nThis is especially useful for Hashes where it is important to account that everyone has arrived safely at the end of the run and ensure no one remains on trail.',
+                  widget.instructions,
                   textAlign: TextAlign.justify,
                   style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )

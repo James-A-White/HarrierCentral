@@ -160,27 +160,27 @@ class AppAccess {
   }
 
   bool get isAdmin {
-    return (appAccessFlags ?? 0) & (authIsAdmin ?? 0) != 0;
+    return (appAccessFlags ?? 0) & (authIsAdmin | authIsSuperAdmin) != 0;
   }
 
   bool get isSuperAdmin {
-    return (appAccessFlags ?? 0) & (authIsSuperAdmin ?? 0) != 0;
+    return (appAccessFlags ?? 0) & (authIsSuperAdmin | authIsSuperAdmin) != 0;
   }
 
   bool get canManageKennel {
-    return (appAccessFlags ?? 0) & (authCanManageKennel ?? 0) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageKennel | authIsSuperAdmin) != 0;
   }
 
   bool get canManageRuns {
-    return (appAccessFlags ?? 0) & (authCanManageRuns ?? 0) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageRuns | authIsSuperAdmin) != 0;
   }
 
   bool get canManageHashCash {
-    return (appAccessFlags ?? 0) & (authCanManageHashCash ?? 0) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageHashCash | authIsSuperAdmin) != 0;
   }
 
   bool get canManageMembers {
-    return (appAccessFlags ?? 0) & (authCanManageMembers ?? 0) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageMembers | authIsSuperAdmin) != 0;
   }
 }
 
