@@ -159,12 +159,12 @@ class AppAccess {
     }
   }
 
-  bool get isAdmin {
-    return (appAccessFlags ?? 0) & (authIsAdmin | authIsSuperAdmin) != 0;
+  bool get isSuperAdmin {
+    return (appAccessFlags ?? 0) & authIsSuperAdmin != 0;
   }
 
-  bool get isSuperAdmin {
-    return (appAccessFlags ?? 0) & (authIsSuperAdmin | authIsSuperAdmin) != 0;
+  bool get isAdmin {
+    return (appAccessFlags ?? 0) & (authIsAdmin | authIsSuperAdmin) != 0;
   }
 
   bool get canManageKennel {
