@@ -29,6 +29,7 @@ class SyncKennelAdminService {
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel));
+    int xxx = 0;
   }
 
   Future<bool> updateFromBackend(
@@ -88,11 +89,11 @@ class SyncKennelAdminService {
       await getLastUpdatedTimes(flags);
 
       final DateTime kennelsUpdatedAfter =
-          _kennelLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelLastUpdated + 1000);
+          _kennelLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_kennelLastUpdated + 1000);
       final DateTime hashersUpdatedAfter =
-          _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+          _hashersLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1000);
       final DateTime hasherKennelMapUpdatedAfter =
-          _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+          _hasherKennelMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -105,9 +106,9 @@ class SyncKennelAdminService {
         'userId': userId,
         'accessToken': accessToken,
         'kennelId': kennelId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
-        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : (hashersUpdatedAfter.toString() + '000000').substring(0, 26),
+        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0 ? 'ignore' : (kennelsUpdatedAfter.toString() + '000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : (hasherKennelMapUpdatedAfter.toString() + '000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       });
 

@@ -127,19 +127,19 @@ class SyncEventAdminService {
       await getLastUpdatedTimes(flags);
 
       final DateTime hasherEventMapUpdatedAfter =
-          _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+          _hasherEventMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
       final DateTime hasherKennelMapUpdatedAfter =
-          _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+          _hasherKennelMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
       final DateTime narrowEventsUpdatedAfter =
-          _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
+          _narrowEventsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
       final DateTime paymentsUpdatedAfter =
-          _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+          _paymentsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1000);
       final DateTime receiptsUpdatedAfter =
-          _receiptsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
+          _receiptsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_receiptsLastUpdated + 1000);
       final DateTime hashersUpdatedAfter =
-          _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+          _hashersLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1000);
       final DateTime kennelCreditsUpdatedAfter =
-          _kennelCreditsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+          _kennelCreditsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -152,13 +152,13 @@ class SyncEventAdminService {
         'userId': userId,
         'accessToken': accessToken,
         'eventId': eventId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
-        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
-        'narrowEventsUpdatedAfter': (flags & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
-        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
-        'receiptsUpdatedAfter': (flags & flagReceiptsTable) == 0 ? 'ignore' : receiptsUpdatedAfter.toString().substring(0, 19),
-        'kennelCreditsUpdatedAfter': (flags & flagKennelCreditTable) == 0 ? 'ignore' : kennelCreditsUpdatedAfter.toString().substring(0, 19),
+        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : (hashersUpdatedAfter.toString() + '000000').substring(0, 26),
+        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0 ? 'ignore' : (hasherEventMapUpdatedAfter.toString() + '000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : (hasherKennelMapUpdatedAfter.toString() + '000000').substring(0, 26),
+        'narrowEventsUpdatedAfter': (flags & flagNarrowEventsTable) == 0 ? 'ignore' : (narrowEventsUpdatedAfter.toString() + '000000').substring(0, 26),
+        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0 ? 'ignore' : (paymentsUpdatedAfter.toString() + '000000').substring(0, 26),
+        'receiptsUpdatedAfter': (flags & flagReceiptsTable) == 0 ? 'ignore' : (receiptsUpdatedAfter.toString() + '000000').substring(0, 26),
+        'kennelCreditsUpdatedAfter': (flags & flagKennelCreditTable) == 0 ? 'ignore' : (kennelCreditsUpdatedAfter.toString() + '000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       });
 

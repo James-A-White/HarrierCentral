@@ -109,23 +109,23 @@ class SyncUserDataService {
         await getLastUpdatedTimes(tablesToSync);
 
         final DateTime hashersUpdatedAfter =
-            _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+            _hashersLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1000);
         final DateTime citiesUpdatedAfter =
-            _citiesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
+            _citiesLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_citiesLastUpdated + 1000);
         final DateTime regionsUpdatedAfter =
-            _regionsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
+            _regionsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_regionsLastUpdated + 1000);
         final DateTime countriesUpdatedAfter =
-            _countriesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
+            _countriesLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_countriesLastUpdated + 1000);
         final DateTime kennelsUpdatedAfter =
-            _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+            _kennelsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_kennelsLastUpdated + 1000);
         // final DateTime paymentsUpdatedAfter =
         //     _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
         final DateTime hasherKennelMapUpdatedAfter =
-            _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+            _hasherKennelMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
         final DateTime hasherEventMapUpdatedAfter =
-            _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+            _hasherEventMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
         final DateTime narrowEventsUpdatedAfter =
-            _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
+            _narrowEventsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
 
         String userId = getStringPref(StringPrefsEnum.userId);
         if ((userId ?? '').isEmpty) {
@@ -137,14 +137,14 @@ class SyncUserDataService {
         final Map<String, String> params = <String, String>{
           'userId': userId,
           'accessToken': accessToken,
-          'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
-          'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
-          'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
-          'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
-          'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
-          'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
-          'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
-          'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
+          'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : (citiesUpdatedAfter.toString() + '000000').substring(0, 26),
+          'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : (regionsUpdatedAfter.toString() + '000000').substring(0, 26),
+          'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : (countriesUpdatedAfter.toString() + '000000').substring(0, 26),
+          'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : (hasherKennelMapUpdatedAfter.toString() + '000000').substring(0, 26),
+          'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : (hasherEventMapUpdatedAfter.toString() + '000000').substring(0, 26),
+          'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : (hashersUpdatedAfter.toString() + '000000').substring(0, 26),
+          'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : (kennelsUpdatedAfter.toString() + '000000').substring(0, 26),
+          'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : (narrowEventsUpdatedAfter.toString() + '000000').substring(0, 26),
           'forceReplicateAllRunsForKennel': forceReplicateAllRunsForKennel ?? 'ignore',
           'usePaging': usePaging ? '1' : '0',
         };

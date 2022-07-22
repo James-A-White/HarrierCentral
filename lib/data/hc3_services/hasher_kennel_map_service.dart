@@ -334,9 +334,9 @@ class HasherKennelMapService {
       'monthsToAddToMembership': monthsToAddToMembership,
       'appAccessFlags': appAccessFlags,
       'mismanagementRoles': mismanagementRoles,
-      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString().substring(0, 19),
-      'kennelsUpdatedAfter': kennelsUpdatedAfter.toString().substring(0, 19),
-      'hashersUpdatedAfter': hashersUpdatedAfter.toString().substring(0, 19)
+      'hasherKennelMapUpdatedAfter': (hasherKennelMapUpdatedAfter.toString() + '000000').substring(0, 26),
+      'kennelsUpdatedAfter': (kennelsUpdatedAfter.toString() + '000000').substring(0, 26),
+      'hashersUpdatedAfter': (hashersUpdatedAfter.toString() + '000000').substring(0, 26)
     });
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_kennel', body);

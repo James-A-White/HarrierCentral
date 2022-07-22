@@ -689,11 +689,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: eca4c4df22292778d9fa7d8960ad5e8fdef40881
-      resolved-ref: eca4c4df22292778d9fa7d8960ad5e8fdef40881
+      ref: "70003ddc2824f19c1800884f40d06ef82be7f513"
+      resolved-ref: "70003ddc2824f19c1800884f40d06ef82be7f513"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git"
     source: git
-    version: "1.1.6"
+    version: "1.1.8"
   js:
     dependency: transitive
     description:
