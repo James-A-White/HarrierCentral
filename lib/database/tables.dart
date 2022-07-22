@@ -173,12 +173,13 @@ class Tables {
       ''',
         appliedAtInt: 0),
 
-    // // MIGRATION 222
-    // MigrationsModel(dbVersion: 222, migrationText: '''
-    //         ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-    //         ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-    //         ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-    //      '''),
+    MigrationsModel(
+        dbVersion: 405,
+        migrationText: ''' 
+        -- DB structure not changed, but migration required to accommodate for
+        -- a change in the values stored in the [updatedAtValue] field
+      ''',
+        appliedAtInt: 0),
   ];
 
   static Future<void> createTables(Database db, int version, Function informUser) async {

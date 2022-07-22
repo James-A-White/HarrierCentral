@@ -270,7 +270,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colUpdatedAt TEXT,
             $colRemoved INT,
 
-            $colUpdatedAtValue NUM NULL
+            $colUpdatedAtValue INT NULL
           )
           ''');
   }

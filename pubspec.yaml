@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 1.1.7+626
+version: 1.1.7+627
 publish_to: none
 
 environment:
@@ -56,7 +56,7 @@ dependencies:
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
-      ref: 70003ddc2824f19c1800884f40d06ef82be7f513 # Version 1.1.8
+      ref: 99f78ae9ec601059829ca8f6f8c276f3a2ea6944 # Version 1.1.8
   keyboard_actions: ^4.0.0 
   keyboard_avoider: ^0.1.2
   maps_launcher: ^2.0.1

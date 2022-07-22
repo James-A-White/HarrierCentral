@@ -109,7 +109,7 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
-            $colUpdatedAtValue NUM NULL
+            $colUpdatedAtValue INT NULL
           )
           ''');
   }
@@ -162,7 +162,7 @@ class ReceiptsService {
           G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
           G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
         );
-    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
+    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_receiptsLastUpdated + 1);
 
     final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
 

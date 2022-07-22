@@ -239,7 +239,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
-            $colUpdatedAtValue NUM NULL
+            $colUpdatedAtValue INT NULL
           )
           ''');
   }
@@ -336,7 +336,7 @@ class EventsService extends BaseService {
       G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
       G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
     );
-    final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
+    final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_eventsLastUpdated + 1);
 
     final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString()};
     if (isVisible != null) {

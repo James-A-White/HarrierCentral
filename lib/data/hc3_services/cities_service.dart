@@ -86,7 +86,7 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
-            $colUpdatedAtValue NUM NULL
+            $colUpdatedAtValue INT NULL
           )
           ''');
   }

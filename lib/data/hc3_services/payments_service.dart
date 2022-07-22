@@ -161,7 +161,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
             $colSpecialRunPriceReason TEXT NOT NULL,
             $colRemoved INT,
             $colUpdatedAt TEXT,
-            $colUpdatedAtValue NUM NULL
+            $colUpdatedAtValue INT NULL
           )
           ''');
   }
@@ -228,7 +228,7 @@ class PaymentsService {
           G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
 
     final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -236,7 +236,7 @@ class PaymentsService {
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
-    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
 
     final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -244,7 +244,7 @@ class PaymentsService {
           G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
           G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
         );
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
 
     final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -252,7 +252,7 @@ class PaymentsService {
           G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
           G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
         );
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_kennelCreditsLastUpdated + 1);
 
     final String appDomainStr = appDomainType.toString();
 
