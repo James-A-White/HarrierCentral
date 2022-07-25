@@ -17,10 +17,12 @@ class PackListAggregate {
   PackListAggregate({
     this.hem,
     this.hasher,
+    this.displayName,
   });
 
   final HasherEventMapModel hem;
   final HashersModel hasher;
+  final String displayName;
 }
 
 class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
@@ -77,14 +79,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       for (int i = 0; i < results.length; i++) {
         final HasherEventMapModel packItem = G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
         final HashersModel hasherItem = HashersModel.fromJson(results[i]);
-        _thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
+        String displayName = hasherItem.dispName;
+        if (packItem.virginVisitorType != 0) {
+          displayName = packItem.displayName;
+        }
+        _thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem, displayName: displayName));
       }
     } catch (e) {
       //print(e);
     }
 
     _thePackList.sort(
-      (PackListAggregate a, PackListAggregate b) => a.hasher.dispName.compareTo(b.hasher.dispName),
+      (PackListAggregate a, PackListAggregate b) => a.displayName.compareTo(b.displayName),
     );
 
     _thisUserIndex = -1;
@@ -177,7 +183,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   num spaceBetweenColumns = 11.0;
   num spaceBetweenRows = 23.0;
 
-  Widget buildRunDetailsView() {
+  Widget _buildRunDetailsView() {
     return RunDetails(
       widget.futureRun.event,
       widget.futureRun.kennel,
@@ -207,7 +213,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   EnumRsvpState<int> rsvpRequested = rsvpUnknown;
 
-  Widget buildRsvpView() {
+  Widget _buildRsvpView() {
     //print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
 
     return Center(
@@ -541,7 +547,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                 Expanded(
                                                     child: Container(
                                                   padding: const EdgeInsets.only(top: 7.0),
-                                                  child: Text(e.hasher.dispName,
+                                                  child: Text(e.displayName ?? '<unknown>',
                                                       style: const TextStyle(
                                                         fontFamily: 'AvenirNextCondensedMedium',
                                                         fontStyle: FontStyle.normal,
@@ -725,7 +731,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
-  Widget buildMapView() {
+  Widget _buildMapView() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Center(
@@ -981,9 +987,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             ),
             Expanded(
               child: TabBarView(controller: _tabController, children: <Widget>[
-                buildRunDetailsView(),
-                buildRsvpView(),
-                buildMapView(),
+                _buildRunDetailsView(),
+                _buildRsvpView(),
+                _buildMapView(),
               ]
                   // children: tabs.map((Tab tab) {
                   //   return Center(
