@@ -393,8 +393,9 @@ class HasherEventMapService {
     String hasherId,
     AppDomainType appDomainType,
     int rsvpState,
-    int isHare,
-  ) async {
+    int isHare, {
+    String hemId,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -429,6 +430,7 @@ class HasherEventMapService {
       'rsvpState': rsvpState,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
+      'hemId': hemId ?? '',
     };
 
     final String body = jsonEncode(bodyMap);
@@ -457,6 +459,7 @@ class HasherEventMapService {
     int attendenceState, {
     int isHare = 0,
     String qrScanText,
+    String hemId,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
@@ -494,6 +497,7 @@ class HasherEventMapService {
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'returnUserRecords': appDomainType == AppDomainType.user ? 1 : 0,
       'qrScanText': qrScanText == null ? '' : qrScanText,
+      'hemId': hemId ?? '',
     };
 
     final String body = jsonEncode(bodyMap);

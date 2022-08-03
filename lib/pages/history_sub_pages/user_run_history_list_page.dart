@@ -741,6 +741,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AppDomainType.user,
           attendenceState.value,
           isHare: isHare.value,
+          hemId: item.hemId,
         );
 
     await refreshRunHistoryFromTable(true);

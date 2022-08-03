@@ -531,7 +531,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
 
     if ((result != null) && (result['hasher']?.hasherId != null)) {
-      // this method returns adHoc data that we are ignoring
+      // NOTE:this method returns adHoc data that we are ignoring
       await G0<TableModel>().hasherEventMapService.setEventAttendence(
             widget.eventAggregate.event.eventId,
             result['hasher'].hasherId,
@@ -716,20 +716,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               hintText: 'Enter Hash or mortal name',
                               hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                             ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 40,
-                          child: TextButton(
-                            style: TextButton.styleFrom(backgroundColor: Colors.white),
-                            child: Text('X', style: TextStyle(color: Colors.grey.shade700)),
-                            onPressed: () {
-                              _searchController.text = '';
-                              _searchText = '';
-                              setState(() {
-                                _filterPackListResults();
-                              });
-                            },
                           ),
                         ),
                       ],
@@ -1618,6 +1604,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           AppDomainType.event,
           rsvpState,
           isHare,
+          hemId: packMember.hemId,
         );
 
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
@@ -1631,12 +1618,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _updateAttendenceState(CheckInPackModel packMember, int rsvpState, int attendenceState, int isHare) async {
-    await G0<TableModel>().hasherEventMapService.setEventAttendence(
-          widget.eventAggregate.event.eventId,
-          packMember.hasherId,
-          AppDomainType.event,
-          attendenceState,
-        );
+    await G0<TableModel>().hasherEventMapService.setEventAttendence(widget.eventAggregate.event.eventId, packMember.hasherId, AppDomainType.event, attendenceState, hemId: packMember.hemId);
 
     await _refreshPackListFromTables(false);
     await _refreshCounters(true);
