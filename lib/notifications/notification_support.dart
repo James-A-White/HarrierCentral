@@ -120,7 +120,7 @@
 
 //       // clean up the notification table and hope we have unsubscribed from
 //       // all the notifications!
-//       // TODO(James): Eventually add a cleanup function to the server
+//       // T0D0(James): Eventually add a cleanup function to the server
 //       sql = '''
 //           DELETE FROM ${NotificationsTableHelper.tableName} WHERE ${NotificationsTableHelper.colNotificationTag} IN 
 //           (SELECT "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId 

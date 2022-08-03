@@ -684,7 +684,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         setState(() {
           // final NotificationSupport notifications = NotificationSupport();
           // notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
-          // // TODO(James): Fix this to reflect true value of what is in the DB not just the value
+          // // T0D0(James): Fix this to reflect true value of what is in the DB not just the value
           // // provided to the function
           widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
         });

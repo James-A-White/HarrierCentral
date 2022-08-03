@@ -57,8 +57,6 @@ class ServiceCommon {
       }
     }
 
-    int xxx = 0;
-
     return returnValue;
   }
 }

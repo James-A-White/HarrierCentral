@@ -1262,7 +1262,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     String latStr = '';
     String lonStr = '';
     String address = '';
-    String url = '';
+    //String url = '';
 
     if (rda.extensions.latitude != null) {
       latStr = rda.extensions.latitude.toString();
@@ -1295,7 +1295,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
 
     if ((latStr != '') && (lonStr != '')) {
-      url = latStr + ',' + lonStr;
+      //url = latStr + ',' + lonStr;
       await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
     } else if ((address != null) && (address.isNotEmpty)) {
       await MapsLauncher.launchQuery(address);

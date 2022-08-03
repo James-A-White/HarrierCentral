@@ -86,8 +86,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   bool _isLoading = false;
 
-  bool _isUpdating = false;
-
   List<UserRunHistoryResults> _runCountsList = <UserRunHistoryResults>[];
   final String _userId = getStringPref(StringPrefsEnum.userId);
 
@@ -396,7 +394,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   int myRunCount = 0;
   int myHaringCount = 0;
 
-  // // TODO(James): Update this to simply pull data already provided by the server
+  // // T0D0(James): Update this to simply pull data already provided by the server
   // void _updateMyRunCounts() {
   //   int haringCount = 0;
   //   int runCount = 0;

@@ -83,7 +83,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR123');
 
-  EQrScannerState _state = EQrScannerState.waitingForScan;
+  // EQrScannerState _state = EQrScannerState.waitingForScan;
 
   QRViewController _controller;
   // EQrScannerState _state = EQrScannerState.waitingForScan;
@@ -387,12 +387,12 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
       if (_isScanning && ((doScanning == null) || !doScanning)) {
         await _controller.pauseCamera();
         _isScanning = false;
-        _state = EQrScannerState.waitingForScan;
+        //_state = EQrScannerState.waitingForScan;
       } else {
         if ((doScanning == null) || doScanning) {
           await _controller.resumeCamera();
           _isScanning = true;
-          _state = EQrScannerState.scanning;
+          // _state = EQrScannerState.scanning;
         }
       }
     }

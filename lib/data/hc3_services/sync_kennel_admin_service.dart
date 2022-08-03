@@ -29,7 +29,6 @@ class SyncKennelAdminService {
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel));
-    int xxx = 0;
   }
 
   Future<bool> updateFromBackend(

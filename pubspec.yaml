@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 1.1.8+629
+version: 1.1.8+631
 publish_to: none
 
 environment:
@@ -15,7 +15,7 @@ dependencies:
   crypto: ^3.0.1  
   cupertino_icons: ^1.0.3  
   date_time_picker: 2.0.0  # NOTE: There's a bug in 2.1.0 with AM/PM selection so stick with 2.0.0
-  device_info_plus: ^4.0.0
+  device_info_plus: ^4.0.1
   # fancy_bottom_navigation: ^0.3.3  
   fancy_bottom_navigation:
     git:
@@ -28,7 +28,7 @@ dependencies:
     sdk: flutter
   flutter_facebook_auth: ^4.3.4+2
   flutter_image: ^4.1.0  
-  flutter_image_compress: ^1.1.0 
+  flutter_image_compress: ^1.1.1 
   flutter_linkify: ^5.0.2  
   flutter_localizations:
     sdk: flutter
@@ -62,7 +62,7 @@ dependencies:
   maps_launcher: ^2.0.1
   meta: ^1.8.0 
   mobile_scanner: ^2.0.0
-  package_info_plus: ^1.4.2
+  package_info_plus: ^1.4.3
   pdf_viewer_plugin: ^2.0.1
   permission_handler: ^10.0.0
   # photo_view: ^0.4.2

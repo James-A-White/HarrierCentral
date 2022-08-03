@@ -170,7 +170,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         break;
     }
 
-    String message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel))).toString();
+    final String message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel))).toString();
     print('HKM count = ' + message);
 
     final String query = ''' 

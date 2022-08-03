@@ -247,7 +247,6 @@ class HasherEventMapService {
   // }) async {
   //   if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
   //     return null;
-  //     // TODO(James): fix this so we can return a bool
   //     //return false;
   //   }
 
@@ -430,7 +429,7 @@ class HasherEventMapService {
       'rsvpState': rsvpState,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
-      'hemId': hemId ?? '',
+      'hemId': hemId,
     };
 
     final String body = jsonEncode(bodyMap);
@@ -497,7 +496,7 @@ class HasherEventMapService {
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'returnUserRecords': appDomainType == AppDomainType.user ? 1 : 0,
       'qrScanText': qrScanText == null ? '' : qrScanText,
-      'hemId': hemId ?? '',
+      'hemId': hemId,
     };
 
     final String body = jsonEncode(bodyMap);

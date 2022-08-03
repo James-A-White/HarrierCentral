@@ -45,10 +45,10 @@ void _initTables() {
 bool _createIndexes = false;
 
 Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) async {
-  bool initialLoad = false;
-  if (getIntPref(IntPrefsEnum.databaseVersion) != DB_VERSION) {
-    initialLoad = true;
-  }
+  // bool initialLoad = false;
+  // if (getIntPref(IntPrefsEnum.databaseVersion) != DB_VERSION) {
+  //   initialLoad = true;
+  // }
 
   // print('******* > DB Setup step 1');
   G0<AppModel>().dbStatus = EdbStatus.opening;
