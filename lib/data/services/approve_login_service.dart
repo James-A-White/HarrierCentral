@@ -53,6 +53,7 @@ class ApproveLoginService {
       'longitude': (G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': hcVersion,
       'fbToken': facebookAccessToken,
+      'usesLocSvcs': (G0<AppModel>().hasLocationPermissions ?? false) ? '1' : '0',
     });
 
     Future<Response> futureResponse;
