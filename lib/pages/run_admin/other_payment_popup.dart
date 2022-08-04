@@ -46,6 +46,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
 
   bool _topUpCreditEnabled = false;
   bool _specialPriceEnabled = false;
+  bool _paySpecialPriceWithCredit = false;
   bool _specialPriceIsDefaultForUser = false;
 
   @override
@@ -101,8 +102,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                     const SizedBox(height: 20.0),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: Text(
-                          'If you want to offer a Hasher a special price for this run, enter that amount here. You can also enter an optional note why you offered this price.',
+                      child: Text('If you want to offer a Hasher a special price for this run, enter that amount here. You can also enter an optional note why you offered this price.',
                           style: TextStyle(color: _specialPriceEnabled ? Colors.black : Colors.grey.shade500)),
                     ),
                     Padding(
@@ -146,6 +146,44 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                         ),
                       ),
                     ),
+                    if (widget.showCreditTopup)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Theme(
+                              data: ThemeData(
+                                //primarySwatch: Colors.blue,
+                                unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
+                              ),
+                              child: Checkbox(
+                                fillColor: MaterialStateProperty.resolveWith<Color>(
+                                  (Set<MaterialState> states) {
+                                    if (states.contains(MaterialState.disabled)) {
+                                      return Colors.grey.shade300;
+                                    }
+                                    return Colors.red.shade900;
+                                  },
+                                ),
+                                onChanged: _specialPriceEnabled
+                                    ? (bool val) {
+                                        setState(() {
+                                          _paySpecialPriceWithCredit = !_paySpecialPriceWithCredit;
+                                          if (_topUpCreditEnabled && _paySpecialPriceWithCredit) {
+                                            _topUpCreditEnabled = false;
+                                          }
+                                        });
+                                      }
+                                    : null,
+                                value: _paySpecialPriceWithCredit,
+                              ),
+                            ),
+                            Text('Pay with Hash Credit', style: TextStyle(color: _specialPriceEnabled ? Colors.black : Colors.grey.shade300)),
+                            const SizedBox(width: 10.0),
+                          ],
+                        ),
+                      ),
                     if (widget.allowDefaultPricing) ...<Widget>[
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 0.0),
@@ -237,8 +275,8 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                       const SizedBox(height: 20.0),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text('Enter an additional amount of money here to add to a Hasher\'s credit balance.',
-                            style: TextStyle(color: _topUpCreditEnabled ? Colors.black : Colors.grey.shade500)),
+                        child:
+                            Text('Enter an additional amount of money here to add to a Hasher\'s credit balance.', style: TextStyle(color: _topUpCreditEnabled ? Colors.black : Colors.grey.shade500)),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -277,6 +315,9 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
                             _recalculateTotal();
                             setState(() {
                               _topUpCreditEnabled = !_topUpCreditEnabled;
+                              if (_paySpecialPriceWithCredit && _topUpCreditEnabled) {
+                                _paySpecialPriceWithCredit = false;
+                              }
                             });
                           },
                           value: _topUpCreditEnabled,
@@ -317,44 +358,64 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         //   width: 60.0,
         //child:
 
-        TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Cash'),
-            onPressed: () {
-              final OtherPaymentPopupResult result = OtherPaymentPopupResult(
-                'process',
-                paymentCashOtherAmount.value,
-                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
-                _totalDue,
-                _specialPriceIsDefaultForUser,
-              );
+        if (!_paySpecialPriceWithCredit) ...<Widget>[
+          TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text('Cash'),
+              onPressed: () {
+                final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                  'process',
+                  paymentCashOtherAmount.value,
+                  _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
+                  _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                  _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                  _totalDue,
+                  _specialPriceIsDefaultForUser,
+                );
 
-              Navigator.of(context).pop(result);
-            }),
-        // ),
-        // Container(
-        //   width: 60.0,
-        //child:
+                Navigator.of(context).pop(result);
+              }),
+          // ),
+          // Container(
+          //   width: 60.0,
+          //child:
 
-        TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Bank transfer'),
-            onPressed: () {
-              final OtherPaymentPopupResult result = OtherPaymentPopupResult(
-                'process',
-                paymentBankTransferOtherAmount.value,
-                _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
-                _totalDue,
-                _specialPriceIsDefaultForUser,
-              );
-              Navigator.of(context).pop(
-                result,
-              );
-            }),
+          TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text('Bank transfer'),
+              onPressed: () {
+                final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                  'process',
+                  paymentBankTransferOtherAmount.value,
+                  _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
+                  _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                  _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                  _totalDue,
+                  _specialPriceIsDefaultForUser,
+                );
+                Navigator.of(context).pop(
+                  result,
+                );
+              }),
+        ],
+        if (_paySpecialPriceWithCredit) ...<Widget>[
+          TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text('Hash Credit'),
+              onPressed: () {
+                final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                  'process',
+                  paymentHashCreditOtherAmount.value,
+                  _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
+                  _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                  _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                  _totalDue,
+                  _specialPriceIsDefaultForUser,
+                );
+
+                Navigator.of(context).pop(result);
+              }),
+        ],
         // ),
       ],
     );

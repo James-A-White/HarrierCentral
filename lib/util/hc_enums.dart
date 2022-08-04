@@ -205,6 +205,7 @@ const EnumPaymentType<int> paymentBankTransfer = EnumPaymentType<int>(4);
 const EnumPaymentType<int> paymentCashOtherAmount = EnumPaymentType<int>(5);
 const EnumPaymentType<int> paymentHashCredit = EnumPaymentType<int>(6);
 const EnumPaymentType<int> paymentBankTransferOtherAmount = EnumPaymentType<int>(7);
+const EnumPaymentType<int> paymentHashCreditOtherAmount = EnumPaymentType<int>(8);
 const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(100);
 
 //////////////////////////

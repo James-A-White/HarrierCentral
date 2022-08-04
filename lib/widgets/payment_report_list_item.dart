@@ -17,7 +17,8 @@ class PaymentReportListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String amountPaid = IveCoreUtilities.getFormattedMoney(paymentReportItem.payment.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String amountPaid = IveCoreUtilities.getFormattedMoney(
+        paymentReportItem.extensions.isHashCredit ? -(paymentReportItem.payment.debitAmount ?? 0) : paymentReportItem.payment.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
       onTap: onTap,
@@ -47,8 +48,7 @@ class PaymentReportListItem extends StatelessWidget {
                 Text(
                   amountPaid,
                   style: TextStyle(
-                      color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) ||
-                                  (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) &&
+                      color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) || (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) &&
                               (paymentReportItem.payment.confirmedBy == null))
                           ? Colors.red
                           : Colors.black,
@@ -64,9 +64,7 @@ class PaymentReportListItem extends StatelessWidget {
                   child: paymentReportItem.extensions.isLoading
                       ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
                       : Image.asset('images/icons/payment_type_${paymentReportItem.payment.paymentType ?? paymentNotPaid.value}.png',
-                          height: 30.0,
-                          width: 30.0,
-                          color: (paymentReportItem.payment.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
+                          height: 30.0, width: 30.0, color: (paymentReportItem.payment.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
                 ),
                 const SizedBox(width: 10),
               ],
@@ -101,7 +99,7 @@ class PaymentTotalsCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String total = (creditAmount ?? 0) <= 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String total = (creditAmount ?? 0) == 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return SizedBox(

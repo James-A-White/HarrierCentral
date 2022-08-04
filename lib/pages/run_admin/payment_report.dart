@@ -28,6 +28,7 @@ class PaymentQueryExtensions {
     this.discountPercentAvailable,
     this.discountAvailableDescription,
     this.isFollowing,
+    this.isHashCredit,
   });
 
   final String pkHemId;
@@ -44,6 +45,7 @@ class PaymentQueryExtensions {
   final int discountPercentAvailable;
   final int isFollowing;
   final String discountAvailableDescription;
+  bool isHashCredit;
 
   bool isLoading = false;
 
@@ -80,12 +82,14 @@ class PaymentReportPage extends StatefulWidget {
 class PaymentReportState extends State<PaymentReportPage> {
   PaymentReportState();
 
+  static const int ALL_PAYMENTS_FILTER_VALUE = 255;
+
   final List<PaymentAggregate> _paymentsList = <PaymentAggregate>[];
   final List<PaymentAggregate> _filteredList = <PaymentAggregate>[];
 
   bool _isLoading = true;
 
-  int _filterValue = 127;
+  int _filterValue = ALL_PAYMENTS_FILTER_VALUE;
 
   @override
   void initState() {
@@ -150,13 +154,16 @@ class PaymentReportState extends State<PaymentReportPage> {
 
     for (int i = 0; i < results.length; i++) {
       final PaymentsModel paymentItem = G0<TableModel>().paymentsTableHelper.fromMap(results[i]);
+
       final PaymentQueryExtensions extensions = PaymentQueryExtensions.fromMap(results[i]);
+      extensions.isHashCredit = ((paymentItem.paymentType == paymentHashCredit.value) || (paymentItem.paymentType == paymentHashCreditOtherAmount.value)) ? true : false;
+
       final PaymentAggregate item = PaymentAggregate(payment: paymentItem, extensions: extensions);
 
       _paymentsList.add(item);
       if (i == results.length - 1) {
         _paymentsList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
-        applyFilter();
+        _applyFilter();
         setState(() {});
       }
     }
@@ -172,9 +179,11 @@ class PaymentReportState extends State<PaymentReportPage> {
     try {
       final String sql = '''
 
+          -- start with the 'not paid' case
           select 0 as paymentType, (SELECT COUNT(*) from ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
           WHERE  hem.attendenceState >= 20
-          AND hem.hemId not in (SELECT hemId from ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) ) as count, 0.0 as totalCollected
+          AND hem.hemId not in (SELECT hemId from ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) ) as count, 0.0 as totalCollected,
+          0.0 as totalDebited
             
           UNION
           select paymentType, 
@@ -190,8 +199,14 @@ class PaymentReportState extends State<PaymentReportPage> {
                 FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
                 INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
-            ) as totalCollected
-          FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7) ) x
+            ) as totalCollected,
+            (
+                SELECT SUM(pay2.${G0<TableModel>().paymentsTableHelper.colDebitAmount})
+                FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
+                INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+            ) as totalDebited
+          FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
 
 
           ''';
@@ -240,7 +255,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     );
   }
 
-  void applyFilter() {
+  void _applyFilter() {
     _filteredList.clear();
     _filteredList.addAll(_paymentsList
         .where((PaymentAggregate evt) =>
@@ -250,7 +265,8 @@ class PaymentReportState extends State<PaymentReportPage> {
             ((_filterValue & 8) != 0 && (evt.payment.paymentType == paymentFreeRun.value)) ||
             ((_filterValue & 16) != 0 && (evt.payment.paymentType == paymentBankTransfer.value)) ||
             ((_filterValue & 32) != 0 && (evt.payment.paymentType == paymentBankTransferOtherAmount.value)) ||
-            ((_filterValue & 64) != 0 && (evt.payment.paymentType == paymentHashCredit.value)))
+            ((_filterValue & 64) != 0 && (evt.payment.paymentType == paymentHashCredit.value)) ||
+            ((_filterValue & 128) != 0 && (evt.payment.paymentType == paymentHashCreditOtherAmount.value)))
         .toList());
 
     _filteredList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
@@ -390,7 +406,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: _paymentTotals[paymentHashCredit.value]['totalCollected'],
+                              creditAmount: -((_paymentTotals[paymentHashCredit.value]['totalDebited']) ?? 0),
                               counter: _paymentTotals[paymentHashCredit.value]['count'],
                               color: (_filterValue & 64) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentHashCredit,
@@ -422,6 +438,17 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(32);
                               },
                             ),
+                            PaymentTotalsCell(
+                              creditAmount: -((_paymentTotals[paymentHashCreditOtherAmount.value]['totalDebited']) ?? 0),
+                              counter: _paymentTotals[paymentHashCreditOtherAmount.value]['count'],
+                              color: (_filterValue & 128) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentHashCreditOtherAmount,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              onTap: () {
+                                filterTapped(128);
+                              },
+                            ),
                           ],
                         ),
                       ],
@@ -450,7 +477,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                       ((_filteredList[index].payment.paymentType == paymentBankTransfer.value) || (_filteredList[index].payment.paymentType == paymentBankTransferOtherAmount.value)) &&
                                           (_filteredList[index].payment.confirmedBy == null);
                                   return (((_filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value) && !needsConfirm)
-                                      ? listItem(_filteredList[index], context)
+                                      ? _listItem(_filteredList[index], context)
                                       : Dismissible(
                                           key: Key(index.toString()),
                                           confirmDismiss: (DismissDirection direction) async {
@@ -531,7 +558,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                           onDismissed: (DismissDirection direction) {
                                             //print(direction.toString() + ' NOTE: We should never reach this point');
                                           },
-                                          child: listItem(_filteredList[index], context),
+                                          child: _listItem(_filteredList[index], context),
                                         );
                                 },
                               ),
@@ -593,7 +620,8 @@ class PaymentReportState extends State<PaymentReportPage> {
             (paymentType == paymentBankTransfer.value) ||
             (paymentType == paymentCashOtherAmount.value) ||
             (paymentType == paymentHashCredit.value) ||
-            (paymentType == paymentBankTransferOtherAmount.value)) &&
+            (paymentType == paymentBankTransferOtherAmount.value) ||
+            (paymentType == paymentHashCreditOtherAmount.value)) &&
         ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
       final num runOnlyPrice = packMember.extensions.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
       final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
@@ -670,21 +698,21 @@ class PaymentReportState extends State<PaymentReportPage> {
   }
 
   void filterTapped(int positionFlag) {
-    if (_filterValue == 127) {
+    if (_filterValue == ALL_PAYMENTS_FILTER_VALUE) {
       _filterValue = positionFlag;
     } else {
       _filterValue = _filterValue ^ positionFlag;
     }
 
     if (_filterValue == 0) {
-      _filterValue = 127;
+      _filterValue = ALL_PAYMENTS_FILTER_VALUE;
     }
 
-    applyFilter();
+    _applyFilter();
     setState(() {});
   }
 
-  Container listItem(PaymentAggregate item, BuildContext topContext) {
+  Container _listItem(PaymentAggregate item, BuildContext topContext) {
     return Container(
       height: 60.0,
       padding: const EdgeInsets.only(top: 10),
@@ -816,7 +844,7 @@ class PaymentReportState extends State<PaymentReportPage> {
 
         final double topUpAmount = (item?.payment?.creditAmount ?? 0) - (item?.payment?.debitAmount ?? 0) + .0;
         if (topUpAmount != 0) {
-          topUpStr = IveCoreUtilities.getFormattedMoney(topUpAmount, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+          topUpStr = IveCoreUtilities.getFormattedMoney(topUpAmount.abs(), widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
         }
         final String extrasPriceStr = IveCoreUtilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
         final String discountAmountStr = IveCoreUtilities.getFormattedMoney(item?.payment?.discountAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
@@ -930,9 +958,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                 if (topUpStr != null) ...<Widget>[
                   Row(
                     children: <Widget>[
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Top up:',
+                          (topUpAmount < 0) ? 'From credit:' : 'Top up:',
                           style: headingStyle,
                           textAlign: TextAlign.right,
                           maxLines: 1,
