@@ -23,7 +23,7 @@ class ApproveLoginService {
 
     if (Platform.isAndroid) {
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId = (androidInfo.androidId ?? '<no Android ID>').toUpperCase();
+      deviceId = (androidInfo.id ?? '<no Android ID>').toUpperCase();
       deviceType = '${androidInfo.model ?? '<no Android model>'} / device: ${androidInfo.device ?? '<no Android device'}';
       deviceName = '<unknown>';
       systemName = androidInfo.host ?? '<no Android system name>';

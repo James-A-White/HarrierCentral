@@ -61,7 +61,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
       for (InternetAddress address in hcAddress) {
         final AddressCheckOptions aco = AddressCheckOptions(
-          address,
+          address: address,
           timeout: const Duration(milliseconds: 10000),
           port: 80,
         );

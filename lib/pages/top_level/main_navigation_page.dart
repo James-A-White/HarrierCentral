@@ -175,6 +175,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           })
             ..start();
         }
+      } else {
+        setState(() {
+          _showMainScreen = true;
+        });
       }
 
       return true;

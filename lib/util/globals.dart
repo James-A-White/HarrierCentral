@@ -163,10 +163,10 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
   message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user))).toString();
   print('Hasher kennel map count = ' + message);
 
-  // print('******* > DB Setup step 11');
+  print('******* > DB Setup step 11');
   G0<AppModel>().dbStatus = EdbStatus.opened;
 
-  // print('******* > DB Setup step 12');
+  print('******* > DB Setup step 12');
   return true;
 }
 
@@ -295,7 +295,7 @@ class DeviceInfo {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     if (Platform.isAndroid) {
       androidInfo = await deviceInfo.androidInfo;
-      deviceId = (androidInfo.androidId ?? '<no Android ID>').toUpperCase();
+      deviceId = (androidInfo.id ?? '<no Android ID>').toUpperCase();
       deviceType = '${androidInfo.model ?? '<no Android model>'} / device: ${androidInfo.device ?? '<no Android device'}';
       deviceName = '<unknown>';
       systemName = androidInfo.host ?? '<no Android system name>';
