@@ -70,6 +70,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   bool _isFlipped = false;
   bool _showMainScreen = false;
+  bool _showPromoScreenTools = false;
 
   final int _steps = 10;
 
@@ -155,7 +156,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       setState(() {});
 
       if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
-        setState(() {});
+        setState(() {
+          _showPromoScreenTools = true;
+        });
         _timeRemaining = widget.promos[0].promoDisplayTimeInMs;
         _promoDisplayDuration = Duration(milliseconds: _timeRemaining ~/ _steps);
 
@@ -586,73 +589,94 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           width: MediaQuery.of(context).size.width,
           child: _promoImage ?? widget.firstPromoImage,
         ),
-        Positioned(
-          bottom: 30,
-          left: 0,
-          right: 0,
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    GestureDetector(
-                      onTap: () {
-                        if (_promoTimer != null) {
-                          if (_promoTimer.isPaused) {
-                            _promoTimer.start();
-                          } else {
-                            _promoTimer.pause();
-                          }
-                          setState(() {});
-                        }
-                      },
-                      child: ImageIcon(
-                        (_promoTimer?.isPaused ?? false) ? const AssetImage('images/icons/promo_play_icon.png') : const AssetImage('images/icons/promo_pause_icon.png'),
-                        color: Colors.white,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: const ImageIcon(
-                        AssetImage('images/icons/promo_trash_icon.png'),
-                        color: Colors.white,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: const ImageIcon(
-                        AssetImage('images/icons/promo_snooze_icon.png'),
-                        color: Colors.white,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        _promoTimer.cancel();
-                        _promoTimer = null;
-                        _showMainScreen = true;
-                        setState(() {});
-                      },
-                      child: const ImageIcon(
-                        AssetImage('images/icons/promo_x_icon.png'),
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+        if (!_showPromoScreenTools) ...<Widget>[
+          Positioned(
+            bottom: 30,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                color: Colors.white60,
+                child: Text(
+                  _initializationMessage.isEmpty ? 'Loading data...' : _initializationMessage,
+                  style: titleStyle.copyWith(color: const Color.fromARGB(255, 0, 2, 65)),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 20.0),
-                ProgressStepper(
-                  width: 300,
-                  stepCount: _steps,
-                  currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
-                  color: Colors.white30,
-                  progressColor: Colors.white,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
+        if (_showPromoScreenTools) ...<Widget>[
+          Positioned(
+            bottom: 30,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      GestureDetector(
+                        onTap: () {
+                          if (_promoTimer != null) {
+                            if (_promoTimer.isPaused) {
+                              _promoTimer.start();
+                            } else {
+                              _promoTimer.pause();
+                            }
+                            setState(() {});
+                          }
+                        },
+                        child: ImageIcon(
+                          (_promoTimer?.isPaused ?? false) ? const AssetImage('images/icons/promo_play_icon.png') : const AssetImage('images/icons/promo_pause_icon.png'),
+                          color: Colors.white,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: const ImageIcon(
+                          AssetImage('images/icons/promo_trash_icon.png'),
+                          color: Colors.white,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: const ImageIcon(
+                          AssetImage('images/icons/promo_snooze_icon.png'),
+                          color: Colors.white,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          _promoTimer.cancel();
+                          _promoTimer = null;
+                          _showMainScreen = true;
+                          setState(() {});
+                        },
+                        child: const ImageIcon(
+                          AssetImage('images/icons/promo_x_icon.png'),
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20.0),
+                  ProgressStepper(
+                    width: 300,
+                    stepCount: _steps,
+                    currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
+                    color: Colors.white30,
+                    progressColor: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
