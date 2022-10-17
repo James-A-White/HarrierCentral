@@ -4,7 +4,10 @@ import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
-  const MainNavigationPage({Key key}) : super(key: key);
+  const MainNavigationPage({Key key, @required this.promos, @required this.firstPromoImage}) : super(key: key);
+
+  final List<PromoModel> promos;
+  final Image firstPromoImage;
 
   @override
   _MainNavigationPageState createState() => _MainNavigationPageState();
@@ -66,6 +69,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   String _initializationMessage = '';
 
   bool _isFlipped = false;
+  bool _showMainScreen = false;
+
+  final int _steps = 10;
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
@@ -75,7 +81,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   //final UserQrCodePage userQrCodePage = const UserQrCodePage();
   RunAndKennelMapPage _runAndKennelMapPage;
 
-  Future<bool> _dbReady;
+  //Future<bool> _dbReady;
+  PausableTimer _promoTimer;
+  Duration _promoDisplayDuration;
+  int _timeRemaining;
+
+  Image _promoImage;
 
   @override
   void initState() {
@@ -106,7 +117,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     // print('******* > Starting DB Setup');
 
-    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool result) async {
+    setupDatabase(informUser, 'PRO_APP').then((bool result) async {
       // print('******* > Finished DB Setup');
       // final NotificationSupport notifications = NotificationSupport();
       // await notifications.configureNotifications(true);
@@ -140,6 +151,31 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         _checkAreWeAtRunStart();
       }
       // print('******* > Init 9');
+
+      setState(() {});
+
+      if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
+        setState(() {});
+        _timeRemaining = widget.promos[0].promoDisplayTimeInMs;
+        _promoDisplayDuration = Duration(milliseconds: _timeRemaining ~/ _steps);
+
+        if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
+          _promoTimer = PausableTimer(_promoDisplayDuration, () {
+            _timeRemaining -= widget.promos[0].promoDisplayTimeInMs ~/ _steps;
+            if (_timeRemaining < 0) {
+              _promoTimer.cancel();
+              _promoTimer = null;
+              _showMainScreen = true;
+            } else {
+              _promoTimer
+                ..reset()
+                ..start();
+            }
+            setState(() {});
+          })
+            ..start();
+        }
+      }
 
       return true;
     });
@@ -320,195 +356,169 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
             backgroundColor: Colors.white,
-            appBar: AppBar(
-              elevation: 3.0,
-              backgroundColor: themeAppBarBackground,
-              title: Text(_appBarText),
-              centerTitle: true,
-              actions: <IconButton>[
-                IconButton(
-                    icon: const Icon(Icons.qr_code_scanner_sharp),
-                    onPressed: () {
-                      Navigator.push<dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => const UserQrCodePage(),
-                        ),
-                      );
-                    }),
-                IconButton(
-                    icon: Icon(_isFlipped ? Icons.undo : Icons.info_outline),
-                    onPressed: () {
-                      setState(() {
-                        _isFlipped = !_isFlipped;
-                      });
-                    }),
-              ],
-            ),
+            appBar: (!_showMainScreen)
+                ? null
+                : AppBar(
+                    elevation: 3.0,
+                    backgroundColor: themeAppBarBackground,
+                    title: Text(_appBarText),
+                    centerTitle: true,
+                    actions: <IconButton>[
+                      IconButton(
+                          icon: const Icon(Icons.qr_code_scanner_sharp),
+                          onPressed: () {
+                            Navigator.push<dynamic>(
+                              context,
+                              MaterialPageRoute<dynamic>(
+                                builder: (BuildContext context) => const UserQrCodePage(),
+                              ),
+                            );
+                          }),
+                      IconButton(
+                          icon: Icon(_isFlipped ? Icons.undo : Icons.info_outline),
+                          onPressed: () {
+                            setState(() {
+                              _isFlipped = !_isFlipped;
+                            });
+                          }),
+                    ],
+                  ),
             floatingActionButton: _getFab(),
-            body: Container(
-              decoration: const BoxDecoration(color: Colors.white),
-              child: FutureBuilder<void>(
-                  future: _dbReady,
-                  builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                    if (snapshot.hasData) {
-                      return FlippableBox(
-                        key: const Key('66193020'),
-                        front: _front(),
-                        // ignore: avoid_unnecessary_containers
-                        back: Container(
-                          child: Swiper(
-                            pagination: SwiperCustomPagination(
-                              builder: (BuildContext context, SwiperPluginConfig config) {
-                                return Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: <Widget>[
-                                    Expanded(child: Container()),
-                                    Row(
-                                      children: <Widget>[
-                                        Expanded(
-                                          child: Align(
-                                            alignment: Alignment.bottomCenter,
-                                            child: const DotSwiperPaginationBuilder(
-                                              color: Colors.grey,
-                                              activeColor: Colors.blue,
-                                              size: 10.0,
-                                              activeSize: 20.0,
-                                            ).build(context, config),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    const SizedBox(height: 20.0)
-                                  ],
-                                );
-                              },
-                            ),
-                            itemCount: _tutorials[currentPage].length,
-                            control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
-                            itemBuilder: (BuildContext context, int index) {
-                              // this configuration of LayoutBuilder is used to center images that do not
-                              // overflow the height of the available render area, but align images
-                              // to the top of the render space if they will overflow the available space.
-                              return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
-                                return Stack(
-                                  clipBehavior: Clip.hardEdge,
-                                  fit: StackFit.passthrough,
-                                  alignment: AlignmentDirectional.topCenter,
-                                  children: <Widget>[
-                                    Positioned(
-                                      top: 15.0,
-                                      left: 0.0,
-                                      right: 0.0,
-                                      child: Column(
-                                        children: <Widget>[
-                                          ConstrainedBox(
-                                            constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
-                                            child: Image.asset(
-                                              _tutorials[currentPage][index],
-                                              fit: BoxFit.fitWidth,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Positioned(bottom: 0.0, left: 0.0, right: 0.0, child: Container(height: 60.0, color: Colors.white))
-                                  ],
-                                );
-                              });
+            body: (!_showMainScreen)
+                ? ((widget.promos != null) && (widget.promos.isNotEmpty))
+                    ? _getPromoScreen()
+                    : _getGenericLoadingScreen()
+                : Container(
+                    decoration: const BoxDecoration(color: Colors.white),
+                    child: FlippableBox(
+                      key: const Key('66193020'),
+                      front: _front(),
+                      // ignore: avoid_unnecessary_containers
+                      back: Container(
+                        child: Swiper(
+                          pagination: SwiperCustomPagination(
+                            builder: (BuildContext context, SwiperPluginConfig config) {
+                              return Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  Expanded(child: Container()),
+                                  Row(
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Align(
+                                          alignment: Alignment.bottomCenter,
+                                          child: const DotSwiperPaginationBuilder(
+                                            color: Colors.grey,
+                                            activeColor: Colors.blue,
+                                            size: 10.0,
+                                            activeSize: 20.0,
+                                          ).build(context, config),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20.0)
+                                ],
+                              );
                             },
                           ),
+                          itemCount: _tutorials[currentPage].length,
+                          control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
+                          itemBuilder: (BuildContext context, int index) {
+                            // this configuration of LayoutBuilder is used to center images that do not
+                            // overflow the height of the available render area, but align images
+                            // to the top of the render space if they will overflow the available space.
+                            return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+                              return Stack(
+                                clipBehavior: Clip.hardEdge,
+                                fit: StackFit.passthrough,
+                                alignment: AlignmentDirectional.topCenter,
+                                children: <Widget>[
+                                  Positioned(
+                                    top: 15.0,
+                                    left: 0.0,
+                                    right: 0.0,
+                                    child: Column(
+                                      children: <Widget>[
+                                        ConstrainedBox(
+                                          constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
+                                          child: Image.asset(
+                                            _tutorials[currentPage][index],
+                                            fit: BoxFit.fitWidth,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned(bottom: 0.0, left: 0.0, right: 0.0, child: Container(height: 60.0, color: Colors.white))
+                                ],
+                              );
+                            });
+                          },
                         ),
-                        isFlipped: _isFlipped,
-                      );
-                    } else {
-                      return Container(
-                        decoration: Backgrounds.defaultHcBackground(),
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
-                        child: Center(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Text(
-                                'Filling your Harrier Central mug',
-                                style: headingStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Image.asset(
-                                'images/other/beer_pour.gif',
-                                // height: 250,
-                                // width: 250,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Text(
-                                _initializationMessage,
-                                style: headingStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                        )),
-                      );
-                    }
-                  }),
-            ),
-            bottomNavigationBar: FlippableBox(
-              key: const Key('667701326'),
-              // ignore: avoid_unnecessary_containers
-              front: Container(
-                child: FancyBottomNavigation(
-                  circleColor: themeButtonColors,
-                  inactiveIconColor: themeBackgroundColor,
-                  barBackgroundColor: themeNavBarBackground,
-                  tabs: <TabData>[
-                    TabData(
-                      iconData: MaterialCommunityIcons.run_fast,
-                      title: 'Runs',
+                      ),
+                      isFlipped: _isFlipped,
                     ),
-                    TabData(
-                      iconData: FontAwesome.home,
-                      title: 'Kennels',
-                    ),
-                    TabData(
-                      iconData: FontAwesome.map,
-                      title: 'Explore',
-                    ),
-                    TabData(
-                      iconData: FontAwesome.list_ul,
-                      title: 'History',
-                    ),
-                  ],
-                  initialSelection: 0,
-                  key: bottomNavigationKey,
-                  onTabChangedListener: (int position) {
-                    setState(() {
-                      _appBarText = _tabTitles[position];
-                      currentPage = position;
+                  ),
 
-                      // this extra setState is here to ensure that the FAB
-                      // displays properly when the map page is showing
-                      if ((!_isFlipped) && (currentPage == 2)) {
-                        Future<void>.delayed(const Duration(milliseconds: 250)).then((void _) {
-                          setState(() {});
-                        });
-                      }
-                    });
-                  },
-                ),
-              ),
-              // ignore: sized_box_for_whitespace
-              back: Container(height: 0, width: 0),
-              isFlipped: _isFlipped,
-            ),
+            // } else {
+            //   if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
+            //     return _getPromoScreen();
+            //   } else {
+            //     return _getGenericLoadingScreen();
+            //   }
+            // }
+
+            bottomNavigationBar: (!_showMainScreen)
+                ? null
+                : FlippableBox(
+                    key: const Key('667701326'),
+                    // ignore: avoid_unnecessary_containers
+                    front: Container(
+                      child: FancyBottomNavigation(
+                        circleColor: themeButtonColors,
+                        inactiveIconColor: themeBackgroundColor,
+                        barBackgroundColor: themeNavBarBackground,
+                        tabs: <TabData>[
+                          TabData(
+                            iconData: MaterialCommunityIcons.run_fast,
+                            title: 'Runs',
+                          ),
+                          TabData(
+                            iconData: FontAwesome.home,
+                            title: 'Kennels',
+                          ),
+                          TabData(
+                            iconData: FontAwesome.map,
+                            title: 'Explore',
+                          ),
+                          TabData(
+                            iconData: FontAwesome.list_ul,
+                            title: 'History',
+                          ),
+                        ],
+                        initialSelection: 0,
+                        key: bottomNavigationKey,
+                        onTabChangedListener: (int position) {
+                          setState(() {
+                            _appBarText = _tabTitles[position];
+                            currentPage = position;
+
+                            // this extra setState is here to ensure that the FAB
+                            // displays properly when the map page is showing
+                            if ((!_isFlipped) && (currentPage == 2)) {
+                              Future<void>.delayed(const Duration(milliseconds: 250)).then((void _) {
+                                setState(() {});
+                              });
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    // ignore: sized_box_for_whitespace
+                    back: Container(height: 0, width: 0),
+                    isFlipped: _isFlipped,
+                  ),
             drawer: DrawerMenu(
               scaffoldKey: _scaffoldKey,
               futureRunsListKey: futureRunsListPageKey,
@@ -519,6 +529,125 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
+        ),
+      ],
+    );
+  }
+
+  Container _getGenericLoadingScreen() {
+    return Container(
+      decoration: Backgrounds.defaultHcBackground(),
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      child: Center(
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text(
+              'Filling your Harrier Central mug',
+              style: headingStyle,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Image.asset(
+              'images/other/beer_pour.gif',
+              // height: 250,
+              // width: 250,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text(
+              _initializationMessage,
+              style: headingStyle,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )),
+    );
+  }
+
+  Widget _getPromoScreen() {
+    return Stack(
+      children: <Widget>[
+        Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: _promoImage ?? widget.firstPromoImage,
+        ),
+        Positioned(
+          bottom: 30,
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () {
+                        if (_promoTimer != null) {
+                          if (_promoTimer.isPaused) {
+                            _promoTimer.start();
+                          } else {
+                            _promoTimer.pause();
+                          }
+                          setState(() {});
+                        }
+                      },
+                      child: ImageIcon(
+                        (_promoTimer?.isPaused ?? false) ? const AssetImage('images/icons/promo_play_icon.png') : const AssetImage('images/icons/promo_pause_icon.png'),
+                        color: Colors.white,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: const ImageIcon(
+                        AssetImage('images/icons/promo_trash_icon.png'),
+                        color: Colors.white,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: const ImageIcon(
+                        AssetImage('images/icons/promo_snooze_icon.png'),
+                        color: Colors.white,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        _promoTimer.cancel();
+                        _promoTimer = null;
+                        _showMainScreen = true;
+                        setState(() {});
+                      },
+                      child: const ImageIcon(
+                        AssetImage('images/icons/promo_x_icon.png'),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20.0),
+                ProgressStepper(
+                  width: 300,
+                  stepCount: _steps,
+                  currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
+                  color: Colors.white30,
+                  progressColor: Colors.white,
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

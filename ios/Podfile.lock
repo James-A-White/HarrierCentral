@@ -251,7 +251,7 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: e5d3acfffe5063a9d0b967ba2ad1f5afc460cf43
   FBSDKCoreKit_Basics: 1ff46a12e80f0b66e6c00e1ef32d6a5b5b9008a5
   FBSDKLoginKit: dbe86ef42ab142f3bd0f1c904a21bb33f31c5569
-  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   flutter_facebook_auth: 8992ef870d441b8403a3b6b9859e7932605407cf
   flutter_image_compress: 5a5e9aee05b6553048b8df1c3bc456d0afaac433
   flutter_statusbarcolor_ns: 68a360889d88d7915ae524e422aeab62e4063804

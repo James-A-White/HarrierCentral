@@ -407,7 +407,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       await Navigator.pushReplacement<dynamic, dynamic>(
           context,
           MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) => const MainNavigationPage(),
+            builder: (BuildContext context) => const MainNavigationPage(
+              promos: <PromoModel>[],
+              firstPromoImage: null,
+            ),
           ));
     }
   }

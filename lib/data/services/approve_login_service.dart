@@ -1,8 +1,10 @@
 // @dart=2.11
+
+import 'package:dart_ipify/dart_ipify.dart';
 import 'package:harrier_central/imports.dart';
 
 class ApproveLoginService {
-  Future<ApproveLoginModel> approveLogin(BuildContext context, String facebookAccessToken) async {
+  Future<String> approveLogin(BuildContext context, String facebookAccessToken) async {
     String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId ?? '').isEmpty) {
       userId = GUID_EMPTY;
@@ -38,7 +40,22 @@ class ApproveLoginService {
       manufacturer = 'Apple';
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'approveLogin', paramString: deviceId);
+    final String ipv4 = await Ipify.ipv4();
+
+    final String uri = 'https://ipinfo.io/$ipv4?token=1c7e5ada20ad08';
+
+    final Response response = await get(
+      Uri.parse(uri),
+    ).catchError(
+      (dynamic error) {
+        print(error.toString());
+        return Response('<no ip information available>', 500);
+      },
+    ).timeout(const Duration(milliseconds: 4000), onTimeout: () {
+      return Response('<no ip information available>', 500);
+    });
+
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'approveLoginV2', paramString: deviceId);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -54,11 +71,14 @@ class ApproveLoginService {
       'hcVersion': hcVersion,
       'fbToken': facebookAccessToken,
       'usesLocSvcs': (G0<AppModel>().hasLocationPermissions ?? false) ? '1' : '0',
+      'screenWidth': (G0<DeviceInfo>().deviceWidth ?? 0).toInt().toString(),
+      'screenHeight': (G0<DeviceInfo>().deviceHeight ?? 0).toInt().toString(),
+      'ipInfo': response.body,
     });
 
     Future<Response> futureResponse;
 
-    futureResponse = post(Uri.parse(BASE_API_URL + 'hc3_approve_login'), headers: <String, String>{'content-type': 'application/json'}, body: body
+    futureResponse = post(Uri.parse(BASE_API_URL + 'hc3_approve_login_v2'), headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -115,7 +135,9 @@ class ApproveLoginService {
     resp ??= await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
 
     if ((resp == null) || (resp.body == null) || (resp.body.length < 10) || ((resp.statusCode < 200) || (resp.statusCode >= 300))) {
-      if (resp.reasonPhrase == 'Site Disabled') {
+      if (resp == null) {
+        return null;
+      } else if (resp.reasonPhrase == 'Site Disabled') {
         await IveCoreUtilities.showAlert(
             context,
             'Down for Maintenance',
@@ -132,10 +154,7 @@ class ApproveLoginService {
       return null;
     }
 
-    final ApproveLoginModel loginResult = ApproveLoginModel.itemFromJson(resp.body);
-
-    return loginResult;
-    //return null;
+    return resp.body;
   }
 
   Future<bool> _onLoginDelayed(BuildContext context, String message) async {

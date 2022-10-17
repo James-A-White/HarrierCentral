@@ -186,6 +186,16 @@ class AppAccess {
 }
 
 // ======================================
+// Promo button flags
+// ======================================
+
+const int promoButtonClose = 0x00000001;
+const int promoButtonPermanentlyDismiss = 0x00000002;
+const int promoButtonSnooze = 0x00000004;
+const int promoButtonGoToRun = 0x00000008;
+const int promoButtonLaunchExternalUrl = 0x00000010;
+
+// ======================================
 // Mismanagement
 // ======================================
 

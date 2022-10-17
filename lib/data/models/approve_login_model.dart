@@ -38,7 +38,9 @@ class ApproveLoginModel {
 
     ApproveLoginModel item;
 
-    json.decode(jsonResult).forEach(
+    final dynamic jResult = json.decode(jsonResult);
+
+    jResult[0].forEach(
       (dynamic jsonItem) {
         item = ApproveLoginModel(
           // isRsvped: jsonItem['isRsvped'],

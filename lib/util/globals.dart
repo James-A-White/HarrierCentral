@@ -137,6 +137,8 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
         );
 
     await CommonQueries.deleteRemovedRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
+    await CommonQueries.deleteRemovedRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
+    await CommonQueries.deleteRemovedRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.kennel));
 
     // print('******* > DB Setup step 10');
 

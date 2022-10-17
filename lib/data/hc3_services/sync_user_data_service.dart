@@ -170,8 +170,13 @@ class SyncUserDataService {
 
         if (!responseBody.startsWith(ERROR_PREFIX)) {
           // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
-          tablesToSync = await updateSqlTablesWithResultsFromApiWithPaging(responseBody.replaceAll('\u2029', ''),
-              informUser: informUser, suppressDeletes: true, batchText: batchText + ' ' + batchNumber.toString(), tables: tables.isEmpty ? null : tables);
+          tablesToSync = await updateSqlTablesWithResultsFromApiWithPaging(
+            responseBody.replaceAll('\u2029', ''),
+            informUser: informUser,
+            suppressDeletes: true,
+            batchText: batchText + ' ' + batchNumber.toString(),
+            tables: tables.isEmpty ? null : tables,
+          );
           //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
           await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
 

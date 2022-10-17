@@ -84,6 +84,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     }
 
     ApproveLoginModel loginResult;
+    List<PromoModel> promoResult;
     String facebookAccessToken;
     final ApproveLoginService svc = ApproveLoginService();
 
@@ -91,7 +92,9 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
       facebookAccessToken = await _checkFacebookLogin();
-      loginResult = await svc.approveLogin(context, facebookAccessToken);
+      final String responseBody = await svc.approveLogin(context, facebookAccessToken);
+      loginResult = ApproveLoginModel.itemFromJson(responseBody);
+      promoResult = PromoModel.itemsFromJson(responseBody);
     }
 
     if (loginResult != null) {
@@ -119,7 +122,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
             facebookAccessToken = await _checkFacebookLogin();
             if (facebookAccessToken != null) {
               await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
-              loginResult = await svc.approveLogin(context, facebookAccessToken);
+              final String responseBody = await svc.approveLogin(context, facebookAccessToken);
+              loginResult = ApproveLoginModel.itemFromJson(responseBody);
             }
           }
         }
@@ -133,8 +137,17 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
           'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.', 'Quit');
       exit(0);
     } else if (loginResult == null) {
+      // open app in offline mode
       G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
-      await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+
+      await Navigator.pushReplacement<dynamic, dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+              builder: (BuildContext context) => const MainNavigationPage(
+                    promos: <PromoModel>[],
+                    firstPromoImage: null,
+                  )));
+
       return;
     } else {
       // No userId was present, this must be the first time the app has been run
@@ -184,13 +197,42 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                   await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
                   await IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
-                    Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                    Navigator.pushReplacement<dynamic, dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                            builder: (BuildContext context) => const MainNavigationPage(
+                                  promos: <PromoModel>[],
+                                  firstPromoImage: null,
+                                )));
                   });
                 } else {
                   // TODO(James): Do something here if the auth device fails
                 }
               } else {
-                await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                if ((promoResult != null) && (promoResult.isNotEmpty)) {
+                  final Image promoImage = Image.network(promoResult[0].promoImage, fit: BoxFit.fitWidth);
+                  promoImage.image.resolve(const ImageConfiguration()).addListener(
+                    ImageStreamListener(
+                      (ImageInfo info, bool syncCall) async {
+                        await Navigator.pushReplacement<dynamic, dynamic>(
+                            context,
+                            MaterialPageRoute<dynamic>(
+                                builder: (BuildContext context) => MainNavigationPage(
+                                      promos: promoResult,
+                                      firstPromoImage: promoImage,
+                                    )));
+                      },
+                    ),
+                  );
+                } else {
+                  await Navigator.pushReplacement<dynamic, dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => MainNavigationPage(
+                                promos: promoResult,
+                                firstPromoImage: null,
+                              )));
+                }
               }
             }
           } else {
