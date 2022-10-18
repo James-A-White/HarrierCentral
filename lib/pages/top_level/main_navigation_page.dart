@@ -4,7 +4,11 @@ import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
-  const MainNavigationPage({Key key, @required this.promos, @required this.firstPromoImage}) : super(key: key);
+  const MainNavigationPage({
+    Key key,
+    @required this.promos,
+    @required this.firstPromoImage,
+  }) : super(key: key);
 
   final List<PromoModel> promos;
   final Image firstPromoImage;
@@ -580,15 +584,51 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     );
   }
 
+  final List<Widget> _overlays = <Widget>[];
+
   Widget _getPromoScreen() {
+    final List<String> overlaysToDisplay = widget.promos[0].promoOverlayTiming.split(',');
+
+    int currentStep = 0;
+
+    if (_timeRemaining != null) {
+      currentStep = _steps - ((_timeRemaining ?? 0) ~/ (widget.promos[0].promoDisplayTimeInMs / _steps));
+
+      final List<int> overlaysToDisplayInt = overlaysToDisplay.map(int.parse).toList();
+
+      if (overlaysToDisplayInt.contains(currentStep)) {
+        _overlays.add(
+          Positioned(
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Image.network(widget.promos[0].promoImage + '_$currentStep' + widget.promos[0].promoImageExtension),
+            ),
+          ),
+        );
+      }
+    }
+
     return Stack(
+      alignment: AlignmentDirectional.topStart,
       children: <Widget>[
-        Container(
-          decoration: Backgrounds.defaultHcBackground(),
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          child: _promoImage ?? widget.firstPromoImage,
+        Positioned(
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: Backgrounds.defaultHcBackground(),
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: _promoImage ?? widget.firstPromoImage,
+          ),
         ),
+        if (_overlays.isNotEmpty) ..._overlays,
         if (!_showPromoScreenTools) ...<Widget>[
           Positioned(
             bottom: 30,

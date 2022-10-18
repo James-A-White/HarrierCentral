@@ -210,7 +210,26 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                 }
               } else {
                 if ((promoResult != null) && (promoResult.isNotEmpty)) {
-                  final Image promoImage = Image.network(promoResult[0].promoImage, fit: BoxFit.fitWidth);
+                  Image promoImage;
+
+                  try {
+                    promoImage = Image.network(
+                      promoResult[0].promoImage + promoResult[0].promoImageExtension,
+                      fit: BoxFit.fitWidth,
+                      errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+                        // Appropriate logging or analytics, e.g.
+                        // myAnalytics.recordError(
+                        //   'An error occurred loading "https://example.does.not.exist/image.jpg"',
+                        //   exception,
+                        //   stackTrace,
+                        // );
+                        return Image.asset('images/other/white_square.jpg', width: 1, height: 1, fit: BoxFit.fitHeight);
+                      },
+                    );
+                  } catch (error) {
+                    promoImage = Image.asset('images/other/white_square.jpg', width: 1, height: 1, fit: BoxFit.fitHeight);
+                  }
+
                   promoImage.image.resolve(const ImageConfiguration()).addListener(
                     ImageStreamListener(
                       (ImageInfo info, bool syncCall) async {

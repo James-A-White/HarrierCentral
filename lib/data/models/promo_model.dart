@@ -14,6 +14,8 @@ class PromoModel {
     this.promoEndDate,
     this.promoDisplayButtons,
     this.promoImage,
+    this.promoImageExtension,
+    this.promoOverlayTiming,
     this.promoExternalUrl,
     this.promoPriority,
     this.promoLat,
@@ -34,6 +36,8 @@ class PromoModel {
   DateTime promoEndDate;
   int promoDisplayButtons;
   String promoImage;
+  String promoImageExtension;
+  String promoOverlayTiming;
   String promoExternalUrl;
   int promoPriority;
   double promoLat;
@@ -63,6 +67,8 @@ class PromoModel {
           promoEndDate: DateTime.parse(jsonItem['promoEndDate'] ?? '2000-01-01 19:00:00'),
           promoDisplayButtons: jsonItem['promoDisplayButtons'],
           promoImage: jsonItem['promoImage'],
+          promoImageExtension: jsonItem['promoImageExtension'],
+          promoOverlayTiming: jsonItem['promoOverlayTiming'],
           promoExternalUrl: jsonItem['promoExternalUrl'],
           promoPriority: jsonItem['prompPriority'],
           promoLat: jsonItem['promoLat'],

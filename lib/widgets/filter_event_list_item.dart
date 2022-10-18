@@ -120,9 +120,7 @@ class FilterEventListItem extends StatelessWidget {
                               children: <TextSpan>[
                                 TextSpan(
                                     text: '#${event.eventNumber.toString()}',
-                                    style: TextStyle(
-                                        fontFamily: 'AvenirNextCondensedBold',
-                                        decoration: ((event.absoluteEventNumber ?? 0) >= 1) ? TextDecoration.underline : TextDecoration.none)),
+                                    style: TextStyle(fontFamily: 'AvenirNextCondensedBold', decoration: ((event.absoluteEventNumber ?? 0) >= 1) ? TextDecoration.underline : TextDecoration.none)),
                               ],
                             ),
                             style: TextStyle(
