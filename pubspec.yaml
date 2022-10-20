@@ -74,6 +74,7 @@ dependencies:
   qr_code_scanner: ^1.0.0
   shared_preferences: ^2.0.7 
   sign_in_with_apple: ^4.0.0 
+  step_progress_indicator: ^1.0.2
   sumup: ^0.5.0
   table_calendar: ^3.0.2 
   tinycolor: ^1.0.3 

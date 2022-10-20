@@ -8,7 +8,6 @@ class PromoModel {
     this.cityId,
     this.eventId,
     this.promoGroupId,
-    this.promoPageNumber,
     this.promoName,
     this.promoStartDate,
     this.promoEndDate,
@@ -21,6 +20,9 @@ class PromoModel {
     this.promoLat,
     this.promoLon,
     this.promoGeographicScope,
+    this.promoDisplayTimingDotsShape,
+    this.promoDisplayTimingDotsToDisplay,
+    this.promoDisplayTimingDotsSize,
     this.promoImageIsDark,
     this.promoDisplayTimeInMs,
   });
@@ -30,7 +32,6 @@ class PromoModel {
   String cityId;
   String eventId;
   String promoGroupId;
-  int promoPageNumber;
   String promoName;
   DateTime promoStartDate;
   DateTime promoEndDate;
@@ -42,6 +43,9 @@ class PromoModel {
   int promoPriority;
   double promoLat;
   double promoLon;
+  String promoDisplayTimingDotsShape;
+  int promoDisplayTimingDotsToDisplay;
+  int promoDisplayTimingDotsSize;
   int promoGeographicScope;
   int promoImageIsDark;
   int promoDisplayTimeInMs;
@@ -61,7 +65,6 @@ class PromoModel {
           cityId: jsonItem['cityId'],
           eventId: jsonItem['eventId'],
           promoGroupId: jsonItem['promoGroupId'],
-          promoPageNumber: jsonItem['promoGroupId'],
           promoName: jsonItem['promoName'],
           promoStartDate: DateTime.parse(jsonItem['promoStartDate'] ?? '2000-01-01 19:00:00'),
           promoEndDate: DateTime.parse(jsonItem['promoEndDate'] ?? '2000-01-01 19:00:00'),
@@ -73,6 +76,9 @@ class PromoModel {
           promoPriority: jsonItem['prompPriority'],
           promoLat: jsonItem['promoLat'],
           promoLon: jsonItem['promoLon'],
+          promoDisplayTimingDotsShape: jsonItem['promoDisplayTimingDotsShape'],
+          promoDisplayTimingDotsToDisplay: jsonItem['promoDisplayTimingDotsToDisplay'],
+          promoDisplayTimingDotsSize: jsonItem['promoDisplayTimingDotsSize'],
           promoGeographicScope: jsonItem['promoGeographicScope'],
           promoImageIsDark: jsonItem['promoImageIsDark'],
           promoDisplayTimeInMs: jsonItem['promoDisplayTimeInMs'],

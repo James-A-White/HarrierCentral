@@ -76,7 +76,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   bool _showMainScreen = false;
   bool _showPromoScreenTools = false;
 
-  final int _steps = 10;
+  int _steps = 10;
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
@@ -164,6 +164,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           _showPromoScreenTools = true;
         });
         _timeRemaining = widget.promos[0].promoDisplayTimeInMs;
+        _steps = widget.promos[0].promoDisplayTimingDotsToDisplay;
         _promoDisplayDuration = Duration(milliseconds: _timeRemaining ~/ _steps);
 
         if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
@@ -677,14 +678,28 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () async {
+                          final SnoozePromotionService svc = SnoozePromotionService();
+                          await svc.snoozePromotion(widget.promos[0].promotionId, true);
+                          _promoTimer.cancel();
+                          _promoTimer = null;
+                          _showMainScreen = true;
+                          setState(() {});
+                        },
                         child: const ImageIcon(
                           AssetImage('images/icons/promo_trash_icon.png'),
                           color: Colors.white,
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () async {
+                          final SnoozePromotionService svc = SnoozePromotionService();
+                          await svc.snoozePromotion(widget.promos[0].promotionId, false);
+                          _promoTimer.cancel();
+                          _promoTimer = null;
+                          _showMainScreen = true;
+                          setState(() {});
+                        },
                         child: const ImageIcon(
                           AssetImage('images/icons/promo_snooze_icon.png'),
                           color: Colors.white,
@@ -705,13 +720,44 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     ],
                   ),
                   const SizedBox(height: 20.0),
-                  ProgressStepper(
-                    width: 300,
-                    stepCount: _steps,
-                    currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
-                    color: Colors.white30,
-                    progressColor: Colors.white,
-                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                    child: StepProgressIndicator(
+                        totalSteps: _steps,
+                        currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
+                        // size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                        // selectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                        // unselectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                        customSize: (int index, bool selected) {
+                          return widget.promos[0].promoDisplayTimingDotsSize + 0.0;
+                        },
+                        selectedColor: Colors.white,
+                        unselectedColor: Colors.white30,
+                        customStep: (int index, Color color, _) => Container(
+                              color: Colors.transparent,
+                              child: widget.promos[0].promoDisplayTimingDotsShape == 'circle'
+                                  ? Icon(
+                                      FontAwesome.circle,
+                                      color: color,
+                                      size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                    )
+                                  : widget.promos[0].promoDisplayTimingDotsShape == 'square'
+                                      ? Icon(
+                                          FontAwesome.square,
+                                          color: color,
+                                          size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                        )
+                                      : ImageIcon(
+                                          AssetImage(widget.promos[0].promoDisplayTimingDotsShape == 'chevron long'
+                                              ? 'images/icons/chevron_long.png'
+                                              : widget.promos[0].promoDisplayTimingDotsShape == 'chevron medium'
+                                                  ? 'images/icons/chevron_medium.png'
+                                                  : 'images/icons/chevron_short.png'),
+                                          color: color,
+                                          size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                        ),
+                            )),
+                  )
                 ],
               ),
             ),
