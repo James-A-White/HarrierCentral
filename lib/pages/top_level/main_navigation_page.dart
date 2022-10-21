@@ -651,112 +651,147 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         ],
         if (_showPromoScreenTools) ...<Widget>[
           Positioned(
-            bottom: 30,
+            bottom: 20,
             left: 0,
             right: 0,
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      GestureDetector(
-                        onTap: () {
-                          if (_promoTimer != null) {
-                            if (_promoTimer.isPaused) {
-                              _promoTimer.start();
-                            } else {
-                              _promoTimer.pause();
-                            }
-                            setState(() {});
-                          }
-                        },
-                        child: ImageIcon(
-                          (_promoTimer?.isPaused ?? false) ? const AssetImage('images/icons/promo_play_icon.png') : const AssetImage('images/icons/promo_pause_icon.png'),
-                          color: Colors.white,
-                        ),
+                  Container(
+                    child: ColorFiltered(
+                      // colorFilter: const ColorFilter.mode(
+                      //   Colors.transparent,
+                      //   BlendMode.difference,
+                      // ),
+                      colorFilter: widget.promos[0].promoImageIsDark == 0
+                          ? const ColorFilter.matrix(<double>[
+                              1, 0, 0, 0, 0, //
+                              0, 1, 0, 0, 0, //
+                              0, 0, 1, 0, 0, //
+                              0, 0, 0, 1, 0, //
+                            ])
+                          : const ColorFilter.matrix(<double>[
+                              -1, 0, 0, 0, 255, //
+                              0, -1, 0, 0, 255, //
+                              0, 0, -1, 0, 255, //
+                              0, 0, 0, 1, 0, //
+                            ]),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          GestureDetector(
+                            onTap: () {
+                              if (_promoTimer != null) {
+                                if (_promoTimer.isPaused) {
+                                  _promoTimer.start();
+                                } else {
+                                  _promoTimer.pause();
+                                }
+                                setState(() {});
+                              }
+                            },
+                            child: (_promoTimer?.isPaused ?? false)
+                                ? Image.asset(
+                                    'images/icons/promo_play_icon.png',
+                                    width: 40.0,
+                                    height: 40.0,
+                                  )
+                                : Image.asset(
+                                    'images/icons/promo_pause_icon.png',
+                                    width: 40.0,
+                                    height: 40.0,
+                                  ),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              final SnoozePromotionService svc = SnoozePromotionService();
+                              await svc.snoozePromotion(widget.promos[0].promotionId, true);
+                              _promoTimer.cancel();
+                              _promoTimer = null;
+                              _showMainScreen = true;
+                              setState(() {});
+                            },
+                            child: Image.asset(
+                              'images/icons/promo_trash_icon.png',
+                              width: 40,
+                              height: 40,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              final SnoozePromotionService svc = SnoozePromotionService();
+                              await svc.snoozePromotion(widget.promos[0].promotionId, false);
+                              _promoTimer.cancel();
+                              _promoTimer = null;
+                              _showMainScreen = true;
+                              setState(() {});
+                            },
+                            child: Image.asset(
+                              'images/icons/promo_snooze_icon.png',
+                              width: 40,
+                              height: 40,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _promoTimer.cancel();
+                              _promoTimer = null;
+                              _showMainScreen = true;
+                              setState(() {});
+                            },
+                            child: Image.asset(
+                              'images/icons/promo_x_icon.png',
+                              width: 40,
+                              height: 40,
+                            ),
+                          ),
+                        ],
                       ),
-                      GestureDetector(
-                        onTap: () async {
-                          final SnoozePromotionService svc = SnoozePromotionService();
-                          await svc.snoozePromotion(widget.promos[0].promotionId, true);
-                          _promoTimer.cancel();
-                          _promoTimer = null;
-                          _showMainScreen = true;
-                          setState(() {});
-                        },
-                        child: const ImageIcon(
-                          AssetImage('images/icons/promo_trash_icon.png'),
-                          color: Colors.white,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () async {
-                          final SnoozePromotionService svc = SnoozePromotionService();
-                          await svc.snoozePromotion(widget.promos[0].promotionId, false);
-                          _promoTimer.cancel();
-                          _promoTimer = null;
-                          _showMainScreen = true;
-                          setState(() {});
-                        },
-                        child: const ImageIcon(
-                          AssetImage('images/icons/promo_snooze_icon.png'),
-                          color: Colors.white,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          _promoTimer.cancel();
-                          _promoTimer = null;
-                          _showMainScreen = true;
-                          setState(() {});
-                        },
-                        child: const ImageIcon(
-                          AssetImage('images/icons/promo_x_icon.png'),
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 20.0),
                   Padding(
+                    //color: Colors.yellow,
                     padding: const EdgeInsets.symmetric(horizontal: 30.0),
                     child: StepProgressIndicator(
-                        totalSteps: _steps,
-                        currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
-                        // size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
-                        // selectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
-                        // unselectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
-                        customSize: (int index, bool selected) {
-                          return widget.promos[0].promoDisplayTimingDotsSize + 0.0;
-                        },
-                        selectedColor: Colors.white,
-                        unselectedColor: Colors.white30,
-                        customStep: (int index, Color color, _) => Container(
-                              color: Colors.transparent,
-                              child: widget.promos[0].promoDisplayTimingDotsShape == 'circle'
-                                  ? Icon(
-                                      FontAwesome.circle,
-                                      color: color,
-                                      size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
-                                    )
-                                  : widget.promos[0].promoDisplayTimingDotsShape == 'square'
-                                      ? Icon(
-                                          FontAwesome.square,
-                                          color: color,
-                                          size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
-                                        )
-                                      : ImageIcon(
-                                          AssetImage(widget.promos[0].promoDisplayTimingDotsShape == 'chevron long'
-                                              ? 'images/icons/chevron_long.png'
-                                              : widget.promos[0].promoDisplayTimingDotsShape == 'chevron medium'
-                                                  ? 'images/icons/chevron_medium.png'
-                                                  : 'images/icons/chevron_short.png'),
-                                          color: color,
-                                          size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
-                                        ),
-                            )),
+                      totalSteps: _steps,
+                      currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
+                      //size: 10.0,
+                      padding: 0.0,
+                      // selectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                      // unselectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                      customSize: (int index, bool selected) {
+                        return widget.promos[0].promoDisplayTimingDotsSize + 0.0;
+                      },
+                      selectedColor: widget.promos[0].promoImageIsDark == 0 ? Colors.black : Colors.white,
+                      unselectedColor: widget.promos[0].promoImageIsDark == 0 ? Colors.black26 : Colors.white30,
+                      customStep: (int index, Color color, _) => Container(
+                        color: Colors.transparent,
+                        height: 10.0,
+                        child: widget.promos[0].promoDisplayTimingDotsShape == 'circle'
+                            ? Icon(
+                                FontAwesome.circle,
+                                color: color,
+                                size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                              )
+                            : widget.promos[0].promoDisplayTimingDotsShape == 'square'
+                                ? Icon(
+                                    FontAwesome.square,
+                                    color: color,
+                                    size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                  )
+                                : ImageIcon(
+                                    AssetImage(widget.promos[0].promoDisplayTimingDotsShape == 'chevron long'
+                                        ? 'images/icons/chevron_long.png'
+                                        : widget.promos[0].promoDisplayTimingDotsShape == 'chevron medium'
+                                            ? 'images/icons/chevron_medium.png'
+                                            : 'images/icons/chevron_short.png'),
+                                    color: color,
+                                    size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                  ),
+                      ),
+                    ),
                   )
                 ],
               ),
