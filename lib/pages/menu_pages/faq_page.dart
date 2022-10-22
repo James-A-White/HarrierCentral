@@ -160,7 +160,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (Uri.parse(link.url).isAbsolute) {
+                      if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
@@ -181,7 +181,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (Uri.parse(link.url).isAbsolute) {
+                      if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
@@ -207,7 +207,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                     linkStyle: bodyStylePink,
                     onOpen: (LinkableElement link) async {
-                      if (Uri.parse(link.url).isAbsolute) {
+                      if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');

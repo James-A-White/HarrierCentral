@@ -58,6 +58,7 @@ enum IntPrefsEnum {
   mapShowKennels,
   isBetaTester,
   isResettingCache,
+  usePlatformNativeMapApp,
 }
 
 enum DatePrefsEnum {

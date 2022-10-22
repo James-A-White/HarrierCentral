@@ -587,7 +587,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       style: bodyStyle,
                                       linkStyle: bodyStyleYellow,
                                       onOpen: (LinkableElement link) async {
-                                        if (Uri.parse(link.url).isAbsolute) {
+                                        if (Utilities.isValidUrl(link.url)) {
                                           await launchUrl(Uri.parse(link.url));
                                         } else {
                                           await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
@@ -1028,10 +1028,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
       //print('launching com googleUrl');
       await launchUrl(Uri.parse(googleAppUrl));
-    } else if (Uri.parse(googleAppUrl).isAbsolute) {
+    } else if (Utilities.isValidUrl(googleAppUrl)) {
       //print('launching apple url');
       await launchUrl(Uri.parse(googleWebUrl));
-    } else if (Uri.parse(appleUrl).isAbsolute) {
+    } else if (Utilities.isValidUrl(appleUrl)) {
       //print('launching apple url');
       await launchUrl(Uri.parse(appleUrl));
     } else {

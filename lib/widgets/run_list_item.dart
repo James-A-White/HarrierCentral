@@ -99,298 +99,281 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4.0,
-      margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              GestureDetector(
-                onTap: () {
-                  _showRsvpOptionsPopup(context);
-                },
-                child: Padding(
-                    padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0), child: _getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
-              ),
-              Expanded(
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(top: 5.0, left: 5.0),
-                  child: AutoSizeText(
-                    widget.futureRun.event.eventName,
-                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.black, height: 1.0),
-                    textAlign: TextAlign.left,
-                    maxLines: 1,
-                    minFontSize: 18,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(right: 10),
-                child: GestureDetector(
+    return GestureDetector(
+      onTap: () {
+        widget.onItemTapped();
+      },
+      child: Card(
+        elevation: 4.0,
+        margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
+        color: Colors.white,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                GestureDetector(
                   onTap: () {
-                    showEmailAlertPopup(context);
+                    _showRsvpOptionsPopup(context);
                   },
-                  child: widget.futureRun.extensions.emailAlertPreference == -1
-                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
-                      : Image(
-                          width: 24.0,
-                          height: 24.0,
-                          fit: BoxFit.fill,
-                          image: widget.futureRun.extensions.emailAlertPreference == 1
-                              ? const AssetImage('images/icons/envelope_gold_50px.png')
-                              : widget.futureRun.extensions.emailAlertPreference == 2
-                                  ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png')
-                                  : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
-                        ),
+                  child: Padding(
+                      padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0), child: _getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
                 ),
-              ),
-              widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
-                  ? Container()
-                  : Container(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: GestureDetector(
-                        onTap: () {
-                          _showNotificationPopup(context);
-                        },
-                        child: widget.futureRun.extensions.notificationPreference == -1
-                            ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
-                            : Image(
-                                width: 24.0,
-                                height: 24.0,
-                                fit: BoxFit.fill,
-                                image: widget.futureRun.extensions.notificationPreference == 1
-                                    ? const AssetImage('images/icons/bell_gold_50px.png')
-                                    : widget.futureRun.extensions.notificationPreference == 2
-                                        ? const AssetImage('images/icons/bell_silver_strike_out_50px.png')
-                                        : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
-                              ),
-                      ),
-                    ),
-            ],
-          ),
-          Container(
-            //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-            margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
-            padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
-            height: 1.0,
-            color: Colors.grey[300],
-          ),
-          if ((widget.futureRun.event.eventImage != null) && (widget.futureRun.event.eventImage.isNotEmpty)) ...<Widget>[
-            GestureDetector(
-              onTap: () {
-                Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => ZoomableImagePage2(
-                      key: const Key('50201112'),
-                      pageTitle: 'Zoomable Event Image',
-                      imageUrl: widget.futureRun.event.eventImage,
-                      appBarBackgroundColor: themeAppBarBackground,
-                      background: Backgrounds.defaultHcBackground(),
+                Expanded(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.only(top: 5.0, left: 5.0),
+                    child: AutoSizeText(
+                      widget.futureRun.event.eventName,
+                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.black, height: 1.0),
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      minFontSize: 18,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                );
-              },
-              child: CachedNetworkImage(
+                ),
+                Container(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: GestureDetector(
+                    onTap: () {
+                      showEmailAlertPopup(context);
+                    },
+                    child: widget.futureRun.extensions.emailAlertPreference == -1
+                        ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                        : Image(
+                            width: 24.0,
+                            height: 24.0,
+                            fit: BoxFit.fill,
+                            image: widget.futureRun.extensions.emailAlertPreference == 1
+                                ? const AssetImage('images/icons/envelope_gold_50px.png')
+                                : widget.futureRun.extensions.emailAlertPreference == 2
+                                    ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png')
+                                    : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                          ),
+                  ),
+                ),
+                widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
+                    ? Container()
+                    : Container(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: GestureDetector(
+                          onTap: () {
+                            _showNotificationPopup(context);
+                          },
+                          child: widget.futureRun.extensions.notificationPreference == -1
+                              ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                              : Image(
+                                  width: 24.0,
+                                  height: 24.0,
+                                  fit: BoxFit.fill,
+                                  image: widget.futureRun.extensions.notificationPreference == 1
+                                      ? const AssetImage('images/icons/bell_gold_50px.png')
+                                      : widget.futureRun.extensions.notificationPreference == 2
+                                          ? const AssetImage('images/icons/bell_silver_strike_out_50px.png')
+                                          : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+                                ),
+                        ),
+                      ),
+              ],
+            ),
+            Container(
+              //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+              margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
+              padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
+              height: 1.0,
+              color: Colors.grey[300],
+            ),
+            if ((widget.futureRun.event.eventImage != null) && (widget.futureRun.event.eventImage.isNotEmpty)) ...<Widget>[
+              CachedNetworkImage(
                 imageUrl: widget.futureRun.event.eventImage,
                 // errorWidget:
                 //     (BuildContext context, String url, Exception error) =>
                 //         const  Icon(Icons.error),
               ),
-            ),
-            Container(
-              //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-              margin: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-              padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-              height: 1.0,
-              color: Colors.grey[300],
-            ),
-          ],
-          Stack(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: 100,
-                    child: TextButton(
-                      style: TextButton.styleFrom(padding: const EdgeInsets.only(top: 10.0, left: 4.0, right: 0.0, bottom: 10.0), backgroundColor: Colors.white),
-                      // splashColor: Theme.of(context).accentColor,
-                      // highlightColor: Theme.of(context).accentColor,
-                      onPressed: () {
-                        widget.onItemTapped();
-                      },
-                      //padding: const EdgeInsets.only(top: 10.0, left: 4.0, right: 0.0, bottom: 10.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          KennelLogo(
-                            kennelId: widget.futureRun.kennel.kennelId,
-                            kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
-                            kennelShortName: widget.futureRun.kennel.kennelShortName,
-                            logoHeight: 70.0,
-                            leftPadding: 7.0,
-                            rightPadding: 7.0,
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                //mainAxisAlignment: MainAxisAlignment.center,
-                                //mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  Text(
-                                    widget.futureRun.kennel.kennelName,
-                                    style: const TextStyle(
-                                      color: Color.fromARGB(255, 7, 12, 165),
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 15.0,
-                                      height: 1,
-                                    ),
-                                    textAlign: TextAlign.left,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
-                                        (widget.futureRun.extensions.daysUntilEvent <= 14
-                                            ? widget.futureRun.extensions.daysUntilEvent.toInt() == -1
-                                                ? 'Yesterday'
-                                                : widget.futureRun.extensions.daysUntilEvent.toInt() == 0
-                                                    ? 'TODAY'
-                                                    : widget.futureRun.extensions.daysUntilEvent.toInt() == 1
-                                                        ? 'Tomorrow'
-                                                        : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
-                                            : (widget.futureRun.extensions.daysUntilEvent <= 30)
-                                                ? 'in ' +
-                                                    (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() +
-                                                    ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
-                                                : widget.futureRun.extensions.daysUntilEvent <= 365
-                                                    ? 'in ' +
-                                                        (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() +
-                                                        ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
-                                                    : 'in ' +
-                                                        (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() +
-                                                        ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
-                                    style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 15.0,
-                                      height: 1,
-                                    ),
-                                    textAlign: TextAlign.left,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
-                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                    textAlign: TextAlign.left,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  (widget.futureRun.event.hares ?? '') == ''
-                                      ? const SizedBox()
-                                      // Text(
-                                      //     'RSVP to Hare this run!',
-                                      //     style: TextStyle(color: Colors.red.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                      //     textAlign: TextAlign.left,
-                                      //     overflow: TextOverflow.ellipsis,
-                                      //   )
-                                      : Text(
-                                          'Hares: ' + widget.futureRun.event.hares,
-                                          style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                          textAlign: TextAlign.left,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                  if ((widget.futureRun.extensions.latitude != null && widget.futureRun.extensions.isMapAndDistanceValid) &&
-                                      ((widget.futureRun.extensions.distToEvent ?? -1.0) >= 0) &&
-                                      (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
+              Container(
+                //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+                margin: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                height: 1.0,
+                color: Colors.grey[300],
+              ),
+            ],
+            Stack(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 100,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 4.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            KennelLogo(
+                              kennelId: widget.futureRun.kennel.kennelId,
+                              kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
+                              kennelShortName: widget.futureRun.kennel.kennelShortName,
+                              logoHeight: 70.0,
+                              leftPadding: 7.0,
+                              rightPadding: 7.0,
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  //mainAxisAlignment: MainAxisAlignment.center,
+                                  //mainAxisSize: MainAxisSize.max,
+                                  children: <Widget>[
                                     Text(
-                                      Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0) + ' from here',
+                                      widget.futureRun.kennel.kennelName,
+                                      style: const TextStyle(
+                                        color: Color.fromARGB(255, 7, 12, 165),
+                                        fontFamily: 'AvenirNextDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 15.0,
+                                        height: 1,
+                                      ),
+                                      textAlign: TextAlign.left,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
+                                          (widget.futureRun.extensions.daysUntilEvent <= 14
+                                              ? widget.futureRun.extensions.daysUntilEvent.toInt() == -1
+                                                  ? 'Yesterday'
+                                                  : widget.futureRun.extensions.daysUntilEvent.toInt() == 0
+                                                      ? 'TODAY'
+                                                      : widget.futureRun.extensions.daysUntilEvent.toInt() == 1
+                                                          ? 'Tomorrow'
+                                                          : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
+                                              : (widget.futureRun.extensions.daysUntilEvent <= 30)
+                                                  ? 'in ' +
+                                                      (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() +
+                                                      ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
+                                                  : widget.futureRun.extensions.daysUntilEvent <= 365
+                                                      ? 'in ' +
+                                                          (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() +
+                                                          ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
+                                                      : 'in ' +
+                                                          (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() +
+                                                          ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
+                                      style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontFamily: 'AvenirNextDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 15.0,
+                                        height: 1,
+                                      ),
+                                      textAlign: TextAlign.left,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
                                       style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                  ] else
-                                    const Text('No location provided',
-                                        style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1)),
-                                  if (widget.futureRun.event.eventGeographicScope > 1) ...<Widget>[
-                                    Text(
-                                      Utilities.getEventScopeText(widget.futureRun.event.eventGeographicScope),
-                                      style: TextStyle(color: Colors.blue.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                                    (widget.futureRun.event.hares ?? '') == ''
+                                        ? const SizedBox()
+                                        // Text(
+                                        //     'RSVP to Hare this run!',
+                                        //     style: TextStyle(color: Colors.red.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                        //     textAlign: TextAlign.left,
+                                        //     overflow: TextOverflow.ellipsis,
+                                        //   )
+                                        : Text(
+                                            'Hares: ' + widget.futureRun.event.hares,
+                                            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                    if ((widget.futureRun.extensions.latitude != null && widget.futureRun.extensions.isMapAndDistanceValid) &&
+                                        ((widget.futureRun.extensions.distToEvent ?? -1.0) >= 0) &&
+                                        (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
+                                      Text(
+                                        Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0) + ' from here',
+                                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                        textAlign: TextAlign.left,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ] else
+                                      const Text('No location provided',
+                                          style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1)),
+                                    if (widget.futureRun.event.eventGeographicScope > 1) ...<Widget>[
+                                      Text(
+                                        Utilities.getEventScopeText(widget.futureRun.event.eventGeographicScope),
+                                        style: TextStyle(color: Colors.blue.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                        textAlign: TextAlign.left,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
 
-                                  //Expanded(child:Container()),
-                                ],
+                                    //Expanded(child:Container()),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
 
-                          if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) ...<Widget>[
-                            IconButton(
-                              icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                              iconSize: Theme.of(context).iconTheme.size,
-                              color: Colors.black54,
-                              splashColor: Theme.of(context).highlightColor,
-                              onPressed: () {
-                                _showAllOptionsPopup(context);
-                              },
-                            ),
+                            if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) ...<Widget>[
+                              IconButton(
+                                icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                                iconSize: Theme.of(context).iconTheme.size,
+                                color: Colors.black54,
+                                splashColor: Theme.of(context).highlightColor,
+                                onPressed: () {
+                                  _showAllOptionsPopup(context);
+                                },
+                              ),
+                            ],
+
+                            // (widget.futureRun.event.hares ?? '') == '' ? Container(
+                            //   padding: const EdgeInsets.only(top:15),
+                            //   child:Image(width: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                           ],
-
-                          // (widget.futureRun.event.hares ?? '') == '' ? Container(
-                          //   padding: const EdgeInsets.only(top:15),
-                          //   child:Image(width: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                  // Expanded(
-                  //   flex: 10,
-                  //   child: IconButton(
-                  //     icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                  //     iconSize: Theme.of(context).iconTheme.size,
-                  //     color: Colors.black54,
-                  //     splashColor: Theme.of(context).highlightColor,
-                  //     onPressed: () {
-                  //       showNotificationPopup(context);
-                  //     },
-                  //   ),
-                  // ),
-                ],
-              ),
-            ],
-          ),
-          PaymentIcons(
-            widget.futureRun.event,
-            widget.futureRun.kennel,
-            widget.futureRun.extensions.digitsAfterDecimal,
-            widget.futureRun.extensions.currencySymbol,
-            widget.futureRun.extensions.distanceUnitsPref,
-            widget.futureRun.extensions.distToEvent,
-            widget.futureRun.paymentUrl,
-            widget.futureRun.extensions.rsvpState,
-            widget.futureRun.extensions.isMember,
-            widget.futureRun.extensions.isPaid,
-            true,
-            (int r, int p) {
-              widget.futureRun.extensions.rsvpState = r;
-              if (p != -1) {
-                widget.futureRun.extensions.isPaid = p;
-              }
-              setState(() {});
-            },
-          )
-        ],
+                    // Expanded(
+                    //   flex: 10,
+                    //   child: IconButton(
+                    //     icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                    //     iconSize: Theme.of(context).iconTheme.size,
+                    //     color: Colors.black54,
+                    //     splashColor: Theme.of(context).highlightColor,
+                    //     onPressed: () {
+                    //       showNotificationPopup(context);
+                    //     },
+                    //   ),
+                    // ),
+                  ],
+                ),
+              ],
+            ),
+            PaymentIcons(
+              widget.futureRun.event,
+              widget.futureRun.kennel,
+              widget.futureRun.extensions.digitsAfterDecimal,
+              widget.futureRun.extensions.currencySymbol,
+              widget.futureRun.extensions.distanceUnitsPref,
+              widget.futureRun.extensions.distToEvent,
+              widget.futureRun.paymentUrl,
+              widget.futureRun.extensions.rsvpState,
+              widget.futureRun.extensions.isMember,
+              widget.futureRun.extensions.isPaid,
+              true,
+              (int r, int p) {
+                widget.futureRun.extensions.rsvpState = r;
+                if (p != -1) {
+                  widget.futureRun.extensions.isPaid = p;
+                }
+                setState(() {});
+              },
+            )
+          ],
+        ),
       ),
     );
   }

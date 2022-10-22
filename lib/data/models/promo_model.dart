@@ -16,6 +16,7 @@ class PromoModel {
     this.promoImageExtension,
     this.promoOverlayTiming,
     this.promoExternalUrl,
+    this.promoExternalUrlButtonText,
     this.promoPriority,
     this.promoLat,
     this.promoLon,
@@ -40,6 +41,7 @@ class PromoModel {
   String promoImageExtension;
   String promoOverlayTiming;
   String promoExternalUrl;
+  String promoExternalUrlButtonText;
   int promoPriority;
   double promoLat;
   double promoLon;
@@ -73,6 +75,7 @@ class PromoModel {
           promoImageExtension: jsonItem['promoImageExtension'],
           promoOverlayTiming: jsonItem['promoOverlayTiming'],
           promoExternalUrl: jsonItem['promoExternalUrl'],
+          promoExternalUrlButtonText: jsonItem['promoExternalUrlButtonText'],
           promoPriority: jsonItem['prompPriority'],
           promoLat: jsonItem['promoLat'],
           promoLon: jsonItem['promoLon'],

@@ -675,7 +675,7 @@ class RunDetails extends StatelessWidget {
                     style: bodyStyle,
                     linkStyle: bodyStyleYellow,
                     onOpen: (LinkableElement link) async {
-                      if (Uri.parse(link.url).isAbsolute) {
+                      if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
                         await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
@@ -724,7 +724,7 @@ class RunDetails extends StatelessWidget {
                 child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
                 onPressed: () async {
                   final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
-                  if (Uri.parse(linkUrl).isAbsolute) {
+                  if (Utilities.isValidUrl(linkUrl)) {
                     await launchUrl(Uri.parse(linkUrl));
                   } else {
                     await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
@@ -743,7 +743,7 @@ class RunDetails extends StatelessWidget {
                 style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
                 child: Image.asset('images/icons/visit_run_on_web.png', height: 60.0, width: 325.0),
                 onPressed: () async {
-                  if (Uri.parse(eventUrlWithKennelBackup).isAbsolute) {
+                  if (Utilities.isValidUrl(eventUrlWithKennelBackup)) {
                     await launchUrl(Uri.parse(eventUrlWithKennelBackup));
                   } else {
                     await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');

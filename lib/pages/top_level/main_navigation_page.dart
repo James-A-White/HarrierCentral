@@ -677,74 +677,102 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                               0, 0, -1, 0, 255, //
                               0, 0, 0, 1, 0, //
                             ]),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      child: Column(
                         children: <Widget>[
-                          GestureDetector(
-                            onTap: () {
-                              if (_promoTimer != null) {
-                                if (_promoTimer.isPaused) {
-                                  _promoTimer.start();
-                                } else {
-                                  _promoTimer.pause();
-                                }
-                                setState(() {});
-                              }
-                            },
-                            child: (_promoTimer?.isPaused ?? false)
-                                ? Image.asset(
-                                    'images/icons/promo_play_icon.png',
-                                    width: 40.0,
-                                    height: 40.0,
-                                  )
-                                : Image.asset(
-                                    'images/icons/promo_pause_icon.png',
-                                    width: 40.0,
-                                    height: 40.0,
-                                  ),
-                          ),
-                          GestureDetector(
-                            onTap: () async {
-                              final SnoozePromotionService svc = SnoozePromotionService();
-                              await svc.snoozePromotion(widget.promos[0].promotionId, true);
-                              _promoTimer.cancel();
-                              _promoTimer = null;
-                              _showMainScreen = true;
-                              setState(() {});
-                            },
-                            child: Image.asset(
-                              'images/icons/promo_trash_icon.png',
-                              width: 40,
-                              height: 40,
+                          if (widget.promos[0].promoExternalUrl != null && widget.promos[0].promoExternalUrlButtonText != null && Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) ...<Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 15.0),
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(width: 2.0, color: Colors.black),
+                                  foregroundColor: Colors.black,
+                                  backgroundColor: Colors.white38,
+                                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
+                                ),
+                                onPressed: () async {
+                                  if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
+                                    await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl));
+                                  } else {
+                                    await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                  child: Text(widget.promos[0].promoExternalUrlButtonText, style: const TextStyle(fontSize: 20.0)),
+                                ),
+                              ),
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: () async {
-                              final SnoozePromotionService svc = SnoozePromotionService();
-                              await svc.snoozePromotion(widget.promos[0].promotionId, false);
-                              _promoTimer.cancel();
-                              _promoTimer = null;
-                              _showMainScreen = true;
-                              setState(() {});
-                            },
-                            child: Image.asset(
-                              'images/icons/promo_snooze_icon.png',
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              _promoTimer.cancel();
-                              _promoTimer = null;
-                              _showMainScreen = true;
-                              setState(() {});
-                            },
-                            child: Image.asset(
-                              'images/icons/promo_x_icon.png',
-                              width: 40,
-                              height: 40,
-                            ),
+                          ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              GestureDetector(
+                                onTap: () {
+                                  if (_promoTimer != null) {
+                                    if (_promoTimer.isPaused) {
+                                      _promoTimer.start();
+                                    } else {
+                                      _promoTimer.pause();
+                                    }
+                                    setState(() {});
+                                  }
+                                },
+                                child: (_promoTimer?.isPaused ?? false)
+                                    ? Image.asset(
+                                        'images/icons/promo_play_icon.png',
+                                        width: 40.0,
+                                        height: 40.0,
+                                      )
+                                    : Image.asset(
+                                        'images/icons/promo_pause_icon.png',
+                                        width: 40.0,
+                                        height: 40.0,
+                                      ),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  final SnoozePromotionService svc = SnoozePromotionService();
+                                  await svc.snoozePromotion(widget.promos[0].promotionId, true);
+                                  _promoTimer.cancel();
+                                  _promoTimer = null;
+                                  _showMainScreen = true;
+                                  setState(() {});
+                                },
+                                child: Image.asset(
+                                  'images/icons/promo_trash_icon.png',
+                                  width: 40,
+                                  height: 40,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  final SnoozePromotionService svc = SnoozePromotionService();
+                                  await svc.snoozePromotion(widget.promos[0].promotionId, false);
+                                  _promoTimer.cancel();
+                                  _promoTimer = null;
+                                  _showMainScreen = true;
+                                  setState(() {});
+                                },
+                                child: Image.asset(
+                                  'images/icons/promo_snooze_icon.png',
+                                  width: 40,
+                                  height: 40,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _promoTimer.cancel();
+                                  _promoTimer = null;
+                                  _showMainScreen = true;
+                                  setState(() {});
+                                },
+                                child: Image.asset(
+                                  'images/icons/promo_x_icon.png',
+                                  width: 40,
+                                  height: 40,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

@@ -87,6 +87,14 @@ class Utilities {
     return result;
   }
 
+  static bool isValidUrl(String url) {
+    if ((url == null) || (url.isEmpty)) {
+      return false;
+    }
+    final Uri uri = Uri.tryParse(url);
+    return uri != null && uri.hasAbsolutePath && uri.scheme.startsWith('http');
+  }
+
   static Future<bool> promptForHare(BuildContext context, String hareList) async {
     return showDialog<bool>(
       context: context,

@@ -1,4 +1,6 @@
 // @dart=2.11
+import 'dart:async';
+
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
@@ -1294,13 +1296,57 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       address = rda.event.locationOneLineDesc;
     }
 
-    if ((latStr != '') && (lonStr != '')) {
-      //url = latStr + ',' + lonStr;
-      await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
-    } else if ((address != null) && (address.isNotEmpty)) {
-      await MapsLauncher.launchQuery(address);
+    int usePlatformNativeMapApp = 1;
+
+    if (Platform.isIOS) {
+      usePlatformNativeMapApp = getIntPref(IntPrefsEnum.usePlatformNativeMapApp);
+      if (usePlatformNativeMapApp == null) {
+        final SnackBar snackBar = _buildDefaultMapSelectionSnackbar(context, _scaffoldKey.currentState);
+
+        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        final SnackBarClosedReason reason = await ScaffoldMessenger.of(context).showSnackBar(snackBar).closed;
+      }
+    }
+
+    if ((usePlatformNativeMapApp ?? 1) == 1) {
+      if ((latStr != '') && (lonStr != '')) {
+        await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
+      } else if ((address != null) && (address.isNotEmpty)) {
+        await MapsLauncher.launchQuery(address);
+      } else {
+        await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+      }
     } else {
-      await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+      String url;
+      if ((address != null) && (address.isNotEmpty)) {
+        address = address.replaceAll(' ', '+');
+        address = Uri.encodeComponent(address);
+        url = address;
+      } else if ((latStr != '') && (lonStr != '')) {
+        url = latStr + ',' + lonStr;
+      } else {
+        unawaited(IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK'));
+      }
+      // otherwise default to using Google maps
+      final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
+      final String googleAppUrl = 'comgooglemaps://?q=$url';
+      String appleUrl = '';
+      if ((latStr.isNotEmpty) && (lonStr.isNotEmpty)) {
+        appleUrl = 'https://maps.apple.com/?sll=$latStr,$lonStr';
+      }
+
+      if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
+        //print('launching com googleUrl');
+        await launchUrl(Uri.parse(googleAppUrl));
+      } else if (Utilities.isValidUrl(googleWebUrl)) {
+        //print('launching Google web url');
+        await launchUrl(Uri.parse(googleWebUrl));
+      } else if ((appleUrl.isNotEmpty) && (Uri.parse(appleUrl).isAbsolute)) {
+        //print('launching apple url');
+        await launchUrl(Uri.parse(appleUrl));
+      } else {
+        throw 'Could not launch url';
+      }
     }
 
     // final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
@@ -1322,6 +1368,70 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     // } else {
     //   throw 'Could not launch url';
     // }
+  }
+
+  SnackBar _buildDefaultMapSelectionSnackbar(BuildContext context, ScaffoldState scaffoldState) {
+    final SnackBar snackbar = SnackBar(
+      content: Container(
+          color: Colors.white,
+          height: 210,
+          child: Column(
+            children: <Widget>[
+              const Padding(
+                padding: EdgeInsets.only(bottom: 14.0),
+                child: Text('Select map provider',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 26.0,
+                    )),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(width: 2.0, color: Colors.black),
+                        foregroundColor: Colors.grey.shade700,
+                        backgroundColor: Colors.white,
+                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                      ),
+                      onPressed: () async {},
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: Image.asset(
+                          'images/icons/google_maps.png',
+                          width: 116.66,
+                          height: 100,
+                        ),
+                      )),
+                  OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(width: 2.0, color: Colors.black),
+                        foregroundColor: Colors.grey.shade700,
+                        backgroundColor: Colors.white,
+                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                      ),
+                      onPressed: () async {},
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: Image.asset(
+                          'images/icons/apple_maps.png',
+                          width: 116.66,
+                          height: 100,
+                        ),
+                      )),
+                ],
+              ),
+              Row(
+                children: <Widget>[Checkbox(value: false, onChanged: (bool x) {}), const Text('Always use this option', style: TextStyle(color: Colors.black, fontSize: 20.0))],
+              ),
+            ],
+          )),
+      duration: const Duration(milliseconds: 100000),
+      backgroundColor: Colors.white,
+    );
+
+    return snackbar;
   }
 }
 
