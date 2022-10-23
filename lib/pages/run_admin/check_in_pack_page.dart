@@ -487,7 +487,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
               (SELECT COUNT(*) FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" and hkm.isMember = 1) as memberCount
           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+          INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
           LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
+          WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0
   
           ''';
 

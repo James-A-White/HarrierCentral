@@ -1296,19 +1296,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       address = rda.event.locationOneLineDesc;
     }
 
-    int usePlatformNativeMapApp = 1;
-
     if (Platform.isIOS) {
-      usePlatformNativeMapApp = getIntPref(IntPrefsEnum.usePlatformNativeMapApp);
-      if (usePlatformNativeMapApp == null) {
+      getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == null ? _useNativeMapProvider = null : _useNativeMapProvider = getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == 1;
+
+      if (_useNativeMapProvider == null) {
         final SnackBar snackBar = _buildDefaultMapSelectionSnackbar(context, _scaffoldKey.currentState);
 
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        final SnackBarClosedReason reason = await ScaffoldMessenger.of(context).showSnackBar(snackBar).closed;
+        await ScaffoldMessenger.of(context).showSnackBar(snackBar).closed;
+        if (_saveUserMapPreference.value) {
+          await setIntPref(IntPrefsEnum.usePlatformNativeMapApp, _useNativeMapProvider ? 1 : 0);
+        }
       }
     }
 
-    if ((usePlatformNativeMapApp ?? 1) == 1) {
+    if ((_useNativeMapProvider ?? 1) == 1) {
+      // use the native map provider for the selected platform
       if ((latStr != '') && (lonStr != '')) {
         await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
       } else if ((address != null) && (address.isNotEmpty)) {
@@ -1317,6 +1320,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
       }
     } else {
+      // otherwise, try to use Google Maps... if they don't exist, revert to Apple Maps
       String url;
       if ((address != null) && (address.isNotEmpty)) {
         address = address.replaceAll(' ', '+');
@@ -1370,6 +1374,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     // }
   }
 
+  bool _useNativeMapProvider;
+  final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
+
   SnackBar _buildDefaultMapSelectionSnackbar(BuildContext context, ScaffoldState scaffoldState) {
     final SnackBar snackbar = SnackBar(
       content: Container(
@@ -1395,7 +1402,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         backgroundColor: Colors.white,
                         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
                       ),
-                      onPressed: () async {},
+                      onPressed: () async {
+                        _useNativeMapProvider = false;
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+                      },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: Image.asset(
@@ -1411,7 +1421,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         backgroundColor: Colors.white,
                         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
                       ),
-                      onPressed: () async {},
+                      onPressed: () async {
+                        _useNativeMapProvider = true;
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+                      },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: Image.asset(
@@ -1423,7 +1436,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 ],
               ),
               Row(
-                children: <Widget>[Checkbox(value: false, onChanged: (bool x) {}), const Text('Always use this option', style: TextStyle(color: Colors.black, fontSize: 20.0))],
+                children: <Widget>[
+                  SnackContent(_saveUserMapPreference, (bool x) {
+                    setState(() {
+                      _saveUserMapPreference.value = x;
+                    });
+                  }),
+                  const Text('Always use this option',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20.0,
+                      ))
+                ],
               ),
             ],
           )),
@@ -1432,6 +1456,32 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
 
     return snackbar;
+  }
+}
+
+/// The ValueListenableBuilder rebuilds whenever [snackMsg] changes.
+class SnackContent extends StatelessWidget {
+  const SnackContent(this.snackState, this.snackOnClick);
+
+  final ValueNotifier<bool> snackState;
+  final Function snackOnClick;
+
+  @override
+  Widget build(BuildContext context) {
+    /// ValueListenableBuilder rebuilds whenever snackMsg value changes.
+    /// i.e. this "listens" to changes of ValueNotifier "snackMsg".
+    /// "msg" in builder below is the value of "snackMsg" ValueNotifier.
+    /// We don't use the other builder args for this example so they are
+    /// set to _ & __ just for readability.
+    return ValueListenableBuilder<bool>(
+        valueListenable: snackState,
+        builder: (_, msg, __) {
+          return Checkbox(
+              value: msg,
+              onChanged: (bool x) {
+                snackOnClick(x);
+              });
+        });
   }
 }
 

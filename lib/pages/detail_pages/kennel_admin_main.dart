@@ -881,6 +881,43 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         ),
                                       ],
                                     ),
+                              Column(
+                                children: <Widget>[
+                                  const FancyDivider(
+                                    key: Key('123435661'),
+                                    innerColor: Colors.white,
+                                    topMargin: 30.0,
+                                    bottomMargin: 15.0,
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 20),
+                                    width: 250,
+                                    child: Connection.styleForConnected(
+                                      G0<AppModel>().connectionStatus,
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
+                                        ),
+                                        child: Row(children: <Widget>[
+                                          Stack(alignment: AlignmentDirectional.center, children: <Widget>[
+                                            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)),
+                                            const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))
+                                          ]),
+                                          const Padding(
+                                            padding: EdgeInsets.only(left: 20, right: 0),
+                                            child: Text('Run art gallery'),
+                                          ),
+                                        ]),
+                                        onPressed: () {
+                                          if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                            launchUrl(Uri.parse(widget.kennelAggregateItem.kennel.kennelWebsiteUrl));
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                           const SizedBox(height: 25.0),

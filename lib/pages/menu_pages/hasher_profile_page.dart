@@ -172,6 +172,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   final TextEditingController _previousHaringCountController = TextEditingController();
   bool _historicalCountIsEstimate = false;
 
+  bool _useNativeMapProvider;
+
   @override
   void initState() {
     Permission.location.isGranted.then((bool isGranted) {
@@ -226,9 +228,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     _previousHaringCountController.addListener(() {
       checkDirty();
     });
-    super.initState();
 
     _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+
+    getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == null ? _useNativeMapProvider = null : _useNativeMapProvider = getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == 1;
+
+    super.initState();
   }
 
   String getDistancePreferenceAsString(int distPref) {
@@ -1064,6 +1069,72 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
+                                    if ((Platform.isIOS) && (_useNativeMapProvider != null)) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('8552133039'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Clear Map Preference',
+                                              style: headingStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'You have set your map preference to ${_useNativeMapProvider ? 'Apple Maps' : 'Google Maps'}. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
+                                              style: bodyStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 15.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15.0),
+                                                  ),
+                                                  onPressed: () async {
+                                                    await IveCoreUtilities.showAlert(
+                                                      context,
+                                                      'Map preferences cleared',
+                                                      'Your map preference has been cleared. Next time you access an external map application, you will be prompted again to select a map preference.',
+                                                      'OK',
+                                                      showCancelButton: false,
+                                                    );
+
+                                                    await removePref(IntPrefsEnum.usePlatformNativeMapApp);
+
+                                                    setState(() {
+                                                      print(getIntPref(IntPrefsEnum.usePlatformNativeMapApp));
+                                                      getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == null
+                                                          ? _useNativeMapProvider = null
+                                                          : _useNativeMapProvider = getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == 1;
+
+                                                      print(_useNativeMapProvider.toString());
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    'Clear map preference',
+                                                    style: textStyleButton,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                     if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_logOutAndRefreshButton != 0) ...<Widget>[
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1091,7 +1162,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                            padding: const EdgeInsets.symmetric(vertical: 15),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                                               children: <Widget>[
