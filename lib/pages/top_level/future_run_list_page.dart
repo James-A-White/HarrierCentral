@@ -339,110 +339,124 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   itemCount: _filteredRuns.length,
                   itemBuilder: (BuildContext context, int index) {
                     if (_filteredRuns[index] is int) {
-                      return Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        padding: const EdgeInsets.only(top: 2.0),
-                        color: themeButtonColors,
-                        height: 40.0,
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
-                              const SizedBox(width: 36.0),
-                            ],
-                            if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
-                              const SizedBox(width: 36.0),
-                            ],
-                            Text(
-                              _filteredRuns[index] == 1
-                                  ? _showRsvpInstructions
-                                      ? 'Learn about RSVPs →'
-                                      : 'My upcoming runs'
-                                  : _filteredRuns[index] == 2
-                                      ? _getDistancePreferenceString()
-                                      : _filteredRuns[index] == 3
-                                          ? 'Runs from Kennels I follow'
-                                          : 'All other upcoming runs',
-                              textAlign: TextAlign.center,
-                              style: titleStyle,
-                            ),
-                            if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
-                              GestureDetector(
-                                onTap: () async {
-                                  await IveCoreUtilities.showAlert(
-                                    context,
-                                    'Why should I RSVP?',
-                                    'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
-                                    'OK',
-                                  );
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: Icon(FontAwesome.graduation_cap, size: 28.0),
+                      return Column(
+                        children: <Widget>[
+                          Container(
+                            margin: const EdgeInsets.only(top: 10),
+                            padding: const EdgeInsets.only(top: 2.0),
+                            color: themeButtonColors,
+                            height: 40.0,
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                                  const SizedBox(width: 36.0),
+                                ],
+                                if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
+                                  const SizedBox(width: 36.0),
+                                ],
+                                Text(
+                                  _filteredRuns[index] == 1
+                                      ? _showRsvpInstructions
+                                          ? 'Learn about RSVPs →'
+                                          : 'My upcoming runs'
+                                      : _filteredRuns[index] == 2
+                                          ? _getDistancePreferenceString('Runs within ')
+                                          : _filteredRuns[index] == 3
+                                              ? 'Runs from Kennels I follow'
+                                              : 'All other upcoming runs',
+                                  textAlign: TextAlign.center,
+                                  style: titleStyle,
                                 ),
-                              )
-                            ],
-                            if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
-                              GestureDetector(
-                                onTap: () async {
-                                  bool success = false;
-
-                                  if (!await Permission.location.isGranted) {
-                                    final bool allow = await IveCoreUtilities.showAlert(
+                                if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await IveCoreUtilities.showAlert(
                                         context,
-                                        'Location Services Required',
-                                        'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
-                                        'Yes',
-                                        showCancelButton: true,
-                                        cancelButtonText: 'No');
+                                        'Why should I RSVP?',
+                                        'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
+                                        'OK',
+                                      );
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Icon(FontAwesome.graduation_cap, size: 28.0),
+                                    ),
+                                  )
+                                ],
+                                if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                                  GestureDetector(
+                                    onTap: () async {
+                                      bool success = false;
 
-                                    if (allow) {
-                                      final PermissionStatus ps = await Permission.location.request();
-
-                                      if (ps.isPermanentlyDenied) {
-                                        final bool openSettings = await IveCoreUtilities.showAlert(
+                                      if (!await Permission.location.isGranted) {
+                                        final bool allow = await IveCoreUtilities.showAlert(
                                             context,
-                                            'Phone Settings',
-                                            'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
-                                            'Open Settings',
+                                            'Location Services Required',
+                                            'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
+                                            'Yes',
                                             showCancelButton: true,
-                                            cancelButtonText: 'Cancel');
-                                        if (openSettings) {
-                                          await openAppSettings();
-                                          success = await IveCoreUtilities.showAlert(context, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
-                                              showCancelButton: true, cancelButtonText: 'No');
-                                        }
-                                      }
+                                            cancelButtonText: 'No');
 
-                                      if ((ps.isGranted) || success) {
-                                        if (await Permission.location.serviceStatus.isEnabled) {
-                                          G0<AppModel>().hasLocationPermissions = true;
-                                          await Utilities.subscribeToGeoLocationStream().then((void _) async {
-                                            await IveCoreUtilities.showAlert(
-                                              context,
-                                              'Location Services Enabled',
-                                              'Location Services have been enabled.',
-                                              'OK',
-                                            );
+                                        if (allow) {
+                                          final PermissionStatus ps = await Permission.location.request();
 
-                                            _showConfigureDistancePopup();
-                                          });
+                                          if (ps.isPermanentlyDenied) {
+                                            final bool openSettings = await IveCoreUtilities.showAlert(
+                                                context,
+                                                'Phone Settings',
+                                                'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+                                                'Open Settings',
+                                                showCancelButton: true,
+                                                cancelButtonText: 'Cancel');
+                                            if (openSettings) {
+                                              await openAppSettings();
+                                              success = await IveCoreUtilities.showAlert(context, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
+                                                  showCancelButton: true, cancelButtonText: 'No');
+                                            }
+                                          }
+
+                                          if ((ps.isGranted) || success) {
+                                            if (await Permission.location.serviceStatus.isEnabled) {
+                                              G0<AppModel>().hasLocationPermissions = true;
+                                              await Utilities.subscribeToGeoLocationStream().then((void _) async {
+                                                await IveCoreUtilities.showAlert(
+                                                  context,
+                                                  'Location Services Enabled',
+                                                  'Location Services have been enabled.',
+                                                  'OK',
+                                                );
+
+                                                _showConfigureDistancePopup();
+                                              });
+                                            }
+                                          }
                                         }
+                                      } else {
+                                        _showConfigureDistancePopup();
                                       }
-                                    }
-                                  } else {
-                                    _showConfigureDistancePopup();
-                                  }
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: Icon(FontAwesome.gear, size: 28.0),
-                                ),
-                              )
-                            ]
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Icon(FontAwesome.gear, size: 28.0),
+                                    ),
+                                  )
+                                ]
+                              ],
+                            ),
+                          ),
+                          // add some text if no runs are found within the distance filter
+                          if ((_filteredRuns[index] == 2) && (_filteredRuns[index + 1] == 3)) ...<Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                              child: Text(
+                                _getDistancePreferenceString('[No runs found within ') + ']',
+                                style: headingStyle,
+                              ),
+                            ),
                           ],
-                        ),
+                        ],
                       );
                     } else {
                       return RunListItem(
@@ -665,7 +679,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     });
   }
 
-  String _getDistancePreferenceString() {
+  String _getDistancePreferenceString(String precursorText) {
     int distancePref = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
 
     final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
@@ -674,41 +688,39 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       distancePref = hasherPref_0;
     }
 
-    String result = 'Runs within ';
-
     switch (distancePref) {
       case hasherPref_0:
-        result = 'Distance filter →';
+        precursorText = 'Distance filter →';
         break;
       case hasherPref_10:
-        result += '10' + units;
+        precursorText += '10' + units;
         break;
       case hasherPref_25:
-        result += '25' + units;
+        precursorText += '25' + units;
         break;
       case hasherPref_50:
-        result += '50' + units;
+        precursorText += '50' + units;
         break;
       case hasherPref_75:
-        result += '75' + units;
+        precursorText += '75' + units;
         break;
       case hasherPref_100:
-        result += '100' + units;
+        precursorText += '100' + units;
         break;
       case hasherPref_150:
-        result += '150' + units;
+        precursorText += '150' + units;
         break;
       case hasherPref_250:
-        result += '250' + units;
+        precursorText += '250' + units;
         break;
       case hasherPref_500:
-        result += '500' + units;
+        precursorText += '500' + units;
         break;
       default:
-        result = 'Distance not configured';
+        precursorText = 'Distance not configured';
         break;
     }
 
-    return result;
+    return precursorText;
   }
 }

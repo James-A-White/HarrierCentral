@@ -854,7 +854,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         ),
                                         Container(
                                           margin: const EdgeInsets.only(bottom: 20),
-                                          width: 180,
+                                          width: 230,
                                           child: Connection.styleForConnected(
                                             G0<AppModel>().connectionStatus,
                                             ElevatedButton(
@@ -866,9 +866,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)),
                                                   const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))
                                                 ]),
-                                                const Padding(
-                                                  padding: EdgeInsets.only(left: 20, right: 0),
-                                                  child: Text('Open website'),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 20, right: 0),
+                                                  child: Text('Open website', style: textStyleButton),
                                                 ),
                                               ]),
                                               onPressed: () {
@@ -891,7 +891,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   ),
                                   Container(
                                     margin: const EdgeInsets.only(bottom: 20),
-                                    width: 250,
+                                    width: 235,
                                     child: Connection.styleForConnected(
                                       G0<AppModel>().connectionStatus,
                                       ElevatedButton(
@@ -899,19 +899,21 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
                                         ),
                                         child: Row(children: <Widget>[
-                                          Stack(alignment: AlignmentDirectional.center, children: <Widget>[
-                                            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)),
-                                            const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))
-                                          ]),
-                                          const Padding(
-                                            padding: EdgeInsets.only(left: 20, right: 0),
-                                            child: Text('Run art gallery'),
+                                          Image.asset('images/icons/painter_palette.png', height: 35),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 20, right: 0),
+                                            child: Text('Run art gallery', style: textStyleButton),
                                           ),
                                         ]),
-                                        onPressed: () {
-                                          if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                            launchUrl(Uri.parse(widget.kennelAggregateItem.kennel.kennelWebsiteUrl));
-                                          }
+                                        onPressed: () async {
+                                          final List<Map<String, dynamic>> results = await QueryKennels.queryKennelGallery(widget.kennelAggregateItem.kennel.kennelId);
+
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder: (BuildContext context) => HashRunArtGalleryPage(key: const Key('52233311'), items: results),
+                                            ),
+                                          );
                                         },
                                       ),
                                     ),

@@ -80,6 +80,7 @@ class KennelListAggregate {
 }
 
 enum EnumKennelQueryType { topKennelPage, singleKennel }
+
 enum EnumKennelQueryContext { user, kennelAdmin }
 
 class QueryKennels {
@@ -168,8 +169,7 @@ class QueryKennels {
 
     KennelListAggregate kennel;
     final String hasherId = getStringPref(StringPrefsEnum.userId);
-    final List<Map<String, dynamic>> results =
-        await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
+    final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
     if (results.isNotEmpty) {
       final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
@@ -248,6 +248,24 @@ class QueryKennels {
     } else {
       assert(false);
     }
+
+    return G0<Database>().rawQuery(query);
+  }
+
+  static Future<List<Map<String, dynamic>>> queryKennelGallery(String kennelId) async {
+    final String query = ''' 
+      
+        SELECT  
+          k.${G0<TableModel>().kennelsTableHelper.colKennelId},
+          evt.${G0<TableModel>().eventsTableHelper.colEventImage},
+          evt.${G0<TableModel>().eventsTableHelper.colEventNumber},
+          evt.${G0<TableModel>().eventsTableHelper.colEventName}
+          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
+          ON evt.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"
+          ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} desc
+          ''';
 
     return G0<Database>().rawQuery(query);
   }
