@@ -1592,6 +1592,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     if (runCount % 100 == 69) {
       result = true;
     }
+
+    if (!result && (runCount > 10)) {
+      final String s = runCount.toString();
+      final String reversed = s.split('').reversed.join('');
+
+      if (s == reversed) {
+        result = true;
+      }
+    }
+
     return result;
   }
 
@@ -1650,10 +1660,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           physics: const AlwaysScrollableScrollPhysics(),
           scrollDirection: Axis.vertical,
           controller: _scrollController,
-          itemCount: (_filteredList?.length ?? 0) + (_searchController.text.isNotEmpty ? 1 : 0),
+          itemCount: (_filteredList?.length ?? 0) + 2,
           itemBuilder: (BuildContext context, int index) {
-            if ((index == (_filteredList?.length ?? 0)) && (_searchController.text.isNotEmpty)) {
+            if (index == (_filteredList?.length ?? 0)) {
               return _getAddHasherBlock();
+            } else if (index == (_filteredList?.length ?? 0) + 1) {
+              return const SizedBox(height: 120);
             } else {
               final CheckInPackModel packMember = _filteredList[index];
 
