@@ -145,11 +145,27 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   ),
                                   Padding(
                                       padding: const EdgeInsets.only(top: 20, bottom: 5),
-                                      child: CachedNetworkImage(
-                                        imageUrl: widget.kennelAggregateItem.kennel.kennelCoverPhoto,
-                                        // errorWidget:
-                                        //     (BuildContext context, String url, Exception error) =>
-                                        //         const  Icon(Icons.error),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder: (BuildContext context) => ZoomableImagePage2(
+                                                  key: const Key('51120331'),
+                                                  pageTitle: 'Kennel Cover Photo',
+                                                  imageUrl: widget.kennelAggregateItem.kennel.kennelCoverPhoto,
+                                                  appBarBackgroundColor: themeAppBarBackground,
+                                                  background: Backgrounds.defaultHcBackground(),
+                                                  margin: 20.0),
+                                            ),
+                                          );
+                                        },
+                                        child: CachedNetworkImage(
+                                          imageUrl: widget.kennelAggregateItem.kennel.kennelCoverPhoto,
+                                          // errorWidget:
+                                          //     (BuildContext context, String url, Exception error) =>
+                                          //         const  Icon(Icons.error),
+                                        ),
                                       )
                                       //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
                                       ),

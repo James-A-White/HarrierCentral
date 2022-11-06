@@ -1,4 +1,6 @@
 // @dart=2.11
+
+import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
 part 'events_service.g.dart';
@@ -473,5 +475,40 @@ class EventsService extends BaseService {
     );
 
     return <String, String>{'result': response.body};
+  }
+
+  Future<RunDetailsAggregate> getSingleRun(String eventId) async {
+    //final Geolocator locator = Geolocator();
+    RunDetailsAggregate item;
+
+    final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
+    if (results.isNotEmpty) {
+      final num dist = Geolocator.distanceBetween(
+        G0<DeviceInfo>().deviceLat,
+        G0<DeviceInfo>().deviceLon,
+        results[0]['evtLat'] + .0,
+        results[0]['evtLon'] + .0,
+      );
+      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
+      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+      final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[0], eventItem.eventStartDatetime);
+      extensionsItem.distToEvent = dist;
+
+      String paymentLinkUrl = '';
+
+      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
+        paymentLinkUrl = eventItem.eventPaymentUrl;
+      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+        paymentLinkUrl = kennelItem.kennelPaymentUrl;
+      }
+
+      // final num julianNow = results[0]['nowJulian'];
+      // final num eventJulian = results[0]['eventJulian'];
+
+      ////print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+
+      item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+    }
+    return item;
   }
 }

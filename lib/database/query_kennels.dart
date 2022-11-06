@@ -259,7 +259,9 @@ class QueryKennels {
           k.${G0<TableModel>().kennelsTableHelper.colKennelId},
           evt.${G0<TableModel>().eventsTableHelper.colEventImage},
           evt.${G0<TableModel>().eventsTableHelper.colEventNumber},
-          evt.${G0<TableModel>().eventsTableHelper.colEventName}
+          evt.${G0<TableModel>().eventsTableHelper.colEventName},          
+          evt.${G0<TableModel>().eventsTableHelper.colEventId},
+          evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
           FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
           INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
           ON evt.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}

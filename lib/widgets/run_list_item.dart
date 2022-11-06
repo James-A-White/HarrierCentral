@@ -185,16 +185,32 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               color: Colors.grey[300],
             ),
             if ((widget.futureRun.event.eventImage != null) && (widget.futureRun.event.eventImage.isNotEmpty)) ...<Widget>[
-              CachedNetworkImage(
-                imageUrl: widget.futureRun.event.eventImage,
-                // errorWidget:
-                //     (BuildContext context, String url, Exception error) =>
-                //         const  Icon(Icons.error),
+              GestureDetector(
+                onLongPress: () {
+                  Navigator.push<void>(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) => ZoomableImagePage2(
+                          key: const Key('51120331'),
+                          pageTitle: widget.futureRun.event.eventName,
+                          imageUrl: widget.futureRun.event.eventImage,
+                          appBarBackgroundColor: themeAppBarBackground,
+                          background: Backgrounds.defaultHcBackground(),
+                          margin: 20.0),
+                    ),
+                  );
+                },
+                child: CachedNetworkImage(
+                  imageUrl: widget.futureRun.event.eventImage,
+                  // errorWidget:
+                  //     (BuildContext context, String url, Exception error) =>
+                  //         const  Icon(Icons.error),
+                ),
               ),
               Container(
                 //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-                margin: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                // margin: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                // padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
                 height: 1.0,
                 color: Colors.grey[300],
               ),

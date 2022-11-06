@@ -2,6 +2,7 @@
 
 //import 'dart:io' as platform;
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 class HashRunArtGalleryPage extends StatelessWidget {
   const HashRunArtGalleryPage({Key key, this.items}) : super(key: key);
@@ -14,7 +15,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: const Text(
-        'Run artwork',
+        'Run Artwork',
         style: TextStyle(
           color: Colors.white,
         ),
@@ -24,56 +25,91 @@ class HashRunArtGalleryPage extends StatelessWidget {
     return Scaffold(
       //key: scaffoldKey,
       appBar: appBar,
-      body: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: items.length,
-        padding: const EdgeInsets.only(top: 5),
-        // separatorBuilder: (BuildContext context, int index) => const Divider(
-        //   height: 1.0,
-        //   color: Colors.black45,
-        // ),
-        //itemExtent: 58.0,
-        //shrinkWrap: true,
-        itemBuilder: (BuildContext context, int index) {
-          final Map<String, dynamic> item = items[index];
-          if (item['eventImage'] == null) {
-            return const SizedBox();
-          }
-          return Card(
-            elevation: 4.0,
-            margin: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                children: <Widget>[
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push<void>(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (BuildContext context) => ZoomableImagePage2(
-                            key: const Key('50201112'),
-                            pageTitle: 'Zoomable Event Image',
-                            imageUrl: item['eventImage'],
-                            appBarBackgroundColor: themeAppBarBackground,
-                            background: Backgrounds.defaultHcBackground(),
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: items.length,
+          padding: const EdgeInsets.only(top: 5),
+          // separatorBuilder: (BuildContext context, int index) => const Divider(
+          //   height: 1.0,
+          //   color: Colors.black45,
+          // ),
+          //itemExtent: 58.0,
+          //shrinkWrap: true,
+          itemBuilder: (BuildContext context, int index) {
+            final Map<String, dynamic> item = items[index];
+            if (item[G0<TableModel>().eventsTableHelper.colEventImage] == null) {
+              return const SizedBox();
+            }
+            return Card(
+              elevation: 4.0,
+              margin: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () async {
+                        final RunDetailsAggregate run = await G0<TableModel>().eventsService.getSingleRun(item[G0<TableModel>().eventsTableHelper.colEventId]);
+
+                        await Navigator.push<dynamic>(
+                          context,
+                          MaterialPageRoute<dynamic>(
+                            builder: (BuildContext context) => RunDetailsPage(futureRun: run),
                           ),
-                        ),
-                      );
-                    },
-                    child: Image.network(
-                      item['eventImage'],
+                        );
+                      },
+                      onLongPress: () {
+                        Navigator.push<void>(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) => ZoomableImagePage2(
+                              key: const Key('50201112'),
+                              pageTitle: 'Zoomable Event Image',
+                              imageUrl: item[G0<TableModel>().eventsTableHelper.colEventImage],
+                              appBarBackgroundColor: themeAppBarBackground,
+                              background: Backgrounds.defaultHcBackground(),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Image.network(
+                        item[G0<TableModel>().eventsTableHelper.colEventImage],
+                        errorBuilder: (BuildContext context, Object error, StackTrace stackTrace) {
+                          return Container();
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10.0),
-                  Text(item['eventName'] ?? '', style: titleStyle.copyWith(color: Colors.black), textAlign: TextAlign.center),
-                ],
+                    const SizedBox(height: 10.0),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(item[G0<TableModel>().eventsTableHelper.colEventName] ?? '', style: titleStyle.copyWith(color: Colors.black), textAlign: TextAlign.center),
+                    ),
+                    item[G0<TableModel>().eventsTableHelper.colEventStartDatetime] != null
+                        ? Padding(
+                            padding: const EdgeInsets.only(top: 15.0),
+                            child: Text(
+                                DateFormat("E, MMM d, yyyy 'at' h:mm a").format(
+                                  DateTime.parse(
+                                    item[G0<TableModel>().eventsTableHelper.colEventStartDatetime],
+                                  ),
+                                ),
+                                style: smallTitleStyle.copyWith(color: Colors.grey.shade500),
+                                textAlign: TextAlign.center),
+                          )
+                        : '',
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 }
+
+
+// ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}'
