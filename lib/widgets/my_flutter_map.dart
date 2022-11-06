@@ -85,14 +85,15 @@ class MyFlutterMapState extends State<MyFlutterMap> {
               minZoom: widget.minZoom,
               maxZoom: widget.maxZoom,
             ),
-      layers: <LayerOptions>[
-        TileLayerOptions(
-            urlTemplate:
-                //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-            //subdomains: ['a', 'b', 'c']),
-            subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-        MarkerLayerOptions(
+      children: <Widget>[
+        TileLayer(
+          urlTemplate:
+              //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+          //subdomains: ['a', 'b', 'c']),
+          subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
+        ),
+        MarkerLayer(
           markers: <Marker>[
             if (G0<AppModel>().hasLocationPermissions) ...<Marker>[
               Marker(

@@ -235,8 +235,8 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     _eventAggregate = widget.eventAggregate;
 
     _mapCenter = latlng.LatLng(
-      _eventAggregate.extensions.latitude ?? _eventAggregate.kennel.kennelLatitude,
-      _eventAggregate.extensions.longitude ?? _eventAggregate.kennel.kennelLongitude,
+      _eventAggregate.extensions.latitude ?? _eventAggregate.kennel.kennelLatitude + .0,
+      _eventAggregate.extensions.longitude ?? _eventAggregate.kennel.kennelLongitude + .0,
     );
     _initTabs();
 
@@ -1023,7 +1023,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
               MyFlutterMap(
                 _eventAggregate.extensions.latitude == null ? null : latlng.LatLng(_eventAggregate.extensions.latitude, _eventAggregate.extensions.longitude),
                 _mapCenter,
-                latlng.LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude),
+                latlng.LatLng(_eventAggregate.kennel.kennelLatitude + .0, _eventAggregate.kennel.kennelLongitude + .0),
                 1.0,
                 18.0,
                 14.0,
@@ -1037,7 +1037,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 GestureDetector(
                   onTapDown: (dynamic tapDownDetails) {
                     setState(() {
-                      _mapCenter = latlng.LatLng(_eventAggregate.kennel.kennelLatitude, _eventAggregate.kennel.kennelLongitude);
+                      _mapCenter = latlng.LatLng(_eventAggregate.kennel.kennelLatitude + .0, _eventAggregate.kennel.kennelLongitude + .0);
                     });
                   },
                   child: Container(color: Colors.black54),
@@ -1261,13 +1261,13 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                   setState(() {
                                     if ((_eventAggregate?.extensions?.latitude == null) || (_eventAggregate?.extensions?.longitude == null)) {
                                       _mapCenter = latlng.LatLng(
-                                        _eventAggregate.kennel.kennelLatitude,
-                                        _eventAggregate.kennel.kennelLongitude,
+                                        _eventAggregate.kennel.kennelLatitude + .0,
+                                        _eventAggregate.kennel.kennelLongitude + .0,
                                       );
                                     } else {
                                       _mapCenter = latlng.LatLng(
-                                        _eventAggregate.extensions.latitude,
-                                        _eventAggregate.extensions.longitude,
+                                        _eventAggregate.extensions.latitude + .0,
+                                        _eventAggregate.extensions.longitude + .0,
                                       );
                                     }
                                     _isUpdating = false;

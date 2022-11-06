@@ -56,7 +56,7 @@ class PermissionSliderPage extends StatefulWidget {
 }
 
 class _PermissionSliderPageState extends State<PermissionSliderPage> {
-  List<Slide> slides = <Slide>[];
+  List<ContentConfig> slides = <ContentConfig>[];
 
   TextStyle titleStyle;
 
@@ -75,7 +75,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
 
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Let us know where you are!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -91,7 +91,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     );
 
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Smile for the camera!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -107,7 +107,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     );
 
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Keep up to date',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -123,7 +123,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     );
 
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Some Last\r\nDetails',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -270,7 +270,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   Widget build(BuildContext context) {
     return IntroSlider(
       // List slides
-      slides: slides,
+      listContentConfig: slides,
 
       // Skip button
       renderSkipBtn: _renderSkipBtn(),
@@ -292,15 +292,35 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       ),
 
       onSkipPress: _onSkipPress,
-      showSkipBtn: true,
+      //showSkipBtn: true,
 
       onTabChangeCompleted: _onTabChangeCompleted,
 
-      // Dot indicator
-      showDotIndicator: true,
-      colorDot: themeAppBarBackground40,
-      colorActiveDot: themeAppBarBackground,
-      sizeDot: 6.0,
+      // // Dot indicator
+      // showDotIndicator: true,
+      // colorDot: themeAppBarBackground40,
+      // colorActiveDot: themeAppBarBackground,
+      // sizeDot: 6.0,
+
+      // // Show or hide status bar
+      // hideStatusBar: true,
+
+      // Indicator
+      indicatorConfig: IndicatorConfig(
+        sizeIndicator: 10,
+        indicatorWidget: Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: themeAppBarBackground40),
+        ),
+        activeIndicatorWidget: Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: themeAppBarBackground),
+        ),
+        spaceBetweenIndicator: 10,
+        typeIndicatorAnimation: TypeIndicatorAnimation.sliding,
+      ),
 
       // Next button
       renderNextBtn: _renderNextBtn(),
@@ -338,9 +358,6 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
           },
         ),
       ),
-
-      // Show or hide status bar
-      hideStatusBar: true,
 
       refFuncGoToTab: (dynamic refFunc) {
         goToTab = refFunc;

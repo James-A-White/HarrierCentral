@@ -694,19 +694,19 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   zoom: 10.0,
                   minZoom: 1.0,
                   maxZoom: 18.0,
-                  plugins: <MarkerClusterPlugin>[
-                    MarkerClusterPlugin(),
-                  ],
+                  // plugins: <MarkerClusterPlugin>[
+                  //   MarkerClusterPlugin(),
+                  // ],
                 ),
-                layers: <LayerOptions>[
-                  TileLayerOptions(
+                children: <Widget>[
+                  TileLayer(
                     urlTemplate:
                         //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                         'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                     //subdomains: ['a', 'b', 'c']),
-                    subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3'],
+                    subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
                   ),
-                  MarkerLayerOptions(
+                  MarkerLayer(
                     markers: <Marker>[
                       if (G0<AppModel>().hasLocationPermissions) ...<Marker>[
                         Marker(
@@ -730,42 +730,46 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       ],
                     ],
                   ),
-                  MarkerClusterLayerOptions(
-                    maxClusterRadius: 60,
-                    size: const Size(40, 40),
-                    fitBoundsOptions: const FitBoundsOptions(
-                      padding: EdgeInsets.all(50),
+                  MarkerClusterLayerWidget(
+                    options: MarkerClusterLayerOptions(
+                      maxClusterRadius: 60,
+                      size: const Size(40, 40),
+                      fitBoundsOptions: const FitBoundsOptions(
+                        padding: EdgeInsets.all(50),
+                      ),
+                      markers: _runLocationMarkers,
+                      polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
+                      builder: (BuildContext context, List<Marker> markers) {
+                        heroCounter++;
+                        return FloatingActionButton(
+                          backgroundColor: Colors.blue[800],
+                          child: Text(markers.length.toString()),
+                          onPressed: null,
+                          heroTag: 'btn_$heroCounter',
+                        );
+                      },
                     ),
-                    markers: _runLocationMarkers,
-                    polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
-                    builder: (BuildContext context, List<Marker> markers) {
-                      heroCounter++;
-                      return FloatingActionButton(
-                        backgroundColor: Colors.blue[800],
-                        child: Text(markers.length.toString()),
-                        onPressed: null,
-                        heroTag: 'btn_$heroCounter',
-                      );
-                    },
                   ),
 
-                  MarkerClusterLayerOptions(
-                    maxClusterRadius: 20,
-                    size: const Size(50, 50),
-                    fitBoundsOptions: const FitBoundsOptions(
-                      padding: EdgeInsets.all(50),
+                  MarkerClusterLayerWidget(
+                    options: MarkerClusterLayerOptions(
+                      maxClusterRadius: 20,
+                      size: const Size(50, 50),
+                      fitBoundsOptions: const FitBoundsOptions(
+                        padding: EdgeInsets.all(50),
+                      ),
+                      markers: _showKennels == true ? _kennelMarkers : <Marker>[],
+                      polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
+                      builder: (BuildContext context, List<Marker> markers) {
+                        heroCounter++;
+                        return FloatingActionButton(
+                          backgroundColor: Colors.purple[600],
+                          child: Text(markers.length.toString()),
+                          onPressed: null,
+                          heroTag: 'btn_$heroCounter',
+                        );
+                      },
                     ),
-                    markers: _showKennels == true ? _kennelMarkers : <Marker>[],
-                    polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
-                    builder: (BuildContext context, List<Marker> markers) {
-                      heroCounter++;
-                      return FloatingActionButton(
-                        backgroundColor: Colors.purple[600],
-                        child: Text(markers.length.toString()),
-                        onPressed: null,
-                        heroTag: 'btn_$heroCounter',
-                      );
-                    },
                   ),
 
                   // MarkerLayerOptions(

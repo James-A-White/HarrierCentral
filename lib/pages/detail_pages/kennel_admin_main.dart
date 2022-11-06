@@ -618,14 +618,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       minZoom: 1.0,
                                       maxZoom: 18.0,
                                     ),
-                                    layers: <LayerOptions>[
-                                      TileLayerOptions(
+                                    children: <Widget>[
+                                      TileLayer(
                                           urlTemplate:
                                               //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                                               'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                                           //subdomains: ['a', 'b', 'c']),
-                                          subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-                                      MarkerLayerOptions(
+                                          subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3']),
+                                      MarkerLayer(
                                         markers: <Marker>[
                                           Marker(
                                             width: 240.0,

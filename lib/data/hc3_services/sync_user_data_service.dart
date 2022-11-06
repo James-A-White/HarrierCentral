@@ -171,7 +171,8 @@ class SyncUserDataService {
         if (!responseBody.startsWith(ERROR_PREFIX)) {
           // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
           tablesToSync = await updateSqlTablesWithResultsFromApiWithPaging(
-            responseBody.replaceAll('\u2029', ''),
+            //responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
+            responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
             informUser: informUser,
             suppressDeletes: true,
             batchText: batchText + ' ' + batchNumber.toString(),

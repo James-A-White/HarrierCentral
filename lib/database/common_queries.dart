@@ -317,10 +317,9 @@ class CommonQueries {
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on e.kennelId = hkm.kennelId,
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on e.kennelId = hkm.kennelId AND hkm.userId = "$userId",
           hashers h  
           WHERE e.eventId = "$eventId"
-          AND hkm.userId = "$userId"
           AND h.hasherId = "$userId" 
           ''';
 
@@ -338,17 +337,17 @@ class CommonQueries {
 
         if (extensions.latitude != null) {
           dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat,
-            G0<DeviceInfo>().deviceLon,
-            extensions.latitude,
-            extensions.longitude,
+            G0<DeviceInfo>().deviceLat + .0,
+            G0<DeviceInfo>().deviceLon + .0,
+            extensions.latitude + .0,
+            extensions.longitude + .0,
           );
         } else {
           dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat,
-            G0<DeviceInfo>().deviceLon,
-            kennel.kennelLatitude,
-            kennel.kennelLongitude,
+            G0<DeviceInfo>().deviceLat + .0,
+            G0<DeviceInfo>().deviceLon + .0,
+            kennel.kennelLatitude + .0,
+            kennel.kennelLongitude + .0,
           );
         }
         extensions.distToEvent = dist;

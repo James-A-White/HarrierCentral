@@ -9,7 +9,7 @@ class IntroSliderPage extends StatefulWidget {
 }
 
 class _IntroSliderPageState extends State<IntroSliderPage> {
-  List<Slide> slides = <Slide>[];
+  List<ContentConfig> slides = <ContentConfig>[];
 
   TextStyle titleStyle;
   TextStyle descriptionStyle;
@@ -27,7 +27,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
 
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Welcome to Harrier Central',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -42,7 +42,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       ),
     );
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Discover Hash Runs',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -57,7 +57,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       ),
     );
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Your Run History',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -72,7 +72,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       ),
     );
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Easy\r\nHash Cash',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -87,7 +87,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       ),
     );
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Built for\r\nMis-Management',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -102,7 +102,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       ),
     );
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'Secure Data',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -117,7 +117,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       ),
     );
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'More to Come!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -132,7 +132,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       ),
     );
     slides.add(
-      Slide(
+      ContentConfig(
         title: 'OK! Let\'s\r\nGet Started!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -196,8 +196,31 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       addSlides();
     }
     return IntroSlider(
+      // Indicator
+      indicatorConfig: IndicatorConfig(
+        sizeIndicator: 10,
+        indicatorWidget: Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: themeAppBarBackground40),
+        ),
+        activeIndicatorWidget: Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: themeAppBarBackground),
+        ),
+        spaceBetweenIndicator: 10,
+        typeIndicatorAnimation: TypeIndicatorAnimation.sliding,
+      ),
+      // // Dot indicator
+      // colorDot: themeAppBarBackground40,
+      // colorActiveDot: themeAppBarBackground,
+      // sizeDot: 6.5,
+
+      // // Show or hide status bar
+      // hideStatusBar: true,
       // List slides
-      slides: slides,
+      listContentConfig: slides,
       //onSkipPress: onSkipPress,
 
       // Skip button
@@ -254,14 +277,6 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
           },
         ),
       ),
-
-      // Dot indicator
-      colorDot: themeAppBarBackground40,
-      colorActiveDot: themeAppBarBackground,
-      sizeDot: 6.5,
-
-      // Show or hide status bar
-      hideStatusBar: true,
     );
   }
 }
