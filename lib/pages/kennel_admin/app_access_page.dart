@@ -63,7 +63,7 @@ class _AppAccessPageState extends State<AppAccessPage> {
 
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.red.shade900,
+                        backgroundColor: Colors.red.shade900,
                       ),
                       onPressed: () {
                         // if appAccessFlags = 1 that means this person has no admin privileges, so set all to zero while at the same time preserving the superAdmin bit, otherwise set the authIsAdmin flag

@@ -1,5 +1,4 @@
 // @dart=2.11
-import 'dart:async';
 
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -1475,7 +1474,7 @@ class SnackContent extends StatelessWidget {
     /// set to _ & __ just for readability.
     return ValueListenableBuilder<bool>(
         valueListenable: snackState,
-        builder: (_, msg, __) {
+        builder: (_, bool msg, __) {
           return Checkbox(
               value: msg,
               onChanged: (bool x) {

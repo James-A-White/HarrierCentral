@@ -1422,7 +1422,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                   G0<AppModel>().connectionStatus,
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: _isDirty ? Colors.red.shade900 : Colors.grey,
+                      backgroundColor: _isDirty ? Colors.red.shade900 : Colors.grey,
                     ),
                     onPressed: () {
                       if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus) && _isDirty) {

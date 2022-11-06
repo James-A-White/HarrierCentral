@@ -61,7 +61,7 @@ void main() {
             selectedRowColor: Colors.red.shade50,
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                  primary: Colors.red.shade900,
+                  backgroundColor: Colors.red.shade900,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                   textStyle: const TextStyle(color: Colors.white),
                   shadowColor: Colors.transparent,

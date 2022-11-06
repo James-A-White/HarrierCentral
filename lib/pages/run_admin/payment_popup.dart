@@ -176,7 +176,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
           child: SizedBox(
             width: 100.0,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.red),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Cancel'),
               onPressed: () {
                 final PaymentPopupResult popupResult = PaymentPopupResult(transactionType: -1, transactionValue: 0);

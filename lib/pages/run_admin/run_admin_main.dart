@@ -281,7 +281,7 @@ class RunAdminPageState extends State<RunAdminPage> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                  primary: _isBetaTester == 1 ? null : Colors.grey,
+                  backgroundColor: _isBetaTester == 1 ? null : Colors.grey,
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                   Padding(
@@ -326,7 +326,7 @@ class RunAdminPageState extends State<RunAdminPage> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                  primary: _isBetaTester == 1 ? null : Colors.grey,
+                  backgroundColor: _isBetaTester == 1 ? null : Colors.grey,
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                   Padding(

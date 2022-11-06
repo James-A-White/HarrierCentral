@@ -6,8 +6,7 @@ class BankTransferQr {
   // the variable below is there to suppress a warning about defining classes with only static members
   int unusedVariableToSuppressWarning;
 
-  static void showBankTransferSnackbar(
-      RunAdminAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
+  static void showBankTransferSnackbar(RunAdminAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
     if (eventAggregate.kennel.bankBic != null) {
       String paymentReference = '';
       if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
@@ -30,7 +29,7 @@ class BankTransferQr {
             content: SizedBox(
               height: 80,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.red),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: Text(
                   'Show Payment QR code for\r\n$packMemberNameForDisplay',
                   style: buttonLabelStyleMedium,

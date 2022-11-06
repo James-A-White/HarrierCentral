@@ -151,7 +151,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         onPressed: () {
                           insertText('{my name}');
                         },
-                        style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
@@ -165,7 +165,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     SizedBox(
                       width: 155,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
                         onPressed: () {
                           insertText('{receipient name}');
                         },
@@ -191,7 +191,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         onPressed: () {
                           insertText('{run details}');
                         },
-                        style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
@@ -208,7 +208,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         onPressed: () {
                           insertText('{run description}');
                         },
-                        style: ElevatedButton.styleFrom(primary: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(

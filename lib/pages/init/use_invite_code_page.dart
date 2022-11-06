@@ -280,7 +280,10 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     const SizedBox(height: 8, width: 10),
                     TextButton(
                         child: Text('Email me a new invite code', style: smallTitleStyle.copyWith(color: Colors.red)),
-                        style: TextButton.styleFrom(backgroundColor: Colors.transparent, primary: Colors.red.shade800),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.red.shade800,
+                        ),
                         onPressed: () async {
                           final EmailPopup emailPopup = EmailPopup(
                             initialEmailAddress: _emailAddress,
