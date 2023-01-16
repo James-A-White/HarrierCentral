@@ -47,9 +47,9 @@ class SyncEventAdminService {
         ? IGNORE_REPLICATION_TIMESTAMP
         : await getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
     //_hashersLastUpdated = true ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
-    _kennelCreditsLastUpdated = (flags & flagKennelCreditTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
+    // _kennelCreditsLastUpdated = (flags & flagKennelCreditTable) == 0
+    //     ? IGNORE_REPLICATION_TIMESTAMP
+    //     : await getLastUpdatedTime(G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
   }
 
   Future<bool> updateFromBackend(
@@ -76,7 +76,7 @@ class SyncEventAdminService {
       await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().hasherEventMapTableHelper, G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event));
       await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().hasherKennelMapTableHelper, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event));
       await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().receiptsTableHelper, G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event));
-      await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().kennelCreditsTableHelper, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
+      // await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().kennelCreditsTableHelper, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
@@ -183,7 +183,7 @@ class SyncEventAdminService {
     G0<TableModel>().eventsTableHelper,
     G0<TableModel>().hasherEventMapTableHelper,
     G0<TableModel>().hasherKennelMapTableHelper,
-    G0<TableModel>().kennelCreditsTableHelper,
+    //G0<TableModel>().kennelCreditsTableHelper,
   ];
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {

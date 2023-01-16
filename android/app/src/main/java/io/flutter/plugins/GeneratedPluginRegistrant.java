@@ -71,9 +71,9 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin image_picker_android, io.flutter.plugins.imagepicker.ImagePickerPlugin", e);
     }
     try {
-      flutterEngine.getPlugins().add(new com.example.maps_launcher.MapsLauncherPlugin());
+      flutterEngine.getPlugins().add(new com.alexmiller.map_launcher.MapLauncherPlugin());
     } catch(Exception e) {
-      Log.e(TAG, "Error registering plugin maps_launcher, com.example.maps_launcher.MapsLauncherPlugin", e);
+      Log.e(TAG, "Error registering plugin map_launcher, com.alexmiller.map_launcher.MapLauncherPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new dev.steenbakker.mobile_scanner.MobileScannerPlugin());

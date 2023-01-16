@@ -130,7 +130,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercentAvailable,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},'') as discountAvailableDescription,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as isFollowing,
-          COALESCE(credits.currentBalance,0) as creditAvailable,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) as creditAvailable,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
           COALESCE(confBy.dispName,'') as confByName,
@@ -143,7 +143,6 @@ class PaymentReportState extends State<PaymentReportPage> {
           LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hem.userId
           LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} paidTo on paidTo.hasherId = pay.paidTo
-          LEFT OUTER JOIN ${G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.user)} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
           LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} confBy on confBy.hasherId = pay.confirmedBy
           WHERE hem.attendenceState >= 20
           ''';

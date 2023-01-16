@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: ">=2.14.3 <3.0.0"
-  flutter: ^3.3.7
+  flutter: ^3.3.10
 
 dependencies:   
   audioplayers: 0.20.1 # had problem with low sound volume on iOS on version 1.0.0
@@ -40,6 +40,7 @@ dependencies:
   flutter_speed_dial: ^6.0.0 
   flutter_staggered_grid_view: ^0.6.1 
   flutter_statusbarcolor_ns: ^0.4.0
+  flutter_svg: ^1.1.6
   flutter_swiper: ^1.1.6
   flutter_vector_icons: ^2.0.0 
   geolocator: ^9.0.0
@@ -60,7 +61,8 @@ dependencies:
       ref: 99f78ae9ec601059829ca8f6f8c276f3a2ea6944 # Version 1.1.8
   keyboard_actions: ^4.0.0 
   keyboard_avoider: ^0.1.2
-  maps_launcher: ^2.0.1
+  map_launcher: ^2.4.0
+  # maps_launcher: ^2.0.1
   meta: ^1.8.0 
   mobile_scanner: ^2.0.0
   package_info_plus: ^3.0.1

@@ -489,6 +489,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.0"
+  flutter_svg:
+    dependency: "direct main"
+    description:
+      name: flutter_svg
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.6"
   flutter_swiper:
     dependency: "direct main"
     description:
@@ -799,13 +806,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
-  maps_launcher:
+  map_launcher:
     dependency: "direct main"
     description:
-      name: maps_launcher
+      name: map_launcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.1"
+    version: "2.4.0"
   matcher:
     dependency: transitive
     description:
@@ -890,6 +897,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.2"
+  path_drawing:
+    dependency: transitive
+    description:
+      name: path_drawing
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
+  path_parsing:
+    dependency: transitive
+    description:
+      name: path_parsing
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   path_provider:
     dependency: transitive
     description:
@@ -1555,4 +1576,4 @@ packages:
     version: "3.1.1"
 sdks:
   dart: ">=2.18.0 <3.0.0"
-  flutter: ">=3.3.7"
+  flutter: ">=3.3.10"

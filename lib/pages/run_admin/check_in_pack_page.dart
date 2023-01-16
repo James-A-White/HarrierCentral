@@ -262,7 +262,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
             hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} as hemUpdatedAt,
             pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} as payUpdatedAt,
-            coalesce(credits.currentBalance,0) as credit,
+            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} as credit,
             coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
             coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
             hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} as hcTotalRunCount,
@@ -274,8 +274,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hkm.userId
           LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
           LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
-          LEFT OUTER JOIN ${G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event)} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
-    
           WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" 
             AND coalesce(hem.virginVisitorType,0) = 0
             AND (
@@ -341,7 +339,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             coalesce(hem3.attendenceState,0) as attendenceState,
             hem3.updatedAt as hemUpdatedAt,
             pay3.updatedAt as payUpdatedAt,
-            coalesce(credits3.currentBalance,0) as credit,
+            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} as credit,
             coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
             coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
             hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
@@ -355,7 +353,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
             LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now','localtime')
             LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 on hkm4.userId = h3.hasherId and hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
-            LEFT OUTER JOIN ${G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.user)} credits3 on credits3.userId = hkm3.userId and credits3.kennelId = hkm3.kennelId
             WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
               AND hem3.virginVisitorType = 0 
               AND  

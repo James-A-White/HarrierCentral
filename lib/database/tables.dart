@@ -200,7 +200,7 @@ class Tables {
     await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.event);
     await G0<TableModel>().paymentsTableHelper.createTable(db, version, AppDomainType.event);
     await G0<TableModel>().receiptsTableHelper.createTable(db, version, AppDomainType.event);
-    await G0<TableModel>().kennelCreditsTableHelper.createTable(db, version, AppDomainType.event);
+    //await G0<TableModel>().kennelCreditsTableHelper.createTable(db, version, AppDomainType.event);
 
     // create kennel admin tables
     await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.kennel);
@@ -222,7 +222,7 @@ class Tables {
     await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.event);
     await G0<TableModel>().paymentsTableHelper.createIndexes(db, version, AppDomainType.event);
     await G0<TableModel>().receiptsTableHelper.createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>().kennelCreditsTableHelper.createIndexes(db, version, AppDomainType.event);
+    //await G0<TableModel>().kennelCreditsTableHelper.createIndexes(db, version, AppDomainType.event);
 
     // create kennel admin tables
     await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.kennel);

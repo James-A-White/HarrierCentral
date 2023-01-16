@@ -246,13 +246,13 @@ class PaymentsService {
         );
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
 
-    final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().kennelCreditsTableHelper,
-          G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
-          G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
-        );
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_kennelCreditsLastUpdated + 1);
+    // final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    //       G0<Database>(),
+    //       G0<TableModel>().kennelCreditsTableHelper,
+    //       G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
+    //       G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
+    //     );
+    // final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_kennelCreditsLastUpdated + 1);
 
     final String appDomainStr = appDomainType.toString();
 
@@ -269,7 +269,7 @@ class PaymentsService {
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
-      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
+      'kennelCreditsUpdatedAfter': 'ignore',
       'doPayForExtras': doPayForExtras.value.toString(),
       'surcharge': surcharge?.toString(),
       'paymentProvider': paymentProvider ?? '',

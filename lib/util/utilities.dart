@@ -191,6 +191,21 @@ class Utilities {
     return 'Please enter an email address';
   }
 
+  static List<double> getLatLongFromString(List<String> values) {
+    for (String value in values) {
+      if ((value != null) && (value.isNotEmpty)) {
+        const Pattern pattern = r'[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)';
+        final RegExp regex = RegExp(pattern, caseSensitive: false);
+        if (regex.hasMatch(value)) {
+          final String numStr = regex.allMatches(value).elementAt(0).group(0);
+          final List<String> str = numStr.split(',');
+          return <double>[double.tryParse(str[0]), double.tryParse(str[1])];
+        }
+      }
+    }
+    return <double>[null, null];
+  }
+
   static String getEventScopeText(int eventGeographicScope) {
     String s = 'Special event';
 

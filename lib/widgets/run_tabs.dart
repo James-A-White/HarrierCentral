@@ -1,7 +1,10 @@
 // @dart=2.11
 
+// import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
+import 'package:map_launcher/map_launcher.dart' as maps;
 
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
@@ -164,8 +167,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       }
     });
 
-    _mapCenter =
-        latlng.LatLng(widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0, widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0);
+    final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
+
+    _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? coords[0] ?? widget.futureRun.kennel.kennelLatitude + .0,
+        widget.futureRun.extensions.longitude ?? coords[1] ?? widget.futureRun.kennel.kennelLongitude + .0);
 
     super.initState();
   }
@@ -732,7 +737,71 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> openMapsSheet(BuildContext context, String title, maps.Coords coords, String address) async {
+    try {
+      final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
+
+      await showModalBottomSheet<dynamic>(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Container(
+                child: Wrap(
+                  children: <Widget>[
+                    for (maps.AvailableMap map in availableMaps)
+                      ListTile(
+                        onTap: () {
+                          if (_saveUserMapPreference.value) {}
+
+                          map.showMarker(
+                            coords: coords,
+                            title: title,
+                            description: address,
+                          );
+                        },
+                        title: Text(map.mapName,
+                            style: const TextStyle(
+                              fontFamily: 'AvenirNextDemiBold',
+                              color: Colors.black,
+                              fontSize: 20.0,
+                            )),
+                        leading: SvgPicture.asset(
+                          map.icon,
+                          height: 45.0,
+                          width: 45.0,
+                        ),
+                      ),
+                    Row(
+                      children: <Widget>[
+                        SnackContent(_saveUserMapPreference, (bool x) {
+                          setState(() {
+                            _saveUserMapPreference.value = x;
+                          });
+                        }),
+                        const Text('Always use this option',
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextDemiBold',
+                              color: Colors.black,
+                              fontSize: 18.0,
+                            ))
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Widget _buildMapView() {
+    final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
+
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Center(
@@ -741,7 +810,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           alignment: AlignmentDirectional.center,
           children: <Widget>[
             MyFlutterMap(
-              widget.futureRun.extensions.latitude == null ? null : latlng.LatLng(widget.futureRun.extensions.latitude + .0, widget.futureRun.extensions.longitude + .0),
+              (widget.futureRun.extensions.latitude ?? coords[0]) == null
+                  ? null
+                  : latlng.LatLng((widget.futureRun.extensions.latitude ?? coords[0]) + .0, (widget.futureRun.extensions.longitude ?? coords[1]) + .0),
               _mapCenter,
               latlng.LatLng(widget.futureRun.kennel.kennelLatitude + .0, widget.futureRun.kennel.kennelLongitude + .0),
               1.0,
@@ -1273,6 +1344,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       lonStr = rda.extensions.longitude.toString();
     }
 
+    if ((latStr == null) || (lonStr == null) || (double.tryParse(latStr) == null) || (double.tryParse(lonStr) == null)) {
+      // try to get lat/lons from other sources
+      final List<double> coords = Utilities.getLatLongFromString(<String>[rda.event.locationOneLineDesc, rda.event.eventDescription, rda.event.eventName]);
+
+      if ((coords[0] != null) && (coords[1] != null)) {
+        latStr = coords[0].toString();
+        lonStr = coords[1].toString();
+      }
+    }
+
     if (rda.event.locationStreet != null) {
       address = address + rda.event.locationStreet + ' ';
     }
@@ -1310,11 +1391,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
 
     if ((_useNativeMapProvider ?? 1) == 1) {
+      final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
+      print(availableMaps); // [AvailableMap { mapName: Google Maps, mapType: google }, ...]
+
       // use the native map provider for the selected platform
       if ((latStr != '') && (lonStr != '')) {
-        await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
+        // await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
+        await openMapsSheet(context, rda.event.eventName, maps.Coords(double.tryParse(latStr), double.tryParse(lonStr)), address ?? '');
       } else if ((address != null) && (address.isNotEmpty)) {
-        await MapsLauncher.launchQuery(address);
+        // await MapsLauncher.launchQuery(address);
+        //await openMapsSheet(context);
       } else {
         await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
       }

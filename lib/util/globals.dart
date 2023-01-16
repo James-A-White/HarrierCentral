@@ -34,7 +34,7 @@ void _initTables() {
     G0<TableModel>().receiptsTableHelper,
     G0<TableModel>().paymentsTableHelper,
     G0<TableModel>().hashersTableHelper,
-    G0<TableModel>().kennelCreditsTableHelper,
+    //G0<TableModel>().kennelCreditsTableHelper,
     G0<TableModel>().kennelsTableHelper,
     G0<TableModel>().eventsTableHelper,
     G0<TableModel>().hasherEventMapTableHelper,
@@ -209,7 +209,7 @@ class TableModel {
   ReceiptsTableHelper receiptsTableHelper;
   PaymentsTableHelper paymentsTableHelper;
   HashersTableHelper hashersTableHelper;
-  KennelCreditsTableHelper kennelCreditsTableHelper;
+  //KennelCreditsTableHelper kennelCreditsTableHelper;
   KennelsTableHelper kennelsTableHelper;
   EventsTableHelper eventsTableHelper;
   HasherEventMapTableHelper hasherEventMapTableHelper;
@@ -236,7 +236,7 @@ class TableModel {
     receiptsTableHelper = ReceiptsTableHelper();
     paymentsTableHelper = PaymentsTableHelper();
     hashersTableHelper = HashersTableHelper();
-    kennelCreditsTableHelper = KennelCreditsTableHelper();
+    //kennelCreditsTableHelper = KennelCreditsTableHelper();
     kennelsTableHelper = KennelsTableHelper();
     eventsTableHelper = EventsTableHelper();
     hasherEventMapTableHelper = HasherEventMapTableHelper();
