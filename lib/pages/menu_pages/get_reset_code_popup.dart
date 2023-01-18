@@ -104,8 +104,8 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
                     await clearPrefs();
                     await DBProvider.deleteDb(DB_NAME);
 
-                    await IveCoreUtilities.showAlert(
-                        context, 'App Cleared Successful', 'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'App Cleared Successful',
+                        'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
                   } else {
                     final AuthorizeDeviceService srv = AuthorizeDeviceService();
                     final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, getResetCodeTextController.text.toUpperCase());
@@ -114,7 +114,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
                       getResetCodeTextController.text = getStringPref(StringPrefsEnum.displayName);
 
                       await IveCoreUtilities.showAlert(
-                          context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                          navigatorKey.currentContext, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                     }
                   }
                 },

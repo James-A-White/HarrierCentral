@@ -465,7 +465,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         0; // we turn the result into a string and then back into an int to allow the DB to return either int or string without causing an error
                     await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                   } else {
-                    await IveCoreUtilities.showAlert(context, 'Account not created',
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Account not created',
                         'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
                   }
 
@@ -474,6 +474,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                     final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
                     //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
+                    if (!mounted) return;
                     await Navigator.pushReplacement<dynamic, dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
@@ -486,7 +487,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         ));
                   } else {
                     // not a new user, pop back to the User profile page.
-                    await IveCoreUtilities.showAlert(context, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
                       Navigator.of(context).pop();
                     });
                   }

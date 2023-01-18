@@ -526,6 +526,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       onTap: () async {
         final RunDetailsAggregate run = await G0<TableModel>().eventsService.getSingleRun(eventId);
 
+        if (!mounted) return;
         await Navigator.push<dynamic>(
           context,
           MaterialPageRoute<dynamic>(
@@ -562,6 +563,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
           final KennelListAggregate kennel = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem, isHomeKennel: isHomeKennel);
 
+          if (!mounted) return;
           await Navigator.of(context).push<dynamic>(
             MaterialPageRoute<dynamic>(
               builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),

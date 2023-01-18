@@ -380,7 +380,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   final bool isPreviewBool = await promptForSending(context);
 
                                                   if (isPreviewBool != null) {
-                                                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                                    IveCoreUtilities.showInSnackBar(navigatorKey.currentContext, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
 
                                                     final EmailReportsService svc = EmailReportsService();
                                                     final Map<String, String> result = await svc.sendKennelInvitesByEmail(
@@ -388,9 +388,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                         kennelName: widget.kennelAggregateItem.kennel.kennelName,
                                                         isPreview: isPreviewBool ? 'Yes' : 'No');
 
-                                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                    ScaffoldMessenger.of(navigatorKey.currentContext).hideCurrentSnackBar();
 
-                                                    await IveCoreUtilities.showAlert(context, result['result'].toLowerCase().startsWith('fail') ? 'Failed' : 'Success', result['result'], 'OK');
+                                                    await IveCoreUtilities.showAlert(
+                                                        navigatorKey.currentContext, result['result'].toLowerCase().startsWith('fail') ? 'Failed' : 'Success', result['result'], 'OK');
                                                   }
                                                 }
                                               },
@@ -606,7 +607,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         if (Utilities.isValidUrl(link.url)) {
                                           await launchUrl(Uri.parse(link.url));
                                         } else {
-                                          await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                                          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                                         }
                                       },
                                     ),
@@ -924,6 +925,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         onPressed: () async {
                                           final List<Map<String, dynamic>> results = await QueryKennels.queryKennelGallery(widget.kennelAggregateItem.kennel.kennelId);
 
+                                          if (!mounted) return;
                                           await Navigator.push<void>(
                                             context,
                                             MaterialPageRoute<void>(

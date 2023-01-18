@@ -341,7 +341,9 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
                           profilePhotoUrl ??= 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
-                          await IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
+                          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
+
+                          if (!mounted) return;
                           await Navigator.pushReplacement<dynamic, dynamic>(
                               context,
                               MaterialPageRoute<dynamic>(
@@ -375,8 +377,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
       });
 
       if (result['validScan'] == 'false') {
-        await IveCoreUtilities.showAlert(
-            context, 'Wrong QR Code', 'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
+        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Wrong QR Code',
+            'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
       } else {
         setState(() {
           _inviteCodeTextController.text = scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');

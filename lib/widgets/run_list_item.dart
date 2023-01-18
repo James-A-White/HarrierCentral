@@ -93,7 +93,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     });
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
     }
   }
 

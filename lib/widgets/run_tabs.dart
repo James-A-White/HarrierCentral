@@ -706,7 +706,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
       if (serverMessage.isNotEmpty) {
-        await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
       }
     }
   }
@@ -733,7 +733,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
     }
   }
 
@@ -764,6 +764,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         if (_saveUserMapPreference.value) {
                           await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
                         }
+                        if (!mounted) return;
                         Navigator.pop(context);
 
                         await Future<void>.delayed(const Duration(milliseconds: 200));
@@ -1399,7 +1400,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       // await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
       await _openMapsSheet(context, rda.event.eventName, maps.Coords(lat, lon), address ?? '');
     } else {
-      await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+      await IveCoreUtilities.showAlert(
+          navigatorKey.currentContext, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
     }
   }
 

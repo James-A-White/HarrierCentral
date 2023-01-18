@@ -55,7 +55,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
                         final RunDetailsAggregate run = await G0<TableModel>().eventsService.getSingleRun(item[G0<TableModel>().eventsTableHelper.colEventId]);
 
                         await Navigator.push<dynamic>(
-                          context,
+                          navigatorKey.currentContext,
                           MaterialPageRoute<dynamic>(
                             builder: (BuildContext context) => RunDetailsPage(futureRun: run),
                           ),

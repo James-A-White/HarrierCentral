@@ -664,6 +664,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     ),
                                     backgroundColor: Colors.blue.shade700,
                                   );
+
+                                  if (!mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                 }
                                 await Future<void>.delayed(const Duration(milliseconds: 500));
@@ -753,6 +755,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               ),
                               backgroundColor: Colors.blue.shade700,
                             );
+
+                            if (!mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
                           }
                         }
@@ -1223,6 +1227,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     ),
                                     backgroundColor: Colors.blue.shade700,
                                   );
+
+                                  if (!mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                 }
 
@@ -1770,6 +1776,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                       await _updateRunDetails(false);
 
                                       if (widget.isNewRun) {
+                                        if (!mounted) return;
                                         Navigator.of(context).pop();
                                       } else {
                                         final SnackBar snackBar = SnackBar(
@@ -1781,6 +1788,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                           ),
                                           backgroundColor: Colors.blue.shade700,
                                         );
+
+                                        if (!mounted) return;
                                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                       }
                                       setState(() {

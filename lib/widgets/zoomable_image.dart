@@ -114,7 +114,7 @@ class ZoomableImagePage2 extends StatelessWidget {
                   onPressed: () async {
                     final KennelListAggregate kennel = await QueryKennels.getSingleKennel(kennelId);
 
-                    await Navigator.of(context).push<dynamic>(
+                    await Navigator.of(navigatorKey.currentContext).push<dynamic>(
                       MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
                       ),

@@ -147,7 +147,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       refreshFromTable();
     } else {
       await IveCoreUtilities.showAlert(
-          context, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+          navigatorKey.currentContext, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
     }
   }
 
@@ -185,7 +185,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       refreshFromTable();
     } else {
       await IveCoreUtilities.showAlert(
-          context, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+          navigatorKey.currentContext, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
     }
   }
 
@@ -383,12 +383,8 @@ class ReceiptListItem extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Text(
                   IveCoreUtilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol),
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextCondensedDemiBold',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 22.0,
-                      height: 1.0,
-                      color: receipt['removed'] == 0 ? Colors.blue[700] : Colors.grey),
+                  style:
+                      TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0, color: receipt['removed'] == 0 ? Colors.blue[700] : Colors.grey),
                   textAlign: TextAlign.right,
                 ),
               ),
@@ -401,12 +397,7 @@ class ReceiptListItem extends StatelessWidget {
               flex: 6,
               child: Text(
                 '${receipt['receiptShortDesc']}',
-                style: TextStyle(
-                    fontFamily: 'AvenirNextCondensedDemiBold',
-                    fontStyle: FontStyle.normal,
-                    fontSize: 22.0,
-                    height: 1.0,
-                    color: receipt['removed'] == 0 ? Colors.black : Colors.grey),
+                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0, color: receipt['removed'] == 0 ? Colors.black : Colors.grey),
                 textAlign: TextAlign.left,
               ),
             ),

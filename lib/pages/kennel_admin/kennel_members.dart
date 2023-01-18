@@ -767,6 +767,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
     if ((_searchText != null) && (_searchText.isNotEmpty)) {
       filteredList = (filteredList ?? fullList).where((dynamic a) => a is int || (a.nameForSort.toLowerCase().contains(_searchText.toLowerCase()))).toList();
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
     }
 

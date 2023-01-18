@@ -212,6 +212,8 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
 
                       if (responseBody == ERROR_INVITE_CODE_SENT) {
                         isSuccessfulLoad = true;
+
+                        if (!mounted) return;
                         await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
                       } else if (!responseBody.startsWith(ERROR_PREFIX)) {
                         final List<dynamic> jsonResultSets = json.decode(responseBody);
@@ -240,6 +242,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
                               final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
                               //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
+                              if (!mounted) return;
                               await Navigator.pushReplacement<dynamic, dynamic>(
                                   context,
                                   MaterialPageRoute<dynamic>(
@@ -257,7 +260,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
 
                       if (!isSuccessfulLoad) {
                         await IveCoreUtilities.showAlert(
-                            context,
+                            navigatorKey.currentContext,
                             'Account not created',
                             'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
                             'OK');

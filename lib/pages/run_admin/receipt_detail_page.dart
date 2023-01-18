@@ -139,10 +139,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
               G0<Database>(),
             );
 
+        if (!mounted) return;
         Navigator.of(context).pop();
       } else {
-        await IveCoreUtilities.showAlert(
-            context, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Error uploading receipt',
+            'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
       }
     } else {
 //    If all data are not valid then start auto validation.

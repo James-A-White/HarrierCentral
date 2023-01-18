@@ -163,7 +163,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -184,7 +184,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -210,7 +210,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),

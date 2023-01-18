@@ -508,6 +508,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             if ((rawEvent != null) && (rawEvent.eventId != null)) {
               RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent.eventId, getStringPref(StringPrefsEnum.userId));
 
+              if (!mounted) return;
               await Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
@@ -535,6 +536,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           onPressed: () async {
             RunAdminAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _selectedDay.value);
             //RunAdminAggregate rda = null;
+
+            if (!mounted) return;
             await Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(

@@ -221,7 +221,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
   void _onSkipPress() {
     if (activeTab == 0) {
-      IveCoreUtilities.showAlert(context, 'Location Preference',
+      IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Location Preference',
               'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
@@ -254,7 +254,8 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      IveCoreUtilities.showAlert(context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
+      IveCoreUtilities.showAlert(
+              navigatorKey.currentContext, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
         if (allow) {

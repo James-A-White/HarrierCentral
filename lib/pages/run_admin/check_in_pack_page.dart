@@ -1224,6 +1224,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
     if (results != null) {
       if ((results[0]['terminalWasUsedForPayment'] == null) || (!results[0]['terminalWasUsedForPayment'])) {
+        if (!mounted) return;
         BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
       }
     }
@@ -1623,7 +1624,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(context, 'RSVP Result', serverMessage, 'OK');
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
     }
 
     await _refreshPackListFromTables(false);

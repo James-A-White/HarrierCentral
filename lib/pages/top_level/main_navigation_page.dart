@@ -272,6 +272,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       }
 
       if (showRunList) {
+        if (!mounted) return;
         final dynamic doCheckIn = await Navigator.push<dynamic>(
           context,
           MaterialPageRoute<dynamic>(
@@ -692,7 +693,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                 if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
                                   await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl));
                                 } else {
-                                  await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
+                                  await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
                                 }
                               },
                               child: Padding(

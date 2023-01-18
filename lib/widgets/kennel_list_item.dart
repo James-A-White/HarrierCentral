@@ -224,9 +224,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           ],
                           if (widget.kennelItem.hkm.dateOfLastRun != null) ...<Widget>[
                             Text(
-                              'Last run: ${widget.kennelItem.hkm.dateOfLastRun.year != DateTime.now().year
-                                      ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm.dateOfLastRun)
-                                      : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun)}',
+                              'Last run: ${widget.kennelItem.hkm.dateOfLastRun.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm.dateOfLastRun) : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun)}',
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
                             ),
                           ],
@@ -407,6 +405,7 @@ class KennelListItemState extends State<KennelsListItem> {
 
     if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
       {
+        if (!mounted) return;
         if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
             message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
           widget.kennelItem.extensions.notificationsRequested = retVal.value;

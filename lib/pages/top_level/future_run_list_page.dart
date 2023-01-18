@@ -404,7 +404,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
                                           if (ps.isPermanentlyDenied) {
                                             final bool openSettings = await IveCoreUtilities.showAlert(
-                                                context,
+                                                navigatorKey.currentContext,
                                                 'Phone Settings',
                                                 'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
                                                 'Open Settings',
@@ -412,7 +412,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                                 cancelButtonText: 'Cancel');
                                             if (openSettings) {
                                               await openAppSettings();
-                                              success = await IveCoreUtilities.showAlert(context, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
+
+                                              success = await IveCoreUtilities.showAlert(
+                                                  navigatorKey.currentContext, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
                                                   showCancelButton: true, cancelButtonText: 'No');
                                             }
                                           }

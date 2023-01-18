@@ -678,7 +678,7 @@ class RunDetails extends StatelessWidget {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -710,7 +710,8 @@ class RunDetails extends StatelessWidget {
                 ),
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));
-                  await IveCoreUtilities.showAlert(context, 'Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
+
+                  await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
                 },
               ),
             ),
@@ -727,7 +728,7 @@ class RunDetails extends StatelessWidget {
                   if (Utilities.isValidUrl(linkUrl)) {
                     await launchUrl(Uri.parse(linkUrl));
                   } else {
-                    await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
                   }
                 },
               ),
@@ -746,7 +747,7 @@ class RunDetails extends StatelessWidget {
                   if (Utilities.isValidUrl(eventUrlWithKennelBackup)) {
                     await launchUrl(Uri.parse(eventUrlWithKennelBackup));
                   } else {
-                    await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
                   }
                 },
               ),

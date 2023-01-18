@@ -392,12 +392,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         });
 
         if (widget.pageType != EnumMyProfilePageType.myProfile) {
+          if (!mounted) return;
           Navigator.of(context).pop(h);
         } else {
-          await IveCoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
+          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
         }
       } else {
-        await IveCoreUtilities.showAlert(context, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
+        await IveCoreUtilities.showAlert(
+            navigatorKey.currentContext, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
       }
     } else {
 //    If all data are not valid then start auto validation.
@@ -1054,7 +1056,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 });
                                                           } else {
                                                             await IveCoreUtilities.showAlert(
-                                                                context,
+                                                                navigatorKey.currentContext,
                                                                 'Code Not Available',
                                                                 'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
                                                                 'OK');
@@ -1195,7 +1197,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           await DBProvider.deleteDb(DB_NAME);
 
                                                           await G0.reset();
-                                                          Phoenix.rebirth(context);
+
+                                                          Phoenix.rebirth(navigatorKey.currentContext);
                                                         }
                                                       });
                                                     },
@@ -1233,7 +1236,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             await clearPrefs();
                                                             await DBProvider.deleteDb(DB_NAME);
                                                             await G0.reset();
-                                                            Phoenix.rebirth(context);
+
+                                                            Phoenix.rebirth(navigatorKey.currentContext);
                                                           }
                                                         });
                                                       },
@@ -1353,7 +1357,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           .then((bool result) async {
                                                         if (result) {
                                                           await Future<void>.delayed(const Duration(milliseconds: 1500));
-                                                          await IveCoreUtilities.showAlert(context, 'Delete Account',
+
+                                                          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Delete Account',
                                                                   'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?', 'Delete Account',
                                                                   showCancelButton: true, cancelButtonText: 'Keep Account')
                                                               .then((bool result2) async {
@@ -1363,14 +1368,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
                                                               if (result.result == 'success') {
                                                                 await IveCoreUtilities.showAlert(
-                                                                  context,
+                                                                  navigatorKey.currentContext,
                                                                   'Successful',
                                                                   'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
                                                                   'OK',
                                                                 );
                                                               } else {
                                                                 await IveCoreUtilities.showAlert(
-                                                                  context,
+                                                                  navigatorKey.currentContext,
                                                                   'Contact us',
                                                                   'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
                                                                   'OK',
@@ -1381,7 +1386,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               await DBProvider.deleteDb(DB_NAME);
                                                               await G0.reset();
 
-                                                              Phoenix.rebirth(context);
+                                                              Phoenix.rebirth(navigatorKey.currentContext);
                                                             }
                                                           });
                                                         }
@@ -1448,7 +1453,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       if (ps.isPermanentlyDenied) {
         final bool openSettings = await IveCoreUtilities.showAlert(
-            context,
+            navigatorKey.currentContext,
             'Phone Settings',
             'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
             'Open Settings',
@@ -1457,7 +1462,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
         if (openSettings) {
           await openAppSettings();
-          success = await IveCoreUtilities.showAlert(context, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes', showCancelButton: true, cancelButtonText: 'No');
+
+          success = await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
+              showCancelButton: true, cancelButtonText: 'No');
         }
       }
 
@@ -1475,7 +1482,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         }
       } else {
         await IveCoreUtilities.showAlert(
-            context,
+            navigatorKey.currentContext,
             'Location Services problem',
             'Harrier Central was unable to confirm that Location Services have been enabled.\r\n\r\nPlease use the Settings panel to enable Location Services for Harrier Centra. Once you have done this, please close and restart Harrier Central.',
             'Open Settings',
@@ -1486,7 +1493,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
     }
 
-    await IveCoreUtilities.showAlert(context, 'Location preferences updated',
+    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Location preferences updated',
         'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
   }
 }

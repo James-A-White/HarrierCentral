@@ -389,6 +389,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     if (widget.popToCaller) {
+      if (!mounted) return;
       Navigator.of(context).pop(profileImageUrl);
     } else {
       final String userId = getStringPref(StringPrefsEnum.userId);
@@ -400,10 +401,10 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
       } else {
-        await IveCoreUtilities.showAlert(context, 'Profile photo not updated.',
+        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Profile photo not updated.',
             'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
       }
-
+      if (!mounted) return;
       await Navigator.pushReplacement<dynamic, dynamic>(
           context,
           MaterialPageRoute<dynamic>(

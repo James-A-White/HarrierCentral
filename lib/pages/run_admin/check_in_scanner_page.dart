@@ -305,6 +305,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
           amountOwed -= discountAmount;
           amountOwed -= amountOwed * (discountPercent / 100.0);
 
+          if (!mounted) return;
           IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
           //
           if ((adHocData[0]['isPaid'] != 0) || (amountOwed <= 0)) {
@@ -395,6 +396,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
       }
       setState(() {});
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       await Future<void>.delayed(const Duration(milliseconds: 4500));

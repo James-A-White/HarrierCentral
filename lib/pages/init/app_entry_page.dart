@@ -17,7 +17,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
-    await setupLocalServices(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
+    await setupLocalServices(MediaQuery.of(navigatorKey.currentContext).size.width, MediaQuery.of(navigatorKey.currentContext).size.height);
 
     await G0.allReady();
 
@@ -25,13 +25,13 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
 
-    G0<DeviceInfo>().deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
-    G0<DeviceInfo>().deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
+    G0<DeviceInfo>().deviceWidthScaleFactor ??= MediaQuery.of(navigatorKey.currentContext).size.width / BASE_DEVICE_WIDTH;
+    G0<DeviceInfo>().deviceHeightScaleFactor ??= MediaQuery.of(navigatorKey.currentContext).size.height / BASE_DEVICE_HEIGHT;
     G0<DeviceInfo>().deviceMaxScaleFactor ??= max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
     G0<DeviceInfo>().deviceMinScaleFactor ??= min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
 
-    G0<DeviceInfo>().deviceWidth ??= MediaQuery.of(context).size.width;
-    G0<DeviceInfo>().deviceHeight ??= MediaQuery.of(context).size.height;
+    G0<DeviceInfo>().deviceWidth ??= MediaQuery.of(navigatorKey.currentContext).size.width;
+    G0<DeviceInfo>().deviceHeight ??= MediaQuery.of(navigatorKey.currentContext).size.height;
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -39,7 +39,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     while (!await checker.hasConnection) {
       final bool useOffline = await IveCoreUtilities.showAlert(
-          context,
+          navigatorKey.currentContext,
           'Check Network',
           'Harrier Central is unable to detect a network connection.\r\n\r\nPlease check the network connection on your phone and try again, or you can continue to use the app in Offline Mode.',
           'Use Offline',
@@ -72,7 +72,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
       if (!await checker.hasConnection) {
         await IveCoreUtilities.showAlert(
-            context,
+            navigatorKey.currentContext,
             'Server Offline',
             'The Harrier Central App is able to access the network but is unable to connect to our backend server.\r\n\r\nThis can happen if there is a problem with the network or our service is down for maintenance.\r\n\r\nYou can use the app offline or close the app and try again later.',
             'OK');
@@ -92,7 +92,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
       facebookAccessToken = await _checkFacebookLogin();
-      final String responseBody = await svc.approveLogin(context, facebookAccessToken);
+
+      final String responseBody = await svc.approveLogin(navigatorKey.currentContext, facebookAccessToken);
       loginResult = ApproveLoginModel.itemFromJson(responseBody);
       promoResult = PromoModel.itemsFromJson(responseBody);
     }
@@ -112,7 +113,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
           if (timeSinceFbCancellaction.inDays > 1) {
             await IveCoreUtilities.showAlert(
-                context,
+                navigatorKey.currentContext,
                 'Facebook Login Required',
                 'Our system indicates that you are an admin of a Facebook Group that uses Facebook integration.\r\n\r\nIt appears as though the Facebook Authorization Token we have in our system for your group has expired.\r\n\r\nTo refresh the token, Harrier Central will now ask you to log in to Facebook. Once you log in, your token will be refreshed and Facebook integration will continue to work for your Kennel.\r\n\r\nIf you have questions, please contact us at connect@harriercentral.com.',
                 'OK');
@@ -122,7 +123,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
             facebookAccessToken = await _checkFacebookLogin();
             if (facebookAccessToken != null) {
               await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
-              final String responseBody = await svc.approveLogin(context, facebookAccessToken);
+
+              final String responseBody = await svc.approveLogin(navigatorKey.currentContext, facebookAccessToken);
               loginResult = ApproveLoginModel.itemFromJson(responseBody);
             }
           }
@@ -133,7 +135,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
-      await IveCoreUtilities.showAlert(context, 'Network Error',
+
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Network Error',
           'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.', 'Quit');
       exit(0);
     } else if (loginResult == null) {
@@ -141,7 +144,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
 
       await Navigator.pushReplacement<dynamic, dynamic>(
-          context,
+          navigatorKey.currentContext,
           MaterialPageRoute<dynamic>(
               builder: (BuildContext context) => const MainNavigationPage(
                     promos: <PromoModel>[],
@@ -155,7 +158,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
         if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-          await _displayAlert(context, loginResult.loginMessage, loginResult.loginMessageTitle);
+          await _displayAlert(navigatorKey.currentContext, loginResult.loginMessage, loginResult.loginMessageTitle);
         }
       }
 
@@ -166,6 +169,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
             //if (true) {
             if (userId == null) {
               // first time the app has run
+              if (!mounted) return;
               await Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
               // app has been run before... let's check the DB version.
@@ -185,6 +189,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
                 final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
+                if (!mounted) return;
                 final Map<String, String> result = await srv.authorizeDevice(context, resetCode.toUpperCase());
 
                 setState(() {
@@ -196,7 +201,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
                   await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
-                  await IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
+                  await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
                     Navigator.pushReplacement<dynamic, dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
@@ -244,6 +249,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                     ),
                   );
                 } else {
+                  if (!mounted) return;
                   await Navigator.pushReplacement<dynamic, dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
@@ -342,6 +348,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
   Future<void> _startTimeout() async {
     await initPrefs();
     await Future<dynamic>.delayed(const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
+
+    if (!mounted) return;
     await _handleStartup(context);
     return;
   }
