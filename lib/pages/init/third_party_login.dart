@@ -7,10 +7,10 @@ class ThirdPartyLogin extends StatefulWidget {
   final bool isNewUser;
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<ThirdPartyLogin> {
+class LoginPageState extends State<ThirdPartyLogin> {
   bool _isLoggedIn = false;
   ThirdPartyLoginData _profileData;
   //String facebookAccessToken;
@@ -465,11 +465,8 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                         0; // we turn the result into a string and then back into an int to allow the DB to return either int or string without causing an error
                     await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                   } else {
-                    await IveCoreUtilities.showAlert(
-                        context,
-                        'Account not created',
-                        'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
-                        'OK');
+                    await IveCoreUtilities.showAlert(context, 'Account not created',
+                        'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
                   }
 
                   if (widget.isNewUser) {
@@ -517,7 +514,7 @@ class ThirdPartyLoginData {
     this.accessTokenExpires,
     this.thirdPartyEmail,
   }) {
-    name ??= (firstName ?? '') + ' ' + (lastName ?? '');
+    name ??= '${firstName ?? ''} ${lastName ?? ''}';
   }
 
   String loginType;

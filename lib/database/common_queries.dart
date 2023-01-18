@@ -201,7 +201,9 @@ class CommonQueries {
         }
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
     return resultList;
   }

@@ -54,10 +54,10 @@ class CreateNewAccountPageContent extends StatefulWidget {
   const CreateNewAccountPageContent({Key key}) : super(key: key);
 
   @override
-  _CreateNewAccountPageContentState createState() => _CreateNewAccountPageContentState();
+  CreateNewAccountPageContentState createState() => CreateNewAccountPageContentState();
 }
 
-class _CreateNewAccountPageContentState extends State<CreateNewAccountPageContent> {
+class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent> {
   TextEditingController inviteCodeTextController;
   InputDecoration inviteCodeDecoration;
   final FocusNode inviteCodeFocusNode = FocusNode();
@@ -197,7 +197,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
 
                       final HashersService srv = HashersService();
 
-                      final String profilePhotoUrl = 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                      final String profilePhotoUrl = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
                       final String responseBody = await srv.addEditUser(
                           targetUserId: GUID_EMPTY,

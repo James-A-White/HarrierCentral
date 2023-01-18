@@ -104,15 +104,15 @@ class RunDetailsQueryExtensions {
     //final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
     ////print(test);
 
-    return ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
+    return ' ${df.format(eventStartDateTime)} $days$weekend$thisDay';
   }
 
   static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
     // make dates and tiems searchable
 
-    int _distanceUnitsPref = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn;
-    if (_distanceUnitsPref == 0) {
-      _distanceUnitsPref = null;
+    int distanceUnitsPref = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn;
+    if (distanceUnitsPref == 0) {
+      distanceUnitsPref = null;
     }
 
     final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
@@ -128,12 +128,12 @@ class RunDetailsQueryExtensions {
       isMember: map['isMember'],
       notificationPreference: map['notificationPreference'],
       emailAlertPreference: map['emailAlertPreference'],
-      distanceUnitsPref: _distanceUnitsPref ?? map['distanceUnitsPref'],
+      distanceUnitsPref: distanceUnitsPref ?? map['distanceUnitsPref'],
       searchRunsText: map['searchRunsText'] + getSearchDateString(eventStartDateTime),
       latitude: map['evtLat'] == null ? null : map['evtLat'] + 0.0,
       longitude: map['evtLon'] == null ? null : map['evtLon'] + 0.0,
       isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
-      runClassification: map['runClassification'] == null ? 3 : map['runClassification'], // default to other run
+      runClassification: map['runClassification'] ?? 3, // default to other run
     );
     return item;
   }
@@ -237,7 +237,7 @@ class QueryRuns {
               if (orItem.trim().isEmpty) {
                 continue;
               }
-              orItem = ' ' + orItem.trim().toLowerCase();
+              orItem = ' ${orItem.trim().toLowerCase()}';
               if (a.extensions.searchRunsText.toLowerCase().contains(orItem)) {
                 return !negate;
               }

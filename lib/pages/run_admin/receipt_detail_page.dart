@@ -109,7 +109,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       String receiptImageUrl = '';
 
       if (_imageFromCamera != null) {
-        receiptImageUrl = _upload(_imageFromCamera, widget.eventId.toUpperCase() + '_' + DateTime.now().millisecondsSinceEpoch.toString() + '.jpg');
+        receiptImageUrl = _upload(_imageFromCamera, '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg');
       }
 
       final ReceiptsModel item = ReceiptsModel(
@@ -355,7 +355,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Container(
+                          SizedBox(
                             //margin: const EdgeInsets.only(right: 15),
                             width: 200,
                             child: ElevatedButton(

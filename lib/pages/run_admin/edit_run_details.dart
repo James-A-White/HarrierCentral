@@ -12,10 +12,10 @@ class EditRunDetailsPage extends StatefulWidget {
   final Function getUpdatedEventAggregate;
 
   @override
-  _EditRunDetailsPageState createState() => _EditRunDetailsPageState();
+  EditRunDetailsPageState createState() => EditRunDetailsPageState();
 }
 
-class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final List<Tab> _tabs = <Tab>[];
 
   TabController _tabController;
@@ -466,6 +466,11 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[100],
+                        border: Border.all(width: 2.0),
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      ),
                       child: Text(
                           _eventAggregate.event.useFbRunDetails == 1
                               ? _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
@@ -474,11 +479,6 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                               : 'Run data from Harrier Central',
                           textAlign: TextAlign.center,
                           style: headingStyle20Black),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow[100],
-                        border: Border.all(width: 2.0),
-                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                      ),
                     ),
                     Container(
                       color: _focusNodeEventName.hasFocus ? Colors.yellow.shade50 : Colors.white,
@@ -623,6 +623,11 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[100],
+                        border: Border.all(width: 2.0),
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      ),
                       child: Text(
                           _eventAggregate.event.useFbRunDetails == 1
                               ? _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
@@ -631,11 +636,6 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                               : 'Run data from Harrier Central',
                           textAlign: TextAlign.center,
                           style: headingStyle20Black),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow[100],
-                        border: Border.all(width: 2.0),
-                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                      ),
                     ),
                     const SizedBox(height: 20.0),
                     _isUpdating
@@ -956,7 +956,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
   String _upload(File imageFile, String eventId) {
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
-    final String fileName = 'eventImage_' + eventId + '_$datetime.jpg';
+    final String fileName = 'eventImage_${eventId}_$datetime.jpg';
     final Uri uri = Uri.parse(
         'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D');
 
@@ -1067,17 +1067,17 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 bottom: 40.0,
                 child: Container(
                   padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow[100],
+                    border: Border.all(width: 2.0),
+                    borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                  ),
                   child: Text(
                       _eventAggregate.event.useFbLatLon == 1
                           ? 'Location from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                           : 'Location from Harrier Central',
                       textAlign: TextAlign.center,
                       style: headingStyle20Black),
-                  decoration: BoxDecoration(
-                    color: Colors.yellow[100],
-                    border: Border.all(width: 2.0),
-                    borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                  ),
                 ),
               ),
 
@@ -1320,12 +1320,12 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
-                      child: Text('Run data from Harrier Central', textAlign: TextAlign.center, style: headingStyle20Black),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
                         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       ),
+                      child: Text('Run data from Harrier Central', textAlign: TextAlign.center, style: headingStyle20Black),
                     ),
                     Container(
                       margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),

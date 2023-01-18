@@ -4,10 +4,10 @@ import 'package:harrier_central/imports.dart';
 class AppEntryPage extends StatefulWidget {
   const AppEntryPage({Key key}) : super(key: key);
   @override
-  _AppEntryPageState createState() => _AppEntryPageState();
+  AppEntryPageState createState() => AppEntryPageState();
 }
 
-class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderStateMixin {
+class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderStateMixin {
   AnimationController _iconAnimationController;
   CurvedAnimation _iconAnimation;
 

@@ -45,10 +45,10 @@ class XPageContent extends StatefulWidget {
   const XPageContent({Key key}) : super(key: key);
 
   @override
-  _XPageContentState createState() => _XPageContentState();
+  XPageContentState createState() => XPageContentState();
 }
 
-class _XPageContentState extends State<XPageContent> {
+class XPageContentState extends State<XPageContent> {
   @override
   Widget build(BuildContext context) {
     return Container(color: Colors.red, width: 100, height: 100);

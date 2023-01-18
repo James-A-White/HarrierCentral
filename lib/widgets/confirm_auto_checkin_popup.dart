@@ -36,10 +36,10 @@ class ConfirmAutoCheckinPopup extends StatefulWidget {
   final String currencySymbol;
 
   @override
-  _ConfirmAutoCheckinPopupState createState() => _ConfirmAutoCheckinPopupState();
+  ConfirmAutoCheckinPopupState createState() => ConfirmAutoCheckinPopupState();
 }
 
-class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
+class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
   TextEditingController followKennelAmountTextController = TextEditingController();
 
@@ -101,8 +101,7 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                   style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Text(
-                        'Check in and pay ${IveCoreUtilities.getFormattedMoney((widget.eventPrice + widget.extrasCost) ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)}'),
+                    child: Text('Check in and pay ${IveCoreUtilities.getFormattedMoney((widget.eventPrice + widget.extrasCost) ?? 0, widget.digitsAfterDecimal, widget.currencySymbol)}'),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop(enumCheckInOption_YesAndPayPlusExtras);

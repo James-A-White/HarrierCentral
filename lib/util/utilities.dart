@@ -1,4 +1,6 @@
 // @dart=2.11
+// ignore_for_file: constant_identifier_names
+
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
@@ -105,7 +107,7 @@ class Utilities {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Please confirm that you are signing up to hare this run' + ((hareList == null) ? '.' : ' with ' + hareList)),
+                Text('Please confirm that you are signing up to hare this run${(hareList == null) ? '.' : ' with $hareList'}'),
               ],
             ),
           ),

@@ -427,10 +427,9 @@ class PaymentSnackBar extends SnackBar {
                               },
                             ),
                             Text(
-                              'Paid other' +
-                                  (((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value))
-                                      ? '\r\n(${formatMoney(packMember.creditAmount)}' + (packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)')
-                                      : ''),
+                              'Paid other${((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value))
+                                      ? '\r\n(${formatMoney(packMember.creditAmount)}${packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)'}'
+                                      : ''}',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 fontFamily: 'AvenirNextCondensedDemiBold',

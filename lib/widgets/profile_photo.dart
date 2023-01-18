@@ -15,13 +15,14 @@ class ProfilePhoto extends StatelessWidget {
         width: photoHeight,
         height: photoHeight,
         margin: EdgeInsets.only(left: leftPadding ?? 0),
+        alignment: Alignment.centerRight,
         child: profilePhotoUrl.isEmpty
             ? Image.asset(
                 'images/icons/create_profile_photo.png',
               )
             : profilePhotoUrl.contains('bundle://')
                 ? Stack(alignment: Alignment.center, children: <Widget>[
-                    Image.asset(('images/avatars/' + profilePhotoUrl.replaceAll('bundle://', '') + '.jpg').toLowerCase()),
+                    Image.asset(('images/avatars/${profilePhotoUrl.replaceAll('bundle://', '')}.jpg').toLowerCase()),
                   ])
                 : CachedNetworkImage(
                     imageUrl: profilePhotoUrl,
@@ -29,7 +30,6 @@ class ProfilePhoto extends StatelessWidget {
                     //errorWidget:  const  Icon(Icons.error),
                     fadeInDuration: const Duration(milliseconds: 0),
                     fit: BoxFit.fitHeight,
-                    height: photoHeight),
-        alignment: Alignment.centerRight);
+                    height: photoHeight));
   }
 }

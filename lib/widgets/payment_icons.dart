@@ -141,7 +141,7 @@ class PaymentIcons extends StatelessWidget {
         'returnValue': payForRunOnly,
       },
       <String, dynamic>{
-        'title': 'Run + ' + event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+        'title': 'Run + ${event.extrasDescription} ($runPlusExtrasPriceStr)',
         'icon': <Widget>[
           Container(),
         ],
@@ -238,7 +238,7 @@ class PaymentIcons extends StatelessWidget {
 
           if (extrasPrice > 0) {
             // build the string if we need to
-            extrasStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol) + ' charge for ${event.extrasDescription}';
+            extrasStr = ' ,and a\r\n${IveCoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol)} charge for ${event.extrasDescription}';
           }
 
           final num total = surcharge + eventPrice + extrasPrice;
@@ -250,7 +250,7 @@ class PaymentIcons extends StatelessWidget {
           String surchargeStr = '';
           if (surcharge > 0) {
             // if there is a surcharge, build the surcharge string
-            surchargeStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol) + ' surcharge for $paymentProvider';
+            surchargeStr = ' ,and a\r\n${IveCoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol)} surcharge for $paymentProvider';
           }
 
           // show the alert so the user knows how much to pay

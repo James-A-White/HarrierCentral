@@ -37,7 +37,7 @@ class BankTransferQr {
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  final String remittanceInfo = paymentReference + '-$packMemberNameForDisplay';
+                  final String remittanceInfo = '$paymentReference-$packMemberNameForDisplay';
                   BankTransferQr.showBankTransferQrCode(context, eventAggregate, isMember != 0,
                       remitString: remittanceInfo, remitAmount: otherAmount, packMemberNameForDisplay: packMemberNameForDisplay);
                 },
@@ -105,7 +105,7 @@ $beneficiaryInfo
 
       final QrPopup pp = QrPopup(
         key: const Key('6677010439'),
-        dialogTitle: '${(packMemberNameForDisplay != null) ? packMemberNameForDisplay + '\r\n' : ''}Scan to pay by bank transfer',
+        dialogTitle: '${(packMemberNameForDisplay != null) ? '$packMemberNameForDisplay\r\n' : ''}Scan to pay by bank transfer',
         qrText: qrPayload,
       );
 

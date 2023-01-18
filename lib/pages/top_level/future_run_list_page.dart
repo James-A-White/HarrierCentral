@@ -322,7 +322,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   SliverAppBar(
                     floating: true,
                     titleSpacing: 0.0,
-                    title: Container(
+                    title: SizedBox(
                       height: 54.0,
                       child: _searchBar(),
                     ),
@@ -451,7 +451,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                             Padding(
                               padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
                               child: Text(
-                                _getDistancePreferenceString('[No runs found within ') + ']',
+                                '${_getDistancePreferenceString('[No runs found within ')}]',
                                 style: headingStyle,
                               ),
                             ),
@@ -502,7 +502,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
-        'title': '10' + units,
+        'title': '10$units',
         'icon': <Widget>[
           Container(
             height: 30,
@@ -514,7 +514,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_10
       },
       <String, dynamic>{
-        'title': '25' + units,
+        'title': '25$units',
         'icon': <Widget>[
           Container(
             height: 30,
@@ -526,7 +526,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_25
       },
       <String, dynamic>{
-        'title': '50' + units,
+        'title': '50$units',
         'icon': <Widget>[
           Container(
             height: 30,
@@ -538,7 +538,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_50
       },
       <String, dynamic>{
-        'title': '75' + units,
+        'title': '75$units',
         'icon': <Widget>[
           Container(
             height: 30,
@@ -550,7 +550,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_75
       },
       <String, dynamic>{
-        'title': '100' + units,
+        'title': '100$units',
         'icon': <Widget>[
           Container(
             height: 30,
@@ -562,7 +562,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_100
       },
       <String, dynamic>{
-        'title': '150' + units,
+        'title': '150$units',
         'icon': <Widget>[
           Container(
             height: 30,
@@ -574,7 +574,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_150
       },
       <String, dynamic>{
-        'title': '250' + units,
+        'title': '250$units',
         'icon': <Widget>[
           Container(
             height: 30,
@@ -618,7 +618,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         'returnValue': hasherPref_0
       },
       <String, dynamic>{
-        'title': 'Switch to ' + switchUnits,
+        'title': 'Switch to $switchUnits',
         'icon': <Widget>[
           Container(height: 30, width: 45, decoration: BoxDecoration(color: Colors.green.shade800, shape: BoxShape.rectangle)),
           const Icon(MaterialCommunityIcons.map_marker_distance, color: Colors.white)
@@ -658,7 +658,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
           await refreshFromTable(true);
         }
-      } else if ((!(retVal is EnumFollowType)) && (retVal >= hasherPref_0) && (retVal <= hasherPref_500)) {
+      } else if ((retVal is! EnumFollowType) && (retVal >= hasherPref_0) && (retVal <= hasherPref_500)) {
         if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
           final HashersService srv = HashersService();
 
@@ -693,28 +693,28 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         precursorText = 'Distance filter →';
         break;
       case hasherPref_10:
-        precursorText += '10' + units;
+        precursorText += '10$units';
         break;
       case hasherPref_25:
-        precursorText += '25' + units;
+        precursorText += '25$units';
         break;
       case hasherPref_50:
-        precursorText += '50' + units;
+        precursorText += '50$units';
         break;
       case hasherPref_75:
-        precursorText += '75' + units;
+        precursorText += '75$units';
         break;
       case hasherPref_100:
-        precursorText += '100' + units;
+        precursorText += '100$units';
         break;
       case hasherPref_150:
-        precursorText += '150' + units;
+        precursorText += '150$units';
         break;
       case hasherPref_250:
-        precursorText += '250' + units;
+        precursorText += '250$units';
         break;
       case hasherPref_500:
-        precursorText += '500' + units;
+        precursorText += '500$units';
         break;
       default:
         precursorText = 'Distance not configured';

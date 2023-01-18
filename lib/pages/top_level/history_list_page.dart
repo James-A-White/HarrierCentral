@@ -155,7 +155,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   Widget _buildListView() {
-    final String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+    final String photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
     return Stack(
       children: <Widget>[
         Container(
@@ -190,10 +190,11 @@ class HistoryListPageState extends State<HistoryListPage> {
                               refreshCounters: (String kennelId) async {
                                 await refreshRunHistoryFromTable(true);
                                 if ((kennelId != null) && (kennelId.isNotEmpty)) {
-                                  for (int i = 0; i < _runCountsList.length; i++)
+                                  for (int i = 0; i < _runCountsList.length; i++) {
                                     if (_runCountsList[i].kennelId == kennelId) {
                                       return _runCountsList[i];
                                     }
+                                  }
                                 }
                               },
                             );
@@ -224,7 +225,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                 width: MediaQuery.of(context).size.width,
                 child: Row(
                   children: <Widget>[
-                    ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: _photo),
+                    ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: photo),
                     const SizedBox(width: 20),
                     (_runCountsList == null || _runCountsList.isEmpty)
                         ? Container()
@@ -235,12 +236,12 @@ class HistoryListPageState extends State<HistoryListPage> {
                               textAlign: TextAlign.center,
                             ),
                             Text(
-                              'Total runs: ' + _totalRuns.toString(),
+                              'Total runs: $_totalRuns',
                               style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
                               textAlign: TextAlign.left,
                             ),
                             Text(
-                              'Total times hared: ' + _totalHaring.toString(),
+                              'Total times hared: $_totalHaring',
                               style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
                               textAlign: TextAlign.left,
                             ),

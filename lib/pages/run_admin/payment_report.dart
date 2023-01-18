@@ -1,4 +1,6 @@
 // @dart=2.11
+// ignore_for_file: constant_identifier_names
+
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -522,7 +524,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Text(
-                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Bank Transfer',
                                                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
@@ -550,7 +552,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Text(
-                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Cash',
                                                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
@@ -571,6 +573,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                       top: 14.0,
                       left: 20.0,
                     ),
+                    decoration: const BoxDecoration(
+                      // border: new Border.all(width: 1.0, color: Colors.black),
+                      //shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Color.fromARGB(70, 0, 0, 0),
+                          offset: Offset(0.0, -6.0),
+                          blurRadius: 10.0,
+                        ),
+                      ],
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
@@ -585,18 +599,6 @@ class PaymentReportState extends State<PaymentReportPage> {
                             widget.eventAggregate.extensions.curSym,
                           )}',
                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0),
-                        ),
-                      ],
-                    ),
-                    decoration: const BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, -6.0),
-                          blurRadius: 10.0,
                         ),
                       ],
                     ),
@@ -637,7 +639,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           'returnValue': payForRunOnly,
         },
         <String, dynamic>{
-          'title': 'Run + ' + widget.eventAggregate.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+          'title': 'Run + ${widget.eventAggregate.event.extrasDescription} ($runPlusExtrasPriceStr)',
           'icon': <Widget>[
             Container(),
           ],
@@ -857,6 +859,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               children: <Widget>[
                 Row(children: <Widget>[
                   const Expanded(
+                    flex: flexLeft,
                     child: Text(
                       'Pay Ref:',
                       style: headingStyle,
@@ -864,18 +867,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: flexLeft,
                   ),
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
+                      flex: flexRight,
                       child: Text(
                         item.payment.paymentReference,
                         style: bodyStyle,
-                      ),
-                      flex: flexRight),
+                      )),
                 ]),
                 Row(children: <Widget>[
                   const Expanded(
+                    flex: flexLeft,
                     child: Text(
                       'Paid by:',
                       style: headingStyle,
@@ -883,18 +886,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: flexLeft,
                   ),
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
+                      flex: flexRight,
                       child: Text(
                         item.extensions.paidByName,
                         style: bodyStyle,
-                      ),
-                      flex: flexRight),
+                      )),
                 ]),
                 Row(children: <Widget>[
                   const Expanded(
+                    flex: flexLeft,
                     child: Text(
                       'Paid to:',
                       style: headingStyle,
@@ -902,18 +905,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: flexLeft,
                   ),
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
+                      flex: flexRight,
                       child: Text(
                         item.extensions.paidToName,
                         style: bodyStyle,
-                      ),
-                      flex: flexRight),
+                      )),
                 ]),
                 Row(children: <Widget>[
                   const Expanded(
+                    flex: flexLeft,
                     child: Text(
                       'Amount:',
                       style: headingStyle,
@@ -921,20 +924,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: flexLeft,
                   ),
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
+                      flex: flexRight,
                       child: Text(
                         amountStr,
                         style: bodyStyle,
-                      ),
-                      flex: flexRight),
+                      )),
                 ]),
                 if ((item?.payment?.specialRunPriceReason != null) && (item.payment.specialRunPriceReason.isNotEmpty)) ...<Widget>[
                   Row(
                     children: <Widget>[
                       const Expanded(
+                        flex: flexLeft,
                         child: Text(
                           'Reason:',
                           style: headingStyle,
@@ -942,15 +945,14 @@ class PaymentReportState extends State<PaymentReportPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        flex: flexLeft,
                       ),
                       const SizedBox(width: spacer, height: 10.0),
                       Expanded(
+                          flex: flexRight,
                           child: Text(
                             item.payment.specialRunPriceReason,
                             style: bodyStyle,
-                          ),
-                          flex: flexRight),
+                          )),
                     ],
                   ),
                 ],
@@ -958,6 +960,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                   Row(
                     children: <Widget>[
                       Expanded(
+                        flex: flexLeft,
                         child: Text(
                           (topUpAmount < 0) ? 'From credit:' : 'Top up:',
                           style: headingStyle,
@@ -965,21 +968,21 @@ class PaymentReportState extends State<PaymentReportPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        flex: flexLeft,
                       ),
                       const SizedBox(width: spacer, height: 10.0),
                       Expanded(
+                          flex: flexRight,
                           child: Text(
                             topUpStr,
                             style: bodyStyle,
-                          ),
-                          flex: flexRight),
+                          )),
                     ],
                   ),
                 ],
                 if ((item?.payment?.discountAmount ?? 0) != 0) ...<Widget>[
                   Row(children: <Widget>[
                     const Expanded(
+                      flex: flexLeft,
                       child: Text(
                         'Discount:',
                         style: headingStyle,
@@ -987,20 +990,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      flex: flexLeft,
                     ),
                     const SizedBox(width: spacer, height: 10.0),
                     Expanded(
+                        flex: flexRight,
                         child: Text(
                           discountAmountStr,
                           style: bodyStyle,
-                        ),
-                        flex: flexRight),
+                        )),
                   ]),
                 ],
                 if ((item?.payment?.discountAmount ?? 0) != 0) ...<Widget>[
                   Row(children: <Widget>[
                     const Expanded(
+                      flex: flexLeft,
                       child: Text(
                         'Discount:',
                         style: headingStyle,
@@ -1008,20 +1011,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      flex: flexLeft,
                     ),
                     const SizedBox(width: spacer, height: 10.0),
                     Expanded(
+                        flex: flexRight,
                         child: Text(
                           discountPercentStr,
                           style: bodyStyle,
-                        ),
-                        flex: flexRight),
+                        )),
                   ]),
                 ],
                 if ((item.payment.discountDescription ?? '').isNotEmpty && ((item.payment.discountAmount != 0) || (item.payment.discountPercent != 0))) ...<Widget>[
                   Row(children: <Widget>[
                     const Expanded(
+                      flex: flexLeft,
                       child: Text(
                         'Description:',
                         style: headingStyle,
@@ -1029,21 +1032,21 @@ class PaymentReportState extends State<PaymentReportPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      flex: flexLeft,
                     ),
                     const SizedBox(width: spacer, height: 10.0),
                     Expanded(
+                        flex: flexRight,
                         child: Text(
                           item.payment.discountDescription,
                           style: bodyStyle,
-                        ),
-                        flex: flexRight),
+                        )),
                   ]),
                 ],
                 item.extensions.extrasPrice == 0
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
+                          flex: flexLeft,
                           child: Text(
                             'Extras:',
                             style: headingStyle,
@@ -1051,20 +1054,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexLeft,
                         ),
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
+                            flex: flexRight,
                             child: Text(
                               item.extensions.extrasDescription,
                               style: bodyStyle,
-                            ),
-                            flex: flexRight),
+                            )),
                       ]),
                 item.extensions.extrasPrice == 0
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
+                          flex: flexLeft,
                           child: Text(
                             'Ex. Paid:',
                             style: headingStyle,
@@ -1072,18 +1075,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexLeft,
                         ),
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
+                            flex: flexRight,
                             child: Text(
                               item.payment.doPayForExtras == 0 ? 'No' : extrasPriceStr,
                               style: bodyStyle,
-                            ),
-                            flex: flexRight),
+                            )),
                       ]),
                 Row(children: <Widget>[
                   const Expanded(
+                    flex: flexLeft,
                     child: Text(
                       'Date:',
                       style: headingStyle,
@@ -1091,18 +1094,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: flexLeft,
                   ),
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
+                      flex: flexRight,
                       child: Text(
                         (item?.payment?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.payment.paidDate),
                         style: bodyStyle,
-                      ),
-                      flex: flexRight),
+                      )),
                 ]),
                 Row(children: <Widget>[
                   const Expanded(
+                    flex: flexLeft,
                     child: Text(
                       'Time:',
                       style: headingStyle,
@@ -1110,18 +1113,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: flexLeft,
                   ),
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
+                      flex: flexRight,
                       child: Text(
                         (item?.payment?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.payment.paidDate),
                         style: bodyStyle,
-                      ),
-                      flex: flexRight),
+                      )),
                 ]),
                 Row(children: <Widget>[
                   const Expanded(
+                    flex: flexLeft,
                     child: Text(
                       'Type:',
                       style: headingStyle,
@@ -1129,20 +1132,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    flex: flexLeft,
                   ),
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
+                      flex: flexRight,
                       child: Text(
                         paymentTypeStr,
                         style: bodyStyle,
-                      ),
-                      flex: flexRight),
+                      )),
                 ]),
                 (item.payment.surcharge ?? 0) == 0
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
+                          flex: flexLeft,
                           child: Text(
                             'Surcharge:',
                             style: headingStyle,
@@ -1150,20 +1153,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexLeft,
                         ),
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
+                            flex: flexRight,
                             child: Text(
                               IveCoreUtilities.getFormattedMoney(item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
                               style: bodyStyle,
-                            ),
-                            flex: flexRight),
+                            )),
                       ]),
                 (item.payment.paymentProvider ?? '') == ''
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
+                          flex: flexLeft,
                           child: Text(
                             'Provider:',
                             style: headingStyle,
@@ -1171,20 +1174,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexLeft,
                         ),
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
+                            flex: flexRight,
                             child: Text(
                               item.payment.paymentProvider,
                               style: bodyStyle,
-                            ),
-                            flex: flexRight),
+                            )),
                       ]),
                 ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
+                          flex: flexLeft,
                           child: Text(
                             'Confirmed:',
                             style: headingStyle,
@@ -1192,20 +1195,20 @@ class PaymentReportState extends State<PaymentReportPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexLeft,
                         ),
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
+                            flex: flexRight,
                             child: Text(
                               (item?.payment?.confirmedDate == null) ? '<not confirmed>' : item.extensions.confByName,
                               style: (item?.payment?.confirmedDate == null) ? bodyStyleRed : bodyStyle,
-                            ),
-                            flex: flexRight),
+                            )),
                       ]),
                 ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
+                          flex: flexLeft,
                           child: Text(
                             'Conf on:',
                             style: headingStyle,
@@ -1213,15 +1216,14 @@ class PaymentReportState extends State<PaymentReportPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexLeft,
                         ),
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
+                            flex: flexRight,
                             child: Text(
                               (item?.payment?.confirmedDate == null) ? '<not confirmed>' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment.paidDate),
                               style: (item?.payment?.confirmedDate == null) ? bodyStyleRed : bodyStyle,
-                            ),
-                            flex: flexRight),
+                            )),
                       ]),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
@@ -1232,7 +1234,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                         ? Container()
                         : ElevatedButton(
                             onPressed: () {
-                              final String remittanceInfo = item.payment.paymentReference + '-${item.extensions.paidByName}';
+                              final String remittanceInfo = '${item.payment.paymentReference}-${item.extensions.paidByName}';
                               BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, item.extensions.isMember != 0,
                                   packMemberNameForDisplay: item.extensions.paidByName, remitString: remittanceInfo, remitAmount: item.payment.creditAmount);
                             },

@@ -96,15 +96,15 @@ class SelectRunPageState extends State<SelectRunPage> {
                       },
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Text('Check in', style: buttonLabelStyleMedium),
-                  ),
                   onPressed: _showCheckinButton
                       ? () {
                           Navigator.of(context).pop(true);
                         }
                       : null,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Text('Check in', style: buttonLabelStyleMedium),
+                  ),
                 ),
               ],
             ),

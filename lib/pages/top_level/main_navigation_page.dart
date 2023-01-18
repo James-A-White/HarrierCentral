@@ -14,13 +14,13 @@ class MainNavigationPage extends StatefulWidget {
   final Image firstPromoImage;
 
   @override
-  _MainNavigationPageState createState() => _MainNavigationPageState();
+  MainNavigationPageState createState() => MainNavigationPageState();
 }
 
 final GlobalKey<RunAndKennelMapPageState> _runAndKennelMapPageKey = GlobalKey<RunAndKennelMapPageState>();
 final GlobalKey<KennelsListPageState> _kennelLocationsPageKey = GlobalKey<KennelsListPageState>();
 
-class _MainNavigationPageState extends State<MainNavigationPage> {
+class MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
   //final List<Widget> _tabs = <Widget>[];
@@ -604,10 +604,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: Container(
+            child: SizedBox(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
-              child: Image.network(widget.promos[0].promoImage + '_$currentStep' + widget.promos[0].promoImageExtension),
+              child: Image.network('${widget.promos[0].promoImage}_$currentStep${widget.promos[0].promoImageExtension}'),
             ),
           ),
         );
@@ -658,124 +658,122 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: <Widget>[
-                  Container(
-                    child: ColorFiltered(
-                      // colorFilter: const ColorFilter.mode(
-                      //   Colors.transparent,
-                      //   BlendMode.difference,
-                      // ),
-                      colorFilter: widget.promos[0].promoImageIsDark == 0
-                          ? const ColorFilter.matrix(<double>[
-                              1, 0, 0, 0, 0, //
-                              0, 1, 0, 0, 0, //
-                              0, 0, 1, 0, 0, //
-                              0, 0, 0, 1, 0, //
-                            ])
-                          : const ColorFilter.matrix(<double>[
-                              -1, 0, 0, 0, 255, //
-                              0, -1, 0, 0, 255, //
-                              0, 0, -1, 0, 255, //
-                              0, 0, 0, 1, 0, //
-                            ]),
-                      child: Column(
-                        children: <Widget>[
-                          if (widget.promos[0].promoExternalUrl != null && widget.promos[0].promoExternalUrlButtonText != null && Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) ...<Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 15.0),
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(width: 2.0, color: Colors.black),
-                                  foregroundColor: Colors.black,
-                                  backgroundColor: Colors.white38,
-                                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
-                                ),
-                                onPressed: () async {
-                                  if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
-                                    await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl));
+                  ColorFiltered(
+                    // colorFilter: const ColorFilter.mode(
+                    //   Colors.transparent,
+                    //   BlendMode.difference,
+                    // ),
+                    colorFilter: widget.promos[0].promoImageIsDark == 0
+                        ? const ColorFilter.matrix(<double>[
+                            1, 0, 0, 0, 0, //
+                            0, 1, 0, 0, 0, //
+                            0, 0, 1, 0, 0, //
+                            0, 0, 0, 1, 0, //
+                          ])
+                        : const ColorFilter.matrix(<double>[
+                            -1, 0, 0, 0, 255, //
+                            0, -1, 0, 0, 255, //
+                            0, 0, -1, 0, 255, //
+                            0, 0, 0, 1, 0, //
+                          ]),
+                    child: Column(
+                      children: <Widget>[
+                        if (widget.promos[0].promoExternalUrl != null && widget.promos[0].promoExternalUrlButtonText != null && Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) ...<Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 15.0),
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(width: 2.0, color: Colors.black),
+                                foregroundColor: Colors.black,
+                                backgroundColor: Colors.white38,
+                                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
+                              ),
+                              onPressed: () async {
+                                if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
+                                  await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl));
+                                } else {
+                                  await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                child: Text(widget.promos[0].promoExternalUrlButtonText, style: const TextStyle(fontSize: 20.0)),
+                              ),
+                            ),
+                          ),
+                        ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () {
+                                if (_promoTimer != null) {
+                                  if (_promoTimer.isPaused) {
+                                    _promoTimer.start();
                                   } else {
-                                    await IveCoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
+                                    _promoTimer.pause();
                                   }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                                  child: Text(widget.promos[0].promoExternalUrlButtonText, style: const TextStyle(fontSize: 20.0)),
-                                ),
+                                  setState(() {});
+                                }
+                              },
+                              child: (_promoTimer?.isPaused ?? false)
+                                  ? Image.asset(
+                                      'images/icons/promo_play_icon.png',
+                                      width: 40.0,
+                                      height: 40.0,
+                                    )
+                                  : Image.asset(
+                                      'images/icons/promo_pause_icon.png',
+                                      width: 40.0,
+                                      height: 40.0,
+                                    ),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                final SnoozePromotionService svc = SnoozePromotionService();
+                                await svc.snoozePromotion(widget.promos[0].promotionId, true);
+                                _promoTimer.cancel();
+                                _promoTimer = null;
+                                _showMainScreen = true;
+                                setState(() {});
+                              },
+                              child: Image.asset(
+                                'images/icons/promo_trash_icon.png',
+                                width: 40,
+                                height: 40,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                final SnoozePromotionService svc = SnoozePromotionService();
+                                await svc.snoozePromotion(widget.promos[0].promotionId, false);
+                                _promoTimer.cancel();
+                                _promoTimer = null;
+                                _showMainScreen = true;
+                                setState(() {});
+                              },
+                              child: Image.asset(
+                                'images/icons/promo_snooze_icon.png',
+                                width: 40,
+                                height: 40,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                _promoTimer.cancel();
+                                _promoTimer = null;
+                                _showMainScreen = true;
+                                setState(() {});
+                              },
+                              child: Image.asset(
+                                'images/icons/promo_x_icon.png',
+                                width: 40,
+                                height: 40,
                               ),
                             ),
                           ],
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              GestureDetector(
-                                onTap: () {
-                                  if (_promoTimer != null) {
-                                    if (_promoTimer.isPaused) {
-                                      _promoTimer.start();
-                                    } else {
-                                      _promoTimer.pause();
-                                    }
-                                    setState(() {});
-                                  }
-                                },
-                                child: (_promoTimer?.isPaused ?? false)
-                                    ? Image.asset(
-                                        'images/icons/promo_play_icon.png',
-                                        width: 40.0,
-                                        height: 40.0,
-                                      )
-                                    : Image.asset(
-                                        'images/icons/promo_pause_icon.png',
-                                        width: 40.0,
-                                        height: 40.0,
-                                      ),
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  final SnoozePromotionService svc = SnoozePromotionService();
-                                  await svc.snoozePromotion(widget.promos[0].promotionId, true);
-                                  _promoTimer.cancel();
-                                  _promoTimer = null;
-                                  _showMainScreen = true;
-                                  setState(() {});
-                                },
-                                child: Image.asset(
-                                  'images/icons/promo_trash_icon.png',
-                                  width: 40,
-                                  height: 40,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  final SnoozePromotionService svc = SnoozePromotionService();
-                                  await svc.snoozePromotion(widget.promos[0].promotionId, false);
-                                  _promoTimer.cancel();
-                                  _promoTimer = null;
-                                  _showMainScreen = true;
-                                  setState(() {});
-                                },
-                                child: Image.asset(
-                                  'images/icons/promo_snooze_icon.png',
-                                  width: 40,
-                                  height: 40,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  _promoTimer.cancel();
-                                  _promoTimer = null;
-                                  _showMainScreen = true;
-                                  setState(() {});
-                                },
-                                child: Image.asset(
-                                  'images/icons/promo_x_icon.png',
-                                  width: 40,
-                                  height: 40,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20.0),

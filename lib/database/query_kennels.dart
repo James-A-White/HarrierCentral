@@ -148,7 +148,7 @@ class QueryKennels {
               if (orItem.trim().isEmpty) {
                 continue;
               }
-              orItem = ' ' + orItem.trim().toLowerCase();
+              orItem = ' ${orItem.trim().toLowerCase()}';
               if (a.extensions.searchKennelsText.toLowerCase().contains(orItem)) {
                 return !negate;
               }

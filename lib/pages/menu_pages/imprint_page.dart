@@ -53,10 +53,10 @@ class ImprintPageContent extends StatefulWidget {
   const ImprintPageContent({Key key}) : super(key: key);
 
   @override
-  _ImprintPageContentState createState() => _ImprintPageContentState();
+  ImprintPageContentState createState() => ImprintPageContentState();
 }
 
-class _ImprintPageContentState extends State<ImprintPageContent> {
+class ImprintPageContentState extends State<ImprintPageContent> {
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.2);
 
   TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.2);
@@ -111,8 +111,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31',
-                          style: bodyStyle),
+                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31', style: bodyStyle),
                     ],
                   ),
                   Expanded(

@@ -468,11 +468,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         ),
         Expanded(
           child: _thePackList == null
-              ? Container(
+              ? const SizedBox(
                   //color: Colors.grey[300],
                   width: 70.0,
                   height: 70.0,
-                  child: const Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
+                  child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
                 )
               : _thePackList.isEmpty
                   ? Column(
@@ -548,7 +548,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                               children: <Widget>[
                                                 _rsvpIcon(e),
                                                 const SizedBox(width: 6.0),
-                                                Container(child: _hasherPhoto(e, false), height: 60, width: 60, padding: const EdgeInsets.all(4)),
+                                                Container(height: 60, width: 60, padding: const EdgeInsets.all(4), child: _hasherPhoto(e, false)),
                                                 const SizedBox(width: 8.0),
                                                 Expanded(
                                                     child: Container(
@@ -612,7 +612,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               key: const Key('39392001'),
               pageTitle: e.hasher.dispName,
               imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
-              assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/' + e.hasher.photo.replaceAll('bundle://', '') + '.jpg' : null,
+              assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/${e.hasher.photo.replaceAll('bundle://', '')}.jpg' : null,
               appBarBackgroundColor: themeAppBarBackground,
               background: Backgrounds.defaultHcBackground(),
               margin: 20.0),
@@ -639,7 +639,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         width: 300.0,
                         height: 300.0,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' + e.hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                        image: AssetImage(('images/avatars/${e.hasher.photo.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
                       )
                     : const Image(
                         width: 300.0,
@@ -746,75 +746,75 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         builder: (BuildContext context) {
           return SafeArea(
             child: SingleChildScrollView(
-              child: Container(
-                child: Wrap(
-                  children: <Widget>[
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
-                      child: Center(
-                        child: Text('Select map provider',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 26.0,
-                            )),
-                      ),
-                    ),
-                    for (maps.AvailableMap map in availableMaps)
-                      ListTile(
-                        onTap: () async {
-                          if (_saveUserMapPreference.value) {
-                             await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
-                          }
-                          Navigator.pop(context);
-
-                          await Future<void>.delayed(const Duration(milliseconds: 200));
-
-                          await map.showMarker(
-                            coords: coords,
-                            title: title,
-                            description: address,
-                          );
-                        },
-                        title: Text(map.mapName,
-                            style: const TextStyle(
-                              fontFamily: 'AvenirNextDemiBold',
-                              color: Colors.black,
-                              fontSize: 26.0,
-                            )),
-                        leading: SvgPicture.asset(
-                          map.icon,
-                          height: 60.0,
-                          width: 60.0,
-                        ),
-                      ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        SnackContent(_saveUserMapPreference, (bool x) {
-                          setState(() {
-                            _saveUserMapPreference.value = x;
-                          });
-                        }),
-                        const Text(
-                          'Always use this option',
+              child: Wrap(
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
+                    child: Center(
+                      child: Text('Select map provider',
                           style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 26.0,
+                          )),
+                    ),
+                  ),
+                  for (maps.AvailableMap map in availableMaps)
+                    ListTile(
+                      onTap: () async {
+                        if (_saveUserMapPreference.value) {
+                          await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
+                        }
+                        Navigator.pop(context);
+
+                        await Future<void>.delayed(const Duration(milliseconds: 200));
+
+                        await map.showMarker(
+                          coords: coords,
+                          title: title,
+                          description: address,
+                        );
+                      },
+                      title: Text(map.mapName,
+                          style: const TextStyle(
                             fontFamily: 'AvenirNextDemiBold',
                             color: Colors.black,
-                            fontSize: 22.0,
-                          ),
-                        ),
-                        const SizedBox(width: 20.0)
-                      ],
+                            fontSize: 26.0,
+                          )),
+                      leading: SvgPicture.asset(
+                        map.icon,
+                        height: 60.0,
+                        width: 60.0,
+                      ),
                     ),
-                  ],
-                ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SnackContent(_saveUserMapPreference, (bool x) {
+                        setState(() {
+                          _saveUserMapPreference.value = x;
+                        });
+                      }),
+                      const Text(
+                        'Always use this option',
+                        style: TextStyle(
+                          fontFamily: 'AvenirNextDemiBold',
+                          color: Colors.black,
+                          fontSize: 22.0,
+                        ),
+                      ),
+                      const SizedBox(width: 20.0)
+                    ],
+                  ),
+                ],
               ),
             ),
           );
         },
       );
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
@@ -933,7 +933,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     shape: BoxShape.circle,
                   ),
                 ),
-                Container(
+                SizedBox(
                   height: 22.0,
                   width: 22.0,
                   child: Icon(iconData, size: 22.0, color: iconColor),
@@ -1373,19 +1373,19 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
 
     if (rda.event.locationStreet != null) {
-      address = address + rda.event.locationStreet + ' ';
+      address = '$address${rda.event.locationStreet} ';
     }
 
     if (rda.event.locationCity != null) {
-      address = address + rda.event.locationCity + ' ';
+      address = '$address${rda.event.locationCity} ';
     }
 
     if (rda.event.locationPostCode != null) {
-      address = address + rda.event.locationPostCode + ' ';
+      address = '$address${rda.event.locationPostCode} ';
     }
 
     if (rda.event.locationCountry != null) {
-      address = address + rda.event.locationCountry + ' ';
+      address = '$address${rda.event.locationCountry} ';
     }
 
     address = address.trim();
@@ -1408,7 +1408,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
 /// The ValueListenableBuilder rebuilds whenever [snackMsg] changes.
 class SnackContent extends StatelessWidget {
-  const SnackContent(this.snackState, this.snackOnClick);
+  const SnackContent(this.snackState, this.snackOnClick, {Key key}) : super(key: key);
 
   final ValueNotifier<bool> snackState;
   final Function snackOnClick;

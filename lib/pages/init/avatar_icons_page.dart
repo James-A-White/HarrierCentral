@@ -45,6 +45,10 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
               itemCount: 50,
               itemBuilder: (BuildContext bldCtx, int index) {
                 return MaterialButton(
+                    splashColor: Colors.greenAccent,
+                    onPressed: () {
+                      Navigator.of(context).pop(index + 1);
+                    },
                     child: Container(
                       color: widget.selectedAvatarIcon == index + 1 ? Colors.red.shade900 : Theme.of(context).scaffoldBackgroundColor,
                       child: Padding(
@@ -55,11 +59,7 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
                           width: iconSize,
                         ),
                       ),
-                    ),
-                    splashColor: Colors.greenAccent,
-                    onPressed: () {
-                      Navigator.of(context).pop(index + 1);
-                    });
+                    ));
               },
             ),
           ),

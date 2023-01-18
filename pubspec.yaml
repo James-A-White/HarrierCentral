@@ -65,6 +65,7 @@ dependencies:
   json_annotation: ^4.7.0
   keyboard_actions: ^4.0.0 
   keyboard_avoider: ^0.1.2
+  latlong2: ^0.8.1
   map_launcher: ^2.4.0
   # maps_launcher: ^2.0.1
   meta: ^1.8.0 
@@ -74,6 +75,7 @@ dependencies:
   pausable_timer: ^1.0.0+5
   pdf_viewer_plugin: ^2.0.1
   permission_handler: ^10.0.0
+  photo_view: ^0.14.0
   progress_stepper: ^1.0.0
   # photo_view: ^0.4.2
   # qonversion_flutter: ^4.2.0 

@@ -166,7 +166,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         }
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 

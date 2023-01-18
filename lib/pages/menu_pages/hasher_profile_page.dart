@@ -1,4 +1,6 @@
 // @dart=2.11
+// ignore_for_file: constant_identifier_names
+
 import 'package:harrier_central/data/services/gdpr_delete_service.dart';
 import 'package:harrier_central/data/services/get_invite_code_service.dart';
 import 'package:harrier_central/imports.dart';
@@ -194,7 +196,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         _addAsKennelFollower = true;
       }
       _hasher = HashersModel(hasherId: GUID_EMPTY);
-      _photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
+      _photoPrefix = 'newHcUser_${DateTime.now().microsecondsSinceEpoch}';
 
       _isLoading = false;
     }
@@ -793,7 +795,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '10 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '10 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -806,7 +808,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '25 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '25 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -819,7 +821,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '50 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '50 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -832,7 +834,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '75 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '75 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -845,7 +847,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '100 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '100 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -858,7 +860,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '150 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '150 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -871,7 +873,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '250 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '250 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -884,7 +886,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '500 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    '500 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
@@ -1413,6 +1415,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             bottom: 0,
             child: Container(
                 padding: const EdgeInsets.only(top: 10, right: 20, bottom: 10, left: 20),
+                height: 60,
+                width: MediaQuery.of(context).size.width,
+                color: Colors.yellow[100],
                 child: Connection.styleForConnected(
                   G0<AppModel>().connectionStatus,
                   ElevatedButton(
@@ -1426,10 +1431,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                     },
                     child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: textStyleButton),
                   ),
-                ),
-                height: 60,
-                width: MediaQuery.of(context).size.width,
-                color: Colors.yellow[100])),
+                ))),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),

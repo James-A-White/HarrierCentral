@@ -57,13 +57,13 @@ class BubbleTabIndicator extends Decoration {
   }
 
   @override
-  _BubblePainter createBoxPainter([VoidCallback onChanged]) {
-    return _BubblePainter(this, onChanged);
+  BubblePainter createBoxPainter([VoidCallback onChanged]) {
+    return BubblePainter(this, onChanged);
   }
 }
 
-class _BubblePainter extends BoxPainter {
-  _BubblePainter(this.decoration, VoidCallback onChanged)
+class BubblePainter extends BoxPainter {
+  BubblePainter(this.decoration, VoidCallback onChanged)
       : assert(decoration != null),
         super(onChanged);
 

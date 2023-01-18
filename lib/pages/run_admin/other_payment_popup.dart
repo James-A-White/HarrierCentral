@@ -31,10 +31,10 @@ class OtherPaymentPopup extends StatefulWidget {
   final bool allowDefaultPricing;
 
   @override
-  _OtherPaymentPopupState createState() => _OtherPaymentPopupState();
+  OtherPaymentPopupState createState() => OtherPaymentPopupState();
 }
 
-class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
+class OtherPaymentPopupState extends State<OtherPaymentPopup> {
   final FocusNode _specialPriceFocusNode = FocusNode();
   final TextEditingController _specialPriceTextController = TextEditingController();
 

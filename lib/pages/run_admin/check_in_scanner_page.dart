@@ -7,7 +7,7 @@ class CheckInScannerPage extends StatefulWidget {
   final RunAdminAggregate eventAggregate;
 
   @override
-  _CheckInScannerPageState createState() => _CheckInScannerPageState();
+  CheckInScannerPageState createState() => CheckInScannerPageState();
 }
 
 final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
@@ -15,7 +15,7 @@ bool _isScanningAtRunStart = true;
 
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-class _CheckInScannerPageState extends State<CheckInScannerPage> {
+class CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,16 +133,6 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                       Container(
                         padding: const EdgeInsets.only(top: 20.0),
                         child: ElevatedButton(
-                            child: Text(
-                              //'Scan at end of run',
-                              ((_state == EQrScannerState.scanning) && !_isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
-                              style: const TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  //color: Colors.white,
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 22.0,
-                                  height: 1.0),
-                            ),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.resolveWith<Color>(
                                 (Set<MaterialState> states) {
@@ -164,7 +154,17 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                             onPressed: () async {
                               _isScanningAtRunStart = false;
                               await _toggleScanning();
-                            }),
+                            },
+                            child: Text(
+                              //'Scan at end of run',
+                              ((_state == EQrScannerState.scanning) && !_isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
+                              style: const TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  //color: Colors.white,
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 22.0,
+                                  height: 1.0),
+                            )),
                       ),
                     ],
                     SizedBox(

@@ -61,13 +61,13 @@ class CheckinFiltersCell extends StatelessWidget {
                         : Colors.green),
           ),
           SizedBox(
+            height: 20,
             child: AutoSizeText(
               label,
               style: textStyle,
               maxLines: 1,
               minFontSize: 2.0,
             ),
-            height: 20,
           ),
         ],
       ),

@@ -34,10 +34,10 @@ class PaymentPopup extends StatefulWidget {
   //final Function valueChanged;
 
   @override
-  _PaymentPopupState createState() => _PaymentPopupState();
+  PaymentPopupState createState() => PaymentPopupState();
 }
 
-class _PaymentPopupState extends State<PaymentPopup> {
+class PaymentPopupState extends State<PaymentPopup> {
   int _selectedValue = 1;
   OtherPaymentPopupResult _otherPaymentResult;
 
@@ -118,8 +118,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                           style: const TextStyle(fontSize: 16.0),
                         ),
                         Text(
-                          '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' +
-                              ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
+                          '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
                           style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                         ),
                       ],
@@ -234,8 +233,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
             _otherPaymentResult == null
                 ? const SizedBox(height: 1, width: 1)
                 : Text(
-                    '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' +
-                        ((_otherPaymentResult.transType == 5) ? ' cash' : ' bank transfer'),
+                    '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult.transType == 5) ? ' cash' : ' bank transfer'}',
                     style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                   ),
           ],

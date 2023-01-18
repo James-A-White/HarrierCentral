@@ -60,7 +60,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                       width: 20,
                     ),
                     Text(
-                      '  =  ' + (kennelInfo.historicalCountIsEstimate != 0 ? '~' : '') + kennelInfo.totalRunsThisKennel.toString(),
+                      '  =  ${kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${kennelInfo.totalRunsThisKennel}',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: numberStyle.copyWith(height: 0.6),

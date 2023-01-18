@@ -452,6 +452,20 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 ),
               ),
               Container(
+                height: 55.0,
+                //padding: const EdgeInsets.only(top: 5),
+                decoration: BoxDecoration(
+                  // border: new Border.all(width: 1.0, color: Colors.black),
+                  //shape: BoxShape.circle,
+                  color: Colors.yellow.shade100,
+                  boxShadow: const <BoxShadow>[
+                    BoxShadow(
+                      color: Color.fromARGB(70, 0, 0, 0),
+                      offset: Offset(0.0, 6.0),
+                      blurRadius: 10.0,
+                    ),
+                  ],
+                ),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
@@ -471,20 +485,6 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                     tabs: _tabs,
                     controller: _tabController,
                   ),
-                ),
-                height: 55.0,
-                //padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                  // border: new Border.all(width: 1.0, color: Colors.black),
-                  //shape: BoxShape.circle,
-                  color: Colors.yellow.shade100,
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color.fromARGB(70, 0, 0, 0),
-                      offset: Offset(0.0, 6.0),
-                      blurRadius: 10.0,
-                    ),
-                  ],
                 ),
               ),
               Expanded(
@@ -563,7 +563,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   }
 
   Future<void> _showEventPopup(DateTime eventStartDate) async {
-    final String title = 'Create new event on ' + DateFormat('E, MMM d').format(eventStartDate);
+    final String title = 'Create new event on ${DateFormat('E, MMM d').format(eventStartDate)}';
 
     final CreateNewEventPopup newEventPopup = CreateNewEventPopup(title);
 

@@ -487,7 +487,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                             runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
                                                             runLink: '',
                                                             showRunLink: false,
-                                                            title: 'Any ' + widget.kennelAggregateItem.kennel.kennelShortName + ' run')));
+                                                            title: 'Any ${widget.kennelAggregateItem.kennel.kennelShortName} run')));
                                               },
                                             ),
                                           ),
@@ -700,6 +700,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                 children: <Widget>[
                                   const SizedBox(height: 25.0),
                                   Expanded(
+                                    flex: _flexLeft,
                                     child: Text(
                                       'Location:',
                                       style: listLabelStyle,
@@ -707,23 +708,23 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: _flexLeft,
                                   ),
                                   Expanded(
+                                      flex: _flexRight,
                                       child: Text(
-                                        '  ' + widget.kennelAggregateItem.extensions.location ?? '',
+                                        '  ${widget.kennelAggregateItem.extensions.location}' ?? '',
                                         style: listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                      ),
-                                      flex: _flexRight),
+                                      )),
                                 ],
                               ),
                               Row(
                                 children: <Widget>[
                                   const SizedBox(height: 25.0),
                                   Expanded(
+                                    flex: _flexLeft,
                                     child: Text(
                                       'Last run:',
                                       style: listLabelStyle,
@@ -731,25 +732,25 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: _flexLeft,
                                   ),
                                   Expanded(
+                                      flex: _flexRight,
                                       child: Text(
                                         widget.kennelAggregateItem.extensions.lastRunDate != null
-                                            ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.lastRunDate.substring(0, 19)))
+                                            ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.lastRunDate.substring(0, 19)))}'
                                             : '  <no run found>',
                                         style: listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                      ),
-                                      flex: _flexRight),
+                                      )),
                                 ],
                               ),
                               Row(
                                 children: <Widget>[
                                   const SizedBox(height: 25.0),
                                   Expanded(
+                                    flex: _flexLeft,
                                     child: Text(
                                       'Next run:',
                                       style: listLabelStyle,
@@ -757,25 +758,25 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: _flexLeft,
                                   ),
                                   Expanded(
+                                      flex: _flexRight,
                                       child: Text(
                                         widget.kennelAggregateItem.extensions.nextRunDate != null
-                                            ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.nextRunDate.substring(0, 19)))
+                                            ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.nextRunDate.substring(0, 19)))}'
                                             : '  <no run found>',
                                         style: listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                      ),
-                                      flex: _flexRight),
+                                      )),
                                 ],
                               ),
                               Row(
                                 children: <Widget>[
                                   const SizedBox(height: 25.0),
                                   Expanded(
+                                    flex: _flexLeft,
                                     child: Text(
                                       'Hash cash:',
                                       style: listLabelStyle,
@@ -783,9 +784,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: _flexLeft,
                                   ),
                                   Expanded(
+                                      flex: _flexRight,
                                       child: Text(
                                         widget.kennelAggregateItem.kennel.defaultPriceForMembers == null
                                             ? '  <not provided>'
@@ -794,14 +795,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                      ),
-                                      flex: _flexRight),
+                                      )),
                                 ],
                               ),
                               Row(
                                 children: <Widget>[
                                   const SizedBox(height: 25.0),
                                   Expanded(
+                                    flex: _flexLeft,
                                     child: Text(
                                       '',
                                       style: listLabelStyle,
@@ -809,9 +810,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    flex: _flexLeft,
                                   ),
                                   Expanded(
+                                      flex: _flexRight,
                                       child: Text(
                                         widget.kennelAggregateItem.kennel.defaultPriceForNonMembers == null
                                             ? '  <not provided>'
@@ -820,8 +821,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                      ),
-                                      flex: _flexRight),
+                                      )),
                                 ],
                               ),
                               ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) ||
@@ -1005,24 +1005,24 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               children: <Widget>[
                 const SizedBox(height: 25.0),
                 Expanded(
+                  flex: 50,
                   child: Text(
-                    items[0] + ':',
+                    '${items[0]}:',
                     style: listLabelStyle,
                     textAlign: TextAlign.right,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  flex: 50,
                 ),
                 Expanded(
+                    flex: 50,
                     child: Text(
-                      ' ' + items[1],
+                      ' ${items[1]}',
                       style: listValueStyle,
                       textAlign: TextAlign.left,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                    flex: 50),
+                    )),
               ],
             );
     }

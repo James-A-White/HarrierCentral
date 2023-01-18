@@ -121,13 +121,13 @@ class PaymentTotalsCell extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 1.0),
             child: SizedBox(
+              height: 20,
               child: AutoSizeText(
                 total,
                 style: textStyle,
                 maxLines: 1,
                 minFontSize: 2.0,
               ),
-              height: 20,
             ),
           ),
         ],

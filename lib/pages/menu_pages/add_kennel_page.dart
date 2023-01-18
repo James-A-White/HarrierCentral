@@ -51,10 +51,10 @@ class FaqPageContent extends StatefulWidget {
   const FaqPageContent({Key key}) : super(key: key);
 
   @override
-  _FaqPageContentState createState() => _FaqPageContentState();
+  FaqPageContentState createState() => FaqPageContentState();
 }
 
-class _FaqPageContentState extends State<FaqPageContent> {
+class FaqPageContentState extends State<FaqPageContent> {
   TextStyle sectionStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.orange, fontSize: 24.0, height: 1.2);
 
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.2);

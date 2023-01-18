@@ -75,7 +75,7 @@ class KennelMemberListItem extends StatelessWidget {
                           key: const Key('36601939'),
                           pageTitle: kennelMember.dispName,
                           imageUrl: kennelMember.photo.startsWith('http') ? kennelMember.photo : null,
-                          assetImage: kennelMember.photo.contains('bundle://') ? 'images/avatars/' + kennelMember.photo.replaceAll('bundle://', '') + '.jpg' : null,
+                          assetImage: kennelMember.photo.contains('bundle://') ? 'images/avatars/${kennelMember.photo.replaceAll('bundle://', '')}.jpg' : null,
                           appBarBackgroundColor: themeAppBarBackground,
                           background: Backgrounds.defaultHcBackground(),
                           margin: 20.0),
@@ -108,7 +108,7 @@ class KennelMemberListItem extends StatelessWidget {
                                 width: PROFILE_PIC_SIZE,
                                 height: PROFILE_PIC_SIZE,
                                 fit: BoxFit.fill,
-                                image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                                image: AssetImage(('images/avatars/${kennelMember.photo.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
                               )
                             : const Image(
                                 width: PROFILE_PIC_SIZE,

@@ -48,7 +48,9 @@ class ApproveLoginService {
       Uri.parse(uri),
     ).catchError(
       (dynamic error) {
-        print(error.toString());
+        if (kDebugMode) {
+          print(error.toString());
+        }
         return Response('<no ip information available>', 500);
       },
     ).timeout(const Duration(milliseconds: 4000), onTimeout: () {

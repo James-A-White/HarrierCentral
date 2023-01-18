@@ -1,5 +1,7 @@
 // @dart=2.11
 
+// ignore_for_file: constant_identifier_names
+
 import 'package:harrier_central/imports.dart';
 
 class CheckInPackModel {
@@ -1054,7 +1056,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               ),
             ],
           ]),
-      appBar: _getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : (widget?.eventAggregate?.event?.eventName ?? '') + ' Check In'),
+      appBar: _getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : '${widget?.eventAggregate?.event?.eventName ?? ''} Check In'),
       body: _isLoading
           ? const HcCircularProgressIndicator(key: Key('430320291'))
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
@@ -1125,11 +1127,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         }
       },
       onPaidCallback: (CheckInPackModel packMember, int paymentType, {OtherPaymentPopupResult userInput}) async {
-        final num totalDue = userInput == null ? null : userInput.totalAmount;
+        final num totalDue = userInput?.totalAmount;
         //final num topUpAmount = userInput['topUpAmount'];
         final num specialPriceAmount = userInput == null ? null : userInput.specialPriceAmount ?? amountOwed;
-        final String specialPriceReason = userInput == null ? null : userInput.specialPriceReason;
-        final bool useSpecialPriceAsDefault = userInput == null ? null : userInput.useSpecialPriceAsDefault;
+        final String specialPriceReason = userInput?.specialPriceReason;
+        final bool useSpecialPriceAsDefault = userInput?.useSpecialPriceAsDefault;
 
         setState(() {
           packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
@@ -1187,7 +1189,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           'returnValue': payForRunOnly,
         },
         <String, dynamic>{
-          'title': 'Run + ' + widget.eventAggregate.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+          'title': 'Run + ${widget.eventAggregate.event.extrasDescription} ($runPlusExtrasPriceStr)',
           'icon': <Widget>[
             Container(),
           ],
@@ -1278,8 +1280,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         await Sumup.login();
       }
 
-      final String title = widget.eventAggregate.event.eventName + ' (' + packMember.nameForDisplay + ')';
-      paymentReference = 'HC:' + randomString;
+      final String title = '${widget.eventAggregate.event.eventName} (${packMember.nameForDisplay})';
+      paymentReference = 'HC:$randomString';
 
       isLoggedIn = await Sumup.isLoggedIn;
       if (isLoggedIn) {
@@ -1307,12 +1309,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           paymentCancelled = true;
         } else {
           if (checkoutResult?.transactionCode != null) {
-            paymentReference = 'SU:' + checkoutResult.transactionCode;
+            paymentReference = 'SU:${checkoutResult.transactionCode}';
           }
         }
       }
     } else {
-      paymentReference = 'HC:' + randomString;
+      paymentReference = 'HC:$randomString';
     }
 
     if (paymentCancelled) {
@@ -1374,7 +1376,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         key: const Key('511203069'),
                         pageTitle: packMember.nameForDisplay,
                         imageUrl: packMember.photo.startsWith('http') ? packMember.photo : null,
-                        assetImage: packMember.photo.contains('bundle://') ? 'images/avatars/' + packMember.photo.replaceAll('bundle://', '') + '.jpg' : null,
+                        assetImage: packMember.photo.contains('bundle://') ? 'images/avatars/${packMember.photo.replaceAll('bundle://', '')}.jpg' : null,
                         appBarBackgroundColor: themeAppBarBackground,
                         background: Backgrounds.defaultHcBackground(),
                         margin: 20.0),
@@ -1385,6 +1387,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   ? CachedNetworkImage(
                       imageUrl: packMember.photo,
                       placeholder: (BuildContext context, String url) => const SizedBox(
+                          height: LIST_ITEM_HEIGHT,
+                          width: LIST_ITEM_HEIGHT,
                           child: Center(
                             child: SizedBox(
                               height: 20,
@@ -1393,9 +1397,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                 strokeWidth: 3.0,
                               ),
                             ),
-                          ),
-                          height: LIST_ITEM_HEIGHT,
-                          width: LIST_ITEM_HEIGHT),
+                          )),
                       errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error, size: LIST_ITEM_HEIGHT, color: Colors.red),
                       //fadeOutDuration:  Duration(seconds: 1),
                       fadeInDuration: const Duration(milliseconds: 0),
@@ -1407,7 +1409,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                           width: LIST_ITEM_HEIGHT,
                           height: LIST_ITEM_HEIGHT,
                           fit: BoxFit.fill,
-                          image: AssetImage(('images/avatars/' + packMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                          image: AssetImage(('images/avatars/${packMember.photo.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
                         )
                       : const Image(
                           width: LIST_ITEM_HEIGHT,
@@ -1429,7 +1431,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             if ((widget.eventAggregate.event.isCountedRun == 1) &&
                 (packMember.attendenceState >= attendenceAtHash.value) &&
                 (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0)))) ...<Widget>[
-              Positioned(right: 8.0, top: 9.0, child: Image.asset('images/icons/beer_mug.png'), width: 35.0, height: 35.0),
+              Positioned(right: 8.0, top: 9.0, width: 35.0, height: 35.0, child: Image.asset('images/icons/beer_mug.png')),
             ],
 
             // Positioned(
@@ -1605,7 +1607,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   Future<void> _updateRsvpState(CheckInPackModel packMember, int rsvpState, int isHare) async {
     final String hasherId = packMember.hasherId;
 
-    print('rsvpState = ' + rsvpState.toString());
+    if (kDebugMode) {
+      print('rsvpState = $rsvpState');
+    }
 
     final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
           widget.eventAggregate.event.eventId,
@@ -1681,10 +1685,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 controller: _slidableController,
                 actionPane: const SlidableBehindActionPane(),
                 actionExtentRatio: 0.35,
-                child: Container(
-                  color: Colors.white,
-                  child: _listItem(context, packMember),
-                ),
                 dismissal: SlidableDismissal(
                   onWillDismiss: (SlideActionType actionType) {
                     if (actionType == SlideActionType.secondary) {
@@ -1750,7 +1750,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 10.0),
-                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : amountOwedStr + '\r\n'}Bank Transfer',
+                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                                   ),
@@ -1774,7 +1774,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(top: 10.0),
-                                child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : amountOwedStr + '\r\n'}Contactless',
+                                child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                               ),
@@ -1846,7 +1846,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 5.0),
-                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : amountOwedStr + '\r\n'}Cash',
+                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                                 ),
@@ -1855,6 +1855,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                           ),
                   ),
                 ],
+                child: Container(
+                  color: Colors.white,
+                  child: _listItem(context, packMember),
+                ),
               );
             }
           },
@@ -1930,10 +1934,10 @@ class AddVisitorVirginPopup extends StatefulWidget {
   const AddVisitorVirginPopup({Key key}) : super(key: key);
 
   @override
-  _AddVisitorVirginPopupState createState() => _AddVisitorVirginPopupState();
+  AddVisitorVirginPopupState createState() => AddVisitorVirginPopupState();
 }
 
-class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
+class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
 
   TextEditingController nameTextController = TextEditingController();

@@ -772,7 +772,7 @@ packages:
     source: hosted
     version: "0.1.2"
   latlong2:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: latlong2
       url: "https://pub.dartlang.org"
@@ -1024,7 +1024,7 @@ packages:
     source: hosted
     version: "5.1.0"
   photo_view:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: photo_view
       url: "https://pub.dartlang.org"

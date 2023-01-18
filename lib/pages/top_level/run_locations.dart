@@ -167,7 +167,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               if (orItem.trim().isEmpty) {
                 continue;
               }
-              orItem = ' ' + orItem.trim().toLowerCase();
+              orItem = ' ${orItem.trim().toLowerCase()}';
               if (a['searchKennelsText'].toLowerCase().contains(orItem)) {
                 return !negate;
               }
@@ -363,15 +363,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           ''';
 
     if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
-      query = query +
-          '''
-            AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel.kennelId}"
+      query = '''$query            AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel.kennelId}"
           ''';
     }
 
-    query = query +
-        '''
-    ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
+    query = '''$query    ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
     ''';
 
     try {
@@ -468,9 +464,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
            ''';
 
     if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
-      query = query +
-          '''
-            WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "${widget.kennel.kennelId}"''';
+      query = '''$query            WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "${widget.kennel.kennelId}"''';
     }
 
     _allKennels = await G0<Database>().rawQuery(query);
@@ -703,9 +697,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         heroCounter++;
                         return FloatingActionButton(
                           backgroundColor: Colors.blue[800],
-                          child: Text(markers.length.toString()),
                           onPressed: null,
                           heroTag: 'btn_$heroCounter',
+                          child: Text(markers.length.toString()),
                         );
                       },
                     ),
@@ -724,9 +718,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         heroCounter++;
                         return FloatingActionButton(
                           backgroundColor: Colors.purple[600],
-                          child: Text(markers.length.toString()),
                           onPressed: null,
                           heroTag: 'btn_$heroCounter',
+                          child: Text(markers.length.toString()),
                         );
                       },
                     ),
@@ -783,12 +777,12 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   top: 10.0,
                   child: Container(
                     padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                    child: Text(_textDescription, textAlign: TextAlign.center, style: headingStyle20Black),
                     decoration: BoxDecoration(
                       color: Colors.yellow[100],
                       border: Border.all(width: 2.0),
                       borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                     ),
+                    child: Text(_textDescription, textAlign: TextAlign.center, style: headingStyle20Black),
                   )),
             ],
           ),

@@ -153,20 +153,39 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
   }
 
   String message = (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString();
-  print('Hashers count = ' + message);
+  if (kDebugMode) {
+    print('Hashers count = $message');
+  }
+
   message = (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString();
-  print('Events count = ' + message);
+  if (kDebugMode) {
+    print('Events count = $message');
+  }
+
   message = (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString();
-  print('Kennels count = ' + message);
+  if (kDebugMode) {
+    print('Kennels count = $message');
+  }
+
   message = (await CommonQueries.countRecords(G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user))).toString();
-  print('Hasher event map count = ' + message);
+  if (kDebugMode) {
+    print('Hasher event map count = $message');
+  }
+
   message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user))).toString();
-  print('Hasher kennel map count = ' + message);
+  if (kDebugMode) {
+    print('Hasher kennel map count = $message');
+  }
 
-  print('******* > DB Setup step 11');
+  if (kDebugMode) {
+    print('******* > DB Setup step 11');
+  }
+
   G0<AppModel>().dbStatus = EdbStatus.opened;
+  if (kDebugMode) {
+    print('******* > DB Setup step 12');
+  }
 
-  print('******* > DB Setup step 12');
   return true;
 }
 

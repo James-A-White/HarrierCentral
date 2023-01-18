@@ -1,4 +1,6 @@
 // @dart=2.11
+// ignore_for_file: constant_identifier_names
+
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
@@ -57,7 +59,7 @@ const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/#/';
 
 const String BASE_URL = 'harrier.azurewebsites.net';
-const String BASE_API_URL = 'https://' + BASE_URL + '/api/';
+const String BASE_API_URL = 'https://$BASE_URL/api/';
 
 const String BASE_KENNEL_LOGOS_URL = 'https://harriercentral.blob.core.windows.net/harrier/';
 const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
@@ -76,14 +78,14 @@ const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 const String NOTIFICATION_PREFIX_EVENT_UPDATE = 'evtUpdate_';
 
 const String ERROR_PREFIX = 'HC_ERROR_';
-const String ERROR_KEY_OK_BTN_PRESSED = ERROR_PREFIX + 'OK';
-const String ERROR_KEY_CANCEL_BTN_PRESSED = ERROR_PREFIX + 'CANCEL';
-const String ERROR_HANDLED = ERROR_PREFIX + 'HANDLED';
-const String ERROR_NOT_HANDLED = ERROR_PREFIX + 'NOT_HANDLED';
-const String ERROR_NO_CONNECTION = ERROR_PREFIX + 'NO_CONNECTION';
-const String ERROR_UNKNOWN_HTTP_ERROR = ERROR_PREFIX + 'HTTP_ERROR';
-const String ERROR_UNKNOWN_REMOTE_DB_ERROR = ERROR_PREFIX + 'REMOTE_DB_ERROR';
-const String ERROR_INVITE_CODE_SENT = ERROR_PREFIX + 'INVITE_CODE_SENT';
+const String ERROR_KEY_OK_BTN_PRESSED = '${ERROR_PREFIX}OK';
+const String ERROR_KEY_CANCEL_BTN_PRESSED = '${ERROR_PREFIX}CANCEL';
+const String ERROR_HANDLED = '${ERROR_PREFIX}HANDLED';
+const String ERROR_NOT_HANDLED = '${ERROR_PREFIX}NOT_HANDLED';
+const String ERROR_NO_CONNECTION = '${ERROR_PREFIX}NO_CONNECTION';
+const String ERROR_UNKNOWN_HTTP_ERROR = '${ERROR_PREFIX}HTTP_ERROR';
+const String ERROR_UNKNOWN_REMOTE_DB_ERROR = '${ERROR_PREFIX}REMOTE_DB_ERROR';
+const String ERROR_INVITE_CODE_SENT = '${ERROR_PREFIX}INVITE_CODE_SENT';
 
 const String GUID_EMPTY = '00000000-0000-0000-0000-000000000000';
 const String GUID_8 = '88888888-8888-8888-8888-888888888888';

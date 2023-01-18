@@ -45,10 +45,10 @@ class UserFeedbackPageContent extends StatefulWidget {
   const UserFeedbackPageContent({Key key}) : super(key: key);
 
   @override
-  _UserFeedbackPageContentState createState() => _UserFeedbackPageContentState();
+  UserFeedbackPageContentState createState() => UserFeedbackPageContentState();
 }
 
-class _UserFeedbackPageContentState extends State<UserFeedbackPageContent> {
+class UserFeedbackPageContentState extends State<UserFeedbackPageContent> {
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
 
   TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);

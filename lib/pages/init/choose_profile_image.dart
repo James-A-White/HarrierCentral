@@ -12,12 +12,12 @@ class ChooseProfileImage extends StatefulWidget {
   final bool popToCaller;
 
   @override
-  _ChooseProfileImageState createState() => _ChooseProfileImageState();
+  ChooseProfileImageState createState() => ChooseProfileImageState();
 }
 
 enum SelectedImageTypeEnum { none, avatar, fromCamera, fromGallery, fromFacebook, fromNetwork }
 
-class _ChooseProfileImageState extends State<ChooseProfileImage> {
+class ChooseProfileImageState extends State<ChooseProfileImage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
@@ -306,11 +306,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           child: FancyDivider(key: Key('13301239'), innerColor: Colors.white),
         ),
         Container(
-          child: _getPreviewImage(),
           color: Colors.white,
           height: _uploadingImageSize + 6,
           width: _uploadingImageSize + 6,
           padding: const EdgeInsets.all(6.0),
+          child: _getPreviewImage(),
         ),
         const SizedBox(
           height: 20,
@@ -351,7 +351,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
 
     if ((widget.fileNamePrefix != null) && (widget.fileNamePrefix.isNotEmpty)) {
-      fileName = widget.fileNamePrefix.replaceAll('USC:', '') + '_${datetime}_thumb.jpg';
+      fileName = '${widget.fileNamePrefix.replaceAll('USC:', '')}_${datetime}_thumb.jpg';
     } else {
       fileName = 'profilePhoto_${Random().nextInt(899999) + 100000}_${datetime}_thumb.jpg';
     }
@@ -476,7 +476,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           )
         : url.contains('bundle://')
             ? Stack(alignment: Alignment.center, children: <Widget>[
-                Image.asset(('images/avatars/' + url.replaceAll('bundle://', '') + '.jpg').toLowerCase()),
+                Image.asset(('images/avatars/${url.replaceAll('bundle://', '')}.jpg').toLowerCase()),
               ])
             : CachedNetworkImage(
                 imageUrl: url,
@@ -542,7 +542,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     if ((_facebookProfileUrl != null) && (_facebookProfileUrl.isNotEmpty)) {
       final Response response = await get(Uri.parse(_facebookProfileUrl));
       final Directory documentDirectory = await getApplicationDocumentsDirectory();
-      final File profilePhotoFile = File(documentDirectory.path + '/temp.jpg');
+      final File profilePhotoFile = File('${documentDirectory.path}/temp.jpg');
       profilePhotoFile.writeAsBytesSync(response.bodyBytes);
 
       final ImageCropper ic = ImageCropper();

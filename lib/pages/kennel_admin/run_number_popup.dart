@@ -7,10 +7,10 @@ class RunNumberPopup extends StatefulWidget {
   final int runNumber;
 
   @override
-  _RunNumberPopupState createState() => _RunNumberPopupState();
+  RunNumberPopupState createState() => RunNumberPopupState();
 }
 
-class _RunNumberPopupState extends State<RunNumberPopup> {
+class RunNumberPopupState extends State<RunNumberPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
   TextEditingController runNumberAmountTextController;
 

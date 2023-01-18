@@ -9,11 +9,11 @@ class RunListItem extends StatefulWidget {
   final Function onItemTapped;
 
   @override
-  _RunListItemState createState() => _RunListItemState();
+  RunListItemState createState() => RunListItemState();
 }
 
-class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
-  _RunListItemState();
+class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
+  RunListItemState();
 
   @override
   void initState() {
@@ -266,16 +266,10 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                                           ? 'Tomorrow'
                                                           : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
                                               : (widget.futureRun.extensions.daysUntilEvent <= 30)
-                                                  ? 'in ' +
-                                                      (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() +
-                                                      ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
+                                                  ? 'in ${widget.futureRun.extensions.daysUntilEvent ~/ 7.0}${(widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
                                                   : widget.futureRun.extensions.daysUntilEvent <= 365
-                                                      ? 'in ' +
-                                                          (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() +
-                                                          ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
-                                                      : 'in ' +
-                                                          (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() +
-                                                          ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
+                                                      ? 'in ${widget.futureRun.extensions.daysUntilEvent ~/ 30.0}${(widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
+                                                      : 'in ${widget.futureRun.extensions.daysUntilEvent ~/ 365.0}${(widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
                                       style: const TextStyle(
                                         color: Colors.black87,
                                         fontFamily: 'AvenirNextDemiBold',
@@ -301,7 +295,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                         //     overflow: TextOverflow.ellipsis,
                                         //   )
                                         : Text(
-                                            'Hares: ' + widget.futureRun.event.hares,
+                                            'Hares: ${widget.futureRun.event.hares}',
                                             style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
@@ -310,7 +304,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                         ((widget.futureRun.extensions.distToEvent ?? -1.0) >= 0) &&
                                         (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
                                       Text(
-                                        Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0) + ' from here',
+                                        '${Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0)} from here',
                                         style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,

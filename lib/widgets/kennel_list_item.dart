@@ -88,9 +88,9 @@ class KennelListItemState extends State<KennelsListItem> {
               !widget.kennelItem.isHomeKennel
                   ? Container()
                   : Container(
-                      child: widget.kennelItem.extensions.followingRequested != -1 ? Icon(delayIcon, size: 35, color: Colors.blue) : Icon(FontAwesome.home, size: 35, color: Colors.red[900]),
                       alignment: Alignment.topLeft,
                       padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
+                      child: widget.kennelItem.extensions.followingRequested != -1 ? Icon(delayIcon, size: 35, color: Colors.blue) : Icon(FontAwesome.home, size: 35, color: Colors.red[900]),
                     ),
               Expanded(
                 child: InkWell(
@@ -218,20 +218,15 @@ class KennelListItemState extends State<KennelsListItem> {
                           ],
                           if ((widget.kennelItem.hkm.hcTotalRunCount ?? 0) != 0) ...<Widget>[
                             Text(
-                              'Runs: ' +
-                                  (widget.kennelItem.hkm.historicalCountIsEstimate == 0 ? '' : '~') +
-                                  (widget.kennelItem.hkm.hcTotalRunCount + widget.kennelItem.hkm.historicalTotalRunCount).toString() +
-                                  ', Times hared: ' +
-                                  (widget.kennelItem.hkm.hcHaringCount + widget.kennelItem.hkm.historicalHaringCount).toString(),
+                              'Runs: ${widget.kennelItem.hkm.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm.hcTotalRunCount + widget.kennelItem.hkm.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm.hcHaringCount + widget.kennelItem.hkm.historicalHaringCount}',
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
                             ),
                           ],
                           if (widget.kennelItem.hkm.dateOfLastRun != null) ...<Widget>[
                             Text(
-                              'Last run: ' +
-                                  (widget.kennelItem.hkm.dateOfLastRun.year != DateTime.now().year
+                              'Last run: ${widget.kennelItem.hkm.dateOfLastRun.year != DateTime.now().year
                                       ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm.dateOfLastRun)
-                                      : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun)),
+                                      : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun)}',
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
                             ),
                           ],
@@ -291,7 +286,7 @@ class KennelListItemState extends State<KennelsListItem> {
           'returnValue': followTypeIgnore
         },
         <String, dynamic>{
-          'title': 'Show runs within ' + getDistanceString(),
+          'title': 'Show runs within ${getDistanceString()}',
           'icon': <Widget>[
             Image.asset('images/icons/checkbox_empty.png', width: 30, height: 30),
             //Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
@@ -484,7 +479,7 @@ class KennelListItemState extends State<KennelsListItem> {
         break;
     }
 
-    return distance + ' ' + unitsOfMeasure;
+    return '$distance $unitsOfMeasure';
   }
 
   void _showEmailPopup(BuildContext context) {

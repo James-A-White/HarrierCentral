@@ -7,10 +7,10 @@ class AppAccessPage extends StatefulWidget {
   final int appAccess;
 
   @override
-  _AppAccessPageState createState() => _AppAccessPageState();
+  AppAccessPageState createState() => AppAccessPageState();
 }
 
-class _AppAccessPageState extends State<AppAccessPage> {
+class AppAccessPageState extends State<AppAccessPage> {
   AppAccess appAccess;
 
   @override

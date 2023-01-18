@@ -46,10 +46,10 @@ class PaymentTerminalConfigContent extends StatefulWidget {
   const PaymentTerminalConfigContent({Key key}) : super(key: key);
 
   @override
-  _PaymentTerminalConfigContentState createState() => _PaymentTerminalConfigContentState();
+  PaymentTerminalConfigContentState createState() => PaymentTerminalConfigContentState();
 }
 
-class _PaymentTerminalConfigContentState extends State<PaymentTerminalConfigContent> {
+class PaymentTerminalConfigContentState extends State<PaymentTerminalConfigContent> {
   final TextEditingController _accountKeyTextController = TextEditingController();
 
   final GlobalKey<FormState> _paymentTerminalFormKey = GlobalKey<FormState>();

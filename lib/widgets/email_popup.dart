@@ -7,10 +7,10 @@ class EmailPopup extends StatefulWidget {
   final String initialEmailAddress;
 
   @override
-  _EmailPopupState createState() => _EmailPopupState();
+  EmailPopupState createState() => EmailPopupState();
 }
 
-class _EmailPopupState extends State<EmailPopup> {
+class EmailPopupState extends State<EmailPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
   TextEditingController emailTextController = TextEditingController();
 

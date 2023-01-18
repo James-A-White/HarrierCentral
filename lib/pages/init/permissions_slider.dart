@@ -52,10 +52,10 @@ class PermissionSliderPage extends StatefulWidget {
   const PermissionSliderPage({Key key}) : super(key: key);
 
   @override
-  _PermissionSliderPageState createState() => _PermissionSliderPageState();
+  PermissionSliderPageState createState() => PermissionSliderPageState();
 }
 
-class _PermissionSliderPageState extends State<PermissionSliderPage> {
+class PermissionSliderPageState extends State<PermissionSliderPage> {
   List<ContentConfig> slides = <ContentConfig>[];
 
   TextStyle titleStyle;

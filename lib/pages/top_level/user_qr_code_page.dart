@@ -7,10 +7,10 @@ class UserQrCodePage extends StatefulWidget {
   const UserQrCodePage({Key key}) : super(key: key);
 
   @override
-  _UserQrCodePageState createState() => _UserQrCodePageState();
+  UserQrCodePageState createState() => UserQrCodePageState();
 }
 
-class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProviderStateMixin {
+class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProviderStateMixin {
   final List<Tab> _tabs = <Tab>[];
 
   //PageController _pageController;
@@ -231,10 +231,10 @@ class QrCodeTab extends StatefulWidget {
   const QrCodeTab({Key key}) : super(key: key);
 
   @override
-  _QrCodeTabState createState() => _QrCodeTabState();
+  QrCodeTabState createState() => QrCodeTabState();
 }
 
-class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -316,12 +316,12 @@ class QrScannerTab extends StatefulWidget {
   const QrScannerTab({Key key}) : super(key: key);
 
   @override
-  _QrScannerTabState createState() => _QrScannerTabState();
+  QrScannerTabState createState() => QrScannerTabState();
 }
 
 enum EQrScannerState { waitingForScan, scanning, isProcessing, qrNotRecognized, dataRecorded }
 
-class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   String _onScreenMessage = 'Scanning paused';
 
   QRViewController _controller;
@@ -467,7 +467,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
                 _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
               } else {
                 _onScreenMessage =
-                    'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' + NumberFormat('###').format(hoursUntilNextEvent * 60) != '1'
+                    'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute${NumberFormat('###').format(hoursUntilNextEvent * 60)}' != '1'
                         ? 's'
                         : '';
               }

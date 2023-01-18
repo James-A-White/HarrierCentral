@@ -54,10 +54,10 @@ class NewAccountPageContent extends StatefulWidget {
   const NewAccountPageContent({Key key}) : super(key: key);
 
   @override
-  _NewAccountPageContentState createState() => _NewAccountPageContentState();
+  NewAccountPageContentState createState() => NewAccountPageContentState();
 }
 
-class _NewAccountPageContentState extends State<NewAccountPageContent> {
+class NewAccountPageContentState extends State<NewAccountPageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {

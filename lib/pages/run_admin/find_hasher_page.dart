@@ -283,6 +283,8 @@ class HasherListView extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: hasherList[index].photo,
                     placeholder: (BuildContext context, String url) => const SizedBox(
+                        height: 70.0,
+                        width: 70.0,
                         child: Center(
                           child: SizedBox(
                             height: 20,
@@ -291,9 +293,7 @@ class HasherListView extends StatelessWidget {
                               strokeWidth: 3.0,
                             ),
                           ),
-                        ),
-                        height: 70.0,
-                        width: 70.0),
+                        )),
                     errorWidget: (BuildContext context, String url, Object error) {
                       return Container(
                           height: 70.0,
@@ -318,7 +318,7 @@ class HasherListView extends StatelessWidget {
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' + hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                        image: AssetImage(('images/avatars/${hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
                       )
                     : const Image(
                         width: 70.0,

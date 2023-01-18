@@ -7,10 +7,10 @@ class MismanagementRolesPage extends StatefulWidget {
   final int mismanagementRoles;
 
   @override
-  _MismanagementRolesPageState createState() => _MismanagementRolesPageState();
+  MismanagementRolesPageState createState() => MismanagementRolesPageState();
 }
 
-class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
+class MismanagementRolesPageState extends State<MismanagementRolesPage> {
   Mismanagement mmRoles;
 
   @override

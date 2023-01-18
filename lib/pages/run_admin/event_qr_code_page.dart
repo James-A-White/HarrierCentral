@@ -26,10 +26,10 @@ class EventQrCodePage extends StatefulWidget {
   final bool showRunLink;
 
   @override
-  _EventQrCodePageState createState() => _EventQrCodePageState();
+  EventQrCodePageState createState() => EventQrCodePageState();
 }
 
-class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProviderStateMixin {
+class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProviderStateMixin {
   List<Tab> tabs = <Tab>[];
 
   String barcode = '';
@@ -248,10 +248,10 @@ class QrTab extends StatefulWidget {
   final DateTime eventStartDatetime;
 
   @override
-  _QrTabState createState() => _QrTabState();
+  QrTabState createState() => QrTabState();
 }
 
-class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 

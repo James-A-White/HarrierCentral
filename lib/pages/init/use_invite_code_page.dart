@@ -56,10 +56,10 @@ class UseInviteCodePageContent extends StatefulWidget {
   const UseInviteCodePageContent({Key key}) : super(key: key);
 
   @override
-  _UseInviteCodePageContentState createState() => _UseInviteCodePageContentState();
+  UseInviteCodePageContentState createState() => UseInviteCodePageContentState();
 }
 
-class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
+class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   TextEditingController _inviteCodeTextController;
   InputDecoration _inviteCodeDecoration;
   final FocusNode _inviteCodeFocusNode = FocusNode();
@@ -207,7 +207,6 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         ),
                         const SizedBox(width: 15.0),
                         TextButton(
-                            child: const Icon(MaterialCommunityIcons.qrcode_scan, color: Colors.white),
                             style: TextButton.styleFrom(padding: const EdgeInsets.all(8.0), minimumSize: Size.zero, alignment: Alignment.center),
                             onPressed: () async {
                               setState(() {
@@ -219,7 +218,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                                   _controller.pauseCamera();
                                 }
                               });
-                            }),
+                            },
+                            child: const Icon(MaterialCommunityIcons.qrcode_scan, color: Colors.white)),
                       ],
                     ),
                     Visibility(
@@ -279,7 +279,6 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     ),
                     const SizedBox(height: 8, width: 10),
                     TextButton(
-                        child: Text('Email me a new invite code', style: smallTitleStyle.copyWith(color: Colors.red)),
                         style: TextButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           foregroundColor: Colors.red.shade800,
@@ -305,7 +304,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             final String userMessage = await HashersService.sendInviteCodeByEmail(email);
                             await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Instructions', userMessage, 'OK');
                           }
-                        }),
+                        },
+                        child: Text('Email me a new invite code', style: smallTitleStyle.copyWith(color: Colors.red))),
                   ],
                 ),
               ),
@@ -339,7 +339,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           final String userName = getStringPref(StringPrefsEnum.displayName);
 
                           String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                          profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                          profilePhotoUrl ??= 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
                           await IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
                           await Navigator.pushReplacement<dynamic, dynamic>(

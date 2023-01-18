@@ -1,4 +1,6 @@
 // @dart=2.11
+// ignore_for_file: constant_identifier_names
+
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/kennel_admin/mismanagement_roles_page.dart';
 
@@ -170,8 +172,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         break;
     }
 
-    final String message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel))).toString();
-    print('HKM count = ' + message);
+    if (kDebugMode) {
+      final String message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel))).toString();
+      print('HKM count = $message');
+    }
 
     final String query = ''' 
         SELECT 
@@ -478,12 +482,12 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                             return Container(
                               padding: const EdgeInsets.only(top: 7.0),
                               height: 40.0,
+                              color: themeBackgroundColor,
                               child: Text(
                                 memberType,
                                 style: titleStyle,
                                 textAlign: TextAlign.center,
                               ),
-                              color: themeBackgroundColor,
                             );
                           } else {
                             final KennelMembersResults item = snapshot.data[index];

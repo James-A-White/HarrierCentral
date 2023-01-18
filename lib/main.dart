@@ -22,8 +22,8 @@ void main() {
           final MediaQueryData mediaQueryData = MediaQuery.of(context);
           final num scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.25);
           return MediaQuery(
-            child: child,
             data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
+            child: child,
           );
         },
         debugShowCheckedModeBanner: false,

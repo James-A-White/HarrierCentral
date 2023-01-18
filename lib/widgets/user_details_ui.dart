@@ -12,11 +12,11 @@ class UserDetailsUi extends StatefulWidget {
   Function validateForm;
 
   @override
-  _UserDetailsUiState createState() => _UserDetailsUiState();
+  UserDetailsUiState createState() => UserDetailsUiState();
 }
 
-class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserver {
-  _UserDetailsUiState();
+class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserver {
+  UserDetailsUiState();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 

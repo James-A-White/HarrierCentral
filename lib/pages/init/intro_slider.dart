@@ -5,10 +5,10 @@ class IntroSliderPage extends StatefulWidget {
   const IntroSliderPage({Key key}) : super(key: key);
 
   @override
-  _IntroSliderPageState createState() => _IntroSliderPageState();
+  IntroSliderPageState createState() => IntroSliderPageState();
 }
 
-class _IntroSliderPageState extends State<IntroSliderPage> {
+class IntroSliderPageState extends State<IntroSliderPage> {
   List<ContentConfig> slides = <ContentConfig>[];
 
   TextStyle titleStyle;

@@ -5,10 +5,10 @@ class GetResetCodePopup extends StatefulWidget {
   const GetResetCodePopup({Key key}) : super(key: key);
 
   @override
-  _GetResetCodePopupState createState() => _GetResetCodePopupState();
+  GetResetCodePopupState createState() => GetResetCodePopupState();
 }
 
-class _GetResetCodePopupState extends State<GetResetCodePopup> {
+class GetResetCodePopupState extends State<GetResetCodePopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
   TextEditingController getResetCodeTextController = TextEditingController();
 
@@ -100,12 +100,12 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                 style: TextButton.styleFrom(backgroundColor: Colors.blue),
                 child: const Text('Reset device'),
                 onPressed: () async {
-                  if (getResetCodeTextController.text.toUpperCase() == QR_PREFIX_USER_RESET_CODE + 'CLEAR') {
+                  if (getResetCodeTextController.text.toUpperCase() == '${QR_PREFIX_USER_RESET_CODE}CLEAR') {
                     await clearPrefs();
                     await DBProvider.deleteDb(DB_NAME);
 
-                    await IveCoreUtilities.showAlert(context, 'App Cleared Successful',
-                        'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
+                    await IveCoreUtilities.showAlert(
+                        context, 'App Cleared Successful', 'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
                   } else {
                     final AuthorizeDeviceService srv = AuthorizeDeviceService();
                     final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, getResetCodeTextController.text.toUpperCase());

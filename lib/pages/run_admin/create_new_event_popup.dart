@@ -7,10 +7,10 @@ class CreateNewEventPopup extends StatefulWidget {
   final String title;
 
   @override
-  _CreateNewEventPopupState createState() => _CreateNewEventPopupState();
+  CreateNewEventPopupState createState() => CreateNewEventPopupState();
 }
 
-class _CreateNewEventPopupState extends State<CreateNewEventPopup> {
+class CreateNewEventPopupState extends State<CreateNewEventPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
   TextEditingController eventNameAmountTextController = TextEditingController();
 
