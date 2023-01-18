@@ -218,33 +218,33 @@ class PaymentsService {
       hasherId = GUID_EMPTY;
     }
 
-    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + hasherId + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
+    final String tokenParameterString = '${hasherEventMapId.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
 
-    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherEventMapTableHelper,
           G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+    final DateTime hasherEventMapUpdatedAfter = hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
 
-    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherKennelMapTableHelper,
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
-    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
-    final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().paymentsTableHelper,
           G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
           G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
         );
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
+    final DateTime paymentsUpdatedAfter = paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(paymentsLastUpdated + 1);
 
     // final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
     //       G0<Database>(),

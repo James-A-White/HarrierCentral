@@ -105,9 +105,9 @@ class SyncKennelAdminService {
         'userId': userId,
         'accessToken': accessToken,
         'kennelId': kennelId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : (hashersUpdatedAfter.toString() + '000000').substring(0, 26),
-        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0 ? 'ignore' : (kennelsUpdatedAfter.toString() + '000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : (hasherKennelMapUpdatedAfter.toString() + '000000').substring(0, 26),
+        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : ('${hashersUpdatedAfter}000000').substring(0, 26),
+        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0 ? 'ignore' : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       });
 

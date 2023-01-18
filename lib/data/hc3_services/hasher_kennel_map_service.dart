@@ -226,21 +226,21 @@ class HasherKennelMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEmailAndNotificationPrefs');
 
-    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherEventMapTableHelper,
           G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherKennelMapTableHelper,
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
 
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
-    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+    final DateTime hasherEventMapUpdatedAfter = hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
     final Map<String, Object> bodyMap = <String, Object>{
       'userId': userId,
@@ -297,28 +297,28 @@ class HasherKennelMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherKennelMapTableHelper,
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
-    final num _kennelsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num kennelsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().kennelsTableHelper,
           G0<TableModel>().kennelsTableHelper.getTableName(appDomainType),
           G0<TableModel>().kennelsTableHelper.colUpdatedAtValue,
         );
-    final num _hashersLastUpdated = await G0<TableModel>().hashersService.getLastUpdatedTime(
+    final num hashersLastUpdated = await G0<TableModel>().hashersService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hashersTableHelper,
           G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
           G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
         );
 
-    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
-    final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_kennelsLastUpdated + 1);
-    final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
+    final DateTime kennelsUpdatedAfter = kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(kennelsLastUpdated + 1);
+    final DateTime hashersUpdatedAfter = hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
 
     monthsToAddToMembership ??= 0;
 
@@ -334,9 +334,9 @@ class HasherKennelMapService {
       'monthsToAddToMembership': monthsToAddToMembership,
       'appAccessFlags': appAccessFlags,
       'mismanagementRoles': mismanagementRoles,
-      'hasherKennelMapUpdatedAfter': (hasherKennelMapUpdatedAfter.toString() + '000000').substring(0, 26),
-      'kennelsUpdatedAfter': (kennelsUpdatedAfter.toString() + '000000').substring(0, 26),
-      'hashersUpdatedAfter': (hashersUpdatedAfter.toString() + '000000').substring(0, 26)
+      'hasherKennelMapUpdatedAfter': ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+      'kennelsUpdatedAfter': ('${kennelsUpdatedAfter}000000').substring(0, 26),
+      'hashersUpdatedAfter': ('${hashersUpdatedAfter}000000').substring(0, 26)
     });
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_kennel', body);

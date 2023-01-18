@@ -332,13 +332,13 @@ class EventsService extends BaseService {
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent');
 
-    final num _eventsLastUpdated = await getLastUpdatedTime(
+    final num eventsLastUpdated = await getLastUpdatedTime(
       G0<Database>(),
       G0<TableModel>().eventsTableHelper,
       G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
       G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
     );
-    final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_eventsLastUpdated + 1);
+    final DateTime eventUpdatedAfter = eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
 
     final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString()};
     if (isVisible != null) {

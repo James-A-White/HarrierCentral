@@ -737,7 +737,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> openMapsSheet(BuildContext context, String title, maps.Coords coords, String address) async {
+  Future<void> _openMapsSheet(BuildContext context, String title, maps.Coords coords, String address) async {
     try {
       final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
 
@@ -749,12 +749,27 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               child: Container(
                 child: Wrap(
                   children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
+                      child: Center(
+                        child: Text('Select map provider',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 26.0,
+                            )),
+                      ),
+                    ),
                     for (maps.AvailableMap map in availableMaps)
                       ListTile(
-                        onTap: () {
-                          if (_saveUserMapPreference.value) {}
+                        onTap: () async {
+                          if (_saveUserMapPreference.value) {
+                             await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
+                          }
+                          Navigator.pop(context);
 
-                          map.showMarker(
+                          await Future<void>.delayed(const Duration(milliseconds: 200));
+
+                          await map.showMarker(
                             coords: coords,
                             title: title,
                             description: address,
@@ -764,27 +779,31 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                             style: const TextStyle(
                               fontFamily: 'AvenirNextDemiBold',
                               color: Colors.black,
-                              fontSize: 20.0,
+                              fontSize: 26.0,
                             )),
                         leading: SvgPicture.asset(
                           map.icon,
-                          height: 45.0,
-                          width: 45.0,
+                          height: 60.0,
+                          width: 60.0,
                         ),
                       ),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         SnackContent(_saveUserMapPreference, (bool x) {
                           setState(() {
                             _saveUserMapPreference.value = x;
                           });
                         }),
-                        const Text('Always use this option',
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextDemiBold',
-                              color: Colors.black,
-                              fontSize: 18.0,
-                            ))
+                        const Text(
+                          'Always use this option',
+                          style: TextStyle(
+                            fontFamily: 'AvenirNextDemiBold',
+                            color: Colors.black,
+                            fontSize: 22.0,
+                          ),
+                        ),
+                        const SizedBox(width: 20.0)
                       ],
                     ),
                   ],
@@ -1331,26 +1350,25 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   // }
 
   Future<void> _launchMaps(RunDetailsAggregate rda) async {
-    String latStr = '';
-    String lonStr = '';
+    num lat;
+    num lon;
     String address = '';
-    //String url = '';
 
     if (rda.extensions.latitude != null) {
-      latStr = rda.extensions.latitude.toString();
+      lat = rda.extensions.latitude;
     }
 
     if (rda.extensions.longitude != null) {
-      lonStr = rda.extensions.longitude.toString();
+      lon = rda.extensions.longitude;
     }
 
-    if ((latStr == null) || (lonStr == null) || (double.tryParse(latStr) == null) || (double.tryParse(lonStr) == null)) {
+    if ((lat == null) || (lon == null)) {
       // try to get lat/lons from other sources
       final List<double> coords = Utilities.getLatLongFromString(<String>[rda.event.locationOneLineDesc, rda.event.eventDescription, rda.event.eventName]);
 
       if ((coords[0] != null) && (coords[1] != null)) {
-        latStr = coords[0].toString();
-        lonStr = coords[1].toString();
+        lat = coords[0];
+        lon = coords[1];
       }
     }
 
@@ -1372,176 +1390,20 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     address = address.trim();
 
-    if ((address.isEmpty) && (latStr.isEmpty || lonStr.isEmpty)) {
+    if ((address.isEmpty) && (lat == null || lon == null)) {
       address = rda.event.locationOneLineDesc;
     }
 
-    if (Platform.isIOS) {
-      getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == null ? _useNativeMapProvider = null : _useNativeMapProvider = getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == 1;
-
-      if (_useNativeMapProvider == null) {
-        final SnackBar snackBar = _buildDefaultMapSelectionSnackbar(context, _scaffoldKey.currentState);
-
-        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        await ScaffoldMessenger.of(context).showSnackBar(snackBar).closed;
-        if (_saveUserMapPreference.value) {
-          await setIntPref(IntPrefsEnum.usePlatformNativeMapApp, _useNativeMapProvider ? 1 : 0);
-        }
-      }
-    }
-
-    if ((_useNativeMapProvider ?? 1) == 1) {
-      final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
-      print(availableMaps); // [AvailableMap { mapName: Google Maps, mapType: google }, ...]
-
-      // use the native map provider for the selected platform
-      if ((latStr != '') && (lonStr != '')) {
-        // await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
-        await openMapsSheet(context, rda.event.eventName, maps.Coords(double.tryParse(latStr), double.tryParse(lonStr)), address ?? '');
-      } else if ((address != null) && (address.isNotEmpty)) {
-        // await MapsLauncher.launchQuery(address);
-        //await openMapsSheet(context);
-      } else {
-        await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
-      }
+    // use the native map provider for the selected platform
+    if ((lat != null) && (lon != null)) {
+      // await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
+      await _openMapsSheet(context, rda.event.eventName, maps.Coords(lat, lon), address ?? '');
     } else {
-      // otherwise, try to use Google Maps... if they don't exist, revert to Apple Maps
-      String url;
-      if ((address != null) && (address.isNotEmpty)) {
-        address = address.replaceAll(' ', '+');
-        address = Uri.encodeComponent(address);
-        url = address;
-      } else if ((latStr != '') && (lonStr != '')) {
-        url = latStr + ',' + lonStr;
-      } else {
-        unawaited(IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK'));
-      }
-      // otherwise default to using Google maps
-      final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
-      final String googleAppUrl = 'comgooglemaps://?q=$url';
-      String appleUrl = '';
-      if ((latStr.isNotEmpty) && (lonStr.isNotEmpty)) {
-        appleUrl = 'https://maps.apple.com/?sll=$latStr,$lonStr';
-      }
-
-      if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
-        //print('launching com googleUrl');
-        await launchUrl(Uri.parse(googleAppUrl));
-      } else if (Utilities.isValidUrl(googleWebUrl)) {
-        //print('launching Google web url');
-        await launchUrl(Uri.parse(googleWebUrl));
-      } else if ((appleUrl.isNotEmpty) && (Uri.parse(appleUrl).isAbsolute)) {
-        //print('launching apple url');
-        await launchUrl(Uri.parse(appleUrl));
-      } else {
-        throw 'Could not launch url';
-      }
+      await IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
     }
-
-    // final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
-    // final String googleAppUrl = 'comgooglemaps://?q=$url';
-    // String appleUrl = '';
-    // if ((latStr.isNotEmpty) && (lonStr.isNotEmpty)) {
-    //   appleUrl = 'https://maps.apple.com/?sll=$latStr,$lonStr';
-    // }
-
-    // if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
-    //   //print('launching com googleUrl');
-    //   await launchUrl(Uri.parse(googleAppUrl));
-    // } else if (Uri.parse(googleAppUrl).isAbsolute) {
-    //   //print('launching Google web url');
-    //   await launchUrl(Uri.parse(googleWebUrl));
-    // } else if ((appleUrl.isNotEmpty) && (Uri.parse(appleUrl).isAbsolute)) {
-    //   //print('launching apple url');
-    //   await launchUrl(Uri.parse(appleUrl));
-    // } else {
-    //   throw 'Could not launch url';
-    // }
   }
 
-  bool _useNativeMapProvider;
   final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
-
-  SnackBar _buildDefaultMapSelectionSnackbar(BuildContext context, ScaffoldState scaffoldState) {
-    final SnackBar snackbar = SnackBar(
-      content: Container(
-          color: Colors.white,
-          height: 210,
-          child: Column(
-            children: <Widget>[
-              const Padding(
-                padding: EdgeInsets.only(bottom: 14.0),
-                child: Text('Select map provider',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 26.0,
-                    )),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(width: 2.0, color: Colors.black),
-                        foregroundColor: Colors.grey.shade700,
-                        backgroundColor: Colors.white,
-                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-                      ),
-                      onPressed: () async {
-                        _useNativeMapProvider = false;
-                        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Image.asset(
-                          'images/icons/google_maps.png',
-                          width: 116.66,
-                          height: 100,
-                        ),
-                      )),
-                  OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(width: 2.0, color: Colors.black),
-                        foregroundColor: Colors.grey.shade700,
-                        backgroundColor: Colors.white,
-                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-                      ),
-                      onPressed: () async {
-                        _useNativeMapProvider = true;
-                        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Image.asset(
-                          'images/icons/apple_maps.png',
-                          width: 116.66,
-                          height: 100,
-                        ),
-                      )),
-                ],
-              ),
-              Row(
-                children: <Widget>[
-                  SnackContent(_saveUserMapPreference, (bool x) {
-                    setState(() {
-                      _saveUserMapPreference.value = x;
-                    });
-                  }),
-                  const Text('Always use this option',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20.0,
-                      ))
-                ],
-              ),
-            ],
-          )),
-      duration: const Duration(milliseconds: 100000),
-      backgroundColor: Colors.white,
-    );
-
-    return snackbar;
-  }
 }
 
 /// The ValueListenableBuilder rebuilds whenever [snackMsg] changes.

@@ -303,7 +303,7 @@ packages:
     source: hosted
     version: "0.7.0"
   flutter_cache_manager:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_cache_manager
       url: "https://pub.dartlang.org"
@@ -469,7 +469,7 @@ packages:
     source: hosted
     version: "6.2.0"
   flutter_spinkit:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_spinkit
       url: "https://pub.dartlang.org"
@@ -698,7 +698,7 @@ packages:
     source: hosted
     version: "1.0.0+1"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       url: "https://pub.dartlang.org"
@@ -744,7 +744,7 @@ packages:
     source: hosted
     version: "0.6.4"
   json_annotation:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: json_annotation
       url: "https://pub.dartlang.org"
@@ -912,7 +912,7 @@ packages:
     source: hosted
     version: "1.0.1"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       url: "https://pub.dartlang.org"
@@ -1129,7 +1129,7 @@ packages:
     source: hosted
     version: "1.0.1"
   qr_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: qr_flutter
       url: "https://pub.dartlang.org"
@@ -1267,19 +1267,19 @@ packages:
     source: hosted
     version: "1.9.1"
   sqflite:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqflite
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.0+3"
+    version: "2.2.3"
   sqflite_common:
     dependency: transitive
     description:
       name: sqflite_common
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.4.0+2"
+    version: "2.4.1"
   stack_trace:
     dependency: transitive
     description:
@@ -1456,12 +1456,12 @@ packages:
     source: hosted
     version: "2.1.2"
   video_player:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: video_player
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.4.7"
+    version: "2.4.10"
   video_player_android:
     dependency: transitive
     description:

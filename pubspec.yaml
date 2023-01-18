@@ -27,6 +27,7 @@ dependencies:
   # flutter_facebook_login: ^3.0.0 
   flutter:
     sdk: flutter
+  flutter_cache_manager: ^3.3.0
   flutter_facebook_auth: ^5.0.1
   flutter_image: ^4.1.0  
   flutter_image_compress: ^1.1.1 
@@ -38,6 +39,7 @@ dependencies:
   flutter_phoenix: ^1.0.0  
   flutter_slidable: 0.6.0  # 1.3.0 - new Flutter Slidable sucks. Will have to find an alternative - cannot use images for icons
   flutter_speed_dial: ^6.0.0 
+  flutter_spinkit: ^5.1.0
   flutter_staggered_grid_view: ^0.6.1 
   flutter_statusbarcolor_ns: ^0.4.0
   flutter_svg: ^1.1.6
@@ -50,6 +52,7 @@ dependencies:
   image_cropper: ^3.0.0
   image_picker: ^0.8.5+3
   internet_connection_checker: ^1.0.0+1
+  intl: ^0.17.0
   intro_slider: ^4.2.0
   ive_flutter_core:
     git:
@@ -59,6 +62,7 @@ dependencies:
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
       ref: 99f78ae9ec601059829ca8f6f8c276f3a2ea6944 # Version 1.1.8
+  json_annotation: ^4.7.0
   keyboard_actions: ^4.0.0 
   keyboard_avoider: ^0.1.2
   map_launcher: ^2.4.0
@@ -66,6 +70,7 @@ dependencies:
   meta: ^1.8.0 
   mobile_scanner: ^2.0.0
   package_info_plus: ^3.0.1
+  path_provider: ^2.0.11
   pausable_timer: ^1.0.0+5
   pdf_viewer_plugin: ^2.0.1
   permission_handler: ^10.0.0
@@ -74,13 +79,16 @@ dependencies:
   # qonversion_flutter: ^4.2.0 
   # qr_flutter: ^2.1.0+55 
   qr_code_scanner: ^1.0.0
+  qr_flutter: ^4.0.0
   shared_preferences: ^2.0.7 
   sign_in_with_apple: ^4.0.0 
+  sqflite: ^2.2.3
   step_progress_indicator: ^1.0.2
   sumup: ^0.5.0
   table_calendar: ^3.0.2 
   tinycolor: ^1.0.3 
   url_launcher: ^6.0.15 
+  video_player: ^2.4.10
   # video_player: ^1.0.1 
 
   # # flip_panel: ^1.0.0
@@ -112,7 +120,6 @@ dev_dependencies:
   flutter_launcher_icons: ^0.10.0 
   # intl_translation: ^0.17.10+1 
   flutter_lints: ^2.0.1
-  json_annotation: ^4.1.0 
   json_serializable: ^6.0.1
 
 flutter_icons:

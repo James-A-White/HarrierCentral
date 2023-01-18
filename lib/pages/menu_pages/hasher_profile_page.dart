@@ -172,7 +172,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   final TextEditingController _previousHaringCountController = TextEditingController();
   bool _historicalCountIsEstimate = false;
 
-  bool _useNativeMapProvider;
+  String _externalMapProvider;
 
   @override
   void initState() {
@@ -231,7 +231,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
     _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
-    getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == null ? _useNativeMapProvider = null : _useNativeMapProvider = getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == 1;
+    _externalMapProvider = getStringPref(StringPrefsEnum.mapPreference);
 
     super.initState();
   }
@@ -1069,7 +1069,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    if ((Platform.isIOS) && (_useNativeMapProvider != null)) ...<Widget>[
+                                    if (_externalMapProvider != null) ...<Widget>[
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: <Widget>[
@@ -1090,7 +1090,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                           Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
-                                              'You have set your map preference to ${_useNativeMapProvider ? 'Apple Maps' : 'Google Maps'}. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
+                                              'You have set your map preference to $_externalMapProvider. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
                                               style: bodyStyle,
                                               textAlign: TextAlign.center,
                                             ),
@@ -1113,15 +1113,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       showCancelButton: false,
                                                     );
 
-                                                    await removePref(IntPrefsEnum.usePlatformNativeMapApp);
+                                                    await removePref(StringPrefsEnum.mapPreference);
 
                                                     setState(() {
-                                                      print(getIntPref(IntPrefsEnum.usePlatformNativeMapApp));
-                                                      getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == null
-                                                          ? _useNativeMapProvider = null
-                                                          : _useNativeMapProvider = getIntPref(IntPrefsEnum.usePlatformNativeMapApp) == 1;
-
-                                                      print(_useNativeMapProvider.toString());
+                                                      _externalMapProvider = null;
                                                     });
                                                   },
                                                   child: Text(

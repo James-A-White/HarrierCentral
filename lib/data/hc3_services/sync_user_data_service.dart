@@ -1,4 +1,6 @@
 // @dart=2.11
+// ignore_for_file: constant_identifier_names
+
 import 'package:harrier_central/imports.dart';
 
 class SyncUserDataService {
@@ -137,14 +139,14 @@ class SyncUserDataService {
         final Map<String, String> params = <String, String>{
           'userId': userId,
           'accessToken': accessToken,
-          'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : (citiesUpdatedAfter.toString() + '000000').substring(0, 26),
-          'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : (regionsUpdatedAfter.toString() + '000000').substring(0, 26),
-          'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : (countriesUpdatedAfter.toString() + '000000').substring(0, 26),
-          'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : (hasherKennelMapUpdatedAfter.toString() + '000000').substring(0, 26),
-          'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : (hasherEventMapUpdatedAfter.toString() + '000000').substring(0, 26),
-          'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : (hashersUpdatedAfter.toString() + '000000').substring(0, 26),
-          'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : (kennelsUpdatedAfter.toString() + '000000').substring(0, 26),
-          'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : (narrowEventsUpdatedAfter.toString() + '000000').substring(0, 26),
+          'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : ('${citiesUpdatedAfter}000000').substring(0, 26),
+          'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : ('${regionsUpdatedAfter}000000').substring(0, 26),
+          'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : ('${countriesUpdatedAfter}000000').substring(0, 26),
+          'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+          'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+          'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : ('${hashersUpdatedAfter}000000').substring(0, 26),
+          'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+          'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
           'forceReplicateAllRunsForKennel': forceReplicateAllRunsForKennel ?? 'ignore',
           'usePaging': usePaging ? '1' : '0',
         };
@@ -175,7 +177,7 @@ class SyncUserDataService {
             responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
             informUser: informUser,
             suppressDeletes: true,
-            batchText: batchText + ' ' + batchNumber.toString(),
+            batchText: '$batchText $batchNumber',
             tables: tables.isEmpty ? null : tables,
           );
           //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
@@ -185,7 +187,10 @@ class SyncUserDataService {
             batchNumber++;
           }
         } else {
-          print('XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX');
+          if (kDebugMode) {
+            // ignore: avoid_print
+            print('XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX');
+          }
         }
 
         //print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');

@@ -37,6 +37,7 @@ enum StringPrefsEnum {
   thirdPartyEmail,
   paymentTerminalAccountKey,
   thirdPartyForceTokenRefresh,
+  mapPreference,
 }
 
 enum NumPrefsEnum {
@@ -58,7 +59,7 @@ enum IntPrefsEnum {
   mapShowKennels,
   isBetaTester,
   isResettingCache,
-  usePlatformNativeMapApp,
+  //usePlatformNativeMapApp,
 }
 
 enum DatePrefsEnum {

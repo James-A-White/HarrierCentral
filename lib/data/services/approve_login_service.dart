@@ -78,7 +78,7 @@ class ApproveLoginService {
 
     Future<Response> futureResponse;
 
-    futureResponse = post(Uri.parse(BASE_API_URL + 'hc3_approve_login_v2'), headers: <String, String>{'content-type': 'application/json'}, body: body
+    futureResponse = post(Uri.parse('${BASE_API_URL}hc3_approve_login_v2'), headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )

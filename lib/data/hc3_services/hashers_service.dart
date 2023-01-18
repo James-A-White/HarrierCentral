@@ -175,31 +175,31 @@ class HashersService extends BaseService {
     DateTime hasherKennelMapUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await getLastUpdatedTime(
+      final num hashersLastUpdated = await getLastUpdatedTime(
         G0<Database>(),
         G0<TableModel>().hashersTableHelper,
         G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
         G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
       );
-      hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+      hashersUpdatedAfter = hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
 
       // TODO(James): Check the logic here in this call we are using AppDomainType of event but in the next one we have logic to go between event and kennel
-      final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+      final num hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
             G0<Database>(),
             G0<TableModel>().hasherEventMapTableHelper,
             G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event),
             G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
           );
-      hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+      hasherEventMapUpdatedAfter = hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
 
       // this one has event and kennel
-      final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+      final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
             G0<Database>(),
             G0<TableModel>().hasherKennelMapTableHelper,
             G0<TableModel>().hasherKennelMapTableHelper.getTableName(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? AppDomainType.event : AppDomainType.kennel),
             G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
           );
-      hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+      hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
     } else {
       // do this to suppress any records being returned through the sync mechanism
       hashersUpdatedAfter = DateTime(2050, 1, 1);
@@ -368,13 +368,13 @@ class HashersService extends BaseService {
     DateTime hashersUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await getLastUpdatedTime(
+      final num hashersLastUpdated = await getLastUpdatedTime(
         G0<Database>(),
         G0<TableModel>().hashersTableHelper,
         G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
         G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
       );
-      hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+      hashersUpdatedAfter = hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
     } else {
       // do this to suppress any records being returned through the sync mechanism
       hashersUpdatedAfter = DateTime(2050, 1, 1);

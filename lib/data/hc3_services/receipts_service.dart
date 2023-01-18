@@ -156,13 +156,13 @@ class ReceiptsService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
-    final num _receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final num receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().receiptsTableHelper,
           G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
           G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
         );
-    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_receiptsLastUpdated + 1);
+    final DateTime receiptsUpdatedAfter = receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(receiptsLastUpdated + 1);
 
     final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
 
