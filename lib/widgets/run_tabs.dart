@@ -743,71 +743,86 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
       await showModalBottomSheet<dynamic>(
         context: context,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
         builder: (BuildContext context) {
           return SafeArea(
-            child: SingleChildScrollView(
-              child: Wrap(
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
-                    child: Center(
-                      child: Text('Select map provider',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 26.0,
-                          )),
-                    ),
-                  ),
-                  for (maps.AvailableMap map in availableMaps)
-                    ListTile(
-                      onTap: () async {
-                        if (_saveUserMapPreference.value) {
-                          await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
-                        }
-                        if (!mounted) return;
-                        Navigator.pop(context);
-
-                        await Future<void>.delayed(const Duration(milliseconds: 200));
-
-                        await map.showMarker(
-                          coords: coords,
-                          title: title,
-                          description: address,
-                        );
-                      },
-                      title: Text(map.mapName,
-                          style: const TextStyle(
-                            fontFamily: 'AvenirNextDemiBold',
-                            color: Colors.black,
-                            fontSize: 26.0,
-                          )),
-                      leading: SvgPicture.asset(
-                        map.icon,
-                        height: 60.0,
-                        width: 60.0,
-                      ),
-                    ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      SnackContent(_saveUserMapPreference, (bool x) {
-                        setState(() {
-                          _saveUserMapPreference.value = x;
-                        });
-                      }),
-                      const Text(
-                        'Always use this option',
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
+                  child: Center(
+                    child: Text('Select map provider',
                         style: TextStyle(
-                          fontFamily: 'AvenirNextDemiBold',
                           color: Colors.black,
-                          fontSize: 22.0,
-                        ),
-                      ),
-                      const SizedBox(width: 20.0)
-                    ],
+                          fontSize: 24.0,
+                        )),
                   ),
-                ],
-              ),
+                ),
+                const Divider(height: 1.0, color: Colors.black87),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Wrap(
+                      children: <Widget>[
+                        for (maps.AvailableMap map in availableMaps)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: ListTile(
+                              onTap: () async {
+                                if (_saveUserMapPreference.value) {
+                                  await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
+                                }
+                                if (!mounted) return;
+                                Navigator.pop(context);
+
+                                await Future<void>.delayed(const Duration(milliseconds: 200));
+
+                                // BUG in plugin - doesn't work when sending a title with Google maps
+                                await map.showMarker(
+                                  coords: coords,
+                                  title: map.mapName.contains('Google') ? '' : title,
+                                  description: address,
+                                );
+                              },
+                              title: Text(map.mapName,
+                                  style: const TextStyle(
+                                    fontFamily: 'AvenirNextDemiBold',
+                                    color: Colors.black,
+                                    fontSize: 26.0,
+                                  )),
+                              leading: SvgPicture.asset(
+                                map.icon,
+                                height: 60.0,
+                                width: 60.0,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 30.0),
+                      ],
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SnackContent(_saveUserMapPreference, (bool x) {
+                      setState(() {
+                        _saveUserMapPreference.value = x;
+                      });
+                    }),
+                    const Text(
+                      'Always use this option',
+                      style: TextStyle(
+                        fontFamily: 'AvenirNextDemiBold',
+                        color: Colors.black,
+                        fontSize: 22.0,
+                      ),
+                    ),
+                    const SizedBox(width: 20.0)
+                  ],
+                ),
+              ],
             ),
           );
         },
@@ -1397,8 +1412,20 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     // use the native map provider for the selected platform
     if ((lat != null) && (lon != null)) {
-      // await MapsLauncher.launchCoordinates(double.tryParse(latStr), double.tryParse(lonStr), rda.event.eventName);
-      await _openMapsSheet(context, rda.event.eventName, maps.Coords(lat, lon), address ?? '');
+      final String mapName = getStringPref(StringPrefsEnum.mapPreference);
+      if (mapName == null) {
+        await _openMapsSheet(context, address, maps.Coords(lat, lon), rda.event.eventName ?? '');
+      } else {
+        final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
+        final maps.AvailableMap activeMap = availableMaps.where((maps.AvailableMap map) => map.mapName == mapName).first;
+
+        // BUG in plugin - doesn't work when sending a title with Google maps
+        activeMap.showMarker(
+          coords: maps.Coords(lat, lon),
+          title: activeMap.mapName.contains('Google') ? '' : address,
+          description: address,
+        );
+      }
     } else {
       await IveCoreUtilities.showAlert(
           navigatorKey.currentContext, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
