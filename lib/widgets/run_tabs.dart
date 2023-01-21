@@ -747,23 +747,25 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(10.0),
         ),
         builder: (BuildContext context) {
-          return SafeArea(
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
-                  child: Center(
-                    child: Text('Select map provider',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 24.0,
-                        )),
+          return SizedBox(
+            height: (availableMaps.length * 64.0) + 170,
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
+                    child: Center(
+                      child: Text('Select map provider',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 24.0,
+                          )),
+                    ),
                   ),
-                ),
-                const Divider(height: 1.0, color: Colors.black87),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Wrap(
+                  const Divider(height: 1.0, color: Colors.black87),
+                  Expanded(
+                    child: ListView(
                       children: <Widget>[
                         for (maps.AvailableMap map in availableMaps)
                           Padding(
@@ -774,7 +776,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                   await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
                                 }
                                 if (!mounted) return;
-                                Navigator.pop(context);
+                                Navigator.of(context).pop();
 
                                 await Future<void>.delayed(const Duration(milliseconds: 200));
 
@@ -802,27 +804,27 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SnackContent(_saveUserMapPreference, (bool x) {
-                      setState(() {
-                        _saveUserMapPreference.value = x;
-                      });
-                    }),
-                    const Text(
-                      'Always use this option',
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextDemiBold',
-                        color: Colors.black,
-                        fontSize: 22.0,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SnackContent(_saveUserMapPreference, (bool x) {
+                        setState(() {
+                          _saveUserMapPreference.value = x;
+                        });
+                      }),
+                      const Text(
+                        'Always use this option',
+                        style: TextStyle(
+                          fontFamily: 'AvenirNextDemiBold',
+                          color: Colors.black,
+                          fontSize: 22.0,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 20.0)
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 20.0)
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         },

@@ -456,7 +456,7 @@ class HasherEventMapService {
     String hasherId,
     AppDomainType appDomainType,
     int attendenceState, {
-    int isHare = 0,
+    int isHare = -1,
     String qrScanText,
     String hemId,
   }) async {
