@@ -29,6 +29,8 @@ class CheckInPackModel {
     this.historicalTotalRunCount,
     this.historicalHaringCount,
     this.historicalCountIsEstimate,
+    this.totalRunsThisKennel,
+    this.totalHaringThisKennel,
     this.hemUpdatedAt,
     this.payUpdatedAt,
     this.credit,
@@ -58,6 +60,8 @@ class CheckInPackModel {
   final int historicalTotalRunCount;
   final int historicalHaringCount;
   final int historicalCountIsEstimate;
+  final int totalRunsThisKennel;
+  final int totalHaringThisKennel;
   final String hemUpdatedAt;
   final String payUpdatedAt;
   final num credit;
@@ -88,6 +92,8 @@ class CheckInPackModel {
         historicalTotalRunCount: map['historicalTotalRunCount'],
         historicalHaringCount: map['historicalHaringCount'],
         historicalCountIsEstimate: map['historicalCountIsEstimate'],
+        totalRunsThisKennel: map['totalRunsThisKennel'],
+        totalHaringThisKennel: map['totalHaringThisKennel'],
         hemUpdatedAt: map['hemUpdatedAt'],
         payUpdatedAt: map['payUpdatedAt'],
         isFollowing: map['isFollowing'],
@@ -261,6 +267,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             h.${G0<TableModel>().hashersTableHelper.colPhoto} as photo,
             0 as virginVisitorType,
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
+            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel,
+            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
             hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} as hemUpdatedAt,
             pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} as payUpdatedAt,
@@ -307,6 +315,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             CASE WHEN hem2.virginVisitorType = 1 THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" END as photo,
             coalesce(hem2.virginVisitorType,1) as virginVisitorType,
             coalesce(hem2.rsvpState,0) as rsvpState,
+            coalesce(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel,
+            coalesce(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
             coalesce(hem2.attendenceState,0) as attendenceState,
             hem2.updatedAt as hemUpdatedAt,
             pay2.updatedAt as payUpdatedAt,
@@ -338,6 +348,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             h3.photo as photo,
             hem3.virginVisitorType as virginVisitorType,
             coalesce(hem3.rsvpState,0) as rsvpState,
+            coalesce(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel,
+            coalesce(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
             coalesce(hem3.attendenceState,0) as attendenceState,
             hem3.updatedAt as hemUpdatedAt,
             pay3.updatedAt as payUpdatedAt,
@@ -437,7 +449,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               ((_filterValues[5] == 0) || (_filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (_filterValues[5] == 1 && (a.isMember ?? 0) == 1)) &&
               ((_filterValues[6] == 0) ||
                   (_filterValues[6] == -1) ||
-                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount ?? 0) + (a.hcTotalRunCount ?? 0))))))
+                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && ((_checkSpecialRun((a.totalRunsThisKennel ?? 0) + (a.historicalTotalRunCount ?? 0)))) ||
+                      (_checkSpecialHaring((a.totalHaringThisKennel ?? 0) + (a.historicalHaringCount ?? 0))))))
           .toList();
 
       _filteredList.sort((CheckInPackModel a, CheckInPackModel b) => a.nameForDisplay.compareTo(b.nameForDisplay));
@@ -504,7 +517,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
       if (_packList != null) {
         final List<CheckInPackModel> specialRunNumbers =
-            _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount ?? 0) + (a.hcTotalRunCount ?? 0)))).toList();
+            _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount ?? 0) + (a.totalRunsThisKennel ?? 0)))).toList();
+
+        specialRunNumbers
+            .addAll(_packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialHaring((a.historicalHaringCount ?? 0) + (a.totalHaringThisKennel ?? 0)))).toList());
+
         _drinkCount = specialRunNumbers.length;
       } else {
         _drinkCount = 0;
@@ -1362,7 +1379,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       child: Container(
         color: ((widget.eventAggregate.event.isCountedRun == 1) &&
                 (packMember.attendenceState >= attendenceAtHash.value) &&
-                (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0))))
+                ((_checkSpecialRun((packMember.totalRunsThisKennel ?? 0) + (packMember.historicalTotalRunCount ?? 0))) ||
+                    (_checkSpecialHaring((packMember.totalHaringThisKennel ?? 0) + (packMember.historicalHaringCount ?? 0)))))
             ? Colors.amber.shade100
             : Colors.white,
         width: MediaQuery.of(context).size.width,
@@ -1431,7 +1449,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
             if ((widget.eventAggregate.event.isCountedRun == 1) &&
                 (packMember.attendenceState >= attendenceAtHash.value) &&
-                (_checkSpecialRun((packMember.hcTotalRunCount ?? 0) + (packMember.historicalTotalRunCount ?? 0)))) ...<Widget>[
+                ((_checkSpecialRun((packMember.totalRunsThisKennel ?? 0) + (packMember.historicalTotalRunCount ?? 0))) ||
+                    (_checkSpecialHaring((packMember.totalHaringThisKennel ?? 0) + (packMember.historicalHaringCount ?? 0))))) ...<Widget>[
               Positioned(right: 8.0, top: 9.0, width: 35.0, height: 35.0, child: Image.asset('images/icons/beer_mug.png')),
             ],
 
@@ -1540,19 +1559,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   }),
             ),
 
-            if ((packMember.hcHaringCount != null) && (packMember.hcHaringCount != 0))
+            if ((packMember.totalHaringThisKennel != null) && (packMember.totalHaringThisKennel != 0))
               Positioned(
                 right: 4,
                 bottom: 17,
-                child: Text('Hared = ${packMember.hcHaringCount + (packMember.historicalHaringCount ?? 0)}',
-                    style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
+                child: Text('Hared = ${packMember.totalHaringThisKennel + (packMember.historicalHaringCount ?? 0)}',
+                    style: _getHaringLabelStyle(packMember.totalHaringThisKennel + (packMember.historicalHaringCount ?? 0), packMember.attendenceState)),
               ),
-            if (packMember.hcTotalRunCount != null)
+            if (packMember.totalRunsThisKennel != 0)
               Positioned(
                 right: 4,
                 bottom: 1,
-                child: Text('Total Runs = ${packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)}',
-                    style: _getRunLabelStyle(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
+                child: Text('Total Runs = ${packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount ?? 0)}',
+                    style: _getRunLabelStyle(packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
               ),
           ],
         ),
@@ -1569,6 +1588,36 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       }
     }
     return mediumText.copyWith(color: Colors.blue.shade800);
+  }
+
+  TextStyle _getHaringLabelStyle(int numHaring, int attendenceState) {
+    if (widget.eventAggregate.event.isCountedRun == 0) {
+      return mediumText.copyWith(color: Colors.grey);
+    } else if (attendenceState >= attendenceAtHash.value) {
+      if (_checkSpecialHaring(numHaring ?? 0)) {
+        return mediumTextRed;
+      }
+    }
+    return mediumText.copyWith(color: Colors.blue.shade800);
+  }
+
+  bool _checkSpecialHaring(int haringCount) {
+    haringCount ??= 0;
+    bool result = false;
+
+    if (haringCount == 1) {
+      result = true;
+    }
+
+    if ((haringCount % 5 == 0) && (haringCount > 0)) {
+      result = true;
+    }
+
+    if (haringCount % 100 == 69) {
+      result = true;
+    }
+
+    return result;
   }
 
   bool _checkSpecialRun(int runCount) {
