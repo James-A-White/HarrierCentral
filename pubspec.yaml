@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 1.2.1+642
+version: 1.2.1+643
 publish_to: none
 
 environment:
@@ -42,7 +42,7 @@ dependencies:
   flutter_speed_dial: ^6.0.0 
   flutter_spinkit: ^5.1.0
   flutter_staggered_grid_view: ^0.6.1 
-  flutter_statusbarcolor_ns: ^0.4.0
+  flutter_statusbarcolor_ns: ^0.5.0
   flutter_svg: ^1.1.6
   flutter_swiper: ^1.1.6
   flutter_vector_icons: ^2.0.0 
@@ -87,7 +87,7 @@ dependencies:
   sign_in_with_apple: ^4.0.0 
   sqflite: ^2.2.3
   step_progress_indicator: ^1.0.2
-  sumup: ^0.5.0
+  sumup: ^0.6.0
   table_calendar: ^3.0.2 
   tinycolor: ^1.0.3 
   url_launcher: ^6.0.15 
