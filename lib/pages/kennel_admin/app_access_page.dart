@@ -60,6 +60,9 @@ class AppAccessPageState extends State<AppAccessPage> {
                     getOption('Manage Members', appAccess.getAppAccess(authCanManageMembers), (bool value) {
                       appAccess.setAppAccess(authCanManageMembers, value);
                     }),
+                    getOption('Manage Awards', appAccess.getAppAccess(authCanManageAwards), (bool value) {
+                      appAccess.setAppAccess(authCanManageAwards, value);
+                    }),
 
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(

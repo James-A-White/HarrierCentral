@@ -506,6 +506,37 @@ class RunAdminPageState extends State<RunAdminPage> {
                 ),
               ),
             ),
+            if (_eventAggregate.extensions.appAccess.canManageAwards)
+              Container(
+                margin: const EdgeInsets.only(top: 20, bottom: 15),
+                width: 110,
+                height: 110,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                  ),
+                  child: Column(children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.only(left: 0, top: 4),
+                      child: Icon(FontAwesome5Solid.award, color: Colors.white, size: 50),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
+                      child: Text(
+                        'Drink\r\nlist',
+                        textAlign: TextAlign.center,
+                        style: buttonLabelStyleSmall,
+                      ),
+                    ),
+                  ]),
+                  onPressed: () {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(builder: (BuildContext context) => DrinksList(eventAggregate: _eventAggregate)),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       );

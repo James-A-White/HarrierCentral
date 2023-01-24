@@ -139,8 +139,9 @@ const int authCanManageKennel = 0x00000002;
 const int authCanManageRuns = 0x00000004;
 const int authCanManageHashCash = 0x00000008;
 const int authCanManageMembers = 0x00000010;
+const int authCanManageAwards = 0x00000020;
 const int authIsSuperAdmin = 0x40000000;
-const int authAllFlags = 0x0000001f;
+const int authAllFlags = 0x0000003f;
 
 class AppAccess {
   AppAccess(
@@ -184,6 +185,10 @@ class AppAccess {
 
   bool get canManageMembers {
     return (appAccessFlags ?? 0) & (authCanManageMembers | authIsSuperAdmin) != 0;
+  }
+
+  bool get canManageAwards {
+    return (appAccessFlags ?? 0) & (authCanManageAwards | authIsSuperAdmin) != 0;
   }
 }
 
@@ -232,6 +237,14 @@ const int mmRoleFlagSocialMediaWhore = 0x02000000;
 const int mmRoleFlagDownDownMaster = 0x04000000;
 
 const int mmRoleAllFlags = 0x07ffffff;
+
+const int specialRunNo = 0;
+const int specialRunFirstRun = 1;
+const int specialRunFifthRun = 2;
+const int specialRunTenthRun = 3;
+const int specialRunTwentyFive = 4;
+const int specialRunSixtyNine = 5;
+const int specialRunPalindrome = 6;
 
 class Mismanagement {
   Mismanagement(

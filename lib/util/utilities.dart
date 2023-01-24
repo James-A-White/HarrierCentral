@@ -270,4 +270,59 @@ class Utilities {
 
     return result;
   }
+
+  static int checkSpecialHaring(int haringCount) {
+    haringCount ??= 0;
+    int result = specialRunNo;
+
+    if (haringCount == 1) {
+      result = specialRunFirstRun;
+    }
+
+    if ((haringCount % 5 == 0) && (haringCount > 0)) {
+      result = specialRunFifthRun;
+    }
+
+    if (haringCount % 100 == 69) {
+      result = specialRunSixtyNine;
+    }
+
+    return result;
+  }
+
+  static int checkSpecialRun(int runCount) {
+    runCount ??= 0;
+
+    int result = specialRunNo;
+
+    if (runCount == 0) {
+      result = specialRunFirstRun;
+    }
+    if (runCount == 1) {
+      result = specialRunFirstRun;
+    }
+    if (runCount == 5) {
+      result = specialRunFifthRun;
+    }
+    if (runCount == 10) {
+      result = specialRunTenthRun;
+    }
+    if ((runCount % 25 == 0) && (runCount > 0)) {
+      result = specialRunTwentyFive;
+    }
+    if (runCount % 100 == 69) {
+      result = specialRunSixtyNine;
+    }
+
+    if ((result == specialRunNo) && (runCount > 10)) {
+      final String s = runCount.toString();
+      final String reversed = s.split('').reversed.join('');
+
+      if (s == reversed) {
+        result = specialRunPalindrome;
+      }
+    }
+
+    return result;
+  }
 }

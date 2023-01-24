@@ -97,6 +97,7 @@ export 'package:harrier_central/pages/misc_pages/hash_run_art_gallery_page.dart'
 export 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 export 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 export 'package:harrier_central/pages/run_admin/create_new_event_popup.dart';
+export 'package:harrier_central/pages/run_admin/drinks_list.dart';
 export 'package:harrier_central/pages/run_admin/edit_run_details.dart';
 export 'package:harrier_central/pages/run_admin/email_editor_page.dart';
 export 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';

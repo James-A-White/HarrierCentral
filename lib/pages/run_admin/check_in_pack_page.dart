@@ -487,6 +487,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
   }
 
+  bool _checkSpecialRun(int runCount) {
+    return Utilities.checkSpecialRun(runCount) != 0;
+  }
+
+  bool _checkSpecialHaring(int runCount) {
+    return Utilities.checkSpecialHaring(runCount) != 0;
+  }
+
   Future<void> _refreshCounters(bool forceRefresh) async {
     try {
       final String sql = ''' 
@@ -1599,59 +1607,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       }
     }
     return mediumText.copyWith(color: Colors.blue.shade800);
-  }
-
-  bool _checkSpecialHaring(int haringCount) {
-    haringCount ??= 0;
-    bool result = false;
-
-    if (haringCount == 1) {
-      result = true;
-    }
-
-    if ((haringCount % 5 == 0) && (haringCount > 0)) {
-      result = true;
-    }
-
-    if (haringCount % 100 == 69) {
-      result = true;
-    }
-
-    return result;
-  }
-
-  bool _checkSpecialRun(int runCount) {
-    runCount ??= 0;
-    bool result = false;
-    if (runCount == 0) {
-      result = true;
-    }
-    if (runCount == 1) {
-      result = true;
-    }
-    if (runCount == 5) {
-      result = true;
-    }
-    if (runCount == 10) {
-      result = true;
-    }
-    if ((runCount % 25 == 0) && (runCount > 0)) {
-      result = true;
-    }
-    if (runCount % 100 == 69) {
-      result = true;
-    }
-
-    if (!result && (runCount > 10)) {
-      final String s = runCount.toString();
-      final String reversed = s.split('').reversed.join('');
-
-      if (s == reversed) {
-        result = true;
-      }
-    }
-
-    return result;
   }
 
   Future<void> _updateRsvpState(CheckInPackModel packMember, int rsvpState, int isHare) async {
