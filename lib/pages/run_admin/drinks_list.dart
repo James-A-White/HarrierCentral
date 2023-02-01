@@ -110,8 +110,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
           coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>") as dispName,
           lower(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " ") as nameForSort,
           h.${G0<TableModel>().hashersTableHelper.colPhoto},         
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel
           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}  
           WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 

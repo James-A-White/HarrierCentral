@@ -1574,7 +1574,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 child: Text('Hared = ${packMember.totalHaringThisKennel + (packMember.historicalHaringCount ?? 0)}',
                     style: _getHaringLabelStyle(packMember.totalHaringThisKennel + (packMember.historicalHaringCount ?? 0), packMember.attendenceState)),
               ),
-            if (packMember.totalRunsThisKennel != 0)
+            if ((packMember.totalRunsThisKennel != null) && (packMember.totalRunsThisKennel != 0))
               Positioned(
                 right: 4,
                 bottom: 1,
