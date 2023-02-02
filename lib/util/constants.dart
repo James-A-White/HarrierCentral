@@ -242,9 +242,13 @@ const int specialRunNo = 0;
 const int specialRunFirstRun = 1;
 const int specialRunFifthRun = 2;
 const int specialRunTenthRun = 3;
-const int specialRunTwentyFive = 4;
-const int specialRunSixtyNine = 5;
-const int specialRunPalindrome = 6;
+const int specialRun25 = 4;
+const int specialRun69 = 5;
+const int specialRun100 = 6;
+const int specialRun250 = 7;
+const int specialRun500 = 8;
+const int specialRun1000 = 9;
+const int specialRunPalindrome = 10;
 
 class Mismanagement {
   Mismanagement(
