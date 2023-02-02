@@ -284,10 +284,47 @@ class Utilities {
     }
 
     if (haringCount % 100 == 69) {
-      result = specialRunSixtyNine;
+      result = specialRun69;
     }
 
     return result;
+  }
+
+  static Widget getProfilePic(String url, num width, num height) {
+    return url.startsWith('http')
+        ? CachedNetworkImage(
+            imageUrl: url,
+            placeholder: (BuildContext context, String url) => SizedBox(
+                height: height + .0,
+                width: width + .0,
+                child: const Center(
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3.0,
+                    ),
+                  ),
+                )),
+            errorWidget: (BuildContext context, String url, Object error) => Icon(Icons.error, size: height, color: Colors.red),
+            //fadeOutDuration:  Duration(seconds: 1),
+            fadeInDuration: const Duration(milliseconds: 0),
+            width: width + .0,
+            height: height + .0,
+            fit: BoxFit.fill)
+        : url.startsWith('bundle')
+            ? Image(
+                width: width + .0,
+                height: height + .0,
+                fit: BoxFit.fill,
+                image: AssetImage(('images/avatars/${url.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+              )
+            : Image(
+                width: width + .0,
+                height: height + .0,
+                fit: BoxFit.fill,
+                image: const AssetImage('images/avatars/avatar-2.jpg'),
+              );
   }
 
   static int checkSpecialRun(int runCount) {
@@ -295,23 +332,40 @@ class Utilities {
 
     int result = specialRunNo;
 
-    if (runCount == 0) {
+    if ((result == specialRunNo) && (runCount % 1000 == 0) && (runCount > 0)) {
+      result = specialRun1000;
+    }
+
+    if ((result == specialRunNo) && (runCount % 500 == 0) && (runCount > 0)) {
+      result = specialRun500;
+    }
+
+    if ((result == specialRunNo) && (runCount % 250 == 0) && (runCount > 0)) {
+      result = specialRun250;
+    }
+
+    if ((result == specialRunNo) && (runCount % 100 == 0) && (runCount > 0)) {
+      result = specialRun100;
+    }
+
+    if ((result == specialRunNo) && (runCount % 25 == 0) && (runCount > 0)) {
+      result = specialRun25;
+    }
+
+    if ((result == specialRunNo) && ((runCount == 0) || (runCount == 1))) {
       result = specialRunFirstRun;
     }
-    if (runCount == 1) {
-      result = specialRunFirstRun;
-    }
-    if (runCount == 5) {
+
+    if ((result == specialRunNo) && (runCount == 5)) {
       result = specialRunFifthRun;
     }
-    if (runCount == 10) {
+
+    if ((result == specialRunNo) && (runCount == 10)) {
       result = specialRunTenthRun;
     }
-    if ((runCount % 25 == 0) && (runCount > 0)) {
-      result = specialRunTwentyFive;
-    }
+
     if (runCount % 100 == 69) {
-      result = specialRunSixtyNine;
+      result = specialRun69;
     }
 
     if ((result == specialRunNo) && (runCount > 10)) {

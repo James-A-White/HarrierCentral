@@ -62,6 +62,10 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
 
   bool _isLoading = false;
 
+  final int LIST_ITEM_HEIGHT = 120;
+
+  final List<DrinksResults> _awards = <DrinksResults>[];
+
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
       if (showLoadingIndicator) {
@@ -119,13 +123,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
           AND h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 
           ''';
 
-    //_DrinksListFuture = Future<List<dynamic>>.value(<DrinksResults>[]);
-
-    // final List<dynamic> kList = <dynamic>[];
-    // int lastMemberType = 0;
-
     try {
-      List<DrinksResults> awards = <DrinksResults>[];
+      _awards.clear();
 
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
       for (int i = 0; i < results.length; i++) {
@@ -136,10 +135,9 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
         hlrItem.specialHaringCount = Utilities.checkSpecialHaring(hlrItem.totalHaringThisKennel);
 
         if ((hlrItem.specialRunCount != specialRunNo) || (hlrItem.specialHaringCount != specialRunNo)) {
-          awards.add(hlrItem);
+          _awards.add(hlrItem);
         }
       }
-      int xxx = 0;
     } catch (e) {
       print(e);
     }
@@ -155,6 +153,44 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: appBar, key: _scaffoldKey, body: Container(color: Colors.purple));
+    return Scaffold(
+      appBar: appBar,
+      key: _scaffoldKey,
+      body: SafeArea(
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: _awards.length,
+          //padding: const EdgeInsets.only(top: 5),
+          // separatorBuilder: (BuildContext context, int index) => const Divider(
+          //   height: 1.0,
+          //   color: Colors.black45,
+          // ),
+
+          //itemExtent: 58.0,
+          //shrinkWrap: true,
+          itemBuilder: (BuildContext context, int index) {
+            return Row(
+              children: [
+                Utilities.getProfilePic(
+                  _awards[index].photo,
+                  LIST_ITEM_HEIGHT,
+                  LIST_ITEM_HEIGHT,
+                ),
+              ],
+            );
+
+            // return Container(
+            //   height: 120.0,
+            //   child: ListTile(
+            //     dense: false,
+            //     visualDensity: VisualDensity(vertical: 4), // to expand
+            //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
+            //     title: Text(_awards[index].dispName),
+            //   ),
+            // );
+          },
+        ),
+      ),
+    );
   }
 }

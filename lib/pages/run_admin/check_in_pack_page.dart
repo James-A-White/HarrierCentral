@@ -1410,40 +1410,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   ),
                 );
               },
-              child: packMember.photo.startsWith('http')
-                  ? CachedNetworkImage(
-                      imageUrl: packMember.photo,
-                      placeholder: (BuildContext context, String url) => const SizedBox(
-                          height: LIST_ITEM_HEIGHT,
-                          width: LIST_ITEM_HEIGHT,
-                          child: Center(
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3.0,
-                              ),
-                            ),
-                          )),
-                      errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error, size: LIST_ITEM_HEIGHT, color: Colors.red),
-                      //fadeOutDuration:  Duration(seconds: 1),
-                      fadeInDuration: const Duration(milliseconds: 0),
-                      width: LIST_ITEM_HEIGHT,
-                      height: LIST_ITEM_HEIGHT,
-                      fit: BoxFit.fill)
-                  : packMember.photo.startsWith('bundle')
-                      ? Image(
-                          width: LIST_ITEM_HEIGHT,
-                          height: LIST_ITEM_HEIGHT,
-                          fit: BoxFit.fill,
-                          image: AssetImage(('images/avatars/${packMember.photo.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
-                        )
-                      : const Image(
-                          width: LIST_ITEM_HEIGHT,
-                          height: LIST_ITEM_HEIGHT,
-                          fit: BoxFit.fill,
-                          image: AssetImage('images/avatars/avatar-2.jpg'),
-                        ),
+              child: Utilities.getProfilePic(packMember.photo, LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT),
             ),
 
             Positioned(
