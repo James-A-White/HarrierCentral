@@ -240,15 +240,14 @@ const int mmRoleAllFlags = 0x07ffffff;
 
 const int specialRunNo = 0;
 const int specialRunFirstRun = 1;
-const int specialRunFifthRun = 2;
-const int specialRunTenthRun = 3;
-const int specialRun25 = 4;
-const int specialRun69 = 5;
-const int specialRun100 = 6;
-const int specialRun250 = 7;
-const int specialRun500 = 8;
-const int specialRun1000 = 9;
-const int specialRunPalindrome = 10;
+const int specialRunFifthRun = 5;
+const int specialRunTenthRun = 10;
+const int specialRun25 = 25;
+const int specialRun69 = 69;
+const int specialRun100 = 100;
+const int specialRun250 = 250;
+const int specialRun1000 = 1000;
+const int specialRunPalindrome = 969;
 
 class Mismanagement {
   Mismanagement(

@@ -62,7 +62,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
 
   bool _isLoading = false;
 
-  final int LIST_ITEM_HEIGHT = 120;
+  final int LIST_ITEM_HEIGHT = 84;
+  final int LIST_ITEM_ELEMENT_HEIGHT = 84;
 
   final List<DrinksResults> _awards = <DrinksResults>[];
 
@@ -111,7 +112,11 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
     final String query = ''' 
         SELECT 
           h.${G0<TableModel>().hashersTableHelper.colHasherId},
-          coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>") as dispName,
+          coalesce(
+            hem.${G0<TableModel>().hasherEventMapTableHelper.colDisplayName},
+            h.${G0<TableModel>().hashersTableHelper.colDispName},
+            h.${G0<TableModel>().hashersTableHelper.colHashName},
+            h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>") as dispName,
           lower(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " ") as nameForSort,
           h.${G0<TableModel>().hashersTableHelper.colPhoto},         
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
@@ -121,6 +126,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
           WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20
           AND h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 
+          ORDER BY totalHaringThisKennel, totalRunsThisKennel
           ''';
 
     try {
@@ -157,9 +163,13 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
       appBar: appBar,
       key: _scaffoldKey,
       body: SafeArea(
-        child: ListView.builder(
+        child: ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
           itemCount: _awards.length,
+          separatorBuilder: (BuildContext context, int index) => const Divider(
+            height: 1.0,
+            color: Colors.black45,
+          ),
           //padding: const EdgeInsets.only(top: 5),
           // separatorBuilder: (BuildContext context, int index) => const Divider(
           //   height: 1.0,
@@ -170,12 +180,75 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
           //shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
             return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                SizedBox(
+                  height: LIST_ITEM_HEIGHT + .0,
+                  width: 10.0,
+                ),
                 Utilities.getProfilePic(
                   _awards[index].photo,
-                  LIST_ITEM_HEIGHT,
-                  LIST_ITEM_HEIGHT,
+                  LIST_ITEM_ELEMENT_HEIGHT,
+                  LIST_ITEM_ELEMENT_HEIGHT,
                 ),
+                Expanded(
+                    child: Column(
+                  children: <Widget>[
+                    FittedBox(
+                      child: Text(
+                        _awards[index].dispName,
+                        style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                      ),
+                    ),
+                    if (_awards[index].specialRunCount == 1) ...<Widget>[
+                      const FittedBox(
+                        child: Text(
+                          '1 run',
+                          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                        ),
+                      ),
+                    ],
+                    if (_awards[index].specialRunCount > 1) ...<Widget>[
+                      FittedBox(
+                        child: Text(
+                          '${_awards[index].totalRunsThisKennel.toString()} runs',
+                          style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                        ),
+                      ),
+                    ],
+                    if (_awards[index].specialHaringCount == 1) ...<Widget>[
+                      const FittedBox(
+                        child: Text(
+                          'First time haring',
+                          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                        ),
+                      ),
+                    ],
+                    if (_awards[index].specialHaringCount > 1) ...<Widget>[
+                      FittedBox(
+                        child: Text(
+                          '${_awards[index].totalHaringThisKennel.toString()} hared runs',
+                          style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                        ),
+                      ),
+                    ],
+                  ],
+                )),
+                if (_awards[index].specialRunCount > 0) ...<Widget>[
+                  Image.asset(
+                    'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
+                    height: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                    width: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                  ),
+                ],
+                if (_awards[index].specialHaringCount > 0) ...<Widget>[
+                  Image.asset(
+                    'images/run_count_icons/rabbit_with_beer.png',
+                    height: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                    width: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                  ),
+                ],
+                const Divider()
               ],
             );
 

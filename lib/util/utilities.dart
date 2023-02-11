@@ -332,40 +332,30 @@ class Utilities {
 
     int result = specialRunNo;
 
-    if ((result == specialRunNo) && (runCount % 1000 == 0) && (runCount > 0)) {
-      result = specialRun1000;
-    }
-
-    if ((result == specialRunNo) && (runCount % 500 == 0) && (runCount > 0)) {
-      result = specialRun500;
-    }
-
-    if ((result == specialRunNo) && (runCount % 250 == 0) && (runCount > 0)) {
-      result = specialRun250;
-    }
-
-    if ((result == specialRunNo) && (runCount % 100 == 0) && (runCount > 0)) {
-      result = specialRun100;
-    }
-
-    if ((result == specialRunNo) && (runCount % 25 == 0) && (runCount > 0)) {
-      result = specialRun25;
-    }
-
-    if ((result == specialRunNo) && ((runCount == 0) || (runCount == 1))) {
+    if (((runCount == 0) || (runCount == 1))) {
       result = specialRunFirstRun;
-    }
-
-    if ((result == specialRunNo) && (runCount == 5)) {
+    } else if (runCount == 5) {
       result = specialRunFifthRun;
-    }
-
-    if ((result == specialRunNo) && (runCount == 10)) {
+    } else if (runCount == 10) {
       result = specialRunTenthRun;
-    }
-
-    if (runCount % 100 == 69) {
+    } else if (runCount % 100 == 69) {
       result = specialRun69;
+    } else if (runCount > 0) {
+      if (runCount % 25 == 0) {
+        result = specialRun25;
+      }
+
+      if (runCount % 100 == 0) {
+        result = specialRun100;
+      }
+
+      if (runCount % 250 == 0) {
+        result = specialRun250;
+      }
+
+      if (runCount % 1000 == 0) {
+        result = specialRun1000;
+      }
     }
 
     if ((result == specialRunNo) && (runCount > 10)) {

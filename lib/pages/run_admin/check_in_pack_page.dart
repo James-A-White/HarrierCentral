@@ -491,8 +491,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return Utilities.checkSpecialRun(runCount) != 0;
   }
 
-  bool _checkSpecialHaring(int runCount) {
-    return Utilities.checkSpecialHaring(runCount) != 0;
+  bool _checkSpecialHaring(int haringCount) {
+    return Utilities.checkSpecialHaring(haringCount) != 0;
   }
 
   Future<void> _refreshCounters(bool forceRefresh) async {
