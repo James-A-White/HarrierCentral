@@ -290,41 +290,57 @@ class Utilities {
     return result;
   }
 
-  static Widget getProfilePic(String url, num width, num height) {
-    return url.startsWith('http')
-        ? CachedNetworkImage(
-            imageUrl: url,
-            placeholder: (BuildContext context, String url) => SizedBox(
-                height: height + .0,
+  static Widget getProfilePic(String image, num width, num height, BuildContext context, String pageTitle) {
+    return GestureDetector(
+        onTap: () {
+          Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => ZoomableImagePage2(
+                  key: const Key('511203069'),
+                  pageTitle: pageTitle,
+                  imageUrl: image.startsWith('http') ? image : null,
+                  assetImage: image.contains('bundle://') ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg' : null,
+                  appBarBackgroundColor: themeAppBarBackground,
+                  background: Backgrounds.defaultHcBackground(),
+                  margin: 20.0),
+            ),
+          );
+        },
+        child: image.startsWith('http')
+            ? CachedNetworkImage(
+                imageUrl: image,
+                placeholder: (BuildContext context, String url) => SizedBox(
+                    height: height + .0,
+                    width: width + .0,
+                    child: const Center(
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3.0,
+                        ),
+                      ),
+                    )),
+                errorWidget: (BuildContext context, String url, Object error) => Icon(Icons.error, size: height, color: Colors.red),
+                //fadeOutDuration:  Duration(seconds: 1),
+                fadeInDuration: const Duration(milliseconds: 0),
                 width: width + .0,
-                child: const Center(
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3.0,
-                    ),
-                  ),
-                )),
-            errorWidget: (BuildContext context, String url, Object error) => Icon(Icons.error, size: height, color: Colors.red),
-            //fadeOutDuration:  Duration(seconds: 1),
-            fadeInDuration: const Duration(milliseconds: 0),
-            width: width + .0,
-            height: height + .0,
-            fit: BoxFit.fill)
-        : url.startsWith('bundle')
-            ? Image(
-                width: width + .0,
                 height: height + .0,
-                fit: BoxFit.fill,
-                image: AssetImage(('images/avatars/${url.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
-              )
-            : Image(
-                width: width + .0,
-                height: height + .0,
-                fit: BoxFit.fill,
-                image: const AssetImage('images/avatars/avatar-2.jpg'),
-              );
+                fit: BoxFit.fill)
+            : image.startsWith('bundle')
+                ? Image(
+                    width: width + .0,
+                    height: height + .0,
+                    fit: BoxFit.fill,
+                    image: AssetImage(('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                  )
+                : Image(
+                    width: width + .0,
+                    height: height + .0,
+                    fit: BoxFit.fill,
+                    image: const AssetImage('images/avatars/avatar-2.jpg'),
+                  ));
   }
 
   static int checkSpecialRun(int runCount) {

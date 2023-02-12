@@ -516,14 +516,14 @@ class RunAdminPageState extends State<RunAdminPage> {
                     padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
                   ),
                   child: Column(children: <Widget>[
-                    const Padding(
-                      padding: EdgeInsets.only(left: 0, top: 4),
-                      child: Icon(FontAwesome5Solid.award, color: Colors.white, size: 50),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 3, top: 1),
+                      child: Image.asset('images/icons/run_awards.png', height: 55.0, width: 55.0),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
                       child: Text(
-                        'Drink\r\nlist',
+                        'Award\r\nlist',
                         textAlign: TextAlign.center,
                         style: buttonLabelStyleSmall,
                       ),

@@ -17,6 +17,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
   @override
   void initState() {
     _futureRun = widget.futureRun;
+
     super.initState();
   }
 

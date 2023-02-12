@@ -1394,24 +1394,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
-            GestureDetector(
-              onTap: () {
-                Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => ZoomableImagePage2(
-                        key: const Key('511203069'),
-                        pageTitle: packMember.nameForDisplay,
-                        imageUrl: packMember.photo.startsWith('http') ? packMember.photo : null,
-                        assetImage: packMember.photo.contains('bundle://') ? 'images/avatars/${packMember.photo.replaceAll('bundle://', '')}.jpg' : null,
-                        appBarBackgroundColor: themeAppBarBackground,
-                        background: Backgrounds.defaultHcBackground(),
-                        margin: 20.0),
-                  ),
-                );
-              },
-              child: Utilities.getProfilePic(packMember.photo, LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT),
-            ),
+            Utilities.getProfilePic(packMember.photo, LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT, context, packMember.nameForDisplay),
 
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN + 2.0,

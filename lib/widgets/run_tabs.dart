@@ -151,7 +151,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   @override
   void initState() {
     //_scrollController.createScrollPosition(physics, context, oldPosition) = 0;
-    _refreshHemTableFromBackend(false);
+    //_refreshHemTableFromBackend(false);
     _initTabs();
     _tabController = TabController(vsync: this, length: _tabs.length);
     _gridListTabController = TabController(vsync: this, length: 2);
@@ -172,6 +172,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? coords[0] ?? widget.futureRun.kennel.kennelLatitude + .0,
         widget.futureRun.extensions.longitude ?? coords[1] ?? widget.futureRun.kennel.kennelLongitude + .0);
 
+    if ((widget.futureRun.extensions.rsvpState ?? 0) == 0) {
+      _tabController.animateTo(1);
+    }
     super.initState();
   }
 
