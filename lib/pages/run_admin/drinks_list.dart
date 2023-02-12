@@ -119,10 +119,15 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
             h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>") as dispName,
           lower(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " ") as nameForSort,
           h.${G0<TableModel>().hashersTableHelper.colPhoto},         
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) 
+          + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0)
+          as totalHaringThisKennel,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) 
+          + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},0)
+          as totalRunsThisKennel
           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}  
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
           WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20
           AND h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 

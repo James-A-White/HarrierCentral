@@ -139,6 +139,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _tabs.add(const Tab(text: 'Details'));
     _tabs.add(const Tab(text: 'RSVP'));
     _tabs.add(const Tab(text: 'Map'));
+    _tabs.add(const Tab(text: 'Wankers'));
   }
 
   TabController _tabController;
@@ -156,9 +157,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _tabController = TabController(vsync: this, length: _tabs.length);
     _gridListTabController = TabController(vsync: this, length: 2);
     _tabController.addListener(() async {
-      if (fabIsVisible != (_tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
+      if (_fabIsVisible != (_tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
         setState(() {
-          fabIsVisible = _tabs[_tabController.index].text.toLowerCase() == 'rsvp';
+          _fabIsVisible = _tabs[_tabController.index].text.toLowerCase() == 'rsvp';
           if (_tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
             //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
             _refreshHemTableFromBackend(false);
@@ -220,7 +221,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   TextStyle rsvpTitlesView =
       TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1);
 
-  EnumRsvpState<int> rsvpRequested = rsvpUnknown;
+  EnumRsvpState<int> _rsvpRequested = rsvpUnknown;
 
   Widget _buildRsvpView() {
     //print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
@@ -262,7 +263,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               ? Colors.grey
                               : _thePackList[_thisUserIndex].hem.rsvpState == rsvpYes.value
                                   ? Colors.green
-                                  : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpYes)
+                                  : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpYes)
                                       ? Colors.blue
                                       : Colors.grey,
                           //tooltip: 'Select to follow a Kennel',
@@ -326,7 +327,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               ? Colors.grey
                               : _thePackList[_thisUserIndex].hem.rsvpState == rsvpMaybe.value
                                   ? Colors.orange
-                                  : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpMaybe)
+                                  : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpMaybe)
                                       ? Colors.blue
                                       : Colors.grey,
                           //tooltip: 'Select to follow a Kennel',
@@ -387,7 +388,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               ? Colors.grey
                               : _thePackList[_thisUserIndex].hem.rsvpState == rsvpNo.value
                                   ? Colors.red
-                                  : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpNo)
+                                  : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpNo)
                                       ? Colors.blue
                                       : Colors.grey,
                           //tooltip: 'Select to follow a Kennel',
@@ -483,7 +484,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         const Expanded(flex: 40, child: SizedBox()),
                         Text(
                           'Be the first to RSVP\r\nfor this run!',
-                          style: headingStyle,
+                          style: largeTitleStyle,
                           textAlign: TextAlign.center,
                         ),
                         if (_thisUserIndex == -1) ..._getRsvpButtons(),
@@ -492,6 +493,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     )
                   : Column(
                       children: <Widget>[
+                        if (_thisUserIndex == -1) ..._getRsvpButtons(),
+                        if (_thisUserIndex == -1) ...<Widget>[const SizedBox(height: 10)],
                         Container(
                           padding: const EdgeInsets.all(8.0),
                           width: 140.0,
@@ -692,7 +695,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         if (_thisUserIndex >= 0) {
           _thePackList[_thisUserIndex].hem.rsvpState = -1;
           _thePackList[_thisUserIndex].hem.isHare = -1;
-          rsvpRequested = rsvpYes;
+          _rsvpRequested = rsvpYes;
         }
       });
 
@@ -719,8 +722,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       if (_thisUserIndex >= 0) {
         _thePackList[_thisUserIndex].hem.rsvpState = -1;
         _thePackList[_thisUserIndex].hem.isHare = 0;
-        rsvpRequested = rsvpState;
       }
+      _rsvpRequested = rsvpState;
     });
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -839,6 +842,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
+  Widget _buildWankersView() {
+    return Container(color: Colors.blue);
+  }
+
   Widget _buildMapView() {
     final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
 
@@ -935,7 +942,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  bool fabIsVisible = false;
+  bool _fabIsVisible = false;
 
   Widget _getRsvpButton(IconData iconData, Color iconColor, String text, EnumRsvpState<int> rsvpState) {
     return ElevatedButton(
@@ -976,12 +983,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   List<Widget> _getRsvpButtons() {
-    return <Widget>[
-      const SizedBox(height: 30.0),
-      _getRsvpButton(FontAwesome.check_circle, Colors.green, 'I\'ll be there!', rsvpYes),
-      _getRsvpButton(FontAwesome.check_circle, Colors.orange, 'I might come!', rsvpMaybe),
-      _getRsvpButton(FontAwesome.check_circle, Colors.red, 'I will not come', rsvpNo),
-    ];
+    if (_rsvpRequested != rsvpUnknown) {
+      return <Widget>[const HcCircularProgressIndicator(key: Key('3920394'))];
+    } else {
+      return <Widget>[
+        const SizedBox(height: 30.0),
+        _getRsvpButton(FontAwesome.check_circle, Colors.green, 'I\'ll be there!', rsvpYes),
+        _getRsvpButton(FontAwesome.check_circle, Colors.orange, 'I might come!', rsvpMaybe),
+        _getRsvpButton(FontAwesome.check_circle, Colors.red, 'I will not come', rsvpNo),
+      ];
+    }
   }
 
   @override
@@ -992,7 +1003,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       key: _scaffoldKey,
       floatingActionButton: AnimatedOpacity(
         duration: const Duration(milliseconds: 500),
-        opacity: fabIsVisible ? 1.0 : 0.0,
+        opacity: _fabIsVisible ? 1.0 : 0.0,
         child: SpeedDial(
           // both default to 16
           // marginEnd: 18,
@@ -1102,6 +1113,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 _buildRunDetailsView(),
                 _buildRsvpView(),
                 _buildMapView(),
+                _buildWankersView(),
               ]
                   // children: tabs.map((Tab tab) {
                   //   return Center(
