@@ -6,6 +6,40 @@ import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
 
+class LeaderboardModel {
+  String displayName;
+  int totalRunCount;
+  int totalHaringCount;
+  int ytdTotalRunCount;
+  int ytdHaringCount;
+  int rollingYearTotalRunCount;
+  int rollingYearHaringCount;
+
+  LeaderboardModel({this.displayName, this.totalRunCount, this.totalHaringCount, this.ytdTotalRunCount, this.ytdHaringCount, this.rollingYearTotalRunCount, this.rollingYearHaringCount});
+
+  LeaderboardModel.fromJson(Map<String, dynamic> json) {
+    displayName = json['displayName'];
+    totalRunCount = json['totalRunCount'];
+    totalHaringCount = json['totalHaringCount'];
+    ytdTotalRunCount = json['ytdTotalRunCount'];
+    ytdHaringCount = json['ytdHaringCount'];
+    rollingYearTotalRunCount = json['rollingYearTotalRunCount'];
+    rollingYearHaringCount = json['rollingYearHaringCount'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['displayName'] = displayName;
+    data['totalRunCount'] = totalRunCount;
+    data['totalHaringCount'] = totalHaringCount;
+    data['ytdTotalRunCount'] = ytdTotalRunCount;
+    data['ytdHaringCount'] = ytdHaringCount;
+    data['rollingYearTotalRunCount'] = rollingYearTotalRunCount;
+    data['rollingYearHaringCount'] = rollingYearHaringCount;
+    return data;
+  }
+}
+
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
 
@@ -37,6 +71,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   GlobalKey packListBox = GlobalKey();
 
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _leaderScrollController = ScrollController();
 
   bool isAdmin = true;
   //bool _isLoading = true;
@@ -59,13 +94,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Pack member data synchronized $resultStr');
 
-    await refreshPackListFromTable();
-    await refreshPackCountFromTable(true);
+    await _refreshPackListFromTable();
+    await _refreshPackCountFromTable(true);
   }
 
   int _thisUserIndex = -1;
 
-  Future<void> refreshPackListFromTable() async {
+  Future<void> _refreshPackListFromTable() async {
     final String query = ''' 
         SELECT  
           hem.*,
@@ -107,7 +142,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> refreshPackCountFromTable(bool callSetState) async {
+  Future<void> _refreshPackCountFromTable(bool callSetState) async {
     _packCount = <String, dynamic>{};
 
     final String query = ''' 
@@ -134,20 +169,33 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
+  // ignore: non_constant_identifier_names
+  final String LABEL_DETAILS = 'Details';
+  // ignore: non_constant_identifier_names
+  final String LABEL_MAP = 'Map';
+  // ignore: non_constant_identifier_names
+  final String LABEL_RSVP = 'RSVP';
+  // ignore: non_constant_identifier_names
+  final String LABEL_GETALIFE = 'GetALife';
+
   void _initTabs() {
     _tabs.clear();
-    _tabs.add(const Tab(text: 'Details'));
-    _tabs.add(const Tab(text: 'RSVP'));
-    _tabs.add(const Tab(text: 'Map'));
-    _tabs.add(const Tab(text: 'Wankers'));
+    _tabs.add(Tab(text: LABEL_DETAILS));
+    _tabs.add(Tab(text: LABEL_RSVP));
+    _tabs.add(Tab(text: LABEL_MAP));
+    _tabs.add(Tab(text: LABEL_GETALIFE));
   }
 
   TabController _tabController;
   TabController _gridListTabController;
 
+  List<LeaderboardModel> _leaderboardList;
+
   //final GetPackService _getPackService = GetPackService();
 
   final String _userId = getStringPref(StringPrefsEnum.userId);
+
+  int _currentTabIndex = -1;
 
   @override
   void initState() {
@@ -157,15 +205,31 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _tabController = TabController(vsync: this, length: _tabs.length);
     _gridListTabController = TabController(vsync: this, length: 2);
     _tabController.addListener(() async {
-      if (_fabIsVisible != (_tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
-        setState(() {
-          _fabIsVisible = _tabs[_tabController.index].text.toLowerCase() == 'rsvp';
-          if (_tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
-            //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-            _refreshHemTableFromBackend(false);
-          }
-        });
+      if (_fabIsVisible != (_tabs[_tabController.index].text == LABEL_RSVP)) {
+        _fabIsVisible = _tabs[_tabController.index].text == LABEL_RSVP;
+        if (_tabs[_tabController.index].text == LABEL_RSVP) {
+          //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          _refreshHemTableFromBackend(false).then(
+            (value) {
+              setState(() {});
+            },
+          );
+        }
       }
+
+      if ((_tabController.index != _currentTabIndex) && (_tabs[_tabController.index].text == LABEL_GETALIFE)) {
+        if (_leaderboardList == null) {
+          _getLeaderboard().then(
+            (value) {
+              setState(() {});
+            },
+          );
+        }
+      }
+
+      setState(() {});
+
+      _currentTabIndex = _tabController.index;
     });
 
     final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
@@ -177,6 +241,29 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       _tabController.animateTo(1);
     }
     super.initState();
+  }
+
+  Future<void> _getLeaderboard() async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'getLeaderboard');
+
+    final String body = jsonEncode(<String, Object>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'kennelId': widget.futureRun.kennel.kennelId,
+    });
+
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_get_leaderboard', body);
+
+    List<dynamic> jsonResults = json.decode(responseBody);
+
+    _leaderboardList = <LeaderboardModel>[];
+
+    jsonResults[0].forEach((element) {
+      _leaderboardList.add(LeaderboardModel.fromJson(element));
+    });
+
+    return;
   }
 
   @override
@@ -842,8 +929,171 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildWankersView() {
-    return Container(color: Colors.blue);
+  // ignore: constant_identifier_names
+  static const double LEADER_FONT_SIZE = 22.0;
+
+  Widget _buildLeaderboardView() {
+    //print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
+
+    return Center(
+        child: Column(
+      children: <Widget>[
+        Expanded(
+          child: _leaderboardList == null
+              ? const SizedBox(
+                  //color: Colors.grey[300],
+                  width: 70.0,
+                  height: 70.0,
+                  child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
+                )
+              : _leaderboardList.isEmpty
+                  ? Column(
+                      children: <Widget>[
+                        const Expanded(flex: 40, child: SizedBox()),
+                        Text(
+                          'No run counts\r\nregistered for\r\nthis Kennel.',
+                          style: largeTitleStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                        const Expanded(flex: 100, child: SizedBox()),
+                      ],
+                    )
+                  : Column(
+                      children: <Widget>[
+                        Container(
+                          padding: const EdgeInsets.all(8.0),
+                          width: 140.0,
+                          child: TabBar(
+                            onTap: (void _) {
+                              setState(() {});
+                            },
+                            labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0),
+                            unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0),
+                            isScrollable: false,
+                            unselectedLabelColor: Colors.white,
+                            labelColor: Colors.white,
+                            //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                            indicatorSize: TabBarIndicatorSize.label,
+                            indicator: BubbleTabIndicator(
+                              indicatorHeight: 40.0,
+                              indicatorColor: Colors.red.shade900,
+                              tabBarIndicatorSize: TabBarIndicatorSize.label,
+                              indicatorRadius: 20.0,
+                            ),
+                            tabs: const <Tab>[
+                              Tab(icon: Icon(MaterialCommunityIcons.format_list_bulleted_square)),
+                              Tab(icon: Icon(MaterialCommunityIcons.view_grid_outline)),
+                            ],
+                            controller: _gridListTabController,
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            key: packListBox,
+                            color: const Color.fromARGB(60, 255, 255, 255),
+                            margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
+                            padding: const EdgeInsets.all(8.0),
+                            width: MediaQuery.of(context).size.width,
+                            child: Scrollbar(
+                                controller: _leaderScrollController,
+                                child: Column(
+                                  children: <Widget>[
+                                    Row(
+                                      children: const <Widget>[
+                                        SizedBox(
+                                            width: 45.0,
+                                            child: Text('Total\r\nruns',
+                                                textAlign: TextAlign.left,
+                                                style: TextStyle(
+                                                  fontFamily: 'AvenirNextCondensedMedium',
+                                                  fontStyle: FontStyle.normal,
+                                                  fontSize: LEADER_FONT_SIZE,
+                                                  height: 1.0,
+                                                  color: Colors.yellow,
+                                                ))),
+                                        SizedBox(
+                                            width: 115.0,
+                                            child: Text('Total\r\nHaring',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontFamily: 'AvenirNextCondensedMedium',
+                                                  fontStyle: FontStyle.normal,
+                                                  fontSize: LEADER_FONT_SIZE,
+                                                  height: 1.0,
+                                                  color: Colors.yellow,
+                                                ))),
+                                        Expanded(
+                                            child: Text('Hasher',
+                                                textAlign: TextAlign.left,
+                                                style: TextStyle(
+                                                  fontFamily: 'AvenirNextCondensedMedium',
+                                                  fontStyle: FontStyle.normal,
+                                                  fontSize: LEADER_FONT_SIZE,
+                                                  height: 1.0,
+                                                  color: Colors.yellow,
+                                                ))),
+                                      ],
+                                    ),
+                                    Expanded(
+                                      child: ListView.separated(
+                                          separatorBuilder: (BuildContext context, int index) => const Divider(
+                                                height: 3.0,
+                                                color: Colors.black45,
+                                                thickness: 1.5,
+                                              ),
+                                          physics: const AlwaysScrollableScrollPhysics(),
+                                          controller: _leaderScrollController,
+                                          itemCount: _leaderboardList.length,
+                                          itemBuilder: (BuildContext context, int index) {
+                                            final LeaderboardModel e = _leaderboardList[index];
+
+                                            return Row(
+                                              children: <Widget>[
+                                                const SizedBox(width: 6.0),
+                                                // Container(height: 60, width: 60, padding: const EdgeInsets.all(4), child: _hasherPhoto(e, false)),
+                                                SizedBox(
+                                                    width: 90.0,
+                                                    child: Text(e.totalRunCount.toString(),
+                                                        style: const TextStyle(
+                                                          fontFamily: 'AvenirNextCondensedMedium',
+                                                          fontStyle: FontStyle.normal,
+                                                          fontSize: LEADER_FONT_SIZE,
+                                                          height: 1.0,
+                                                          color: Colors.white,
+                                                        ))),
+                                                SizedBox(
+                                                    width: 70.0,
+                                                    child: Text(e.totalHaringCount.toString(),
+                                                        style: const TextStyle(
+                                                          fontFamily: 'AvenirNextCondensedMedium',
+                                                          fontStyle: FontStyle.normal,
+                                                          fontSize: LEADER_FONT_SIZE,
+                                                          height: 1.0,
+                                                          color: Colors.white,
+                                                        ))),
+                                                Expanded(
+                                                    child: Text(e.displayName ?? '<unknown>',
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: const TextStyle(
+                                                          fontFamily: 'AvenirNextCondensedMedium',
+                                                          fontStyle: FontStyle.normal,
+                                                          fontSize: LEADER_FONT_SIZE,
+                                                          height: 1.0,
+                                                          color: Colors.white,
+                                                        ))),
+                                              ],
+                                            );
+                                          }),
+                                    ),
+                                  ],
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+        ),
+      ],
+    ));
   }
 
   Widget _buildMapView() {
@@ -1113,7 +1363,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 _buildRunDetailsView(),
                 _buildRsvpView(),
                 _buildMapView(),
-                _buildWankersView(),
+                _buildLeaderboardView(),
               ]
                   // children: tabs.map((Tab tab) {
                   //   return Center(
