@@ -900,12 +900,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     ),
                               Column(
                                 children: <Widget>[
-                                  const FancyDivider(
-                                    key: Key('123435661'),
-                                    innerColor: Colors.white,
-                                    topMargin: 30.0,
-                                    bottomMargin: 15.0,
-                                  ),
+                                  // const FancyDivider(
+                                  //   key: Key('123435661'),
+                                  //   innerColor: Colors.white,
+                                  //   topMargin: 30.0,
+                                  //   bottomMargin: 15.0,
+                                  // ),
                                   Container(
                                     margin: const EdgeInsets.only(bottom: 20),
                                     width: 235,
@@ -930,6 +930,56 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             context,
                                             MaterialPageRoute<void>(
                                               builder: (BuildContext context) => HashRunArtGalleryPage(key: const Key('52233311'), items: results),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  // const FancyDivider(
+                                  //   key: Key('5203920'),
+                                  //   innerColor: Colors.white,
+                                  //   topMargin: 30.0,
+                                  //   bottomMargin: 15.0,
+                                  // ),
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 20),
+                                    width: 235,
+                                    child: Connection.styleForConnected(
+                                      G0<AppModel>().connectionStatus,
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
+                                        ),
+                                        child: Row(children: <Widget>[
+                                          Image.asset('images/icons/leaderboard_icon.png', height: 35),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 20, right: 0),
+                                            child: Text('Leaderboards', style: textStyleButton),
+                                          ),
+                                        ]),
+                                        onPressed: () async {
+                                          if (!mounted) return;
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder: (BuildContext context) => GenericWidgetPage(
+                                                key: const Key('52233311'),
+                                                widget: Column(
+                                                  children: <Widget>[
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
+                                                      child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
+                                                    ),
+                                                    Expanded(
+                                                      child: Leaderboard(
+                                                        kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                appBarTitle: 'Get a Life (Leaderboards)',
+                                              ),
                                             ),
                                           );
                                         },
