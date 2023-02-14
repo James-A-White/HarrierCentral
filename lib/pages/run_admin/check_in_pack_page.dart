@@ -1954,37 +1954,54 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
         ),
       ]),
       actions: <Widget>[
-        TextButton(
-          style: TextButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Cancel'),
-          onPressed: () {
-            Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
-          },
+        SizedBox(
+          height: 55,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
+            },
+          ),
         ),
 
-        TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Add Visitor'),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{
-                'type': enumAnonymousVisitor.value.toString(),
-                'name': nameTextController.text,
-                'email': emailTextController.text,
-                'phone': phoneTextController.text,
-              });
-            }),
+        SizedBox(
+          height: 55.0,
+          child: TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text(
+                'Add\r\nVisitor',
+                textAlign: TextAlign.center,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(<String, String>{
+                  'type': enumAnonymousVisitor.value.toString(),
+                  'name': nameTextController.text,
+                  'email': emailTextController.text,
+                  'phone': phoneTextController.text,
+                });
+              }),
+        ),
 
-        TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Add Virgin'),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{
-                'type': enumVirgin.value.toString(),
-                'name': nameTextController.text,
-                'email': emailTextController.text,
-                'phone': phoneTextController.text,
-              });
-            }),
+        SizedBox(
+          height: 55.0,
+          child: TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text(
+                'Add\r\nVirgin',
+                textAlign: TextAlign.center,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(<String, String>{
+                  'type': enumVirgin.value.toString(),
+                  'name': nameTextController.text,
+                  'email': emailTextController.text,
+                  'phone': phoneTextController.text,
+                });
+              }),
+        ),
         // ),
       ],
     );

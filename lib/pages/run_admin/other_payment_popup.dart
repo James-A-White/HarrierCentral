@@ -345,12 +345,15 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
         //     width: 60.0,
         //     child:
 
-        TextButton(
-          style: TextButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Cancel'),
-          onPressed: () {
-            Navigator.of(context).pop(OtherPaymentPopupResult('cancel', -1, null, null, null, null, _specialPriceIsDefaultForUser));
-          },
+        SizedBox(
+          height: 55.0,
+          child: TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop(OtherPaymentPopupResult('cancel', -1, null, null, null, null, _specialPriceIsDefaultForUser));
+            },
+          ),
         ),
         //   ),
         // ),
@@ -359,44 +362,53 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
         //child:
 
         if (!_paySpecialPriceWithCredit) ...<Widget>[
-          TextButton(
-              style: TextButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text('Cash'),
-              onPressed: () {
-                final OtherPaymentPopupResult result = OtherPaymentPopupResult(
-                  'process',
-                  paymentCashOtherAmount.value,
-                  _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                  _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                  _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
-                  _totalDue,
-                  _specialPriceIsDefaultForUser,
-                );
+          SizedBox(
+            height: 55.0,
+            child: TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text('Cash'),
+                onPressed: () {
+                  final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                    'process',
+                    paymentCashOtherAmount.value,
+                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
+                    _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                    _totalDue,
+                    _specialPriceIsDefaultForUser,
+                  );
 
-                Navigator.of(context).pop(result);
-              }),
+                  Navigator.of(context).pop(result);
+                }),
+          ),
           // ),
           // Container(
           //   width: 60.0,
           //child:
 
-          TextButton(
-              style: TextButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text('Bank transfer'),
-              onPressed: () {
-                final OtherPaymentPopupResult result = OtherPaymentPopupResult(
-                  'process',
-                  paymentBankTransferOtherAmount.value,
-                  _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                  _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                  _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
-                  _totalDue,
-                  _specialPriceIsDefaultForUser,
-                );
-                Navigator.of(context).pop(
-                  result,
-                );
-              }),
+          SizedBox(
+            height: 55.0,
+            child: TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text(
+                  'Bank\r\ntransfer',
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () {
+                  final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                    'process',
+                    paymentBankTransferOtherAmount.value,
+                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
+                    _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                    _totalDue,
+                    _specialPriceIsDefaultForUser,
+                  );
+                  Navigator.of(context).pop(
+                    result,
+                  );
+                }),
+          ),
         ],
         if (_paySpecialPriceWithCredit) ...<Widget>[
           TextButton(
