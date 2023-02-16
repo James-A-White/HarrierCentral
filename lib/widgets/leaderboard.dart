@@ -191,10 +191,13 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   TabController _timespanTabController;
   TabController _scopeTabController;
 
+  final FocusNode _searchFocusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
+
   List<LeaderboardModel> _leaderboardList;
   List<LeaderboardModel> _leaderboardAggregateList;
 
-  final ScrollController _leaderScrollController = ScrollController();
+  final ScrollController _leaderScrollController = ScrollController(keepScrollOffset: false, initialScrollOffset: 50.0);
 
   // ignore: constant_identifier_names
   static const int TABINDEX_365_DAYS = 0;
@@ -230,85 +233,135 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                     )
                   : Column(
                       children: <Widget>[
-                        if (widget.kennelId == null) ...<Widget>[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                            //width: 140.0,
-                            child: TabBar(
-                              onTap: (void _) {
-                                //_sortLeaderboard(_leaderboardSortColumnIndex, false);
-                                setState(() {});
-                              },
-                              labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                              unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                              isScrollable: false,
-                              unselectedLabelColor: Colors.white,
-                              labelColor: Colors.white,
-                              //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                              indicatorSize: TabBarIndicatorSize.tab,
-                              indicator: BubbleTabIndicator(
-                                  indicatorHeight: 25.0,
-                                  indicatorColor: Colors.red.shade900,
-                                  tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                  indicatorRadius: 20.0,
-                                  bubblePadding: const EdgeInsets.only(top: 5.0)
-                                  //insets: const EdgeInsets.only(bottom: 5),
-                                  ),
-                              tabs: const <Tab>[
-                                Tab(text: 'Combined'),
-                                Tab(text: 'By Kennel'),
-                              ],
-                              controller: _scopeTabController,
-                            ),
-                          ),
-                        ],
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          //width: 140.0,
-                          child: TabBar(
-                            onTap: (void _) {
-                              _sortLeaderboard(_leaderboardSortColumnIndex, false);
-                              setState(() {});
-                            },
-                            labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                            unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                            isScrollable: false,
-                            unselectedLabelColor: Colors.white,
-                            labelColor: Colors.white,
-                            //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            indicator: BubbleTabIndicator(
-                                indicatorHeight: 25.0,
-                                indicatorColor: Colors.red.shade900,
-                                tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                indicatorRadius: 20.0,
-                                bubblePadding: const EdgeInsets.only(top: 5.0)
-                                //insets: const EdgeInsets.only(bottom: 5),
-                                ),
-                            tabs: <Tab>[
-                              const Tab(text: '365 days'),
-                              Tab(text: 'In ${DateTime.now().year}'),
-                              const Tab(text: 'Total'),
-                            ],
-                            controller: _timespanTabController,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
                         Expanded(
-                          child: Container(
+                          child: SizedBox(
                             //key: packListBox,
-                            color: const Color.fromARGB(60, 255, 255, 255),
-                            margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
-                            padding: const EdgeInsets.all(8.0),
+                            //color: const Color.fromARGB(60, 255, 255, 255),
+                            //margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
+                            //padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             width: MediaQuery.of(context).size.width,
-                            child: Scrollbar(
-                                controller: _leaderScrollController,
-                                child: Column(
-                                  children: <Widget>[
+                            child: CustomScrollView(
+                              controller: _leaderScrollController,
+                              slivers: [
+                                // SliverAppBar(
+                                //   expandedHeight: 100.0,
+                                //   floating: true,
+                                //   backgroundColor: Colors.transparent,
+                                //   automaticallyImplyLeading: false,
+                                //   flexibleSpace: Column(
+                                //     children: <Widget>[
+                                //       Container(color: Colors.pink, height: 40.0),
+                                //     ],
+                                //   ),
+                                // ),
+                                SliverAppBar(
+                                  // expandedHeight: 120.0,
+                                  // stretchTriggerOffset: 220.0,
+                                  toolbarHeight: 170.0,
+                                  floating: true,
+                                  //stretch: true,
+                                  backgroundColor: Colors.grey.shade400,
+                                  // foregroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  automaticallyImplyLeading: false,
+                                  flexibleSpace: Column(
+                                    children: <Widget>[
+                                      //Container(color: Colors.pink, height: 40.0),
+                                      _searchBar(),
+
+                                      if (widget.kennelId == null) ...<Widget>[
+                                        const SizedBox(height: 10.0),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                          color: Colors.grey.shade400,
+                                          child: TabBar(
+                                            onTap: (void _) {
+                                              //_sortLeaderboard(_leaderboardSortColumnIndex, false);
+                                              setState(() {});
+                                            },
+                                            labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                            unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                            isScrollable: false,
+                                            unselectedLabelColor: Colors.black,
+                                            labelColor: Colors.white,
+                                            //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                                            indicatorSize: TabBarIndicatorSize.tab,
+                                            indicator: BubbleTabIndicator(
+                                                indicatorHeight: 25.0,
+                                                indicatorColor: Colors.red.shade900,
+                                                tabBarIndicatorSize: TabBarIndicatorSize.label,
+                                                indicatorRadius: 20.0,
+                                                bubblePadding: const EdgeInsets.only(top: 5.0)
+                                                //insets: const EdgeInsets.only(bottom: 5),
+                                                ),
+                                            tabs: const <Tab>[
+                                              Tab(text: 'Combined'),
+                                              Tab(text: 'By Kennel'),
+                                            ],
+                                            controller: _scopeTabController,
+                                          ),
+                                        ),
+                                        const Divider(
+                                          color: Colors.black45,
+                                          thickness: 1.0,
+                                          height: 3.0,
+                                        ),
+                                        const SizedBox(height: 3.0),
+                                      ],
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                        color: Colors.grey.shade400,
+                                        child: TabBar(
+                                          onTap: (void _) {
+                                            _sortLeaderboard(_leaderboardSortColumnIndex, false);
+                                            setState(() {});
+                                          },
+                                          labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          isScrollable: false,
+                                          unselectedLabelColor: Colors.black,
+                                          labelColor: Colors.white,
+                                          //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                                          indicatorSize: TabBarIndicatorSize.tab,
+                                          indicator: BubbleTabIndicator(
+                                              indicatorHeight: 25.0,
+                                              indicatorColor: Colors.red.shade900,
+                                              tabBarIndicatorSize: TabBarIndicatorSize.label,
+                                              indicatorRadius: 20.0,
+                                              bubblePadding: const EdgeInsets.only(top: 5.0)
+                                              //insets: const EdgeInsets.only(bottom: 5),
+                                              ),
+                                          tabs: <Tab>[
+                                            const Tab(text: '365 days'),
+                                            Tab(text: 'In ${DateTime.now().year}'),
+                                            const Tab(text: 'Total'),
+                                          ],
+                                          controller: _timespanTabController,
+                                        ),
+                                      ),
+                                      const Divider(
+                                        color: Colors.black45,
+                                        thickness: 1.0,
+                                        height: 1.0,
+                                      ),
+                                      // const SizedBox(
+                                      //   height: 10.0,
+                                      // ),
+
+                                      // const SizedBox(height: 10.0),
+                                    ],
+                                  ),
+                                ),
+                                SliverAppBar(
+                                  pinned: true,
+                                  toolbarHeight: 60.0,
+                                  backgroundColor: Colors.grey.shade400,
+                                  automaticallyImplyLeading: false,
+                                  flexibleSpace: Column(children: [
+                                    const SizedBox(height: 10.0),
                                     Row(
                                       children: <Widget>[
+                                        const SizedBox(width: 4.0),
                                         GestureDetector(
                                           onTap: () {
                                             setState(
@@ -327,7 +380,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                 fontStyle: FontStyle.normal,
                                                 fontSize: LEADER_FONT_SIZE,
                                                 height: 1.0,
-                                                color: Colors.yellow,
+                                                color: Colors.red.shade900,
                                               ),
                                             ),
                                           ),
@@ -350,7 +403,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                 fontStyle: FontStyle.normal,
                                                 fontSize: LEADER_FONT_SIZE,
                                                 height: 1.0,
-                                                color: Colors.yellow,
+                                                color: Colors.red.shade900,
                                               ),
                                             ),
                                           ),
@@ -370,7 +423,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                 fontStyle: FontStyle.normal,
                                                 fontSize: LEADER_FONT_SIZE,
                                                 height: 1.0,
-                                                color: Colors.yellow,
+                                                color: Colors.red.shade900,
                                               ),
                                             ),
                                           ),
@@ -393,7 +446,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                 : Icon(
                                                     _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
                                                     size: 20.0,
-                                                    color: Colors.yellow,
+                                                    color: Colors.red.shade900,
                                                   ),
                                           ),
                                         ),
@@ -412,7 +465,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                 : Icon(
                                                     _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
                                                     size: 20.0,
-                                                    color: Colors.yellow,
+                                                    color: Colors.red.shade900,
                                                   ),
                                           ),
                                         ),
@@ -429,7 +482,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                   : Icon(
                                                       _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
                                                       size: 20.0,
-                                                      color: Colors.yellow,
+                                                      color: Colors.red.shade900,
                                                     ),
                                             ),
                                           ),
@@ -437,53 +490,58 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                         const SizedBox(width: 50.0),
                                       ],
                                     ),
-                                    const SizedBox(height: 7.0),
-                                    Expanded(
-                                      child: ListView.separated(
-                                          separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 3.0),
-                                          physics: const AlwaysScrollableScrollPhysics(),
-                                          controller: _leaderScrollController,
-                                          itemCount: (_scopeTabController?.index ?? 1) == 0 ? _leaderboardAggregateList.length : _leaderboardList.length,
-                                          itemBuilder: (BuildContext context, int index) {
-                                            final LeaderboardModel e = (_scopeTabController?.index ?? 1) == 0 ? _leaderboardAggregateList[index] : _leaderboardList[index];
-                                            return Row(
-                                              children: <Widget>[
-                                                SizedBox(
-                                                    width: 50.0,
-                                                    child: Text(
-                                                        (_timespanTabController.index == TABINDEX_TOTAL
-                                                                ? e.totalRunCount
-                                                                : _timespanTabController.index == TABINDEX_365_DAYS
-                                                                    ? e.rollingYearTotalRunCount
-                                                                    : e.ytdTotalRunCount)
-                                                            .toString(),
-                                                        textAlign: TextAlign.center,
-                                                        style: const TextStyle(
-                                                          fontFamily: 'AvenirNextCondensedMedium',
-                                                          fontStyle: FontStyle.normal,
-                                                          fontSize: LEADER_FONT_SIZE,
-                                                          height: 1.0,
-                                                          color: Colors.white,
-                                                        ))),
-                                                SizedBox(
-                                                    width: 70.0,
-                                                    child: Text(
-                                                        (_timespanTabController.index == TABINDEX_TOTAL
-                                                                ? e.totalHaringCount
-                                                                : _timespanTabController.index == TABINDEX_365_DAYS
-                                                                    ? e.rollingYearHaringCount
-                                                                    : e.ytdHaringCount)
-                                                            .toString(),
-                                                        textAlign: TextAlign.center,
-                                                        style: const TextStyle(
-                                                          fontFamily: 'AvenirNextCondensedMedium',
-                                                          fontStyle: FontStyle.normal,
-                                                          fontSize: LEADER_FONT_SIZE,
-                                                          height: 1.0,
-                                                          color: Colors.white,
-                                                        ))),
-                                                Expanded(
-                                                    child: SingleChildScrollView(
+                                  ]),
+                                ),
+                                // Next, create a SliverList
+                                const SliverToBoxAdapter(child: SizedBox(height: 15)),
+                                SliverList(
+                                  // Use a delegate to build items as they're scrolled on screen.
+                                  delegate: SliverChildBuilderDelegate(
+                                    // The builder function returns a ListTile with a title that
+                                    // displays the index of the current item.
+                                    (context, index) {
+                                      LeaderboardModel e = (_scopeTabController?.index ?? 1) == 0 ? _leaderboardAggregateList[index] : _leaderboardList[index];
+                                      return Column(
+                                        children: [
+                                          const SizedBox(height: 3.0),
+                                          Row(
+                                            children: <Widget>[
+                                              SizedBox(
+                                                  width: 50.0,
+                                                  child: Text(
+                                                      (_timespanTabController.index == TABINDEX_TOTAL
+                                                              ? e.totalRunCount
+                                                              : _timespanTabController.index == TABINDEX_365_DAYS
+                                                                  ? e.rollingYearTotalRunCount
+                                                                  : e.ytdTotalRunCount)
+                                                          .toString(),
+                                                      textAlign: TextAlign.center,
+                                                      style: const TextStyle(
+                                                        fontFamily: 'AvenirNextCondensedMedium',
+                                                        fontStyle: FontStyle.normal,
+                                                        fontSize: LEADER_FONT_SIZE,
+                                                        height: 1.0,
+                                                        color: Colors.white,
+                                                      ))),
+                                              SizedBox(
+                                                  width: 70.0,
+                                                  child: Text(
+                                                      (_timespanTabController.index == TABINDEX_TOTAL
+                                                              ? e.totalHaringCount
+                                                              : _timespanTabController.index == TABINDEX_365_DAYS
+                                                                  ? e.rollingYearHaringCount
+                                                                  : e.ytdHaringCount)
+                                                          .toString(),
+                                                      textAlign: TextAlign.center,
+                                                      style: const TextStyle(
+                                                        fontFamily: 'AvenirNextCondensedMedium',
+                                                        fontStyle: FontStyle.normal,
+                                                        fontSize: LEADER_FONT_SIZE,
+                                                        height: 1.0,
+                                                        color: Colors.white,
+                                                      ))),
+                                              Expanded(
+                                                child: SingleChildScrollView(
                                                   scrollDirection: Axis.horizontal,
                                                   child: Row(
                                                     children: [
@@ -526,13 +584,19 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                       ]
                                                     ],
                                                   ),
-                                                )),
-                                              ],
-                                            );
-                                          }),
-                                    ),
-                                  ],
-                                )),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    // Builds 1000 ListTiles
+                                    childCount: (_scopeTabController?.index ?? 1) == 0 ? _leaderboardAggregateList.length : _leaderboardList.length,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -540,6 +604,87 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         ),
       ],
     ));
+  }
+
+  Widget _searchBar() {
+    return Container(
+      height: 50,
+      color: Colors.white,
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Row(
+          //   children: <Widget>[
+          //     Checkbox(
+          //       value: _searchAllRuns,
+          //       onChanged: (bool value) {
+          //         _searchAllRuns = !_searchAllRuns;
+          //         refreshFromTable(true).then((void _) {
+          //           setState(() {});
+          //         });
+          //       },
+          //     ),
+          //     Padding(
+          //       padding: const EdgeInsets.only(top: 4.0),
+          //       child: Text('Search all runs', style: headingStyleBlack.copyWith(fontSize: 18.0)),
+          //     ),
+          //   ],
+          // ),
+          const Divider(
+            height: 2.0,
+            thickness: 2.0,
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 14.0),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextField(
+                      autocorrect: false,
+                      onChanged: (String text) {
+                        // setState(() {
+                        //   _searchRunsText = text;
+                        //   _filterRuns();
+                        // });
+                      },
+                      focusNode: _searchFocusNode,
+                      controller: _searchController,
+                      keyboardType: TextInputType.text,
+                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        icon: Icon(
+                          FontAwesome.search,
+                          color: Colors.black,
+                        ),
+                        hintText: 'Search...',
+                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 40,
+                    child: TextButton(
+                      style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
+                      child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
+                      onPressed: () {
+                        // _searchController.text = '';
+                        // _searchRunsText = '';
+                        // setState(() {
+                        //   _filterRuns();
+                        // });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ignore: constant_identifier_names

@@ -80,12 +80,13 @@ class DrawerMenuState extends State<DrawerMenu> {
                       builder: (BuildContext context) => GenericWidgetPage(
                         key: const Key('52233311'),
                         widget: Column(
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
-                              child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
-                            ),
-                            const Expanded(
+                          children: const <Widget>[
+                            // Padding(
+                            //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
+                            //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
+                            // ),
+                            //SizedBox(height: 13.0),
+                            Expanded(
                               child: Leaderboard(
                                 kennelId: null,
                               ),

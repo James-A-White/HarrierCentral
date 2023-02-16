@@ -264,7 +264,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         child: Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(top: 0.0, bottom: 8.0),
+          padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
@@ -1102,37 +1102,34 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           children: <Widget>[
             PreferredSize(
               preferredSize: const Size.fromHeight(120.0),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 15),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: 50.0,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorLight,
-                    borderRadius: const BorderRadius.all(Radius.circular(0.0)),
-                  ),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-                      child: TabBar(
-                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                        isScrollable: true,
-                        labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
-                        unselectedLabelColor: Colors.black,
-                        labelColor: Colors.white,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicator: BubbleTabIndicator(
-                          indicatorHeight: 30.0,
-                          indicatorColor: Colors.red.shade900,
-                          tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                          indicatorRadius: 20.0,
-                          // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
-                          // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
-                        ),
-                        tabs: _tabs,
-                        controller: _tabController,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: 50.0,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorLight,
+                  borderRadius: const BorderRadius.all(Radius.circular(0.0)),
+                ),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                    child: TabBar(
+                      labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                      unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                      isScrollable: true,
+                      labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                      unselectedLabelColor: Colors.black,
+                      labelColor: Colors.white,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BubbleTabIndicator(
+                        indicatorHeight: 30.0,
+                        indicatorColor: Colors.red.shade900,
+                        tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                        indicatorRadius: 20.0,
+                        // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+                        // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
                       ),
+                      tabs: _tabs,
+                      controller: _tabController,
                     ),
                   ),
                 ),
