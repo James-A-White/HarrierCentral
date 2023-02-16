@@ -67,6 +67,38 @@ class DrawerMenuState extends State<DrawerMenu> {
               //     );
               //   },
               // ),
+
+              ListTile(
+                leading: const Icon(FontAwesome.trophy, color: textColor),
+                title: Text('Global Leaders', style: _style),
+                onTap: () {
+                  Navigator.pop(context);
+
+                  Navigator.push<void>(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) => GenericWidgetPage(
+                        key: const Key('52233311'),
+                        widget: Column(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
+                              child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
+                            ),
+                            const Expanded(
+                              child: Leaderboard(
+                                kennelId: null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        appBarTitle: 'Get a Life (Leaderboards)',
+                      ),
+                    ),
+                  );
+                },
+              ),
+
               ListTile(
                 leading: const Icon(MaterialIcons.house, color: textColor),
                 title: Text('Add a Kennel', style: _style),
@@ -184,6 +216,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
+
               ListTile(
                 leading: const Icon(FontAwesome.legal, color: textColor),
                 title: Text('Legal', style: _style),

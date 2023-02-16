@@ -974,6 +974,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     Expanded(
                                                       child: Leaderboard(
                                                         kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                        //kennelId: null,
                                                       ),
                                                     ),
                                                   ],
