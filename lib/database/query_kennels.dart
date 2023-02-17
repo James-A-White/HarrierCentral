@@ -271,4 +271,51 @@ class QueryKennels {
 
     return G0<Database>().rawQuery(query);
   }
+
+  static Future<List<Map<String, dynamic>>> queryKennelDetails() async {
+    String searchKennelsField = '''
+               "~ "  || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},"") 
+            || " " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelName},"")   
+            
+            || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
+            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName}
+            || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"") 
+            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
+            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryCode} 
+            || " " || replace(coalesce(c.${G0<TableModel>().citiesTableHelper.colCitySearchTags},""),","," ") 
+            || " " || replace(coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionSearchTags},""),","," ") 
+            || " " || replace(coalesce(n.${G0<TableModel>().countriesTableHelper.colCountrySearchTags},""),","," ") 
+            || " " || replace(coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelSearchTags},""),","," ") 
+            || " " || 
+              case 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AF" then "africa" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AS" then "asia" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "NA" then "north america" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "SA" then "south america" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
+              else "" 
+              end || " ~" 
+          as searchText
+          ''';
+
+    final String query = ''' 
+      
+        SELECT  
+          k.${G0<TableModel>().kennelsTableHelper.colKennelId},
+          k.${G0<TableModel>().kennelsTableHelper.colKennelName},
+          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
+          $searchKennelsField
+          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c
+          ON k.${G0<TableModel>().kennelsTableHelper.colCityId} = c.${G0<TableModel>().citiesTableHelper.colCityId}
+          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r
+          ON c.${G0<TableModel>().citiesTableHelper.colRegionId} = r.${G0<TableModel>().regionsTableHelper.colRegionId}
+          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n
+          ON r.${G0<TableModel>().regionsTableHelper.colCountryId} = n.${G0<TableModel>().countriesTableHelper.colCountryId}
+          ''';
+
+    return G0<Database>().rawQuery(query);
+  }
 }
