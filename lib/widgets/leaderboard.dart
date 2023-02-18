@@ -835,70 +835,76 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   }
 
   void _filterResults(String filter) {
+    //[\+-]\w+(?:\s+\w+)*
+
+    List<String> addParams = <String>[];
+    List<String> subParams = <String>[];
+
+    int firstPositive = filter.indexOf('+');
+    if (firstPositive >= 0) {
+      addParams = Utilities.parseSearchTokens(filter, r"\+");
+    }
+
+    int firstNegative = filter.indexOf('-');
+    if (firstNegative >= 0) {
+      subParams = Utilities.parseSearchTokens(filter, r"-");
+    }
+
+    if ((firstPositive > 0) && (firstNegative > 0)) {
+      int firstToken = min(firstPositive, firstNegative);
+      addParams.add(filter.substring(0, firstToken));
+    } else if (firstPositive > 0) {
+      addParams.add(filter.substring(0, firstPositive));
+    } else if (firstNegative > 0) {
+      addParams.add(filter.substring(0, firstNegative));
+    } else {
+      addParams.add(filter);
+    }
+
     _filteredLeaderboardList ??= <LeaderboardModel>[];
     _filteredLeaderboardList.clear();
 
     _filteredLeaderboardAggregateList ??= <LeaderboardModel>[];
     _filteredLeaderboardAggregateList.clear();
 
-    if (_leaderboardList != null) {
+    if ((filter != null) && (filter.isNotEmpty)) {
+      if (_leaderboardList != null) {
+        _filteredLeaderboardList = _leaderboardList.where((LeaderboardModel a) {
+          for (String param in subParams) {
+            if (a.searchText.toLowerCase().contains(param)) {
+              return false;
+            }
+          }
+
+          for (String param in addParams) {
+            if (a.searchText.toLowerCase().contains(param)) {
+              return true;
+            }
+          }
+
+          return false;
+        }).toList();
+      }
+
+      if (_leaderboardAggregateList != null) {
+        _filteredLeaderboardAggregateList = _leaderboardAggregateList.where((LeaderboardModel a) {
+          for (String param in subParams) {
+            if (a.searchText.toLowerCase().contains(param)) {
+              return false;
+            }
+          }
+
+          for (String param in addParams) {
+            if (a.searchText.toLowerCase().contains(param)) {
+              return true;
+            }
+          }
+          return false;
+        }).toList();
+      }
+    } else {
       _filteredLeaderboardList.addAll(_leaderboardList);
       _filteredLeaderboardAggregateList.addAll(_leaderboardAggregateList);
-
-      // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-      if ((filter != null) && (filter.isNotEmpty)) {
-        final List<String> searchItems = filter.trim().toLowerCase().split(',');
-
-        for (String st in searchItems) {
-          if (st.trim().isEmpty) {
-            continue;
-          }
-          bool negate = false;
-          if (st.trim().toLowerCase().startsWith('not ')) {
-            negate = true;
-            st = st.substring(4);
-          }
-          final List<String> orItems = st.split('+');
-
-          _filteredLeaderboardList = _filteredLeaderboardList.where((LeaderboardModel a) {
-            for (String orItem in orItems) {
-              if (orItem.trim().isEmpty) {
-                continue;
-              }
-              orItem = ' ${orItem.trim().toLowerCase()}';
-              if (a.searchText.toLowerCase().contains(orItem)) {
-                return !negate;
-              }
-            }
-            return negate;
-          }).toList();
-        }
-
-        for (String st in searchItems) {
-          if (st.trim().isEmpty) {
-            continue;
-          }
-          bool negate = false;
-          if (st.trim().toLowerCase().startsWith('not ')) {
-            negate = true;
-            st = st.substring(4);
-          }
-          final List<String> orItems = st.split('+');
-
-          _filteredLeaderboardAggregateList = _filteredLeaderboardAggregateList.where((LeaderboardModel a) {
-            for (String orItem in orItems) {
-              if (orItem.trim().isEmpty) {
-                continue;
-              }
-              orItem = ' ${orItem.trim().toLowerCase()}';
-              if (a.searchText.toLowerCase().contains(orItem)) {
-                return !negate;
-              }
-            }
-            return negate;
-          }).toList();
-        }
-      }
     }
   }
 }

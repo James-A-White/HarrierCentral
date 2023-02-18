@@ -193,6 +193,21 @@ class Utilities {
     return 'Please enter an email address';
   }
 
+  static List<String> parseSearchTokens(String searchText, String token) {
+    List<String> results = <String>[];
+
+    if ((searchText != null) && (searchText.isNotEmpty)) {
+      Pattern pattern = r"[" + token + r"]\w+(?:\s+\w+)*";
+      final RegExp regex = RegExp(pattern, caseSensitive: false);
+      if (regex.hasMatch(searchText)) {
+        for (RegExpMatch match in regex.allMatches(searchText)) {
+          results.add(match[0].replaceFirst(token.replaceFirst(r'\', ''), '').trim());
+        }
+      }
+    }
+    return results;
+  }
+
   static List<double> getLatLongFromString(List<String> values) {
     for (String value in values) {
       if ((value != null) && (value.isNotEmpty)) {
