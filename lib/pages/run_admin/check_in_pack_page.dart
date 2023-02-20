@@ -1926,115 +1926,118 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Add Visitor or Virgin'),
-      content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-        TextField(
-          autofocus: true,
-          focusNode: myFocusNodeFirstName,
-          controller: nameTextController,
-          keyboardType: TextInputType.text,
-          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-          decoration: const InputDecoration(
-            //border: InputBorder.none,
-            icon: Icon(
-              FontAwesome.money,
-              color: Colors.white,
+    return TextScaleFactorClamper(
+      textScaleFactor: G0<DeviceInfo>().textClamp25,
+      child: AlertDialog(
+        title: const Text('Add Visitor or Virgin'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+          TextField(
+            autofocus: true,
+            focusNode: myFocusNodeFirstName,
+            controller: nameTextController,
+            keyboardType: TextInputType.text,
+            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+            decoration: const InputDecoration(
+              //border: InputBorder.none,
+              icon: Icon(
+                FontAwesome.money,
+                color: Colors.white,
+              ),
+              hintText: 'Just Julie',
+              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
             ),
-            hintText: 'Just Julie',
-            hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
-        ),
-        TextField(
-          autofocus: true,
-          //focusNode: myFocusNodeFirstName,
-          controller: emailTextController,
-          keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-          decoration: const InputDecoration(
-            //border: InputBorder.none,
-            icon: Icon(
-              FontAwesome.money,
-              color: Colors.white,
+          TextField(
+            autofocus: true,
+            //focusNode: myFocusNodeFirstName,
+            controller: emailTextController,
+            keyboardType: TextInputType.emailAddress,
+            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+            decoration: const InputDecoration(
+              //border: InputBorder.none,
+              icon: Icon(
+                FontAwesome.money,
+                color: Colors.white,
+              ),
+              hintText: '(email - optional)',
+              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
             ),
-            hintText: '(email - optional)',
-            hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
-        ),
-        TextField(
-          autofocus: true,
-          //focusNode: myFocusNodeFirstName,
-          controller: phoneTextController,
-          keyboardType: TextInputType.phone,
-          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-          decoration: const InputDecoration(
-            //border: InputBorder.none,
-            icon: Icon(
-              FontAwesome.money,
-              color: Colors.white,
+          TextField(
+            autofocus: true,
+            //focusNode: myFocusNodeFirstName,
+            controller: phoneTextController,
+            keyboardType: TextInputType.phone,
+            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+            decoration: const InputDecoration(
+              //border: InputBorder.none,
+              icon: Icon(
+                FontAwesome.money,
+                color: Colors.white,
+              ),
+              hintText: '(phone # - optional)',
+              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
             ),
-            hintText: '(phone # - optional)',
-            hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
-        ),
-      ]),
-      actions: <Widget>[
-        SizedBox(
-          height: 55,
-          child: TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            child: Text(
-              'Cancel',
-              textAlign: TextAlign.center,
-              textScaleFactor: G0<DeviceInfo>().textClamp15,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
-            },
-          ),
-        ),
-
-        SizedBox(
-          height: 55.0,
-          child: TextButton(
-              style: TextButton.styleFrom(backgroundColor: Colors.blue),
+        ]),
+        actions: <Widget>[
+          SizedBox(
+            height: 55,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
               child: Text(
-                'Add\r\nVisitor',
+                'Cancel',
                 textAlign: TextAlign.center,
                 textScaleFactor: G0<DeviceInfo>().textClamp15,
               ),
               onPressed: () {
-                Navigator.of(context).pop(<String, String>{
-                  'type': enumAnonymousVisitor.value.toString(),
-                  'name': nameTextController.text,
-                  'email': emailTextController.text,
-                  'phone': phoneTextController.text,
-                });
-              }),
-        ),
+                Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
+              },
+            ),
+          ),
 
-        SizedBox(
-          height: 55.0,
-          child: TextButton(
-              style: TextButton.styleFrom(backgroundColor: Colors.blue),
-              child: Text(
-                'Add\r\nVirgin',
-                textAlign: TextAlign.center,
-                textScaleFactor: G0<DeviceInfo>().textClamp15,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop(<String, String>{
-                  'type': enumVirgin.value.toString(),
-                  'name': nameTextController.text,
-                  'email': emailTextController.text,
-                  'phone': phoneTextController.text,
-                });
-              }),
-        ),
-        // ),
-      ],
+          SizedBox(
+            height: 55.0,
+            child: TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                child: Text(
+                  'Add\r\nVisitor',
+                  textAlign: TextAlign.center,
+                  textScaleFactor: G0<DeviceInfo>().textClamp15,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(<String, String>{
+                    'type': enumAnonymousVisitor.value.toString(),
+                    'name': nameTextController.text,
+                    'email': emailTextController.text,
+                    'phone': phoneTextController.text,
+                  });
+                }),
+          ),
+
+          SizedBox(
+            height: 55.0,
+            child: TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                child: Text(
+                  'Add\r\nVirgin',
+                  textAlign: TextAlign.center,
+                  textScaleFactor: G0<DeviceInfo>().textClamp15,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(<String, String>{
+                    'type': enumVirgin.value.toString(),
+                    'name': nameTextController.text,
+                    'email': emailTextController.text,
+                    'phone': phoneTextController.text,
+                  });
+                }),
+          ),
+          // ),
+        ],
+      ),
     );
   }
 }

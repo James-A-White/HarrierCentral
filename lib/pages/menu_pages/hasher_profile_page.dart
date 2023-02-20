@@ -1049,7 +1049,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             );
 
                                                             await showDialog<void>(
-                                                                context: context,
+                                                                context: navigatorKey.currentContext,
                                                                 barrierDismissible: false, // user must tap button!
                                                                 builder: (BuildContext context) {
                                                                   return pp;

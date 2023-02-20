@@ -98,8 +98,13 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       facebookAccessToken = await _checkFacebookLogin();
 
       final String responseBody = await svc.approveLogin(navigatorKey.currentContext, facebookAccessToken);
-      loginResult = ApproveLoginModel.itemFromJson(responseBody);
-      promoResult = PromoModel.itemsFromJson(responseBody);
+
+      if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
+        exit(0);
+      } else {
+        loginResult = ApproveLoginModel.itemFromJson(responseBody);
+        promoResult = PromoModel.itemsFromJson(responseBody);
+      }
     }
 
     if (loginResult != null) {
