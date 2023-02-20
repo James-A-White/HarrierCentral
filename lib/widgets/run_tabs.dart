@@ -87,7 +87,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         if (packItem.virginVisitorType != 0) {
           displayName = packItem.displayName;
         }
-        _thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem, displayName: displayName));
+
+        if ((packItem.hemId != null) && (hasherItem.hasherId != null)) {
+          _thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem, displayName: displayName));
+        }
       }
     } catch (e) {
       //print(e);
@@ -512,7 +515,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   height: 70.0,
                   child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
                 )
-              : _thePackList.isEmpty
+              : ((_thePackList.isEmpty) && (widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().subtract(const Duration(days: -1)))))
                   ? Column(
                       children: <Widget>[
                         const Expanded(flex: 40, child: SizedBox()),
@@ -527,7 +530,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     )
                   : Column(
                       children: <Widget>[
-                        if (_thisUserIndex == -1) ..._getRsvpButtons(),
+                        if ((_thisUserIndex == -1) &&
+                            (widget.futureRun.event.eventStartDatetime.isAfter(
+                              DateTime.now().subtract(
+                                const Duration(days: -1),
+                              ),
+                            )))
+                          ..._getRsvpButtons(),
                         if (_thisUserIndex == -1) ...<Widget>[const SizedBox(height: 10)],
                         Container(
                           padding: const EdgeInsets.all(8.0),
@@ -782,7 +791,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
 
       await showModalBottomSheet<dynamic>(
-        context: context,
+        context: navigatorKey.currentContext,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),

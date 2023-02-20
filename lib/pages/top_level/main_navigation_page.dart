@@ -225,7 +225,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
         );
 
         final EnumCheckinOptions<int> retVal = await showDialog<EnumCheckinOptions<int>>(
-            context: context,
+            context: navigatorKey.currentContext,
             barrierDismissible: false, // user must tap button!
             builder: (BuildContext context) {
               return popup;

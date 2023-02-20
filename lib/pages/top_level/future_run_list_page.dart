@@ -393,7 +393,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
                                       if (!await Permission.location.isGranted) {
                                         final bool allow = await IveCoreUtilities.showAlert(
-                                            context,
+                                            navigatorKey.currentContext,
                                             'Location Services Required',
                                             'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
                                             'Yes',

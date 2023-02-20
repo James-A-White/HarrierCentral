@@ -15,7 +15,7 @@ class OfflineModeRibbon extends StatelessWidget {
         ? const SizedBox.shrink()
         : Positioned(
             right: 0,
-            top: 20,
+            top: 0,
             child: GestureDetector(
               onTap: () {
                 if (lastSync != null) {
@@ -47,7 +47,7 @@ class OfflineModeRibbon extends StatelessWidget {
                 Text(
                   body,
                   textAlign: TextAlign.justify,
-                  style: Theme.of(context).textTheme.subtitle1,
+                  style: Theme.of(context).textTheme.titleMedium,
                 )
               ],
             ),

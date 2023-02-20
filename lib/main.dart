@@ -20,7 +20,7 @@ void main() {
       child: MaterialApp(
         builder: (BuildContext context, Widget child) {
           final MediaQueryData mediaQueryData = MediaQuery.of(context);
-          final num scale = mediaQueryData.textScaleFactor.clamp(0.8, 2.0);
+          final num scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.75);
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
             child: child,
@@ -56,9 +56,8 @@ void main() {
             primaryColor: Colors.grey.shade700,
             primaryColorDark: Colors.grey.shade900,
             primaryColorLight: Colors.grey.shade400,
-            bottomAppBarColor: Colors.grey.shade700,
+            bottomAppBarTheme: BottomAppBarTheme(color: Colors.grey.shade700),
             highlightColor: Colors.yellow,
-            selectedRowColor: Colors.red.shade50,
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade900,
