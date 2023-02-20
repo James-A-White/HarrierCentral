@@ -17,7 +17,11 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
-    await setupLocalServices(MediaQuery.of(navigatorKey.currentContext).size.width, MediaQuery.of(navigatorKey.currentContext).size.height);
+    await setupLocalServices(
+      MediaQuery.of(navigatorKey.currentContext).size.width,
+      MediaQuery.of(navigatorKey.currentContext).size.height,
+      MediaQuery.of(navigatorKey.currentContext).textScaleFactor,
+    );
 
     await G0.allReady();
 

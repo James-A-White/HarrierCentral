@@ -657,10 +657,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
+      title: TextScaleFactorClamper(
+        textScaleFactor: G0<DeviceInfo>().textClamp15,
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -716,38 +719,41 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 ),
               ),
               Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: TextField(
-                            autocorrect: false,
-                            onChanged: (String text) {
-                              setState(() {
-                                _searchText = text;
-                                _filterPackListResults();
-                              });
-                            },
-                            focusNode: _searchFocusNode,
-                            controller: _searchController,
-                            keyboardType: TextInputType.text,
-                            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              icon: Icon(
-                                FontAwesome.search,
-                                color: Colors.black,
+                child: TextScaleFactorClamper(
+                  textScaleFactor: G0<DeviceInfo>().textClamp00,
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: TextField(
+                              autocorrect: false,
+                              onChanged: (String text) {
+                                setState(() {
+                                  _searchText = text;
+                                  _filterPackListResults();
+                                });
+                              },
+                              focusNode: _searchFocusNode,
+                              controller: _searchController,
+                              keyboardType: TextInputType.text,
+                              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                icon: Icon(
+                                  FontAwesome.search,
+                                  color: Colors.black,
+                                ),
+                                hintText: 'Enter Hash or mortal name',
+                                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                               ),
-                              hintText: 'Enter Hash or mortal name',
-                              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Text(_searchTypeText, style: _highlightSearchType ? _localFootnoteSmallRed : _localFootnoteSmall)
-                  ],
+                        ],
+                      ),
+                      Text(_searchTypeText, style: _highlightSearchType ? _localFootnoteSmallRed : _localFootnoteSmall)
+                    ],
+                  ),
                 ),
               ),
               SizedBox(
@@ -769,93 +775,96 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  Container _filterBar() {
-    return Container(
-      decoration: const BoxDecoration(
-        // border: new Border.all(width: 1.0, color: Colors.black),
-        //shape: BoxShape.circle,
-        color: Colors.white,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Color.fromARGB(70, 0, 0, 0),
-            offset: Offset(0.0, 6.0),
-            blurRadius: 10.0,
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.only(top: 10),
-      width: MediaQuery.of(context).size.width,
-      height: 120,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          CheckinFiltersCell(
-            counter: _memberCount,
-            label: 'Member',
-            index: 5,
-            onTap: () {
-              _refreshPackListFromTables(true);
-            },
-            filterValues: _filterValues,
-          ),
-          // CheckinFiltersCell(
-          //   counter: countRsvps,
-          //   label: 'RSVP',
-          //   index: 0,
-          //   onTap: () {
-          //     _refreshPackListFromTables(true);
-          //   },
-          //   filterValues: filterValues,
-          // ),
-          CheckinFiltersCell(
-            counter: _countComing,
-            label: 'Coming',
-            index: 1,
-            useTriState: false,
-            onTap: () {
-              _refreshPackListFromTables(true);
-            },
-            filterValues: _filterValues,
-          ),
-          CheckinFiltersCell(
-            counter: _countAtHash,
-            index: 2,
-            label: 'At Hash',
-            onTap: () {
-              _refreshPackListFromTables(true);
-            },
-            filterValues: _filterValues,
-          ),
-          CheckinFiltersCell(
-            counter: _countPaid,
-            index: 3,
-            label: 'Paid',
-            onTap: () {
-              _refreshPackListFromTables(true);
-            },
-            filterValues: _filterValues,
-          ),
-          CheckinFiltersCell(
-            counter: _countOnIn,
-            index: 4,
-            label: 'On In',
-            onTap: () {
-              _refreshPackListFromTables(true);
-            },
-            filterValues: _filterValues,
-          ),
-          CheckinFiltersCell(
-            counter: _drinkCount,
-            index: 6,
-            useTriState: false,
-            label: 'Drink!',
-            onTap: () {
-              _refreshPackListFromTables(true);
-            },
-            filterValues: _filterValues,
-          ),
-        ],
+  Widget _filterBar() {
+    return TextScaleFactorClamper(
+      textScaleFactor: G0<DeviceInfo>().textClamp25,
+      child: Container(
+        decoration: const BoxDecoration(
+          // border: new Border.all(width: 1.0, color: Colors.black),
+          //shape: BoxShape.circle,
+          color: Colors.white,
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Color.fromARGB(70, 0, 0, 0),
+              offset: Offset(0.0, 6.0),
+              blurRadius: 10.0,
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.only(top: 10),
+        width: MediaQuery.of(context).size.width,
+        height: 120,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            CheckinFiltersCell(
+              counter: _memberCount,
+              label: 'Member',
+              index: 5,
+              onTap: () {
+                _refreshPackListFromTables(true);
+              },
+              filterValues: _filterValues,
+            ),
+            // CheckinFiltersCell(
+            //   counter: countRsvps,
+            //   label: 'RSVP',
+            //   index: 0,
+            //   onTap: () {
+            //     _refreshPackListFromTables(true);
+            //   },
+            //   filterValues: filterValues,
+            // ),
+            CheckinFiltersCell(
+              counter: _countComing,
+              label: 'Coming',
+              index: 1,
+              useTriState: false,
+              onTap: () {
+                _refreshPackListFromTables(true);
+              },
+              filterValues: _filterValues,
+            ),
+            CheckinFiltersCell(
+              counter: _countAtHash,
+              index: 2,
+              label: 'At Hash',
+              onTap: () {
+                _refreshPackListFromTables(true);
+              },
+              filterValues: _filterValues,
+            ),
+            CheckinFiltersCell(
+              counter: _countPaid,
+              index: 3,
+              label: 'Paid',
+              onTap: () {
+                _refreshPackListFromTables(true);
+              },
+              filterValues: _filterValues,
+            ),
+            CheckinFiltersCell(
+              counter: _countOnIn,
+              index: 4,
+              label: 'On In',
+              onTap: () {
+                _refreshPackListFromTables(true);
+              },
+              filterValues: _filterValues,
+            ),
+            CheckinFiltersCell(
+              counter: _drinkCount,
+              index: 6,
+              useTriState: false,
+              label: 'Drink!',
+              onTap: () {
+                _refreshPackListFromTables(true);
+              },
+              filterValues: _filterValues,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -984,103 +993,116 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return Scaffold(
       key: _scaffoldKey,
       floatingActionButton: SpeedDial(
-          // both default to 16
-          // marginEnd: 18,
-          // marginBottom: 30,
-          animatedIcon: AnimatedIcons.menu_close,
-          animatedIconTheme: const IconThemeData(size: 22.0),
-          // this is ignored if animatedIcon is non null
-          // child:const  Icon(Icons.add),
-          visible: true,
-          curve: Curves.bounceIn,
-          overlayColor: Colors.black,
-          overlayOpacity: 0.5,
-          onOpen: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            _searchFocusNode.unfocus();
-          },
-          //onClose: () => //print('DIAL CLOSED'),
-          tooltip: 'Speed Dial',
-          heroTag: 'speed-dial-hero-tag',
-          backgroundColor: Colors.red.shade900,
-          foregroundColor: Colors.white,
-          elevation: 8.0,
-          shape: const CircleBorder(),
-          children: <SpeedDialChild>[
-            SpeedDialChild(
-              child: const Icon(Icons.filter_list),
-              backgroundColor: Colors.green,
-              label: 'Preset Filters',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _filterOptionsPopup();
-              },
+        // both default to 16
+        // marginEnd: 18,
+        // marginBottom: 30,
+        animatedIcon: AnimatedIcons.menu_close,
+        animatedIconTheme: const IconThemeData(size: 22.0),
+        // this is ignored if animatedIcon is non null
+        // child:const  Icon(Icons.add),
+        visible: true,
+        curve: Curves.bounceIn,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        onOpen: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          _searchFocusNode.unfocus();
+        },
+        //onClose: () => //print('DIAL CLOSED'),
+        tooltip: 'Speed Dial',
+        heroTag: 'speed-dial-hero-tag',
+        backgroundColor: Colors.red.shade900,
+        foregroundColor: Colors.white,
+        elevation: 8.0,
+        shape: const CircleBorder(),
+        children: <SpeedDialChild>[
+          SpeedDialChild(
+            child: const Icon(Icons.filter_list),
+            backgroundColor: Colors.green,
+            label: 'Preset Filters',
+            labelStyle: TextStyle(
+              fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
             ),
-            // SpeedDialChild(
-            //     child: const Icon(Icons.person_add),
-            //     backgroundColor: Colors.blue,
-            //     label: 'Add Hasher to Harrier Central',
-            //     labelStyle: const TextStyle(fontSize: 18.0),
-            //     onTap: () {
-            //       Navigator.push<HashersModel>(
-            //         context,
-            //         MaterialPageRoute<HashersModel>(
-            //           builder: (BuildContext context) => HasherProfilePage(
-            //             dataContext: EnumDataContext.event,
-            //             pageType: EnumMyProfilePageType.newHasherProfile,
-            //             eventId: widget.eventAggregate.event.eventId,
-            //             kennelId: widget.eventAggregate.event.kennelId,
-            //             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-            //           ),
-            //         ),
-            //       ).then((HashersModel result) {
-            //         _refreshPackListFromTables(true);
-            //       });
-            //     }),
-            SpeedDialChild(
-              child: const Icon(FontAwesome.heart),
-              backgroundColor: Colors.blue,
-              label: 'Add Virgin / Visitor',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () => _showVirginVisitorPopup(context),
+            onTap: () {
+              _filterOptionsPopup();
+            },
+          ),
+          // SpeedDialChild(
+          //     child: const Icon(Icons.person_add),
+          //     backgroundColor: Colors.blue,
+          //     label: 'Add Hasher to Harrier Central',
+          //     labelStyle: const TextStyle(fontSize: 18.0),
+          //     onTap: () {
+          //       Navigator.push<HashersModel>(
+          //         context,
+          //         MaterialPageRoute<HashersModel>(
+          //           builder: (BuildContext context) => HasherProfilePage(
+          //             dataContext: EnumDataContext.event,
+          //             pageType: EnumMyProfilePageType.newHasherProfile,
+          //             eventId: widget.eventAggregate.event.eventId,
+          //             kennelId: widget.eventAggregate.event.kennelId,
+          //             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+          //           ),
+          //         ),
+          //       ).then((HashersModel result) {
+          //         _refreshPackListFromTables(true);
+          //       });
+          //     }),
+          SpeedDialChild(
+            child: const Icon(FontAwesome.heart),
+            backgroundColor: Colors.blue,
+            label: 'Add Virgin / Visitor',
+            labelStyle: TextStyle(
+              fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
             ),
-            SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.account_search),
-              backgroundColor: Colors.blue,
-              label: 'Find Hasher and add',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () async => await _findHasher(),
+            onTap: () => _showVirginVisitorPopup(context),
+          ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.account_search),
+            backgroundColor: Colors.blue,
+            label: 'Find Hasher and add',
+            labelStyle: TextStyle(
+              fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
             ),
-            SpeedDialChild(
-                child: const Icon(MaterialCommunityIcons.message_video),
-                backgroundColor: Colors.deepOrange,
-                label: 'View video tutorial',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => const VideoTutorialPage(
-                                title: 'How to use Check In Page',
-                                videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
-                              )),
-                    )),
-            if ((widget.eventAggregate?.kennel?.bankScheme != null) && (widget.eventAggregate?.kennel?.bankScheme != '')) ...<SpeedDialChild>[
-              SpeedDialChild(
-                child: const Icon(MaterialCommunityIcons.bank),
-                backgroundColor: Colors.purple,
-                label: 'Bank Transfer\r\n(Member)',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, true),
+            onTap: () async => await _findHasher(),
+          ),
+          SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.message_video),
+              backgroundColor: Colors.deepOrange,
+              label: 'View video tutorial',
+              labelStyle: TextStyle(
+                fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
               ),
-              SpeedDialChild(
-                child: const Icon(MaterialCommunityIcons.bank),
-                backgroundColor: Colors.purple,
-                label: 'Bank Transfer\r\n(Non-Member)',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, false),
+              onTap: () => Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => const VideoTutorialPage(
+                              title: 'How to use Check In Page',
+                              videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
+                            )),
+                  )),
+          if ((widget.eventAggregate?.kennel?.bankScheme != null) && (widget.eventAggregate?.kennel?.bankScheme != '')) ...<SpeedDialChild>[
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.bank),
+              backgroundColor: Colors.purple,
+              label: 'Bank Transfer\r\n(Member)',
+              labelStyle: TextStyle(
+                fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
               ),
-            ],
-          ]),
+              onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, true),
+            ),
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.bank),
+              backgroundColor: Colors.purple,
+              label: 'Bank Transfer\r\n(Non-Member)',
+              labelStyle: TextStyle(
+                fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+              ),
+              onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, false),
+            ),
+          ],
+        ],
+      ),
       appBar: _getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : '${widget?.eventAggregate?.event?.eventName ?? ''} Check In'),
       body: _isLoading
           ? const HcCircularProgressIndicator(key: Key('430320291'))
@@ -1608,149 +1630,78 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         onRefresh: () async {
           await _refreshSqlTablesFromBackend(true);
         },
-        child: ListView.separated(
-          separatorBuilder: (BuildContext context, int index) => const Divider(
-            height: 1.0,
-            color: Colors.black45,
-          ),
-          physics: const AlwaysScrollableScrollPhysics(),
-          scrollDirection: Axis.vertical,
-          controller: _scrollController,
-          itemCount: (_filteredList?.length ?? 0) + 2,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == (_filteredList?.length ?? 0)) {
-              return _getAddHasherBlock();
-            } else if (index == (_filteredList?.length ?? 0) + 1) {
-              return const SizedBox(height: 120);
-            } else {
-              final CheckInPackModel packMember = _filteredList[index];
+        child: TextScaleFactorClamper(
+          textScaleFactor: G0<DeviceInfo>().textClamp25,
+          child: ListView.separated(
+            separatorBuilder: (BuildContext context, int index) => const Divider(
+              height: 1.0,
+              color: Colors.black45,
+            ),
+            physics: const AlwaysScrollableScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            controller: _scrollController,
+            itemCount: (_filteredList?.length ?? 0) + 2,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == (_filteredList?.length ?? 0)) {
+                return _getAddHasherBlock();
+              } else if (index == (_filteredList?.length ?? 0) + 1) {
+                return const SizedBox(height: 120);
+              } else {
+                final CheckInPackModel packMember = _filteredList[index];
 
-              num amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+                num amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
 
-              amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
-              amountOwed -= packMember.discountAmount;
-              amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
+                amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+                amountOwed -= packMember.discountAmount;
+                amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
 
-              final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+                final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
-              final Key key = Key(index.toString());
+                final Key key = Key(index.toString());
 
-              return Slidable(
-                key: key,
-                controller: _slidableController,
-                actionPane: const SlidableBehindActionPane(),
-                actionExtentRatio: 0.35,
-                dismissal: SlidableDismissal(
-                  onWillDismiss: (SlideActionType actionType) {
-                    if (actionType == SlideActionType.secondary) {
-                      _useTerminalForPayment = false;
-                    }
-                    if (packMember.isPaid != 1) {
-                      _payForEvent(
-                        context,
-                        _scaffoldKey.currentState,
-                        actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
-                        packMember,
-                        -1,
-                      );
-                    } else {
+                return Slidable(
+                  key: key,
+                  controller: _slidableController,
+                  actionPane: const SlidableBehindActionPane(),
+                  actionExtentRatio: 0.35,
+                  dismissal: SlidableDismissal(
+                    onWillDismiss: (SlideActionType actionType) {
                       if (actionType == SlideActionType.secondary) {
-                        _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
-                      }
-                    }
-
-                    Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
-                      _slidableController.activeState.close();
-                    });
-
-                    return false;
-                  },
-                  dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
-                  child: const SlidableDrawerDismissal(),
-                  onDismissed: (SlideActionType actionType) {
-                    setState(() {});
-                  },
-                ),
-                actions: <Widget>[
-                  IconSlideAction(
-                      iconWidget: packMember.isPaid == 1
-                          ? Container(
-                              color: Colors.grey,
-                              width: G0<DeviceInfo>().deviceWidth,
-                              child: Column(
-                                children: const <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 5.0),
-                                    child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 5.0),
-                                    child: Text(
-                                      'Already\r\npaid',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Container(
-                              color: Colors.blue,
-                              width: G0<DeviceInfo>().deviceWidth,
-                              child: Column(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 10.0),
-                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                      onTap: () {
                         _useTerminalForPayment = false;
-                        _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
-                      }),
-                  if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
+                      }
+                      if (packMember.isPaid != 1) {
+                        _payForEvent(
+                          context,
+                          _scaffoldKey.currentState,
+                          actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
+                          packMember,
+                          -1,
+                        );
+                      } else {
+                        if (actionType == SlideActionType.secondary) {
+                          _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
+                        }
+                      }
+
+                      Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
+                        _slidableController.activeState.close();
+                      });
+
+                      return false;
+                    },
+                    dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
+                    child: const SlidableDrawerDismissal(),
+                    onDismissed: (SlideActionType actionType) {
+                      setState(() {});
+                    },
+                  ),
+                  actions: <Widget>[
                     IconSlideAction(
-                        iconWidget: Container(
-                          color: Colors.deepPurple,
-                          width: G0<DeviceInfo>().deviceWidth,
-                          child: Column(
-                            children: <Widget>[
-                              const Padding(
-                                padding: EdgeInsets.only(top: 8.0),
-                                child: Icon(MaterialCommunityIcons.contactless_payment_circle, size: 30.0, color: Colors.white),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        onTap: () {
-                          _useTerminalForPayment = true;
-                          _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
-                        }),
-                  ],
-                ],
-                secondaryActions: <Widget>[
-                  IconSlideAction(
-                    iconWidget: packMember.isPaid == 1
-                        ? packMember.attendenceState >= attendenceOnIn.value
+                        iconWidget: packMember.isPaid == 1
                             ? Container(
-                                width: G0<DeviceInfo>().deviceWidth,
                                 color: Colors.grey,
+                                width: G0<DeviceInfo>().deviceWidth,
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: const <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(top: 5.0),
@@ -1759,7 +1710,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                     Padding(
                                       padding: EdgeInsets.only(top: 5.0),
                                       child: Text(
-                                        'Already\r\nOn-In',
+                                        'Already\r\npaid',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
                                       ),
@@ -1768,55 +1719,129 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                 ),
                               )
                             : Container(
-                                color: Colors.amber[800],
+                                color: Colors.blue,
                                 width: G0<DeviceInfo>().deviceWidth,
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: const <Widget>[
+                                  children: <Widget>[
                                     Padding(
-                                      padding: EdgeInsets.only(top: 2.0),
-                                      child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(top: 5.0),
-                                      child: Text(
-                                        'Record as\r\nOn-In',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                      ),
+                                      padding: const EdgeInsets.only(top: 10.0),
+                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                                     ),
                                   ],
                                 ),
-                              )
-                        : Container(
+                              ),
+                        onTap: () {
+                          _useTerminalForPayment = false;
+                          _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
+                        }),
+                    if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
+                      IconSlideAction(
+                          iconWidget: Container(
+                            color: Colors.deepPurple,
                             width: G0<DeviceInfo>().deviceWidth,
-                            color: Colors.green,
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.max,
                               children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
-                                  child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8.0),
+                                  child: Icon(MaterialCommunityIcons.contactless_payment_circle, size: 30.0, color: Colors.white),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(bottom: 5.0),
-                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                                  padding: const EdgeInsets.only(top: 10.0),
+                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                                 ),
                               ],
                             ),
                           ),
+                          onTap: () {
+                            _useTerminalForPayment = true;
+                            _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
+                          }),
+                    ],
+                  ],
+                  secondaryActions: <Widget>[
+                    IconSlideAction(
+                      iconWidget: packMember.isPaid == 1
+                          ? packMember.attendenceState >= attendenceOnIn.value
+                              ? Container(
+                                  width: G0<DeviceInfo>().deviceWidth,
+                                  color: Colors.grey,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: const <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.only(top: 5.0),
+                                        child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.only(top: 5.0),
+                                        child: Text(
+                                          'Already\r\nOn-In',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(
+                                  color: Colors.amber[800],
+                                  width: G0<DeviceInfo>().deviceWidth,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: const <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.only(top: 2.0),
+                                        child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.only(top: 5.0),
+                                        child: Text(
+                                          'Record as\r\nOn-In',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                          : Container(
+                              width: G0<DeviceInfo>().deviceWidth,
+                              color: Colors.green,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
+                                    child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 5.0),
+                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                    ),
+                  ],
+                  child: Container(
+                    color: Colors.white,
+                    child: _listItem(context, packMember),
                   ),
-                ],
-                child: Container(
-                  color: Colors.white,
-                  child: _listItem(context, packMember),
-                ),
-              );
-            }
-          },
+                );
+              }
+            },
+          ),
         ),
       ),
     );
@@ -1960,7 +1985,11 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             style: TextButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              textAlign: TextAlign.center,
+              textScaleFactor: G0<DeviceInfo>().textClamp15,
+            ),
             onPressed: () {
               Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
             },
@@ -1971,9 +2000,10 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           height: 55.0,
           child: TextButton(
               style: TextButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text(
+              child: Text(
                 'Add\r\nVisitor',
                 textAlign: TextAlign.center,
+                textScaleFactor: G0<DeviceInfo>().textClamp15,
               ),
               onPressed: () {
                 Navigator.of(context).pop(<String, String>{
@@ -1989,9 +2019,10 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           height: 55.0,
           child: TextButton(
               style: TextButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text(
+              child: Text(
                 'Add\r\nVirgin',
                 textAlign: TextAlign.center,
+                textScaleFactor: G0<DeviceInfo>().textClamp15,
               ),
               onPressed: () {
                 Navigator.of(context).pop(<String, String>{

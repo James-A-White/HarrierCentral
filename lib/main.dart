@@ -20,7 +20,7 @@ void main() {
       child: MaterialApp(
         builder: (BuildContext context, Widget child) {
           final MediaQueryData mediaQueryData = MediaQuery.of(context);
-          final num scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.25);
+          final num scale = mediaQueryData.textScaleFactor.clamp(0.8, 2.0);
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
             child: child,

@@ -62,7 +62,9 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
 
   bool _isLoading = false;
 
+  // ignore: non_constant_identifier_names
   final int LIST_ITEM_HEIGHT = 84;
+  // ignore: non_constant_identifier_names
   final int LIST_ITEM_ELEMENT_HEIGHT = 84;
 
   final List<DrinksResults> _awards = <DrinksResults>[];

@@ -374,7 +374,10 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                 : AppBar(
                     elevation: 3.0,
                     backgroundColor: themeAppBarBackground,
-                    title: Text(_appBarText),
+                    title: Text(
+                      _appBarText,
+                      textScaleFactor: G0<DeviceInfo>().textClamp00,
+                    ),
                     centerTitle: true,
                     actions: <IconButton>[
                       IconButton(
@@ -481,51 +484,53 @@ class MainNavigationPageState extends State<MainNavigationPage> {
             //     return _getGenericLoadingScreen();
             //   }
             // }
-
             bottomNavigationBar: (!_showMainScreen)
                 ? null
                 : FlippableBox(
                     key: const Key('667701326'),
                     // ignore: avoid_unnecessary_containers
                     front: Container(
-                      child: FancyBottomNavigation(
-                        circleColor: themeButtonColors,
-                        inactiveIconColor: themeBackgroundColor,
-                        barBackgroundColor: themeNavBarBackground,
-                        tabs: <TabData>[
-                          TabData(
-                            iconData: MaterialCommunityIcons.run_fast,
-                            title: 'Runs',
-                          ),
-                          TabData(
-                            iconData: FontAwesome.home,
-                            title: 'Kennels',
-                          ),
-                          TabData(
-                            iconData: FontAwesome.map,
-                            title: 'Explore',
-                          ),
-                          TabData(
-                            iconData: FontAwesome.list_ul,
-                            title: 'History',
-                          ),
-                        ],
-                        initialSelection: 0,
-                        key: bottomNavigationKey,
-                        onTabChangedListener: (int position) {
-                          setState(() {
-                            _appBarText = _tabTitles[position];
-                            currentPage = position;
+                      child: TextScaleFactorClamper(
+                        textScaleFactor: G0<DeviceInfo>().textClamp00,
+                        child: FancyBottomNavigation(
+                          circleColor: themeButtonColors,
+                          inactiveIconColor: themeBackgroundColor,
+                          barBackgroundColor: themeNavBarBackground,
+                          tabs: <TabData>[
+                            TabData(
+                              iconData: MaterialCommunityIcons.run_fast,
+                              title: 'Runs',
+                            ),
+                            TabData(
+                              iconData: FontAwesome.home,
+                              title: 'Kennels',
+                            ),
+                            TabData(
+                              iconData: FontAwesome.map,
+                              title: 'Explore',
+                            ),
+                            TabData(
+                              iconData: FontAwesome.list_ul,
+                              title: 'History',
+                            ),
+                          ],
+                          initialSelection: 0,
+                          key: bottomNavigationKey,
+                          onTabChangedListener: (int position) {
+                            setState(() {
+                              _appBarText = _tabTitles[position];
+                              currentPage = position;
 
-                            // this extra setState is here to ensure that the FAB
-                            // displays properly when the map page is showing
-                            if ((!_isFlipped) && (currentPage == 2)) {
-                              Future<void>.delayed(const Duration(milliseconds: 250)).then((void _) {
-                                setState(() {});
-                              });
-                            }
-                          });
-                        },
+                              // this extra setState is here to ensure that the FAB
+                              // displays properly when the map page is showing
+                              if ((!_isFlipped) && (currentPage == 2)) {
+                                Future<void>.delayed(const Duration(milliseconds: 250)).then((void _) {
+                                  setState(() {});
+                                });
+                              }
+                            });
+                          },
+                        ),
                       ),
                     ),
                     // ignore: sized_box_for_whitespace

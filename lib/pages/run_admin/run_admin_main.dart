@@ -147,7 +147,14 @@ class RunAdminPageState extends State<RunAdminPage> {
                       topMargin: 20.0,
                       bottomMargin: 5.0,
                     ),
-                    Column(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: _kiddies()),
+                    TextScaleFactorClamper(
+                      textScaleFactor: G0<DeviceInfo>().textClamp15,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        children: _kiddies(),
+                      ),
+                    ),
                     const FancyDivider(
                       key: Key('669190022'),
                       innerColor: Colors.white,

@@ -158,7 +158,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   final String _userId = getStringPref(StringPrefsEnum.userId);
 
-  int _currentTabIndex = -1;
+  //int _currentTabIndex = -1;
 
   @override
   void initState() {
@@ -197,7 +197,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
       setState(() {});
 
-      _currentTabIndex = _tabController.index;
+      //_currentTabIndex = _tabController.index;
     });
 
     final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
@@ -1112,24 +1112,27 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-                    child: TabBar(
-                      labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                      unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                      isScrollable: true,
-                      labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
-                      unselectedLabelColor: Colors.black,
-                      labelColor: Colors.white,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicator: BubbleTabIndicator(
-                        indicatorHeight: 30.0,
-                        indicatorColor: Colors.red.shade900,
-                        tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                        indicatorRadius: 20.0,
-                        // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
-                        // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
+                    child: TextScaleFactorClamper(
+                      textScaleFactor: G0<DeviceInfo>().textClamp15,
+                      child: TabBar(
+                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                        isScrollable: true,
+                        labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                        unselectedLabelColor: Colors.black,
+                        labelColor: Colors.white,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        indicator: BubbleTabIndicator(
+                          indicatorHeight: 30.0,
+                          indicatorColor: Colors.red.shade900,
+                          tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                          indicatorRadius: 20.0,
+                          // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+                          // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
+                        ),
+                        tabs: _tabs,
+                        controller: _tabController,
                       ),
-                      tabs: _tabs,
-                      controller: _tabController,
                     ),
                   ),
                 ),

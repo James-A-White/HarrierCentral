@@ -89,134 +89,30 @@ class RunDetails extends StatelessWidget {
             padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
             child: FancyDivider(key: Key('61566713'), innerColor: Colors.white),
           ),
-          Text('Event details', style: headingStyle),
+          Text(
+            'Event details',
+            style: headingStyle,
+            textScaleFactor: G0<DeviceInfo>().textClamp50,
+          ),
           const SizedBox(
             height: 15.0,
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: flexLeft,
-                    child: Text(
-                      'Kennel:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      flex: flexRight,
-                      child: Text(
-                        kennel.kennelName,
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )),
-                ],
-              ),
-              ((event.eventNumber ?? 0) == 0) || (event.isCountedRun == 0)
-                  ? const SizedBox(height: 0.0, width: 0.0)
-                  : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            'Run #:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              '${event.eventNumber}',
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: flexLeft,
-                    child: Text(
-                      'Date:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      flex: flexRight,
-                      child: Text(
-                        DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime),
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )),
-                ],
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: flexLeft,
-                    child: Text(
-                      'Time:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      flex: flexRight,
-                      child: Text(
-                        DateFormat('h:mm a').format(event.eventStartDatetime),
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )),
-                ],
-              ),
-              if ((event.locationOneLineDesc ?? '') != '') ...<Widget>[
+          TextScaleFactorClamper(
+            textScaleFactor: G0<DeviceInfo>().textClamp50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
                 Row(
                   children: <Widget>[
                     Expanded(
                       flex: flexLeft,
                       child: Text(
-                        'Place:',
+                        'Kennel:',
                         style: listLabelStyle,
                         textAlign: TextAlign.right,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(
@@ -226,207 +122,52 @@ class RunDetails extends StatelessWidget {
                     Expanded(
                         flex: flexRight,
                         child: Text(
-                          event.locationOneLineDesc ?? '',
+                          kennel.kennelName,
                           style: listValueStyle,
                           textAlign: TextAlign.left,
-
-                          //maxLines: ,
-                          //overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         )),
                   ],
                 ),
-              ],
-              ((event.eventGeographicScope ?? 0) == 0)
-                  ? Container()
-                  : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            'Event:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: flexRight,
+                ((event.eventNumber ?? 0) == 0) || (event.isCountedRun == 0)
+                    ? const SizedBox(height: 0.0, width: 0.0)
+                    : Row(
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
                             child: Text(
-                              Utilities.getEventScopeText(event.eventGeographicScope),
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
+                              'Run #:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: flexLeft,
-                    child: Text(
-                      'Run fees:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      flex: flexRight,
-                      child: Text(
-                        ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0) > 0)
-                            ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0, digitsAfterDecimal, currencySymbol)} (members)'
-                            : '',
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )),
-                ],
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: flexLeft,
-                    child: Text(
-                      '',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 0,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      flex: flexRight,
-                      child: Text(
-                        ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0)
-                            ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0, digitsAfterDecimal, currencySymbol)} (non-members)'
-                            : '',
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )),
-                ],
-              ),
-              (event.eventPriceForExtras ?? 0) == 0
-                  ? const SizedBox(height: 0.0, width: 0.0)
-                  : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            'Extra fee:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0)
-                                  ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})'
-                                  : '',
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    ),
-              (event.hares ?? '') == ''
-                  ? const SizedBox(height: 0.0, width: 0.0)
-                  : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            'Hares:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
                           ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              event.hares ?? '',
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    ),
-              (G0<AppModel>().hasLocationPermissions) && isMapAndDistanceValid
-                  ? Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            'Distance:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: G0<AppModel>().hasLocationPermissions ? flexRight : 0,
-                            child: Text(
-                              G0<AppModel>().hasLocationPermissions
-                                  ? distToEvent >= 0
-                                      ? '${Utilities.getDistance(distToEvent, context, isMetric: ((distancePreference ?? 0) & 0x01) == 0)} from here'
-                                      : '<unknown>'
-                                  : '',
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    )
-                  : const SizedBox(height: 0.0, width: 0.0),
-              if ((event.locationStreet ?? '') != '') ...<Widget>[
+                          Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                '${event.eventNumber}',
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Expanded(
                       flex: flexLeft,
                       child: Text(
-                        'Street:',
+                        'Date:',
                         style: listLabelStyle,
                         textAlign: TextAlign.right,
-                        maxLines: 3,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -437,164 +178,430 @@ class RunDetails extends StatelessWidget {
                     Expanded(
                         flex: flexRight,
                         child: Text(
-                          event.locationStreet ?? '',
+                          DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime),
                           style: listValueStyle,
                           textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: flexLeft,
+                      child: Text(
+                        'Time:',
+                        style: listLabelStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: spaceBetweenRows,
+                      width: spaceBetweenColumns,
+                    ),
+                    Expanded(
+                        flex: flexRight,
+                        child: Text(
+                          DateFormat('h:mm a').format(event.eventStartDatetime),
+                          style: listValueStyle,
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )),
+                  ],
+                ),
+                if ((event.locationOneLineDesc ?? '') != '') ...<Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: flexLeft,
+                        child: Text(
+                          'Place:',
+                          style: listLabelStyle,
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: spaceBetweenRows,
+                        width: spaceBetweenColumns,
+                      ),
+                      Expanded(
+                          flex: flexRight,
+                          child: Text(
+                            event.locationOneLineDesc ?? '',
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+
+                            //maxLines: ,
+                            //overflow: TextOverflow.ellipsis,
+                          )),
+                    ],
+                  ),
+                ],
+                ((event.eventGeographicScope ?? 0) == 0)
+                    ? Container()
+                    : Row(
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
+                            child: Text(
+                              'Event:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
+                          ),
+                          Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                Utilities.getEventScopeText(event.eventGeographicScope),
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: flexLeft,
+                      child: Text(
+                        'Run fees:',
+                        style: listLabelStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: spaceBetweenRows,
+                      width: spaceBetweenColumns,
+                    ),
+                    Expanded(
+                        flex: flexRight,
+                        child: Text(
+                          ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0) > 0)
+                              ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0, digitsAfterDecimal, currencySymbol)} (members)'
+                              : '',
+                          style: listValueStyle,
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: flexLeft,
+                      child: Text(
+                        '',
+                        style: listLabelStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 0,
+                      width: spaceBetweenColumns,
+                    ),
+                    Expanded(
+                        flex: flexRight,
+                        child: Text(
+                          ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0)
+                              ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0, digitsAfterDecimal, currencySymbol)} (non-members)'
+                              : '',
+                          style: listValueStyle,
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )),
+                  ],
+                ),
+                (event.eventPriceForExtras ?? 0) == 0
+                    ? const SizedBox(height: 0.0, width: 0.0)
+                    : Row(
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
+                            child: Text(
+                              'Extra fee:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
+                          ),
+                          Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0)
+                                    ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})'
+                                    : '',
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
+                (event.hares ?? '') == ''
+                    ? const SizedBox(height: 0.0, width: 0.0)
+                    : Row(
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
+                            child: Text(
+                              'Hares:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
+                          ),
+                          Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                event.hares ?? '',
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
+                (G0<AppModel>().hasLocationPermissions) && isMapAndDistanceValid
+                    ? Row(
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
+                            child: Text(
+                              'Distance:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
+                          ),
+                          Expanded(
+                              flex: G0<AppModel>().hasLocationPermissions ? flexRight : 0,
+                              child: Text(
+                                G0<AppModel>().hasLocationPermissions
+                                    ? distToEvent >= 0
+                                        ? '${Utilities.getDistance(distToEvent, context, isMetric: ((distancePreference ?? 0) & 0x01) == 0)} from here'
+                                        : '<unknown>'
+                                    : '',
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      )
+                    : const SizedBox(height: 0.0, width: 0.0),
+                if ((event.locationStreet ?? '') != '') ...<Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(
+                        flex: flexLeft,
+                        child: Text(
+                          'Street:',
+                          style: listLabelStyle,
+                          textAlign: TextAlign.right,
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
-                        )),
-                  ],
-                ),
-              ],
-              if ((((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : '${event.locationPostCode} ') != '') ...<Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: flexLeft,
-                      child: Text(
-                        'Post Code:',
-                        style: listLabelStyle,
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: spaceBetweenRows,
-                      width: spaceBetweenColumns,
-                    ),
-                    Expanded(
-                        flex: flexRight,
+                      const SizedBox(
+                        height: spaceBetweenRows,
+                        width: spaceBetweenColumns,
+                      ),
+                      Expanded(
+                          flex: flexRight,
+                          child: Text(
+                            event.locationStreet ?? '',
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ],
+                  ),
+                ],
+                if ((((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : '${event.locationPostCode} ') != '') ...<Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: flexLeft,
                         child: Text(
-                          ((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : '${event.locationPostCode} ',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
+                          'Post Code:',
+                          style: listLabelStyle,
+                          textAlign: TextAlign.right,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        )),
-                  ],
-                ),
-              ],
-              if ((event.locationCity ?? '') != '') ...<Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: flexLeft,
-                      child: Text(
-                        'City:',
-                        style: listLabelStyle,
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: spaceBetweenRows,
-                      width: spaceBetweenColumns,
-                    ),
-                    Expanded(
-                        flex: flexRight,
+                      const SizedBox(
+                        height: spaceBetweenRows,
+                        width: spaceBetweenColumns,
+                      ),
+                      Expanded(
+                          flex: flexRight,
+                          child: Text(
+                            ((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : '${event.locationPostCode} ',
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ],
+                  ),
+                ],
+                if ((event.locationCity ?? '') != '') ...<Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: flexLeft,
                         child: Text(
-                          event.locationCity ?? '',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
+                          'City:',
+                          style: listLabelStyle,
+                          textAlign: TextAlign.right,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        )),
-                  ],
-                ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: spaceBetweenRows,
+                        width: spaceBetweenColumns,
+                      ),
+                      Expanded(
+                          flex: flexRight,
+                          child: Text(
+                            event.locationCity ?? '',
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ],
+                  ),
+                ],
+                ((event.locationSubRegion ?? '') == '')
+                    ? const SizedBox(height: 0.0, width: 0.0)
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
+                            child: Text(
+                              event.locationCountry.toLowerCase() == 'united states' ? 'County' : 'Region:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
+                          ),
+                          Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                event.locationSubRegion ?? '',
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
+                ((event.locationRegion ?? '') == '')
+                    ? const SizedBox(height: 0.0, width: 0.0)
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
+                            child: Text(
+                              'State:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
+                          ),
+                          Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                event.locationRegion ?? '',
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
+                ((event.locationCountry ?? '') == '')
+                    ? const SizedBox(height: 0.0, width: 0.0)
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: flexLeft,
+                            child: Text(
+                              'Country:',
+                              style: listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: spaceBetweenRows,
+                            width: spaceBetweenColumns,
+                          ),
+                          Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                event.locationCountry ?? '',
+                                style: listValueStyle,
+                                textAlign: TextAlign.left,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
               ],
-              ((event.locationSubRegion ?? '') == '')
-                  ? const SizedBox(height: 0.0, width: 0.0)
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            event.locationCountry.toLowerCase() == 'united states' ? 'County' : 'Region:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              event.locationSubRegion ?? '',
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    ),
-              ((event.locationRegion ?? '') == '')
-                  ? const SizedBox(height: 0.0, width: 0.0)
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            'State:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              event.locationRegion ?? '',
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    ),
-              ((event.locationCountry ?? '') == '')
-                  ? const SizedBox(height: 0.0, width: 0.0)
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: flexLeft,
-                          child: Text(
-                            'Country:',
-                            style: listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: spaceBetweenRows,
-                          width: spaceBetweenColumns,
-                        ),
-                        Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              event.locationCountry ?? '',
-                              style: listValueStyle,
-                              textAlign: TextAlign.left,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            )),
-                      ],
-                    ),
-            ],
+            ),
           ),
           !showPaymentOptions
               ? Container()
@@ -627,35 +634,42 @@ class RunDetails extends StatelessWidget {
                       topMargin: 30.0,
                       bottomMargin: 10.0,
                     ),
-                    Text('Event tags', style: headingStyle),
+                    Text(
+                      'Event tags',
+                      style: headingStyle,
+                      textScaleFactor: G0<DeviceInfo>().textClamp50,
+                    ),
                     const SizedBox(
                       height: 15.0,
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        SizedBox(width: G0<DeviceInfo>().deviceWidth), // this is required to force the column to be the full width of the device
-                        for (int i = 0; i < runTags1.length; i++)
-                          if (((runTags1.values.elementAt(i) ?? 0) & event.tags1) != 0)
-                            Container(
-                              margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
-                              child: Text(
-                                '•  ${runTags1.keys.elementAt(i)}',
-                                style: listValueStyle,
+                    TextScaleFactorClamper(
+                      textScaleFactor: G0<DeviceInfo>().textClamp50,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          SizedBox(width: G0<DeviceInfo>().deviceWidth), // this is required to force the column to be the full width of the device
+                          for (int i = 0; i < runTags1.length; i++)
+                            if (((runTags1.values.elementAt(i) ?? 0) & event.tags1) != 0)
+                              Container(
+                                margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
+                                child: Text(
+                                  '•  ${runTags1.keys.elementAt(i)}',
+                                  style: listValueStyle,
+                                ),
                               ),
-                            ),
-                        for (int i = 0; i < runTags2.length; i++)
-                          if (((runTags2.values.elementAt(i) ?? 0) & event.tags2) != 0)
-                            Container(
-                              margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
-                              child: Text(
-                                '•  ${runTags2.keys.elementAt(i)}',
-                                style: listValueStyle,
-                              ),
-                            )
+                          for (int i = 0; i < runTags2.length; i++)
+                            if (((runTags2.values.elementAt(i) ?? 0) & event.tags2) != 0)
+                              Container(
+                                margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
+                                child: Text(
+                                  '•  ${runTags2.keys.elementAt(i)}',
+                                  style: listValueStyle,
+                                ),
+                              )
 
-                        //for (dynamic tag in runTags) Text(tag.key)
-                      ],
+                          //for (dynamic tag in runTags) Text(tag.key)
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -672,7 +686,7 @@ class RunDetails extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
                   child: Linkify(
                     text: event.eventDescription.replaceAll('\r\n', '\n'),
-                    style: bodyStyle,
+                    style: bodyStyle.copyWith(fontSize: 20 * G0<DeviceInfo>().textClamp50),
                     linkStyle: bodyStyleYellow,
                     onOpen: (LinkableElement link) async {
                       if (Utilities.isValidUrl(link.url)) {
@@ -707,6 +721,7 @@ class RunDetails extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
+                  textScaleFactor: G0<DeviceInfo>().textClamp50,
                 ),
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));

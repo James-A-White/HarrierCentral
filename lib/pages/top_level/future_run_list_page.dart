@@ -367,6 +367,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                               ? 'Runs from Kennels I follow'
                                               : 'All other upcoming runs',
                                   textAlign: TextAlign.center,
+                                  textScaleFactor: G0<DeviceInfo>().textClamp15,
                                   style: titleStyle,
                                 ),
                                 if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[

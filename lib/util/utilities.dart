@@ -201,7 +201,7 @@ class Utilities {
       final RegExp regex = RegExp(pattern, caseSensitive: false);
       if (regex.hasMatch(searchText)) {
         for (RegExpMatch match in regex.allMatches(searchText)) {
-          results.add(match[0].replaceFirst(token.replaceFirst(r'\', ''), '').trim());
+          results.add(match[0].replaceFirst(token.replaceFirst(r'\', ''), '').trim().toLowerCase());
         }
       }
     }

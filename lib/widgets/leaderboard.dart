@@ -101,8 +101,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   @override
   void initState() {
     _timespanTabController = TabController(vsync: this, length: 3);
-    if (widget.kennelId == null) {
-      _scopeTabController = TabController(vsync: this, length: 2);
+    if (widget.kennelId != null) {
+      _showKennels = true;
     }
 
     QueryKennels.queryKennelDetails().then((List<Map<String, dynamic>> kennels) {
@@ -218,7 +218,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   }
 
   TabController _timespanTabController;
-  TabController _scopeTabController;
+  //TabController _scopeTabController;
 
   Map<String, Map<String, dynamic>> _kennels;
 
@@ -230,6 +230,9 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
 
   List<LeaderboardModel> _filteredLeaderboardList;
   List<LeaderboardModel> _filteredLeaderboardAggregateList;
+
+  bool _showKennels = false;
+  bool _showHomeKennel = false;
 
   final ScrollController _leaderScrollController = ScrollController(keepScrollOffset: false, initialScrollOffset: 50.0);
 
@@ -279,7 +282,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                             SliverAppBar(
                               // expandedHeight: 120.0,
                               // stretchTriggerOffset: 220.0,
-                              toolbarHeight: 170.0,
+                              toolbarHeight: widget.kennelId == null ? 155.0 : 106.0,
                               floating: true,
                               //stretch: true,
                               backgroundColor: Colors.grey.shade400,
@@ -290,48 +293,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                 children: <Widget>[
                                   //Container(color: Colors.pink, height: 40.0),
                                   _searchBar(),
-
-                                  if (widget.kennelId == null) ...<Widget>[
-                                    const SizedBox(height: 10.0),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                      color: Colors.grey.shade400,
-                                      child: TabBar(
-                                        onTap: (void _) {
-                                          //_sortLeaderboard(_leaderboardSortColumnIndex, false);
-                                          setState(() {});
-                                        },
-                                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                        isScrollable: false,
-                                        unselectedLabelColor: Colors.black,
-                                        labelColor: Colors.white,
-                                        //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                                        indicatorSize: TabBarIndicatorSize.tab,
-                                        indicator: BubbleTabIndicator(
-                                            indicatorHeight: 25.0,
-                                            indicatorColor: Colors.red.shade900,
-                                            tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                            indicatorRadius: 20.0,
-                                            bubblePadding: const EdgeInsets.only(top: 5.0)
-                                            //insets: const EdgeInsets.only(bottom: 5),
-                                            ),
-                                        tabs: const <Tab>[
-                                          Tab(text: 'Combined'),
-                                          Tab(text: 'By Kennel'),
-                                        ],
-                                        controller: _scopeTabController,
-                                      ),
-                                    ),
-                                    const Divider(
-                                      color: Colors.black45,
-                                      thickness: 1.0,
-                                      height: 3.0,
-                                    ),
-                                    const SizedBox(height: 3.0),
-                                  ],
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                    padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 7.0),
                                     color: Colors.grey.shade400,
                                     child: TabBar(
                                       onTap: (void _) {
@@ -366,18 +329,99 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                     thickness: 1.0,
                                     height: 1.0,
                                   ),
-                                  // const SizedBox(
-                                  //   height: 10.0,
-                                  // ),
+                                  if (widget.kennelId == null) ...<Widget>[
+                                    //const SizedBox(height: 10.0),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        //SizedBox(width: 10),
+                                        Checkbox(
+                                          value: _showKennels,
+                                          checkColor: Colors.white,
+                                          activeColor: Colors.red.shade900,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _showKennels = !_showKennels;
+                                            });
+                                          },
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 3.0),
+                                          child: Text(
+                                            'Show Kennels',
+                                            style: _showKennels
+                                                ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0)
+                                                : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Checkbox(
+                                          value: _showHomeKennel,
+                                          checkColor: Colors.white,
+                                          activeColor: Colors.red.shade900,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _showHomeKennel = !_showHomeKennel;
+                                            });
+                                          },
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 3.0),
+                                          child: Text(
+                                            'Home Kennel',
+                                            style: _showHomeKennel
+                                                ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0)
+                                                : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 15),
+                                      ],
+                                    ),
 
-                                  // const SizedBox(height: 10.0),
+                                    // Container(
+                                    //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                    //   color: Colors.grey.shade400,
+                                    //   child: TabBar(
+                                    //     onTap: (void _) {
+                                    //       //_sortLeaderboard(_leaderboardSortColumnIndex, false);
+                                    //       setState(() {});
+                                    //     },
+                                    //     labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                    //     unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                    //     isScrollable: false,
+                                    //     unselectedLabelColor: Colors.black,
+                                    //     labelColor: Colors.white,
+                                    //     //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                                    //     indicatorSize: TabBarIndicatorSize.tab,
+                                    //     indicator: BubbleTabIndicator(
+                                    //         indicatorHeight: 25.0,
+                                    //         indicatorColor: Colors.red.shade900,
+                                    //         tabBarIndicatorSize: TabBarIndicatorSize.label,
+                                    //         indicatorRadius: 20.0,
+                                    //         bubblePadding: const EdgeInsets.only(top: 5.0)
+                                    //         //insets: const EdgeInsets.only(bottom: 5),
+                                    //         ),
+                                    //     tabs: const <Tab>[
+                                    //       Tab(text: 'Combined'),
+                                    //       Tab(text: 'By Kennel'),
+                                    //     ],
+                                    //     controller: _scopeTabController,
+                                    //   ),
+                                    // ),
+                                    const Divider(
+                                      color: Colors.black45,
+                                      thickness: 1.0,
+                                      height: 1.0,
+                                    ),
+                                    //const SizedBox(height: 3.0),
+                                  ],
                                 ],
                               ),
                             ),
                             SliverAppBar(
                               pinned: true,
                               toolbarHeight: 60.0,
-                              backgroundColor: Colors.grey.shade400,
+                              backgroundColor: const Color.fromARGB(255, 26, 0, 65),
                               automaticallyImplyLeading: false,
                               flexibleSpace: Column(children: [
                                 const SizedBox(height: 10.0),
@@ -402,7 +446,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             fontStyle: FontStyle.normal,
                                             fontSize: LEADER_FONT_SIZE,
                                             height: 1.0,
-                                            color: Colors.red.shade900,
+                                            color: Colors.yellow,
                                           ),
                                         ),
                                       ),
@@ -425,7 +469,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             fontStyle: FontStyle.normal,
                                             fontSize: LEADER_FONT_SIZE,
                                             height: 1.0,
-                                            color: Colors.red.shade900,
+                                            color: Colors.yellow,
                                           ),
                                         ),
                                       ),
@@ -445,7 +489,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             fontStyle: FontStyle.normal,
                                             fontSize: LEADER_FONT_SIZE,
                                             height: 1.0,
-                                            color: Colors.red.shade900,
+                                            color: Colors.yellow,
                                           ),
                                         ),
                                       ),
@@ -468,7 +512,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             : Icon(
                                                 _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
                                                 size: 20.0,
-                                                color: Colors.red.shade900,
+                                                color: Colors.yellow,
                                               ),
                                       ),
                                     ),
@@ -487,7 +531,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             : Icon(
                                                 _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
                                                 size: 20.0,
-                                                color: Colors.red.shade900,
+                                                color: Colors.yellow,
                                               ),
                                       ),
                                     ),
@@ -504,7 +548,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                               : Icon(
                                                   _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
                                                   size: 20.0,
-                                                  color: Colors.red.shade900,
+                                                  color: Colors.yellow,
                                                 ),
                                         ),
                                       ),
@@ -522,7 +566,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                 // The builder function returns a ListTile with a title that
                                 // displays the index of the current item.
                                 (context, index) {
-                                  LeaderboardModel e = (_scopeTabController?.index ?? 1) == 0 ? _filteredLeaderboardAggregateList[index] : _filteredLeaderboardList[index];
+                                  if (index == (_showKennels ? _filteredLeaderboardList.length : _filteredLeaderboardAggregateList.length)) {
+                                    return const SizedBox(height: 50);
+                                  }
+
+                                  LeaderboardModel e = !_showKennels ? _filteredLeaderboardAggregateList[index] : _filteredLeaderboardList[index];
                                   return Column(
                                     children: [
                                       const SizedBox(height: 3.0),
@@ -578,7 +626,20 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                       color: Colors.white,
                                                     ),
                                                   ),
-                                                  if ((widget.kennelId == null) && ((_scopeTabController?.index ?? 1) == 1)) ...<Widget>[
+                                                  if ((widget.kennelId == null) && _showHomeKennel && (e.homeKennelId != null)) ...<Widget>[
+                                                    Text(
+                                                      '  -  ${_kennels[e.homeKennelId]["kennelShortName"]}',
+                                                      //overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontFamily: 'AvenirNextCondensedMedium',
+                                                        fontStyle: FontStyle.italic,
+                                                        fontSize: LEADER_FONT_SIZE,
+                                                        height: 1.0,
+                                                        color: Colors.blue.shade100,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  if ((widget.kennelId == null) && _showKennels) ...<Widget>[
                                                     Text(
                                                       '  -  ${_kennels[e.kennelId]["kennelName"]}',
                                                       //overflow: TextOverflow.ellipsis,
@@ -591,7 +652,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                                       ),
                                                     ),
                                                   ],
-                                                  if ((widget.kennelId == null) && ((_scopeTabController?.index ?? 1) == 0)) ...<Widget>[
+                                                  if ((widget.kennelId == null) && !_showKennels) ...<Widget>[
                                                     Text(
                                                       '  -  ${_timespanTabController.index == TABINDEX_TOTAL ? e.kennelCountTotal : _timespanTabController.index == TABINDEX_365_DAYS ? e.kennelCountRollingYear : e.kennelCountYtd} Kennels',
                                                       //overflow: TextOverflow.ellipsis,
@@ -613,8 +674,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                     ],
                                   );
                                 },
-                                // Builds 1000 ListTiles
-                                childCount: (_scopeTabController?.index ?? 1) == 0 ? _filteredLeaderboardAggregateList.length : _filteredLeaderboardList.length,
+
+                                childCount: _showKennels ? _filteredLeaderboardList.length + 1 : _filteredLeaderboardAggregateList.length + 1,
                               ),
                             ),
                           ],
@@ -835,7 +896,13 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   }
 
   void _filterResults(String filter) {
-    //[\+-]\w+(?:\s+\w+)*
+    while (filter.contains('+ ')) {
+      filter = filter.replaceAll('+ ', '+');
+    }
+
+    while (filter.contains('- ')) {
+      filter = filter.replaceAll('- ', '-');
+    }
 
     List<String> addParams = <String>[];
     List<String> subParams = <String>[];
@@ -852,13 +919,13 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
 
     if ((firstPositive > 0) && (firstNegative > 0)) {
       int firstToken = min(firstPositive, firstNegative);
-      addParams.add(filter.substring(0, firstToken));
+      addParams.add(filter.substring(0, firstToken).trim().toLowerCase());
     } else if (firstPositive > 0) {
-      addParams.add(filter.substring(0, firstPositive));
+      addParams.add(filter.substring(0, firstPositive).trim().toLowerCase());
     } else if (firstNegative > 0) {
-      addParams.add(filter.substring(0, firstNegative));
+      addParams.add(filter.substring(0, firstNegative).trim().toLowerCase());
     } else {
-      addParams.add(filter);
+      addParams.add(filter.trim().toLowerCase());
     }
 
     _filteredLeaderboardList ??= <LeaderboardModel>[];
