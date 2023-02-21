@@ -146,73 +146,75 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_get_leaderboard', body);
 
-    List<dynamic> jsonResults = json.decode(responseBody);
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      List<dynamic> jsonResults = json.decode(responseBody);
 
-    _filteredLeaderboardList = <LeaderboardModel>[];
-    _filteredLeaderboardAggregateList = <LeaderboardModel>[];
+      _filteredLeaderboardList = <LeaderboardModel>[];
+      _filteredLeaderboardAggregateList = <LeaderboardModel>[];
 
-    _leaderboardList = <LeaderboardModel>[];
-    _leaderboardAggregateList = <LeaderboardModel>[];
+      _leaderboardList = <LeaderboardModel>[];
+      _leaderboardAggregateList = <LeaderboardModel>[];
 
-    Map<String, LeaderboardModel> leaderAggregateMap = {};
+      Map<String, LeaderboardModel> leaderAggregateMap = {};
 
-    jsonResults[0].forEach((element) {
-      LeaderboardModel lm = LeaderboardModel.fromJson(element);
-      lm.searchText = ' ${lm.displayName}, ${_kennels[lm.kennelId]['searchText']}, ';
-      if ((lm.homeKennelId != null) && (lm.homeKennelId.isNotEmpty)) {
-        lm.searchText += _kennels[lm.kennelId]['searchText'];
-      }
-      _leaderboardList.add(lm);
-
-      if ((widget.kennelId == null) || (widget.kennelId.isEmpty)) {
-        if (leaderAggregateMap.containsKey(lm.hasherId)) {
-          leaderAggregateMap[lm.hasherId].rollingYearHaringCount += lm.rollingYearHaringCount;
-          leaderAggregateMap[lm.hasherId].rollingYearTotalRunCount += lm.rollingYearTotalRunCount;
-          leaderAggregateMap[lm.hasherId].totalHaringCount += lm.totalHaringCount;
-          leaderAggregateMap[lm.hasherId].totalRunCount += lm.totalRunCount;
-          leaderAggregateMap[lm.hasherId].ytdHaringCount += lm.ytdHaringCount;
-          leaderAggregateMap[lm.hasherId].ytdTotalRunCount += lm.ytdTotalRunCount;
-          leaderAggregateMap[lm.hasherId].searchText += ' ${_kennels[lm.kennelId]['searchText']}, ';
-
-          if (lm.totalRunCount > 0) {
-            leaderAggregateMap[lm.hasherId].kennelCountTotal++;
-          }
-
-          if (lm.rollingYearTotalRunCount > 0) {
-            leaderAggregateMap[lm.hasherId].kennelCountRollingYear++;
-          }
-
-          if (lm.ytdTotalRunCount > 0) {
-            leaderAggregateMap[lm.hasherId].kennelCountYtd++;
-          }
-        } else {
-          LeaderboardModel newLm = LeaderboardModel.clone(lm);
-          newLm.searchText = ' ${newLm.displayName}, ${_kennels[newLm.kennelId]['searchText']}, ';
-          if ((newLm.homeKennelId != null) && (newLm.homeKennelId.isNotEmpty)) {
-            newLm.searchText += _kennels[newLm.kennelId]['searchText'];
-          }
-
-          if (lm.totalRunCount > 0) {
-            newLm.kennelCountTotal++;
-          }
-
-          if (lm.rollingYearTotalRunCount > 0) {
-            newLm.kennelCountRollingYear++;
-          }
-
-          if (lm.ytdTotalRunCount > 0) {
-            newLm.kennelCountYtd++;
-          }
-
-          leaderAggregateMap.addAll({lm.hasherId: newLm});
+      jsonResults[0].forEach((element) {
+        LeaderboardModel lm = LeaderboardModel.fromJson(element);
+        lm.searchText = ' ${lm.displayName}, ${_kennels[lm.kennelId]['searchText']}, ';
+        if ((lm.homeKennelId != null) && (lm.homeKennelId.isNotEmpty)) {
+          lm.searchText += _kennels[lm.kennelId]['searchText'];
         }
-      }
-    });
+        _leaderboardList.add(lm);
 
-    _leaderboardAggregateList = leaderAggregateMap.values.toList();
+        if ((widget.kennelId == null) || (widget.kennelId.isEmpty)) {
+          if (leaderAggregateMap.containsKey(lm.hasherId)) {
+            leaderAggregateMap[lm.hasherId].rollingYearHaringCount += lm.rollingYearHaringCount;
+            leaderAggregateMap[lm.hasherId].rollingYearTotalRunCount += lm.rollingYearTotalRunCount;
+            leaderAggregateMap[lm.hasherId].totalHaringCount += lm.totalHaringCount;
+            leaderAggregateMap[lm.hasherId].totalRunCount += lm.totalRunCount;
+            leaderAggregateMap[lm.hasherId].ytdHaringCount += lm.ytdHaringCount;
+            leaderAggregateMap[lm.hasherId].ytdTotalRunCount += lm.ytdTotalRunCount;
+            leaderAggregateMap[lm.hasherId].searchText += ' ${_kennels[lm.kennelId]['searchText']}, ';
 
-    _filteredLeaderboardAggregateList = _leaderboardAggregateList.toList();
-    _filteredLeaderboardList = _leaderboardList.toList();
+            if (lm.totalRunCount > 0) {
+              leaderAggregateMap[lm.hasherId].kennelCountTotal++;
+            }
+
+            if (lm.rollingYearTotalRunCount > 0) {
+              leaderAggregateMap[lm.hasherId].kennelCountRollingYear++;
+            }
+
+            if (lm.ytdTotalRunCount > 0) {
+              leaderAggregateMap[lm.hasherId].kennelCountYtd++;
+            }
+          } else {
+            LeaderboardModel newLm = LeaderboardModel.clone(lm);
+            newLm.searchText = ' ${newLm.displayName}, ${_kennels[newLm.kennelId]['searchText']}, ';
+            if ((newLm.homeKennelId != null) && (newLm.homeKennelId.isNotEmpty)) {
+              newLm.searchText += _kennels[newLm.kennelId]['searchText'];
+            }
+
+            if (lm.totalRunCount > 0) {
+              newLm.kennelCountTotal++;
+            }
+
+            if (lm.rollingYearTotalRunCount > 0) {
+              newLm.kennelCountRollingYear++;
+            }
+
+            if (lm.ytdTotalRunCount > 0) {
+              newLm.kennelCountYtd++;
+            }
+
+            leaderAggregateMap.addAll({lm.hasherId: newLm});
+          }
+        }
+      });
+
+      _leaderboardAggregateList = leaderAggregateMap.values.toList();
+
+      _filteredLeaderboardAggregateList = _leaderboardAggregateList.toList();
+      _filteredLeaderboardList = _leaderboardList.toList();
+    }
 
     return;
   }

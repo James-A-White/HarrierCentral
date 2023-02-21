@@ -272,6 +272,7 @@ class HashersService extends BaseService {
       }
     }
 
+    // callers checked and they are handling the error
     return responseBody;
   }
 
@@ -302,9 +303,9 @@ class HashersService extends BaseService {
     return returnValue;
   }
 
-  Future<String> changeProfilePicture({String targetUserId, String photo}) async {
+  Future<bool> changeProfilePicture({String targetUserId, String photo}) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
-      return '';
+      return false;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
@@ -341,10 +342,11 @@ class HashersService extends BaseService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body);
 
-    return responseBody;
+    // I checked and the error condition is being properly handled by the caller
+    return !responseBody.startsWith(ERROR_PREFIX);
   }
 
-  Future<String> processThirdPartyLogin({
+  Future<dynamic> processThirdPartyLogin({
     ThirdPartyLoginData loginData,
     String hashName,
     String email,
@@ -411,27 +413,15 @@ class HashersService extends BaseService {
       }
     }
 
-    // Get long life FB token... looks like this is not required as the FB token already has a long life.
-
-    // final String body2 = jsonEncode(<String, String>{
-    //   'userId': userId,
-    //   'facebookAccessToken': facebookAccessToken,
-    // });
-
-    // final Response response2 = await post(PROCESS_FACEBOOK_TOKEN_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body2
-    //         // Send authorization headers to your backend
-    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-    //         )
-    //     .catchError(
-    //   (dynamic error) {
-    //     return Future<Response>.value(null);
-    //   },
-    // );
-
     if (!newUserForThisDevice) {
       await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
     }
 
-    return responseBody;
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      final dynamic result = json.decode(responseBody);
+      return result;
+    }
+
+    return null;
   }
 }

@@ -396,9 +396,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
       final HashersService srv = HashersService();
 
-      final String responseBody = await srv.changeProfilePicture(targetUserId: userId, photo: profileImageUrl);
+      final bool updateWasSuccessful = await srv.changeProfilePicture(targetUserId: userId, photo: profileImageUrl);
 
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
+      if (updateWasSuccessful) {
         await setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
       } else {
         await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Profile photo not updated.',
