@@ -620,82 +620,100 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               : Container(),
                           Column(
                             children: <Widget>[
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                height: 300,
-                                //padding: const EdgeInsets.all(20.0),
-                                child: Center(
-                                  // Map
-                                  child: FlutterMap(
-                                    mapController: _mapController,
-                                    options: MapOptions(
-                                      //interactive: false,
-                                      center: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
-                                      zoom: _sliderValue,
-                                      minZoom: 1.0,
-                                      maxZoom: 18.0,
+                              ConnectedWidget(
+                                refreshFunction: () {
+                                  setState(() {});
+                                },
+                                //showConnectButton: true,
+                                disconnectedChild: Padding(
+                                  padding: const EdgeInsets.only(top: 1, bottom: 30),
+                                  child: Center(
+                                    child: Text(
+                                      'Kennel maps require a connection to the Internet',
+                                      style: headingStyle,
+                                      textAlign: TextAlign.center,
                                     ),
-                                    children: <Widget>[
-                                      TileLayer(
-                                          urlTemplate:
-                                              //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                              'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                                          //subdomains: ['a', 'b', 'c']),
-                                          subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3']),
-                                      MarkerLayer(
-                                        markers: <Marker>[
-                                          Marker(
-                                            width: 240.0,
-                                            height: 240.0,
-                                            point: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
-                                            builder: (BuildContext ctx) => GestureDetector(
-                                              onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
-                                              child: Container(
-                                                margin: const EdgeInsets.only(bottom: 110.0),
-                                                child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
-                                                  Image.asset('images/icons/grey_square_pin.png'),
-                                                  Positioned(
-                                                    top: 14,
-                                                    child: KennelLogo(
-                                                      //kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                                      kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                                      kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                                      logoHeight: 60.0,
-                                                      leftPadding: 0.0,
-                                                      zoomGesture: KennelLogoZoomGesture.none,
+                                  ),
+                                ),
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 300,
+                                  //padding: const EdgeInsets.all(20.0),
+                                  child: Center(
+                                    // Map
+                                    child: FlutterMap(
+                                      mapController: _mapController,
+                                      options: MapOptions(
+                                        //interactive: false,
+                                        center: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+                                        zoom: _sliderValue,
+                                        minZoom: 1.0,
+                                        maxZoom: 18.0,
+                                      ),
+                                      children: <Widget>[
+                                        TileLayer(
+                                            urlTemplate:
+                                                //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                                            //subdomains: ['a', 'b', 'c']),
+                                            subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3']),
+                                        MarkerLayer(
+                                          markers: <Marker>[
+                                            Marker(
+                                              width: 240.0,
+                                              height: 240.0,
+                                              point: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+                                              builder: (BuildContext ctx) => GestureDetector(
+                                                onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+                                                child: Container(
+                                                  margin: const EdgeInsets.only(bottom: 110.0),
+                                                  child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
+                                                    Image.asset('images/icons/grey_square_pin.png'),
+                                                    Positioned(
+                                                      top: 14,
+                                                      child: KennelLogo(
+                                                        //kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                        kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                                        kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                                        logoHeight: 60.0,
+                                                        leftPadding: 0.0,
+                                                        zoomGesture: KennelLogoZoomGesture.none,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ]
-                                                    //child: FlutterLogo(colors: Colors.purple),
-                                                    ),
+                                                  ]
+                                                      //child: FlutterLogo(colors: Colors.purple),
+                                                      ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
+                                          ],
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: Slider(
-                                    value: _sliderValue,
-                                    activeColor: Colors.yellow,
-                                    inactiveColor: Colors.grey,
-                                    min: 1.0,
-                                    max: 20.0,
-                                    onChanged: (num val) {
-                                      // setState(() {
-                                      if (_mapController != null) {
-                                        _mapController.move(latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
-                                      }
-                                      setState(() {
-                                        _sliderValue = val;
-                                      });
+                              ConnectedWidget(
+                                child: Container(
+                                  padding: const EdgeInsets.only(top: 10.0),
+                                  child: Slider(
+                                      value: _sliderValue,
+                                      activeColor: Colors.yellow,
+                                      inactiveColor: Colors.grey,
+                                      min: 1.0,
+                                      max: 20.0,
+                                      onChanged: (num val) {
+                                        // setState(() {
+                                        if (_mapController != null) {
+                                          _mapController.move(latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
+                                        }
+                                        setState(() {
+                                          _sliderValue = val;
+                                        });
 
-                                      //});
-                                    }),
+                                        //});
+                                      }),
+                                ),
                               ),
                               Row(
                                 children: <Widget>[

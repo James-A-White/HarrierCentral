@@ -401,6 +401,45 @@ class Utilities {
     return result;
   }
 
+  static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false, String cancelButtonText = 'Cancel'}) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  body,
+                  textAlign: TextAlign.justify,
+                  style: Theme.of(context).textTheme.titleMedium,
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            showCancelButton == true
+                ? TextButton(
+                    child: Text(cancelButtonText),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  )
+                : Container(),
+            TextButton(
+              child: Text(buttonText),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   static Future<void> checkForInternetConnection(bool reconnectAttempt) async {
     final InternetConnectionChecker checker = InternetConnectionChecker();
 

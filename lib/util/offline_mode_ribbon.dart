@@ -28,11 +28,11 @@ class OfflineModeRibbon extends StatelessWidget {
                 bool tryReconnect = false;
 
                 if (lastSync != null) {
-                  tryReconnect = !await showAlert(navigatorKey.currentContext, 'Offline Mode',
+                  tryReconnect = !await Utilities.showAlert(navigatorKey.currentContext, 'Offline Mode',
                       'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d 'at' h:mm a").format(lastSync)}', 'OK',
                       showCancelButton: true, cancelButtonText: 'Try reconnect');
                 } else {
-                  tryReconnect = !await showAlert(
+                  tryReconnect = !await Utilities.showAlert(
                       navigatorKey.currentContext, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK',
                       showCancelButton: true, cancelButtonText: 'Try reconnect');
                 }
@@ -41,7 +41,7 @@ class OfflineModeRibbon extends StatelessWidget {
                   await Utilities.checkForInternetConnection(true);
 
                   if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
-                    await showAlert(
+                    await Utilities.showAlert(
                       navigatorKey.currentContext,
                       'Connected',
                       'You are now connected to the Internet',
@@ -58,44 +58,5 @@ class OfflineModeRibbon extends StatelessWidget {
               ),
             ),
           );
-  }
-
-  static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false, String cancelButtonText = 'Cancel'}) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  body,
-                  textAlign: TextAlign.justify,
-                  style: Theme.of(context).textTheme.titleMedium,
-                )
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            showCancelButton == true
-                ? TextButton(
-                    child: Text(cancelButtonText),
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                  )
-                : Container(),
-            TextButton(
-              child: Text(buttonText),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

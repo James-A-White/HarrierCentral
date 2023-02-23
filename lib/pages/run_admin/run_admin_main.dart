@@ -132,50 +132,65 @@ class RunAdminPageState extends State<RunAdminPage> {
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         padding: const EdgeInsets.only(left: 20, right: 20),
-        child: _isLoading
-            ? const HcCircularProgressIndicator(key: Key('16093026'))
-            : SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20, bottom: 20),
-                      child: AutoSizeText(_eventAggregate.event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
-                    ),
-                    const FancyDivider(
-                      key: Key('66103920'),
-                      innerColor: Colors.white,
-                      topMargin: 20.0,
-                      bottomMargin: 5.0,
-                    ),
-                    TextScaleFactorClamper(
-                      textScaleFactor: G0<DeviceInfo>().textClamp15,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: _kiddies(),
+        child: ConnectedWidget(
+          refreshFunction: () {
+            setState(() {});
+          },
+          showConnectButton: true,
+          disconnectedChild: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Center(
+                child: Text(
+              'Run admin functions require a connection to the Internet',
+              style: headingStyle,
+              textAlign: TextAlign.center,
+            )),
+          ),
+          child: _isLoading
+              ? const HcCircularProgressIndicator(key: Key('16093026'))
+              : SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20, bottom: 20),
+                        child: AutoSizeText(_eventAggregate.event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
                       ),
-                    ),
-                    const FancyDivider(
-                      key: Key('669190022'),
-                      innerColor: Colors.white,
-                      topMargin: 35.0,
-                      bottomMargin: 5.0,
-                    ),
-                    RunDetails(
-                      _eventAggregate.event,
-                      _eventAggregate.kennel,
-                      _eventAggregate.extensions.digAfterDec,
-                      _eventAggregate.extensions.curSym,
-                      _eventAggregate.extensions.distancePreference,
-                      _eventAggregate.extensions.distToEvent,
-                      _eventAggregate.extensions.paymentUrl,
-                      false,
-                      _eventAggregate.extensions.isMapAndDistanceValid,
-                      eventUrlWithKennelBackup: _eventAggregate.event.eventUrl ?? _eventAggregate.kennel.kennelEventsUrl,
-                    ),
-                  ],
+                      const FancyDivider(
+                        key: Key('66103920'),
+                        innerColor: Colors.white,
+                        topMargin: 20.0,
+                        bottomMargin: 5.0,
+                      ),
+                      TextScaleFactorClamper(
+                        textScaleFactor: G0<DeviceInfo>().textClamp15,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          children: _kiddies(),
+                        ),
+                      ),
+                      const FancyDivider(
+                        key: Key('669190022'),
+                        innerColor: Colors.white,
+                        topMargin: 35.0,
+                        bottomMargin: 5.0,
+                      ),
+                      RunDetails(
+                        _eventAggregate.event,
+                        _eventAggregate.kennel,
+                        _eventAggregate.extensions.digAfterDec,
+                        _eventAggregate.extensions.curSym,
+                        _eventAggregate.extensions.distancePreference,
+                        _eventAggregate.extensions.distToEvent,
+                        _eventAggregate.extensions.paymentUrl,
+                        false,
+                        _eventAggregate.extensions.isMapAndDistanceValid,
+                        eventUrlWithKennelBackup: _eventAggregate.event.eventUrl ?? _eventAggregate.kennel.kennelEventsUrl,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
