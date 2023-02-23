@@ -98,7 +98,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: const Text(
-        'Awards',
+        'Drink chug-a-lug',
         style: TextStyle(
           color: Colors.white,
         ),
@@ -133,6 +133,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
           WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20
           AND h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 
+          AND h.${G0<TableModel>().hashersTableHelper.colHashName} not like '👣 Anonymous%' 
           ORDER BY totalHaringThisKennel, totalRunsThisKennel
           ''';
 
@@ -172,110 +173,113 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
       appBar: appBar,
       key: _scaffoldKey,
       body: SafeArea(
-        child: _isLoading
-            ? const HcCircularProgressIndicator(key: Key('52039320'))
-            : _awards.isEmpty
-                ? Center(
-                    child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: Text('No awards yet for this Hash', textAlign: TextAlign.center, style: largeTitleStyle.copyWith(color: themeBackgroundColor)),
-                  ))
-                : ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: _awards.length,
-                    separatorBuilder: (BuildContext context, int index) => const Divider(
-                      height: 1.0,
-                      color: Colors.black45,
-                    ),
-                    //padding: const EdgeInsets.only(top: 5),
-                    // separatorBuilder: (BuildContext context, int index) => const Divider(
-                    //   height: 1.0,
-                    //   color: Colors.black45,
-                    // ),
+        child: Container(
+          decoration: Backgrounds.defaultHcBackgroundLight(),
+          child: _isLoading
+              ? const HcCircularProgressIndicator(key: Key('52039320'))
+              : _awards.isEmpty
+                  ? Center(
+                      child: Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: Text('No awards yet for this Hash', textAlign: TextAlign.center, style: largeTitleStyle.copyWith(color: themeBackgroundColor)),
+                    ))
+                  : ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: _awards.length,
+                      separatorBuilder: (BuildContext context, int index) => const Divider(
+                        height: 1.0,
+                        color: Colors.black45,
+                      ),
+                      //padding: const EdgeInsets.only(top: 5),
+                      // separatorBuilder: (BuildContext context, int index) => const Divider(
+                      //   height: 1.0,
+                      //   color: Colors.black45,
+                      // ),
 
-                    //itemExtent: 58.0,
-                    //shrinkWrap: true,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            height: LIST_ITEM_HEIGHT + .0,
-                            width: 10.0,
-                          ),
-                          Utilities.getProfilePic(_awards[index].photo, LIST_ITEM_ELEMENT_HEIGHT, LIST_ITEM_ELEMENT_HEIGHT, context, _awards[index].dispName),
-                          Expanded(
-                              child: Column(
-                            children: <Widget>[
-                              FittedBox(
-                                child: Text(
-                                  _awards[index].dispName,
-                                  style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                      //itemExtent: 58.0,
+                      //shrinkWrap: true,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              height: LIST_ITEM_HEIGHT + .0,
+                              width: 10.0,
+                            ),
+                            Utilities.getProfilePic(_awards[index].photo, LIST_ITEM_ELEMENT_HEIGHT, LIST_ITEM_ELEMENT_HEIGHT, context, _awards[index].dispName),
+                            Expanded(
+                                child: Column(
+                              children: <Widget>[
+                                FittedBox(
+                                  child: Text(
+                                    _awards[index].dispName,
+                                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                  ),
                                 ),
+                                if (_awards[index].specialRunCount == 1) ...<Widget>[
+                                  const FittedBox(
+                                    child: Text(
+                                      '1 run',
+                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                    ),
+                                  ),
+                                ],
+                                if (_awards[index].specialRunCount > 1) ...<Widget>[
+                                  FittedBox(
+                                    child: Text(
+                                      '${_awards[index].totalRunsThisKennel.toString()} runs',
+                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                    ),
+                                  ),
+                                ],
+                                if (_awards[index].specialHaringCount == 1) ...<Widget>[
+                                  const FittedBox(
+                                    child: Text(
+                                      'First time haring',
+                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                    ),
+                                  ),
+                                ],
+                                if (_awards[index].specialHaringCount > 1) ...<Widget>[
+                                  FittedBox(
+                                    child: Text(
+                                      '${_awards[index].totalHaringThisKennel.toString()} hared runs',
+                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            )),
+                            if (_awards[index].specialRunCount > 0) ...<Widget>[
+                              Image.asset(
+                                'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
+                                height: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                                width: LIST_ITEM_ELEMENT_HEIGHT + .0,
                               ),
-                              if (_awards[index].specialRunCount == 1) ...<Widget>[
-                                const FittedBox(
-                                  child: Text(
-                                    '1 run',
-                                    style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
-                                  ),
-                                ),
-                              ],
-                              if (_awards[index].specialRunCount > 1) ...<Widget>[
-                                FittedBox(
-                                  child: Text(
-                                    '${_awards[index].totalRunsThisKennel.toString()} runs',
-                                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
-                                  ),
-                                ),
-                              ],
-                              if (_awards[index].specialHaringCount == 1) ...<Widget>[
-                                const FittedBox(
-                                  child: Text(
-                                    'First time haring',
-                                    style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
-                                  ),
-                                ),
-                              ],
-                              if (_awards[index].specialHaringCount > 1) ...<Widget>[
-                                FittedBox(
-                                  child: Text(
-                                    '${_awards[index].totalHaringThisKennel.toString()} hared runs',
-                                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
-                                  ),
-                                ),
-                              ],
                             ],
-                          )),
-                          if (_awards[index].specialRunCount > 0) ...<Widget>[
-                            Image.asset(
-                              'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
-                              height: LIST_ITEM_ELEMENT_HEIGHT + .0,
-                              width: LIST_ITEM_ELEMENT_HEIGHT + .0,
-                            ),
+                            if (_awards[index].specialHaringCount > 0) ...<Widget>[
+                              Image.asset(
+                                'images/run_count_icons/rabbit_with_beer.png',
+                                height: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                                width: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                              ),
+                            ],
+                            const Divider()
                           ],
-                          if (_awards[index].specialHaringCount > 0) ...<Widget>[
-                            Image.asset(
-                              'images/run_count_icons/rabbit_with_beer.png',
-                              height: LIST_ITEM_ELEMENT_HEIGHT + .0,
-                              width: LIST_ITEM_ELEMENT_HEIGHT + .0,
-                            ),
-                          ],
-                          const Divider()
-                        ],
-                      );
+                        );
 
-                      // return Container(
-                      //   height: 120.0,
-                      //   child: ListTile(
-                      //     dense: false,
-                      //     visualDensity: VisualDensity(vertical: 4), // to expand
-                      //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
-                      //     title: Text(_awards[index].dispName),
-                      //   ),
-                      // );
-                    },
-                  ),
+                        // return Container(
+                        //   height: 120.0,
+                        //   child: ListTile(
+                        //     dense: false,
+                        //     visualDensity: VisualDensity(vertical: 4), // to expand
+                        //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
+                        //     title: Text(_awards[index].dispName),
+                        //   ),
+                        // );
+                      },
+                    ),
+        ),
       ),
     );
   }
