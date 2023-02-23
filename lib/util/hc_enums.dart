@@ -40,6 +40,7 @@ enum StringPrefsEnum {
   paymentTerminalAccountKey,
   thirdPartyForceTokenRefresh,
   mapPreference,
+  leaderboardJson,
 }
 
 enum NumPrefsEnum {
@@ -71,6 +72,7 @@ enum DatePrefsEnum {
   thirdPartyTokenLastUpdated,
   thirdPartyTokenExpires,
   lastLocationUpdate,
+  lastLeaderboardUpdate,
 }
 
 enum EnumDataContext { user, event, kennel }

@@ -443,13 +443,13 @@ class EventsService extends BaseService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
-    }
 
-    final dynamic responseJson = jsonDecode(responseBody);
+      final dynamic responseJson = jsonDecode(responseBody);
 
-    if (responseJson.length > 0) {
-      if (responseJson[0].length > 0) {
-        eventId = responseJson[0][0]['eventId'];
+      if (responseJson.length > 0) {
+        if (responseJson[0].length > 0) {
+          eventId = responseJson[0][0]['eventId'];
+        }
       }
     }
 

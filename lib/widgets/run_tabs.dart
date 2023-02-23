@@ -184,23 +184,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         }
       }
 
-      // if ((_tabController.index != _currentTabIndex) && (_tabs[_tabController.index].text == LABEL_GETALIFE)) {
-      //   if (_leaderboardList == null) {
-      //     _getLeaderboard().then(
-      //       (value) {
-      //         setState(() {
-      //           _leaderboardSortColumnIndex = 0;
-      //           _sortOrderAsc = false;
-      //           _sortLeaderboard(_leaderboardSortColumnIndex, false);
-      //         });
-      //       },
-      //     );
-      //   }
-      // }
-
       setState(() {});
-
-      //_currentTabIndex = _tabController.index;
     });
 
     final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
@@ -208,7 +192,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? coords[0] ?? widget.futureRun.kennel.kennelLatitude + .0,
         widget.futureRun.extensions.longitude ?? coords[1] ?? widget.futureRun.kennel.kennelLongitude + .0);
 
-    if ((widget.futureRun.extensions.rsvpState ?? 0) == 0) {
+    if (((widget.futureRun.extensions.rsvpState ?? 0) == 0) &&
+        (widget.futureRun.event.eventStartDatetime.isAfter(
+          DateTime.now().add(
+            const Duration(days: -1),
+          ),
+        ))) {
       _tabController.animateTo(1);
     }
     super.initState();

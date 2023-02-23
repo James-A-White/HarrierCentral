@@ -216,6 +216,10 @@ class DrawerMenuState extends State<DrawerMenu> {
                           return const ImprintPage();
                         },
                       ),
+                    ).then(
+                      (value) {
+                        widget.scaffoldKey.currentState.setState(() {});
+                      },
                     );
                   },
                 ),

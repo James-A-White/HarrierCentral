@@ -168,6 +168,7 @@ class ReceiptsService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_receipt', body);
 
+    // callers are properly handling Error conditions
     return responseBody;
   }
 }

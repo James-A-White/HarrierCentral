@@ -368,6 +368,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
+            key: _scaffoldKey,
             backgroundColor: Colors.white,
             appBar: (!_showMainScreen)
                 ? null
@@ -547,6 +548,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
+          refreshFunction: () {
+            setState(() {});
+          },
         ),
       ],
     );

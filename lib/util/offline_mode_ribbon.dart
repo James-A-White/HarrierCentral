@@ -1,13 +1,20 @@
 // @dart=2.11
-import 'package:flutter/material.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class OfflineModeRibbon extends StatelessWidget {
-  const OfflineModeRibbon({Key key, @required this.showRibbon, @required this.lastSync, this.ribbonImage = 'images/icons/offline_mode.png'}) : super(key: key);
+  const OfflineModeRibbon({
+    Key key,
+    @required this.showRibbon,
+    @required this.lastSync,
+    @required this.refreshFunction,
+    this.ribbonImage = 'images/icons/offline_mode.png',
+  }) : super(key: key);
 
   final bool showRibbon;
   final DateTime lastSync;
   final String ribbonImage;
+  final Function refreshFunction;
 
   @override
   Widget build(BuildContext context) {
@@ -17,12 +24,31 @@ class OfflineModeRibbon extends StatelessWidget {
             right: 0,
             top: 0,
             child: GestureDetector(
-              onTap: () {
+              onTap: () async {
+                bool tryReconnect = false;
+
                 if (lastSync != null) {
-                  showAlert(context, 'Offline Mode',
-                      'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d 'at' h:mm a").format(lastSync)}', 'OK');
+                  tryReconnect = !await showAlert(navigatorKey.currentContext, 'Offline Mode',
+                      'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d 'at' h:mm a").format(lastSync)}', 'OK',
+                      showCancelButton: true, cancelButtonText: 'Try reconnect');
                 } else {
-                  showAlert(context, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK');
+                  tryReconnect = !await showAlert(
+                      navigatorKey.currentContext, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK',
+                      showCancelButton: true, cancelButtonText: 'Try reconnect');
+                }
+
+                if (tryReconnect) {
+                  await Utilities.checkForInternetConnection(true);
+
+                  if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+                    await showAlert(
+                      navigatorKey.currentContext,
+                      'Connected',
+                      'You are now connected to the Internet',
+                      'OK',
+                    );
+                    refreshFunction();
+                  }
                 }
               },
               child: Image.asset(

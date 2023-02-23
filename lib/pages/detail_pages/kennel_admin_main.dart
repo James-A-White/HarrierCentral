@@ -965,19 +965,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             MaterialPageRoute<void>(
                                               builder: (BuildContext context) => GenericWidgetPage(
                                                 key: const Key('52233311'),
-                                                widget: Column(
-                                                  children: <Widget>[
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
-                                                      child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
-                                                    ),
-                                                    Expanded(
-                                                      child: Leaderboard(
-                                                        kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                                        //kennelId: null,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                widget: Leaderboard(
+                                                  kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                  //kennelId: null,
                                                 ),
                                                 appBarTitle: 'Get a Life (Leaderboards)',
                                               ),
@@ -1003,6 +993,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
         lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
         ribbonImage: 'images/icons/offline_mode.png',
+        refreshFunction: () {
+          setState(() {});
+        },
       ),
     ]);
   }

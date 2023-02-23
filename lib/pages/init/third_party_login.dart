@@ -412,16 +412,14 @@ class LoginPageState extends State<ThirdPartyLogin> {
                   });
 
                   final HashersService hSrv = HashersService();
-                  final String responseBody = await hSrv.processThirdPartyLogin(
+                  final dynamic result = await hSrv.processThirdPartyLogin(
                     loginData: profileData,
                     hashName: _hashNameTextController.text,
                     email: _emailTextController.text,
                     includeInGlobalHashDirectory: _includeInGlobalHashDirectory ? 1 : 0,
                   );
 
-                  if (!responseBody.startsWith(ERROR_PREFIX)) {
-                    final dynamic result = json.decode(responseBody);
-
+                  if (result != null) {
                     await setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
                     await setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
                     // if the email has not already been set, populate it with the email address received by the third party identity provider
@@ -467,6 +465,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                   } else {
                     await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Account not created',
                         'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
+                    return;
                   }
 
                   if (widget.isNewUser) {

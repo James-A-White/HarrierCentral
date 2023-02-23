@@ -1,5 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 class LeaderboardModel {
   String displayName;
@@ -35,16 +36,16 @@ class LeaderboardModel {
   });
 
   LeaderboardModel.fromJson(Map<String, dynamic> json) {
-    displayName = json['displayName'];
-    totalRunCount = json['totalRunCount'];
-    totalHaringCount = json['totalHaringCount'];
-    ytdTotalRunCount = json['ytdTotalRunCount'];
-    ytdHaringCount = json['ytdHaringCount'];
-    rollingYearTotalRunCount = json['rollingYearTotalRunCount'];
-    rollingYearHaringCount = json['rollingYearHaringCount'];
-    kennelId = json['kennelId'];
-    homeKennelId = json['homeKennelId'];
-    hasherId = json['hasherId'];
+    displayName = json['a'];
+    totalRunCount = json['b'];
+    totalHaringCount = json['c'];
+    ytdTotalRunCount = json['d'];
+    ytdHaringCount = json['e'];
+    rollingYearTotalRunCount = json['f'];
+    rollingYearHaringCount = json['g'];
+    kennelId = json['h'];
+    homeKennelId = json['i'];
+    hasherId = json['j'];
     kennelCountTotal = 0;
     kennelCountYtd = 0;
     kennelCountRollingYear = 0;
@@ -135,25 +136,42 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   }
 
   Future<void> _getLeaderboard() async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'getLeaderboard');
+    String responseBody;
 
-    final String body = jsonEncode(<String, Object>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'kennelId': widget.kennelId,
-    });
+    bool updateLocalLeaderboardCache = false;
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_get_leaderboard', body);
+    DateTime lastLeaderboardUpdate = getDatePref(DatePrefsEnum.lastLeaderboardUpdate);
+
+    if ((widget.kennelId != null) || (lastLeaderboardUpdate == null) || (DateFormat('yyyyMMMdd').format(lastLeaderboardUpdate) != DateFormat('yyyyMMMdd').format(DateTime.now()))) {
+      final String userId = getStringPref(StringPrefsEnum.userId);
+      final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'getLeaderboard');
+
+      final String body = jsonEncode(<String, Object>{
+        'userId': userId,
+        'accessToken': accessToken,
+        'kennelId': widget.kennelId,
+      });
+
+      responseBody = await ServiceCommon.sendHttpPost('hc3_get_leaderboard', body);
+      updateLocalLeaderboardCache = true;
+    } else {
+      responseBody = getStringPref(StringPrefsEnum.leaderboardJson);
+      updateLocalLeaderboardCache = false;
+    }
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      List<dynamic> jsonResults = json.decode(responseBody);
-
       _filteredLeaderboardList = <LeaderboardModel>[];
       _filteredLeaderboardAggregateList = <LeaderboardModel>[];
 
       _leaderboardList = <LeaderboardModel>[];
       _leaderboardAggregateList = <LeaderboardModel>[];
+
+      if ((widget.kennelId == null) && updateLocalLeaderboardCache) {
+        await setDatePref(DatePrefsEnum.lastLeaderboardUpdate, DateTime.now());
+        await setStringPref(StringPrefsEnum.leaderboardJson, responseBody);
+      }
+
+      List<dynamic> jsonResults = json.decode(responseBody);
 
       Map<String, LeaderboardModel> leaderAggregateMap = {};
 
@@ -258,434 +276,415 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                   height: 70.0,
                   child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
                 )
-              : Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(
-                        //key: packListBox,
-                        //color: const Color.fromARGB(60, 255, 255, 255),
-                        //margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
-                        //padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        width: MediaQuery.of(context).size.width,
-                        child: CustomScrollView(
-                          controller: _leaderScrollController,
-                          slivers: [
-                            // SliverAppBar(
-                            //   expandedHeight: 100.0,
-                            //   floating: true,
-                            //   backgroundColor: Colors.transparent,
-                            //   automaticallyImplyLeading: false,
-                            //   flexibleSpace: Column(
-                            //     children: <Widget>[
-                            //       Container(color: Colors.pink, height: 40.0),
-                            //     ],
-                            //   ),
-                            // ),
-                            SliverAppBar(
-                              // expandedHeight: 120.0,
-                              // stretchTriggerOffset: 220.0,
-                              toolbarHeight: widget.kennelId == null ? 155.0 : 106.0,
-                              floating: true,
-                              //stretch: true,
-                              backgroundColor: Colors.grey.shade400,
-                              // foregroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              automaticallyImplyLeading: false,
-                              flexibleSpace: Column(
-                                children: <Widget>[
-                                  //Container(color: Colors.pink, height: 40.0),
-                                  _searchBar(),
-                                  Container(
-                                    padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 7.0),
-                                    color: Colors.grey.shade400,
-                                    child: TabBar(
-                                      onTap: (void _) {
-                                        _sortLeaderboard(_leaderboardSortColumnIndex, false);
-                                        setState(() {});
-                                      },
-                                      labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                      unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                      isScrollable: false,
-                                      unselectedLabelColor: Colors.black,
-                                      labelColor: Colors.white,
-                                      //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                                      indicatorSize: TabBarIndicatorSize.tab,
-                                      indicator: BubbleTabIndicator(
-                                          indicatorHeight: 25.0,
-                                          indicatorColor: Colors.red.shade900,
-                                          tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                          indicatorRadius: 20.0,
-                                          bubblePadding: const EdgeInsets.only(top: 5.0)
-                                          //insets: const EdgeInsets.only(bottom: 5),
-                                          ),
-                                      tabs: <Tab>[
-                                        const Tab(text: '365 days'),
-                                        Tab(text: 'In ${DateTime.now().year}'),
-                                        const Tab(text: 'Total'),
+              : _filteredLeaderboardList.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(
+                          'No leaderboard records found',
+                          style: largeTitleStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: <Widget>[
+                        Expanded(
+                          child: SizedBox(
+                            //key: packListBox,
+                            //color: const Color.fromARGB(60, 255, 255, 255),
+                            //margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
+                            //padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            width: MediaQuery.of(context).size.width,
+                            child: CustomScrollView(
+                              controller: _leaderScrollController,
+                              slivers: <Widget>[
+                                // SliverAppBar(
+                                //   expandedHeight: 100.0,
+                                //   floating: true,
+                                //   backgroundColor: Colors.transparent,
+                                //   automaticallyImplyLeading: false,
+                                //   flexibleSpace: Column(
+                                //     children: <Widget>[
+                                //       Container(color: Colors.pink, height: 40.0),
+                                //     ],
+                                //   ),
+                                // ),
+                                SliverAppBar(
+                                  // expandedHeight: 120.0,
+                                  // stretchTriggerOffset: 220.0,
+                                  toolbarHeight: widget.kennelId == null ? 155.0 : 106.0,
+                                  floating: true,
+                                  //stretch: true,
+                                  backgroundColor: Colors.grey.shade400,
+                                  // foregroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  automaticallyImplyLeading: false,
+                                  flexibleSpace: Column(
+                                    children: <Widget>[
+                                      //Container(color: Colors.pink, height: 40.0),
+                                      _searchBar(),
+                                      Container(
+                                        padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 7.0),
+                                        color: Colors.grey.shade400,
+                                        child: TabBar(
+                                          onTap: (void _) {
+                                            _sortLeaderboard(_leaderboardSortColumnIndex, false);
+                                            setState(() {});
+                                          },
+                                          labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          isScrollable: false,
+                                          unselectedLabelColor: Colors.black,
+                                          labelColor: Colors.white,
+                                          //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                                          indicatorSize: TabBarIndicatorSize.tab,
+                                          indicator: BubbleTabIndicator(
+                                              indicatorHeight: 25.0,
+                                              indicatorColor: Colors.red.shade900,
+                                              tabBarIndicatorSize: TabBarIndicatorSize.label,
+                                              indicatorRadius: 20.0,
+                                              bubblePadding: const EdgeInsets.only(top: 5.0)
+                                              //insets: const EdgeInsets.only(bottom: 5),
+                                              ),
+                                          tabs: <Tab>[
+                                            const Tab(text: '365 days'),
+                                            Tab(text: 'In ${DateTime.now().year}'),
+                                            const Tab(text: 'Total'),
+                                          ],
+                                          controller: _timespanTabController,
+                                        ),
+                                      ),
+                                      const Divider(
+                                        color: Colors.black45,
+                                        thickness: 1.0,
+                                        height: 1.0,
+                                      ),
+                                      if (widget.kennelId == null) ...<Widget>[
+                                        //const SizedBox(height: 10.0),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            //SizedBox(width: 10),
+                                            Checkbox(
+                                              value: _showKennels,
+                                              checkColor: Colors.white,
+                                              activeColor: Colors.red.shade900,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _showKennels = !_showKennels;
+                                                });
+                                              },
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 3.0),
+                                              child: Text(
+                                                'Show Kennels',
+                                                style: _showKennels
+                                                    ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0)
+                                                    : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Checkbox(
+                                              value: _showHomeKennel,
+                                              checkColor: Colors.white,
+                                              activeColor: Colors.red.shade900,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _showHomeKennel = !_showHomeKennel;
+                                                });
+                                              },
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 3.0),
+                                              child: Text(
+                                                'Home Kennel',
+                                                style: _showHomeKennel
+                                                    ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0)
+                                                    : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 15),
+                                          ],
+                                        ),
+
+                                        const Divider(
+                                          color: Colors.black45,
+                                          thickness: 1.0,
+                                          height: 1.0,
+                                        ),
+                                        //const SizedBox(height: 3.0),
                                       ],
-                                      controller: _timespanTabController,
-                                    ),
+                                    ],
                                   ),
-                                  const Divider(
-                                    color: Colors.black45,
-                                    thickness: 1.0,
-                                    height: 1.0,
-                                  ),
-                                  if (widget.kennelId == null) ...<Widget>[
-                                    //const SizedBox(height: 10.0),
+                                ),
+                                SliverAppBar(
+                                  pinned: true,
+                                  toolbarHeight: 60.0,
+                                  backgroundColor: const Color.fromARGB(255, 26, 0, 65),
+                                  automaticallyImplyLeading: false,
+                                  flexibleSpace: Column(children: [
+                                    const SizedBox(height: 10.0),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        //SizedBox(width: 10),
-                                        Checkbox(
-                                          value: _showKennels,
-                                          checkColor: Colors.white,
-                                          activeColor: Colors.red.shade900,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _showKennels = !_showKennels;
-                                            });
+                                      children: <Widget>[
+                                        const SizedBox(width: 4.0),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(
+                                              () {
+                                                _sortLeaderboard(0, true);
+                                              },
+                                            );
                                           },
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 3.0),
-                                          child: Text(
-                                            'Show Kennels',
-                                            style: _showKennels
-                                                ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0)
-                                                : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Checkbox(
-                                          value: _showHomeKennel,
-                                          checkColor: Colors.white,
-                                          activeColor: Colors.red.shade900,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _showHomeKennel = !_showHomeKennel;
-                                            });
-                                          },
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 3.0),
-                                          child: Text(
-                                            'Home Kennel',
-                                            style: _showHomeKennel
-                                                ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0)
-                                                : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                      ],
-                                    ),
-
-                                    // Container(
-                                    //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                    //   color: Colors.grey.shade400,
-                                    //   child: TabBar(
-                                    //     onTap: (void _) {
-                                    //       //_sortLeaderboard(_leaderboardSortColumnIndex, false);
-                                    //       setState(() {});
-                                    //     },
-                                    //     labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                    //     unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                    //     isScrollable: false,
-                                    //     unselectedLabelColor: Colors.black,
-                                    //     labelColor: Colors.white,
-                                    //     //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                                    //     indicatorSize: TabBarIndicatorSize.tab,
-                                    //     indicator: BubbleTabIndicator(
-                                    //         indicatorHeight: 25.0,
-                                    //         indicatorColor: Colors.red.shade900,
-                                    //         tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                    //         indicatorRadius: 20.0,
-                                    //         bubblePadding: const EdgeInsets.only(top: 5.0)
-                                    //         //insets: const EdgeInsets.only(bottom: 5),
-                                    //         ),
-                                    //     tabs: const <Tab>[
-                                    //       Tab(text: 'Combined'),
-                                    //       Tab(text: 'By Kennel'),
-                                    //     ],
-                                    //     controller: _scopeTabController,
-                                    //   ),
-                                    // ),
-                                    const Divider(
-                                      color: Colors.black45,
-                                      thickness: 1.0,
-                                      height: 1.0,
-                                    ),
-                                    //const SizedBox(height: 3.0),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            SliverAppBar(
-                              pinned: true,
-                              toolbarHeight: 60.0,
-                              backgroundColor: const Color.fromARGB(255, 26, 0, 65),
-                              automaticallyImplyLeading: false,
-                              flexibleSpace: Column(children: [
-                                const SizedBox(height: 10.0),
-                                Row(
-                                  children: <Widget>[
-                                    const SizedBox(width: 4.0),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(
-                                          () {
-                                            _sortLeaderboard(0, true);
-                                          },
-                                        );
-                                      },
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        child: Text(
-                                          'Runs',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: _leaderboardSortColumnIndex == 0 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
-                                            fontStyle: FontStyle.normal,
-                                            fontSize: LEADER_FONT_SIZE,
-                                            height: 1.0,
-                                            color: Colors.yellow,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(
-                                          () {
-                                            _sortLeaderboard(1, true);
-                                          },
-                                        );
-                                      },
-                                      child: SizedBox(
-                                        width: 70.0,
-                                        child: Text(
-                                          'Hared',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: _leaderboardSortColumnIndex == 1 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
-                                            fontStyle: FontStyle.normal,
-                                            fontSize: LEADER_FONT_SIZE,
-                                            height: 1.0,
-                                            color: Colors.yellow,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            _sortLeaderboard(2, true);
-                                          });
-                                        },
-                                        child: Text(
-                                          'Hasher',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: _leaderboardSortColumnIndex == 2 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
-                                            fontStyle: FontStyle.normal,
-                                            fontSize: LEADER_FONT_SIZE,
-                                            height: 1.0,
-                                            color: Colors.yellow,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 50.0),
-                                  ],
-                                ),
-                                Row(
-                                  children: <Widget>[
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _sortLeaderboard(0, true);
-                                        });
-                                      },
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        child: _leaderboardSortColumnIndex != 0
-                                            ? null
-                                            : Icon(
-                                                _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
-                                                size: 20.0,
+                                          child: SizedBox(
+                                            width: 50.0,
+                                            child: Text(
+                                              'Runs',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily: _leaderboardSortColumnIndex == 0 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
+                                                fontStyle: FontStyle.normal,
+                                                fontSize: LEADER_FONT_SIZE,
+                                                height: 1.0,
                                                 color: Colors.yellow,
-                                              ),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(
-                                          () {
-                                            _sortLeaderboard(1, true);
-                                          },
-                                        );
-                                      },
-                                      child: SizedBox(
-                                        width: 70.0,
-                                        child: _leaderboardSortColumnIndex != 1
-                                            ? null
-                                            : Icon(
-                                                _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
-                                                size: 20.0,
-                                                color: Colors.yellow,
-                                              ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            _sortLeaderboard(2, true);
-                                          });
-                                        },
-                                        child: SizedBox(
-                                          child: _leaderboardSortColumnIndex != 2
-                                              ? null
-                                              : Icon(
-                                                  _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
-                                                  size: 20.0,
-                                                  color: Colors.yellow,
-                                                ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 50.0),
-                                  ],
-                                ),
-                              ]),
-                            ),
-                            // Next, create a SliverList
-                            const SliverToBoxAdapter(child: SizedBox(height: 15)),
-                            SliverList(
-                              // Use a delegate to build items as they're scrolled on screen.
-                              delegate: SliverChildBuilderDelegate(
-                                // The builder function returns a ListTile with a title that
-                                // displays the index of the current item.
-                                (context, index) {
-                                  if (index == (_showKennels ? _filteredLeaderboardList.length : _filteredLeaderboardAggregateList.length)) {
-                                    return const SizedBox(height: 50);
-                                  }
-
-                                  LeaderboardModel e = !_showKennels ? _filteredLeaderboardAggregateList[index] : _filteredLeaderboardList[index];
-                                  return Column(
-                                    children: [
-                                      const SizedBox(height: 3.0),
-                                      Row(
-                                        children: <Widget>[
-                                          SizedBox(
-                                              width: 50.0,
-                                              child: Text(
-                                                  (_timespanTabController.index == TABINDEX_TOTAL
-                                                          ? e.totalRunCount
-                                                          : _timespanTabController.index == TABINDEX_365_DAYS
-                                                              ? e.rollingYearTotalRunCount
-                                                              : e.ytdTotalRunCount)
-                                                      .toString(),
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(
-                                                    fontFamily: 'AvenirNextCondensedMedium',
-                                                    fontStyle: FontStyle.normal,
-                                                    fontSize: LEADER_FONT_SIZE,
-                                                    height: 1.0,
-                                                    color: Colors.white,
-                                                  ))),
-                                          SizedBox(
-                                              width: 70.0,
-                                              child: Text(
-                                                  (_timespanTabController.index == TABINDEX_TOTAL
-                                                          ? e.totalHaringCount
-                                                          : _timespanTabController.index == TABINDEX_365_DAYS
-                                                              ? e.rollingYearHaringCount
-                                                              : e.ytdHaringCount)
-                                                      .toString(),
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(
-                                                    fontFamily: 'AvenirNextCondensedMedium',
-                                                    fontStyle: FontStyle.normal,
-                                                    fontSize: LEADER_FONT_SIZE,
-                                                    height: 1.0,
-                                                    color: Colors.white,
-                                                  ))),
-                                          Expanded(
-                                            child: SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    e.displayName ?? '<unknown>',
-                                                    //overflow: TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontFamily: 'AvenirNextCondensedMedium',
-                                                      fontStyle: FontStyle.normal,
-                                                      fontSize: LEADER_FONT_SIZE,
-                                                      height: 1.0,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  if ((widget.kennelId == null) && _showHomeKennel && (e.homeKennelId != null)) ...<Widget>[
-                                                    Text(
-                                                      '  -  ${_kennels[e.homeKennelId]["kennelShortName"]}',
-                                                      //overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontFamily: 'AvenirNextCondensedMedium',
-                                                        fontStyle: FontStyle.italic,
-                                                        fontSize: LEADER_FONT_SIZE,
-                                                        height: 1.0,
-                                                        color: Colors.blue.shade100,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                  if ((widget.kennelId == null) && _showKennels) ...<Widget>[
-                                                    Text(
-                                                      '  -  ${_kennels[e.kennelId]["kennelName"]}',
-                                                      //overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontFamily: 'AvenirNextCondensedMedium',
-                                                        fontStyle: FontStyle.italic,
-                                                        fontSize: LEADER_FONT_SIZE,
-                                                        height: 1.0,
-                                                        color: Colors.pink.shade100,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                  if ((widget.kennelId == null) && !_showKennels) ...<Widget>[
-                                                    Text(
-                                                      '  -  ${_timespanTabController.index == TABINDEX_TOTAL ? e.kennelCountTotal : _timespanTabController.index == TABINDEX_365_DAYS ? e.kennelCountRollingYear : e.kennelCountYtd} Kennels',
-                                                      //overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontFamily: 'AvenirNextCondensedMedium',
-                                                        fontStyle: FontStyle.italic,
-                                                        fontSize: LEADER_FONT_SIZE,
-                                                        height: 1.0,
-                                                        color: Colors.pink.shade100,
-                                                      ),
-                                                    ),
-                                                  ]
-                                                ],
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ],
-                                  );
-                                },
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(
+                                              () {
+                                                _sortLeaderboard(1, true);
+                                              },
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            width: 70.0,
+                                            child: Text(
+                                              'Hared',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily: _leaderboardSortColumnIndex == 1 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
+                                                fontStyle: FontStyle.normal,
+                                                fontSize: LEADER_FONT_SIZE,
+                                                height: 1.0,
+                                                color: Colors.yellow,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _sortLeaderboard(2, true);
+                                              });
+                                            },
+                                            child: Text(
+                                              'Hasher',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily: _leaderboardSortColumnIndex == 2 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
+                                                fontStyle: FontStyle.normal,
+                                                fontSize: LEADER_FONT_SIZE,
+                                                height: 1.0,
+                                                color: Colors.yellow,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 50.0),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _sortLeaderboard(0, true);
+                                            });
+                                          },
+                                          child: SizedBox(
+                                            width: 50.0,
+                                            child: _leaderboardSortColumnIndex != 0
+                                                ? null
+                                                : Icon(
+                                                    _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
+                                                    size: 20.0,
+                                                    color: Colors.yellow,
+                                                  ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(
+                                              () {
+                                                _sortLeaderboard(1, true);
+                                              },
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            width: 70.0,
+                                            child: _leaderboardSortColumnIndex != 1
+                                                ? null
+                                                : Icon(
+                                                    _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
+                                                    size: 20.0,
+                                                    color: Colors.yellow,
+                                                  ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _sortLeaderboard(2, true);
+                                              });
+                                            },
+                                            child: SizedBox(
+                                              child: _leaderboardSortColumnIndex != 2
+                                                  ? null
+                                                  : Icon(
+                                                      _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
+                                                      size: 20.0,
+                                                      color: Colors.yellow,
+                                                    ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 50.0),
+                                      ],
+                                    ),
+                                  ]),
+                                ),
+                                // Next, create a SliverList
+                                const SliverToBoxAdapter(child: SizedBox(height: 15)),
+                                SliverList(
+                                  // Use a delegate to build items as they're scrolled on screen.
+                                  delegate: SliverChildBuilderDelegate(
+                                    // The builder function returns a ListTile with a title that
+                                    // displays the index of the current item.
+                                    (context, index) {
+                                      if (index == (_showKennels ? _filteredLeaderboardList.length : _filteredLeaderboardAggregateList.length)) {
+                                        return const SizedBox(height: 50);
+                                      }
 
-                                childCount: _showKennels ? _filteredLeaderboardList.length + 1 : _filteredLeaderboardAggregateList.length + 1,
-                              ),
+                                      LeaderboardModel e = !_showKennels ? _filteredLeaderboardAggregateList[index] : _filteredLeaderboardList[index];
+                                      return Column(
+                                        children: [
+                                          const SizedBox(height: 3.0),
+                                          Row(
+                                            children: <Widget>[
+                                              SizedBox(
+                                                  width: 50.0,
+                                                  child: Text(
+                                                      (_timespanTabController.index == TABINDEX_TOTAL
+                                                              ? e.totalRunCount
+                                                              : _timespanTabController.index == TABINDEX_365_DAYS
+                                                                  ? e.rollingYearTotalRunCount
+                                                                  : e.ytdTotalRunCount)
+                                                          .toString(),
+                                                      textAlign: TextAlign.center,
+                                                      style: const TextStyle(
+                                                        fontFamily: 'AvenirNextCondensedMedium',
+                                                        fontStyle: FontStyle.normal,
+                                                        fontSize: LEADER_FONT_SIZE,
+                                                        height: 1.0,
+                                                        color: Colors.white,
+                                                      ))),
+                                              SizedBox(
+                                                  width: 70.0,
+                                                  child: Text(
+                                                      (_timespanTabController.index == TABINDEX_TOTAL
+                                                              ? e.totalHaringCount
+                                                              : _timespanTabController.index == TABINDEX_365_DAYS
+                                                                  ? e.rollingYearHaringCount
+                                                                  : e.ytdHaringCount)
+                                                          .toString(),
+                                                      textAlign: TextAlign.center,
+                                                      style: const TextStyle(
+                                                        fontFamily: 'AvenirNextCondensedMedium',
+                                                        fontStyle: FontStyle.normal,
+                                                        fontSize: LEADER_FONT_SIZE,
+                                                        height: 1.0,
+                                                        color: Colors.white,
+                                                      ))),
+                                              Expanded(
+                                                child: SingleChildScrollView(
+                                                  scrollDirection: Axis.horizontal,
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        e.displayName ?? '<unknown>',
+                                                        //overflow: TextOverflow.ellipsis,
+                                                        style: const TextStyle(
+                                                          fontFamily: 'AvenirNextCondensedMedium',
+                                                          fontStyle: FontStyle.normal,
+                                                          fontSize: LEADER_FONT_SIZE,
+                                                          height: 1.0,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                      if ((widget.kennelId == null) && _showHomeKennel && (e.homeKennelId != null)) ...<Widget>[
+                                                        Text(
+                                                          '  -  ${_kennels[e.homeKennelId]["kennelShortName"]}',
+                                                          //overflow: TextOverflow.ellipsis,
+                                                          style: TextStyle(
+                                                            fontFamily: 'AvenirNextCondensedMedium',
+                                                            fontStyle: FontStyle.italic,
+                                                            fontSize: LEADER_FONT_SIZE,
+                                                            height: 1.0,
+                                                            color: Colors.blue.shade100,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                      if ((widget.kennelId == null) && _showKennels) ...<Widget>[
+                                                        Text(
+                                                          '  -  ${_kennels[e.kennelId]["kennelName"]}',
+                                                          //overflow: TextOverflow.ellipsis,
+                                                          style: TextStyle(
+                                                            fontFamily: 'AvenirNextCondensedMedium',
+                                                            fontStyle: FontStyle.italic,
+                                                            fontSize: LEADER_FONT_SIZE,
+                                                            height: 1.0,
+                                                            color: Colors.pink.shade100,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                      if ((widget.kennelId == null) && !_showKennels) ...<Widget>[
+                                                        Text(
+                                                          '  -  ${_timespanTabController.index == TABINDEX_TOTAL ? e.kennelCountTotal : _timespanTabController.index == TABINDEX_365_DAYS ? e.kennelCountRollingYear : e.kennelCountYtd} Kennels',
+                                                          //overflow: TextOverflow.ellipsis,
+                                                          style: TextStyle(
+                                                            fontFamily: 'AvenirNextCondensedMedium',
+                                                            fontStyle: FontStyle.italic,
+                                                            fontSize: LEADER_FONT_SIZE,
+                                                            height: 1.0,
+                                                            color: Colors.pink.shade100,
+                                                          ),
+                                                        ),
+                                                      ]
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    },
+
+                                    childCount: _showKennels ? _filteredLeaderboardList.length + 1 : _filteredLeaderboardAggregateList.length + 1,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
         ),
       ],
     ));
@@ -699,23 +698,6 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // Row(
-          //   children: <Widget>[
-          //     Checkbox(
-          //       value: _searchAllRuns,
-          //       onChanged: (bool value) {
-          //         _searchAllRuns = !_searchAllRuns;
-          //         refreshFromTable(true).then((void _) {
-          //           setState(() {});
-          //         });
-          //       },
-          //     ),
-          //     Padding(
-          //       padding: const EdgeInsets.only(top: 4.0),
-          //       child: Text('Search all runs', style: headingStyleBlack.copyWith(fontSize: 18.0)),
-          //     ),
-          //   ],
-          // ),
           const Divider(
             height: 2.0,
             thickness: 2.0,
@@ -785,115 +767,116 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   bool _sortOrderAsc = false;
 
   void _sortLeaderboard(int columnIndex, bool alternateSortOrder) {
-    if (alternateSortOrder && (columnIndex == _leaderboardSortColumnIndex)) {
-      _sortOrderAsc = !_sortOrderAsc;
-    }
+    if ((_filteredLeaderboardList != null) &&
+        ((widget.kennelId != null) || (_filteredLeaderboardAggregateList != null)) &&
+        (_filteredLeaderboardList.isNotEmpty) &&
+        ((widget.kennelId != null) || (_filteredLeaderboardAggregateList.isNotEmpty))) {
+      if (alternateSortOrder && (columnIndex == _leaderboardSortColumnIndex)) {
+        _sortOrderAsc = !_sortOrderAsc;
+      }
 
-    _leaderboardSortColumnIndex = columnIndex;
+      _leaderboardSortColumnIndex = columnIndex;
 
-    switch (_leaderboardSortColumnIndex) {
-      // sort runs
-      case 0:
-        switch (_timespanTabController.index) {
-          case TABINDEX_TOTAL:
-            _filteredLeaderboardList.sort((a, b) {
-              int cmp = a.totalRunCount.compareTo(b.totalRunCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            _filteredLeaderboardAggregateList.sort((a, b) {
-              int cmp = a.totalRunCount.compareTo(b.totalRunCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            break;
-          case TABINDEX_365_DAYS:
-            _filteredLeaderboardList.sort((a, b) {
-              int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            _filteredLeaderboardAggregateList.sort((a, b) {
-              int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            break;
+      switch (_leaderboardSortColumnIndex) {
+        // sort runs
+        case 0:
+          switch (_timespanTabController.index) {
+            case TABINDEX_TOTAL:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.totalRunCount.compareTo(b.totalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.totalRunCount.compareTo(b.totalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+            case TABINDEX_365_DAYS:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
 
-          case TABINDEX_CURRENT_YEAR:
-            _filteredLeaderboardList.sort((a, b) {
-              int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            _filteredLeaderboardAggregateList.sort((a, b) {
-              int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            break;
-        }
-        break;
-      // sort haring
-      case 1:
-        switch (_timespanTabController.index) {
-          case TABINDEX_TOTAL:
-            _filteredLeaderboardList.sort((a, b) {
-              int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            _filteredLeaderboardAggregateList.sort((a, b) {
-              int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            break;
-          case TABINDEX_365_DAYS:
-            _filteredLeaderboardList.sort((a, b) {
-              int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            _filteredLeaderboardAggregateList.sort((a, b) {
-              int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            break;
-          case TABINDEX_CURRENT_YEAR:
-            _filteredLeaderboardList.sort((a, b) {
-              int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            _filteredLeaderboardAggregateList.sort((a, b) {
-              int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
-              if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-              return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            });
-            break;
-        }
-        break;
-      // sort by name
-      case 2:
-        // _sortOrderAsc
-        //     ? _leaderboardList.sort((a, b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()))
-        //     : _leaderboardList.sort((b, a) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
+            case TABINDEX_CURRENT_YEAR:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+          }
+          break;
+        // sort haring
+        case 1:
+          switch (_timespanTabController.index) {
+            case TABINDEX_TOTAL:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+            case TABINDEX_365_DAYS:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+            case TABINDEX_CURRENT_YEAR:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+          }
+          break;
+        // sort by name
+        case 2:
+          _filteredLeaderboardList.sort((a, b) {
+            int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+            if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+            return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
+          });
 
-        _filteredLeaderboardList.sort((a, b) {
-          int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-          if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-          return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
-        });
+          _filteredLeaderboardAggregateList.sort((a, b) {
+            int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+            if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+            return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
+          });
 
-        _filteredLeaderboardAggregateList.sort((a, b) {
-          int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-          if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-          return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
-        });
-
-        break;
+          break;
+      }
     }
   }
 

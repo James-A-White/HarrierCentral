@@ -44,6 +44,9 @@ class NewAccountPageState extends State<NewAccountPage> {
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
+          refreshFunction: () {
+            setState(() {});
+          },
         ),
       ],
     );

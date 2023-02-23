@@ -43,12 +43,14 @@ class ServiceCommon {
             'Down for Maintenance',
             'The Harrier Central server is temporarily offline for maintenance.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
             'Use Offline');
+        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
       } else {
         await IveCoreUtilities.showAlert(
             navigatorKey.currentContext,
             'Unknown Server Error',
             'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at connect@harriercentral.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',
             'Use Offline');
+        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
       }
     } else if (response.body.contains('"errorId"')) {
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;

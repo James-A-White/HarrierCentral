@@ -39,53 +39,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final InternetConnectionChecker checker = InternetConnectionChecker();
-
-    while (!await checker.hasConnection) {
-      final bool useOffline = await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext,
-          'Check Network',
-          'Harrier Central is unable to detect a network connection.\r\n\r\nPlease check the network connection on your phone and try again, or you can continue to use the app in Offline Mode.',
-          'Use Offline',
-          showCancelButton: true,
-          cancelButtonText: 'Try again');
-      if (useOffline) {
-        break;
-      }
-
-      await Future<void>.delayed(const Duration(seconds: 2));
-    }
-
-    if (await checker.hasConnection) {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
-
-      final List<AddressCheckOptions> addressesToCheck = <AddressCheckOptions>[];
-
-      final List<InternetAddress> hcAddress = await InternetAddress.lookup(BASE_URL);
-
-      for (InternetAddress address in hcAddress) {
-        final AddressCheckOptions aco = AddressCheckOptions(
-          address: address,
-          timeout: const Duration(milliseconds: 10000),
-          port: 80,
-        );
-        addressesToCheck.add(aco);
-      }
-
-      checker.addresses = addressesToCheck;
-
-      if (!await checker.hasConnection) {
-        await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext,
-            'Server Offline',
-            'The Harrier Central App is able to access the network but is unable to connect to our backend server.\r\n\r\nThis can happen if there is a problem with the network or our service is down for maintenance.\r\n\r\nYou can use the app offline or close the app and try again later.',
-            'OK');
-
-        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
-      }
-    } else {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
-    }
+    await Utilities.checkForInternetConnection(false);
 
     ApproveLoginModel loginResult;
     List<PromoModel> promoResult;
@@ -101,7 +55,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
       if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
         exit(0);
-      } else {
+      } else if (!responseBody.startsWith(ERROR_PREFIX)) {
         loginResult = ApproveLoginModel.itemFromJson(responseBody);
         promoResult = PromoModel.itemsFromJson(responseBody);
       }
@@ -134,7 +88,9 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
               await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
 
               final String responseBody = await svc.approveLogin(navigatorKey.currentContext, facebookAccessToken);
-              loginResult = ApproveLoginModel.itemFromJson(responseBody);
+              if (!responseBody.startsWith(ERROR_PREFIX)) {
+                loginResult = ApproveLoginModel.itemFromJson(responseBody);
+              }
             }
           }
         }
