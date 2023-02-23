@@ -210,7 +210,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
           LEFT OUTER JOIN kennels k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
           WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 
-          
+          AND h.${G0<TableModel>().hashersTableHelper.colDispName} not like 'Placeholder user for%'
           ORDER BY memberFollowingStatus,$orderBy
           
           ''';

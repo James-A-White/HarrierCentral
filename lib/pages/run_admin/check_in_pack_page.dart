@@ -230,6 +230,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             0 as credit
           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
+          WHERE h.${G0<TableModel>().hashersTableHelper.colDispName} not like 'Placeholder user for%'
           ORDER BY nameForSort
           ''';
 
