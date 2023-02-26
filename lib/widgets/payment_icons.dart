@@ -261,9 +261,7 @@ class PaymentIcons extends StatelessWidget {
           if (result) {
             // now launch into the payment provider
             await launchUrl(Uri.parse(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))));
-            if (kennel.allowSelfPayment == 0) {
-              await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
-            } else {
+            if ((kennel.allowSelfPayment & selfPaymentAutoPayAfterBankTransfer) == selfPaymentAutoPayAfterBankTransfer) {
               // show the alert so the user knows how much to pay
               final bool result2 = await IveCoreUtilities.showAlert(
                 navigatorKey.currentContext,
@@ -283,6 +281,8 @@ class PaymentIcons extends StatelessWidget {
               } else {
                 await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
               }
+            } else {
+              await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
             }
           }
           // } else {

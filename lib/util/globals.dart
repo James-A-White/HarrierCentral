@@ -87,7 +87,7 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable,
+          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagPaymentsTable,
           false,
           informUser: informUser,
           debugText: 'Globals: HEM on launch',

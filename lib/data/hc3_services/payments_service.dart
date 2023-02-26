@@ -14,6 +14,7 @@ class PaymentsModel implements BaseModel {
     this.paidTo,
     this.creditAmount,
     this.debitAmount,
+    this.creditAvailable,
     this.paidDate,
     this.paymentType,
     this.productType,
@@ -46,6 +47,7 @@ class PaymentsModel implements BaseModel {
   final String paidTo;
   num creditAmount;
   final num debitAmount;
+  final num creditAvailable;
   final DateTime paidDate;
   int paymentType;
   final int productType;
@@ -111,6 +113,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
   final String colPaidTo = 'paidTo';
   final String colCreditAmount = 'creditAmount';
   final String colDebitAmount = 'debitAmount';
+  final String colCreditAvailable = 'creditAvailable';
   final String colPaidDate = 'paidDate';
   final String colPaymentType = 'paymentType';
   final String colProductType = 'productType';
@@ -143,6 +146,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
             $colPaidTo TEXT NOT NULL,
             $colCreditAmount NUM,
             $colDebitAmount NUM,
+            $colCreditAvailable NUM,
             $colPaidDate TEXT,
             $colPaymentType INT,
             $colProductType INT,

@@ -93,7 +93,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 405;
+const int DB_VERSION = 416;
 
 const num CLEAR_LATLONG = -2.0;
 
@@ -142,6 +142,10 @@ const int authCanManageMembers = 0x00000010;
 const int authCanManageAwards = 0x00000020;
 const int authIsSuperAdmin = 0x40000000;
 const int authAllFlags = 0x0000003f;
+
+const int selfPaymentNone = 0x00000000;
+const int selfPaymentAutoPayAfterBankTransfer = 0x00000001;
+const int selfPaymentShowBankButtonOnAutoCheckinDialog = 0x00000002;
 
 class AppAccess {
   AppAccess(

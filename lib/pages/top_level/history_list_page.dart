@@ -20,10 +20,13 @@ class HistoryListResults {
     this.kennelShortName,
     this.kennelId,
     this.kennelLogo,
+    this.currencySymbol,
+    this.kennelCredit,
     this.historicalTotalRunCount,
     this.historicalHaringCount,
     this.historicalCountIsEstimate,
     this.following,
+    this.digitsAfterDecimal,
   });
 
   final int totalRunsThisKennel;
@@ -34,25 +37,32 @@ class HistoryListResults {
   final String kennelShortName;
   final String kennelId;
   final String kennelLogo;
+  final String currencySymbol;
+  final num kennelCredit;
   final int historicalHaringCount;
   final int historicalTotalRunCount;
   final int historicalCountIsEstimate;
   final int following;
+  final int digitsAfterDecimal;
 
   static HistoryListResults fromMap(Map<String, dynamic> map) {
     final HistoryListResults item = HistoryListResults(
-        totalRunsThisKennel: map['totalRunsThisKennel'],
-        totalHaringThisKennel: map['totalHaringThisKennel'],
-        hcRunsThisKennel: map['hcRunsThisKennel'],
-        hcHaringThisKennel: map['hcHaringThisKennel'],
-        kennelId: map['kennelId'],
-        historicalTotalRunCount: map['historicalTotalRunCount'],
-        historicalHaringCount: map['historicalHaringCount'],
-        historicalCountIsEstimate: map['historicalCountIsEstimate'],
-        kennelLogo: map['kennelLogo'],
-        kennelName: map['kennelName'],
-        kennelShortName: map['kennelShortName'],
-        following: map['following']);
+      totalRunsThisKennel: map['totalRunsThisKennel'],
+      totalHaringThisKennel: map['totalHaringThisKennel'],
+      hcRunsThisKennel: map['hcRunsThisKennel'],
+      hcHaringThisKennel: map['hcHaringThisKennel'],
+      kennelId: map['kennelId'],
+      historicalTotalRunCount: map['historicalTotalRunCount'],
+      historicalHaringCount: map['historicalHaringCount'],
+      historicalCountIsEstimate: map['historicalCountIsEstimate'],
+      kennelCredit: map['kennelCredit'],
+      kennelLogo: map['kennelLogo'],
+      kennelName: map['kennelName'],
+      kennelShortName: map['kennelShortName'],
+      following: map['following'],
+      digitsAfterDecimal: map['digitsAfterDecimal'],
+      currencySymbol: map['currencySymbol'],
+    );
     return item;
   }
 }
@@ -91,8 +101,12 @@ class HistoryListPageState extends State<HistoryListPage> {
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colFollowing}
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal}) as digitsAfterDecimal,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol}) as currencySymbol
           FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           ORDER BY totalRunsThisKennel desc
           ''';

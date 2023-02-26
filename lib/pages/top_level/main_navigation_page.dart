@@ -209,19 +209,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) && (result.attendenceState < attendenceAtHash.value)) {
         final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
           title: 'Check-in to Run',
-          eventImage: result.eventImage,
-          eventName: result.eventName,
-          kennelLogo: result.kennelLogo,
+          areWeAtRunData: result,
           okButtonTitle: 'Yes',
           cancelButtonTitle: 'No',
-          kennelShortName: result.kennelShortName,
-          eventNumber: result.eventNumber,
-          kennelCredit: result.kennelCredit,
-          extrasCost: result.extrasCost,
-          eventPrice: result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice,
-          extrasDescription: result.extrasDescription,
-          digitsAfterDecimal: result.digitsAfterDecimal,
-          currencySymbol: result.currencySymbol,
         );
 
         final EnumCheckinOptions<int> retVal = await showDialog<EnumCheckinOptions<int>>(
@@ -233,25 +223,25 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
         if (retVal == enumCheckInOption_Yes) {
           await _checkInAtEvent(result.eventId, userId);
-        } else if (retVal == enumCheckInOption_YesAndPay) {
+        } else if ((retVal == enumCheckInOption_YesAndPayByCredit) || (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
           final PaymentsService paySrv = PaymentsService();
           await paySrv.payForEvent(
             result.eventId,
             userId,
             GUID_EMPTY,
-            paymentHashCredit.value,
+            retVal == enumCheckInOption_YesAndPayByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
             result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice,
             attendenceAtHash.value,
             payForRunOnly,
             AppDomainType.user,
           );
-        } else if (retVal == enumCheckInOption_YesAndPayPlusExtras) {
+        } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) || (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
           final PaymentsService paySrv = PaymentsService();
           await paySrv.payForEvent(
               result.eventId,
               userId,
               GUID_EMPTY,
-              paymentHashCredit.value,
+              retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
               result.extrasCost + (result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice),
               attendenceAtHash.value,
               payForRunAndExtras,

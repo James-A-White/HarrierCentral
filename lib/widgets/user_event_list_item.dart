@@ -16,104 +16,170 @@ class UserEventListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // const num textWidth = 55.0;
-
-    // const TextStyle numberStyle = TextStyle(
-    //   fontFamily: 'AvenirNextCondensedDemiBold',
-    //   fontStyle: FontStyle.normal,
-    //   fontSize: 22.0,
-    // );
-
-    return listItem(context);
+    return _listItem(context);
   }
 
-  Container listItem(BuildContext context) {
+  Container _listItem(BuildContext context) {
+    num netPayment = (item.creditAmount ?? 0) - (item.debitAmount ?? 0);
+    Color paymentColor = netPayment > 0
+        ? Colors.green.shade800
+        : netPayment < 0
+            ? Colors.red.shade900
+            : Colors.black38;
+
+    final String amountDue = IveCoreUtilities.getFormattedMoney(item.debitAmount ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
+
+    final String amountPaid = IveCoreUtilities.getFormattedMoney(item.creditAmount ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
+
+    final String creditAvailable = IveCoreUtilities.getFormattedMoney(item.creditAvailable ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
+
+    final String extrasPrice = IveCoreUtilities.getFormattedMoney(item.extrasPrice ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
+
     return Container(
       margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
       width: MediaQuery.of(context).size.width,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          item.isUpdating
-              ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
-              : item.attendenceState < attendenceAtHash.value
-                  ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
-                  : item.isHare == isHareNo.value
-                      ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
-                      : const Padding(
-                          padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                          child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 30.0),
-                        ),
-
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    item.eventName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                    textAlign: TextAlign.left,
-                  ),
-                  Text(
-                    item.eventStartDatetime.year != DateTime.now().year
-                        ? 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy 'at' h:mm a").format(item.eventStartDatetime)}'
-                        : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d 'at' h:mm a").format(item.eventStartDatetime)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                    textAlign: TextAlign.left,
-                  ),
-                  item.attendenceState < attendenceAtHash.value
-                      ? Container()
-                      : Row(
-                          children: <Widget>[
-                            Text(
-                              'My ${kennelInfo.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (kennelInfo?.historicalTotalRunCount ?? 0)}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.green[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                              textAlign: TextAlign.left,
-                            ),
-                            item.isHare == isHareNo.value
-                                ? Container()
-                                : Text(
-                                    ' and #${(item.totalHaringThisKennel ?? 0) + (kennelInfo?.historicalHaringCount ?? 0)} time haring',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                    textAlign: TextAlign.left,
-                                  ),
-                          ],
-                        ),
-                ],
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            item.isUpdating
+                ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
+                : item.attendenceState < attendenceAtHash.value
+                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
+                    : item.isHare == isHareNo.value
+                        ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
+                        : const Padding(
+                            padding: EdgeInsets.only(left: 2.5, right: 2.5),
+                            child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 30.0),
+                          ),
+            const Padding(
+              padding: EdgeInsets.only(left: 7.0, right: 3.0),
+              child: VerticalDivider(
+                thickness: 2.0,
+                width: 2.0,
               ),
             ),
-          ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      item.eventName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      item.eventStartDatetime.year != DateTime.now().year
+                          ? 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy 'at' h:mm a").format(item.eventStartDatetime)}'
+                          : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d 'at' h:mm a").format(item.eventStartDatetime)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                      textAlign: TextAlign.left,
+                    ),
+                    item.attendenceState < attendenceAtHash.value
+                        ? Container()
+                        : Row(
+                            children: <Widget>[
+                              Text(
+                                'My ${kennelInfo.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (kennelInfo?.historicalTotalRunCount ?? 0)}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: Colors.green[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                textAlign: TextAlign.left,
+                              ),
+                              item.isHare == isHareNo.value
+                                  ? Container()
+                                  : Text(
+                                      ' and #${(item.totalHaringThisKennel ?? 0) + (kennelInfo?.historicalHaringCount ?? 0)} time haring',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                      textAlign: TextAlign.left,
+                                    ),
+                            ],
+                          ),
+                    // Container(
+                    //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+                    //   margin: const EdgeInsets.only(top: 7.0, bottom: 7.0),
+                    //   padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
+                    //   height: 1.0,
+                    //   color: Colors.grey[800],
+                    // ),
 
-          if ((G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) && (item.canEditRunAttendence != 0)) ...<Widget>[
-            IconButton(
-              icon: const Icon(MaterialCommunityIcons.dots_vertical),
-              iconSize: Theme.of(context).iconTheme.size,
-              color: Colors.black54,
-              splashColor: Theme.of(context).highlightColor,
-              onPressed: () async {
-                await _showRunAttendencePopup(context);
-              },
+                    if ((item.doPayForExtras ?? 0) != 0) ...<Widget>[
+                      const SizedBox(height: 5.0),
+                      Center(
+                        child: Text((item.extrasDescription ?? 'Extra charge: ') + extrasPrice,
+                            style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                      ),
+                    ],
+
+                    if ((item.debitAmount ?? 0) != 0) ...<Widget>[
+                      const SizedBox(height: 5.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          const SizedBox(width: 1.0),
+                          Expanded(
+                            flex: 33,
+                            child: Column(
+                              children: [
+                                Text('Run fee', style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                                Text(amountDue, style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            flex: 34,
+                            child: Column(
+                              children: [
+                                Text('Paid', style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                                Text(amountPaid, style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            flex: 33,
+                            child: Column(
+                              children: [
+                                Text('Credit', style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                                Text(creditAvailable, style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                              width: 40.0,
+                              child: netPayment > 0
+                                  ? Icon(FontAwesome.plus_circle, color: Colors.green.shade800)
+                                  : netPayment < 0
+                                      ? Icon(FontAwesome.minus_circle, color: Colors.red.shade900)
+                                      : const SizedBox()),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
+            if ((G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) && (item.canEditRunAttendence != 0)) ...<Widget>[
+              IconButton(
+                icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                iconSize: Theme.of(context).iconTheme.size,
+                color: Colors.black54,
+                splashColor: Theme.of(context).highlightColor,
+                onPressed: () async {
+                  await _showRunAttendencePopup(context);
+                },
+              ),
+            ],
           ],
-          // Container(
-          //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-          //   margin: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-          //   padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-          //   height: 1.0,
-          //   color: Colors.grey[800],
-          // ),
-        ],
+        ),
       ),
     );
   }

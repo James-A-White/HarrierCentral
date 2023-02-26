@@ -180,6 +180,13 @@ class Tables {
         -- a change in the values stored in the [updatedAtValue] field
       ''',
         appliedAtInt: 0),
+
+    MigrationsModel(
+        dbVersion: 416,
+        migrationText: ''' 
+     ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ''',
+        appliedAtInt: 0),
   ];
 
   static Future<void> createTables(Database db, int version, Function informUser) async {

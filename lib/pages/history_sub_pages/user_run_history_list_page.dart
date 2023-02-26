@@ -39,18 +39,26 @@ class UserRunHistoryListPage extends StatefulWidget {
 }
 
 class UserRunHistoryResults {
-  UserRunHistoryResults(
-      {this.eventId,
-      this.eventName,
-      this.eventNumber,
-      this.eventStartDatetime,
-      this.canEditRunAttendence,
-      this.hemId,
-      this.attendenceState,
-      this.isHare,
-      this.totalHaringThisKennel,
-      this.totalRunsThisKennel,
-      this.isUpdating});
+  UserRunHistoryResults({
+    this.eventId,
+    this.eventName,
+    this.eventNumber,
+    this.eventStartDatetime,
+    this.canEditRunAttendence,
+    this.hemId,
+    this.attendenceState,
+    this.isHare,
+    this.creditAmount,
+    this.debitAmount,
+    this.creditAvailable,
+    this.paymentType,
+    this.totalHaringThisKennel,
+    this.totalRunsThisKennel,
+    this.isUpdating,
+    this.doPayForExtras,
+    this.extrasDescription,
+    this.extrasPrice,
+  });
 
   final String eventId;
   final String eventName;
@@ -60,6 +68,13 @@ class UserRunHistoryResults {
   final String hemId;
   final int attendenceState;
   final int isHare;
+  final num creditAmount;
+  final num debitAmount;
+  final num creditAvailable;
+  final int paymentType;
+  final String extrasDescription;
+  final num extrasPrice;
+  final int doPayForExtras;
   int totalRunsThisKennel;
   int totalHaringThisKennel;
   bool isUpdating;
@@ -74,8 +89,15 @@ class UserRunHistoryResults {
       hemId: map['hemId'],
       attendenceState: map['attendenceState'],
       isHare: map['isHare'],
+      creditAmount: map['creditAmount'],
+      debitAmount: map['debitAmount'],
+      creditAvailable: map['creditAvailable'],
+      paymentType: map['paymentType'],
       totalRunsThisKennel: map['totalRunsThisKennel'],
       totalHaringThisKennel: map['totalHaringThisKennel'],
+      extrasDescription: map['extrasDescription'],
+      extrasPrice: map['extrasPrice'],
+      doPayForExtras: map['doPayForExtras'],
     );
     return item;
   }
@@ -110,14 +132,22 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           e.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
           e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
           e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
+          e.${G0<TableModel>().eventsTableHelper.colExtrasDescription} as extrasDescription,
+          e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras} as extrasPrice,
           coalesce(e.${G0<TableModel>().eventsTableHelper.colCanEditRunAttendence},k.${G0<TableModel>().kennelsTableHelper.colCanEditRunAttendence}) as canEditRunAttendence,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
+          pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount} as creditAmount,
+          pay.${G0<TableModel>().paymentsTableHelper.colDebitAmount} as debitAmount,
+          pay.${G0<TableModel>().paymentsTableHelper.colCreditAvailable} as creditAvailable,
+          pay.${G0<TableModel>().paymentsTableHelper.colPaymentType} as paymentType,
+          pay.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM narrowEvents e
           INNER JOIN kennels k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          LEFT OUTER JOIN hasherEventMap hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
+          LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$_userId"
+          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
@@ -131,11 +161,19 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventName} as eventName,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventNumber} as eventNumber,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
+          "" as extrasDescription,
+          0 as extrasPrice,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
+          pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount} as creditAmount,
+          pay.${G0<TableModel>().paymentsTableHelper.colDebitAmount} as debitAmount,
+          pay.${G0<TableModel>().paymentsTableHelper.colPaymentType} as paymentType,
+          pay.${G0<TableModel>().paymentsTableHelper.colCreditAvailable} as creditAvailable,
+          pay.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM hasherEventMap hem
+          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
           WHERE 
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$_userId"
@@ -285,7 +323,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     //final bool result = await G0<TableModel>()
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable,
+          SyncUserDataService.flagHasherEventMapTable |
+              SyncUserDataService.flagNarrowEventsTable |
+              SyncUserDataService.flagKennelsTable |
+              SyncUserDataService.flagPaymentsTable |
+              SyncUserDataService.flagHasherKennelMapTable,
           true,
           debugText: 'user_run_history_list_page: HEM, Events, Kennels',
         );
@@ -487,6 +529,16 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             ),
                             AutoSizeText(
                               'My verified haring count: ${(_kennelInfo ?? widget.kennelInfo).hcHaringThisKennel}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 12.0,
+                              maxLines: 1,
+                              style: numberStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                            AutoSizeText(
+                              'Kennel credit: ${IveCoreUtilities.getFormattedMoney((_kennelInfo ?? widget.kennelInfo).kennelCredit ?? 0, widget.kennelInfo.digitsAfterDecimal, widget.kennelInfo.currencySymbol)}',
                               //'Super fucking long text thats sure to overflow and more',
                               //'999',
                               overflow: TextOverflow.ellipsis,

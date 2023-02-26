@@ -17,8 +17,11 @@ class AreWeAtRunResult {
   num memberPrice;
   num nonMemberPrice;
   num extrasCost;
+  num discountAmount;
+  num discountPercent;
   int attendenceState;
   int digitsAfterDecimal;
+  int allowSelfPayment;
   String currencySymbol;
   bool selected;
   DateTime membershipExpirationDate;
@@ -111,10 +114,13 @@ class CommonQueries {
           k.${G0<TableModel>().kennelsTableHelper.colKennelId} as kennelId,
           k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
+          k.${G0<TableModel>().kennelsTableHelper.colAllowSelfPayment} as allowSelfPayment,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
           case when k.${G0<TableModel>().kennelsTableHelper.colAllowSelfPayment} != 0 then coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) else 0 end as kennelCredit,
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},'2000-01-01') as membershipExpirationDate,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
           coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras},0) as extrasCost,
           coalesce(e.${G0<TableModel>().eventsTableHelper.colExtrasDescription},'') as extrasDescription,
           coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
@@ -177,6 +183,9 @@ class CommonQueries {
               result.extrasCost = queryResults[i]['extrasCost'];
               result.extrasDescription = queryResults[i]['extrasDescription'];
               result.kennelShortName = queryResults[i]['kennelShortName'];
+              result.allowSelfPayment = queryResults[i]['allowSelfPayment'];
+              result.discountAmount = queryResults[i]['discountAmount'];
+              result.discountPercent = queryResults[i]['discountPercent'];
               result.distanceInMeters = dist;
               result.attendenceState = queryResults[i]['attendenceState'];
               result.membershipExpirationDate = DateTime.tryParse(queryResults[i]['membershipExpirationDate']) ?? DateTime(2000, 1, 1);

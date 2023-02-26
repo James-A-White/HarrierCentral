@@ -160,8 +160,10 @@ class EnumCheckinOptions<int> extends HcEnum<int> {
 const EnumCheckinOptions<int> enumCheckInOption_Cancel = EnumCheckinOptions<int>(-1);
 const EnumCheckinOptions<int> enumCheckInOption_No = EnumCheckinOptions<int>(0);
 const EnumCheckinOptions<int> enumCheckInOption_Yes = EnumCheckinOptions<int>(1);
-const EnumCheckinOptions<int> enumCheckInOption_YesAndPay = EnumCheckinOptions<int>(2);
-const EnumCheckinOptions<int> enumCheckInOption_YesAndPayPlusExtras = EnumCheckinOptions<int>(3);
+const EnumCheckinOptions<int> enumCheckInOption_YesAndPayByCredit = EnumCheckinOptions<int>(2);
+const EnumCheckinOptions<int> enumCheckInOption_YesAndPayPlusExtrasByCredit = EnumCheckinOptions<int>(3);
+const EnumCheckinOptions<int> enumCheckInOption_YesAndPayByBankXfer = EnumCheckinOptions<int>(4);
+const EnumCheckinOptions<int> enumCheckInOption_YesAndPayPlusExtrasByBankXfer = EnumCheckinOptions<int>(5);
 
 //////////////////////////
 
