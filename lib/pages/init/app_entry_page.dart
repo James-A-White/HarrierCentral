@@ -91,6 +91,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
               if (!responseBody.startsWith(ERROR_PREFIX)) {
                 loginResult = ApproveLoginModel.itemFromJson(responseBody);
               }
+            } else {
+              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
             }
           }
         }

@@ -21,15 +21,22 @@ class UserEventListItem extends StatelessWidget {
 
   Container _listItem(BuildContext context) {
     num netPayment = (item.creditAmount ?? 0) - (item.debitAmount ?? 0);
-    Color paymentColor = netPayment > 0
+    Color paymentColor = Colors.green.shade800;
+    Color creditAvailableColor = (item.creditAvailable ?? 0) > 0
         ? Colors.green.shade800
-        : netPayment < 0
+        : (item.creditAvailable ?? 0) < 0
             ? Colors.red.shade900
             : Colors.black38;
 
+    bool creditWasUsed = false;
+
+    if (((item.debitAmount ?? 0) > 0) && ((item.creditAmount ?? 0) == 0)) {
+      creditWasUsed = true;
+    }
+
     final String amountDue = IveCoreUtilities.getFormattedMoney(item.debitAmount ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
 
-    final String amountPaid = IveCoreUtilities.getFormattedMoney(item.creditAmount ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
+    final String creditAmount = IveCoreUtilities.getFormattedMoney(item.creditAmount ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
 
     final String creditAvailable = IveCoreUtilities.getFormattedMoney(item.creditAvailable ?? 0, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol);
 
@@ -125,7 +132,6 @@ class UserEventListItem extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          const SizedBox(width: 1.0),
                           Expanded(
                             flex: 33,
                             child: Column(
@@ -138,9 +144,11 @@ class UserEventListItem extends StatelessWidget {
                           Expanded(
                             flex: 34,
                             child: Column(
-                              children: [
-                                Text('Paid', style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
-                                Text(amountPaid, style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                              children: <Widget>[
+                                Text(creditWasUsed ? 'From credit' : 'Paid',
+                                    style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                                Text(creditWasUsed ? amountDue : creditAmount,
+                                    style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
                               ],
                             ),
                           ),
@@ -148,17 +156,17 @@ class UserEventListItem extends StatelessWidget {
                             flex: 33,
                             child: Column(
                               children: [
-                                Text('Credit', style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
-                                Text(creditAvailable, style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                                Text('Credit left', style: netPayment == 0 ? mediumTextBlack.copyWith(color: creditAvailableColor) : mediumTextBlackBold.copyWith(color: creditAvailableColor)),
+                                Text(creditAvailable, style: netPayment == 0 ? mediumTextBlack.copyWith(color: creditAvailableColor) : mediumTextBlackBold.copyWith(color: creditAvailableColor)),
                               ],
                             ),
                           ),
                           SizedBox(
                               width: 40.0,
                               child: netPayment > 0
-                                  ? Icon(FontAwesome.plus_circle, color: Colors.green.shade800)
+                                  ? Icon(MaterialCommunityIcons.arrow_up_bold, color: Colors.green.shade800)
                                   : netPayment < 0
-                                      ? Icon(FontAwesome.minus_circle, color: Colors.red.shade900)
+                                      ? Icon(MaterialCommunityIcons.arrow_down_bold, color: Colors.red.shade900)
                                       : const SizedBox()),
                         ],
                       ),
