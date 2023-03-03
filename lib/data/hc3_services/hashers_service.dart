@@ -152,7 +152,8 @@ class HashersService extends BaseService {
       bool historicalCountIsEstimate,
       int followKennelOnAddNewUser,
       int includeInGlobalHashDirectory = -1,
-      int preferences = -1}) async {
+      int preferences = -1,
+      int nameDisplayPreference = -1}) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -228,7 +229,8 @@ class HashersService extends BaseService {
       'historicalCountIsEstimate': (historicalCountIsEstimate ?? false) ? '1' : '0',
       'followKennelOnAddNewUser': followKennelOnAddNewUser?.toString(),
       'latitude': G0<DeviceInfo>().deviceLat.toString(),
-      'longitude': G0<DeviceInfo>().deviceLon.toString()
+      'longitude': G0<DeviceInfo>().deviceLon.toString(),
+      'nameDisplayPreference': nameDisplayPreference.toString(),
     });
 
     bool dbErrorIsDuplicateEmail = false;
