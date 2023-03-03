@@ -334,19 +334,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       final HashersService srv = HashersService();
 
       final String responseBody = await srv.addEditUser(
-          targetUserId: _hasher.hasherId,
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          email: _emailController.text,
-          hashName: _hashNameController.text,
-          photo: _newPhoto,
-          eventId: widget.eventId,
-          kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
-          historicalTotalRunCount: _previousRunCountController.text,
-          historicalHaringCount: _previousHaringCountController.text,
-          historicalCountIsEstimate: _historicalCountIsEstimate,
-          preferences: _distancePreference + _autoRunPreference,
-          followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
+        targetUserId: _hasher.hasherId,
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        email: _emailController.text,
+        hashName: _hashNameController.text,
+        photo: _newPhoto,
+        eventId: widget.eventId,
+        kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
+        historicalTotalRunCount: _previousRunCountController.text,
+        historicalHaringCount: _previousHaringCountController.text,
+        historicalCountIsEstimate: _historicalCountIsEstimate,
+        preferences: _distancePreference + _autoRunPreference,
+        followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0,
+        nameDisplayPreference: _namePreference,
+      );
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
@@ -533,8 +535,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   AppBar appBar;
 
+  int _namePreference = 1;
   int _distancePreference = 0;
   int _autoRunPreference = 2;
+
+  void _handleRadioValueChange0(int value) {
+    setState(() {
+      _namePreference = value;
+      checkDirty();
+    });
+  }
 
   void _handleRadioValueChange1(int value) {
     setState(() {
@@ -607,6 +617,55 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 child: profileFormUi(),
                                               ),
                                             ),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.yellow[100],
+                                                borderRadius: BorderRadius.circular(5.0),
+                                              ),
+                                              child: Column(
+                                                children: <Widget>[
+                                                  const SizedBox(
+                                                    height: 10,
+                                                    width: 10,
+                                                  ),
+                                                  Text(
+                                                    'Name Preference',
+                                                    style: headingStyle20Black,
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                    width: 10,
+                                                  ),
+                                                  Row(
+                                                    children: <Widget>[
+                                                      Radio<int>(
+                                                        value: 1,
+                                                        groupValue: _namePreference,
+                                                        onChanged: _handleRadioValueChange0,
+                                                      ),
+                                                      const Text(
+                                                        'Use Hash name',
+                                                        style: TextStyle(fontSize: 16.0),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: <Widget>[
+                                                      Radio<int>(
+                                                        value: 2,
+                                                        groupValue: _namePreference,
+                                                        onChanged: _handleRadioValueChange0,
+                                                      ),
+                                                      const Text(
+                                                        'Use mortal name',
+                                                        style: TextStyle(fontSize: 16.0),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 45.0),
                                             const FancyDivider(key: Key('11203961'), innerColor: Colors.white),
                                             Container(
                                               height: 220,
