@@ -145,6 +145,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         _lastNameController.text = _hasher.lastName;
         _emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
         _hashNameController.text = _hasher.hashName;
+        _nameDisplayPreference = _hasher.dispPref ?? 1;
         _newPhoto = _hasher.photo; // if we have returned from the photo chooser, don't overwrite
         _previousRunCountController.text = (_hkmData?.historicalTotalRunCount ?? 0).toString();
         _previousHaringCountController.text = (_hkmData?.historicalHaringCount ?? 0).toString();
@@ -264,6 +265,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (_hashNameController.text != _hasher?.hashName ?? '') {
       isDirty = true;
     }
+    if (_nameDisplayPreference != _hasher?.dispPref ?? -1) {
+      isDirty = true;
+    }
     if (_newPhoto != _hasher?.photo ?? '') {
       isDirty = true;
     }
@@ -347,7 +351,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         historicalCountIsEstimate: _historicalCountIsEstimate,
         preferences: _distancePreference + _autoRunPreference,
         followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0,
-        nameDisplayPreference: _namePreference,
+        nameDisplayPreference: _nameDisplayPreference,
       );
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
@@ -535,13 +539,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   AppBar appBar;
 
-  int _namePreference = 1;
+  int _nameDisplayPreference = 1;
   int _distancePreference = 0;
   int _autoRunPreference = 2;
 
   void _handleRadioValueChange0(int value) {
     setState(() {
-      _namePreference = value;
+      _nameDisplayPreference = value;
       checkDirty();
     });
   }
@@ -603,10 +607,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                       padding: EdgeInsets.only(top: 30.0, left: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30, right: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30),
                                       child: Center(
                                         child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: <Widget>[
                                             Container(
                                               padding: const EdgeInsets.all(10.0),
-                                              margin: const EdgeInsets.only(bottom: 45),
+                                              margin: const EdgeInsets.only(bottom: 30),
                                               decoration: BoxDecoration(
                                                 color: Colors.yellow[100],
                                                 borderRadius: BorderRadius.circular(5.0),
@@ -640,7 +645,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     children: <Widget>[
                                                       Radio<int>(
                                                         value: 1,
-                                                        groupValue: _namePreference,
+                                                        groupValue: _nameDisplayPreference,
                                                         onChanged: _handleRadioValueChange0,
                                                       ),
                                                       const Text(
@@ -653,7 +658,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     children: <Widget>[
                                                       Radio<int>(
                                                         value: 2,
-                                                        groupValue: _namePreference,
+                                                        groupValue: _nameDisplayPreference,
                                                         onChanged: _handleRadioValueChange0,
                                                       ),
                                                       const Text(
@@ -665,8 +670,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(height: 45.0),
-                                            const FancyDivider(key: Key('11203961'), innerColor: Colors.white),
+                                            const FancyDivider(key: Key('11203961'), innerColor: Colors.white, topMargin: 45.0, bottomMargin: 5.0),
                                             Container(
                                               height: 220,
                                               color: Colors.white,

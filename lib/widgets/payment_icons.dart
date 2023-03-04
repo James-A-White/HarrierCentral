@@ -260,7 +260,7 @@ class PaymentIcons extends StatelessWidget {
 
           if (result) {
             // now launch into the payment provider
-            await launchUrl(Uri.parse(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))));
+            await launchUrl(Uri.parse(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))), mode: LaunchMode.externalApplication);
             if ((kennel.allowSelfPayment & selfPaymentAutoPayAfterBankTransfer) == selfPaymentAutoPayAfterBankTransfer) {
               // show the alert so the user knows how much to pay
               final bool result2 = await IveCoreUtilities.showAlert(

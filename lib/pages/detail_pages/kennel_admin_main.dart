@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
+import 'package:map_launcher/map_launcher.dart' as maps;
 
 class KennelAdminMainPage extends StatefulWidget {
   const KennelAdminMainPage({Key key, @required this.kennelAggregateItem}) : super(key: key);
@@ -18,7 +19,17 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   bool _isLoading = true;
 
   @override
+  void dispose() {
+    _saveUserMapPreference.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
+    _saveUserMapPreference.addListener(() {
+      setState(() {});
+    });
+
     if ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) || (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty)) {
       _mismanagement = null;
     } else {
@@ -50,6 +61,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   KennelMembersList _kennelMembersList;
+
+  final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
 
   List<String> _mismanagement;
 
@@ -605,7 +618,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       linkStyle: bodyStyleYellow,
                                       onOpen: (LinkableElement link) async {
                                         if (Utilities.isValidUrl(link.url)) {
-                                          await launchUrl(Uri.parse(link.url));
+                                          await launchUrl(
+                                            Uri.parse(link.url),
+                                            mode: LaunchMode.externalApplication,
+                                          );
                                         } else {
                                           await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                                         }
@@ -664,7 +680,31 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               height: 240.0,
                                               point: latlng.LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
                                               builder: (BuildContext ctx) => GestureDetector(
-                                                onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+                                                // onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+
+                                                onTap: () async {
+                                                  final String mapName = getStringPref(StringPrefsEnum.mapPreference);
+                                                  if (mapName == null) {
+                                                    await Utilities.openMapsSheet(
+                                                      context,
+                                                      widget.kennelAggregateItem.kennel.kennelName,
+                                                      maps.Coords(widget.kennelAggregateItem.extensions.cityLat.toDouble(), widget.kennelAggregateItem.extensions.cityLon.toDouble()),
+                                                      '',
+                                                      _saveUserMapPreference,
+                                                    );
+                                                  } else {
+                                                    final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
+                                                    final maps.AvailableMap activeMap = availableMaps.where((maps.AvailableMap map) => map.mapName == mapName).first;
+
+                                                    // BUG in plugin - doesn't work when sending a title with Google maps
+                                                    activeMap.showMarker(
+                                                      coords: maps.Coords(widget.kennelAggregateItem.extensions.cityLat.toDouble(), widget.kennelAggregateItem.extensions.cityLon.toDouble()),
+                                                      title: activeMap.mapName.contains('Google') ? '' : widget.kennelAggregateItem.kennel.kennelName,
+                                                      description: widget.kennelAggregateItem.kennel.kennelName,
+                                                    );
+                                                  }
+                                                },
+
                                                 child: Container(
                                                   margin: const EdgeInsets.only(bottom: 110.0),
                                                   child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
@@ -908,7 +948,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ]),
                                               onPressed: () {
                                                 if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  launchUrl(Uri.parse(widget.kennelAggregateItem.kennel.kennelWebsiteUrl));
+                                                  launchUrl(
+                                                    Uri.parse(widget.kennelAggregateItem.kennel.kennelWebsiteUrl),
+                                                    mode: LaunchMode.externalApplication,
+                                                  );
                                                 }
                                               },
                                             ),
@@ -1108,54 +1151,5 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         });
       },
     );
-
-    // Padding(
-    //   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-    //   child: Column(
-    //     mainAxisAlignment: MainAxisAlignment.center,
-    //     crossAxisAlignment: CrossAxisAlignment.center,
-    //     mainAxisSize: MainAxisSize.max,
-    //     children: <Widget>[
-    //       Text(
-    //         s.event.eventName.trim(),
-    //         style: listValueStyle,
-    //         textAlign: TextAlign.center,
-    //         maxLines: 3,
-    //         overflow: TextOverflow.ellipsis,
-    //       ),
-    //       //flex: 4,
-
-    //       // Expanded(
-    //       //     child: Text(
-    //       //       ' ' + items[1],
-    //       //       style: listValueStyle,
-    //       //       textAlign: TextAlign.left,
-    //       //       maxLines: 1,
-    //       //       overflow: TextOverflow.ellipsis,
-    //       //     ),
-    //       //     flex: 6),
-    //     ],
-    //   ),
-    // );
-  }
-
-  Future<void> _launchMaps(num lat, num lon) async {
-    final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
-    //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
-    final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';
-    final String appleUrl = 'https://maps.apple.com/?sll=$lat,$lon';
-    if (await canLaunchUrl(Uri.parse('comgooglemaps://'))) {
-      //print('launching com googleUrl');
-      await launchUrl(Uri.parse(googleAppUrl));
-    } else if (Utilities.isValidUrl(googleAppUrl)) {
-      //print('launching apple url');
-      await launchUrl(Uri.parse(googleWebUrl));
-    } else if (Utilities.isValidUrl(appleUrl)) {
-      //print('launching apple url');
-      await launchUrl(Uri.parse(appleUrl));
-    } else {
-      throw 'Could not launch url';
-    }
-    // return Future<void>(() {});((){});
   }
 }

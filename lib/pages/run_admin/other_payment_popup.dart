@@ -411,22 +411,25 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
           ),
         ],
         if (_paySpecialPriceWithCredit) ...<Widget>[
-          TextButton(
-              style: TextButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text('Hash Credit'),
-              onPressed: () {
-                final OtherPaymentPopupResult result = OtherPaymentPopupResult(
-                  'process',
-                  paymentHashCreditOtherAmount.value,
-                  _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                  _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                  _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
-                  _totalDue,
-                  _specialPriceIsDefaultForUser,
-                );
+          SizedBox(
+            height: 55.0,
+            child: TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text('Hash Credit'),
+                onPressed: () {
+                  final OtherPaymentPopupResult result = OtherPaymentPopupResult(
+                    'process',
+                    paymentHashCreditOtherAmount.value,
+                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
+                    _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
+                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                    _totalDue,
+                    _specialPriceIsDefaultForUser,
+                  );
 
-                Navigator.of(context).pop(result);
-              }),
+                  Navigator.of(context).pop(result);
+                }),
+          ),
         ],
         // ),
       ],

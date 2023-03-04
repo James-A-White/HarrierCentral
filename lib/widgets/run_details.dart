@@ -690,7 +690,10 @@ class RunDetails extends StatelessWidget {
                     linkStyle: bodyStyleYellow,
                     onOpen: (LinkableElement link) async {
                       if (Utilities.isValidUrl(link.url)) {
-                        await launchUrl(Uri.parse(link.url));
+                        await launchUrl(
+                          Uri.parse(link.url),
+                          mode: LaunchMode.externalApplication,
+                        );
                       } else {
                         await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
@@ -741,7 +744,10 @@ class RunDetails extends StatelessWidget {
                 onPressed: () async {
                   final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
                   if (Utilities.isValidUrl(linkUrl)) {
-                    await launchUrl(Uri.parse(linkUrl));
+                    await launchUrl(
+                      Uri.parse(linkUrl),
+                      mode: LaunchMode.externalApplication,
+                    );
                   } else {
                     await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
                   }
@@ -760,7 +766,10 @@ class RunDetails extends StatelessWidget {
                 child: Image.asset('images/icons/visit_run_on_web.png', height: 60.0, width: 325.0),
                 onPressed: () async {
                   if (Utilities.isValidUrl(eventUrlWithKennelBackup)) {
-                    await launchUrl(Uri.parse(eventUrlWithKennelBackup));
+                    await launchUrl(
+                      Uri.parse(eventUrlWithKennelBackup),
+                      mode: LaunchMode.externalApplication,
+                    );
                   } else {
                     await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
                   }

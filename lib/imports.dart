@@ -135,6 +135,7 @@ export 'package:harrier_central/widgets/kennel_logo.dart';
 export 'package:harrier_central/widgets/kennel_member_list_item.dart';
 export 'package:harrier_central/widgets/kennel_run_history_count_list_item.dart';
 export 'package:harrier_central/widgets/leaderboard.dart';
+export 'package:harrier_central/widgets/map_snackbar.dart';
 export 'package:harrier_central/widgets/my_flutter_map.dart';
 export 'package:harrier_central/widgets/payment_icons.dart';
 export 'package:harrier_central/widgets/payment_report_list_item.dart';

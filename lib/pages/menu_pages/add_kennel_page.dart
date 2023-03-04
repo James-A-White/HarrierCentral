@@ -101,7 +101,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                           padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                         ),
                         onPressed: () async {
-                          await launchUrl(Uri.parse('https://harriercentral.com/index.php/add-kennel-with-facebook-integration/'));
+                          await launchUrl(Uri.parse('https://harriercentral.com/index.php/add-kennel-with-facebook-integration/'), mode: LaunchMode.externalApplication);
                         },
                         child: Text('Add with Facebook', style: textStyleButton),
                       ),
@@ -124,7 +124,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                           padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                         ),
                         onPressed: () async {
-                          await launchUrl(Uri.parse('https://harriercentral.com/index.php/add-kennel-standalone/'));
+                          await launchUrl(Uri.parse('https://harriercentral.com/index.php/add-kennel-standalone/'), mode: LaunchMode.externalApplication);
                         },
                         child: Text('Add without integration', style: textStyleButton),
                       ),

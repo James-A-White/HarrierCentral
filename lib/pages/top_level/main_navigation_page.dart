@@ -690,7 +690,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                               ),
                               onPressed: () async {
                                 if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
-                                  await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl));
+                                  await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl), mode: LaunchMode.externalApplication);
                                 } else {
                                   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
                                 }

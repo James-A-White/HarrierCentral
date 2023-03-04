@@ -1,7 +1,7 @@
 // @dart=2.11
 
 // import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -37,6 +37,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //GlobalKey packListBox = GlobalKey();
 
   final ScrollController _scrollController = ScrollController();
+  final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
 
   bool isAdmin = true;
   //bool _isLoading = true;
@@ -167,6 +168,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   void initState() {
     //_scrollController.createScrollPosition(physics, context, oldPosition) = 0;
     //_refreshHemTableFromBackend(false);
+
+    _saveUserMapPreference.addListener(
+      () {
+        setState(() {});
+      },
+    );
+
     _initTabs();
     _tabController = TabController(vsync: this, length: _tabs.length);
     _gridListTabController = TabController(vsync: this, length: 2);
@@ -197,7 +205,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           DateTime.now().add(
             const Duration(days: -1),
           ),
-        ))) {
+        )) &&
+        ((widget.futureRun.extensions.distToEvent ?? 9999999.0) < 250000)) {
       _tabController.animateTo(1);
     }
     super.initState();
@@ -207,6 +216,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   void dispose() {
     _tabController.dispose();
     _gridListTabController.dispose();
+    _saveUserMapPreference.dispose();
 
     super.dispose();
   }
@@ -785,105 +795,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     if (serverMessage.isNotEmpty) {
       await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
-    }
-  }
-
-  Future<void> _openMapsSheet(BuildContext context, String title, maps.Coords coords, String address) async {
-    try {
-      final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
-
-      await showModalBottomSheet<dynamic>(
-        context: navigatorKey.currentContext,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        builder: (BuildContext context) {
-          return SizedBox(
-            height: (availableMaps.length * 64.0) + 170,
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
-                    child: Center(
-                      child: Text('Select map provider',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 24.0,
-                          )),
-                    ),
-                  ),
-                  const Divider(height: 1.0, color: Colors.black87),
-                  Expanded(
-                    child: ListView(
-                      children: <Widget>[
-                        for (maps.AvailableMap map in availableMaps)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: ListTile(
-                              onTap: () async {
-                                if (_saveUserMapPreference.value) {
-                                  await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
-                                }
-                                if (!mounted) return;
-                                Navigator.of(context).pop();
-
-                                await Future<void>.delayed(const Duration(milliseconds: 200));
-
-                                // BUG in plugin - doesn't work when sending a title with Google maps
-                                await map.showMarker(
-                                  coords: coords,
-                                  title: map.mapName.contains('Google') ? '' : title,
-                                  description: address,
-                                );
-                              },
-                              title: Text(map.mapName,
-                                  style: const TextStyle(
-                                    fontFamily: 'AvenirNextDemiBold',
-                                    color: Colors.black,
-                                    fontSize: 26.0,
-                                  )),
-                              leading: SvgPicture.asset(
-                                map.icon,
-                                height: 60.0,
-                                width: 60.0,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(height: 30.0),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      SnackContent(_saveUserMapPreference, (bool x) {
-                        setState(() {
-                          _saveUserMapPreference.value = x;
-                        });
-                      }),
-                      const Text(
-                        'Always use this option',
-                        style: TextStyle(
-                          fontFamily: 'AvenirNextDemiBold',
-                          color: Colors.black,
-                          fontSize: 22.0,
-                        ),
-                      ),
-                      const SizedBox(width: 20.0)
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
     }
   }
 
@@ -1504,7 +1415,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     if ((lat != null) && (lon != null)) {
       final String mapName = getStringPref(StringPrefsEnum.mapPreference);
       if (mapName == null) {
-        await _openMapsSheet(context, address, maps.Coords(lat, lon), rda.event.eventName ?? '');
+        await Utilities.openMapsSheet(
+          context,
+          address,
+          maps.Coords(lat, lon),
+          rda.event.eventName ?? '',
+          _saveUserMapPreference,
+        );
       } else {
         final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
         final maps.AvailableMap activeMap = availableMaps.where((maps.AvailableMap map) => map.mapName == mapName).first;
@@ -1521,84 +1438,4 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           navigatorKey.currentContext, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
     }
   }
-
-  final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
-}
-
-/// The ValueListenableBuilder rebuilds whenever [snackMsg] changes.
-class SnackContent extends StatelessWidget {
-  const SnackContent(this.snackState, this.snackOnClick, {Key key}) : super(key: key);
-
-  final ValueNotifier<bool> snackState;
-  final Function snackOnClick;
-
-  @override
-  Widget build(BuildContext context) {
-    /// ValueListenableBuilder rebuilds whenever snackMsg value changes.
-    /// i.e. this "listens" to changes of ValueNotifier "snackMsg".
-    /// "msg" in builder below is the value of "snackMsg" ValueNotifier.
-    /// We don't use the other builder args for this example so they are
-    /// set to _ & __ just for readability.
-    return ValueListenableBuilder<bool>(
-        valueListenable: snackState,
-        builder: (_, bool msg, __) {
-          return Checkbox(
-              value: msg,
-              onChanged: (bool x) {
-                snackOnClick(x);
-              });
-        });
-  }
-}
-
-// class _Tile extends StatelessWidget {
-//   const _Tile(this.source, this.index);
-
-//   final String source;
-//   final int index;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       child: Column(
-//         children: <Widget>[
-//           Image.network(source),
-//           Padding(
-//             padding: const EdgeInsets.all(4.0),
-//             child: Column(
-//               children: <Widget>[
-//                 Text(
-//                   'Image number $index',
-//                   style: const TextStyle(fontWeight: FontWeight.bold),
-//                 ),
-//                 const Text(
-//                   'Vincent Van Gogh',
-//                   style: TextStyle(color: Colors.grey),
-//                 ),
-//               ],
-//             ),
-//           )
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-class RectClipper extends CustomClipper<Rect> {
-  RectClipper({@required this.width, @required this.height});
-
-  num width;
-  num height;
-
-  @override
-  Rect getClip(Size size) {
-    final Rect r = const Offset(0.0, 0.0) & Size(width, height - 33);
-
-    // This is where we decide what part of our image is going to be
-    // visible. If you try to run the app now, nothing will be shown.
-    return r;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Rect> oldClipper) => false;
 }
