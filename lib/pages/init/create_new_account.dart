@@ -217,7 +217,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
                         isSuccessfulLoad = true;
 
                         if (!mounted) return;
-                        await Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
+                        await Navigator.push<dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
                       } else if (!responseBody.startsWith(ERROR_PREFIX)) {
                         final List<dynamic> jsonResultSets = json.decode(responseBody);
                         if (jsonResultSets.isNotEmpty) {

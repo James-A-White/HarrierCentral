@@ -202,8 +202,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     if (((widget.futureRun.extensions.rsvpState ?? 0) == 0) &&
         (widget.futureRun.event.eventStartDatetime.isAfter(
-          DateTime.now().add(
-            const Duration(days: -1),
+          DateTime.now().subtract(
+            const Duration(hours: 6),
           ),
         )) &&
         ((widget.futureRun.extensions.distToEvent ?? 9999999.0) < 250000)) {
@@ -526,7 +526,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         height: 70.0,
                         child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
                       )
-                    : ((_thePackList.isEmpty) && (widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().subtract(const Duration(days: -1)))))
+                    : ((_thePackList.isEmpty) && (widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().subtract(const Duration(hours: 6)))))
                         ? Column(
                             children: <Widget>[
                               const Expanded(flex: 40, child: SizedBox()),
@@ -544,7 +544,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               if ((_thisUserIndex == -1) &&
                                   (widget.futureRun.event.eventStartDatetime.isAfter(
                                     DateTime.now().subtract(
-                                      const Duration(days: -1),
+                                      const Duration(hours: 6),
                                     ),
                                   )))
                                 ..._getRsvpButtons(),

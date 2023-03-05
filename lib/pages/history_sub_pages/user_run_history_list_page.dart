@@ -152,7 +152,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
           AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
-          AND e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
+          AND DateTime(e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) <= DateTime('now')
         UNION
           SELECT 
           hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
@@ -180,9 +180,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRemoved} = 0 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now','+36 hours')
+          AND DateTime(hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime}) <= DateTime('now')
           ORDER BY eventStartDatetime desc
-          
           ''';
 
     _runCountsList = <UserRunHistoryResults>[];

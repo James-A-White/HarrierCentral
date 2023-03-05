@@ -129,7 +129,7 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.pushReplacement<dynamic, dynamic>(
+                  Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()),
                   );

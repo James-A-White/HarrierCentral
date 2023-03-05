@@ -346,6 +346,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
                           await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
 
+                          Navigator.pop(navigatorKey.currentContext);
                           if (!mounted) return;
                           await Navigator.pushReplacement<dynamic, dynamic>(
                               context,
