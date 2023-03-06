@@ -355,46 +355,46 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       style: TextStyle(fontFamily: 'Poppins', fontSize: 20.0, color: Colors.red.shade900),
                     ),
                     const SizedBox(height: 20, width: 10),
-                    Row(
-                      children: <Widget>[
-                        Container(
-                          margin: const EdgeInsets.only(right: 10),
-                          height: 25,
-                          width: 25,
-                          color: Colors.yellow[100],
-                          child: Checkbox(
-                            value: _includeInGlobalHashDirectory,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _includeInGlobalHashDirectory = value;
-                                // checkDirty();
-                              });
-                            },
-                          ),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            'Include me in Global Hash Directory',
-                            //style: headingStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            await IveCoreUtilities.showAlert(
-                                context,
-                                'What is the Global Hash Directory?',
-                                'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
-                                'OK');
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 20),
-                            height: 26,
-                            child: Image.asset('images/icons/more_info_button.png'),
-                          ),
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   children: <Widget>[
+                    //     Container(
+                    //       margin: const EdgeInsets.only(right: 10),
+                    //       height: 25,
+                    //       width: 25,
+                    //       color: Colors.yellow[100],
+                    //       child: Checkbox(
+                    //         value: _includeInGlobalHashDirectory,
+                    //         onChanged: (bool value) {
+                    //           setState(() {
+                    //             _includeInGlobalHashDirectory = value;
+                    //             // checkDirty();
+                    //           });
+                    //         },
+                    //       ),
+                    //     ),
+                    //     const Expanded(
+                    //       child: Text(
+                    //         'Include me in Global Hash Directory',
+                    //         //style: headingStyle,
+                    //         textAlign: TextAlign.center,
+                    //       ),
+                    //     ),
+                    //     GestureDetector(
+                    //       onTap: () async {
+                    //         await IveCoreUtilities.showAlert(
+                    //             context,
+                    //             'What is the Global Hash Directory?',
+                    //             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
+                    //             'OK');
+                    //       },
+                    //       child: Container(
+                    //         padding: const EdgeInsets.only(left: 20),
+                    //         height: 26,
+                    //         child: Image.asset('images/icons/more_info_button.png'),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
                     const SizedBox(height: 8, width: 10),
                   ],
                 ),
@@ -416,7 +416,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
                     loginData: profileData,
                     hashName: _hashNameTextController.text,
                     email: _emailTextController.text,
-                    includeInGlobalHashDirectory: _includeInGlobalHashDirectory ? 1 : 0,
+                    includeInGlobalHashDirectory: 0,
+                    // includeInGlobalHashDirectory: _includeInGlobalHashDirectory ? 1 : 0,
                   );
 
                   if (result != null) {

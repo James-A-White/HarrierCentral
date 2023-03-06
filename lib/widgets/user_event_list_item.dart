@@ -136,8 +136,8 @@ class UserEventListItem extends StatelessWidget {
                             flex: 33,
                             child: Column(
                               children: [
-                                Text('Run fee', style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
-                                Text(amountDue, style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                                Text('Run fee', style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor)),
+                                Text(amountDue, style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor)),
                               ],
                             ),
                           ),
@@ -145,10 +145,16 @@ class UserEventListItem extends StatelessWidget {
                             flex: 34,
                             child: Column(
                               children: <Widget>[
-                                Text(creditWasUsed ? 'From credit' : 'Paid',
-                                    style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
-                                Text(creditWasUsed ? amountDue : creditAmount,
-                                    style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                                Text(
+                                  creditWasUsed ? 'From credit' : 'Paid',
+                                  style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor),
+                                  textScaleFactor: 1.0,
+                                ),
+                                Text(
+                                  creditWasUsed ? amountDue : creditAmount,
+                                  style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor),
+                                  textScaleFactor: 1.0,
+                                ),
                               ],
                             ),
                           ),
@@ -156,18 +162,46 @@ class UserEventListItem extends StatelessWidget {
                             flex: 33,
                             child: Column(
                               children: [
-                                Text('Credit left', style: netPayment == 0 ? mediumTextBlack.copyWith(color: creditAvailableColor) : mediumTextBlackBold.copyWith(color: creditAvailableColor)),
-                                Text(creditAvailable, style: netPayment == 0 ? mediumTextBlack.copyWith(color: creditAvailableColor) : mediumTextBlackBold.copyWith(color: creditAvailableColor)),
+                                Text(
+                                  'Credit left',
+                                  style: netPayment == 0 ? smallTextBlack.copyWith(color: creditAvailableColor) : smallTextBlackBold.copyWith(color: creditAvailableColor),
+                                  textScaleFactor: 1.0,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    if (netPayment != 0) ...<Widget>[
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 0.0, bottom: 2.0, right: 3.0),
+                                        child: SizedBox(
+                                            child: netPayment > 0
+                                                ? Icon(
+                                                    Fontisto.caret_up,
+                                                    color: Colors.green.shade800,
+                                                    size: 12.0,
+                                                  )
+                                                : Icon(
+                                                    Fontisto.caret_down,
+                                                    color: Colors.red.shade900,
+                                                    size: 12.0,
+                                                  )),
+                                      ),
+                                    ],
+                                    Text(
+                                      creditAvailable,
+                                      style: netPayment == 0 ? smallTextBlack.copyWith(color: creditAvailableColor) : smallTextBlackBold.copyWith(color: creditAvailableColor),
+                                      textScaleFactor: 1.0,
+                                    ),
+                                    if (netPayment != 0) ...<Widget>[const SizedBox(width: 3.0)],
+                                  ],
+                                ),
                               ],
                             ),
                           ),
                           SizedBox(
-                              width: 40.0,
-                              child: netPayment > 0
-                                  ? Icon(MaterialCommunityIcons.arrow_up_bold, color: Colors.green.shade800)
-                                  : netPayment < 0
-                                      ? Icon(MaterialCommunityIcons.arrow_down_bold, color: Colors.red.shade900)
-                                      : const SizedBox()),
+                            width: 40.0,
+                          ),
                         ],
                       ),
                     ],

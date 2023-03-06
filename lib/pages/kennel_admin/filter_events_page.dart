@@ -187,7 +187,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           SELECT COUNT(*) as publishedRunCount  
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt 
           WHERE kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1
-          AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','localtime'))
+          AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now'))
           ''';
 
       _publishedRunCountSqlResult = await G0<Database>().rawQuery(sql);
@@ -213,7 +213,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
           INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}" and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"
           WHERE evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}"
-          AND date(datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now','localtime'))
+          AND date(datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now'))
           ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${G0<TableModel>().eventsTableHelper.colEventNumber} $sortOrder
         
           ''';

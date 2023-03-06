@@ -1,29 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-// import 'package:flutter/material.dart';
-
-// import 'package:auto_size_text/auto_size_text.dart';
-// import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-// import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-
-// import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-// import 'package:harrier_central/database/tables.dart';
-// import 'package:harrier_central/util/enums.dart';
-// import 'package:harrier_central/util/globals.dart';
-// import 'package:ive_flutter_core/util/core_utilities.dart';
-
-// import 'package:harrier_central/util/styles.dart';
-// import 'package:harrier_central/util/constants.dart';
-// import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
-
-// import 'package:harrier_central/widgets/kennel_logo.dart';
-// import 'package:harrier_central/widgets/user_event_list_item.dart';
-// import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
-// import 'package:harrier_central/pages/top_level/history_list_page.dart';
-// import 'package:ive_flutter_core_mobile/util/connection.dart';
-// import 'package:harrier_central/util/secure_prefs.dart';
-
 class UserRunHistoryListPage extends StatefulWidget {
   const UserRunHistoryListPage({
     Key key,

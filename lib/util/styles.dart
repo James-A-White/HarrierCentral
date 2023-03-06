@@ -81,6 +81,11 @@ TextStyle mediumTextRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle:
 TextStyle mediumTextBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 16.0, height: 1.0);
 TextStyle mediumTextBlackBold = const TextStyle(fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 16.0, height: 1.0);
 
+TextStyle smallText = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.grey[700], fontSize: 14.0, height: 1.0);
+TextStyle smallTextRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.red[900], fontSize: 14.0, height: 1.0);
+TextStyle smallTextBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 14.0, height: 1.0);
+TextStyle smallTextBlackBold = const TextStyle(fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 14.0, height: 1.0);
+
 // Color brown = const Color.fromARGB(255, 107, 87, 66);
 // Color purple = const Color.fromARGB(255, 61, 27, 142);
 // Color yellow = const Color.fromARGB(255, 236, 212, 68);

@@ -484,7 +484,7 @@ class QueryRuns {
     }
 
     final String whereClauseForTopRunsPage = '''
-            WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+            WHERE datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND coalesce(hkm.following,0) != 2
             AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
             AND (
@@ -498,7 +498,7 @@ class QueryRuns {
           ''';
 
     final String whereClauseForKennelDetailsPage = '''
-            WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+            WHERE datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
             ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
