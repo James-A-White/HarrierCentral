@@ -72,7 +72,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   bool _showQrScanner = false;
 
-  bool _includeInGlobalHashDirectory = true;
+  // bool _includeInGlobalHashDirectory = true;
 
   String _emailAddress = '';
 

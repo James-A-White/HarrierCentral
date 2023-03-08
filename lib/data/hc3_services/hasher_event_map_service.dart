@@ -35,6 +35,8 @@ class HasherEventMapModel implements BaseModel {
       this.hemEventIsCountedAndVisible,
       this.hemCanEditRunAttendence,
       this.hemEventKennelId,
+      this.hemKennelUserPhoto,
+      this.hemKennelHashName,
       this.updatedAt});
 
   factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);
@@ -70,6 +72,8 @@ class HasherEventMapModel implements BaseModel {
   final num hemCanEditRunAttendence;
   final String hemEventKennelId;
   final int hemEventIsCountedAndVisible;
+  final String hemKennelUserPhoto;
+  final String hemKennelHashName;
 
   final int removed;
   final DateTime updatedAt;
@@ -129,6 +133,8 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
   final String colCanEditRunAttendence = 'hemCanEditRunAttendence';
   final String colEventKennelId = 'hemEventKennelId';
   final String colEventIsCountedAndVisible = 'hemEventIsCountedAndVisible';
+  final String colKennelUserPhoto = 'hemKennelUserPhoto';
+  final String colKennelHashName = 'hemKennelHashName';
 
   @override
   Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
@@ -165,6 +171,8 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
             $colCanEditRunAttendence NUM,
             $colEventKennelId TEXT,
             $colEventIsCountedAndVisible INT,
+            $colKennelUserPhoto TEXT,
+            $colKennelHashName TEXT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,

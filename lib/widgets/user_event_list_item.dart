@@ -199,7 +199,7 @@ class UserEventListItem extends StatelessWidget {
                               ],
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 40.0,
                           ),
                         ],

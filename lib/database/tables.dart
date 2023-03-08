@@ -187,6 +187,33 @@ class Tables {
      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
       ''',
         appliedAtInt: 0),
+
+    MigrationsModel(
+        dbVersion: 417,
+        migrationText: ''' 
+
+        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelUserPhoto} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelHashName} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelUserPhoto} TEXT;
+
+        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelHashName} TEXT;
+     
+      ''',
+        appliedAtInt: 0),
   ];
 
   static Future<void> createTables(Database db, int version, Function informUser) async {

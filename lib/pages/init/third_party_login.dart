@@ -15,7 +15,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
   ThirdPartyLoginData _profileData;
   //String facebookAccessToken;
 
-  bool _includeInGlobalHashDirectory = true;
+  // bool _includeInGlobalHashDirectory = true;
 
   final TextEditingController _hashNameTextController = TextEditingController();
   final FocusNode _hashNameFocusNode = FocusNode();

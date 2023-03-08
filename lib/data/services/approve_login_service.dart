@@ -40,22 +40,39 @@ class ApproveLoginService {
       manufacturer = 'Apple';
     }
 
-    final String ipv4 = await Ipify.ipv4();
+    String responseBody;
 
-    final String uri = 'https://ipinfo.io/$ipv4?token=1c7e5ada20ad08';
+    try {
+      final String ipv4 = await Ipify.ipv4();
 
-    final Response response = await get(
-      Uri.parse(uri),
-    ).catchError(
-      (dynamic error) {
-        if (kDebugMode) {
-          print(error.toString());
-        }
+      final String uri = 'https://ipinfo.io/$ipv4?token=1c7e5ada20ad08';
+
+      final Response response = await get(
+        Uri.parse(uri),
+      ).catchError(
+        (dynamic error) {
+          if (kDebugMode) {
+            print(error.toString());
+          }
+          return Response('<no ip information available>', 500);
+        },
+      ).timeout(const Duration(milliseconds: 4000), onTimeout: () {
         return Response('<no ip information available>', 500);
-      },
-    ).timeout(const Duration(milliseconds: 4000), onTimeout: () {
-      return Response('<no ip information available>', 500);
-    });
+      });
+      responseBody = response.body;
+    } on Exception catch (_) {
+      responseBody = '''{
+  "ip": "0.0.0.0",
+  "hostname": "Ipify error",
+  "city": "none",
+  "region": "none",
+  "country": "XX",
+  "loc": "51.9340,4.4325",
+  "org": "none",
+  "postal": "2252",
+  "timezone": "Europe/Amsterdam"
+}''';
+    }
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'approveLoginV2', paramString: deviceId);
 
@@ -75,7 +92,7 @@ class ApproveLoginService {
       'usesLocSvcs': (G0<AppModel>().hasLocationPermissions ?? false) ? '1' : '0',
       'screenWidth': (G0<DeviceInfo>().deviceWidth ?? 0).toInt().toString(),
       'screenHeight': (G0<DeviceInfo>().deviceHeight ?? 0).toInt().toString(),
-      'ipInfo': response.body,
+      'ipInfo': responseBody,
     });
 
     Future<Response> futureResponse;

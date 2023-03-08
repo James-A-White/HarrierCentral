@@ -32,6 +32,8 @@ class HasherKennelMapModel implements BaseModel {
       this.memberSince,
       this.isKennelFollowing,
       this.mismanagementRoles,
+      this.kennelUserPhoto,
+      this.kennelHashName,
       this.removed,
       this.updatedAt});
 
@@ -65,6 +67,8 @@ class HasherKennelMapModel implements BaseModel {
   final DateTime memberSince;
   final int isKennelFollowing;
   final int mismanagementRoles;
+  final String kennelUserPhoto;
+  final String kennelHashName;
 
   final DateTime updatedAt;
   final int removed;
@@ -142,6 +146,8 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   final String colMemberSince = 'memberSince';
   final String colIsKennelFollowing = 'isKennelFollowing';
   final String colMismanagementRoles = 'mismanagementRoles';
+  final String colKennelUserPhoto = 'kennelUserPhoto';
+  final String colKennelHashName = 'kennelHashName';
 
   @override
   Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
@@ -175,6 +181,8 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
             $colMemberSince TEXT,
             $colIsKennelFollowing INT,
             $colMismanagementRoles INT,
+            $colKennelUserPhoto TEXT,
+            $colKennelHashName TEXT,
 
             $colRemoved INT,
             $colUpdatedAt TEXT,

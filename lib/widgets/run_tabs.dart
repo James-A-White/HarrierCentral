@@ -83,6 +83,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
       for (int i = 0; i < results.length; i++) {
         final HasherEventMapModel packItem = G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
+
         final HashersModel hasherItem = HashersModel.fromJson(results[i]);
         String displayName = hasherItem.dispName;
         if (packItem.virginVisitorType != 0) {
@@ -98,7 +99,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
 
     _thePackList.sort(
-      (PackListAggregate a, PackListAggregate b) => a.displayName.compareTo(b.displayName),
+      (PackListAggregate a, PackListAggregate b) => (a.hem.hemKennelHashName ?? a.displayName).compareTo(b.hem.hemKennelHashName ?? b.displayName),
     );
 
     _thisUserIndex = -1;
@@ -613,7 +614,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                       Expanded(
                                                           child: Container(
                                                         padding: const EdgeInsets.only(top: 7.0),
-                                                        child: Text(e.displayName ?? '<unknown>',
+                                                        child: Text(e.hem.hemKennelHashName ?? e.displayName ?? '<unknown>',
                                                             style: const TextStyle(
                                                               fontFamily: 'AvenirNextCondensedMedium',
                                                               fontStyle: FontStyle.normal,
@@ -693,14 +694,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 image: AssetImage(
                   'images/avatars/avatar-0.jpg',
                 ))
-            : e.hasher.photo.startsWith('http')
-                ? CachedNetworkImage(imageUrl: e.hasher.photo, fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
-                : e.hasher.photo.startsWith('bundle')
+            : (e.hem.hemKennelUserPhoto ?? e.hasher.photo).startsWith('http')
+                ? CachedNetworkImage(imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo), fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
+                : (e.hem.hemKennelUserPhoto ?? e.hasher.photo).startsWith('bundle')
                     ? Image(
                         width: 300.0,
                         height: 300.0,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/${e.hasher.photo.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                        image: AssetImage(('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo).toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
                       )
                     : const Image(
                         width: 300.0,

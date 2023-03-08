@@ -125,7 +125,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           pay.*,
           -- Extensions
           hem.hemId as pkHemId,
-          COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>') as paidByName,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>')) as paidByName,
           COALESCE(paidTo.dispName,'<hasher not found>') as paidToName,
           CASE WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmountAvailable,

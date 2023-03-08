@@ -14,32 +14,30 @@ class KennelMembersList extends StatefulWidget {
 }
 
 class KennelMembersResults {
-  KennelMembersResults(
-      {this.hasherId,
-      this.dispName,
-      this.nameForSort,
-      this.photo,
-      this.following,
-      this.kennelId,
-      this.dateOfLastRun,
-      this.historicalTotalRunCount,
-      this.historicalHaringCount,
-      this.hcHaringCount,
-      this.hcTotalRunCount,
-      this.kennelEmailAlertPreference,
-      this.membershipExpirationDate,
-      this.memberSince,
-      this.membershipDurationInMonths,
-      this.isLoading = false,
-      this.kennelShortName,
-      this.appAccessFlags,
-      this.mismanagementRoles,
-      this.kennelCredit,
-      this.memberFollowingStatus,
-
-      // this.homeKennelName,
-      // this.homeKennelBeingUpdated = false,
-      this.memberInfoBeingUpdated = false});
+  KennelMembersResults({
+    this.hasherId,
+    this.dispName,
+    this.nameForSort,
+    this.photo,
+    this.following,
+    this.kennelId,
+    this.dateOfLastRun,
+    this.historicalTotalRunCount,
+    this.historicalHaringCount,
+    this.hcHaringCount,
+    this.hcTotalRunCount,
+    this.kennelEmailAlertPreference,
+    this.membershipExpirationDate,
+    this.memberSince,
+    this.membershipDurationInMonths,
+    this.isLoading = false,
+    this.kennelShortName,
+    this.appAccessFlags,
+    this.mismanagementRoles,
+    this.kennelCredit,
+    this.memberFollowingStatus,
+    this.memberInfoBeingUpdated = false,
+  });
 
   final String hasherId;
   String dispName;
@@ -60,11 +58,9 @@ class KennelMembersResults {
   int mismanagementRoles;
   bool isLoading;
   bool memberInfoBeingUpdated;
-  //bool homeKennelBeingUpdated;
   String kennelShortName;
   num kennelCredit;
   int memberFollowingStatus;
-  //String homeKennelName;
 
   static KennelMembersResults fromMap(Map<String, dynamic> map) {
     final KennelMembersResults item = KennelMembersResults(
@@ -88,7 +84,6 @@ class KennelMembersResults {
       kennelShortName: map['kennelShortName'],
       kennelCredit: map['kennelCredit'],
       memberFollowingStatus: map['memberFollowingStatus'],
-      // homeKennelName: map['homeKennelName'],
     );
     return item;
   }
@@ -180,9 +175,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     final String query = ''' 
         SELECT 
           h.${G0<TableModel>().hashersTableHelper.colHasherId},
-          coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>") as dispName,
-          lower(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " ") as nameForSort,
-          h.${G0<TableModel>().hashersTableHelper.colPhoto},
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>")) as dispName,
+          lower(coalesce(" " || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || " ",(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " "))) as nameForSort,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},h.${G0<TableModel>().hashersTableHelper.colPhoto}) as photo,
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
