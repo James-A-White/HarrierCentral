@@ -18,6 +18,9 @@ class KennelListQueryExtenstions {
     this.regionAbbreviation,
     this.countryName,
     this.searchKennelsText,
+    this.isKennelMember,
+    this.originalProfilePhoto,
+    this.originalDisplayName,
   });
 
   final String location;
@@ -34,10 +37,12 @@ class KennelListQueryExtenstions {
   String regionAbbreviation;
   String countryName;
   final String searchKennelsText;
-
+  int isKennelMember;
   int followingRequested;
   int notificationsRequested;
   int emailAlertRequested;
+  String originalProfilePhoto;
+  String originalDisplayName;
 
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
     final KennelListQueryExtenstions item = KennelListQueryExtenstions(
@@ -55,6 +60,9 @@ class KennelListQueryExtenstions {
       regionAbbreviation: map['regionAbbreviation'],
       countryName: map['countryName'],
       searchKennelsText: map['searchKennelsText'],
+      isKennelMember: map['isKennelMember'],
+      originalProfilePhoto: map['originalProfilePhoto'],
+      originalDisplayName: map['originalDisplayName'],
     );
     return item;
   }
@@ -203,6 +211,8 @@ class QueryKennels {
       
         SELECT  
           k.*, 
+          h.${G0<TableModel>().hashersTableHelper.colPhoto} as originalProfilePhoto,
+          h.${G0<TableModel>().hashersTableHelper.colDispName} as originalDisplayName,
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHkmId}, 
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit}, 
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}, 
@@ -213,6 +223,10 @@ class QueryKennels {
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun}, 
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelNotificationPreference},
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
+          case when datetime(coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},"2000-01-01")) <= datetime('now') then 0 else 1 end as isKennelMember,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as following,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},0) as appAccessFlags,
           c.${G0<TableModel>().citiesTableHelper.colCityName} || ', ' || CASE WHEN n.${G0<TableModel>().countriesTableHelper.colShowRegion} = 1 THEN r.${G0<TableModel>().regionsTableHelper.colRegionName} || ', ' ELSE '' END || n.${G0<TableModel>().countriesTableHelper.colCountryName} as location,

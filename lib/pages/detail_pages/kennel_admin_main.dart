@@ -104,6 +104,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     }
   }
 
+  static const double _buttonHeight = 53.0;
+  static const double _buttonWidth = 270.0;
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: <Widget>[
@@ -929,7 +932,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         ),
                                         Container(
                                           margin: const EdgeInsets.only(bottom: 20),
-                                          width: 230,
+                                          width: _buttonWidth,
+                                          height: _buttonHeight,
                                           child: Connection.styleForConnected(
                                             G0<AppModel>().connectionStatus,
                                             ElevatedButton(
@@ -937,10 +941,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
                                               ),
                                               child: Row(children: <Widget>[
-                                                Stack(alignment: AlignmentDirectional.center, children: <Widget>[
-                                                  Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)),
-                                                  const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))
-                                                ]),
+                                                SizedBox(
+                                                  width: 45.0,
+                                                  child: Stack(alignment: AlignmentDirectional.center, children: <Widget>[
+                                                    Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)),
+                                                    const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))
+                                                  ]),
+                                                ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(left: 20, right: 0),
                                                   child: Text('Open website', style: textStyleButton),
@@ -969,7 +976,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   // ),
                                   Container(
                                     margin: const EdgeInsets.only(bottom: 20),
-                                    width: 235,
+                                    width: _buttonWidth,
+                                    height: _buttonHeight,
                                     child: Connection.styleForConnected(
                                       G0<AppModel>().connectionStatus,
                                       ElevatedButton(
@@ -977,7 +985,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
                                         ),
                                         child: Row(children: <Widget>[
-                                          Image.asset('images/icons/painter_palette.png', height: 35),
+                                          SizedBox(width: 45.0, child: Image.asset('images/icons/painter_palette.png', height: 35)),
                                           Padding(
                                             padding: const EdgeInsets.only(left: 20, right: 0),
                                             child: Text('Run art gallery', style: textStyleButton),
@@ -997,15 +1005,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       ),
                                     ),
                                   ),
-                                  // const FancyDivider(
-                                  //   key: Key('5203920'),
-                                  //   innerColor: Colors.white,
-                                  //   topMargin: 30.0,
-                                  //   bottomMargin: 15.0,
-                                  // ),
                                   Container(
                                     margin: const EdgeInsets.only(bottom: 20),
-                                    width: 235,
+                                    width: _buttonWidth,
+                                    height: _buttonHeight,
                                     child: Connection.styleForConnected(
                                       G0<AppModel>().connectionStatus,
                                       ElevatedButton(
@@ -1013,7 +1016,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
                                         ),
                                         child: Row(children: <Widget>[
-                                          Image.asset('images/icons/leaderboard_icon.png', height: 35),
+                                          SizedBox(width: 45.0, child: Image.asset('images/icons/leaderboard_icon.png', height: 35)),
                                           Padding(
                                             padding: const EdgeInsets.only(left: 20, right: 0),
                                             child: Text('Leaderboards', style: textStyleButton),
@@ -1038,6 +1041,52 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       ),
                                     ),
                                   ),
+                                  if (widget.kennelAggregateItem.extensions.isKennelMember == 1) ...<Widget>[
+                                    const FancyDivider(
+                                      key: Key('5203920'),
+                                      innerColor: Colors.white,
+                                      topMargin: 30.0,
+                                      bottomMargin: 25.0,
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 20),
+                                      width: _buttonWidth,
+                                      height: _buttonHeight,
+                                      child: Connection.styleForConnected(
+                                        G0<AppModel>().connectionStatus,
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
+                                          ),
+                                          child: Row(children: <Widget>[
+                                            SizedBox(width: 45.0, child: Image.asset('images/icons/woman_man_profile_icon.png', height: 40)),
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 20, right: 0),
+                                              child: Text('Customize profile', style: textStyleButton),
+                                            ),
+                                          ]),
+                                          onPressed: () async {
+                                            if (!mounted) return;
+                                            await Navigator.push<void>(
+                                              context,
+                                              MaterialPageRoute<void>(
+                                                builder: (BuildContext context) => GenericWidgetPage(
+                                                  key: const Key('52233311'),
+                                                  widget: CustomizeProfile(
+                                                    originalProfilePhoto: widget.kennelAggregateItem.extensions.originalProfilePhoto,
+                                                    originalDisplayName: widget.kennelAggregateItem.extensions.originalDisplayName,
+                                                    customKennelPhoto: widget.kennelAggregateItem.hkm.kennelUserPhoto,
+                                                    customKennelHashName: widget.kennelAggregateItem.hkm.kennelHashName,
+                                                  ),
+                                                  appBarTitle: 'Customize profile',
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ],
