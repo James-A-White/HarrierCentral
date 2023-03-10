@@ -8,15 +8,15 @@ part of 'cities_model_ns.dart';
 
 _$_CitiesModel _$$_CitiesModelFromJson(Map<String, dynamic> json) =>
     _$_CitiesModel(
-      cityId: json['cityId'] as String?,
-      cityName: json['cityName'] as String?,
+      cityId: json['cityId'] as String,
+      cityName: json['cityName'] as String,
       citySearchTags: json['citySearchTags'] as String?,
-      regionId: json['regionId'] as String?,
-      latitude: json['latitude'] as num?,
-      longitude: json['longitude'] as num?,
-      cityAscii: json['cityAscii'] as String?,
+      regionId: json['regionId'] as String,
+      latitude: json['latitude'] as num,
+      longitude: json['longitude'] as num,
+      cityAscii: json['cityAscii'] as String,
       flagFile: json['flagFile'] as String?,
-      removed: json['removed'] as int?,
+      removed: json['removed'] as int,
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 

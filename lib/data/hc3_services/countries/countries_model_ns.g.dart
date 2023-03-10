@@ -8,21 +8,21 @@ part of 'countries_model_ns.dart';
 
 _$_CountriesModel _$$_CountriesModelFromJson(Map<String, dynamic> json) =>
     _$_CountriesModel(
-      countryId: json['countryId'] as String?,
-      countryCode: json['countryCode'] as String?,
-      latitude: json['latitude'] as num?,
-      longitude: json['longitude'] as num?,
-      countryName: json['countryName'] as String?,
+      countryId: json['countryId'] as String,
+      countryCode: json['countryCode'] as String,
+      latitude: json['latitude'] as num,
+      longitude: json['longitude'] as num,
+      countryName: json['countryName'] as String,
       countrySearchTags: json['countrySearchTags'] as String?,
-      continentCode: json['continentCode'] as String?,
+      continentCode: json['continentCode'] as String,
       flagFile: json['flagFile'] as String?,
-      currencyCode: json['currencyCode'] as String?,
-      primaryCultureCode: json['primaryCultureCode'] as String?,
-      showRegion: json['showRegion'] as int?,
+      currencyCode: json['currencyCode'] as String,
+      primaryCultureCode: json['primaryCultureCode'] as String,
+      showRegion: json['showRegion'] as int,
       currencySymbol: json['currencySymbol'] as String?,
       digitsAfterDecimal: json['digitsAfterDecimal'] as int?,
       distancePreference: json['distancePreference'] as int?,
-      removed: json['removed'] as int?,
+      removed: json['removed'] as int,
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 

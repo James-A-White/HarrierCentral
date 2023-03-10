@@ -208,6 +208,11 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     return HasherKennelMapModel.fromJson(inputMap).toJson();
   }
+
+  @override
+  HasherKennelMapModel fromMap(Map<String, dynamic> map) {
+    return HasherKennelMapModel.fromJson(map);
+  }
 }
 
 class HasherKennelMapService {

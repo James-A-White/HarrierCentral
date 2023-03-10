@@ -291,4 +291,9 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     return KennelsModel.fromJson(inputMap).toJson();
   }
+
+  @override
+  KennelsModel fromMap(Map<String, dynamic> map) {
+    return KennelsModel.fromJson(map);
+  }
 }

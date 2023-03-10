@@ -199,6 +199,11 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     return HasherEventMapModel.fromJson(inputMap).toJson();
   }
+
+  @override
+  HasherEventMapModel fromMap(Map<String, dynamic> map) {
+    return HasherEventMapModel.fromJson(map);
+  }
 }
 
 class HasherEventMapService {

@@ -20,14 +20,14 @@ RegionsModel _$RegionsModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$RegionsModel {
-  String? get regionId => throw _privateConstructorUsedError;
-  String? get regionName => throw _privateConstructorUsedError;
+  String get regionId => throw _privateConstructorUsedError;
+  String get regionName => throw _privateConstructorUsedError;
   String? get regionSearchTags => throw _privateConstructorUsedError;
   String? get regionAbbreviation => throw _privateConstructorUsedError;
-  String? get countryId => throw _privateConstructorUsedError;
+  String get countryId => throw _privateConstructorUsedError;
   String? get flagFile => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -42,14 +42,14 @@ abstract class $RegionsModelCopyWith<$Res> {
       _$RegionsModelCopyWithImpl<$Res, RegionsModel>;
   @useResult
   $Res call(
-      {String? regionId,
-      String? regionName,
+      {String regionId,
+      String regionName,
       String? regionSearchTags,
       String? regionAbbreviation,
-      String? countryId,
+      String countryId,
       String? flagFile,
-      int? removed,
-      DateTime? updatedAt});
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -65,24 +65,24 @@ class _$RegionsModelCopyWithImpl<$Res, $Val extends RegionsModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? regionId = freezed,
-    Object? regionName = freezed,
+    Object? regionId = null,
+    Object? regionName = null,
     Object? regionSearchTags = freezed,
     Object? regionAbbreviation = freezed,
-    Object? countryId = freezed,
+    Object? countryId = null,
     Object? flagFile = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      regionId: freezed == regionId
+      regionId: null == regionId
           ? _value.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionName: freezed == regionName
+              as String,
+      regionName: null == regionName
           ? _value.regionName
           : regionName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       regionSearchTags: freezed == regionSearchTags
           ? _value.regionSearchTags
           : regionSearchTags // ignore: cast_nullable_to_non_nullable
@@ -91,22 +91,22 @@ class _$RegionsModelCopyWithImpl<$Res, $Val extends RegionsModel>
           ? _value.regionAbbreviation
           : regionAbbreviation // ignore: cast_nullable_to_non_nullable
               as String?,
-      countryId: freezed == countryId
+      countryId: null == countryId
           ? _value.countryId
           : countryId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       flagFile: freezed == flagFile
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ) as $Val);
   }
 }
@@ -120,14 +120,14 @@ abstract class _$$_RegionsModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? regionId,
-      String? regionName,
+      {String regionId,
+      String regionName,
       String? regionSearchTags,
       String? regionAbbreviation,
-      String? countryId,
+      String countryId,
       String? flagFile,
-      int? removed,
-      DateTime? updatedAt});
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -141,24 +141,24 @@ class __$$_RegionsModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? regionId = freezed,
-    Object? regionName = freezed,
+    Object? regionId = null,
+    Object? regionName = null,
     Object? regionSearchTags = freezed,
     Object? regionAbbreviation = freezed,
-    Object? countryId = freezed,
+    Object? countryId = null,
     Object? flagFile = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_$_RegionsModel(
-      regionId: freezed == regionId
+      regionId: null == regionId
           ? _value.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionName: freezed == regionName
+              as String,
+      regionName: null == regionName
           ? _value.regionName
           : regionName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       regionSearchTags: freezed == regionSearchTags
           ? _value.regionSearchTags
           : regionSearchTags // ignore: cast_nullable_to_non_nullable
@@ -167,22 +167,22 @@ class __$$_RegionsModelCopyWithImpl<$Res>
           ? _value.regionAbbreviation
           : regionAbbreviation // ignore: cast_nullable_to_non_nullable
               as String?,
-      countryId: freezed == countryId
+      countryId: null == countryId
           ? _value.countryId
           : countryId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       flagFile: freezed == flagFile
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ));
   }
 }
@@ -204,21 +204,21 @@ class _$_RegionsModel implements _RegionsModel {
       _$$_RegionsModelFromJson(json);
 
   @override
-  final String? regionId;
+  final String regionId;
   @override
-  final String? regionName;
+  final String regionName;
   @override
   final String? regionSearchTags;
   @override
   final String? regionAbbreviation;
   @override
-  final String? countryId;
+  final String countryId;
   @override
   final String? flagFile;
   @override
-  final int? removed;
+  final int removed;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
 
   @override
   String toString() {
@@ -276,34 +276,34 @@ class _$_RegionsModel implements _RegionsModel {
 
 abstract class _RegionsModel implements RegionsModel {
   factory _RegionsModel(
-      {required final String? regionId,
-      required final String? regionName,
+      {required final String regionId,
+      required final String regionName,
       required final String? regionSearchTags,
       required final String? regionAbbreviation,
-      required final String? countryId,
+      required final String countryId,
       required final String? flagFile,
-      required final int? removed,
-      required final DateTime? updatedAt}) = _$_RegionsModel;
+      required final int removed,
+      required final DateTime updatedAt}) = _$_RegionsModel;
 
   factory _RegionsModel.fromJson(Map<String, dynamic> json) =
       _$_RegionsModel.fromJson;
 
   @override
-  String? get regionId;
+  String get regionId;
   @override
-  String? get regionName;
+  String get regionName;
   @override
   String? get regionSearchTags;
   @override
   String? get regionAbbreviation;
   @override
-  String? get countryId;
+  String get countryId;
   @override
   String? get flagFile;
   @override
-  int? get removed;
+  int get removed;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_RegionsModelCopyWith<_$_RegionsModel> get copyWith =>

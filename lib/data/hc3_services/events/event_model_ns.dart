@@ -57,4 +57,9 @@ class EventModel with _$EventModel implements BaseModel {
   }) = _EventModel;
 
   factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
+
+  @override
+  factory EventModel.fromMap(Map<String, dynamic> map) {
+    return EventModel.fromJson(map);
+  }
 }

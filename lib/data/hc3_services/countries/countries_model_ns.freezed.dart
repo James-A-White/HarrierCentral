@@ -20,21 +20,21 @@ CountriesModel _$CountriesModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CountriesModel {
-  String? get countryId => throw _privateConstructorUsedError;
-  String? get countryCode => throw _privateConstructorUsedError;
-  num? get latitude => throw _privateConstructorUsedError;
-  num? get longitude => throw _privateConstructorUsedError;
-  String? get countryName => throw _privateConstructorUsedError;
+  String get countryId => throw _privateConstructorUsedError;
+  String get countryCode => throw _privateConstructorUsedError;
+  num get latitude => throw _privateConstructorUsedError;
+  num get longitude => throw _privateConstructorUsedError;
+  String get countryName => throw _privateConstructorUsedError;
   String? get countrySearchTags => throw _privateConstructorUsedError;
-  String? get continentCode => throw _privateConstructorUsedError;
+  String get continentCode => throw _privateConstructorUsedError;
   String? get flagFile => throw _privateConstructorUsedError;
-  String? get currencyCode => throw _privateConstructorUsedError;
-  String? get primaryCultureCode => throw _privateConstructorUsedError;
-  int? get showRegion => throw _privateConstructorUsedError;
+  String get currencyCode => throw _privateConstructorUsedError;
+  String get primaryCultureCode => throw _privateConstructorUsedError;
+  int get showRegion => throw _privateConstructorUsedError;
   String? get currencySymbol => throw _privateConstructorUsedError;
   int? get digitsAfterDecimal => throw _privateConstructorUsedError;
   int? get distancePreference => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -50,21 +50,21 @@ abstract class $CountriesModelCopyWith<$Res> {
       _$CountriesModelCopyWithImpl<$Res, CountriesModel>;
   @useResult
   $Res call(
-      {String? countryId,
-      String? countryCode,
-      num? latitude,
-      num? longitude,
-      String? countryName,
+      {String countryId,
+      String countryCode,
+      num latitude,
+      num longitude,
+      String countryName,
       String? countrySearchTags,
-      String? continentCode,
+      String continentCode,
       String? flagFile,
-      String? currencyCode,
-      String? primaryCultureCode,
-      int? showRegion,
+      String currencyCode,
+      String primaryCultureCode,
+      int showRegion,
       String? currencySymbol,
       int? digitsAfterDecimal,
       int? distancePreference,
-      int? removed,
+      int removed,
       DateTime updatedAt});
 }
 
@@ -81,68 +81,68 @@ class _$CountriesModelCopyWithImpl<$Res, $Val extends CountriesModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? countryId = freezed,
-    Object? countryCode = freezed,
-    Object? latitude = freezed,
-    Object? longitude = freezed,
-    Object? countryName = freezed,
+    Object? countryId = null,
+    Object? countryCode = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? countryName = null,
     Object? countrySearchTags = freezed,
-    Object? continentCode = freezed,
+    Object? continentCode = null,
     Object? flagFile = freezed,
-    Object? currencyCode = freezed,
-    Object? primaryCultureCode = freezed,
-    Object? showRegion = freezed,
+    Object? currencyCode = null,
+    Object? primaryCultureCode = null,
+    Object? showRegion = null,
     Object? currencySymbol = freezed,
     Object? digitsAfterDecimal = freezed,
     Object? distancePreference = freezed,
-    Object? removed = freezed,
+    Object? removed = null,
     Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      countryId: freezed == countryId
+      countryId: null == countryId
           ? _value.countryId
           : countryId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      countryCode: freezed == countryCode
+              as String,
+      countryCode: null == countryCode
           ? _value.countryCode
           : countryCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      latitude: freezed == latitude
+              as String,
+      latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      longitude: freezed == longitude
+              as num,
+      longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      countryName: freezed == countryName
+              as num,
+      countryName: null == countryName
           ? _value.countryName
           : countryName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       countrySearchTags: freezed == countrySearchTags
           ? _value.countrySearchTags
           : countrySearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
-      continentCode: freezed == continentCode
+      continentCode: null == continentCode
           ? _value.continentCode
           : continentCode // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       flagFile: freezed == flagFile
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      currencyCode: freezed == currencyCode
+      currencyCode: null == currencyCode
           ? _value.currencyCode
           : currencyCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      primaryCultureCode: freezed == primaryCultureCode
+              as String,
+      primaryCultureCode: null == primaryCultureCode
           ? _value.primaryCultureCode
           : primaryCultureCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      showRegion: freezed == showRegion
+              as String,
+      showRegion: null == showRegion
           ? _value.showRegion
           : showRegion // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       currencySymbol: freezed == currencySymbol
           ? _value.currencySymbol
           : currencySymbol // ignore: cast_nullable_to_non_nullable
@@ -155,10 +155,10 @@ class _$CountriesModelCopyWithImpl<$Res, $Val extends CountriesModel>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -176,21 +176,21 @@ abstract class _$$_CountriesModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? countryId,
-      String? countryCode,
-      num? latitude,
-      num? longitude,
-      String? countryName,
+      {String countryId,
+      String countryCode,
+      num latitude,
+      num longitude,
+      String countryName,
       String? countrySearchTags,
-      String? continentCode,
+      String continentCode,
       String? flagFile,
-      String? currencyCode,
-      String? primaryCultureCode,
-      int? showRegion,
+      String currencyCode,
+      String primaryCultureCode,
+      int showRegion,
       String? currencySymbol,
       int? digitsAfterDecimal,
       int? distancePreference,
-      int? removed,
+      int removed,
       DateTime updatedAt});
 }
 
@@ -205,68 +205,68 @@ class __$$_CountriesModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? countryId = freezed,
-    Object? countryCode = freezed,
-    Object? latitude = freezed,
-    Object? longitude = freezed,
-    Object? countryName = freezed,
+    Object? countryId = null,
+    Object? countryCode = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? countryName = null,
     Object? countrySearchTags = freezed,
-    Object? continentCode = freezed,
+    Object? continentCode = null,
     Object? flagFile = freezed,
-    Object? currencyCode = freezed,
-    Object? primaryCultureCode = freezed,
-    Object? showRegion = freezed,
+    Object? currencyCode = null,
+    Object? primaryCultureCode = null,
+    Object? showRegion = null,
     Object? currencySymbol = freezed,
     Object? digitsAfterDecimal = freezed,
     Object? distancePreference = freezed,
-    Object? removed = freezed,
+    Object? removed = null,
     Object? updatedAt = null,
   }) {
     return _then(_$_CountriesModel(
-      countryId: freezed == countryId
+      countryId: null == countryId
           ? _value.countryId
           : countryId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      countryCode: freezed == countryCode
+              as String,
+      countryCode: null == countryCode
           ? _value.countryCode
           : countryCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      latitude: freezed == latitude
+              as String,
+      latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      longitude: freezed == longitude
+              as num,
+      longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      countryName: freezed == countryName
+              as num,
+      countryName: null == countryName
           ? _value.countryName
           : countryName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       countrySearchTags: freezed == countrySearchTags
           ? _value.countrySearchTags
           : countrySearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
-      continentCode: freezed == continentCode
+      continentCode: null == continentCode
           ? _value.continentCode
           : continentCode // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       flagFile: freezed == flagFile
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      currencyCode: freezed == currencyCode
+      currencyCode: null == currencyCode
           ? _value.currencyCode
           : currencyCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      primaryCultureCode: freezed == primaryCultureCode
+              as String,
+      primaryCultureCode: null == primaryCultureCode
           ? _value.primaryCultureCode
           : primaryCultureCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      showRegion: freezed == showRegion
+              as String,
+      showRegion: null == showRegion
           ? _value.showRegion
           : showRegion // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       currencySymbol: freezed == currencySymbol
           ? _value.currencySymbol
           : currencySymbol // ignore: cast_nullable_to_non_nullable
@@ -279,10 +279,10 @@ class __$$_CountriesModelCopyWithImpl<$Res>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -316,27 +316,27 @@ class _$_CountriesModel implements _CountriesModel {
       _$$_CountriesModelFromJson(json);
 
   @override
-  final String? countryId;
+  final String countryId;
   @override
-  final String? countryCode;
+  final String countryCode;
   @override
-  final num? latitude;
+  final num latitude;
   @override
-  final num? longitude;
+  final num longitude;
   @override
-  final String? countryName;
+  final String countryName;
   @override
   final String? countrySearchTags;
   @override
-  final String? continentCode;
+  final String continentCode;
   @override
   final String? flagFile;
   @override
-  final String? currencyCode;
+  final String currencyCode;
   @override
-  final String? primaryCultureCode;
+  final String primaryCultureCode;
   @override
-  final int? showRegion;
+  final int showRegion;
   @override
   final String? currencySymbol;
   @override
@@ -344,7 +344,7 @@ class _$_CountriesModel implements _CountriesModel {
   @override
   final int? distancePreference;
   @override
-  final int? removed;
+  final int removed;
   @override
   final DateTime updatedAt;
 
@@ -428,48 +428,48 @@ class _$_CountriesModel implements _CountriesModel {
 
 abstract class _CountriesModel implements CountriesModel {
   factory _CountriesModel(
-      {required final String? countryId,
-      required final String? countryCode,
-      required final num? latitude,
-      required final num? longitude,
-      required final String? countryName,
+      {required final String countryId,
+      required final String countryCode,
+      required final num latitude,
+      required final num longitude,
+      required final String countryName,
       required final String? countrySearchTags,
-      required final String? continentCode,
+      required final String continentCode,
       required final String? flagFile,
-      required final String? currencyCode,
-      required final String? primaryCultureCode,
-      required final int? showRegion,
+      required final String currencyCode,
+      required final String primaryCultureCode,
+      required final int showRegion,
       required final String? currencySymbol,
       required final int? digitsAfterDecimal,
       required final int? distancePreference,
-      required final int? removed,
+      required final int removed,
       required final DateTime updatedAt}) = _$_CountriesModel;
 
   factory _CountriesModel.fromJson(Map<String, dynamic> json) =
       _$_CountriesModel.fromJson;
 
   @override
-  String? get countryId;
+  String get countryId;
   @override
-  String? get countryCode;
+  String get countryCode;
   @override
-  num? get latitude;
+  num get latitude;
   @override
-  num? get longitude;
+  num get longitude;
   @override
-  String? get countryName;
+  String get countryName;
   @override
   String? get countrySearchTags;
   @override
-  String? get continentCode;
+  String get continentCode;
   @override
   String? get flagFile;
   @override
-  String? get currencyCode;
+  String get currencyCode;
   @override
-  String? get primaryCultureCode;
+  String get primaryCultureCode;
   @override
-  int? get showRegion;
+  int get showRegion;
   @override
   String? get currencySymbol;
   @override
@@ -477,7 +477,7 @@ abstract class _CountriesModel implements CountriesModel {
   @override
   int? get distancePreference;
   @override
-  int? get removed;
+  int get removed;
   @override
   DateTime get updatedAt;
   @override

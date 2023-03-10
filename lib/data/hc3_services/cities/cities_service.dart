@@ -68,4 +68,9 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     return CitiesModel.fromJson(inputMap).toJson();
   }
+
+  @override
+  CitiesModel fromMap(Map<String, dynamic> map) {
+    return CitiesModel.fromJson(map);
+  }
 }

@@ -20,15 +20,15 @@ CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CitiesModel {
-  String? get cityId => throw _privateConstructorUsedError;
-  String? get cityName => throw _privateConstructorUsedError;
+  String get cityId => throw _privateConstructorUsedError;
+  String get cityName => throw _privateConstructorUsedError;
   String? get citySearchTags => throw _privateConstructorUsedError;
-  String? get regionId => throw _privateConstructorUsedError;
-  num? get latitude => throw _privateConstructorUsedError;
-  num? get longitude => throw _privateConstructorUsedError;
-  String? get cityAscii => throw _privateConstructorUsedError;
+  String get regionId => throw _privateConstructorUsedError;
+  num get latitude => throw _privateConstructorUsedError;
+  num get longitude => throw _privateConstructorUsedError;
+  String get cityAscii => throw _privateConstructorUsedError;
   String? get flagFile => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -44,15 +44,15 @@ abstract class $CitiesModelCopyWith<$Res> {
       _$CitiesModelCopyWithImpl<$Res, CitiesModel>;
   @useResult
   $Res call(
-      {String? cityId,
-      String? cityName,
+      {String cityId,
+      String cityName,
       String? citySearchTags,
-      String? regionId,
-      num? latitude,
-      num? longitude,
-      String? cityAscii,
+      String regionId,
+      num latitude,
+      num longitude,
+      String cityAscii,
       String? flagFile,
-      int? removed,
+      int removed,
       DateTime updatedAt});
 }
 
@@ -69,54 +69,54 @@ class _$CitiesModelCopyWithImpl<$Res, $Val extends CitiesModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cityId = freezed,
-    Object? cityName = freezed,
+    Object? cityId = null,
+    Object? cityName = null,
     Object? citySearchTags = freezed,
-    Object? regionId = freezed,
-    Object? latitude = freezed,
-    Object? longitude = freezed,
-    Object? cityAscii = freezed,
+    Object? regionId = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? cityAscii = null,
     Object? flagFile = freezed,
-    Object? removed = freezed,
+    Object? removed = null,
     Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      cityId: freezed == cityId
+      cityId: null == cityId
           ? _value.cityId
           : cityId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      cityName: freezed == cityName
+              as String,
+      cityName: null == cityName
           ? _value.cityName
           : cityName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       citySearchTags: freezed == citySearchTags
           ? _value.citySearchTags
           : citySearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
-      regionId: freezed == regionId
+      regionId: null == regionId
           ? _value.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      latitude: freezed == latitude
+              as String,
+      latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      longitude: freezed == longitude
+              as num,
+      longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      cityAscii: freezed == cityAscii
+              as num,
+      cityAscii: null == cityAscii
           ? _value.cityAscii
           : cityAscii // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       flagFile: freezed == flagFile
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -134,15 +134,15 @@ abstract class _$$_CitiesModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? cityId,
-      String? cityName,
+      {String cityId,
+      String cityName,
       String? citySearchTags,
-      String? regionId,
-      num? latitude,
-      num? longitude,
-      String? cityAscii,
+      String regionId,
+      num latitude,
+      num longitude,
+      String cityAscii,
       String? flagFile,
-      int? removed,
+      int removed,
       DateTime updatedAt});
 }
 
@@ -157,54 +157,54 @@ class __$$_CitiesModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cityId = freezed,
-    Object? cityName = freezed,
+    Object? cityId = null,
+    Object? cityName = null,
     Object? citySearchTags = freezed,
-    Object? regionId = freezed,
-    Object? latitude = freezed,
-    Object? longitude = freezed,
-    Object? cityAscii = freezed,
+    Object? regionId = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? cityAscii = null,
     Object? flagFile = freezed,
-    Object? removed = freezed,
+    Object? removed = null,
     Object? updatedAt = null,
   }) {
     return _then(_$_CitiesModel(
-      cityId: freezed == cityId
+      cityId: null == cityId
           ? _value.cityId
           : cityId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      cityName: freezed == cityName
+              as String,
+      cityName: null == cityName
           ? _value.cityName
           : cityName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       citySearchTags: freezed == citySearchTags
           ? _value.citySearchTags
           : citySearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
-      regionId: freezed == regionId
+      regionId: null == regionId
           ? _value.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      latitude: freezed == latitude
+              as String,
+      latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      longitude: freezed == longitude
+              as num,
+      longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num?,
-      cityAscii: freezed == cityAscii
+              as num,
+      cityAscii: null == cityAscii
           ? _value.cityAscii
           : cityAscii // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       flagFile: freezed == flagFile
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -232,23 +232,23 @@ class _$_CitiesModel implements _CitiesModel {
       _$$_CitiesModelFromJson(json);
 
   @override
-  final String? cityId;
+  final String cityId;
   @override
-  final String? cityName;
+  final String cityName;
   @override
   final String? citySearchTags;
   @override
-  final String? regionId;
+  final String regionId;
   @override
-  final num? latitude;
+  final num latitude;
   @override
-  final num? longitude;
+  final num longitude;
   @override
-  final String? cityAscii;
+  final String cityAscii;
   @override
   final String? flagFile;
   @override
-  final int? removed;
+  final int removed;
   @override
   final DateTime updatedAt;
 
@@ -303,38 +303,38 @@ class _$_CitiesModel implements _CitiesModel {
 
 abstract class _CitiesModel implements CitiesModel {
   factory _CitiesModel(
-      {required final String? cityId,
-      required final String? cityName,
+      {required final String cityId,
+      required final String cityName,
       required final String? citySearchTags,
-      required final String? regionId,
-      required final num? latitude,
-      required final num? longitude,
-      required final String? cityAscii,
+      required final String regionId,
+      required final num latitude,
+      required final num longitude,
+      required final String cityAscii,
       required final String? flagFile,
-      required final int? removed,
+      required final int removed,
       required final DateTime updatedAt}) = _$_CitiesModel;
 
   factory _CitiesModel.fromJson(Map<String, dynamic> json) =
       _$_CitiesModel.fromJson;
 
   @override
-  String? get cityId;
+  String get cityId;
   @override
-  String? get cityName;
+  String get cityName;
   @override
   String? get citySearchTags;
   @override
-  String? get regionId;
+  String get regionId;
   @override
-  num? get latitude;
+  num get latitude;
   @override
-  num? get longitude;
+  num get longitude;
   @override
-  String? get cityAscii;
+  String get cityAscii;
   @override
   String? get flagFile;
   @override
-  int? get removed;
+  int get removed;
   @override
   DateTime get updatedAt;
   @override
