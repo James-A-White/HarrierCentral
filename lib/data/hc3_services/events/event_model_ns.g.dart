@@ -1,0 +1,118 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'event_model_ns.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$_EventModel _$$_EventModelFromJson(Map<String, dynamic> json) =>
+    _$_EventModel(
+      eventId: json['eventId'] as String?,
+      publicEventId: json['publicEventId'] as String?,
+      eventStartDatetime: json['eventStartDatetime'] == null
+          ? null
+          : DateTime.parse(json['eventStartDatetime'] as String),
+      kennelId: json['kennelId'] as String?,
+      isVisible: json['isVisible'] as int?,
+      isCountedRun: json['isCountedRun'] as int?,
+      isPromotedEvent: json['isPromotedEvent'] as int?,
+      eventGeographicScope: json['eventGeographicScope'] as int?,
+      eventInboundIntegrationId: json['eventInboundIntegrationId'] as int?,
+      eventNumber: json['eventNumber'] as int?,
+      eventName: json['eventName'] as String?,
+      hcLatitude: json['hcLatitude'] as num?,
+      hcLongitude: json['hcLongitude'] as num?,
+      fbLatitude: json['fbLatitude'] as num?,
+      fbLongitude: json['fbLongitude'] as num?,
+      eventPriceForMembers: json['eventPriceForMembers'] as num?,
+      eventPriceForNonMembers: json['eventPriceForNonMembers'] as num?,
+      evtDisseminateAllowWebLinks: json['evtDisseminateAllowWebLinks'] as int?,
+      eventFacebookId: json['eventFacebookId'] as String?,
+      absoluteEventNumber: json['absoluteEventNumber'] as num?,
+      canEditRunAttendence: json['canEditRunAttendence'] as num?,
+      eventImage: json['eventImage'] as String?,
+      eventDescription: json['eventDescription'] as String?,
+      eventUrl: json['eventUrl'] as String?,
+      locationOneLineDesc: json['locationOneLineDesc'] as String?,
+      locationPostCode: json['locationPostCode'] as String?,
+      locationCity: json['locationCity'] as String?,
+      locationStreet: json['locationStreet'] as String?,
+      locationCountry: json['locationCountry'] as String?,
+      locationRegion: json['locationRegion'] as String?,
+      locationSubRegion: json['locationSubRegion'] as String?,
+      hares: json['hares'] as String?,
+      eventPaymentScheme: json['eventPaymentScheme'] as String?,
+      eventPaymentUrl: json['eventPaymentUrl'] as String?,
+      eventPaymentUrlExpires: json['eventPaymentUrlExpires'] == null
+          ? null
+          : DateTime.parse(json['eventPaymentUrlExpires'] as String),
+      unconfirmedBankXferCount: json['unconfirmedBankXferCount'] as int?,
+      eventPriceForExtras: json['eventPriceForExtras'] as num?,
+      extrasDescription: json['extrasDescription'] as String?,
+      doTrackHashCash: json['doTrackHashCash'] as int?,
+      tags1: json['tags1'] as int?,
+      tags2: json['tags2'] as int?,
+      tags3: json['tags3'] as int?,
+      useFbLocation: json['useFbLocation'] as int?,
+      useFbLatLon: json['useFbLatLon'] as int?,
+      useFbRunDetails: json['useFbRunDetails'] as int?,
+      useFbImage: json['useFbImage'] as int?,
+      removed: json['removed'] as int?,
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
+    );
+
+Map<String, dynamic> _$$_EventModelToJson(_$_EventModel instance) =>
+    <String, dynamic>{
+      'eventId': instance.eventId,
+      'publicEventId': instance.publicEventId,
+      'eventStartDatetime': instance.eventStartDatetime?.toIso8601String(),
+      'kennelId': instance.kennelId,
+      'isVisible': instance.isVisible,
+      'isCountedRun': instance.isCountedRun,
+      'isPromotedEvent': instance.isPromotedEvent,
+      'eventGeographicScope': instance.eventGeographicScope,
+      'eventInboundIntegrationId': instance.eventInboundIntegrationId,
+      'eventNumber': instance.eventNumber,
+      'eventName': instance.eventName,
+      'hcLatitude': instance.hcLatitude,
+      'hcLongitude': instance.hcLongitude,
+      'fbLatitude': instance.fbLatitude,
+      'fbLongitude': instance.fbLongitude,
+      'eventPriceForMembers': instance.eventPriceForMembers,
+      'eventPriceForNonMembers': instance.eventPriceForNonMembers,
+      'evtDisseminateAllowWebLinks': instance.evtDisseminateAllowWebLinks,
+      'eventFacebookId': instance.eventFacebookId,
+      'absoluteEventNumber': instance.absoluteEventNumber,
+      'canEditRunAttendence': instance.canEditRunAttendence,
+      'eventImage': instance.eventImage,
+      'eventDescription': instance.eventDescription,
+      'eventUrl': instance.eventUrl,
+      'locationOneLineDesc': instance.locationOneLineDesc,
+      'locationPostCode': instance.locationPostCode,
+      'locationCity': instance.locationCity,
+      'locationStreet': instance.locationStreet,
+      'locationCountry': instance.locationCountry,
+      'locationRegion': instance.locationRegion,
+      'locationSubRegion': instance.locationSubRegion,
+      'hares': instance.hares,
+      'eventPaymentScheme': instance.eventPaymentScheme,
+      'eventPaymentUrl': instance.eventPaymentUrl,
+      'eventPaymentUrlExpires':
+          instance.eventPaymentUrlExpires?.toIso8601String(),
+      'unconfirmedBankXferCount': instance.unconfirmedBankXferCount,
+      'eventPriceForExtras': instance.eventPriceForExtras,
+      'extrasDescription': instance.extrasDescription,
+      'doTrackHashCash': instance.doTrackHashCash,
+      'tags1': instance.tags1,
+      'tags2': instance.tags2,
+      'tags3': instance.tags3,
+      'useFbLocation': instance.useFbLocation,
+      'useFbLatLon': instance.useFbLatLon,
+      'useFbRunDetails': instance.useFbRunDetails,
+      'useFbImage': instance.useFbImage,
+      'removed': instance.removed,
+      'updatedAt': instance.updatedAt?.toIso8601String(),
+    };

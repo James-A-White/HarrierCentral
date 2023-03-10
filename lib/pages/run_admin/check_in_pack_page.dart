@@ -1869,10 +1869,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           if (result != null) {
             _refreshPackListFromTables(true);
             if (result.dispName == '') {
-              result.dispName = null;
+              result = result.copyWith(dispName: null);
             }
             if (result.hashName == '') {
-              result.hashName = null;
+              result = result.copyWith(hashName: null);
             }
 
             _searchText = result.dispName ?? result.hashName ?? '${result.firstName} ${result.lastName}' ?? '<error no name entered>';

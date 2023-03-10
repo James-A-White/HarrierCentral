@@ -432,7 +432,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             }
           },
           onSaved: (String val) {
-            _hasher.firstName = val;
+            _hasher = _hasher.copyWith(firstName: val);
+            //_hasher.firstName = val;
           },
         ),
         TextFormField(
@@ -449,7 +450,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             }
           },
           onSaved: (String val) {
-            _hasher.lastName = val;
+            _hasher = _hasher.copyWith(lastName: val);
+            //_hasher.lastName = val;
           },
         ),
         if ((widget.pageType == EnumMyProfilePageType.myProfile) || (widget.pageType == EnumMyProfilePageType.newHasherProfile)) ...<Widget>[
@@ -471,7 +473,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           controller: _hashNameController,
           decoration: const InputDecoration(labelText: 'Hash Name (optional)'),
           onSaved: (String val) {
-            _hasher.hashName = val;
+            _hasher = _hasher.copyWith(hashName: val);
+            //_hasher.hashName = val;
           },
           keyboardType: TextInputType.text,
         ),
@@ -491,7 +494,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           decoration: const InputDecoration(labelText: 'Historical run count'),
           keyboardType: TextInputType.number,
           onSaved: (String val) {
-            _hasher.firstName = val;
+            _hasher = _hasher.copyWith(firstName: val);
+            //_hasher.firstName = val;
           },
         ),
         TextFormField(
@@ -500,7 +504,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           decoration: const InputDecoration(labelText: 'Historical haring count'),
           keyboardType: TextInputType.number,
           onSaved: (String val) {
-            _hasher.firstName = val;
+            _hasher = _hasher.copyWith(firstName: val);
+            //_hasher.firstName = val;
           },
         ),
         const SizedBox(

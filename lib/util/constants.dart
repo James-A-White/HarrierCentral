@@ -1,8 +1,6 @@
-// @dart=2.11
 // ignore_for_file: constant_identifier_names
 
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports.dart';
 
 const String RANDOM_STRING_LIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -155,11 +153,10 @@ class AppAccess {
   int appAccessFlags;
 
   bool getAppAccess(int aaFlag) {
-    return (appAccessFlags ?? 0) & aaFlag != 0;
+    return (appAccessFlags) & aaFlag != 0;
   }
 
   void setAppAccess(int aaFlag, bool value) {
-    appAccessFlags ??= 0;
     if (value) {
       appAccessFlags |= aaFlag;
     } else {
@@ -168,31 +165,31 @@ class AppAccess {
   }
 
   bool get isSuperAdmin {
-    return (appAccessFlags ?? 0) & authIsSuperAdmin != 0;
+    return (appAccessFlags) & authIsSuperAdmin != 0;
   }
 
   bool get isAdmin {
-    return (appAccessFlags ?? 0) & (authIsAdmin | authIsSuperAdmin) != 0;
+    return (appAccessFlags) & (authIsAdmin | authIsSuperAdmin) != 0;
   }
 
   bool get canManageKennel {
-    return (appAccessFlags ?? 0) & (authCanManageKennel | authIsSuperAdmin) != 0;
+    return (appAccessFlags) & (authCanManageKennel | authIsSuperAdmin) != 0;
   }
 
   bool get canManageRuns {
-    return (appAccessFlags ?? 0) & (authCanManageRuns | authIsSuperAdmin) != 0;
+    return (appAccessFlags) & (authCanManageRuns | authIsSuperAdmin) != 0;
   }
 
   bool get canManageHashCash {
-    return (appAccessFlags ?? 0) & (authCanManageHashCash | authIsSuperAdmin) != 0;
+    return (appAccessFlags) & (authCanManageHashCash | authIsSuperAdmin) != 0;
   }
 
   bool get canManageMembers {
-    return (appAccessFlags ?? 0) & (authCanManageMembers | authIsSuperAdmin) != 0;
+    return (appAccessFlags) & (authCanManageMembers | authIsSuperAdmin) != 0;
   }
 
   bool get canManageAwards {
-    return (appAccessFlags ?? 0) & (authCanManageAwards | authIsSuperAdmin) != 0;
+    return (appAccessFlags) & (authCanManageAwards | authIsSuperAdmin) != 0;
   }
 }
 
@@ -261,11 +258,10 @@ class Mismanagement {
   int mismanagementFlags;
 
   bool getMismanagementState(int mmFlag) {
-    return (mismanagementFlags ?? 0) & mmFlag != 0;
+    return (mismanagementFlags) & mmFlag != 0;
   }
 
   void setMismanagementState(int mmFlag, bool value) {
-    mismanagementFlags ??= 0;
     if (value) {
       mismanagementFlags |= mmFlag;
     } else {
@@ -274,7 +270,7 @@ class Mismanagement {
   }
 
   bool get isOnMismanagement {
-    return (mismanagementFlags ?? 0) & mmRoleIsOnMm != 0;
+    return (mismanagementFlags) & mmRoleIsOnMm != 0;
   }
 
   // set isOnMismanagement(bool value) {

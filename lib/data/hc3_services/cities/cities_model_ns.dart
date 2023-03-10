@@ -1,0 +1,22 @@
+import 'package:harrier_central/imports_null_safe.dart';
+
+part 'cities_model_ns.freezed.dart';
+part 'cities_model_ns.g.dart';
+
+@freezed
+class CitiesModel with _$CitiesModel implements BaseModel {
+  factory CitiesModel({
+    required String? cityId,
+    required String? cityName,
+    required String? citySearchTags,
+    required String? regionId,
+    required num? latitude,
+    required num? longitude,
+    required String? cityAscii,
+    required String? flagFile,
+    required int? removed,
+    required DateTime updatedAt,
+  }) = _CitiesModel;
+
+  factory CitiesModel.fromJson(Map<String, dynamic> json) => _$CitiesModelFromJson(json);
+}

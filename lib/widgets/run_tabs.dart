@@ -749,8 +749,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     if (willHare) {
       setState(() {
         if (_thisUserIndex >= 0) {
-          _thePackList[_thisUserIndex].hem.rsvpState = -1;
-          _thePackList[_thisUserIndex].hem.isHare = -1;
+          PackListAggregate a = _thePackList[_thisUserIndex];
+          _thePackList[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
+
+          // _thePackList[_thisUserIndex].hem.rsvpState = -1;
+          // _thePackList[_thisUserIndex].hem.isHare = -1;
           _rsvpRequested = rsvpYes;
         }
       });
@@ -776,8 +779,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
     setState(() {
       if (_thisUserIndex >= 0) {
-        _thePackList[_thisUserIndex].hem.rsvpState = -1;
-        _thePackList[_thisUserIndex].hem.isHare = 0;
+        // _thePackList[_thisUserIndex].hem.rsvpState = -1;
+        // _thePackList[_thisUserIndex].hem.isHare = 0;
+
+        PackListAggregate a = _thePackList[_thisUserIndex];
+        _thePackList[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: 0));
       }
       _rsvpRequested = rsvpState;
     });

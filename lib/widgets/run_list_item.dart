@@ -15,10 +15,13 @@ class RunListItem extends StatefulWidget {
 class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   RunListItemState();
 
+  RunDetailsAggregate _rda;
+
   @override
   void initState() {
+    _rda = widget.futureRun;
     super.initState();
-    //_rsvpIcon = Future<Widget>.value(getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare));
+    //_rsvpIcon = Future<Widget>.value(getRsvpWidget(_rda.extensions.rsvpState, _rda.extensions.isHare));
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -69,12 +72,12 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
     setState(() {
-      widget.futureRun.extensions.rsvpState = -1;
+      _rda.extensions.rsvpState = -1;
     });
 
     final String userId = getStringPref(StringPrefsEnum.userId);
     final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
-          widget.futureRun.event.eventId,
+          _rda.event.eventId,
           userId,
           AppDomainType.user,
           rsvpState.value,
@@ -87,9 +90,19 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     setState(() {
-      widget.futureRun.extensions.rsvpState = rsvpResult;
-      widget.futureRun.extensions.isHare = willHareResult;
-      widget.futureRun.event.hares = hares;
+      _rda = RunDetailsAggregate(
+        kennel: _rda.kennel,
+        extensions: _rda.extensions,
+        paymentUrl: _rda.paymentUrl,
+        event: _rda.event.copyWith(
+          hares: hares,
+        ),
+      );
+
+      _rda.extensions.rsvpState = rsvpResult;
+      _rda.extensions.isHare = willHareResult;
+
+      // _rda.event = _rda.event.hares = hares;
     });
 
     if (serverMessage.isNotEmpty) {
@@ -116,15 +129,14 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   onTap: () {
                     _showRsvpOptionsPopup(context);
                   },
-                  child: Padding(
-                      padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0), child: _getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
+                  child: Padding(padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0), child: _getRsvpWidget(_rda.extensions.rsvpState, _rda.extensions.isHare)),
                 ),
                 Expanded(
                   child: Container(
                     width: MediaQuery.of(context).size.width,
                     padding: const EdgeInsets.only(top: 5.0, left: 5.0),
                     child: AutoSizeText(
-                      widget.futureRun.event.eventName,
+                      _rda.event.eventName,
                       style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.black, height: 1.0),
                       textAlign: TextAlign.left,
                       maxLines: 1,
@@ -139,21 +151,21 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                     onTap: () {
                       showEmailAlertPopup(context);
                     },
-                    child: widget.futureRun.extensions.emailAlertPreference == -1
+                    child: _rda.extensions.emailAlertPreference == -1
                         ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
                         : Image(
                             width: 24.0,
                             height: 24.0,
                             fit: BoxFit.fill,
-                            image: widget.futureRun.extensions.emailAlertPreference == 1
+                            image: _rda.extensions.emailAlertPreference == 1
                                 ? const AssetImage('images/icons/envelope_gold_50px.png')
-                                : widget.futureRun.extensions.emailAlertPreference == 2
+                                : _rda.extensions.emailAlertPreference == 2
                                     ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png')
                                     : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
                           ),
                   ),
                 ),
-                widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
+                _rda.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
                     ? Container()
                     : Container(
                         padding: const EdgeInsets.only(right: 10),
@@ -161,15 +173,15 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           onTap: () {
                             _showNotificationPopup(context);
                           },
-                          child: widget.futureRun.extensions.notificationPreference == -1
+                          child: _rda.extensions.notificationPreference == -1
                               ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
                               : Image(
                                   width: 24.0,
                                   height: 24.0,
                                   fit: BoxFit.fill,
-                                  image: widget.futureRun.extensions.notificationPreference == 1
+                                  image: _rda.extensions.notificationPreference == 1
                                       ? const AssetImage('images/icons/bell_gold_50px.png')
-                                      : widget.futureRun.extensions.notificationPreference == 2
+                                      : _rda.extensions.notificationPreference == 2
                                           ? const AssetImage('images/icons/bell_silver_strike_out_50px.png')
                                           : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
                                 ),
@@ -184,7 +196,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               height: 1.0,
               color: Colors.grey[300],
             ),
-            if ((widget.futureRun.event.eventImage != null) && (widget.futureRun.event.eventImage.isNotEmpty)) ...<Widget>[
+            if ((_rda.event.eventImage != null) && (_rda.event.eventImage.isNotEmpty)) ...<Widget>[
               GestureDetector(
                 onLongPress: () {
                   Navigator.push<void>(
@@ -192,8 +204,8 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                     MaterialPageRoute<void>(
                       builder: (BuildContext context) => ZoomableImagePage2(
                           key: const Key('51120331'),
-                          pageTitle: widget.futureRun.event.eventName,
-                          imageUrl: widget.futureRun.event.eventImage,
+                          pageTitle: _rda.event.eventName,
+                          imageUrl: _rda.event.eventImage,
                           appBarBackgroundColor: themeAppBarBackground,
                           background: Backgrounds.defaultHcBackground(),
                           margin: 20.0),
@@ -201,7 +213,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   );
                 },
                 child: CachedNetworkImage(
-                  imageUrl: widget.futureRun.event.eventImage,
+                  imageUrl: _rda.event.eventImage,
                   // errorWidget:
                   //     (BuildContext context, String url, Exception error) =>
                   //         const  Icon(Icons.error),
@@ -228,9 +240,9 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             KennelLogo(
-                              kennelId: widget.futureRun.kennel.kennelId,
-                              kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
-                              kennelShortName: widget.futureRun.kennel.kennelShortName,
+                              kennelId: _rda.kennel.kennelId,
+                              kennelLogoUrl: _rda.kennel.kennelLogo,
+                              kennelShortName: _rda.kennel.kennelShortName,
                               logoHeight: 70.0,
                               leftPadding: 7.0,
                               rightPadding: 7.0,
@@ -244,7 +256,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                   //mainAxisSize: MainAxisSize.max,
                                   children: <Widget>[
                                     Text(
-                                      widget.futureRun.kennel.kennelName,
+                                      _rda.kennel.kennelName,
                                       style: const TextStyle(
                                         color: Color.fromARGB(255, 7, 12, 165),
                                         fontFamily: 'AvenirNextDemiBold',
@@ -256,20 +268,20 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
-                                      (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
-                                          (widget.futureRun.extensions.daysUntilEvent <= 14
-                                              ? widget.futureRun.extensions.daysUntilEvent.toInt() == -1
+                                      (_rda.event.isCountedRun == 1 ? 'Run #${_rda.event.eventNumber}, ' : 'Run / Event ') +
+                                          (_rda.extensions.daysUntilEvent <= 14
+                                              ? _rda.extensions.daysUntilEvent.toInt() == -1
                                                   ? 'Yesterday'
-                                                  : widget.futureRun.extensions.daysUntilEvent.toInt() == 0
+                                                  : _rda.extensions.daysUntilEvent.toInt() == 0
                                                       ? 'TODAY'
-                                                      : widget.futureRun.extensions.daysUntilEvent.toInt() == 1
+                                                      : _rda.extensions.daysUntilEvent.toInt() == 1
                                                           ? 'Tomorrow'
-                                                          : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
-                                              : (widget.futureRun.extensions.daysUntilEvent <= 30)
-                                                  ? 'in ${widget.futureRun.extensions.daysUntilEvent ~/ 7.0}${(widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
-                                                  : widget.futureRun.extensions.daysUntilEvent <= 365
-                                                      ? 'in ${widget.futureRun.extensions.daysUntilEvent ~/ 30.0}${(widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
-                                                      : 'in ${widget.futureRun.extensions.daysUntilEvent ~/ 365.0}${(widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
+                                                          : 'in ${_rda.extensions.daysUntilEvent.toInt().toString()} days'
+                                              : (_rda.extensions.daysUntilEvent <= 30)
+                                                  ? 'in ${_rda.extensions.daysUntilEvent ~/ 7.0}${(_rda.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
+                                                  : _rda.extensions.daysUntilEvent <= 365
+                                                      ? 'in ${_rda.extensions.daysUntilEvent ~/ 30.0}${(_rda.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
+                                                      : 'in ${_rda.extensions.daysUntilEvent ~/ 365.0}${(_rda.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
                                       style: const TextStyle(
                                         color: Colors.black87,
                                         fontFamily: 'AvenirNextDemiBold',
@@ -281,12 +293,12 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
-                                      DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
+                                      DateFormat("E, MMM d 'at' h:mm a").format(_rda.event.eventStartDatetime),
                                       style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    (widget.futureRun.event.hares ?? '') == ''
+                                    (_rda.event.hares ?? '') == ''
                                         ? const SizedBox()
                                         // Text(
                                         //     'RSVP to Hare this run!',
@@ -295,16 +307,16 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                         //     overflow: TextOverflow.ellipsis,
                                         //   )
                                         : Text(
-                                            'Hares: ${widget.futureRun.event.hares}',
+                                            'Hares: ${_rda.event.hares}',
                                             style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                    if ((widget.futureRun.extensions.latitude != null && widget.futureRun.extensions.isMapAndDistanceValid) &&
-                                        ((widget.futureRun.extensions.distToEvent ?? -1.0) >= 0) &&
+                                    if ((_rda.extensions.latitude != null && _rda.extensions.isMapAndDistanceValid) &&
+                                        ((_rda.extensions.distToEvent ?? -1.0) >= 0) &&
                                         (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
                                       Text(
-                                        '${Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0)} from here',
+                                        '${Utilities.getDistance(_rda.extensions.distToEvent, context, isMetric: (_rda.extensions.distanceUnitsPref & 0x01) == 0)} from here',
                                         style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
@@ -312,9 +324,9 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                     ] else
                                       const Text('No location provided',
                                           style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1)),
-                                    if (widget.futureRun.event.eventGeographicScope > 1) ...<Widget>[
+                                    if (_rda.event.eventGeographicScope > 1) ...<Widget>[
                                       Text(
-                                        Utilities.getEventScopeText(widget.futureRun.event.eventGeographicScope),
+                                        Utilities.getEventScopeText(_rda.event.eventGeographicScope),
                                         style: TextStyle(color: Colors.blue.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
@@ -339,7 +351,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                               ),
                             ],
 
-                            // (widget.futureRun.event.hares ?? '') == '' ? Container(
+                            // (_rda.event.hares ?? '') == '' ? Container(
                             //   padding: const EdgeInsets.only(top:15),
                             //   child:Image(width: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                           ],
@@ -363,21 +375,21 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               ],
             ),
             PaymentIcons(
-              widget.futureRun.event,
-              widget.futureRun.kennel,
-              widget.futureRun.extensions.digitsAfterDecimal,
-              widget.futureRun.extensions.currencySymbol,
-              widget.futureRun.extensions.distanceUnitsPref,
-              widget.futureRun.extensions.distToEvent,
-              widget.futureRun.paymentUrl,
-              widget.futureRun.extensions.rsvpState,
-              widget.futureRun.extensions.isMember,
-              widget.futureRun.extensions.isPaid,
+              _rda.event,
+              _rda.kennel,
+              _rda.extensions.digitsAfterDecimal,
+              _rda.extensions.currencySymbol,
+              _rda.extensions.distanceUnitsPref,
+              _rda.extensions.distToEvent,
+              _rda.paymentUrl,
+              _rda.extensions.rsvpState,
+              _rda.extensions.isMember,
+              _rda.extensions.isPaid,
               true,
               (int r, int p) {
-                widget.futureRun.extensions.rsvpState = r;
+                _rda.extensions.rsvpState = r;
                 if (p != -1) {
-                  widget.futureRun.extensions.isPaid = p;
+                  _rda.extensions.isPaid = p;
                 }
                 setState(() {});
               },
@@ -442,7 +454,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         if (retVal is EnumRsvpState) {
           await _setRsvpState(retVal, false);
         } else if (retVal is EnumIsHare) {
-          final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares);
+          final bool willHare = await Utilities.promptForHare(context, _rda.event.hares);
           await _setRsvpState(rsvpYes, willHare);
         }
       });
@@ -484,7 +496,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           ],
           'returnValue': isHareYes
         },
-        widget.futureRun.extensions.notificationPreference == 2
+        _rda.extensions.notificationPreference == 2
             ? <String, dynamic>{
                 'title': 'Notifications on',
                 'icon': <Widget>[
@@ -519,7 +531,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                 ],
                 'returnValue': notificationsOff,
               },
-        widget.futureRun.extensions.emailAlertPreference == 2
+        _rda.extensions.emailAlertPreference == 2
             ? <String, dynamic>{
                 'title': 'Send e-mail',
                 'icon': <Widget>[
@@ -577,7 +589,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         } else if (retVal is EnumRsvpState) {
           await _setRsvpState(retVal, false);
         } else if (retVal is EnumIsHare) {
-          final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares);
+          final bool willHare = await Utilities.promptForHare(context, _rda.event.hares);
           await _setRsvpState(rsvpYes, willHare);
         }
       });
@@ -667,13 +679,13 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final String userId = getStringPref(StringPrefsEnum.userId);
       final EnumEmailAlertState<int> nState = retVal;
       setState(() {
-        widget.futureRun.extensions.emailAlertPreference = -1;
+        _rda.extensions.emailAlertPreference = -1;
       });
 
       G0<TableModel>()
           .hasherEventMapService
           .setEmailAndNotificationPreferences(
-            widget.futureRun.event.eventId,
+            _rda.event.eventId,
             userId,
             AppDomainType.user,
             notificationsUnchanged,
@@ -681,7 +693,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           )
           .then((List<dynamic> results) {
         setState(() {
-          widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
+          _rda.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
         });
       });
     }
@@ -692,13 +704,13 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final String userId = getStringPref(StringPrefsEnum.userId);
       final EnumNotificationState<int> nState = retVal;
       setState(() {
-        widget.futureRun.extensions.notificationPreference = -1;
+        _rda.extensions.notificationPreference = -1;
       });
 
       G0<TableModel>()
           .hasherEventMapService
           .setEmailAndNotificationPreferences(
-            widget.futureRun.event.eventId,
+            _rda.event.eventId,
             userId,
             AppDomainType.user,
             nState,
@@ -707,10 +719,10 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           .then((List<dynamic> results) {
         setState(() {
           // final NotificationSupport notifications = NotificationSupport();
-          // notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
+          // notifications.setNotificationState(eventId: _rda.event.eventId);
           // // T0D0(James): Fix this to reflect true value of what is in the DB not just the value
           // // provided to the function
-          widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
+          _rda.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
         });
       });
     }

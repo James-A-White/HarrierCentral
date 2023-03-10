@@ -1,6 +1,7 @@
 // @dart=2.11
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 final GlobalKey<KennelsListPageState> kennelListPageKey = GlobalKey<KennelsListPageState>();
 
@@ -319,7 +320,6 @@ class KennelsListPageState extends State<KennelsListPage> {
       }
 
       //G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.isHomeKennel ? 1 : 0).compareTo(a.isHomeKennel ? 1 : 0));
-
     }
   }
 
@@ -363,11 +363,29 @@ class KennelsListPageState extends State<KennelsListPage> {
                                           _filteredList[index].extensions.notificationsRequested = -1;
                                           _filteredList[index].extensions.emailAlertRequested = -1;
                                           if (notificationStatus != null) {
-                                            _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                            // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+
+                                            KennelListAggregate a = _filteredList[index];
+
+                                            _filteredList[index] = KennelListAggregate(
+                                              kennel: a.kennel,
+                                              extensions: a.extensions,
+                                              isHomeKennel: a.isHomeKennel,
+                                              hkm: a.hkm.copyWith(kennelNotificationPreference: notificationStatus),
+                                            );
                                           }
 
                                           if (emailAlertStatus != null) {
-                                            _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
+                                            KennelListAggregate a = _filteredList[index];
+
+                                            _filteredList[index] = KennelListAggregate(
+                                              kennel: a.kennel,
+                                              extensions: a.extensions,
+                                              isHomeKennel: a.isHomeKennel,
+                                              hkm: a.hkm.copyWith(kennelEmailAlertPreference: emailAlertStatus),
+                                            );
+
+                                            // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
                                           }
                                         });
                                       },
@@ -375,9 +393,18 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         _filteredList[index].extensions.followingRequested = -1;
                                         _filteredList[index].extensions.notificationsRequested = -1;
                                         _filteredList[index].extensions.emailAlertRequested = -1;
-                                        _filteredList[index].hkm.following = following;
-                                        _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
-                                        _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
+
+                                        KennelListAggregate a = _filteredList[index];
+
+                                        _filteredList[index] = KennelListAggregate(
+                                            kennel: a.kennel,
+                                            isHomeKennel: a.isHomeKennel,
+                                            extensions: a.extensions,
+                                            hkm: a.hkm.copyWith(following: following, kennelNotificationPreference: notificationStatus, kennelEmailAlertPreference: emailAlertStatus));
+
+                                        // _filteredList[index].hkm.following = following;
+                                        // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                        // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
 
                                         if (_filteredList[index].kennel.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
                                           // if this kennel has been set as the home kennel, clear the home kennel
