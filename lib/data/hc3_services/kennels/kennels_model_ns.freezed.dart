@@ -20,34 +20,34 @@ KennelsModel _$KennelsModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$KennelsModel {
-  String? get kennelId => throw _privateConstructorUsedError;
-  String? get publicKennelId => throw _privateConstructorUsedError;
-  String? get cityId => throw _privateConstructorUsedError;
-  String? get regionId => throw _privateConstructorUsedError;
-  String? get countryId => throw _privateConstructorUsedError;
-  String? get kennelName => throw _privateConstructorUsedError;
+  String get kennelId => throw _privateConstructorUsedError;
+  String get publicKennelId => throw _privateConstructorUsedError;
+  String get cityId => throw _privateConstructorUsedError;
+  String get regionId => throw _privateConstructorUsedError;
+  String get countryId => throw _privateConstructorUsedError;
+  String get kennelName => throw _privateConstructorUsedError;
   String? get kennelSearchTags => throw _privateConstructorUsedError;
-  String? get kennelShortName => throw _privateConstructorUsedError;
+  String get kennelShortName => throw _privateConstructorUsedError;
   String? get kennelDescription => throw _privateConstructorUsedError;
-  String? get kennelLogo => throw _privateConstructorUsedError;
-  int? get kennelPinColor => throw _privateConstructorUsedError;
-  int? get disseminateAllowWebLinks => throw _privateConstructorUsedError;
+  String get kennelLogo => throw _privateConstructorUsedError;
+  int get kennelPinColor => throw _privateConstructorUsedError;
+  int get disseminateAllowWebLinks => throw _privateConstructorUsedError;
   String? get kennelCoverPhoto => throw _privateConstructorUsedError;
   String? get kennelWebsiteUrl => throw _privateConstructorUsedError;
   String? get defaultEventCurrencyType => throw _privateConstructorUsedError;
   String? get integrationType => throw _privateConstructorUsedError;
   int? get kennelInboundIntegrationId => throw _privateConstructorUsedError;
   String? get kennelEventsUrl => throw _privateConstructorUsedError;
-  int? get kennelStatus => throw _privateConstructorUsedError;
-  int? get canEditRunAttendence => throw _privateConstructorUsedError;
-  int? get allowNegativeCredit => throw _privateConstructorUsedError;
-  int? get allowSelfPayment => throw _privateConstructorUsedError;
+  int get kennelStatus => throw _privateConstructorUsedError;
+  int get canEditRunAttendence => throw _privateConstructorUsedError;
+  int get allowNegativeCredit => throw _privateConstructorUsedError;
+  int get allowSelfPayment => throw _privateConstructorUsedError;
   num? get kennelLatitude => throw _privateConstructorUsedError;
   num? get kennelLongitude => throw _privateConstructorUsedError;
-  num? get defaultPriceForMembers => throw _privateConstructorUsedError;
-  num? get defaultPriceForNonMembers => throw _privateConstructorUsedError;
-  int? get membershipDurationInMonths => throw _privateConstructorUsedError;
-  DateTime? get defaultRunStartTime => throw _privateConstructorUsedError;
+  num get defaultPriceForMembers => throw _privateConstructorUsedError;
+  num get defaultPriceForNonMembers => throw _privateConstructorUsedError;
+  int get membershipDurationInMonths => throw _privateConstructorUsedError;
+  DateTime get defaultRunStartTime => throw _privateConstructorUsedError;
   String? get currencyCode => throw _privateConstructorUsedError;
   String? get primaryCultureCode => throw _privateConstructorUsedError;
   String? get currencySymbol => throw _privateConstructorUsedError;
@@ -77,8 +77,8 @@ mixin _$KennelsModel {
   DateTime? get runCountStartDate => throw _privateConstructorUsedError;
   String? get kennelMismanagementTeam => throw _privateConstructorUsedError;
   int? get distancePreference => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -93,34 +93,34 @@ abstract class $KennelsModelCopyWith<$Res> {
       _$KennelsModelCopyWithImpl<$Res, KennelsModel>;
   @useResult
   $Res call(
-      {String? kennelId,
-      String? publicKennelId,
-      String? cityId,
-      String? regionId,
-      String? countryId,
-      String? kennelName,
+      {String kennelId,
+      String publicKennelId,
+      String cityId,
+      String regionId,
+      String countryId,
+      String kennelName,
       String? kennelSearchTags,
-      String? kennelShortName,
+      String kennelShortName,
       String? kennelDescription,
-      String? kennelLogo,
-      int? kennelPinColor,
-      int? disseminateAllowWebLinks,
+      String kennelLogo,
+      int kennelPinColor,
+      int disseminateAllowWebLinks,
       String? kennelCoverPhoto,
       String? kennelWebsiteUrl,
       String? defaultEventCurrencyType,
       String? integrationType,
       int? kennelInboundIntegrationId,
       String? kennelEventsUrl,
-      int? kennelStatus,
-      int? canEditRunAttendence,
-      int? allowNegativeCredit,
-      int? allowSelfPayment,
+      int kennelStatus,
+      int canEditRunAttendence,
+      int allowNegativeCredit,
+      int allowSelfPayment,
       num? kennelLatitude,
       num? kennelLongitude,
-      num? defaultPriceForMembers,
-      num? defaultPriceForNonMembers,
-      int? membershipDurationInMonths,
-      DateTime? defaultRunStartTime,
+      num defaultPriceForMembers,
+      num defaultPriceForNonMembers,
+      int membershipDurationInMonths,
+      DateTime defaultRunStartTime,
       String? currencyCode,
       String? primaryCultureCode,
       String? currencySymbol,
@@ -147,8 +147,8 @@ abstract class $KennelsModelCopyWith<$Res> {
       DateTime? runCountStartDate,
       String? kennelMismanagementTeam,
       int? distancePreference,
-      DateTime? updatedAt,
-      int? removed});
+      DateTime updatedAt,
+      int removed});
 }
 
 /// @nodoc
@@ -164,34 +164,34 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? kennelId = freezed,
-    Object? publicKennelId = freezed,
-    Object? cityId = freezed,
-    Object? regionId = freezed,
-    Object? countryId = freezed,
-    Object? kennelName = freezed,
+    Object? kennelId = null,
+    Object? publicKennelId = null,
+    Object? cityId = null,
+    Object? regionId = null,
+    Object? countryId = null,
+    Object? kennelName = null,
     Object? kennelSearchTags = freezed,
-    Object? kennelShortName = freezed,
+    Object? kennelShortName = null,
     Object? kennelDescription = freezed,
-    Object? kennelLogo = freezed,
-    Object? kennelPinColor = freezed,
-    Object? disseminateAllowWebLinks = freezed,
+    Object? kennelLogo = null,
+    Object? kennelPinColor = null,
+    Object? disseminateAllowWebLinks = null,
     Object? kennelCoverPhoto = freezed,
     Object? kennelWebsiteUrl = freezed,
     Object? defaultEventCurrencyType = freezed,
     Object? integrationType = freezed,
     Object? kennelInboundIntegrationId = freezed,
     Object? kennelEventsUrl = freezed,
-    Object? kennelStatus = freezed,
-    Object? canEditRunAttendence = freezed,
-    Object? allowNegativeCredit = freezed,
-    Object? allowSelfPayment = freezed,
+    Object? kennelStatus = null,
+    Object? canEditRunAttendence = null,
+    Object? allowNegativeCredit = null,
+    Object? allowSelfPayment = null,
     Object? kennelLatitude = freezed,
     Object? kennelLongitude = freezed,
-    Object? defaultPriceForMembers = freezed,
-    Object? defaultPriceForNonMembers = freezed,
-    Object? membershipDurationInMonths = freezed,
-    Object? defaultRunStartTime = freezed,
+    Object? defaultPriceForMembers = null,
+    Object? defaultPriceForNonMembers = null,
+    Object? membershipDurationInMonths = null,
+    Object? defaultRunStartTime = null,
     Object? currencyCode = freezed,
     Object? primaryCultureCode = freezed,
     Object? currencySymbol = freezed,
@@ -218,58 +218,58 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
     Object? runCountStartDate = freezed,
     Object? kennelMismanagementTeam = freezed,
     Object? distancePreference = freezed,
-    Object? updatedAt = freezed,
-    Object? removed = freezed,
+    Object? updatedAt = null,
+    Object? removed = null,
   }) {
     return _then(_value.copyWith(
-      kennelId: freezed == kennelId
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      publicKennelId: freezed == publicKennelId
+              as String,
+      publicKennelId: null == publicKennelId
           ? _value.publicKennelId
           : publicKennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      cityId: freezed == cityId
+              as String,
+      cityId: null == cityId
           ? _value.cityId
           : cityId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionId: freezed == regionId
+              as String,
+      regionId: null == regionId
           ? _value.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      countryId: freezed == countryId
+              as String,
+      countryId: null == countryId
           ? _value.countryId
           : countryId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelName: freezed == kennelName
+              as String,
+      kennelName: null == kennelName
           ? _value.kennelName
           : kennelName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       kennelSearchTags: freezed == kennelSearchTags
           ? _value.kennelSearchTags
           : kennelSearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
-      kennelShortName: freezed == kennelShortName
+      kennelShortName: null == kennelShortName
           ? _value.kennelShortName
           : kennelShortName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       kennelDescription: freezed == kennelDescription
           ? _value.kennelDescription
           : kennelDescription // ignore: cast_nullable_to_non_nullable
               as String?,
-      kennelLogo: freezed == kennelLogo
+      kennelLogo: null == kennelLogo
           ? _value.kennelLogo
           : kennelLogo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPinColor: freezed == kennelPinColor
+              as String,
+      kennelPinColor: null == kennelPinColor
           ? _value.kennelPinColor
           : kennelPinColor // ignore: cast_nullable_to_non_nullable
-              as int?,
-      disseminateAllowWebLinks: freezed == disseminateAllowWebLinks
+              as int,
+      disseminateAllowWebLinks: null == disseminateAllowWebLinks
           ? _value.disseminateAllowWebLinks
           : disseminateAllowWebLinks // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       kennelCoverPhoto: freezed == kennelCoverPhoto
           ? _value.kennelCoverPhoto
           : kennelCoverPhoto // ignore: cast_nullable_to_non_nullable
@@ -294,22 +294,22 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
           ? _value.kennelEventsUrl
           : kennelEventsUrl // ignore: cast_nullable_to_non_nullable
               as String?,
-      kennelStatus: freezed == kennelStatus
+      kennelStatus: null == kennelStatus
           ? _value.kennelStatus
           : kennelStatus // ignore: cast_nullable_to_non_nullable
-              as int?,
-      canEditRunAttendence: freezed == canEditRunAttendence
+              as int,
+      canEditRunAttendence: null == canEditRunAttendence
           ? _value.canEditRunAttendence
           : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as int?,
-      allowNegativeCredit: freezed == allowNegativeCredit
+              as int,
+      allowNegativeCredit: null == allowNegativeCredit
           ? _value.allowNegativeCredit
           : allowNegativeCredit // ignore: cast_nullable_to_non_nullable
-              as int?,
-      allowSelfPayment: freezed == allowSelfPayment
+              as int,
+      allowSelfPayment: null == allowSelfPayment
           ? _value.allowSelfPayment
           : allowSelfPayment // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       kennelLatitude: freezed == kennelLatitude
           ? _value.kennelLatitude
           : kennelLatitude // ignore: cast_nullable_to_non_nullable
@@ -318,22 +318,22 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
           ? _value.kennelLongitude
           : kennelLongitude // ignore: cast_nullable_to_non_nullable
               as num?,
-      defaultPriceForMembers: freezed == defaultPriceForMembers
+      defaultPriceForMembers: null == defaultPriceForMembers
           ? _value.defaultPriceForMembers
           : defaultPriceForMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
-      defaultPriceForNonMembers: freezed == defaultPriceForNonMembers
+              as num,
+      defaultPriceForNonMembers: null == defaultPriceForNonMembers
           ? _value.defaultPriceForNonMembers
           : defaultPriceForNonMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
-      membershipDurationInMonths: freezed == membershipDurationInMonths
+              as num,
+      membershipDurationInMonths: null == membershipDurationInMonths
           ? _value.membershipDurationInMonths
           : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
-              as int?,
-      defaultRunStartTime: freezed == defaultRunStartTime
+              as int,
+      defaultRunStartTime: null == defaultRunStartTime
           ? _value.defaultRunStartTime
           : defaultRunStartTime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       currencyCode: freezed == currencyCode
           ? _value.currencyCode
           : currencyCode // ignore: cast_nullable_to_non_nullable
@@ -441,14 +441,14 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      removed: freezed == removed
+              as DateTime,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
     ) as $Val);
   }
 }
@@ -462,34 +462,34 @@ abstract class _$$_KennelsModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? kennelId,
-      String? publicKennelId,
-      String? cityId,
-      String? regionId,
-      String? countryId,
-      String? kennelName,
+      {String kennelId,
+      String publicKennelId,
+      String cityId,
+      String regionId,
+      String countryId,
+      String kennelName,
       String? kennelSearchTags,
-      String? kennelShortName,
+      String kennelShortName,
       String? kennelDescription,
-      String? kennelLogo,
-      int? kennelPinColor,
-      int? disseminateAllowWebLinks,
+      String kennelLogo,
+      int kennelPinColor,
+      int disseminateAllowWebLinks,
       String? kennelCoverPhoto,
       String? kennelWebsiteUrl,
       String? defaultEventCurrencyType,
       String? integrationType,
       int? kennelInboundIntegrationId,
       String? kennelEventsUrl,
-      int? kennelStatus,
-      int? canEditRunAttendence,
-      int? allowNegativeCredit,
-      int? allowSelfPayment,
+      int kennelStatus,
+      int canEditRunAttendence,
+      int allowNegativeCredit,
+      int allowSelfPayment,
       num? kennelLatitude,
       num? kennelLongitude,
-      num? defaultPriceForMembers,
-      num? defaultPriceForNonMembers,
-      int? membershipDurationInMonths,
-      DateTime? defaultRunStartTime,
+      num defaultPriceForMembers,
+      num defaultPriceForNonMembers,
+      int membershipDurationInMonths,
+      DateTime defaultRunStartTime,
       String? currencyCode,
       String? primaryCultureCode,
       String? currencySymbol,
@@ -516,8 +516,8 @@ abstract class _$$_KennelsModelCopyWith<$Res>
       DateTime? runCountStartDate,
       String? kennelMismanagementTeam,
       int? distancePreference,
-      DateTime? updatedAt,
-      int? removed});
+      DateTime updatedAt,
+      int removed});
 }
 
 /// @nodoc
@@ -531,34 +531,34 @@ class __$$_KennelsModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? kennelId = freezed,
-    Object? publicKennelId = freezed,
-    Object? cityId = freezed,
-    Object? regionId = freezed,
-    Object? countryId = freezed,
-    Object? kennelName = freezed,
+    Object? kennelId = null,
+    Object? publicKennelId = null,
+    Object? cityId = null,
+    Object? regionId = null,
+    Object? countryId = null,
+    Object? kennelName = null,
     Object? kennelSearchTags = freezed,
-    Object? kennelShortName = freezed,
+    Object? kennelShortName = null,
     Object? kennelDescription = freezed,
-    Object? kennelLogo = freezed,
-    Object? kennelPinColor = freezed,
-    Object? disseminateAllowWebLinks = freezed,
+    Object? kennelLogo = null,
+    Object? kennelPinColor = null,
+    Object? disseminateAllowWebLinks = null,
     Object? kennelCoverPhoto = freezed,
     Object? kennelWebsiteUrl = freezed,
     Object? defaultEventCurrencyType = freezed,
     Object? integrationType = freezed,
     Object? kennelInboundIntegrationId = freezed,
     Object? kennelEventsUrl = freezed,
-    Object? kennelStatus = freezed,
-    Object? canEditRunAttendence = freezed,
-    Object? allowNegativeCredit = freezed,
-    Object? allowSelfPayment = freezed,
+    Object? kennelStatus = null,
+    Object? canEditRunAttendence = null,
+    Object? allowNegativeCredit = null,
+    Object? allowSelfPayment = null,
     Object? kennelLatitude = freezed,
     Object? kennelLongitude = freezed,
-    Object? defaultPriceForMembers = freezed,
-    Object? defaultPriceForNonMembers = freezed,
-    Object? membershipDurationInMonths = freezed,
-    Object? defaultRunStartTime = freezed,
+    Object? defaultPriceForMembers = null,
+    Object? defaultPriceForNonMembers = null,
+    Object? membershipDurationInMonths = null,
+    Object? defaultRunStartTime = null,
     Object? currencyCode = freezed,
     Object? primaryCultureCode = freezed,
     Object? currencySymbol = freezed,
@@ -585,58 +585,58 @@ class __$$_KennelsModelCopyWithImpl<$Res>
     Object? runCountStartDate = freezed,
     Object? kennelMismanagementTeam = freezed,
     Object? distancePreference = freezed,
-    Object? updatedAt = freezed,
-    Object? removed = freezed,
+    Object? updatedAt = null,
+    Object? removed = null,
   }) {
     return _then(_$_KennelsModel(
-      kennelId: freezed == kennelId
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      publicKennelId: freezed == publicKennelId
+              as String,
+      publicKennelId: null == publicKennelId
           ? _value.publicKennelId
           : publicKennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      cityId: freezed == cityId
+              as String,
+      cityId: null == cityId
           ? _value.cityId
           : cityId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionId: freezed == regionId
+              as String,
+      regionId: null == regionId
           ? _value.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      countryId: freezed == countryId
+              as String,
+      countryId: null == countryId
           ? _value.countryId
           : countryId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelName: freezed == kennelName
+              as String,
+      kennelName: null == kennelName
           ? _value.kennelName
           : kennelName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       kennelSearchTags: freezed == kennelSearchTags
           ? _value.kennelSearchTags
           : kennelSearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
-      kennelShortName: freezed == kennelShortName
+      kennelShortName: null == kennelShortName
           ? _value.kennelShortName
           : kennelShortName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       kennelDescription: freezed == kennelDescription
           ? _value.kennelDescription
           : kennelDescription // ignore: cast_nullable_to_non_nullable
               as String?,
-      kennelLogo: freezed == kennelLogo
+      kennelLogo: null == kennelLogo
           ? _value.kennelLogo
           : kennelLogo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPinColor: freezed == kennelPinColor
+              as String,
+      kennelPinColor: null == kennelPinColor
           ? _value.kennelPinColor
           : kennelPinColor // ignore: cast_nullable_to_non_nullable
-              as int?,
-      disseminateAllowWebLinks: freezed == disseminateAllowWebLinks
+              as int,
+      disseminateAllowWebLinks: null == disseminateAllowWebLinks
           ? _value.disseminateAllowWebLinks
           : disseminateAllowWebLinks // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       kennelCoverPhoto: freezed == kennelCoverPhoto
           ? _value.kennelCoverPhoto
           : kennelCoverPhoto // ignore: cast_nullable_to_non_nullable
@@ -661,22 +661,22 @@ class __$$_KennelsModelCopyWithImpl<$Res>
           ? _value.kennelEventsUrl
           : kennelEventsUrl // ignore: cast_nullable_to_non_nullable
               as String?,
-      kennelStatus: freezed == kennelStatus
+      kennelStatus: null == kennelStatus
           ? _value.kennelStatus
           : kennelStatus // ignore: cast_nullable_to_non_nullable
-              as int?,
-      canEditRunAttendence: freezed == canEditRunAttendence
+              as int,
+      canEditRunAttendence: null == canEditRunAttendence
           ? _value.canEditRunAttendence
           : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as int?,
-      allowNegativeCredit: freezed == allowNegativeCredit
+              as int,
+      allowNegativeCredit: null == allowNegativeCredit
           ? _value.allowNegativeCredit
           : allowNegativeCredit // ignore: cast_nullable_to_non_nullable
-              as int?,
-      allowSelfPayment: freezed == allowSelfPayment
+              as int,
+      allowSelfPayment: null == allowSelfPayment
           ? _value.allowSelfPayment
           : allowSelfPayment // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       kennelLatitude: freezed == kennelLatitude
           ? _value.kennelLatitude
           : kennelLatitude // ignore: cast_nullable_to_non_nullable
@@ -685,22 +685,22 @@ class __$$_KennelsModelCopyWithImpl<$Res>
           ? _value.kennelLongitude
           : kennelLongitude // ignore: cast_nullable_to_non_nullable
               as num?,
-      defaultPriceForMembers: freezed == defaultPriceForMembers
+      defaultPriceForMembers: null == defaultPriceForMembers
           ? _value.defaultPriceForMembers
           : defaultPriceForMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
-      defaultPriceForNonMembers: freezed == defaultPriceForNonMembers
+              as num,
+      defaultPriceForNonMembers: null == defaultPriceForNonMembers
           ? _value.defaultPriceForNonMembers
           : defaultPriceForNonMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
-      membershipDurationInMonths: freezed == membershipDurationInMonths
+              as num,
+      membershipDurationInMonths: null == membershipDurationInMonths
           ? _value.membershipDurationInMonths
           : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
-              as int?,
-      defaultRunStartTime: freezed == defaultRunStartTime
+              as int,
+      defaultRunStartTime: null == defaultRunStartTime
           ? _value.defaultRunStartTime
           : defaultRunStartTime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       currencyCode: freezed == currencyCode
           ? _value.currencyCode
           : currencyCode // ignore: cast_nullable_to_non_nullable
@@ -808,14 +808,14 @@ class __$$_KennelsModelCopyWithImpl<$Res>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      removed: freezed == removed
+              as DateTime,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
     ));
   }
 }
@@ -830,54 +830,54 @@ class _$_KennelsModel implements _KennelsModel {
       required this.regionId,
       required this.countryId,
       required this.kennelName,
-      required this.kennelSearchTags,
+      this.kennelSearchTags,
       required this.kennelShortName,
-      required this.kennelDescription,
+      this.kennelDescription,
       required this.kennelLogo,
       required this.kennelPinColor,
       required this.disseminateAllowWebLinks,
-      required this.kennelCoverPhoto,
-      required this.kennelWebsiteUrl,
-      required this.defaultEventCurrencyType,
-      required this.integrationType,
-      required this.kennelInboundIntegrationId,
-      required this.kennelEventsUrl,
+      this.kennelCoverPhoto,
+      this.kennelWebsiteUrl,
+      this.defaultEventCurrencyType,
+      this.integrationType,
+      this.kennelInboundIntegrationId,
+      this.kennelEventsUrl,
       required this.kennelStatus,
       required this.canEditRunAttendence,
       required this.allowNegativeCredit,
       required this.allowSelfPayment,
-      required this.kennelLatitude,
-      required this.kennelLongitude,
+      this.kennelLatitude,
+      this.kennelLongitude,
       required this.defaultPriceForMembers,
       required this.defaultPriceForNonMembers,
       required this.membershipDurationInMonths,
       required this.defaultRunStartTime,
-      required this.currencyCode,
-      required this.primaryCultureCode,
-      required this.currencySymbol,
-      required this.digitsAfterDecimal,
-      required this.bankScheme,
-      required this.bankAccountNumber,
-      required this.bankBic,
-      required this.bankBeneficiary,
-      required this.kennelPaymentScheme,
-      required this.kennelPaymentUrl,
-      required this.kennelPaymentUrlExpires,
-      required this.kennelPaymentMemberSurcharge,
-      required this.kennelPaymentNonMemberSurcharge,
-      required this.kennelPaymentScheme2,
-      required this.kennelPaymentUrl2,
-      required this.kennelPaymentUrlExpires2,
-      required this.kennelPaymentMemberSurcharge2,
-      required this.kennelPaymentNonMemberSurcharge2,
-      required this.kennelPaymentScheme3,
-      required this.kennelPaymentUrl3,
-      required this.kennelPaymentUrlExpires3,
-      required this.kennelPaymentMemberSurcharge3,
-      required this.kennelPaymentNonMemberSurcharge3,
-      required this.runCountStartDate,
-      required this.kennelMismanagementTeam,
-      required this.distancePreference,
+      this.currencyCode,
+      this.primaryCultureCode,
+      this.currencySymbol,
+      this.digitsAfterDecimal,
+      this.bankScheme,
+      this.bankAccountNumber,
+      this.bankBic,
+      this.bankBeneficiary,
+      this.kennelPaymentScheme,
+      this.kennelPaymentUrl,
+      this.kennelPaymentUrlExpires,
+      this.kennelPaymentMemberSurcharge,
+      this.kennelPaymentNonMemberSurcharge,
+      this.kennelPaymentScheme2,
+      this.kennelPaymentUrl2,
+      this.kennelPaymentUrlExpires2,
+      this.kennelPaymentMemberSurcharge2,
+      this.kennelPaymentNonMemberSurcharge2,
+      this.kennelPaymentScheme3,
+      this.kennelPaymentUrl3,
+      this.kennelPaymentUrlExpires3,
+      this.kennelPaymentMemberSurcharge3,
+      this.kennelPaymentNonMemberSurcharge3,
+      this.runCountStartDate,
+      this.kennelMismanagementTeam,
+      this.distancePreference,
       required this.updatedAt,
       required this.removed});
 
@@ -885,29 +885,29 @@ class _$_KennelsModel implements _KennelsModel {
       _$$_KennelsModelFromJson(json);
 
   @override
-  final String? kennelId;
+  final String kennelId;
   @override
-  final String? publicKennelId;
+  final String publicKennelId;
   @override
-  final String? cityId;
+  final String cityId;
   @override
-  final String? regionId;
+  final String regionId;
   @override
-  final String? countryId;
+  final String countryId;
   @override
-  final String? kennelName;
+  final String kennelName;
   @override
   final String? kennelSearchTags;
   @override
-  final String? kennelShortName;
+  final String kennelShortName;
   @override
   final String? kennelDescription;
   @override
-  final String? kennelLogo;
+  final String kennelLogo;
   @override
-  final int? kennelPinColor;
+  final int kennelPinColor;
   @override
-  final int? disseminateAllowWebLinks;
+  final int disseminateAllowWebLinks;
   @override
   final String? kennelCoverPhoto;
   @override
@@ -921,25 +921,25 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final String? kennelEventsUrl;
   @override
-  final int? kennelStatus;
+  final int kennelStatus;
   @override
-  final int? canEditRunAttendence;
+  final int canEditRunAttendence;
   @override
-  final int? allowNegativeCredit;
+  final int allowNegativeCredit;
   @override
-  final int? allowSelfPayment;
+  final int allowSelfPayment;
   @override
   final num? kennelLatitude;
   @override
   final num? kennelLongitude;
   @override
-  final num? defaultPriceForMembers;
+  final num defaultPriceForMembers;
   @override
-  final num? defaultPriceForNonMembers;
+  final num defaultPriceForNonMembers;
   @override
-  final int? membershipDurationInMonths;
+  final int membershipDurationInMonths;
   @override
-  final DateTime? defaultRunStartTime;
+  final DateTime defaultRunStartTime;
   @override
   final String? currencyCode;
   @override
@@ -993,9 +993,9 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final int? distancePreference;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
   @override
-  final int? removed;
+  final int removed;
 
   @override
   String toString() {
@@ -1174,90 +1174,90 @@ class _$_KennelsModel implements _KennelsModel {
 
 abstract class _KennelsModel implements KennelsModel {
   factory _KennelsModel(
-      {required final String? kennelId,
-      required final String? publicKennelId,
-      required final String? cityId,
-      required final String? regionId,
-      required final String? countryId,
-      required final String? kennelName,
-      required final String? kennelSearchTags,
-      required final String? kennelShortName,
-      required final String? kennelDescription,
-      required final String? kennelLogo,
-      required final int? kennelPinColor,
-      required final int? disseminateAllowWebLinks,
-      required final String? kennelCoverPhoto,
-      required final String? kennelWebsiteUrl,
-      required final String? defaultEventCurrencyType,
-      required final String? integrationType,
-      required final int? kennelInboundIntegrationId,
-      required final String? kennelEventsUrl,
-      required final int? kennelStatus,
-      required final int? canEditRunAttendence,
-      required final int? allowNegativeCredit,
-      required final int? allowSelfPayment,
-      required final num? kennelLatitude,
-      required final num? kennelLongitude,
-      required final num? defaultPriceForMembers,
-      required final num? defaultPriceForNonMembers,
-      required final int? membershipDurationInMonths,
-      required final DateTime? defaultRunStartTime,
-      required final String? currencyCode,
-      required final String? primaryCultureCode,
-      required final String? currencySymbol,
-      required final num? digitsAfterDecimal,
-      required final String? bankScheme,
-      required final String? bankAccountNumber,
-      required final String? bankBic,
-      required final String? bankBeneficiary,
-      required final String? kennelPaymentScheme,
-      required final String? kennelPaymentUrl,
-      required final DateTime? kennelPaymentUrlExpires,
-      required final num? kennelPaymentMemberSurcharge,
-      required final num? kennelPaymentNonMemberSurcharge,
-      required final String? kennelPaymentScheme2,
-      required final String? kennelPaymentUrl2,
-      required final DateTime? kennelPaymentUrlExpires2,
-      required final num? kennelPaymentMemberSurcharge2,
-      required final num? kennelPaymentNonMemberSurcharge2,
-      required final String? kennelPaymentScheme3,
-      required final String? kennelPaymentUrl3,
-      required final DateTime? kennelPaymentUrlExpires3,
-      required final num? kennelPaymentMemberSurcharge3,
-      required final num? kennelPaymentNonMemberSurcharge3,
-      required final DateTime? runCountStartDate,
-      required final String? kennelMismanagementTeam,
-      required final int? distancePreference,
-      required final DateTime? updatedAt,
-      required final int? removed}) = _$_KennelsModel;
+      {required final String kennelId,
+      required final String publicKennelId,
+      required final String cityId,
+      required final String regionId,
+      required final String countryId,
+      required final String kennelName,
+      final String? kennelSearchTags,
+      required final String kennelShortName,
+      final String? kennelDescription,
+      required final String kennelLogo,
+      required final int kennelPinColor,
+      required final int disseminateAllowWebLinks,
+      final String? kennelCoverPhoto,
+      final String? kennelWebsiteUrl,
+      final String? defaultEventCurrencyType,
+      final String? integrationType,
+      final int? kennelInboundIntegrationId,
+      final String? kennelEventsUrl,
+      required final int kennelStatus,
+      required final int canEditRunAttendence,
+      required final int allowNegativeCredit,
+      required final int allowSelfPayment,
+      final num? kennelLatitude,
+      final num? kennelLongitude,
+      required final num defaultPriceForMembers,
+      required final num defaultPriceForNonMembers,
+      required final int membershipDurationInMonths,
+      required final DateTime defaultRunStartTime,
+      final String? currencyCode,
+      final String? primaryCultureCode,
+      final String? currencySymbol,
+      final num? digitsAfterDecimal,
+      final String? bankScheme,
+      final String? bankAccountNumber,
+      final String? bankBic,
+      final String? bankBeneficiary,
+      final String? kennelPaymentScheme,
+      final String? kennelPaymentUrl,
+      final DateTime? kennelPaymentUrlExpires,
+      final num? kennelPaymentMemberSurcharge,
+      final num? kennelPaymentNonMemberSurcharge,
+      final String? kennelPaymentScheme2,
+      final String? kennelPaymentUrl2,
+      final DateTime? kennelPaymentUrlExpires2,
+      final num? kennelPaymentMemberSurcharge2,
+      final num? kennelPaymentNonMemberSurcharge2,
+      final String? kennelPaymentScheme3,
+      final String? kennelPaymentUrl3,
+      final DateTime? kennelPaymentUrlExpires3,
+      final num? kennelPaymentMemberSurcharge3,
+      final num? kennelPaymentNonMemberSurcharge3,
+      final DateTime? runCountStartDate,
+      final String? kennelMismanagementTeam,
+      final int? distancePreference,
+      required final DateTime updatedAt,
+      required final int removed}) = _$_KennelsModel;
 
   factory _KennelsModel.fromJson(Map<String, dynamic> json) =
       _$_KennelsModel.fromJson;
 
   @override
-  String? get kennelId;
+  String get kennelId;
   @override
-  String? get publicKennelId;
+  String get publicKennelId;
   @override
-  String? get cityId;
+  String get cityId;
   @override
-  String? get regionId;
+  String get regionId;
   @override
-  String? get countryId;
+  String get countryId;
   @override
-  String? get kennelName;
+  String get kennelName;
   @override
   String? get kennelSearchTags;
   @override
-  String? get kennelShortName;
+  String get kennelShortName;
   @override
   String? get kennelDescription;
   @override
-  String? get kennelLogo;
+  String get kennelLogo;
   @override
-  int? get kennelPinColor;
+  int get kennelPinColor;
   @override
-  int? get disseminateAllowWebLinks;
+  int get disseminateAllowWebLinks;
   @override
   String? get kennelCoverPhoto;
   @override
@@ -1271,25 +1271,25 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   String? get kennelEventsUrl;
   @override
-  int? get kennelStatus;
+  int get kennelStatus;
   @override
-  int? get canEditRunAttendence;
+  int get canEditRunAttendence;
   @override
-  int? get allowNegativeCredit;
+  int get allowNegativeCredit;
   @override
-  int? get allowSelfPayment;
+  int get allowSelfPayment;
   @override
   num? get kennelLatitude;
   @override
   num? get kennelLongitude;
   @override
-  num? get defaultPriceForMembers;
+  num get defaultPriceForMembers;
   @override
-  num? get defaultPriceForNonMembers;
+  num get defaultPriceForNonMembers;
   @override
-  int? get membershipDurationInMonths;
+  int get membershipDurationInMonths;
   @override
-  DateTime? get defaultRunStartTime;
+  DateTime get defaultRunStartTime;
   @override
   String? get currencyCode;
   @override
@@ -1343,9 +1343,9 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   int? get distancePreference;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
-  int? get removed;
+  int get removed;
   @override
   @JsonKey(ignore: true)
   _$$_KennelsModelCopyWith<_$_KennelsModel> get copyWith =>

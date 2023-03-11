@@ -219,12 +219,12 @@ class _$_CitiesModel implements _CitiesModel {
   _$_CitiesModel(
       {required this.cityId,
       required this.cityName,
-      required this.citySearchTags,
+      this.citySearchTags,
       required this.regionId,
       required this.latitude,
       required this.longitude,
       required this.cityAscii,
-      required this.flagFile,
+      this.flagFile,
       required this.removed,
       required this.updatedAt});
 
@@ -305,12 +305,12 @@ abstract class _CitiesModel implements CitiesModel {
   factory _CitiesModel(
       {required final String cityId,
       required final String cityName,
-      required final String? citySearchTags,
+      final String? citySearchTags,
       required final String regionId,
       required final num latitude,
       required final num longitude,
       required final String cityAscii,
-      required final String? flagFile,
+      final String? flagFile,
       required final int removed,
       required final DateTime updatedAt}) = _$_CitiesModel;
 

@@ -8,10 +8,10 @@ class RegionsModel with _$RegionsModel implements BaseModel {
   factory RegionsModel({
     required String regionId,
     required String regionName,
-    required String? regionSearchTags,
-    required String? regionAbbreviation,
+    String? regionSearchTags,
+    String? regionAbbreviation,
     required String countryId,
-    required String? flagFile,
+    String? flagFile,
     required int removed,
     required DateTime updatedAt,
   }) = _RegionsModel;

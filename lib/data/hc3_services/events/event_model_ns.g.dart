@@ -8,19 +8,19 @@ part of 'event_model_ns.dart';
 
 _$_EventModel _$$_EventModelFromJson(Map<String, dynamic> json) =>
     _$_EventModel(
-      eventId: json['eventId'] as String?,
-      publicEventId: json['publicEventId'] as String?,
+      eventId: json['eventId'] as String,
+      publicEventId: json['publicEventId'] as String,
       eventStartDatetime: json['eventStartDatetime'] == null
           ? null
           : DateTime.parse(json['eventStartDatetime'] as String),
-      kennelId: json['kennelId'] as String?,
-      isVisible: json['isVisible'] as int?,
-      isCountedRun: json['isCountedRun'] as int?,
-      isPromotedEvent: json['isPromotedEvent'] as int?,
-      eventGeographicScope: json['eventGeographicScope'] as int?,
-      eventInboundIntegrationId: json['eventInboundIntegrationId'] as int?,
-      eventNumber: json['eventNumber'] as int?,
-      eventName: json['eventName'] as String?,
+      kennelId: json['kennelId'] as String,
+      isVisible: json['isVisible'] as int,
+      isCountedRun: json['isCountedRun'] as int,
+      isPromotedEvent: json['isPromotedEvent'] as int,
+      eventGeographicScope: json['eventGeographicScope'] as int,
+      eventInboundIntegrationId: json['eventInboundIntegrationId'] as int,
+      eventNumber: json['eventNumber'] as int,
+      eventName: json['eventName'] as String,
       hcLatitude: json['hcLatitude'] as num?,
       hcLongitude: json['hcLongitude'] as num?,
       fbLatitude: json['fbLatitude'] as num?,
@@ -50,18 +50,16 @@ _$_EventModel _$$_EventModelFromJson(Map<String, dynamic> json) =>
       unconfirmedBankXferCount: json['unconfirmedBankXferCount'] as int?,
       eventPriceForExtras: json['eventPriceForExtras'] as num?,
       extrasDescription: json['extrasDescription'] as String?,
-      doTrackHashCash: json['doTrackHashCash'] as int?,
-      tags1: json['tags1'] as int?,
-      tags2: json['tags2'] as int?,
-      tags3: json['tags3'] as int?,
-      useFbLocation: json['useFbLocation'] as int?,
-      useFbLatLon: json['useFbLatLon'] as int?,
-      useFbRunDetails: json['useFbRunDetails'] as int?,
-      useFbImage: json['useFbImage'] as int?,
-      removed: json['removed'] as int?,
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      doTrackHashCash: json['doTrackHashCash'] as int,
+      tags1: json['tags1'] as int,
+      tags2: json['tags2'] as int,
+      tags3: json['tags3'] as int,
+      useFbLocation: json['useFbLocation'] as int,
+      useFbLatLon: json['useFbLatLon'] as int,
+      useFbRunDetails: json['useFbRunDetails'] as int,
+      useFbImage: json['useFbImage'] as int,
+      removed: json['removed'] as int,
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$$_EventModelToJson(_$_EventModel instance) =>
@@ -114,5 +112,5 @@ Map<String, dynamic> _$$_EventModelToJson(_$_EventModel instance) =>
       'useFbRunDetails': instance.useFbRunDetails,
       'useFbImage': instance.useFbImage,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
     };

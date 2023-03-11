@@ -1,73 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-// part '../payments_service.g.dart';
-
-// @JsonSerializable(fieldRename: FieldRename.none)
-// class PaymentsModel implements BaseModel {
-//   PaymentsModel({
-//     this.paymentId,
-//     this.kennelId,
-//     this.paidBy,
-//     this.hemId,
-//     this.eventId,
-//     this.paidTo,
-//     this.creditAmount,
-//     this.debitAmount,
-//     this.creditAvailable,
-//     this.paidDate,
-//     this.paymentType,
-//     this.productType,
-//     this.cancelledDate,
-//     this.cancelledBy,
-//     this.confirmedDate,
-//     this.confirmedBy,
-//     this.paymentReference,
-//     this.notes,
-//     this.doPayForExtras,
-//     this.surcharge,
-//     this.paymentProvider,
-//     this.discountAmount,
-//     this.discountPercent,
-//     this.discountDescription,
-//     this.specialRunPriceReason,
-//     this.removed,
-//     this.updatedAt,
-//   });
-
-//   factory PaymentsModel.fromJson(Map<String, dynamic> json) => _$PaymentsModelFromJson(json);
-
-//   Map<String, dynamic> toJson() => _$PaymentsModelToJson(this);
-
-//   final String paymentId;
-//   final String kennelId;
-//   final String paidBy;
-//   final String hemId;
-//   final String eventId;
-//   final String paidTo;
-//   num creditAmount;
-//   final num debitAmount;
-//   final num creditAvailable;
-//   final DateTime paidDate;
-//   int paymentType;
-//   final int productType;
-//   final DateTime cancelledDate;
-//   final String cancelledBy;
-//   final DateTime confirmedDate;
-//   final String confirmedBy;
-//   final String paymentReference;
-//   final String notes;
-//   final int doPayForExtras;
-//   final num surcharge;
-//   final String paymentProvider;
-//   final num discountAmount;
-//   final int discountPercent;
-//   final String discountDescription;
-//   final String specialRunPriceReason;
-//   final int removed;
-//   final DateTime updatedAt;
-// }
-
 class PaymentsTableHelper extends BaseTableHelper with BaseFields {
   PaymentsTableHelper() {
     remoteDbId = 'paymentId';
@@ -144,27 +77,27 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
             $colHemId TEXT NOT NULL,
             $colEventId TEXT NOT NULL,
             $colPaidTo TEXT NOT NULL,
-            $colCreditAmount NUM,
-            $colDebitAmount NUM,
-            $colCreditAvailable NUM,
-            $colPaidDate TEXT,
-            $colPaymentType INT,
-            $colProductType INT,
+            $colCreditAmount NUM NOT NULL,
+            $colDebitAmount NUM NOT NULL,
+            $colCreditAvailable NUM NOT NULL,
+            $colPaidDate TEXT NOT NULL,
+            $colPaymentType INT NOT NULL,
+            $colProductType INT NOT NULL,
             $colCancelledDate TEXT,
             $colCancelledBy TEXT,
             $colConfirmedDate TEXT,
             $colConfirmedBy TEXT,
             $colPaymentReference TEXT,
             $colNotes TEXT,
-            $colDoPayForExtras INT,
-            $colSurcharge NUM,
+            $colDoPayForExtras INT NOT NULL,
+            $colSurcharge NUM NOT NULL,
             $colPaymentProvider TEXT,
             $colDiscountAmount NUM NOT NULL,
             $colDiscountPercent INT NOT NULL,
             $colDiscountDescription TEXT NOT NULL,
             $colSpecialRunPriceReason TEXT NOT NULL,
-            $colRemoved INT,
-            $colUpdatedAt TEXT,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');

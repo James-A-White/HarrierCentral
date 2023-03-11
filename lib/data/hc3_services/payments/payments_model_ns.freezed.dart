@@ -20,33 +20,33 @@ PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PaymentsModel {
-  String? get paymentId => throw _privateConstructorUsedError;
-  String? get kennelId => throw _privateConstructorUsedError;
-  String? get paidBy => throw _privateConstructorUsedError;
-  String? get hemId => throw _privateConstructorUsedError;
-  String? get eventId => throw _privateConstructorUsedError;
-  String? get paidTo => throw _privateConstructorUsedError;
-  num? get creditAmount => throw _privateConstructorUsedError;
-  num? get debitAmount => throw _privateConstructorUsedError;
-  num? get creditAvailable => throw _privateConstructorUsedError;
-  DateTime? get paidDate => throw _privateConstructorUsedError;
-  int? get paymentType => throw _privateConstructorUsedError;
-  int? get productType => throw _privateConstructorUsedError;
+  String get paymentId => throw _privateConstructorUsedError;
+  String get kennelId => throw _privateConstructorUsedError;
+  String get paidBy => throw _privateConstructorUsedError;
+  String get hemId => throw _privateConstructorUsedError;
+  String get eventId => throw _privateConstructorUsedError;
+  String get paidTo => throw _privateConstructorUsedError;
+  num get creditAmount => throw _privateConstructorUsedError;
+  num get debitAmount => throw _privateConstructorUsedError;
+  num get creditAvailable => throw _privateConstructorUsedError;
+  DateTime get paidDate => throw _privateConstructorUsedError;
+  int get paymentType => throw _privateConstructorUsedError;
+  int get productType => throw _privateConstructorUsedError;
   DateTime? get cancelledDate => throw _privateConstructorUsedError;
   String? get cancelledBy => throw _privateConstructorUsedError;
   DateTime? get confirmedDate => throw _privateConstructorUsedError;
   String? get confirmedBy => throw _privateConstructorUsedError;
   String? get paymentReference => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
-  int? get doPayForExtras => throw _privateConstructorUsedError;
-  num? get surcharge => throw _privateConstructorUsedError;
+  int get doPayForExtras => throw _privateConstructorUsedError;
+  num get surcharge => throw _privateConstructorUsedError;
   String? get paymentProvider => throw _privateConstructorUsedError;
-  num? get discountAmount => throw _privateConstructorUsedError;
-  int? get discountPercent => throw _privateConstructorUsedError;
-  String? get discountDescription => throw _privateConstructorUsedError;
-  String? get specialRunPriceReason => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  num get discountAmount => throw _privateConstructorUsedError;
+  int get discountPercent => throw _privateConstructorUsedError;
+  String get discountDescription => throw _privateConstructorUsedError;
+  String get specialRunPriceReason => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -61,33 +61,33 @@ abstract class $PaymentsModelCopyWith<$Res> {
       _$PaymentsModelCopyWithImpl<$Res, PaymentsModel>;
   @useResult
   $Res call(
-      {String? paymentId,
-      String? kennelId,
-      String? paidBy,
-      String? hemId,
-      String? eventId,
-      String? paidTo,
-      num? creditAmount,
-      num? debitAmount,
-      num? creditAvailable,
-      DateTime? paidDate,
-      int? paymentType,
-      int? productType,
+      {String paymentId,
+      String kennelId,
+      String paidBy,
+      String hemId,
+      String eventId,
+      String paidTo,
+      num creditAmount,
+      num debitAmount,
+      num creditAvailable,
+      DateTime paidDate,
+      int paymentType,
+      int productType,
       DateTime? cancelledDate,
       String? cancelledBy,
       DateTime? confirmedDate,
       String? confirmedBy,
       String? paymentReference,
       String? notes,
-      int? doPayForExtras,
-      num? surcharge,
+      int doPayForExtras,
+      num surcharge,
       String? paymentProvider,
-      num? discountAmount,
-      int? discountPercent,
-      String? discountDescription,
-      String? specialRunPriceReason,
-      int? removed,
-      DateTime? updatedAt});
+      num discountAmount,
+      int discountPercent,
+      String discountDescription,
+      String specialRunPriceReason,
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -103,83 +103,83 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? paymentId = freezed,
-    Object? kennelId = freezed,
-    Object? paidBy = freezed,
-    Object? hemId = freezed,
-    Object? eventId = freezed,
-    Object? paidTo = freezed,
-    Object? creditAmount = freezed,
-    Object? debitAmount = freezed,
-    Object? creditAvailable = freezed,
-    Object? paidDate = freezed,
-    Object? paymentType = freezed,
-    Object? productType = freezed,
+    Object? paymentId = null,
+    Object? kennelId = null,
+    Object? paidBy = null,
+    Object? hemId = null,
+    Object? eventId = null,
+    Object? paidTo = null,
+    Object? creditAmount = null,
+    Object? debitAmount = null,
+    Object? creditAvailable = null,
+    Object? paidDate = null,
+    Object? paymentType = null,
+    Object? productType = null,
     Object? cancelledDate = freezed,
     Object? cancelledBy = freezed,
     Object? confirmedDate = freezed,
     Object? confirmedBy = freezed,
     Object? paymentReference = freezed,
     Object? notes = freezed,
-    Object? doPayForExtras = freezed,
-    Object? surcharge = freezed,
+    Object? doPayForExtras = null,
+    Object? surcharge = null,
     Object? paymentProvider = freezed,
-    Object? discountAmount = freezed,
-    Object? discountPercent = freezed,
-    Object? discountDescription = freezed,
-    Object? specialRunPriceReason = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? discountAmount = null,
+    Object? discountPercent = null,
+    Object? discountDescription = null,
+    Object? specialRunPriceReason = null,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      paymentId: freezed == paymentId
+      paymentId: null == paymentId
           ? _value.paymentId
           : paymentId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelId: freezed == kennelId
+              as String,
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      paidBy: freezed == paidBy
+              as String,
+      paidBy: null == paidBy
           ? _value.paidBy
           : paidBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemId: freezed == hemId
+              as String,
+      hemId: null == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventId: freezed == eventId
+              as String,
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      paidTo: freezed == paidTo
+              as String,
+      paidTo: null == paidTo
           ? _value.paidTo
           : paidTo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      creditAmount: freezed == creditAmount
+              as String,
+      creditAmount: null == creditAmount
           ? _value.creditAmount
           : creditAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      debitAmount: freezed == debitAmount
+              as num,
+      debitAmount: null == debitAmount
           ? _value.debitAmount
           : debitAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      creditAvailable: freezed == creditAvailable
+              as num,
+      creditAvailable: null == creditAvailable
           ? _value.creditAvailable
           : creditAvailable // ignore: cast_nullable_to_non_nullable
-              as num?,
-      paidDate: freezed == paidDate
+              as num,
+      paidDate: null == paidDate
           ? _value.paidDate
           : paidDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      paymentType: freezed == paymentType
+              as DateTime,
+      paymentType: null == paymentType
           ? _value.paymentType
           : paymentType // ignore: cast_nullable_to_non_nullable
-              as int?,
-      productType: freezed == productType
+              as int,
+      productType: null == productType
           ? _value.productType
           : productType // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       cancelledDate: freezed == cancelledDate
           ? _value.cancelledDate
           : cancelledDate // ignore: cast_nullable_to_non_nullable
@@ -204,42 +204,42 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
               as String?,
-      doPayForExtras: freezed == doPayForExtras
+      doPayForExtras: null == doPayForExtras
           ? _value.doPayForExtras
           : doPayForExtras // ignore: cast_nullable_to_non_nullable
-              as int?,
-      surcharge: freezed == surcharge
+              as int,
+      surcharge: null == surcharge
           ? _value.surcharge
           : surcharge // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as num,
       paymentProvider: freezed == paymentProvider
           ? _value.paymentProvider
           : paymentProvider // ignore: cast_nullable_to_non_nullable
               as String?,
-      discountAmount: freezed == discountAmount
+      discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      discountPercent: freezed == discountPercent
+              as num,
+      discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
-              as int?,
-      discountDescription: freezed == discountDescription
+              as int,
+      discountDescription: null == discountDescription
           ? _value.discountDescription
           : discountDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
-      specialRunPriceReason: freezed == specialRunPriceReason
+              as String,
+      specialRunPriceReason: null == specialRunPriceReason
           ? _value.specialRunPriceReason
           : specialRunPriceReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
+              as String,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ) as $Val);
   }
 }
@@ -253,33 +253,33 @@ abstract class _$$_PaymentsModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? paymentId,
-      String? kennelId,
-      String? paidBy,
-      String? hemId,
-      String? eventId,
-      String? paidTo,
-      num? creditAmount,
-      num? debitAmount,
-      num? creditAvailable,
-      DateTime? paidDate,
-      int? paymentType,
-      int? productType,
+      {String paymentId,
+      String kennelId,
+      String paidBy,
+      String hemId,
+      String eventId,
+      String paidTo,
+      num creditAmount,
+      num debitAmount,
+      num creditAvailable,
+      DateTime paidDate,
+      int paymentType,
+      int productType,
       DateTime? cancelledDate,
       String? cancelledBy,
       DateTime? confirmedDate,
       String? confirmedBy,
       String? paymentReference,
       String? notes,
-      int? doPayForExtras,
-      num? surcharge,
+      int doPayForExtras,
+      num surcharge,
       String? paymentProvider,
-      num? discountAmount,
-      int? discountPercent,
-      String? discountDescription,
-      String? specialRunPriceReason,
-      int? removed,
-      DateTime? updatedAt});
+      num discountAmount,
+      int discountPercent,
+      String discountDescription,
+      String specialRunPriceReason,
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -293,83 +293,83 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? paymentId = freezed,
-    Object? kennelId = freezed,
-    Object? paidBy = freezed,
-    Object? hemId = freezed,
-    Object? eventId = freezed,
-    Object? paidTo = freezed,
-    Object? creditAmount = freezed,
-    Object? debitAmount = freezed,
-    Object? creditAvailable = freezed,
-    Object? paidDate = freezed,
-    Object? paymentType = freezed,
-    Object? productType = freezed,
+    Object? paymentId = null,
+    Object? kennelId = null,
+    Object? paidBy = null,
+    Object? hemId = null,
+    Object? eventId = null,
+    Object? paidTo = null,
+    Object? creditAmount = null,
+    Object? debitAmount = null,
+    Object? creditAvailable = null,
+    Object? paidDate = null,
+    Object? paymentType = null,
+    Object? productType = null,
     Object? cancelledDate = freezed,
     Object? cancelledBy = freezed,
     Object? confirmedDate = freezed,
     Object? confirmedBy = freezed,
     Object? paymentReference = freezed,
     Object? notes = freezed,
-    Object? doPayForExtras = freezed,
-    Object? surcharge = freezed,
+    Object? doPayForExtras = null,
+    Object? surcharge = null,
     Object? paymentProvider = freezed,
-    Object? discountAmount = freezed,
-    Object? discountPercent = freezed,
-    Object? discountDescription = freezed,
-    Object? specialRunPriceReason = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? discountAmount = null,
+    Object? discountPercent = null,
+    Object? discountDescription = null,
+    Object? specialRunPriceReason = null,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_$_PaymentsModel(
-      paymentId: freezed == paymentId
+      paymentId: null == paymentId
           ? _value.paymentId
           : paymentId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelId: freezed == kennelId
+              as String,
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      paidBy: freezed == paidBy
+              as String,
+      paidBy: null == paidBy
           ? _value.paidBy
           : paidBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemId: freezed == hemId
+              as String,
+      hemId: null == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventId: freezed == eventId
+              as String,
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      paidTo: freezed == paidTo
+              as String,
+      paidTo: null == paidTo
           ? _value.paidTo
           : paidTo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      creditAmount: freezed == creditAmount
+              as String,
+      creditAmount: null == creditAmount
           ? _value.creditAmount
           : creditAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      debitAmount: freezed == debitAmount
+              as num,
+      debitAmount: null == debitAmount
           ? _value.debitAmount
           : debitAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      creditAvailable: freezed == creditAvailable
+              as num,
+      creditAvailable: null == creditAvailable
           ? _value.creditAvailable
           : creditAvailable // ignore: cast_nullable_to_non_nullable
-              as num?,
-      paidDate: freezed == paidDate
+              as num,
+      paidDate: null == paidDate
           ? _value.paidDate
           : paidDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      paymentType: freezed == paymentType
+              as DateTime,
+      paymentType: null == paymentType
           ? _value.paymentType
           : paymentType // ignore: cast_nullable_to_non_nullable
-              as int?,
-      productType: freezed == productType
+              as int,
+      productType: null == productType
           ? _value.productType
           : productType // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       cancelledDate: freezed == cancelledDate
           ? _value.cancelledDate
           : cancelledDate // ignore: cast_nullable_to_non_nullable
@@ -394,42 +394,42 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
               as String?,
-      doPayForExtras: freezed == doPayForExtras
+      doPayForExtras: null == doPayForExtras
           ? _value.doPayForExtras
           : doPayForExtras // ignore: cast_nullable_to_non_nullable
-              as int?,
-      surcharge: freezed == surcharge
+              as int,
+      surcharge: null == surcharge
           ? _value.surcharge
           : surcharge // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as num,
       paymentProvider: freezed == paymentProvider
           ? _value.paymentProvider
           : paymentProvider // ignore: cast_nullable_to_non_nullable
               as String?,
-      discountAmount: freezed == discountAmount
+      discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      discountPercent: freezed == discountPercent
+              as num,
+      discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
-              as int?,
-      discountDescription: freezed == discountDescription
+              as int,
+      discountDescription: null == discountDescription
           ? _value.discountDescription
           : discountDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
-      specialRunPriceReason: freezed == specialRunPriceReason
+              as String,
+      specialRunPriceReason: null == specialRunPriceReason
           ? _value.specialRunPriceReason
           : specialRunPriceReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
+              as String,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ));
   }
 }
@@ -450,15 +450,15 @@ class _$_PaymentsModel implements _PaymentsModel {
       required this.paidDate,
       required this.paymentType,
       required this.productType,
-      required this.cancelledDate,
-      required this.cancelledBy,
-      required this.confirmedDate,
-      required this.confirmedBy,
-      required this.paymentReference,
-      required this.notes,
+      this.cancelledDate,
+      this.cancelledBy,
+      this.confirmedDate,
+      this.confirmedBy,
+      this.paymentReference,
+      this.notes,
       required this.doPayForExtras,
       required this.surcharge,
-      required this.paymentProvider,
+      this.paymentProvider,
       required this.discountAmount,
       required this.discountPercent,
       required this.discountDescription,
@@ -470,29 +470,29 @@ class _$_PaymentsModel implements _PaymentsModel {
       _$$_PaymentsModelFromJson(json);
 
   @override
-  final String? paymentId;
+  final String paymentId;
   @override
-  final String? kennelId;
+  final String kennelId;
   @override
-  final String? paidBy;
+  final String paidBy;
   @override
-  final String? hemId;
+  final String hemId;
   @override
-  final String? eventId;
+  final String eventId;
   @override
-  final String? paidTo;
+  final String paidTo;
   @override
-  final num? creditAmount;
+  final num creditAmount;
   @override
-  final num? debitAmount;
+  final num debitAmount;
   @override
-  final num? creditAvailable;
+  final num creditAvailable;
   @override
-  final DateTime? paidDate;
+  final DateTime paidDate;
   @override
-  final int? paymentType;
+  final int paymentType;
   @override
-  final int? productType;
+  final int productType;
   @override
   final DateTime? cancelledDate;
   @override
@@ -506,23 +506,23 @@ class _$_PaymentsModel implements _PaymentsModel {
   @override
   final String? notes;
   @override
-  final int? doPayForExtras;
+  final int doPayForExtras;
   @override
-  final num? surcharge;
+  final num surcharge;
   @override
   final String? paymentProvider;
   @override
-  final num? discountAmount;
+  final num discountAmount;
   @override
-  final int? discountPercent;
+  final int discountPercent;
   @override
-  final String? discountDescription;
+  final String discountDescription;
   @override
-  final String? specialRunPriceReason;
+  final String specialRunPriceReason;
   @override
-  final int? removed;
+  final int removed;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
 
   @override
   String toString() {
@@ -633,61 +633,61 @@ class _$_PaymentsModel implements _PaymentsModel {
 
 abstract class _PaymentsModel implements PaymentsModel {
   factory _PaymentsModel(
-      {required final String? paymentId,
-      required final String? kennelId,
-      required final String? paidBy,
-      required final String? hemId,
-      required final String? eventId,
-      required final String? paidTo,
-      required final num? creditAmount,
-      required final num? debitAmount,
-      required final num? creditAvailable,
-      required final DateTime? paidDate,
-      required final int? paymentType,
-      required final int? productType,
-      required final DateTime? cancelledDate,
-      required final String? cancelledBy,
-      required final DateTime? confirmedDate,
-      required final String? confirmedBy,
-      required final String? paymentReference,
-      required final String? notes,
-      required final int? doPayForExtras,
-      required final num? surcharge,
-      required final String? paymentProvider,
-      required final num? discountAmount,
-      required final int? discountPercent,
-      required final String? discountDescription,
-      required final String? specialRunPriceReason,
-      required final int? removed,
-      required final DateTime? updatedAt}) = _$_PaymentsModel;
+      {required final String paymentId,
+      required final String kennelId,
+      required final String paidBy,
+      required final String hemId,
+      required final String eventId,
+      required final String paidTo,
+      required final num creditAmount,
+      required final num debitAmount,
+      required final num creditAvailable,
+      required final DateTime paidDate,
+      required final int paymentType,
+      required final int productType,
+      final DateTime? cancelledDate,
+      final String? cancelledBy,
+      final DateTime? confirmedDate,
+      final String? confirmedBy,
+      final String? paymentReference,
+      final String? notes,
+      required final int doPayForExtras,
+      required final num surcharge,
+      final String? paymentProvider,
+      required final num discountAmount,
+      required final int discountPercent,
+      required final String discountDescription,
+      required final String specialRunPriceReason,
+      required final int removed,
+      required final DateTime updatedAt}) = _$_PaymentsModel;
 
   factory _PaymentsModel.fromJson(Map<String, dynamic> json) =
       _$_PaymentsModel.fromJson;
 
   @override
-  String? get paymentId;
+  String get paymentId;
   @override
-  String? get kennelId;
+  String get kennelId;
   @override
-  String? get paidBy;
+  String get paidBy;
   @override
-  String? get hemId;
+  String get hemId;
   @override
-  String? get eventId;
+  String get eventId;
   @override
-  String? get paidTo;
+  String get paidTo;
   @override
-  num? get creditAmount;
+  num get creditAmount;
   @override
-  num? get debitAmount;
+  num get debitAmount;
   @override
-  num? get creditAvailable;
+  num get creditAvailable;
   @override
-  DateTime? get paidDate;
+  DateTime get paidDate;
   @override
-  int? get paymentType;
+  int get paymentType;
   @override
-  int? get productType;
+  int get productType;
   @override
   DateTime? get cancelledDate;
   @override
@@ -701,23 +701,23 @@ abstract class _PaymentsModel implements PaymentsModel {
   @override
   String? get notes;
   @override
-  int? get doPayForExtras;
+  int get doPayForExtras;
   @override
-  num? get surcharge;
+  num get surcharge;
   @override
   String? get paymentProvider;
   @override
-  num? get discountAmount;
+  num get discountAmount;
   @override
-  int? get discountPercent;
+  int get discountPercent;
   @override
-  String? get discountDescription;
+  String get discountDescription;
   @override
-  String? get specialRunPriceReason;
+  String get specialRunPriceReason;
   @override
-  int? get removed;
+  int get removed;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentsModelCopyWith<_$_PaymentsModel> get copyWith =>

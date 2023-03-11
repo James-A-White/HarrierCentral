@@ -10,9 +10,10 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
-  # strong-mode:
-  #   implicit-dynamic: false
+  strong-mode:
+    implicit-dynamic: false
   errors:
+    non_constant_identifier_names: ignore
     # treat missing required parameters as a warning (not a hint)
     # missing_required_param: warning
     # treat missing returns as a warning (not a hint)

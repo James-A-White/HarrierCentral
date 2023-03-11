@@ -1,87 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-// part '../hasher_kennel_map_service.g.dart';
-
-// @JsonSerializable(fieldRename: FieldRename.none)
-// class HasherKennelMapModel implements BaseModel {
-//   HasherKennelMapModel(
-//       {this.hkmId,
-//       this.userId,
-//       this.kennelId,
-//       this.following,
-//       this.isMember,
-//       this.isHomeKennel,
-//       this.kennelNotificationPreference,
-//       this.kennelEmailAlertPreference,
-//       this.authorizedDeviceList,
-//       this.authorizedDeviceCount,
-//       this.userRoleFlags,
-//       this.appAccessFlags,
-//       this.hcTotalRunCount,
-//       this.hcHaringCount,
-//       this.historicalTotalRunCount,
-//       this.historicalHaringCount,
-//       this.historicalCountIsEstimate,
-//       this.kennelCredit,
-//       this.discountAmount,
-//       this.discountPercent,
-//       this.discountDescription,
-//       this.dateOfLastRun,
-//       this.membershipExpirationDate,
-//       this.memberSince,
-//       this.isKennelFollowing,
-//       this.mismanagementRoles,
-//       this.kennelUserPhoto,
-//       this.kennelHashName,
-//       this.removed,
-//       this.updatedAt});
-
-//   factory HasherKennelMapModel.fromJson(Map<String, dynamic> json) => _$HasherKennelMapModelFromJson(json);
-
-//   Map<String, dynamic> toJson() => _$HasherKennelMapModelToJson(this);
-
-//   final String hkmId;
-//   final String userId;
-//   final String kennelId;
-//   int following;
-//   final int isMember;
-//   final int isHomeKennel;
-//   int kennelNotificationPreference;
-//   int kennelEmailAlertPreference;
-//   final String authorizedDeviceList;
-//   final int authorizedDeviceCount;
-//   final int userRoleFlags;
-//   final int appAccessFlags;
-//   final int hcTotalRunCount;
-//   final int hcHaringCount;
-//   final int historicalTotalRunCount;
-//   final int historicalHaringCount;
-//   final int historicalCountIsEstimate;
-//   final num kennelCredit;
-//   final num discountAmount;
-//   final int discountPercent;
-//   final String discountDescription;
-//   final DateTime dateOfLastRun;
-//   final DateTime membershipExpirationDate;
-//   final DateTime memberSince;
-//   final int isKennelFollowing;
-//   final int mismanagementRoles;
-//   final String kennelUserPhoto;
-//   final String kennelHashName;
-
-//   final DateTime updatedAt;
-//   final int removed;
-
-//   Mismanagement get mismanagement {
-//     return Mismanagement(mismanagementRoles);
-//   }
-
-//   AppAccess get appAccess {
-//     return AppAccess(appAccessFlags);
-//   }
-// }
-
 class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   HasherKennelMapTableHelper() {
     remoteDbId = 'hkmId';
@@ -158,34 +77,33 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
             $colHkmId TEXT NOT NULL,
             $colUserId TEXT NOT NULL,
             $colKennelId TEXT NOT NULL,
-            $colFollowing INT,
-            $colIsMember INT,
-            $colIsHomeKennel INT,
-            $colKennelNotificationPreference INT,
-            $colKennelEmailAlertPreference INT,
+            $colFollowing INT NOT NULL,
+            $colIsMember INT NOT NULL,
+            $colIsHomeKennel INT NOT NULL,
+            $colKennelNotificationPreference INT NOT NULL,
+            $colKennelEmailAlertPreference INT NOT NULL,
             $colAuthorizedDeviceList TEXT,
             $colAuthorizedDeviceCount INT,
-            $colUserRoleFlags INT,
-            $colAppAccessFlags INT,
-            $colHcTotalRunCount INT,
-            $colHcHaringCount INT,
-            $colHistoricalTotalRunCount INT,
-            $colHistoricalHaringCount INT,
-            $colHistoricalCountIsEstimate INT,
-            $colKennelCredit NUM,
-            $colDiscountAmount NUM NOT NULL,
-            $colDiscountPercent INT NOT NULL,
-            $colDiscountDescription TEXT NOT NULL,
+            $colUserRoleFlags INT NOT NULL,
+            $colAppAccessFlags INT NOT NULL,
+            $colHcTotalRunCount INT NOT NULL,
+            $colHcHaringCount INT NOT NULL,
+            $colHistoricalTotalRunCount INT NOT NULL,
+            $colHistoricalHaringCount INT NOT NULL,
+            $colHistoricalCountIsEstimate INT NOT NULL,
+            $colKennelCredit NUM NOT NULL,
+            $colDiscountAmount NUM NOT NULL NOT NULL,
+            $colDiscountPercent INT NOT NULL NOT NULL,
+            $colDiscountDescription TEXT NOT NULL NOT NULL,
             $colDateOfLastRun TEXT,
             $colMembershipExpirationDate TEXT,
             $colMemberSince TEXT,
             $colIsKennelFollowing INT,
-            $colMismanagementRoles INT,
+            $colMismanagementRoles INT NOT NULL,
             $colKennelUserPhoto TEXT,
             $colKennelHashName TEXT,
-
-            $colRemoved INT,
-            $colUpdatedAt TEXT,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');

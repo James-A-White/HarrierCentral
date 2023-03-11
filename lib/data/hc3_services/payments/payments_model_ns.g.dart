@@ -8,20 +8,18 @@ part of 'payments_model_ns.dart';
 
 _$_PaymentsModel _$$_PaymentsModelFromJson(Map<String, dynamic> json) =>
     _$_PaymentsModel(
-      paymentId: json['paymentId'] as String?,
-      kennelId: json['kennelId'] as String?,
-      paidBy: json['paidBy'] as String?,
-      hemId: json['hemId'] as String?,
-      eventId: json['eventId'] as String?,
-      paidTo: json['paidTo'] as String?,
-      creditAmount: json['creditAmount'] as num?,
-      debitAmount: json['debitAmount'] as num?,
-      creditAvailable: json['creditAvailable'] as num?,
-      paidDate: json['paidDate'] == null
-          ? null
-          : DateTime.parse(json['paidDate'] as String),
-      paymentType: json['paymentType'] as int?,
-      productType: json['productType'] as int?,
+      paymentId: json['paymentId'] as String,
+      kennelId: json['kennelId'] as String,
+      paidBy: json['paidBy'] as String,
+      hemId: json['hemId'] as String,
+      eventId: json['eventId'] as String,
+      paidTo: json['paidTo'] as String,
+      creditAmount: json['creditAmount'] as num,
+      debitAmount: json['debitAmount'] as num,
+      creditAvailable: json['creditAvailable'] as num,
+      paidDate: DateTime.parse(json['paidDate'] as String),
+      paymentType: json['paymentType'] as int,
+      productType: json['productType'] as int,
       cancelledDate: json['cancelledDate'] == null
           ? null
           : DateTime.parse(json['cancelledDate'] as String),
@@ -32,17 +30,15 @@ _$_PaymentsModel _$$_PaymentsModelFromJson(Map<String, dynamic> json) =>
       confirmedBy: json['confirmedBy'] as String?,
       paymentReference: json['paymentReference'] as String?,
       notes: json['notes'] as String?,
-      doPayForExtras: json['doPayForExtras'] as int?,
-      surcharge: json['surcharge'] as num?,
+      doPayForExtras: json['doPayForExtras'] as int,
+      surcharge: json['surcharge'] as num,
       paymentProvider: json['paymentProvider'] as String?,
-      discountAmount: json['discountAmount'] as num?,
-      discountPercent: json['discountPercent'] as int?,
-      discountDescription: json['discountDescription'] as String?,
-      specialRunPriceReason: json['specialRunPriceReason'] as String?,
-      removed: json['removed'] as int?,
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      discountAmount: json['discountAmount'] as num,
+      discountPercent: json['discountPercent'] as int,
+      discountDescription: json['discountDescription'] as String,
+      specialRunPriceReason: json['specialRunPriceReason'] as String,
+      removed: json['removed'] as int,
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$$_PaymentsModelToJson(_$_PaymentsModel instance) =>
@@ -56,7 +52,7 @@ Map<String, dynamic> _$$_PaymentsModelToJson(_$_PaymentsModel instance) =>
       'creditAmount': instance.creditAmount,
       'debitAmount': instance.debitAmount,
       'creditAvailable': instance.creditAvailable,
-      'paidDate': instance.paidDate?.toIso8601String(),
+      'paidDate': instance.paidDate.toIso8601String(),
       'paymentType': instance.paymentType,
       'productType': instance.productType,
       'cancelledDate': instance.cancelledDate?.toIso8601String(),
@@ -73,5 +69,5 @@ Map<String, dynamic> _$$_PaymentsModelToJson(_$_PaymentsModel instance) =>
       'discountDescription': instance.discountDescription,
       'specialRunPriceReason': instance.specialRunPriceReason,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
     };

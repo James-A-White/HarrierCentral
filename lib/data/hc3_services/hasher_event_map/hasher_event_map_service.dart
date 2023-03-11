@@ -1,84 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-// part '../hasher_event_map_service.g.dart';
-
-// @JsonSerializable(fieldRename: FieldRename.none)
-// class HasherEventMapModel implements BaseModel {
-//   HasherEventMapModel(
-//       {this.hemId,
-//       this.userId,
-//       this.eventId,
-//       this.hasherOwnEventId,
-//       this.userStartEvent,
-//       this.userEndEvent,
-//       this.rsvpState,
-//       this.attendenceState,
-//       this.isHare,
-//       this.eventNotificationPreference,
-//       this.eventEmailAlertPreference,
-//       this.totalHaring,
-//       this.totalHaringThisKennel,
-//       this.totalRuns,
-//       this.totalRunsThisKennel,
-//       this.eventCountOverride,
-//       this.virginVisitorType,
-//       this.displayName,
-//       this.email,
-//       this.phoneNumber,
-//       this.removed,
-//       // these fields are cached from the event itself. This enables us to keep run count information without
-//       // having to have the actual run cached on the phone
-//       this.hemEventName,
-//       this.hemEventNumber,
-//       this.hemEventStartDatetime,
-//       this.hemEventIsCountedAndVisible,
-//       this.hemCanEditRunAttendence,
-//       this.hemEventKennelId,
-//       this.hemKennelUserPhoto,
-//       this.hemKennelHashName,
-//       this.updatedAt});
-
-//   factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);
-
-//   Map<String, dynamic> toJson() => _$HasherEventMapModelToJson(this);
-
-//   final String hemId;
-//   final String userId;
-//   final String eventId;
-//   final String hasherOwnEventId;
-//   final String userStartEvent;
-//   final String userEndEvent;
-//   int rsvpState;
-//   final int attendenceState;
-//   int isHare;
-//   int eventNotificationPreference;
-//   int eventEmailAlertPreference;
-//   int totalHaring;
-//   int totalHaringThisKennel;
-//   int totalRuns;
-//   int totalRunsThisKennel;
-//   final num eventCountOverride;
-//   final num virginVisitorType;
-//   final String displayName;
-//   final String email;
-//   final String phoneNumber;
-
-//   // these fields are cached from the event itself. This enables us to keep run count information without
-//   // having to have the actual run cached on the phone
-//   final String hemEventName;
-//   final int hemEventNumber;
-//   final DateTime hemEventStartDatetime;
-//   final num hemCanEditRunAttendence;
-//   final String hemEventKennelId;
-//   final int hemEventIsCountedAndVisible;
-//   final String hemKennelUserPhoto;
-//   final String hemKennelHashName;
-
-//   final int removed;
-//   final DateTime updatedAt;
-// }
-
 class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
   HasherEventMapTableHelper() {
     remoteDbId = 'hemId';
@@ -144,13 +66,13 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
 
             $colHemId TEXT NOT NULL,
             $colUserId TEXT NOT NULL,
-            $colEventId TEXT,
+            $colEventId TEXT NOT NULL,
             $colHasherOwnEventId TEXT,
             $colUserStartEvent TEXT,
             $colUserEndEvent TEXT,
-            $colRsvpState INT,
-            $colAttendenceState INT,
-            $colIsHare INT,
+            $colRsvpState INT NOT NULL,
+            $colAttendenceState INT NOT NULL,
+            $colIsHare INT NOT NULL,
             $colEventNotificationPreference INT,
             $colEventEmailAlertPreference INT,
 
@@ -160,22 +82,21 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
             $colTotalRunsThisKennel INT,
 
             $colEventCountOverride NUM,
-            $colVirginVisitorType NUM,
+            $colVirginVisitorType NUM NOT NULL,
             $colDisplayName TEXT,
             $colEmail TEXT,
             $colPhoneNumber TEXT,
 
             $colEventName TEXT,
             $colEventNumber INT,
-            $colEventStartDatetime TEXT,
+            $colEventStartDatetime TEXT NOT NULL,
             $colCanEditRunAttendence NUM,
             $colEventKennelId TEXT,
             $colEventIsCountedAndVisible INT,
             $colKennelUserPhoto TEXT,
             $colKennelHashName TEXT,
-
-            $colRemoved NUM,
-            $colUpdatedAt TEXT,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
 
           )

@@ -6,16 +6,16 @@ part 'hashers_model_ns.g.dart';
 @freezed
 class HashersModel with _$HashersModel implements BaseModel {
   factory HashersModel({
-    required String? hasherId,
-    required String? firstName,
-    required String? lastName,
-    required String? dispName,
-    required String? hashName,
-    required String? photo,
-    required int? dispPref,
-    required int? includeInGlobalHashDirectory,
-    required int? removed,
-    required DateTime? updatedAt,
+    required String hasherId,
+    String? firstName,
+    String? lastName,
+    required String dispName,
+    String? hashName,
+    String? photo,
+    required int dispPref,
+    required int includeInGlobalHashDirectory,
+    required int removed,
+    required DateTime updatedAt,
   }) = _HashersModel;
 
   factory HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);

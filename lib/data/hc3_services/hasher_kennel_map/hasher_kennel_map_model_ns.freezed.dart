@@ -20,27 +20,27 @@ HasherKennelMapModel _$HasherKennelMapModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$HasherKennelMapModel {
-  String? get hkmId => throw _privateConstructorUsedError;
-  String? get userId => throw _privateConstructorUsedError;
-  String? get kennelId => throw _privateConstructorUsedError;
-  int? get following => throw _privateConstructorUsedError;
-  int? get isMember => throw _privateConstructorUsedError;
-  int? get isHomeKennel => throw _privateConstructorUsedError;
-  int? get kennelNotificationPreference => throw _privateConstructorUsedError;
-  int? get kennelEmailAlertPreference => throw _privateConstructorUsedError;
+  String get hkmId => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
+  String get kennelId => throw _privateConstructorUsedError;
+  int get following => throw _privateConstructorUsedError;
+  int get isMember => throw _privateConstructorUsedError;
+  int get isHomeKennel => throw _privateConstructorUsedError;
+  int get kennelNotificationPreference => throw _privateConstructorUsedError;
+  int get kennelEmailAlertPreference => throw _privateConstructorUsedError;
   String? get authorizedDeviceList => throw _privateConstructorUsedError;
   int? get authorizedDeviceCount => throw _privateConstructorUsedError;
-  int? get userRoleFlags => throw _privateConstructorUsedError;
+  int get userRoleFlags => throw _privateConstructorUsedError;
   int get appAccessFlags => throw _privateConstructorUsedError;
-  int? get hcTotalRunCount => throw _privateConstructorUsedError;
-  int? get hcHaringCount => throw _privateConstructorUsedError;
-  int? get historicalTotalRunCount => throw _privateConstructorUsedError;
-  int? get historicalHaringCount => throw _privateConstructorUsedError;
-  int? get historicalCountIsEstimate => throw _privateConstructorUsedError;
-  num? get kennelCredit => throw _privateConstructorUsedError;
-  num? get discountAmount => throw _privateConstructorUsedError;
-  int? get discountPercent => throw _privateConstructorUsedError;
-  String? get discountDescription => throw _privateConstructorUsedError;
+  int get hcTotalRunCount => throw _privateConstructorUsedError;
+  int get hcHaringCount => throw _privateConstructorUsedError;
+  int get historicalTotalRunCount => throw _privateConstructorUsedError;
+  int get historicalHaringCount => throw _privateConstructorUsedError;
+  int get historicalCountIsEstimate => throw _privateConstructorUsedError;
+  num get kennelCredit => throw _privateConstructorUsedError;
+  num get discountAmount => throw _privateConstructorUsedError;
+  int get discountPercent => throw _privateConstructorUsedError;
+  String get discountDescription => throw _privateConstructorUsedError;
   DateTime? get dateOfLastRun => throw _privateConstructorUsedError;
   DateTime? get membershipExpirationDate => throw _privateConstructorUsedError;
   DateTime? get memberSince => throw _privateConstructorUsedError;
@@ -48,8 +48,8 @@ mixin _$HasherKennelMapModel {
   int get mismanagementRoles => throw _privateConstructorUsedError;
   String? get kennelUserPhoto => throw _privateConstructorUsedError;
   String? get kennelHashName => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -64,27 +64,27 @@ abstract class $HasherKennelMapModelCopyWith<$Res> {
       _$HasherKennelMapModelCopyWithImpl<$Res, HasherKennelMapModel>;
   @useResult
   $Res call(
-      {String? hkmId,
-      String? userId,
-      String? kennelId,
-      int? following,
-      int? isMember,
-      int? isHomeKennel,
-      int? kennelNotificationPreference,
-      int? kennelEmailAlertPreference,
+      {String hkmId,
+      String userId,
+      String kennelId,
+      int following,
+      int isMember,
+      int isHomeKennel,
+      int kennelNotificationPreference,
+      int kennelEmailAlertPreference,
       String? authorizedDeviceList,
       int? authorizedDeviceCount,
-      int? userRoleFlags,
+      int userRoleFlags,
       int appAccessFlags,
-      int? hcTotalRunCount,
-      int? hcHaringCount,
-      int? historicalTotalRunCount,
-      int? historicalHaringCount,
-      int? historicalCountIsEstimate,
-      num? kennelCredit,
-      num? discountAmount,
-      int? discountPercent,
-      String? discountDescription,
+      int hcTotalRunCount,
+      int hcHaringCount,
+      int historicalTotalRunCount,
+      int historicalHaringCount,
+      int historicalCountIsEstimate,
+      num kennelCredit,
+      num discountAmount,
+      int discountPercent,
+      String discountDescription,
       DateTime? dateOfLastRun,
       DateTime? membershipExpirationDate,
       DateTime? memberSince,
@@ -92,8 +92,8 @@ abstract class $HasherKennelMapModelCopyWith<$Res> {
       int mismanagementRoles,
       String? kennelUserPhoto,
       String? kennelHashName,
-      DateTime? updatedAt,
-      int? removed});
+      DateTime updatedAt,
+      int removed});
 }
 
 /// @nodoc
@@ -110,27 +110,27 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hkmId = freezed,
-    Object? userId = freezed,
-    Object? kennelId = freezed,
-    Object? following = freezed,
-    Object? isMember = freezed,
-    Object? isHomeKennel = freezed,
-    Object? kennelNotificationPreference = freezed,
-    Object? kennelEmailAlertPreference = freezed,
+    Object? hkmId = null,
+    Object? userId = null,
+    Object? kennelId = null,
+    Object? following = null,
+    Object? isMember = null,
+    Object? isHomeKennel = null,
+    Object? kennelNotificationPreference = null,
+    Object? kennelEmailAlertPreference = null,
     Object? authorizedDeviceList = freezed,
     Object? authorizedDeviceCount = freezed,
-    Object? userRoleFlags = freezed,
+    Object? userRoleFlags = null,
     Object? appAccessFlags = null,
-    Object? hcTotalRunCount = freezed,
-    Object? hcHaringCount = freezed,
-    Object? historicalTotalRunCount = freezed,
-    Object? historicalHaringCount = freezed,
-    Object? historicalCountIsEstimate = freezed,
-    Object? kennelCredit = freezed,
-    Object? discountAmount = freezed,
-    Object? discountPercent = freezed,
-    Object? discountDescription = freezed,
+    Object? hcTotalRunCount = null,
+    Object? hcHaringCount = null,
+    Object? historicalTotalRunCount = null,
+    Object? historicalHaringCount = null,
+    Object? historicalCountIsEstimate = null,
+    Object? kennelCredit = null,
+    Object? discountAmount = null,
+    Object? discountPercent = null,
+    Object? discountDescription = null,
     Object? dateOfLastRun = freezed,
     Object? membershipExpirationDate = freezed,
     Object? memberSince = freezed,
@@ -138,42 +138,42 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
     Object? mismanagementRoles = null,
     Object? kennelUserPhoto = freezed,
     Object? kennelHashName = freezed,
-    Object? updatedAt = freezed,
-    Object? removed = freezed,
+    Object? updatedAt = null,
+    Object? removed = null,
   }) {
     return _then(_value.copyWith(
-      hkmId: freezed == hkmId
+      hkmId: null == hkmId
           ? _value.hkmId
           : hkmId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
+              as String,
+      userId: null == userId
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelId: freezed == kennelId
+              as String,
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      following: freezed == following
+              as String,
+      following: null == following
           ? _value.following
           : following // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isMember: freezed == isMember
+              as int,
+      isMember: null == isMember
           ? _value.isMember
           : isMember // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isHomeKennel: freezed == isHomeKennel
+              as int,
+      isHomeKennel: null == isHomeKennel
           ? _value.isHomeKennel
           : isHomeKennel // ignore: cast_nullable_to_non_nullable
-              as int?,
-      kennelNotificationPreference: freezed == kennelNotificationPreference
+              as int,
+      kennelNotificationPreference: null == kennelNotificationPreference
           ? _value.kennelNotificationPreference
           : kennelNotificationPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      kennelEmailAlertPreference: freezed == kennelEmailAlertPreference
+              as int,
+      kennelEmailAlertPreference: null == kennelEmailAlertPreference
           ? _value.kennelEmailAlertPreference
           : kennelEmailAlertPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       authorizedDeviceList: freezed == authorizedDeviceList
           ? _value.authorizedDeviceList
           : authorizedDeviceList // ignore: cast_nullable_to_non_nullable
@@ -182,50 +182,50 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
           ? _value.authorizedDeviceCount
           : authorizedDeviceCount // ignore: cast_nullable_to_non_nullable
               as int?,
-      userRoleFlags: freezed == userRoleFlags
+      userRoleFlags: null == userRoleFlags
           ? _value.userRoleFlags
           : userRoleFlags // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       appAccessFlags: null == appAccessFlags
           ? _value.appAccessFlags
           : appAccessFlags // ignore: cast_nullable_to_non_nullable
               as int,
-      hcTotalRunCount: freezed == hcTotalRunCount
+      hcTotalRunCount: null == hcTotalRunCount
           ? _value.hcTotalRunCount
           : hcTotalRunCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hcHaringCount: freezed == hcHaringCount
+              as int,
+      hcHaringCount: null == hcHaringCount
           ? _value.hcHaringCount
           : hcHaringCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      historicalTotalRunCount: freezed == historicalTotalRunCount
+              as int,
+      historicalTotalRunCount: null == historicalTotalRunCount
           ? _value.historicalTotalRunCount
           : historicalTotalRunCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      historicalHaringCount: freezed == historicalHaringCount
+              as int,
+      historicalHaringCount: null == historicalHaringCount
           ? _value.historicalHaringCount
           : historicalHaringCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      historicalCountIsEstimate: freezed == historicalCountIsEstimate
+              as int,
+      historicalCountIsEstimate: null == historicalCountIsEstimate
           ? _value.historicalCountIsEstimate
           : historicalCountIsEstimate // ignore: cast_nullable_to_non_nullable
-              as int?,
-      kennelCredit: freezed == kennelCredit
+              as int,
+      kennelCredit: null == kennelCredit
           ? _value.kennelCredit
           : kennelCredit // ignore: cast_nullable_to_non_nullable
-              as num?,
-      discountAmount: freezed == discountAmount
+              as num,
+      discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      discountPercent: freezed == discountPercent
+              as num,
+      discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
-              as int?,
-      discountDescription: freezed == discountDescription
+              as int,
+      discountDescription: null == discountDescription
           ? _value.discountDescription
           : discountDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       dateOfLastRun: freezed == dateOfLastRun
           ? _value.dateOfLastRun
           : dateOfLastRun // ignore: cast_nullable_to_non_nullable
@@ -254,14 +254,14 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
           ? _value.kennelHashName
           : kennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      removed: freezed == removed
+              as DateTime,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
     ) as $Val);
   }
 }
@@ -275,27 +275,27 @@ abstract class _$$_HasherKennelMapModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? hkmId,
-      String? userId,
-      String? kennelId,
-      int? following,
-      int? isMember,
-      int? isHomeKennel,
-      int? kennelNotificationPreference,
-      int? kennelEmailAlertPreference,
+      {String hkmId,
+      String userId,
+      String kennelId,
+      int following,
+      int isMember,
+      int isHomeKennel,
+      int kennelNotificationPreference,
+      int kennelEmailAlertPreference,
       String? authorizedDeviceList,
       int? authorizedDeviceCount,
-      int? userRoleFlags,
+      int userRoleFlags,
       int appAccessFlags,
-      int? hcTotalRunCount,
-      int? hcHaringCount,
-      int? historicalTotalRunCount,
-      int? historicalHaringCount,
-      int? historicalCountIsEstimate,
-      num? kennelCredit,
-      num? discountAmount,
-      int? discountPercent,
-      String? discountDescription,
+      int hcTotalRunCount,
+      int hcHaringCount,
+      int historicalTotalRunCount,
+      int historicalHaringCount,
+      int historicalCountIsEstimate,
+      num kennelCredit,
+      num discountAmount,
+      int discountPercent,
+      String discountDescription,
       DateTime? dateOfLastRun,
       DateTime? membershipExpirationDate,
       DateTime? memberSince,
@@ -303,8 +303,8 @@ abstract class _$$_HasherKennelMapModelCopyWith<$Res>
       int mismanagementRoles,
       String? kennelUserPhoto,
       String? kennelHashName,
-      DateTime? updatedAt,
-      int? removed});
+      DateTime updatedAt,
+      int removed});
 }
 
 /// @nodoc
@@ -318,27 +318,27 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hkmId = freezed,
-    Object? userId = freezed,
-    Object? kennelId = freezed,
-    Object? following = freezed,
-    Object? isMember = freezed,
-    Object? isHomeKennel = freezed,
-    Object? kennelNotificationPreference = freezed,
-    Object? kennelEmailAlertPreference = freezed,
+    Object? hkmId = null,
+    Object? userId = null,
+    Object? kennelId = null,
+    Object? following = null,
+    Object? isMember = null,
+    Object? isHomeKennel = null,
+    Object? kennelNotificationPreference = null,
+    Object? kennelEmailAlertPreference = null,
     Object? authorizedDeviceList = freezed,
     Object? authorizedDeviceCount = freezed,
-    Object? userRoleFlags = freezed,
+    Object? userRoleFlags = null,
     Object? appAccessFlags = null,
-    Object? hcTotalRunCount = freezed,
-    Object? hcHaringCount = freezed,
-    Object? historicalTotalRunCount = freezed,
-    Object? historicalHaringCount = freezed,
-    Object? historicalCountIsEstimate = freezed,
-    Object? kennelCredit = freezed,
-    Object? discountAmount = freezed,
-    Object? discountPercent = freezed,
-    Object? discountDescription = freezed,
+    Object? hcTotalRunCount = null,
+    Object? hcHaringCount = null,
+    Object? historicalTotalRunCount = null,
+    Object? historicalHaringCount = null,
+    Object? historicalCountIsEstimate = null,
+    Object? kennelCredit = null,
+    Object? discountAmount = null,
+    Object? discountPercent = null,
+    Object? discountDescription = null,
     Object? dateOfLastRun = freezed,
     Object? membershipExpirationDate = freezed,
     Object? memberSince = freezed,
@@ -346,42 +346,42 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
     Object? mismanagementRoles = null,
     Object? kennelUserPhoto = freezed,
     Object? kennelHashName = freezed,
-    Object? updatedAt = freezed,
-    Object? removed = freezed,
+    Object? updatedAt = null,
+    Object? removed = null,
   }) {
     return _then(_$_HasherKennelMapModel(
-      hkmId: freezed == hkmId
+      hkmId: null == hkmId
           ? _value.hkmId
           : hkmId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
+              as String,
+      userId: null == userId
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelId: freezed == kennelId
+              as String,
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      following: freezed == following
+              as String,
+      following: null == following
           ? _value.following
           : following // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isMember: freezed == isMember
+              as int,
+      isMember: null == isMember
           ? _value.isMember
           : isMember // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isHomeKennel: freezed == isHomeKennel
+              as int,
+      isHomeKennel: null == isHomeKennel
           ? _value.isHomeKennel
           : isHomeKennel // ignore: cast_nullable_to_non_nullable
-              as int?,
-      kennelNotificationPreference: freezed == kennelNotificationPreference
+              as int,
+      kennelNotificationPreference: null == kennelNotificationPreference
           ? _value.kennelNotificationPreference
           : kennelNotificationPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      kennelEmailAlertPreference: freezed == kennelEmailAlertPreference
+              as int,
+      kennelEmailAlertPreference: null == kennelEmailAlertPreference
           ? _value.kennelEmailAlertPreference
           : kennelEmailAlertPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       authorizedDeviceList: freezed == authorizedDeviceList
           ? _value.authorizedDeviceList
           : authorizedDeviceList // ignore: cast_nullable_to_non_nullable
@@ -390,50 +390,50 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
           ? _value.authorizedDeviceCount
           : authorizedDeviceCount // ignore: cast_nullable_to_non_nullable
               as int?,
-      userRoleFlags: freezed == userRoleFlags
+      userRoleFlags: null == userRoleFlags
           ? _value.userRoleFlags
           : userRoleFlags // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       appAccessFlags: null == appAccessFlags
           ? _value.appAccessFlags
           : appAccessFlags // ignore: cast_nullable_to_non_nullable
               as int,
-      hcTotalRunCount: freezed == hcTotalRunCount
+      hcTotalRunCount: null == hcTotalRunCount
           ? _value.hcTotalRunCount
           : hcTotalRunCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hcHaringCount: freezed == hcHaringCount
+              as int,
+      hcHaringCount: null == hcHaringCount
           ? _value.hcHaringCount
           : hcHaringCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      historicalTotalRunCount: freezed == historicalTotalRunCount
+              as int,
+      historicalTotalRunCount: null == historicalTotalRunCount
           ? _value.historicalTotalRunCount
           : historicalTotalRunCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      historicalHaringCount: freezed == historicalHaringCount
+              as int,
+      historicalHaringCount: null == historicalHaringCount
           ? _value.historicalHaringCount
           : historicalHaringCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      historicalCountIsEstimate: freezed == historicalCountIsEstimate
+              as int,
+      historicalCountIsEstimate: null == historicalCountIsEstimate
           ? _value.historicalCountIsEstimate
           : historicalCountIsEstimate // ignore: cast_nullable_to_non_nullable
-              as int?,
-      kennelCredit: freezed == kennelCredit
+              as int,
+      kennelCredit: null == kennelCredit
           ? _value.kennelCredit
           : kennelCredit // ignore: cast_nullable_to_non_nullable
-              as num?,
-      discountAmount: freezed == discountAmount
+              as num,
+      discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      discountPercent: freezed == discountPercent
+              as num,
+      discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
-              as int?,
-      discountDescription: freezed == discountDescription
+              as int,
+      discountDescription: null == discountDescription
           ? _value.discountDescription
           : discountDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       dateOfLastRun: freezed == dateOfLastRun
           ? _value.dateOfLastRun
           : dateOfLastRun // ignore: cast_nullable_to_non_nullable
@@ -462,14 +462,14 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
           ? _value.kennelHashName
           : kennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      removed: freezed == removed
+              as DateTime,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
     ));
   }
 }
@@ -486,8 +486,8 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
       required this.isHomeKennel,
       required this.kennelNotificationPreference,
       required this.kennelEmailAlertPreference,
-      required this.authorizedDeviceList,
-      required this.authorizedDeviceCount,
+      this.authorizedDeviceList,
+      this.authorizedDeviceCount,
       required this.userRoleFlags,
       required this.appAccessFlags,
       required this.hcTotalRunCount,
@@ -499,13 +499,13 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
       required this.discountAmount,
       required this.discountPercent,
       required this.discountDescription,
-      required this.dateOfLastRun,
-      required this.membershipExpirationDate,
-      required this.memberSince,
-      required this.isKennelFollowing,
+      this.dateOfLastRun,
+      this.membershipExpirationDate,
+      this.memberSince,
+      this.isKennelFollowing,
       required this.mismanagementRoles,
-      required this.kennelUserPhoto,
-      required this.kennelHashName,
+      this.kennelUserPhoto,
+      this.kennelHashName,
       required this.updatedAt,
       required this.removed});
 
@@ -513,47 +513,47 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
       _$$_HasherKennelMapModelFromJson(json);
 
   @override
-  final String? hkmId;
+  final String hkmId;
   @override
-  final String? userId;
+  final String userId;
   @override
-  final String? kennelId;
+  final String kennelId;
   @override
-  final int? following;
+  final int following;
   @override
-  final int? isMember;
+  final int isMember;
   @override
-  final int? isHomeKennel;
+  final int isHomeKennel;
   @override
-  final int? kennelNotificationPreference;
+  final int kennelNotificationPreference;
   @override
-  final int? kennelEmailAlertPreference;
+  final int kennelEmailAlertPreference;
   @override
   final String? authorizedDeviceList;
   @override
   final int? authorizedDeviceCount;
   @override
-  final int? userRoleFlags;
+  final int userRoleFlags;
   @override
   final int appAccessFlags;
   @override
-  final int? hcTotalRunCount;
+  final int hcTotalRunCount;
   @override
-  final int? hcHaringCount;
+  final int hcHaringCount;
   @override
-  final int? historicalTotalRunCount;
+  final int historicalTotalRunCount;
   @override
-  final int? historicalHaringCount;
+  final int historicalHaringCount;
   @override
-  final int? historicalCountIsEstimate;
+  final int historicalCountIsEstimate;
   @override
-  final num? kennelCredit;
+  final num kennelCredit;
   @override
-  final num? discountAmount;
+  final num discountAmount;
   @override
-  final int? discountPercent;
+  final int discountPercent;
   @override
-  final String? discountDescription;
+  final String discountDescription;
   @override
   final DateTime? dateOfLastRun;
   @override
@@ -569,9 +569,9 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
   @override
   final String? kennelHashName;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
   @override
-  final int? removed;
+  final int removed;
 
   @override
   String toString() {
@@ -695,82 +695,82 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
 
 abstract class _HasherKennelMapModel implements HasherKennelMapModel {
   factory _HasherKennelMapModel(
-      {required final String? hkmId,
-      required final String? userId,
-      required final String? kennelId,
-      required final int? following,
-      required final int? isMember,
-      required final int? isHomeKennel,
-      required final int? kennelNotificationPreference,
-      required final int? kennelEmailAlertPreference,
-      required final String? authorizedDeviceList,
-      required final int? authorizedDeviceCount,
-      required final int? userRoleFlags,
+      {required final String hkmId,
+      required final String userId,
+      required final String kennelId,
+      required final int following,
+      required final int isMember,
+      required final int isHomeKennel,
+      required final int kennelNotificationPreference,
+      required final int kennelEmailAlertPreference,
+      final String? authorizedDeviceList,
+      final int? authorizedDeviceCount,
+      required final int userRoleFlags,
       required final int appAccessFlags,
-      required final int? hcTotalRunCount,
-      required final int? hcHaringCount,
-      required final int? historicalTotalRunCount,
-      required final int? historicalHaringCount,
-      required final int? historicalCountIsEstimate,
-      required final num? kennelCredit,
-      required final num? discountAmount,
-      required final int? discountPercent,
-      required final String? discountDescription,
-      required final DateTime? dateOfLastRun,
-      required final DateTime? membershipExpirationDate,
-      required final DateTime? memberSince,
-      required final int? isKennelFollowing,
+      required final int hcTotalRunCount,
+      required final int hcHaringCount,
+      required final int historicalTotalRunCount,
+      required final int historicalHaringCount,
+      required final int historicalCountIsEstimate,
+      required final num kennelCredit,
+      required final num discountAmount,
+      required final int discountPercent,
+      required final String discountDescription,
+      final DateTime? dateOfLastRun,
+      final DateTime? membershipExpirationDate,
+      final DateTime? memberSince,
+      final int? isKennelFollowing,
       required final int mismanagementRoles,
-      required final String? kennelUserPhoto,
-      required final String? kennelHashName,
-      required final DateTime? updatedAt,
-      required final int? removed}) = _$_HasherKennelMapModel;
+      final String? kennelUserPhoto,
+      final String? kennelHashName,
+      required final DateTime updatedAt,
+      required final int removed}) = _$_HasherKennelMapModel;
 
   factory _HasherKennelMapModel.fromJson(Map<String, dynamic> json) =
       _$_HasherKennelMapModel.fromJson;
 
   @override
-  String? get hkmId;
+  String get hkmId;
   @override
-  String? get userId;
+  String get userId;
   @override
-  String? get kennelId;
+  String get kennelId;
   @override
-  int? get following;
+  int get following;
   @override
-  int? get isMember;
+  int get isMember;
   @override
-  int? get isHomeKennel;
+  int get isHomeKennel;
   @override
-  int? get kennelNotificationPreference;
+  int get kennelNotificationPreference;
   @override
-  int? get kennelEmailAlertPreference;
+  int get kennelEmailAlertPreference;
   @override
   String? get authorizedDeviceList;
   @override
   int? get authorizedDeviceCount;
   @override
-  int? get userRoleFlags;
+  int get userRoleFlags;
   @override
   int get appAccessFlags;
   @override
-  int? get hcTotalRunCount;
+  int get hcTotalRunCount;
   @override
-  int? get hcHaringCount;
+  int get hcHaringCount;
   @override
-  int? get historicalTotalRunCount;
+  int get historicalTotalRunCount;
   @override
-  int? get historicalHaringCount;
+  int get historicalHaringCount;
   @override
-  int? get historicalCountIsEstimate;
+  int get historicalCountIsEstimate;
   @override
-  num? get kennelCredit;
+  num get kennelCredit;
   @override
-  num? get discountAmount;
+  num get discountAmount;
   @override
-  int? get discountPercent;
+  int get discountPercent;
   @override
-  String? get discountDescription;
+  String get discountDescription;
   @override
   DateTime? get dateOfLastRun;
   @override
@@ -786,9 +786,9 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
   @override
   String? get kennelHashName;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
-  int? get removed;
+  int get removed;
   @override
   @JsonKey(ignore: true)
   _$$_HasherKennelMapModelCopyWith<_$_HasherKennelMapModel> get copyWith =>

@@ -20,11 +20,11 @@ ReceiptsModel _$ReceiptsModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$ReceiptsModel {
-  String? get receiptId => throw _privateConstructorUsedError;
-  String? get eventId => throw _privateConstructorUsedError;
-  String? get userId => throw _privateConstructorUsedError;
-  num? get receiptAmount => throw _privateConstructorUsedError;
-  int? get costCategory => throw _privateConstructorUsedError;
+  String get receiptId => throw _privateConstructorUsedError;
+  String get eventId => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
+  num get receiptAmount => throw _privateConstructorUsedError;
+  int get costCategory => throw _privateConstructorUsedError;
   DateTime get dateUploaded => throw _privateConstructorUsedError;
   String? get imageUrl => throw _privateConstructorUsedError;
   String? get receiptShortDescription => throw _privateConstructorUsedError;
@@ -33,8 +33,8 @@ mixin _$ReceiptsModel {
   String? get reimbursedOn => throw _privateConstructorUsedError;
   num? get reimbursedAmount => throw _privateConstructorUsedError;
   String? get reimbursedNotes => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -49,11 +49,11 @@ abstract class $ReceiptsModelCopyWith<$Res> {
       _$ReceiptsModelCopyWithImpl<$Res, ReceiptsModel>;
   @useResult
   $Res call(
-      {String? receiptId,
-      String? eventId,
-      String? userId,
-      num? receiptAmount,
-      int? costCategory,
+      {String receiptId,
+      String eventId,
+      String userId,
+      num receiptAmount,
+      int costCategory,
       DateTime dateUploaded,
       String? imageUrl,
       String? receiptShortDescription,
@@ -62,8 +62,8 @@ abstract class $ReceiptsModelCopyWith<$Res> {
       String? reimbursedOn,
       num? reimbursedAmount,
       String? reimbursedNotes,
-      int? removed,
-      DateTime? updatedAt});
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -79,11 +79,11 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? receiptId = freezed,
-    Object? eventId = freezed,
-    Object? userId = freezed,
-    Object? receiptAmount = freezed,
-    Object? costCategory = freezed,
+    Object? receiptId = null,
+    Object? eventId = null,
+    Object? userId = null,
+    Object? receiptAmount = null,
+    Object? costCategory = null,
     Object? dateUploaded = null,
     Object? imageUrl = freezed,
     Object? receiptShortDescription = freezed,
@@ -92,30 +92,30 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
     Object? reimbursedOn = freezed,
     Object? reimbursedAmount = freezed,
     Object? reimbursedNotes = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      receiptId: freezed == receiptId
+      receiptId: null == receiptId
           ? _value.receiptId
           : receiptId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventId: freezed == eventId
+              as String,
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
+              as String,
+      userId: null == userId
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      receiptAmount: freezed == receiptAmount
+              as String,
+      receiptAmount: null == receiptAmount
           ? _value.receiptAmount
           : receiptAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      costCategory: freezed == costCategory
+              as num,
+      costCategory: null == costCategory
           ? _value.costCategory
           : costCategory // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       dateUploaded: null == dateUploaded
           ? _value.dateUploaded
           : dateUploaded // ignore: cast_nullable_to_non_nullable
@@ -148,14 +148,14 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
           ? _value.reimbursedNotes
           : reimbursedNotes // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ) as $Val);
   }
 }
@@ -169,11 +169,11 @@ abstract class _$$_ReceiptsModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? receiptId,
-      String? eventId,
-      String? userId,
-      num? receiptAmount,
-      int? costCategory,
+      {String receiptId,
+      String eventId,
+      String userId,
+      num receiptAmount,
+      int costCategory,
       DateTime dateUploaded,
       String? imageUrl,
       String? receiptShortDescription,
@@ -182,8 +182,8 @@ abstract class _$$_ReceiptsModelCopyWith<$Res>
       String? reimbursedOn,
       num? reimbursedAmount,
       String? reimbursedNotes,
-      int? removed,
-      DateTime? updatedAt});
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -197,11 +197,11 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? receiptId = freezed,
-    Object? eventId = freezed,
-    Object? userId = freezed,
-    Object? receiptAmount = freezed,
-    Object? costCategory = freezed,
+    Object? receiptId = null,
+    Object? eventId = null,
+    Object? userId = null,
+    Object? receiptAmount = null,
+    Object? costCategory = null,
     Object? dateUploaded = null,
     Object? imageUrl = freezed,
     Object? receiptShortDescription = freezed,
@@ -210,30 +210,30 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
     Object? reimbursedOn = freezed,
     Object? reimbursedAmount = freezed,
     Object? reimbursedNotes = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_$_ReceiptsModel(
-      receiptId: freezed == receiptId
+      receiptId: null == receiptId
           ? _value.receiptId
           : receiptId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventId: freezed == eventId
+              as String,
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
+              as String,
+      userId: null == userId
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      receiptAmount: freezed == receiptAmount
+              as String,
+      receiptAmount: null == receiptAmount
           ? _value.receiptAmount
           : receiptAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
-      costCategory: freezed == costCategory
+              as num,
+      costCategory: null == costCategory
           ? _value.costCategory
           : costCategory // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       dateUploaded: null == dateUploaded
           ? _value.dateUploaded
           : dateUploaded // ignore: cast_nullable_to_non_nullable
@@ -266,14 +266,14 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
           ? _value.reimbursedNotes
           : reimbursedNotes // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ));
   }
 }
@@ -288,13 +288,13 @@ class _$_ReceiptsModel implements _ReceiptsModel {
       required this.receiptAmount,
       required this.costCategory,
       required this.dateUploaded,
-      required this.imageUrl,
-      required this.receiptShortDescription,
-      required this.notes,
-      required this.reimbursedBy,
-      required this.reimbursedOn,
-      required this.reimbursedAmount,
-      required this.reimbursedNotes,
+      this.imageUrl,
+      this.receiptShortDescription,
+      this.notes,
+      this.reimbursedBy,
+      this.reimbursedOn,
+      this.reimbursedAmount,
+      this.reimbursedNotes,
       required this.removed,
       required this.updatedAt});
 
@@ -302,15 +302,15 @@ class _$_ReceiptsModel implements _ReceiptsModel {
       _$$_ReceiptsModelFromJson(json);
 
   @override
-  final String? receiptId;
+  final String receiptId;
   @override
-  final String? eventId;
+  final String eventId;
   @override
-  final String? userId;
+  final String userId;
   @override
-  final num? receiptAmount;
+  final num receiptAmount;
   @override
-  final int? costCategory;
+  final int costCategory;
   @override
   final DateTime dateUploaded;
   @override
@@ -328,9 +328,9 @@ class _$_ReceiptsModel implements _ReceiptsModel {
   @override
   final String? reimbursedNotes;
   @override
-  final int? removed;
+  final int removed;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
 
   @override
   String toString() {
@@ -407,35 +407,35 @@ class _$_ReceiptsModel implements _ReceiptsModel {
 
 abstract class _ReceiptsModel implements ReceiptsModel {
   factory _ReceiptsModel(
-      {required final String? receiptId,
-      required final String? eventId,
-      required final String? userId,
-      required final num? receiptAmount,
-      required final int? costCategory,
+      {required final String receiptId,
+      required final String eventId,
+      required final String userId,
+      required final num receiptAmount,
+      required final int costCategory,
       required final DateTime dateUploaded,
-      required final String? imageUrl,
-      required final String? receiptShortDescription,
-      required final String? notes,
-      required final String? reimbursedBy,
-      required final String? reimbursedOn,
-      required final num? reimbursedAmount,
-      required final String? reimbursedNotes,
-      required final int? removed,
-      required final DateTime? updatedAt}) = _$_ReceiptsModel;
+      final String? imageUrl,
+      final String? receiptShortDescription,
+      final String? notes,
+      final String? reimbursedBy,
+      final String? reimbursedOn,
+      final num? reimbursedAmount,
+      final String? reimbursedNotes,
+      required final int removed,
+      required final DateTime updatedAt}) = _$_ReceiptsModel;
 
   factory _ReceiptsModel.fromJson(Map<String, dynamic> json) =
       _$_ReceiptsModel.fromJson;
 
   @override
-  String? get receiptId;
+  String get receiptId;
   @override
-  String? get eventId;
+  String get eventId;
   @override
-  String? get userId;
+  String get userId;
   @override
-  num? get receiptAmount;
+  num get receiptAmount;
   @override
-  int? get costCategory;
+  int get costCategory;
   @override
   DateTime get dateUploaded;
   @override
@@ -453,9 +453,9 @@ abstract class _ReceiptsModel implements ReceiptsModel {
   @override
   String? get reimbursedNotes;
   @override
-  int? get removed;
+  int get removed;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_ReceiptsModelCopyWith<_$_ReceiptsModel> get copyWith =>

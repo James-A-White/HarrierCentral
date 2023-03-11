@@ -20,15 +20,15 @@ HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$HasherEventMapModel {
-  String? get hemId => throw _privateConstructorUsedError;
-  String? get userId => throw _privateConstructorUsedError;
-  String? get eventId => throw _privateConstructorUsedError;
+  String get hemId => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
+  String get eventId => throw _privateConstructorUsedError;
   String? get hasherOwnEventId => throw _privateConstructorUsedError;
   String? get userStartEvent => throw _privateConstructorUsedError;
   String? get userEndEvent => throw _privateConstructorUsedError;
-  int? get rsvpState => throw _privateConstructorUsedError;
-  int? get attendenceState => throw _privateConstructorUsedError;
-  int? get isHare => throw _privateConstructorUsedError;
+  int get rsvpState => throw _privateConstructorUsedError;
+  int get attendenceState => throw _privateConstructorUsedError;
+  int get isHare => throw _privateConstructorUsedError;
   int? get eventNotificationPreference => throw _privateConstructorUsedError;
   int? get eventEmailAlertPreference => throw _privateConstructorUsedError;
   int? get totalHaring => throw _privateConstructorUsedError;
@@ -36,7 +36,7 @@ mixin _$HasherEventMapModel {
   int? get totalRuns => throw _privateConstructorUsedError;
   int? get totalRunsThisKennel => throw _privateConstructorUsedError;
   num? get eventCountOverride => throw _privateConstructorUsedError;
-  num? get virginVisitorType => throw _privateConstructorUsedError;
+  num get virginVisitorType => throw _privateConstructorUsedError;
   String? get displayName => throw _privateConstructorUsedError;
   String? get email => throw _privateConstructorUsedError;
   String? get phoneNumber =>
@@ -50,8 +50,8 @@ mixin _$HasherEventMapModel {
   int? get hemEventIsCountedAndVisible => throw _privateConstructorUsedError;
   String? get hemKennelUserPhoto => throw _privateConstructorUsedError;
   String? get hemKennelHashName => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -66,15 +66,15 @@ abstract class $HasherEventMapModelCopyWith<$Res> {
       _$HasherEventMapModelCopyWithImpl<$Res, HasherEventMapModel>;
   @useResult
   $Res call(
-      {String? hemId,
-      String? userId,
-      String? eventId,
+      {String hemId,
+      String userId,
+      String eventId,
       String? hasherOwnEventId,
       String? userStartEvent,
       String? userEndEvent,
-      int? rsvpState,
-      int? attendenceState,
-      int? isHare,
+      int rsvpState,
+      int attendenceState,
+      int isHare,
       int? eventNotificationPreference,
       int? eventEmailAlertPreference,
       int? totalHaring,
@@ -82,7 +82,7 @@ abstract class $HasherEventMapModelCopyWith<$Res> {
       int? totalRuns,
       int? totalRunsThisKennel,
       num? eventCountOverride,
-      num? virginVisitorType,
+      num virginVisitorType,
       String? displayName,
       String? email,
       String? phoneNumber,
@@ -94,8 +94,8 @@ abstract class $HasherEventMapModelCopyWith<$Res> {
       int? hemEventIsCountedAndVisible,
       String? hemKennelUserPhoto,
       String? hemKennelHashName,
-      int? removed,
-      DateTime? updatedAt});
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -111,15 +111,15 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hemId = freezed,
-    Object? userId = freezed,
-    Object? eventId = freezed,
+    Object? hemId = null,
+    Object? userId = null,
+    Object? eventId = null,
     Object? hasherOwnEventId = freezed,
     Object? userStartEvent = freezed,
     Object? userEndEvent = freezed,
-    Object? rsvpState = freezed,
-    Object? attendenceState = freezed,
-    Object? isHare = freezed,
+    Object? rsvpState = null,
+    Object? attendenceState = null,
+    Object? isHare = null,
     Object? eventNotificationPreference = freezed,
     Object? eventEmailAlertPreference = freezed,
     Object? totalHaring = freezed,
@@ -127,7 +127,7 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
     Object? totalRuns = freezed,
     Object? totalRunsThisKennel = freezed,
     Object? eventCountOverride = freezed,
-    Object? virginVisitorType = freezed,
+    Object? virginVisitorType = null,
     Object? displayName = freezed,
     Object? email = freezed,
     Object? phoneNumber = freezed,
@@ -139,22 +139,22 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
     Object? hemEventIsCountedAndVisible = freezed,
     Object? hemKennelUserPhoto = freezed,
     Object? hemKennelHashName = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      hemId: freezed == hemId
+      hemId: null == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
+              as String,
+      userId: null == userId
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventId: freezed == eventId
+              as String,
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       hasherOwnEventId: freezed == hasherOwnEventId
           ? _value.hasherOwnEventId
           : hasherOwnEventId // ignore: cast_nullable_to_non_nullable
@@ -167,18 +167,18 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
           ? _value.userEndEvent
           : userEndEvent // ignore: cast_nullable_to_non_nullable
               as String?,
-      rsvpState: freezed == rsvpState
+      rsvpState: null == rsvpState
           ? _value.rsvpState
           : rsvpState // ignore: cast_nullable_to_non_nullable
-              as int?,
-      attendenceState: freezed == attendenceState
+              as int,
+      attendenceState: null == attendenceState
           ? _value.attendenceState
           : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isHare: freezed == isHare
+              as int,
+      isHare: null == isHare
           ? _value.isHare
           : isHare // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       eventNotificationPreference: freezed == eventNotificationPreference
           ? _value.eventNotificationPreference
           : eventNotificationPreference // ignore: cast_nullable_to_non_nullable
@@ -207,10 +207,10 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
           ? _value.eventCountOverride
           : eventCountOverride // ignore: cast_nullable_to_non_nullable
               as num?,
-      virginVisitorType: freezed == virginVisitorType
+      virginVisitorType: null == virginVisitorType
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as num,
       displayName: freezed == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -255,14 +255,14 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
           ? _value.hemKennelHashName
           : hemKennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ) as $Val);
   }
 }
@@ -276,15 +276,15 @@ abstract class _$$_HasherEventMapModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? hemId,
-      String? userId,
-      String? eventId,
+      {String hemId,
+      String userId,
+      String eventId,
       String? hasherOwnEventId,
       String? userStartEvent,
       String? userEndEvent,
-      int? rsvpState,
-      int? attendenceState,
-      int? isHare,
+      int rsvpState,
+      int attendenceState,
+      int isHare,
       int? eventNotificationPreference,
       int? eventEmailAlertPreference,
       int? totalHaring,
@@ -292,7 +292,7 @@ abstract class _$$_HasherEventMapModelCopyWith<$Res>
       int? totalRuns,
       int? totalRunsThisKennel,
       num? eventCountOverride,
-      num? virginVisitorType,
+      num virginVisitorType,
       String? displayName,
       String? email,
       String? phoneNumber,
@@ -304,8 +304,8 @@ abstract class _$$_HasherEventMapModelCopyWith<$Res>
       int? hemEventIsCountedAndVisible,
       String? hemKennelUserPhoto,
       String? hemKennelHashName,
-      int? removed,
-      DateTime? updatedAt});
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -319,15 +319,15 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hemId = freezed,
-    Object? userId = freezed,
-    Object? eventId = freezed,
+    Object? hemId = null,
+    Object? userId = null,
+    Object? eventId = null,
     Object? hasherOwnEventId = freezed,
     Object? userStartEvent = freezed,
     Object? userEndEvent = freezed,
-    Object? rsvpState = freezed,
-    Object? attendenceState = freezed,
-    Object? isHare = freezed,
+    Object? rsvpState = null,
+    Object? attendenceState = null,
+    Object? isHare = null,
     Object? eventNotificationPreference = freezed,
     Object? eventEmailAlertPreference = freezed,
     Object? totalHaring = freezed,
@@ -335,7 +335,7 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
     Object? totalRuns = freezed,
     Object? totalRunsThisKennel = freezed,
     Object? eventCountOverride = freezed,
-    Object? virginVisitorType = freezed,
+    Object? virginVisitorType = null,
     Object? displayName = freezed,
     Object? email = freezed,
     Object? phoneNumber = freezed,
@@ -347,22 +347,22 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
     Object? hemEventIsCountedAndVisible = freezed,
     Object? hemKennelUserPhoto = freezed,
     Object? hemKennelHashName = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_$_HasherEventMapModel(
-      hemId: freezed == hemId
+      hemId: null == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
+              as String,
+      userId: null == userId
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventId: freezed == eventId
+              as String,
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       hasherOwnEventId: freezed == hasherOwnEventId
           ? _value.hasherOwnEventId
           : hasherOwnEventId // ignore: cast_nullable_to_non_nullable
@@ -375,18 +375,18 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
           ? _value.userEndEvent
           : userEndEvent // ignore: cast_nullable_to_non_nullable
               as String?,
-      rsvpState: freezed == rsvpState
+      rsvpState: null == rsvpState
           ? _value.rsvpState
           : rsvpState // ignore: cast_nullable_to_non_nullable
-              as int?,
-      attendenceState: freezed == attendenceState
+              as int,
+      attendenceState: null == attendenceState
           ? _value.attendenceState
           : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isHare: freezed == isHare
+              as int,
+      isHare: null == isHare
           ? _value.isHare
           : isHare // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       eventNotificationPreference: freezed == eventNotificationPreference
           ? _value.eventNotificationPreference
           : eventNotificationPreference // ignore: cast_nullable_to_non_nullable
@@ -415,10 +415,10 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
           ? _value.eventCountOverride
           : eventCountOverride // ignore: cast_nullable_to_non_nullable
               as num?,
-      virginVisitorType: freezed == virginVisitorType
+      virginVisitorType: null == virginVisitorType
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as num,
       displayName: freezed == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -463,14 +463,14 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
           ? _value.hemKennelHashName
           : hemKennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: freezed == removed
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ));
   }
 }
@@ -482,31 +482,31 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
       {required this.hemId,
       required this.userId,
       required this.eventId,
-      required this.hasherOwnEventId,
-      required this.userStartEvent,
-      required this.userEndEvent,
+      this.hasherOwnEventId,
+      this.userStartEvent,
+      this.userEndEvent,
       required this.rsvpState,
       required this.attendenceState,
       required this.isHare,
-      required this.eventNotificationPreference,
-      required this.eventEmailAlertPreference,
-      required this.totalHaring,
-      required this.totalHaringThisKennel,
-      required this.totalRuns,
-      required this.totalRunsThisKennel,
-      required this.eventCountOverride,
+      this.eventNotificationPreference,
+      this.eventEmailAlertPreference,
+      this.totalHaring,
+      this.totalHaringThisKennel,
+      this.totalRuns,
+      this.totalRunsThisKennel,
+      this.eventCountOverride,
       required this.virginVisitorType,
-      required this.displayName,
-      required this.email,
-      required this.phoneNumber,
-      required this.hemEventName,
-      required this.hemEventNumber,
+      this.displayName,
+      this.email,
+      this.phoneNumber,
+      this.hemEventName,
+      this.hemEventNumber,
       required this.hemEventStartDatetime,
-      required this.hemCanEditRunAttendence,
-      required this.hemEventKennelId,
-      required this.hemEventIsCountedAndVisible,
-      required this.hemKennelUserPhoto,
-      required this.hemKennelHashName,
+      this.hemCanEditRunAttendence,
+      this.hemEventKennelId,
+      this.hemEventIsCountedAndVisible,
+      this.hemKennelUserPhoto,
+      this.hemKennelHashName,
       required this.removed,
       required this.updatedAt});
 
@@ -514,11 +514,11 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
       _$$_HasherEventMapModelFromJson(json);
 
   @override
-  final String? hemId;
+  final String hemId;
   @override
-  final String? userId;
+  final String userId;
   @override
-  final String? eventId;
+  final String eventId;
   @override
   final String? hasherOwnEventId;
   @override
@@ -526,11 +526,11 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @override
   final String? userEndEvent;
   @override
-  final int? rsvpState;
+  final int rsvpState;
   @override
-  final int? attendenceState;
+  final int attendenceState;
   @override
-  final int? isHare;
+  final int isHare;
   @override
   final int? eventNotificationPreference;
   @override
@@ -546,7 +546,7 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @override
   final num? eventCountOverride;
   @override
-  final num? virginVisitorType;
+  final num virginVisitorType;
   @override
   final String? displayName;
   @override
@@ -572,9 +572,9 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @override
   final String? hemKennelHashName;
   @override
-  final int? removed;
+  final int removed;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
 
   @override
   String toString() {
@@ -698,46 +698,46 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
 
 abstract class _HasherEventMapModel implements HasherEventMapModel {
   factory _HasherEventMapModel(
-      {required final String? hemId,
-      required final String? userId,
-      required final String? eventId,
-      required final String? hasherOwnEventId,
-      required final String? userStartEvent,
-      required final String? userEndEvent,
-      required final int? rsvpState,
-      required final int? attendenceState,
-      required final int? isHare,
-      required final int? eventNotificationPreference,
-      required final int? eventEmailAlertPreference,
-      required final int? totalHaring,
-      required final int? totalHaringThisKennel,
-      required final int? totalRuns,
-      required final int? totalRunsThisKennel,
-      required final num? eventCountOverride,
-      required final num? virginVisitorType,
-      required final String? displayName,
-      required final String? email,
-      required final String? phoneNumber,
-      required final String? hemEventName,
-      required final int? hemEventNumber,
+      {required final String hemId,
+      required final String userId,
+      required final String eventId,
+      final String? hasherOwnEventId,
+      final String? userStartEvent,
+      final String? userEndEvent,
+      required final int rsvpState,
+      required final int attendenceState,
+      required final int isHare,
+      final int? eventNotificationPreference,
+      final int? eventEmailAlertPreference,
+      final int? totalHaring,
+      final int? totalHaringThisKennel,
+      final int? totalRuns,
+      final int? totalRunsThisKennel,
+      final num? eventCountOverride,
+      required final num virginVisitorType,
+      final String? displayName,
+      final String? email,
+      final String? phoneNumber,
+      final String? hemEventName,
+      final int? hemEventNumber,
       required final DateTime hemEventStartDatetime,
-      required final num? hemCanEditRunAttendence,
-      required final String? hemEventKennelId,
-      required final int? hemEventIsCountedAndVisible,
-      required final String? hemKennelUserPhoto,
-      required final String? hemKennelHashName,
-      required final int? removed,
-      required final DateTime? updatedAt}) = _$_HasherEventMapModel;
+      final num? hemCanEditRunAttendence,
+      final String? hemEventKennelId,
+      final int? hemEventIsCountedAndVisible,
+      final String? hemKennelUserPhoto,
+      final String? hemKennelHashName,
+      required final int removed,
+      required final DateTime updatedAt}) = _$_HasherEventMapModel;
 
   factory _HasherEventMapModel.fromJson(Map<String, dynamic> json) =
       _$_HasherEventMapModel.fromJson;
 
   @override
-  String? get hemId;
+  String get hemId;
   @override
-  String? get userId;
+  String get userId;
   @override
-  String? get eventId;
+  String get eventId;
   @override
   String? get hasherOwnEventId;
   @override
@@ -745,11 +745,11 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   String? get userEndEvent;
   @override
-  int? get rsvpState;
+  int get rsvpState;
   @override
-  int? get attendenceState;
+  int get attendenceState;
   @override
-  int? get isHare;
+  int get isHare;
   @override
   int? get eventNotificationPreference;
   @override
@@ -765,7 +765,7 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   num? get eventCountOverride;
   @override
-  num? get virginVisitorType;
+  num get virginVisitorType;
   @override
   String? get displayName;
   @override
@@ -790,9 +790,9 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   String? get hemKennelHashName;
   @override
-  int? get removed;
+  int get removed;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_HasherEventMapModelCopyWith<_$_HasherEventMapModel> get copyWith =>

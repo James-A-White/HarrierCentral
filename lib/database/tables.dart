@@ -214,6 +214,16 @@ class Tables {
      
       ''',
         appliedAtInt: 0),
+
+    // force rebuild of database to account for nullable / non-nullable
+    // fields being defined properly
+    MigrationsModel(
+        dbVersion: 430,
+        migrationText: ''' 
+        -- DB structure not changed, but migration required to accommodate for
+        -- a change in the values stored in the [updatedAtValue] field
+      ''',
+        appliedAtInt: 0),
   ];
 
   static Future<void> createTables(Database db, int version, Function informUser) async {

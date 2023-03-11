@@ -51,21 +51,20 @@ class CountriesTableHelper extends BaseTableHelper with BaseFields {
 
             $colCountryId TEXT NOT NULL,
             $colCountryCode TEXT NOT NULL,
-            $colLatitude NUM,
-            $colLongitude NUM,
+            $colLatitude NUM NOT NULL,
+            $colLongitude NUM NOT NULL,
             $colCountryName TEXT NOT NULL,
             $colCountrySearchTags TEXT,
             $colContinentCode TEXT NOT NULL,
             $colFlagFile TEXT,
-            $colCurrencyCode TEXT,
-            $colPrimaryCultureCode TEXT,
-            $colShowRegion NUM,
+            $colCurrencyCode TEXT NOT NULL,
+            $colPrimaryCultureCode TEXT NOT NULL,
+            $colShowRegion NUM NOT NULL,
             $colCurrencySymbol TEXT,
             $colDigitsAfterDecimal NUM,
             $colDistancePreference INT,
-            
-            $colRemoved NUM,
-            $colUpdatedAt TEXT,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');

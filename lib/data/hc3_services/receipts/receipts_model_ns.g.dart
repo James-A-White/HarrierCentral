@@ -8,11 +8,11 @@ part of 'receipts_model_ns.dart';
 
 _$_ReceiptsModel _$$_ReceiptsModelFromJson(Map<String, dynamic> json) =>
     _$_ReceiptsModel(
-      receiptId: json['receiptId'] as String?,
-      eventId: json['eventId'] as String?,
-      userId: json['userId'] as String?,
-      receiptAmount: json['receiptAmount'] as num?,
-      costCategory: json['costCategory'] as int?,
+      receiptId: json['receiptId'] as String,
+      eventId: json['eventId'] as String,
+      userId: json['userId'] as String,
+      receiptAmount: json['receiptAmount'] as num,
+      costCategory: json['costCategory'] as int,
       dateUploaded: DateTime.parse(json['dateUploaded'] as String),
       imageUrl: json['imageUrl'] as String?,
       receiptShortDescription: json['receiptShortDescription'] as String?,
@@ -21,10 +21,8 @@ _$_ReceiptsModel _$$_ReceiptsModelFromJson(Map<String, dynamic> json) =>
       reimbursedOn: json['reimbursedOn'] as String?,
       reimbursedAmount: json['reimbursedAmount'] as num?,
       reimbursedNotes: json['reimbursedNotes'] as String?,
-      removed: json['removed'] as int?,
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      removed: json['removed'] as int,
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$$_ReceiptsModelToJson(_$_ReceiptsModel instance) =>
@@ -43,5 +41,5 @@ Map<String, dynamic> _$$_ReceiptsModelToJson(_$_ReceiptsModel instance) =>
       'reimbursedAmount': instance.reimbursedAmount,
       'reimbursedNotes': instance.reimbursedNotes,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
     };

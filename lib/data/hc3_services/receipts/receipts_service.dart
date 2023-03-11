@@ -1,49 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-// part '../receipts_service.g.dart';
-
-// @JsonSerializable(fieldRename: FieldRename.none)
-// class ReceiptsModel implements BaseModel {
-//   ReceiptsModel({
-//     this.receiptId,
-//     this.eventId,
-//     this.userId,
-//     this.receiptAmount,
-//     this.costCategory = 0,
-//     this.dateUploaded,
-//     this.imageUrl,
-//     this.receiptShortDescription,
-//     this.notes,
-//     this.reimbursedBy,
-//     this.reimbursedOn,
-//     this.reimbursedAmount,
-//     this.reimbursedNotes,
-//     this.removed,
-//     this.updatedAt,
-//   });
-
-//   factory ReceiptsModel.fromJson(Map<String, dynamic> json) => _$ReceiptsModelFromJson(json);
-
-//   Map<String, dynamic> toJson() => _$ReceiptsModelToJson(this);
-
-//   final String receiptId;
-//   final String eventId;
-//   final String userId;
-//   final num receiptAmount;
-//   final int costCategory;
-//   final DateTime dateUploaded;
-//   final String imageUrl;
-//   final String receiptShortDescription;
-//   final String notes;
-//   final String reimbursedBy;
-//   final String reimbursedOn;
-//   final num reimbursedAmount;
-//   final String reimbursedNotes;
-//   final int removed;
-//   final DateTime updatedAt;
-// }
-
 class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   ReceiptsTableHelper() {
     remoteDbId = 'receiptId';
@@ -96,9 +53,9 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
             $colReceiptId TEXT NOT NULL,
             $colEventId TEXT NOT NULL,
             $colUserId TEXT NOT NULL,
-            $colReceiptAmount NUM,
-            $colCostCategory INT,
-            $colDateUploaded TEXT,
+            $colReceiptAmount NUM NOT NULL,
+            $colCostCategory INT NOT NULL,
+            $colDateUploaded TEXT NOT NULL,
             $colImageUrl TEXT,
             $colReceiptShortDescription TEXT,
             $colNotes TEXT,
@@ -106,9 +63,8 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
             $colReimbursedOn TEXT,
             $colReimbursedAmount NUM,
             $colReimbursedNotes TEXT,
-
-            $colRemoved NUM,
-            $colUpdatedAt TEXT,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');

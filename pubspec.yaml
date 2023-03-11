@@ -136,6 +136,7 @@ flutter_icons:
   adaptive_icon_background: '#FFE02000'
   adaptive_icon_foreground: 'assets/icon/hc_app_icon_adaptive_foot.png'
 
+
   # hc_app_icon_adaptive_foot
 
 #flutter pub pub run flutter_launcher_icons:main

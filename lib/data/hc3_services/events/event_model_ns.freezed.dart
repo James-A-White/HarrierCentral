@@ -20,17 +20,17 @@ EventModel _$EventModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$EventModel {
-  String? get eventId => throw _privateConstructorUsedError;
-  String? get publicEventId => throw _privateConstructorUsedError;
+  String get eventId => throw _privateConstructorUsedError;
+  String get publicEventId => throw _privateConstructorUsedError;
   DateTime? get eventStartDatetime => throw _privateConstructorUsedError;
-  String? get kennelId => throw _privateConstructorUsedError;
-  int? get isVisible => throw _privateConstructorUsedError;
-  int? get isCountedRun => throw _privateConstructorUsedError;
-  int? get isPromotedEvent => throw _privateConstructorUsedError;
-  int? get eventGeographicScope => throw _privateConstructorUsedError;
-  int? get eventInboundIntegrationId => throw _privateConstructorUsedError;
-  int? get eventNumber => throw _privateConstructorUsedError;
-  String? get eventName => throw _privateConstructorUsedError;
+  String get kennelId => throw _privateConstructorUsedError;
+  int get isVisible => throw _privateConstructorUsedError;
+  int get isCountedRun => throw _privateConstructorUsedError;
+  int get isPromotedEvent => throw _privateConstructorUsedError;
+  int get eventGeographicScope => throw _privateConstructorUsedError;
+  int get eventInboundIntegrationId => throw _privateConstructorUsedError;
+  int get eventNumber => throw _privateConstructorUsedError;
+  String get eventName => throw _privateConstructorUsedError;
   num? get hcLatitude => throw _privateConstructorUsedError;
   num? get hcLongitude => throw _privateConstructorUsedError;
   num? get fbLatitude => throw _privateConstructorUsedError;
@@ -58,16 +58,16 @@ mixin _$EventModel {
   int? get unconfirmedBankXferCount => throw _privateConstructorUsedError;
   num? get eventPriceForExtras => throw _privateConstructorUsedError;
   String? get extrasDescription => throw _privateConstructorUsedError;
-  int? get doTrackHashCash => throw _privateConstructorUsedError;
-  int? get tags1 => throw _privateConstructorUsedError;
-  int? get tags2 => throw _privateConstructorUsedError;
-  int? get tags3 => throw _privateConstructorUsedError;
-  int? get useFbLocation => throw _privateConstructorUsedError;
-  int? get useFbLatLon => throw _privateConstructorUsedError;
-  int? get useFbRunDetails => throw _privateConstructorUsedError;
-  int? get useFbImage => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  int get doTrackHashCash => throw _privateConstructorUsedError;
+  int get tags1 => throw _privateConstructorUsedError;
+  int get tags2 => throw _privateConstructorUsedError;
+  int get tags3 => throw _privateConstructorUsedError;
+  int get useFbLocation => throw _privateConstructorUsedError;
+  int get useFbLatLon => throw _privateConstructorUsedError;
+  int get useFbRunDetails => throw _privateConstructorUsedError;
+  int get useFbImage => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -82,17 +82,17 @@ abstract class $EventModelCopyWith<$Res> {
       _$EventModelCopyWithImpl<$Res, EventModel>;
   @useResult
   $Res call(
-      {String? eventId,
-      String? publicEventId,
+      {String eventId,
+      String publicEventId,
       DateTime? eventStartDatetime,
-      String? kennelId,
-      int? isVisible,
-      int? isCountedRun,
-      int? isPromotedEvent,
-      int? eventGeographicScope,
-      int? eventInboundIntegrationId,
-      int? eventNumber,
-      String? eventName,
+      String kennelId,
+      int isVisible,
+      int isCountedRun,
+      int isPromotedEvent,
+      int eventGeographicScope,
+      int eventInboundIntegrationId,
+      int eventNumber,
+      String eventName,
       num? hcLatitude,
       num? hcLongitude,
       num? fbLatitude,
@@ -120,16 +120,16 @@ abstract class $EventModelCopyWith<$Res> {
       int? unconfirmedBankXferCount,
       num? eventPriceForExtras,
       String? extrasDescription,
-      int? doTrackHashCash,
-      int? tags1,
-      int? tags2,
-      int? tags3,
-      int? useFbLocation,
-      int? useFbLatLon,
-      int? useFbRunDetails,
-      int? useFbImage,
-      int? removed,
-      DateTime? updatedAt});
+      int doTrackHashCash,
+      int tags1,
+      int tags2,
+      int tags3,
+      int useFbLocation,
+      int useFbLatLon,
+      int useFbRunDetails,
+      int useFbImage,
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -145,17 +145,17 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? eventId = freezed,
-    Object? publicEventId = freezed,
+    Object? eventId = null,
+    Object? publicEventId = null,
     Object? eventStartDatetime = freezed,
-    Object? kennelId = freezed,
-    Object? isVisible = freezed,
-    Object? isCountedRun = freezed,
-    Object? isPromotedEvent = freezed,
-    Object? eventGeographicScope = freezed,
-    Object? eventInboundIntegrationId = freezed,
-    Object? eventNumber = freezed,
-    Object? eventName = freezed,
+    Object? kennelId = null,
+    Object? isVisible = null,
+    Object? isCountedRun = null,
+    Object? isPromotedEvent = null,
+    Object? eventGeographicScope = null,
+    Object? eventInboundIntegrationId = null,
+    Object? eventNumber = null,
+    Object? eventName = null,
     Object? hcLatitude = freezed,
     Object? hcLongitude = freezed,
     Object? fbLatitude = freezed,
@@ -183,62 +183,62 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
     Object? unconfirmedBankXferCount = freezed,
     Object? eventPriceForExtras = freezed,
     Object? extrasDescription = freezed,
-    Object? doTrackHashCash = freezed,
-    Object? tags1 = freezed,
-    Object? tags2 = freezed,
-    Object? tags3 = freezed,
-    Object? useFbLocation = freezed,
-    Object? useFbLatLon = freezed,
-    Object? useFbRunDetails = freezed,
-    Object? useFbImage = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? doTrackHashCash = null,
+    Object? tags1 = null,
+    Object? tags2 = null,
+    Object? tags3 = null,
+    Object? useFbLocation = null,
+    Object? useFbLatLon = null,
+    Object? useFbRunDetails = null,
+    Object? useFbImage = null,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      eventId: freezed == eventId
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      publicEventId: freezed == publicEventId
+              as String,
+      publicEventId: null == publicEventId
           ? _value.publicEventId
           : publicEventId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       eventStartDatetime: freezed == eventStartDatetime
           ? _value.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      kennelId: freezed == kennelId
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isVisible: freezed == isVisible
+              as String,
+      isVisible: null == isVisible
           ? _value.isVisible
           : isVisible // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isCountedRun: freezed == isCountedRun
+              as int,
+      isCountedRun: null == isCountedRun
           ? _value.isCountedRun
           : isCountedRun // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isPromotedEvent: freezed == isPromotedEvent
+              as int,
+      isPromotedEvent: null == isPromotedEvent
           ? _value.isPromotedEvent
           : isPromotedEvent // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventGeographicScope: freezed == eventGeographicScope
+              as int,
+      eventGeographicScope: null == eventGeographicScope
           ? _value.eventGeographicScope
           : eventGeographicScope // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventInboundIntegrationId: freezed == eventInboundIntegrationId
+              as int,
+      eventInboundIntegrationId: null == eventInboundIntegrationId
           ? _value.eventInboundIntegrationId
           : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventNumber: freezed == eventNumber
+              as int,
+      eventNumber: null == eventNumber
           ? _value.eventNumber
           : eventNumber // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventName: freezed == eventName
+              as int,
+      eventName: null == eventName
           ? _value.eventName
           : eventName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       hcLatitude: freezed == hcLatitude
           ? _value.hcLatitude
           : hcLatitude // ignore: cast_nullable_to_non_nullable
@@ -347,46 +347,46 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
           ? _value.extrasDescription
           : extrasDescription // ignore: cast_nullable_to_non_nullable
               as String?,
-      doTrackHashCash: freezed == doTrackHashCash
+      doTrackHashCash: null == doTrackHashCash
           ? _value.doTrackHashCash
           : doTrackHashCash // ignore: cast_nullable_to_non_nullable
-              as int?,
-      tags1: freezed == tags1
+              as int,
+      tags1: null == tags1
           ? _value.tags1
           : tags1 // ignore: cast_nullable_to_non_nullable
-              as int?,
-      tags2: freezed == tags2
+              as int,
+      tags2: null == tags2
           ? _value.tags2
           : tags2 // ignore: cast_nullable_to_non_nullable
-              as int?,
-      tags3: freezed == tags3
+              as int,
+      tags3: null == tags3
           ? _value.tags3
           : tags3 // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbLocation: freezed == useFbLocation
+              as int,
+      useFbLocation: null == useFbLocation
           ? _value.useFbLocation
           : useFbLocation // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbLatLon: freezed == useFbLatLon
+              as int,
+      useFbLatLon: null == useFbLatLon
           ? _value.useFbLatLon
           : useFbLatLon // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbRunDetails: freezed == useFbRunDetails
+              as int,
+      useFbRunDetails: null == useFbRunDetails
           ? _value.useFbRunDetails
           : useFbRunDetails // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbImage: freezed == useFbImage
+              as int,
+      useFbImage: null == useFbImage
           ? _value.useFbImage
           : useFbImage // ignore: cast_nullable_to_non_nullable
-              as int?,
-      removed: freezed == removed
+              as int,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ) as $Val);
   }
 }
@@ -400,17 +400,17 @@ abstract class _$$_EventModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? eventId,
-      String? publicEventId,
+      {String eventId,
+      String publicEventId,
       DateTime? eventStartDatetime,
-      String? kennelId,
-      int? isVisible,
-      int? isCountedRun,
-      int? isPromotedEvent,
-      int? eventGeographicScope,
-      int? eventInboundIntegrationId,
-      int? eventNumber,
-      String? eventName,
+      String kennelId,
+      int isVisible,
+      int isCountedRun,
+      int isPromotedEvent,
+      int eventGeographicScope,
+      int eventInboundIntegrationId,
+      int eventNumber,
+      String eventName,
       num? hcLatitude,
       num? hcLongitude,
       num? fbLatitude,
@@ -438,16 +438,16 @@ abstract class _$$_EventModelCopyWith<$Res>
       int? unconfirmedBankXferCount,
       num? eventPriceForExtras,
       String? extrasDescription,
-      int? doTrackHashCash,
-      int? tags1,
-      int? tags2,
-      int? tags3,
-      int? useFbLocation,
-      int? useFbLatLon,
-      int? useFbRunDetails,
-      int? useFbImage,
-      int? removed,
-      DateTime? updatedAt});
+      int doTrackHashCash,
+      int tags1,
+      int tags2,
+      int tags3,
+      int useFbLocation,
+      int useFbLatLon,
+      int useFbRunDetails,
+      int useFbImage,
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -461,17 +461,17 @@ class __$$_EventModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? eventId = freezed,
-    Object? publicEventId = freezed,
+    Object? eventId = null,
+    Object? publicEventId = null,
     Object? eventStartDatetime = freezed,
-    Object? kennelId = freezed,
-    Object? isVisible = freezed,
-    Object? isCountedRun = freezed,
-    Object? isPromotedEvent = freezed,
-    Object? eventGeographicScope = freezed,
-    Object? eventInboundIntegrationId = freezed,
-    Object? eventNumber = freezed,
-    Object? eventName = freezed,
+    Object? kennelId = null,
+    Object? isVisible = null,
+    Object? isCountedRun = null,
+    Object? isPromotedEvent = null,
+    Object? eventGeographicScope = null,
+    Object? eventInboundIntegrationId = null,
+    Object? eventNumber = null,
+    Object? eventName = null,
     Object? hcLatitude = freezed,
     Object? hcLongitude = freezed,
     Object? fbLatitude = freezed,
@@ -499,62 +499,62 @@ class __$$_EventModelCopyWithImpl<$Res>
     Object? unconfirmedBankXferCount = freezed,
     Object? eventPriceForExtras = freezed,
     Object? extrasDescription = freezed,
-    Object? doTrackHashCash = freezed,
-    Object? tags1 = freezed,
-    Object? tags2 = freezed,
-    Object? tags3 = freezed,
-    Object? useFbLocation = freezed,
-    Object? useFbLatLon = freezed,
-    Object? useFbRunDetails = freezed,
-    Object? useFbImage = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? doTrackHashCash = null,
+    Object? tags1 = null,
+    Object? tags2 = null,
+    Object? tags3 = null,
+    Object? useFbLocation = null,
+    Object? useFbLatLon = null,
+    Object? useFbRunDetails = null,
+    Object? useFbImage = null,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_$_EventModel(
-      eventId: freezed == eventId
+      eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      publicEventId: freezed == publicEventId
+              as String,
+      publicEventId: null == publicEventId
           ? _value.publicEventId
           : publicEventId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       eventStartDatetime: freezed == eventStartDatetime
           ? _value.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      kennelId: freezed == kennelId
+      kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isVisible: freezed == isVisible
+              as String,
+      isVisible: null == isVisible
           ? _value.isVisible
           : isVisible // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isCountedRun: freezed == isCountedRun
+              as int,
+      isCountedRun: null == isCountedRun
           ? _value.isCountedRun
           : isCountedRun // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isPromotedEvent: freezed == isPromotedEvent
+              as int,
+      isPromotedEvent: null == isPromotedEvent
           ? _value.isPromotedEvent
           : isPromotedEvent // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventGeographicScope: freezed == eventGeographicScope
+              as int,
+      eventGeographicScope: null == eventGeographicScope
           ? _value.eventGeographicScope
           : eventGeographicScope // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventInboundIntegrationId: freezed == eventInboundIntegrationId
+              as int,
+      eventInboundIntegrationId: null == eventInboundIntegrationId
           ? _value.eventInboundIntegrationId
           : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventNumber: freezed == eventNumber
+              as int,
+      eventNumber: null == eventNumber
           ? _value.eventNumber
           : eventNumber // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventName: freezed == eventName
+              as int,
+      eventName: null == eventName
           ? _value.eventName
           : eventName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       hcLatitude: freezed == hcLatitude
           ? _value.hcLatitude
           : hcLatitude // ignore: cast_nullable_to_non_nullable
@@ -663,46 +663,46 @@ class __$$_EventModelCopyWithImpl<$Res>
           ? _value.extrasDescription
           : extrasDescription // ignore: cast_nullable_to_non_nullable
               as String?,
-      doTrackHashCash: freezed == doTrackHashCash
+      doTrackHashCash: null == doTrackHashCash
           ? _value.doTrackHashCash
           : doTrackHashCash // ignore: cast_nullable_to_non_nullable
-              as int?,
-      tags1: freezed == tags1
+              as int,
+      tags1: null == tags1
           ? _value.tags1
           : tags1 // ignore: cast_nullable_to_non_nullable
-              as int?,
-      tags2: freezed == tags2
+              as int,
+      tags2: null == tags2
           ? _value.tags2
           : tags2 // ignore: cast_nullable_to_non_nullable
-              as int?,
-      tags3: freezed == tags3
+              as int,
+      tags3: null == tags3
           ? _value.tags3
           : tags3 // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbLocation: freezed == useFbLocation
+              as int,
+      useFbLocation: null == useFbLocation
           ? _value.useFbLocation
           : useFbLocation // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbLatLon: freezed == useFbLatLon
+              as int,
+      useFbLatLon: null == useFbLatLon
           ? _value.useFbLatLon
           : useFbLatLon // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbRunDetails: freezed == useFbRunDetails
+              as int,
+      useFbRunDetails: null == useFbRunDetails
           ? _value.useFbRunDetails
           : useFbRunDetails // ignore: cast_nullable_to_non_nullable
-              as int?,
-      useFbImage: freezed == useFbImage
+              as int,
+      useFbImage: null == useFbImage
           ? _value.useFbImage
           : useFbImage // ignore: cast_nullable_to_non_nullable
-              as int?,
-      removed: freezed == removed
+              as int,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ));
   }
 }
@@ -713,7 +713,7 @@ class _$_EventModel implements _EventModel {
   _$_EventModel(
       {required this.eventId,
       required this.publicEventId,
-      required this.eventStartDatetime,
+      this.eventStartDatetime,
       required this.kennelId,
       required this.isVisible,
       required this.isCountedRun,
@@ -722,33 +722,33 @@ class _$_EventModel implements _EventModel {
       required this.eventInboundIntegrationId,
       required this.eventNumber,
       required this.eventName,
-      required this.hcLatitude,
-      required this.hcLongitude,
-      required this.fbLatitude,
-      required this.fbLongitude,
-      required this.eventPriceForMembers,
-      required this.eventPriceForNonMembers,
-      required this.evtDisseminateAllowWebLinks,
-      required this.eventFacebookId,
-      required this.absoluteEventNumber,
-      required this.canEditRunAttendence,
-      required this.eventImage,
-      required this.eventDescription,
-      required this.eventUrl,
-      required this.locationOneLineDesc,
-      required this.locationPostCode,
-      required this.locationCity,
-      required this.locationStreet,
-      required this.locationCountry,
-      required this.locationRegion,
-      required this.locationSubRegion,
-      required this.hares,
-      required this.eventPaymentScheme,
-      required this.eventPaymentUrl,
-      required this.eventPaymentUrlExpires,
-      required this.unconfirmedBankXferCount,
-      required this.eventPriceForExtras,
-      required this.extrasDescription,
+      this.hcLatitude,
+      this.hcLongitude,
+      this.fbLatitude,
+      this.fbLongitude,
+      this.eventPriceForMembers,
+      this.eventPriceForNonMembers,
+      this.evtDisseminateAllowWebLinks,
+      this.eventFacebookId,
+      this.absoluteEventNumber,
+      this.canEditRunAttendence,
+      this.eventImage,
+      this.eventDescription,
+      this.eventUrl,
+      this.locationOneLineDesc,
+      this.locationPostCode,
+      this.locationCity,
+      this.locationStreet,
+      this.locationCountry,
+      this.locationRegion,
+      this.locationSubRegion,
+      this.hares,
+      this.eventPaymentScheme,
+      this.eventPaymentUrl,
+      this.eventPaymentUrlExpires,
+      this.unconfirmedBankXferCount,
+      this.eventPriceForExtras,
+      this.extrasDescription,
       required this.doTrackHashCash,
       required this.tags1,
       required this.tags2,
@@ -764,27 +764,27 @@ class _$_EventModel implements _EventModel {
       _$$_EventModelFromJson(json);
 
   @override
-  final String? eventId;
+  final String eventId;
   @override
-  final String? publicEventId;
+  final String publicEventId;
   @override
   final DateTime? eventStartDatetime;
   @override
-  final String? kennelId;
+  final String kennelId;
   @override
-  final int? isVisible;
+  final int isVisible;
   @override
-  final int? isCountedRun;
+  final int isCountedRun;
   @override
-  final int? isPromotedEvent;
+  final int isPromotedEvent;
   @override
-  final int? eventGeographicScope;
+  final int eventGeographicScope;
   @override
-  final int? eventInboundIntegrationId;
+  final int eventInboundIntegrationId;
   @override
-  final int? eventNumber;
+  final int eventNumber;
   @override
-  final String? eventName;
+  final String eventName;
   @override
   final num? hcLatitude;
   @override
@@ -840,25 +840,25 @@ class _$_EventModel implements _EventModel {
   @override
   final String? extrasDescription;
   @override
-  final int? doTrackHashCash;
+  final int doTrackHashCash;
   @override
-  final int? tags1;
+  final int tags1;
   @override
-  final int? tags2;
+  final int tags2;
   @override
-  final int? tags3;
+  final int tags3;
   @override
-  final int? useFbLocation;
+  final int useFbLocation;
   @override
-  final int? useFbLatLon;
+  final int useFbLatLon;
   @override
-  final int? useFbRunDetails;
+  final int useFbRunDetails;
   @override
-  final int? useFbImage;
+  final int useFbImage;
   @override
-  final int? removed;
+  final int removed;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
 
   @override
   String toString() {
@@ -1021,80 +1021,80 @@ class _$_EventModel implements _EventModel {
 
 abstract class _EventModel implements EventModel {
   factory _EventModel(
-      {required final String? eventId,
-      required final String? publicEventId,
-      required final DateTime? eventStartDatetime,
-      required final String? kennelId,
-      required final int? isVisible,
-      required final int? isCountedRun,
-      required final int? isPromotedEvent,
-      required final int? eventGeographicScope,
-      required final int? eventInboundIntegrationId,
-      required final int? eventNumber,
-      required final String? eventName,
-      required final num? hcLatitude,
-      required final num? hcLongitude,
-      required final num? fbLatitude,
-      required final num? fbLongitude,
-      required final num? eventPriceForMembers,
-      required final num? eventPriceForNonMembers,
-      required final int? evtDisseminateAllowWebLinks,
-      required final String? eventFacebookId,
-      required final num? absoluteEventNumber,
-      required final num? canEditRunAttendence,
-      required final String? eventImage,
-      required final String? eventDescription,
-      required final String? eventUrl,
-      required final String? locationOneLineDesc,
-      required final String? locationPostCode,
-      required final String? locationCity,
-      required final String? locationStreet,
-      required final String? locationCountry,
-      required final String? locationRegion,
-      required final String? locationSubRegion,
-      required final String? hares,
-      required final String? eventPaymentScheme,
-      required final String? eventPaymentUrl,
-      required final DateTime? eventPaymentUrlExpires,
-      required final int? unconfirmedBankXferCount,
-      required final num? eventPriceForExtras,
-      required final String? extrasDescription,
-      required final int? doTrackHashCash,
-      required final int? tags1,
-      required final int? tags2,
-      required final int? tags3,
-      required final int? useFbLocation,
-      required final int? useFbLatLon,
-      required final int? useFbRunDetails,
-      required final int? useFbImage,
-      required final int? removed,
-      required final DateTime? updatedAt}) = _$_EventModel;
+      {required final String eventId,
+      required final String publicEventId,
+      final DateTime? eventStartDatetime,
+      required final String kennelId,
+      required final int isVisible,
+      required final int isCountedRun,
+      required final int isPromotedEvent,
+      required final int eventGeographicScope,
+      required final int eventInboundIntegrationId,
+      required final int eventNumber,
+      required final String eventName,
+      final num? hcLatitude,
+      final num? hcLongitude,
+      final num? fbLatitude,
+      final num? fbLongitude,
+      final num? eventPriceForMembers,
+      final num? eventPriceForNonMembers,
+      final int? evtDisseminateAllowWebLinks,
+      final String? eventFacebookId,
+      final num? absoluteEventNumber,
+      final num? canEditRunAttendence,
+      final String? eventImage,
+      final String? eventDescription,
+      final String? eventUrl,
+      final String? locationOneLineDesc,
+      final String? locationPostCode,
+      final String? locationCity,
+      final String? locationStreet,
+      final String? locationCountry,
+      final String? locationRegion,
+      final String? locationSubRegion,
+      final String? hares,
+      final String? eventPaymentScheme,
+      final String? eventPaymentUrl,
+      final DateTime? eventPaymentUrlExpires,
+      final int? unconfirmedBankXferCount,
+      final num? eventPriceForExtras,
+      final String? extrasDescription,
+      required final int doTrackHashCash,
+      required final int tags1,
+      required final int tags2,
+      required final int tags3,
+      required final int useFbLocation,
+      required final int useFbLatLon,
+      required final int useFbRunDetails,
+      required final int useFbImage,
+      required final int removed,
+      required final DateTime updatedAt}) = _$_EventModel;
 
   factory _EventModel.fromJson(Map<String, dynamic> json) =
       _$_EventModel.fromJson;
 
   @override
-  String? get eventId;
+  String get eventId;
   @override
-  String? get publicEventId;
+  String get publicEventId;
   @override
   DateTime? get eventStartDatetime;
   @override
-  String? get kennelId;
+  String get kennelId;
   @override
-  int? get isVisible;
+  int get isVisible;
   @override
-  int? get isCountedRun;
+  int get isCountedRun;
   @override
-  int? get isPromotedEvent;
+  int get isPromotedEvent;
   @override
-  int? get eventGeographicScope;
+  int get eventGeographicScope;
   @override
-  int? get eventInboundIntegrationId;
+  int get eventInboundIntegrationId;
   @override
-  int? get eventNumber;
+  int get eventNumber;
   @override
-  String? get eventName;
+  String get eventName;
   @override
   num? get hcLatitude;
   @override
@@ -1150,25 +1150,25 @@ abstract class _EventModel implements EventModel {
   @override
   String? get extrasDescription;
   @override
-  int? get doTrackHashCash;
+  int get doTrackHashCash;
   @override
-  int? get tags1;
+  int get tags1;
   @override
-  int? get tags2;
+  int get tags2;
   @override
-  int? get tags3;
+  int get tags3;
   @override
-  int? get useFbLocation;
+  int get useFbLocation;
   @override
-  int? get useFbLatLon;
+  int get useFbLatLon;
   @override
-  int? get useFbRunDetails;
+  int get useFbRunDetails;
   @override
-  int? get useFbImage;
+  int get useFbImage;
   @override
-  int? get removed;
+  int get removed;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_EventModelCopyWith<_$_EventModel> get copyWith =>

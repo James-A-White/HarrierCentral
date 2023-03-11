@@ -8,12 +8,12 @@ class CitiesModel with _$CitiesModel implements BaseModel {
   factory CitiesModel({
     required String cityId,
     required String cityName,
-    required String? citySearchTags,
+    String? citySearchTags,
     required String regionId,
     required num latitude,
     required num longitude,
     required String cityAscii,
-    required String? flagFile,
+    String? flagFile,
     required int removed,
     required DateTime updatedAt,
   }) = _CitiesModel;

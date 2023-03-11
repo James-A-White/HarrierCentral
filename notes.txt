@@ -1,1 +1,1 @@
-Convert $colRemoved NUM, to $colRemoved INT
+Convert $colRemoved INT, to $colRemoved INT

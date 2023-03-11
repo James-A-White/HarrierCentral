@@ -1,132 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-// part 'kennels_service.g.dart';
-
-// @JsonSerializable(fieldRename: FieldRename.none)
-// class KennelsModel implements BaseModel {
-//   KennelsModel(
-//       {this.kennelId,
-//       this.publicKennelId,
-//       this.cityId,
-//       this.regionId,
-//       this.countryId,
-//       this.kennelName,
-//       this.kennelSearchTags,
-//       this.kennelShortName,
-//       this.kennelDescription,
-//       this.kennelLogo,
-//       this.kennelPinColor,
-//       this.disseminateAllowWebLinks,
-//       this.kennelCoverPhoto,
-//       this.kennelWebsiteUrl,
-//       this.defaultEventCurrencyType,
-//       this.integrationType,
-//       this.kennelInboundIntegrationId,
-//       this.kennelEventsUrl,
-//       this.kennelStatus,
-//       this.canEditRunAttendence,
-//       this.allowNegativeCredit,
-//       this.allowSelfPayment,
-//       this.kennelLatitude,
-//       this.kennelLongitude,
-//       this.defaultPriceForMembers,
-//       this.defaultPriceForNonMembers,
-//       this.membershipDurationInMonths,
-//       this.defaultRunStartTime,
-//       this.currencyCode,
-//       this.primaryCultureCode,
-//       this.currencySymbol,
-//       this.digitsAfterDecimal,
-//       this.bankScheme,
-//       this.bankAccountNumber,
-//       this.bankBic,
-//       this.bankBeneficiary,
-//       this.kennelPaymentScheme,
-//       this.kennelPaymentUrl,
-//       this.kennelPaymentUrlExpires,
-//       this.kennelPaymentMemberSurcharge,
-//       this.kennelPaymentNonMemberSurcharge,
-//       this.kennelPaymentScheme2,
-//       this.kennelPaymentUrl2,
-//       this.kennelPaymentUrlExpires2,
-//       this.kennelPaymentMemberSurcharge2,
-//       this.kennelPaymentNonMemberSurcharge2,
-//       this.kennelPaymentScheme3,
-//       this.kennelPaymentUrl3,
-//       this.kennelPaymentUrlExpires3,
-//       this.kennelPaymentMemberSurcharge3,
-//       this.kennelPaymentNonMemberSurcharge3,
-//       this.runCountStartDate,
-//       this.kennelMismanagementTeam,
-//       this.distancePreference,
-//       this.updatedAt,
-//       this.removed});
-
-//   factory KennelsModel.fromJson(Map<String, dynamic> json) => _$KennelsModelFromJson(json);
-
-//   Map<String, dynamic> toJson() => _$KennelsModelToJson(this);
-
-//   final String kennelId;
-//   final String publicKennelId;
-//   final String cityId;
-//   final String regionId;
-//   final String countryId;
-//   final String kennelName;
-//   final String kennelSearchTags;
-//   final String kennelShortName;
-//   final String kennelDescription;
-//   final String kennelLogo;
-//   final int kennelPinColor;
-//   final int disseminateAllowWebLinks;
-//   final String kennelCoverPhoto;
-//   final String kennelWebsiteUrl;
-//   final String defaultEventCurrencyType;
-
-//   final String integrationType;
-//   final int kennelInboundIntegrationId;
-//   final String kennelEventsUrl;
-
-//   final int kennelStatus;
-//   final int canEditRunAttendence;
-//   final int allowNegativeCredit;
-//   final int allowSelfPayment;
-//   final num kennelLatitude;
-//   final num kennelLongitude;
-//   final num defaultPriceForMembers;
-//   final num defaultPriceForNonMembers;
-//   final int membershipDurationInMonths;
-//   final DateTime defaultRunStartTime;
-//   final String currencyCode;
-//   final String primaryCultureCode;
-//   final String currencySymbol;
-//   final num digitsAfterDecimal;
-//   final String bankScheme;
-//   final String bankAccountNumber;
-//   final String bankBic;
-//   final String bankBeneficiary;
-//   final String kennelPaymentScheme;
-//   final String kennelPaymentUrl;
-//   final DateTime kennelPaymentUrlExpires;
-//   final num kennelPaymentMemberSurcharge;
-//   final num kennelPaymentNonMemberSurcharge;
-//   final String kennelPaymentScheme2;
-//   final String kennelPaymentUrl2;
-//   final DateTime kennelPaymentUrlExpires2;
-//   final num kennelPaymentMemberSurcharge2;
-//   final num kennelPaymentNonMemberSurcharge2;
-//   final String kennelPaymentScheme3;
-//   final String kennelPaymentUrl3;
-//   final DateTime kennelPaymentUrlExpires3;
-//   final num kennelPaymentMemberSurcharge3;
-//   final num kennelPaymentNonMemberSurcharge3;
-//   final DateTime runCountStartDate;
-//   final String kennelMismanagementTeam;
-//   final int distancePreference;
-//   final DateTime updatedAt;
-//   final int removed;
-// }
-
 class KennelsTableHelper extends BaseTableHelper with BaseFields {
   KennelsTableHelper() {
     remoteDbId = 'kennelId';
@@ -222,8 +96,8 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colKennelSearchTags TEXT,
             $colKennelShortName TEXT NOT NULL,
             $colKennelDescription TEXT,
-            $colKennelLogo TEXT,
-            $colKennelPinColor INT,
+            $colKennelLogo TEXT NOT NULL,
+            $colKennelPinColor INT NOT NULL,
             $colDisseminateAllowWebLinks INT DEFAULT 0 NOT NULL,
             $colKennelCoverPhoto TEXT,
             $colKennelWebsiteUrl TEXT,
@@ -231,16 +105,16 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colIntegrationType TEXT,
             $colKennelInboundIntegrationId INT,
             $colKennelEventsUrl TEXT,
-            $colKennelStatus INT,
-            $colCanEditRunAttendence INT,
-            $colAllowNegativeCredit INT,
-            $colAllowSelfPayment INT,
+            $colKennelStatus INT NOT NULL,
+            $colCanEditRunAttendence INT NOT NULL,
+            $colAllowNegativeCredit INT NOT NULL,
+            $colAllowSelfPayment INT NOT NULL,
             $colKennelLatitude NUM,
             $colKennelLongitude NUM,
-            $colDefaultPriceForMembers NUM,
-            $colDefaultPriceForNonMembers NUM,
-            $colMembershipDurationInMonths INT,
-            $colDefaultRunStartTime TEXT,
+            $colDefaultPriceForMembers NUM NOT NULL,
+            $colDefaultPriceForNonMembers NUM NOT NULL,
+            $colMembershipDurationInMonths INT NOT NULL,
+            $colDefaultRunStartTime TEXT NOT NULL,
             $colCurrencyCode TEXT,
             $colPrimaryCultureCode TEXT,
             $colCurrencySymbol TEXT,
@@ -267,9 +141,8 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colRunCountStartDate TEXT,
             $colKennelMismanagementTeam TEXT,
             $colDistancePreference INT,
-            $colUpdatedAt TEXT,
-            $colRemoved INT,
-
+            $colUpdatedAt TEXT NOT NULL,
+            $colRemoved INT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');

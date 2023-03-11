@@ -175,7 +175,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
 
       Map<String, LeaderboardModel> leaderAggregateMap = {};
 
-      jsonResults[0].forEach((element) {
+      jsonResults[0].forEach((dynamic element) {
         LeaderboardModel lm = LeaderboardModel.fromJson(element);
         lm.searchText = ' ${lm.displayName}, ${_kennels[lm.kennelId]['searchText']}, ';
         if ((lm.homeKennelId != null) && (lm.homeKennelId.isNotEmpty)) {

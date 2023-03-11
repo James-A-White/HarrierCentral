@@ -193,10 +193,10 @@ class _$_RegionsModel implements _RegionsModel {
   _$_RegionsModel(
       {required this.regionId,
       required this.regionName,
-      required this.regionSearchTags,
-      required this.regionAbbreviation,
+      this.regionSearchTags,
+      this.regionAbbreviation,
       required this.countryId,
-      required this.flagFile,
+      this.flagFile,
       required this.removed,
       required this.updatedAt});
 
@@ -278,10 +278,10 @@ abstract class _RegionsModel implements RegionsModel {
   factory _RegionsModel(
       {required final String regionId,
       required final String regionName,
-      required final String? regionSearchTags,
-      required final String? regionAbbreviation,
+      final String? regionSearchTags,
+      final String? regionAbbreviation,
       required final String countryId,
-      required final String? flagFile,
+      final String? flagFile,
       required final int removed,
       required final DateTime updatedAt}) = _$_RegionsModel;
 

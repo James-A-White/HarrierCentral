@@ -9,15 +9,15 @@ part of 'hasher_event_map_model_ns.dart';
 _$_HasherEventMapModel _$$_HasherEventMapModelFromJson(
         Map<String, dynamic> json) =>
     _$_HasherEventMapModel(
-      hemId: json['hemId'] as String?,
-      userId: json['userId'] as String?,
-      eventId: json['eventId'] as String?,
+      hemId: json['hemId'] as String,
+      userId: json['userId'] as String,
+      eventId: json['eventId'] as String,
       hasherOwnEventId: json['hasherOwnEventId'] as String?,
       userStartEvent: json['userStartEvent'] as String?,
       userEndEvent: json['userEndEvent'] as String?,
-      rsvpState: json['rsvpState'] as int?,
-      attendenceState: json['attendenceState'] as int?,
-      isHare: json['isHare'] as int?,
+      rsvpState: json['rsvpState'] as int,
+      attendenceState: json['attendenceState'] as int,
+      isHare: json['isHare'] as int,
       eventNotificationPreference: json['eventNotificationPreference'] as int?,
       eventEmailAlertPreference: json['eventEmailAlertPreference'] as int?,
       totalHaring: json['totalHaring'] as int?,
@@ -25,7 +25,7 @@ _$_HasherEventMapModel _$$_HasherEventMapModelFromJson(
       totalRuns: json['totalRuns'] as int?,
       totalRunsThisKennel: json['totalRunsThisKennel'] as int?,
       eventCountOverride: json['eventCountOverride'] as num?,
-      virginVisitorType: json['virginVisitorType'] as num?,
+      virginVisitorType: json['virginVisitorType'] as num,
       displayName: json['displayName'] as String?,
       email: json['email'] as String?,
       phoneNumber: json['phoneNumber'] as String?,
@@ -38,10 +38,8 @@ _$_HasherEventMapModel _$$_HasherEventMapModelFromJson(
       hemEventIsCountedAndVisible: json['hemEventIsCountedAndVisible'] as int?,
       hemKennelUserPhoto: json['hemKennelUserPhoto'] as String?,
       hemKennelHashName: json['hemKennelHashName'] as String?,
-      removed: json['removed'] as int?,
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      removed: json['removed'] as int,
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$$_HasherEventMapModelToJson(
@@ -76,5 +74,5 @@ Map<String, dynamic> _$$_HasherEventMapModelToJson(
       'hemKennelUserPhoto': instance.hemKennelUserPhoto,
       'hemKennelHashName': instance.hemKennelHashName,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
     };

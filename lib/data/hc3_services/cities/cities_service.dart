@@ -43,16 +43,15 @@ class CitiesTableHelper extends BaseTableHelper with BaseFields {
             $colId INTEGER PRIMARY KEY,
 
             $colCityId TEXT NOT NULL,
-            $colCityName TEXT,
+            $colCityName TEXT NOT NULL,
             $colCitySearchTags TEXT,
-            $colRegionId TEXT,
-            $colLatitude NUM,
-            $colLongitude NUM,
-            $colCityAscii TEXT,
+            $colRegionId TEXT NOT NULL,
+            $colLatitude NUM NOT NULL,
+            $colLongitude NUM NOT NULL,
+            $colCityAscii TEXT NOT NULL,
             $colFlagFile TEXT,
-
-            $colRemoved NUM,
-            $colUpdatedAt TEXT,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');

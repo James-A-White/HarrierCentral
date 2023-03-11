@@ -1,50 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-// part '../hashers_service.g.dart';
-
-// @JsonSerializable(fieldRename: FieldRename.none)
-// class HashersModel implements BaseModel {
-//   HashersModel({
-//     this.hasherId,
-//     // this.homeKennelId,
-//     this.firstName,
-//     this.lastName,
-//     this.dispName,
-//     this.hashName,
-//     // this.email,
-//     this.photo,
-//     this.dispPref,
-//     // this.resetCode,
-//     // this.qrCode,
-//     this.includeInGlobalHashDirectory,
-//     // this.preferences,
-//     this.removed,
-//     this.updatedAt,
-//   });
-
-//   factory HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);
-
-//   Map<String, dynamic> toJson() => _$HashersModelToJson(this);
-
-//   final String hasherId;
-//   // final String homeKennelId;
-//   String firstName;
-//   String lastName;
-//   String dispName;
-//   String hashName;
-//   // String email;
-//   String photo;
-//   int dispPref;
-//   // String resetCode;
-//   // String qrCode;
-//   int includeInGlobalHashDirectory;
-//   // int preferences;
-
-//   final int removed;
-//   final DateTime updatedAt;
-// }
-
 class HashersTableHelper extends BaseTableHelper with BaseFields {
   HashersTableHelper() {
     remoteDbId = 'hasherId';
@@ -93,13 +49,13 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
             $colHasherId TEXT NOT NULL,
             $colFirstName TEXT,
             $colLastName TEXT,
-            $colDispName TEXT,
+            $colDispName TEXT NOT NULL,
             $colHashName TEXT,
             $colPhoto TEXT,
-            $colDispPref INT,
-            $colIncludeInGlobalHashDirectory INT,
-            $colRemoved NUM,
-            $colUpdatedAt TEXT,
+            $colDispPref INT NOT NULL,
+            $colIncludeInGlobalHashDirectory INT NOT NULL,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');

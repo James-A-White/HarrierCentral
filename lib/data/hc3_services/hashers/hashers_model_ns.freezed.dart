@@ -20,16 +20,16 @@ HashersModel _$HashersModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$HashersModel {
-  String? get hasherId => throw _privateConstructorUsedError;
+  String get hasherId => throw _privateConstructorUsedError;
   String? get firstName => throw _privateConstructorUsedError;
   String? get lastName => throw _privateConstructorUsedError;
-  String? get dispName => throw _privateConstructorUsedError;
+  String get dispName => throw _privateConstructorUsedError;
   String? get hashName => throw _privateConstructorUsedError;
   String? get photo => throw _privateConstructorUsedError;
-  int? get dispPref => throw _privateConstructorUsedError;
-  int? get includeInGlobalHashDirectory => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  int get dispPref => throw _privateConstructorUsedError;
+  int get includeInGlobalHashDirectory => throw _privateConstructorUsedError;
+  int get removed => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -44,16 +44,16 @@ abstract class $HashersModelCopyWith<$Res> {
       _$HashersModelCopyWithImpl<$Res, HashersModel>;
   @useResult
   $Res call(
-      {String? hasherId,
+      {String hasherId,
       String? firstName,
       String? lastName,
-      String? dispName,
+      String dispName,
       String? hashName,
       String? photo,
-      int? dispPref,
-      int? includeInGlobalHashDirectory,
-      int? removed,
-      DateTime? updatedAt});
+      int dispPref,
+      int includeInGlobalHashDirectory,
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -69,22 +69,22 @@ class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hasherId = freezed,
+    Object? hasherId = null,
     Object? firstName = freezed,
     Object? lastName = freezed,
-    Object? dispName = freezed,
+    Object? dispName = null,
     Object? hashName = freezed,
     Object? photo = freezed,
-    Object? dispPref = freezed,
-    Object? includeInGlobalHashDirectory = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? dispPref = null,
+    Object? includeInGlobalHashDirectory = null,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
-      hasherId: freezed == hasherId
+      hasherId: null == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       firstName: freezed == firstName
           ? _value.firstName
           : firstName // ignore: cast_nullable_to_non_nullable
@@ -93,10 +93,10 @@ class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
           ? _value.lastName
           : lastName // ignore: cast_nullable_to_non_nullable
               as String?,
-      dispName: freezed == dispName
+      dispName: null == dispName
           ? _value.dispName
           : dispName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       hashName: freezed == hashName
           ? _value.hashName
           : hashName // ignore: cast_nullable_to_non_nullable
@@ -105,22 +105,22 @@ class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
           ? _value.photo
           : photo // ignore: cast_nullable_to_non_nullable
               as String?,
-      dispPref: freezed == dispPref
+      dispPref: null == dispPref
           ? _value.dispPref
           : dispPref // ignore: cast_nullable_to_non_nullable
-              as int?,
-      includeInGlobalHashDirectory: freezed == includeInGlobalHashDirectory
+              as int,
+      includeInGlobalHashDirectory: null == includeInGlobalHashDirectory
           ? _value.includeInGlobalHashDirectory
           : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
-              as int?,
-      removed: freezed == removed
+              as int,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ) as $Val);
   }
 }
@@ -134,16 +134,16 @@ abstract class _$$_HashersModelCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? hasherId,
+      {String hasherId,
       String? firstName,
       String? lastName,
-      String? dispName,
+      String dispName,
       String? hashName,
       String? photo,
-      int? dispPref,
-      int? includeInGlobalHashDirectory,
-      int? removed,
-      DateTime? updatedAt});
+      int dispPref,
+      int includeInGlobalHashDirectory,
+      int removed,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -157,22 +157,22 @@ class __$$_HashersModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hasherId = freezed,
+    Object? hasherId = null,
     Object? firstName = freezed,
     Object? lastName = freezed,
-    Object? dispName = freezed,
+    Object? dispName = null,
     Object? hashName = freezed,
     Object? photo = freezed,
-    Object? dispPref = freezed,
-    Object? includeInGlobalHashDirectory = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
+    Object? dispPref = null,
+    Object? includeInGlobalHashDirectory = null,
+    Object? removed = null,
+    Object? updatedAt = null,
   }) {
     return _then(_$_HashersModel(
-      hasherId: freezed == hasherId
+      hasherId: null == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       firstName: freezed == firstName
           ? _value.firstName
           : firstName // ignore: cast_nullable_to_non_nullable
@@ -181,10 +181,10 @@ class __$$_HashersModelCopyWithImpl<$Res>
           ? _value.lastName
           : lastName // ignore: cast_nullable_to_non_nullable
               as String?,
-      dispName: freezed == dispName
+      dispName: null == dispName
           ? _value.dispName
           : dispName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       hashName: freezed == hashName
           ? _value.hashName
           : hashName // ignore: cast_nullable_to_non_nullable
@@ -193,22 +193,22 @@ class __$$_HashersModelCopyWithImpl<$Res>
           ? _value.photo
           : photo // ignore: cast_nullable_to_non_nullable
               as String?,
-      dispPref: freezed == dispPref
+      dispPref: null == dispPref
           ? _value.dispPref
           : dispPref // ignore: cast_nullable_to_non_nullable
-              as int?,
-      includeInGlobalHashDirectory: freezed == includeInGlobalHashDirectory
+              as int,
+      includeInGlobalHashDirectory: null == includeInGlobalHashDirectory
           ? _value.includeInGlobalHashDirectory
           : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
-              as int?,
-      removed: freezed == removed
+              as int,
+      removed: null == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
+              as int,
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
     ));
   }
 }
@@ -218,11 +218,11 @@ class __$$_HashersModelCopyWithImpl<$Res>
 class _$_HashersModel implements _HashersModel {
   _$_HashersModel(
       {required this.hasherId,
-      required this.firstName,
-      required this.lastName,
+      this.firstName,
+      this.lastName,
       required this.dispName,
-      required this.hashName,
-      required this.photo,
+      this.hashName,
+      this.photo,
       required this.dispPref,
       required this.includeInGlobalHashDirectory,
       required this.removed,
@@ -232,25 +232,25 @@ class _$_HashersModel implements _HashersModel {
       _$$_HashersModelFromJson(json);
 
   @override
-  final String? hasherId;
+  final String hasherId;
   @override
   final String? firstName;
   @override
   final String? lastName;
   @override
-  final String? dispName;
+  final String dispName;
   @override
   final String? hashName;
   @override
   final String? photo;
   @override
-  final int? dispPref;
+  final int dispPref;
   @override
-  final int? includeInGlobalHashDirectory;
+  final int includeInGlobalHashDirectory;
   @override
-  final int? removed;
+  final int removed;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
 
   @override
   String toString() {
@@ -315,40 +315,40 @@ class _$_HashersModel implements _HashersModel {
 
 abstract class _HashersModel implements HashersModel {
   factory _HashersModel(
-      {required final String? hasherId,
-      required final String? firstName,
-      required final String? lastName,
-      required final String? dispName,
-      required final String? hashName,
-      required final String? photo,
-      required final int? dispPref,
-      required final int? includeInGlobalHashDirectory,
-      required final int? removed,
-      required final DateTime? updatedAt}) = _$_HashersModel;
+      {required final String hasherId,
+      final String? firstName,
+      final String? lastName,
+      required final String dispName,
+      final String? hashName,
+      final String? photo,
+      required final int dispPref,
+      required final int includeInGlobalHashDirectory,
+      required final int removed,
+      required final DateTime updatedAt}) = _$_HashersModel;
 
   factory _HashersModel.fromJson(Map<String, dynamic> json) =
       _$_HashersModel.fromJson;
 
   @override
-  String? get hasherId;
+  String get hasherId;
   @override
   String? get firstName;
   @override
   String? get lastName;
   @override
-  String? get dispName;
+  String get dispName;
   @override
   String? get hashName;
   @override
   String? get photo;
   @override
-  int? get dispPref;
+  int get dispPref;
   @override
-  int? get includeInGlobalHashDirectory;
+  int get includeInGlobalHashDirectory;
   @override
-  int? get removed;
+  int get removed;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_HashersModelCopyWith<_$_HashersModel> get copyWith =>

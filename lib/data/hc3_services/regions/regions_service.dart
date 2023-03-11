@@ -43,14 +43,13 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
             $colId INTEGER PRIMARY KEY,
 
             $colRegionId TEXT NOT NULL,
-            $colRegionName TEXT,
+            $colRegionName TEXT NOT NULL,
             $colRegionSearchTags TEXT,
             $colRegionAbbreviation TEXT,
-            $colCountryId TEXT,
+            $colCountryId TEXT NOT NULL,
             $colFlagFile TEXT,
-
-            $colRemoved NUM,
-            $colUpdatedAt TEXT,
+            $colRemoved INT NOT NULL,
+            $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
           )
           ''');
