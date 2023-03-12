@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   ReceiptsTableHelper() {
@@ -87,7 +86,7 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
-    final String map = jsonEncode(<String, Object>{
+    final String map = jsonEncode(<String, Object?>{
       'userId': userId,
       'accessToken': accessToken,
       colReceiptId: item.receiptId,
@@ -109,16 +108,16 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 
 class ReceiptsService {
   Future<String> uploadReceipt(ReceiptsModel item) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
-    final num receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().receiptsTableHelper,
           G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
           G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
         );
-    final DateTime receiptsUpdatedAfter = receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(receiptsLastUpdated + 1);
+    final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(receiptsLastUpdated + 1);
 
     final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
 

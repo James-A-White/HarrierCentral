@@ -1,14 +1,18 @@
-// @dart=2.11
-
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class ChooseProfileImage extends StatefulWidget {
-  const ChooseProfileImage({Key key, @required this.isForThisDevice, @required this.fileNamePrefix, @required this.currentProfileImage, this.popToCaller = true}) : super(key: key);
+  const ChooseProfileImage({
+    Key? key,
+    required this.isForThisDevice,
+    required this.fileNamePrefix,
+    this.currentProfileImage,
+    this.popToCaller = true,
+  }) : super(key: key);
 
   final bool isForThisDevice;
   final String fileNamePrefix;
-  final String currentProfileImage;
+  final String? currentProfileImage;
   final bool popToCaller;
 
   @override
@@ -23,23 +27,23 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
   SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
 
-  final num _thumbnailSize = 50.0;
-  final num _uploadingImageSize = 180.0;
+  final double _thumbnailSize = 50.0;
+  final double _uploadingImageSize = 180.0;
 
-  final String _facebookProfileUrl = getStringPref(StringPrefsEnum.facebookProfilePhoto);
+  final String? _facebookProfileUrl = getStringPref(StringPrefsEnum.facebookProfilePhoto);
 
-  int _selectedAvatarIcon;
+  int _selectedAvatarIcon = 1;
 
-  int _selectedRadioValue;
-  int _previouslySelectedRadioValue;
+  int _selectedRadioValue = 0;
+  int _previouslySelectedRadioValue = 0;
 
   bool _showCircularProgressIndicator = true;
 
-  Future<File> _imageFromCamera;
-  Future<File> _imageFromGallery;
-  Future<File> _imageFromFacebook;
+  Future<File>? _imageFromCamera;
+  Future<File>? _imageFromGallery;
+  Future<File>? _imageFromFacebook;
 
-  CachedNetworkImage _facebookProfileImage;
+  CachedNetworkImage? _facebookProfileImage;
 
   bool _isIos = false;
 
@@ -47,7 +51,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   void initState() {
     if ((_facebookProfileImage == null) && widget.isForThisDevice && ((_facebookProfileUrl ?? '').isNotEmpty)) {
       _facebookProfileImage = CachedNetworkImage(
-          imageUrl: _facebookProfileUrl,
+          imageUrl: _facebookProfileUrl!,
           //placeholder: HcCircularProgressIndicator(key: Key('yyyyyyy')),
           //errorWidget: const  Icon(Icons.error),
           // placeholder: (BuildContext context, String url) =>
@@ -65,9 +69,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
     if (widget.currentProfileImage == null) {
       _imageTypeSelection = SelectedImageTypeEnum.none;
-    } else if (widget.currentProfileImage.toLowerCase().startsWith('bundle://')) {
+    } else if (widget.currentProfileImage!.toLowerCase().startsWith('bundle://')) {
       _imageTypeSelection = SelectedImageTypeEnum.avatar;
-    } else if (widget.currentProfileImage.toLowerCase().startsWith('http')) {
+    } else if (widget.currentProfileImage!.toLowerCase().startsWith('http')) {
       _imageTypeSelection = SelectedImageTypeEnum.fromNetwork;
     }
 
@@ -82,7 +86,13 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     });
   }
 
-  Widget getImageSourceButton({String label, SelectedImageTypeEnum selectedImageType, String iosIcon, String androidIcon, bool disabled = false}) {
+  Widget getImageSourceButton({
+    required String label,
+    required SelectedImageTypeEnum selectedImageType,
+    required String iosIcon,
+    required String androidIcon,
+    bool disabled = false,
+  }) {
     return Container(
       padding: const EdgeInsets.only(right: 10.0, top: 10.0, bottom: 5.0),
       width: 120,
@@ -105,14 +115,15 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Radio<int>(
-                    activeColor: Colors.red.shade900,
-                    value: selectedImageType.index,
-                    groupValue: _selectedRadioValue,
-                    onChanged: (int dummy) {
-                      if (!disabled) {
-                        _handleRadioValueChange(selectedImageType, forceOpen: false);
-                      }
-                    }),
+                  activeColor: Colors.red.shade900,
+                  value: selectedImageType.index,
+                  groupValue: _selectedRadioValue,
+                  onChanged: (_) {
+                    if (!disabled) {
+                      _handleRadioValueChange(selectedImageType, forceOpen: false);
+                    }
+                  },
+                ),
                 Expanded(
                   child: Opacity(
                     opacity: disabled ? 0.5 : 1.0,
@@ -198,18 +209,31 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                               top: 0,
                               left: 0,
                               child: getImageSourceButton(
-                                  label: 'Camera', iosIcon: 'images/icons/ios_camera.png', androidIcon: 'images/icons/android_camera.png', selectedImageType: SelectedImageTypeEnum.fromCamera),
+                                label: 'Camera',
+                                iosIcon: 'images/icons/ios_camera.png',
+                                androidIcon: 'images/icons/android_camera.png',
+                                selectedImageType: SelectedImageTypeEnum.fromCamera,
+                              ),
                             ),
                             Positioned(
                               top: 0,
                               right: 0,
                               child: getImageSourceButton(
-                                  label: 'Gallery', iosIcon: 'images/icons/ios_gallery.png', androidIcon: 'images/icons/android_gallery.png', selectedImageType: SelectedImageTypeEnum.fromGallery),
+                                label: 'Gallery',
+                                iosIcon: 'images/icons/ios_gallery.png',
+                                androidIcon: 'images/icons/android_gallery.png',
+                                selectedImageType: SelectedImageTypeEnum.fromGallery,
+                              ),
                             ),
                             Positioned(
                               bottom: 0,
                               left: 0,
-                              child: getImageSourceButton(label: 'Avatar', iosIcon: 'images/icons/avatar.png', androidIcon: 'images/icons/avatar.png', selectedImageType: SelectedImageTypeEnum.avatar),
+                              child: getImageSourceButton(
+                                label: 'Avatar',
+                                iosIcon: 'images/icons/avatar.png',
+                                androidIcon: 'images/icons/avatar.png',
+                                selectedImageType: SelectedImageTypeEnum.avatar,
+                              ),
                             ),
                             Positioned(
                               bottom: 0,
@@ -339,7 +363,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       _showCircularProgressIndicator = true;
     });
 
-    final num startTime = DateTime.now().millisecondsSinceEpoch;
+    final int startTime = DateTime.now().millisecondsSinceEpoch;
     _prepareAndUploadImageThenContinue(startTime);
   }
 
@@ -350,7 +374,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
 
-    if ((widget.fileNamePrefix != null) && (widget.fileNamePrefix.isNotEmpty)) {
+    if (widget.fileNamePrefix.isNotEmpty) {
       fileName = '${widget.fileNamePrefix.replaceAll('USC:', '')}_${datetime}_thumb.jpg';
     } else {
       fileName = 'profilePhoto_${Random().nextInt(899999) + 100000}_${datetime}_thumb.jpg';
@@ -368,22 +392,24 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         profileImageUrl = BASE_PROFILE_PHOTOS_URL + fileName;
         break;
       case SelectedImageTypeEnum.fromNetwork:
-        profileImageUrl = widget.currentProfileImage;
+        if (widget.currentProfileImage != null) {
+          profileImageUrl = widget.currentProfileImage!;
+        }
         break;
     }
 
     if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-      final File file = await _imageFromCamera;
+      final File? file = await _imageFromCamera;
       _upload(file, fileName);
     } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
-      final File file = await _imageFromGallery;
+      final File? file = await _imageFromGallery;
       _upload(file, fileName);
     } else if (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook) {
-      final File file = await _imageFromFacebook;
+      final File? file = await _imageFromFacebook;
       _upload(file, fileName);
     }
 
-    final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
+    final int deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
     if (deltaTime < 1250) {
       await Future<dynamic>.delayed(Duration(milliseconds: 1500 - deltaTime));
     }
@@ -392,7 +418,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       if (!mounted) return;
       Navigator.of(context).pop(profileImageUrl);
     } else {
-      final String userId = getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId)!;
 
       final HashersService srv = HashersService();
 
@@ -401,37 +427,42 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       if (updateWasSuccessful) {
         await setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
       } else {
-        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Profile photo not updated.',
+        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Profile photo not updated.',
             'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
       }
       if (!mounted) return;
-      await Navigator.pushReplacement<dynamic, dynamic>(
-          context,
-          MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) => const MainNavigationPage(
-              promos: <PromoModel>[],
-              firstPromoImage: null,
-            ),
-          ));
+      // NULLSAFETODO
+      // await Navigator.pushReplacement<dynamic, dynamic>(
+      //     context,
+      //     MaterialPageRoute<dynamic>(
+      //       builder: (BuildContext context) => const MainNavigationPage(
+      //         promos: <PromoModel>[],
+      //         firstPromoImage: null,
+      //       ),
+      //     ));
     }
   }
 
-  String _upload(File imageFile, String fileName) {
-    final Uri uri = Uri.parse(
-        'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
+  String _upload(File? imageFile, String fileName) {
+    if (imageFile != null) {
+      final Uri uri = Uri.parse(
+          'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
 
-    final Request request = Request('PUT', uri);
+      final Request request = Request('PUT', uri);
 
-    final Map<String, String> headers = <String, String>{'content-type': 'image/jpeg', 'x-ms-blob-type': 'BlockBlob'};
+      final Map<String, String> headers = <String, String>{'content-type': 'image/jpeg', 'x-ms-blob-type': 'BlockBlob'};
 
-    request.headers.addAll(headers);
+      request.headers.addAll(headers);
 
-    request.bodyBytes = imageFile.readAsBytesSync();
-    request.send().then((StreamedResponse response) {
-      //print('Avatar thumbnail upload response = ${response.statusCode}');
-    });
+      request.bodyBytes = imageFile.readAsBytesSync();
+      request.send().then((StreamedResponse response) {
+        //print('Avatar thumbnail upload response = ${response.statusCode}');
+      });
 
-    return uri.toString();
+      return uri.toString();
+    }
+
+    return '';
   }
 
   Widget _getPreviewImage() {
@@ -441,12 +472,13 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
     switch (_imageTypeSelection) {
       case SelectedImageTypeEnum.avatar:
-        if (_selectedAvatarIcon != null) {
-          returnWidget = Image.asset('images/avatars/avatar-$_selectedAvatarIcon.jpg', fit: BoxFit.fill);
-        } else if ((widget.currentProfileImage != null) && (widget.currentProfileImage.startsWith('bundle://'))) {
-          final String avatarPath = 'images/avatars/${widget.currentProfileImage.replaceAll('bundle://', '')}.jpg';
-          returnWidget = Image.asset(avatarPath, fit: BoxFit.fill);
-        }
+        returnWidget = Image.asset('images/avatars/avatar-$_selectedAvatarIcon.jpg', fit: BoxFit.fill);
+        // if (_selectedAvatarIcon != null) {
+        //   returnWidget = Image.asset('images/avatars/avatar-$_selectedAvatarIcon.jpg', fit: BoxFit.fill);
+        // } else if ((widget.currentProfileImage != null) && (widget.currentProfileImage.startsWith('bundle://'))) {
+        //   final String avatarPath = 'images/avatars/${widget.currentProfileImage.replaceAll('bundle://', '')}.jpg';
+        //   returnWidget = Image.asset(avatarPath, fit: BoxFit.fill);
+        // }
         break;
       case SelectedImageTypeEnum.fromCamera:
         returnWidget = _previewImage();
@@ -463,8 +495,8 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
 
       default:
-        if (widget.currentProfileImage.isNotEmpty) {
-          returnWidget = getProfilePhoto(widget.currentProfileImage);
+        if ((widget.currentProfileImage ?? '').isNotEmpty) {
+          returnWidget = getProfilePhoto(widget.currentProfileImage!);
         }
     }
     return returnWidget;
@@ -497,7 +529,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
     switch (_imageTypeSelection) {
       case SelectedImageTypeEnum.avatar:
-        if (forceOpen || (_selectedAvatarIcon == null)) {
+        if (forceOpen) {
           Navigator.push<dynamic>(
             context,
             MaterialPageRoute<dynamic>(
@@ -540,14 +572,14 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Future<void> _getImageFromFacebook() async {
-    if ((_facebookProfileUrl != null) && (_facebookProfileUrl.isNotEmpty)) {
-      final Response response = await get(Uri.parse(_facebookProfileUrl));
+    if ((_facebookProfileUrl != null) && (_facebookProfileUrl!.isNotEmpty)) {
+      final Response response = await get(Uri.parse(_facebookProfileUrl!));
       final Directory documentDirectory = await getApplicationDocumentsDirectory();
       final File profilePhotoFile = File('${documentDirectory.path}/temp.jpg');
       profilePhotoFile.writeAsBytesSync(response.bodyBytes);
 
       final ImageCropper ic = ImageCropper();
-      final CroppedFile croppedFile = await ic.cropImage(
+      final CroppedFile? croppedFile = await ic.cropImage(
           sourcePath: profilePhotoFile.path,
           aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
           aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
@@ -556,8 +588,10 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 50);
 
-      final File file = File.fromRawPath(await croppedFile.readAsBytes());
-      _imageFromGallery = Future<File>.value(file);
+      if (croppedFile != null) {
+        final File file = File.fromRawPath(await croppedFile.readAsBytes());
+        _imageFromGallery = Future<File>.value(file);
+      }
 
       await _imageFromFacebook;
       setState(() {});
@@ -565,7 +599,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Future<void> _getImageFromCameraOrGallery(ImageSource source) async {
-    final XFile image = await ImagePicker().pickImage(source: source);
+    final XFile? image = await ImagePicker().pickImage(source: source);
 
     if (image == null) {
       setState(() {
@@ -574,7 +608,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       });
     } else {
       final ImageCropper ic = ImageCropper();
-      final CroppedFile croppedFile = await ic.cropImage(
+      final CroppedFile? croppedFile = await ic.cropImage(
           sourcePath: image.path,
           aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
           aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
@@ -586,13 +620,15 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       // final Uint8List bytes = await croppedFile.readAsBytes();
       // final File file = File.fromRawPath(bytes);
 
-      setState(() {
-        if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-          _imageFromCamera = Future<File>.value(File(croppedFile.path));
-        } else {
-          _imageFromGallery = Future<File>.value(File(croppedFile.path));
-        }
-      });
+      if (croppedFile != null) {
+        setState(() {
+          if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
+            _imageFromCamera = Future<File>.value(File(croppedFile.path));
+          } else {
+            _imageFromGallery = Future<File>.value(File(croppedFile.path));
+          }
+        });
+      }
     }
   }
 
@@ -636,7 +672,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                 : _imageFromGallery,
         builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
           if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-            return Image.file(snapshot.data, fit: BoxFit.fitHeight);
+            return Image.file(snapshot.data!, fit: BoxFit.fitHeight);
           } else if (snapshot.error != null) {
             return const Text(
               'Error picking image.',

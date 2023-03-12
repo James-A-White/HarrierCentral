@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 // TODO(James): Eventually add the flag file to the Regions and Cities JSON or remove it completely from the app
 

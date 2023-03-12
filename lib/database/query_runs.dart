@@ -406,7 +406,7 @@ class QueryRuns {
         break;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     String queryBase = '';
 

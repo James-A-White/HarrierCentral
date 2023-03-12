@@ -1,8 +1,7 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class AvatarIconsPage extends StatefulWidget {
-  const AvatarIconsPage({Key key, this.selectedAvatarIcon}) : super(key: key);
+  const AvatarIconsPage({Key? key, required this.selectedAvatarIcon}) : super(key: key);
 
   final int selectedAvatarIcon;
 
@@ -18,8 +17,8 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
     return _buildListView();
   }
 
-  num iconSize = 100.0;
-  num imagePadding = 8.0;
+  double iconSize = 100.0;
+  double imagePadding = 8.0;
 
   Widget _buildListView() {
     return Scaffold(

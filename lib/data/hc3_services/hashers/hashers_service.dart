@@ -240,7 +240,7 @@ class HashersService extends BaseService {
             )
         .catchError(
       (dynamic error) {
-        return Future<Response>.value(null);
+        return Future<Response>.value(Response('', 500));
       },
     );
 
@@ -314,9 +314,9 @@ class HashersService extends BaseService {
 
     bool newUserForThisDevice = false;
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
-    String userId = getStringPref(StringPrefsEnum.userId);
-    if ((userId == null) || (userId.isEmpty)) {
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<unknown version>';
+    String userId = getStringPref(StringPrefsEnum.userId)!;
+    if (userId.isEmpty) {
       userId = GUID_EMPTY;
       newUserForThisDevice = true;
     }
@@ -324,13 +324,13 @@ class HashersService extends BaseService {
     DateTime hashersUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num hashersLastUpdated = await getLastUpdatedTime(
+      final int hashersLastUpdated = await getLastUpdatedTime(
         G0<Database>(),
         G0<TableModel>().hashersTableHelper,
         G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
         G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
       );
-      hashersUpdatedAfter = hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
+      hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
     } else {
       // do this to suppress any records being returned through the sync mechanism
       hashersUpdatedAfter = DateTime(2050, 1, 1);
@@ -338,7 +338,7 @@ class HashersService extends BaseService {
 
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'processThirdPartyLogin', paramString: userId.toUpperCase());
 
-    final String body = jsonEncode(<String, String>{
+    final String body = jsonEncode(<String, String?>{
       'userId': userId,
       'accessToken': accessToken,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
@@ -349,7 +349,7 @@ class HashersService extends BaseService {
       'photo': loginData.photoUrl ?? '',
       'thirdPartyLoginType': loginData.loginType,
       'thirdPartyUserId': loginData.id,
-      'thirdPartyAccessToken': loginData.accessToken ?? '',
+      'thirdPartyAccessToken': loginData.accessToken,
       'thirdPartyAuthorizationCode': loginData.authorizationCode ?? '',
       'thirdPartyAccessTokenExpires': loginData.accessTokenExpires?.toString(),
       'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),

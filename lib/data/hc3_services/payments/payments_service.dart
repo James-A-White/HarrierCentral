@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PaymentsTableHelper extends BaseTableHelper with BaseFields {
   PaymentsTableHelper() {
@@ -22,7 +21,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   String getTableName(dynamic appDomainType) {
-    String tableName;
+    String tableName = '';
     switch (appDomainType) {
       case AppDomainType.event:
         tableName = 'Payments';
@@ -123,19 +122,19 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
 class PaymentsService {
   Future<List<dynamic>> payForEvent(
     String eventId,
-    String hasherId,
-    String hasherEventMapId,
+    String? hasherId,
+    String? hasherEventMapId,
     int paymentType,
     num paymentAmount,
     int minimumAttendenceValue,
     EnumPayForExtras<int> doPayForExtras,
     AppDomainType appDomainType, {
-    num surcharge,
-    String paymentProvider,
-    String paymentReference,
-    num specialRunPrice,
-    String specialRunPriceReason,
-    bool useSpecialPriceAsDefault,
+    num? surcharge,
+    String? paymentProvider,
+    String? paymentReference,
+    num? specialRunPrice,
+    String? specialRunPriceReason,
+    bool? useSpecialPriceAsDefault,
   }) async {
     List<dynamic> results = <dynamic>[];
 
@@ -145,7 +144,7 @@ class PaymentsService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     if ((hasherEventMapId ?? '').isEmpty) {
       hasherEventMapId = GUID_EMPTY;
@@ -155,53 +154,45 @@ class PaymentsService {
       hasherId = GUID_EMPTY;
     }
 
-    final String tokenParameterString = '${hasherEventMapId.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
+    final String tokenParameterString = '${hasherEventMapId!.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
 
-    final num hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherEventMapTableHelper,
           G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final DateTime hasherEventMapUpdatedAfter = hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+    final DateTime hasherEventMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
 
-    final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherKennelMapTableHelper,
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
-    final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
-    final num paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().paymentsTableHelper,
           G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
           G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
         );
-    final DateTime paymentsUpdatedAfter = paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(paymentsLastUpdated + 1);
-
-    // final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-    //       G0<Database>(),
-    //       G0<TableModel>().kennelCreditsTableHelper,
-    //       G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
-    //       G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
-    //     );
-    // final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(_kennelCreditsLastUpdated + 1);
+    final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(paymentsLastUpdated + 1);
 
     final String appDomainStr = appDomainType.toString();
 
-    final Map<String, String> bodyMap = <String, String>{
+    final Map<String, String?> bodyMap = <String, String?>{
       'userId': userId,
       'accessToken': accessToken,
       'userIdWhoPaid': hasherId,
       'eventId': eventId,
       'hasherEventMapId': hasherEventMapId,
-      'paymentType': paymentType?.toString(),
+      'paymentType': paymentType.toString(),
       'productType': productTypeEvent.value.toString(),
-      'paymentAmount': paymentAmount?.toString(),
+      'paymentAmount': paymentAmount.toString(),
       'minimumAttendenceValue': minimumAttendenceValue.toString(),
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
@@ -218,8 +209,8 @@ class PaymentsService {
     if (specialRunPrice != null) {
       bodyMap.addAll(<String, String>{
         'specialRunPrice': specialRunPrice.toString(),
-        'specialRunPriceReason': specialRunPriceReason,
-        'useSpecialPriceAsDefault': (useSpecialPriceAsDefault ? 1 : 0).toString(),
+        'specialRunPriceReason': specialRunPriceReason ?? '',
+        'useSpecialPriceAsDefault': ((useSpecialPriceAsDefault ?? false) ? 1 : 0).toString(),
       });
     }
 
@@ -237,18 +228,18 @@ class PaymentsService {
     return results;
   }
 
-  Future<Map<String, String>> sendPaymentReportByEmail({
-    String eventId,
-    String eventName,
+  Future<Map<String, String?>> sendPaymentReportByEmail({
+    required String eventId,
+    required String eventName,
   }) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String userName = getStringPref(StringPrefsEnum.displayName);
-    final String emailAddress = getStringPref(StringPrefsEnum.email);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userName = getStringPref(StringPrefsEnum.displayName) ?? '<no name>';
+    final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'getPaymentReport');
 
     if ((emailAddress ?? '').isNotEmpty) {
-      final String body = jsonEncode(<String, String>{
+      final String body = jsonEncode(<String, String?>{
         //'code': EMAIL_PAYMENT_API_KEY,
         'userId': userId,
         'accessToken': accessToken,
@@ -264,11 +255,11 @@ class PaymentsService {
               )
           .catchError(
         (dynamic error) {
-          return Future<Response>.value(null);
+          return Future<Response>.value(Response('', 500));
         },
       );
 
-      return <String, String>{'result': response.body, 'email': emailAddress};
+      return <String, String?>{'result': response.body, 'email': emailAddress};
     }
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }

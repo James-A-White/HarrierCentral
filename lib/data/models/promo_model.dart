@@ -1,38 +1,38 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PromoModel {
   PromoModel({
-    this.promotionId,
+    required this.promotionId,
     this.kennelId,
     this.cityId,
     this.eventId,
     this.promoGroupId,
-    this.promoName,
-    this.promoStartDate,
-    this.promoEndDate,
-    this.promoDisplayButtons,
-    this.promoImage,
-    this.promoImageExtension,
-    this.promoOverlayTiming,
+    required this.promoName,
+    required this.promoStartDate,
+    required this.promoEndDate,
+    required this.promoDisplayButtons,
+    required this.promoImage,
+    required this.promoImageExtension,
+    required this.promoOverlayTiming,
     this.promoExternalUrl,
     this.promoExternalUrlButtonText,
-    this.promoPriority,
+    required this.promoPriority,
     this.promoLat,
     this.promoLon,
-    this.promoGeographicScope,
-    this.promoDisplayTimingDotsShape,
-    this.promoDisplayTimingDotsToDisplay,
-    this.promoDisplayTimingDotsSize,
-    this.promoImageIsDark,
-    this.promoDisplayTimeInMs,
+    this.promoRadius,
+    required this.promoGeographicScope,
+    required this.promoDisplayTimingDotsShape,
+    required this.promoDisplayTimingDotsToDisplay,
+    required this.promoDisplayTimingDotsSize,
+    required this.promoImageIsDark,
+    required this.promoDisplayTimeInMs,
   });
 
   String promotionId;
-  String kennelId;
-  String cityId;
-  String eventId;
-  String promoGroupId;
+  String? kennelId;
+  String? cityId;
+  String? eventId;
+  String? promoGroupId;
   String promoName;
   DateTime promoStartDate;
   DateTime promoEndDate;
@@ -40,11 +40,12 @@ class PromoModel {
   String promoImage;
   String promoImageExtension;
   String promoOverlayTiming;
-  String promoExternalUrl;
-  String promoExternalUrlButtonText;
+  String? promoExternalUrl;
+  String? promoExternalUrlButtonText;
   int promoPriority;
-  double promoLat;
-  double promoLon;
+  double? promoLat;
+  double? promoLon;
+  double? promoRadius;
   String promoDisplayTimingDotsShape;
   int promoDisplayTimingDotsToDisplay;
   int promoDisplayTimingDotsSize;
@@ -79,6 +80,7 @@ class PromoModel {
           promoPriority: jsonItem['prompPriority'],
           promoLat: jsonItem['promoLat'],
           promoLon: jsonItem['promoLon'],
+          promoRadius: jsonItem['promoRadius'],
           promoDisplayTimingDotsShape: jsonItem['promoDisplayTimingDotsShape'],
           promoDisplayTimingDotsToDisplay: jsonItem['promoDisplayTimingDotsToDisplay'],
           promoDisplayTimingDotsSize: jsonItem['promoDisplayTimingDotsSize'],
@@ -90,10 +92,6 @@ class PromoModel {
         items.add(item);
       },
     );
-
-    if (items.isEmpty) {
-      return null;
-    }
 
     return items;
   }

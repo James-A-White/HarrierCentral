@@ -297,8 +297,8 @@ class DeviceInfo {
   num deviceHeightScaleFactor;
   num deviceMaxScaleFactor;
   num deviceMinScaleFactor;
-  num deviceWidth;
-  num deviceHeight;
+  double deviceWidth;
+  double deviceHeight;
   double deviceLat;
   double deviceLon;
   num deviceTextScaleFactor;
