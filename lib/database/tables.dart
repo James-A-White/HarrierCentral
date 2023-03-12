@@ -1,4 +1,3 @@
-// @dart=2.11
 import 'package:harrier_central/imports.dart';
 
 // TODO(James): Add an "All" category to AppDomainType for tables that exist across all appDomains
@@ -7,7 +6,7 @@ enum AppDomainType { user, event, kennel }
 
 class Tables {
   // the variable below is there to suppress a warning about defining classes with only static members
-  int unusedVariableToSuppressWarning;
+  int? unusedVariableToSuppressWarning;
 
   // static String getTableName(BaseTableHelper tableHelper, {AppDomainType appDomainType}) {
   //   String tableName = tableHelper.tableName;

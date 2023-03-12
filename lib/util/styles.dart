@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 Color themeButtonColors = const Color.fromARGB(255, 13, 115, 124);
 Color themeStatusBarBackground = const Color.fromARGB(255, 7, 63, 68);
@@ -12,9 +11,9 @@ Color themeLearnMoreLink = Colors.yellow;
 IconData delayIcon = MaterialCommunityIcons.progress_clock;
 const String delayIconAsset = 'images/icons/progress_clock.png';
 
-const num detailsFontSize = 16.0;
-const num detailLineSpace = 1.0;
-const num detailLineSpaceForBold = 1.1;
+const double detailsFontSize = 16.0;
+const double detailLineSpace = 1.0;
+const double detailLineSpaceForBold = 1.1;
 
 TextStyle listLabelStyle = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpace);
 
@@ -94,7 +93,7 @@ TextStyle smallTextBlackBold = const TextStyle(fontFamily: 'AvenirNextBold', fon
 
 class Backgrounds {
   // the variable below is there to suppress a warning about defining classes with only static members
-  int unusedVariableToSuppressWarning;
+  int? unusedVariableToSuppressWarning;
 
   static BoxDecoration defaultHcBackground() {
     return const BoxDecoration(

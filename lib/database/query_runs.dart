@@ -1,6 +1,5 @@
-// @dart=2.11
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 import 'package:intl/intl.dart';
 
@@ -27,28 +26,32 @@ class RunDetailsQueryExtensions {
     this.runClassification,
   });
 
-  final num daysUntilEvent;
-  num distToEvent;
-  final int appAccessFlags;
-  int digitsAfterDecimal;
-  String currencySymbol;
-  int rsvpState;
-  int attendenceState;
-  int isPaid;
-  int isHare;
-  int isMember;
-  final int following;
-  int notificationPreference;
-  int emailAlertPreference;
-  int distanceUnitsPref;
+  final num? daysUntilEvent;
+  num? distToEvent;
+  final int? appAccessFlags;
+  int? digitsAfterDecimal;
+  String? currencySymbol;
+  int? rsvpState;
+  int? attendenceState;
+  int? isPaid;
+  int? isHare;
+  int? isMember;
+  final int? following;
+  int? notificationPreference;
+  int? emailAlertPreference;
+  int? distanceUnitsPref;
   //int userPrefs;
-  String searchRunsText;
-  num latitude;
-  num longitude;
-  bool isMapAndDistanceValid;
-  int runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+  String? searchRunsText;
+  num? latitude;
+  num? longitude;
+  bool? isMapAndDistanceValid;
+  int? runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
 
-  static String getSearchDateString(DateTime eventStartDateTime) {
+  static String getSearchDateString(DateTime? eventStartDateTime) {
+    if (eventStartDateTime == null) {
+      return '';
+    }
+
     final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
     String days = '';
     String weekend = '';
@@ -107,10 +110,10 @@ class RunDetailsQueryExtensions {
     return ' ${df.format(eventStartDateTime)} $days$weekend$thisDay';
   }
 
-  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
-    // make dates and tiems searchable
+  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime? eventStartDateTime) {
+    // make dates and times searchable
 
-    int distanceUnitsPref = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn;
+    int? distanceUnitsPref = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceMeasuredIn;
     if (distanceUnitsPref == 0) {
       distanceUnitsPref = null;
     }
@@ -141,16 +144,16 @@ class RunDetailsQueryExtensions {
 
 class RunDetailsAggregate {
   RunDetailsAggregate({
-    this.event,
-    this.kennel,
-    this.extensions,
+    required this.event,
+    required this.kennel,
+    required this.extensions,
     this.paymentUrl,
   });
 
   final EventModel event;
   final KennelsModel kennel;
   final RunDetailsQueryExtensions extensions;
-  final String paymentUrl;
+  final String? paymentUrl;
 }
 
 enum EnumRunQueryType { topRunsPage, kennelDetailPage, singleRun }
@@ -213,48 +216,46 @@ class QueryRuns {
 
   static List<dynamic> doRunsFilter(String searchRunsText, List<dynamic> allRuns) {
     List<dynamic> filteredRuns = <dynamic>[];
-    if (allRuns != null) {
-      //filteredRuns.addAll(allRuns);
 
-      // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-      if ((searchRunsText != null) && (searchRunsText.isNotEmpty)) {
-        final List<String> searchItems = searchRunsText.trim().toLowerCase().split(',');
-        for (String st in searchItems) {
-          if (st.trim().isEmpty) {
-            continue;
-          }
-          bool negate = false;
-          if (st.trim().toLowerCase().startsWith('not ')) {
-            negate = true;
-            st = st.substring(4);
-          }
-          final List<String> orItems = st.split('+');
-
-          ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
-
-          filteredRuns = allRuns.where((dynamic a) {
-            for (String orItem in orItems) {
-              if (orItem.trim().isEmpty) {
-                continue;
-              }
-              orItem = ' ${orItem.trim().toLowerCase()}';
-              if (a.extensions.searchRunsText.toLowerCase().contains(orItem)) {
-                return !negate;
-              }
-            }
-            return negate;
-          }).toList();
+    // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
+    if (searchRunsText.isNotEmpty) {
+      final List<String> searchItems = searchRunsText.trim().toLowerCase().split(',');
+      for (String st in searchItems) {
+        if (st.trim().isEmpty) {
+          continue;
         }
-      } else {
-        filteredRuns.addAll(allRuns);
+        bool negate = false;
+        if (st.trim().toLowerCase().startsWith('not ')) {
+          negate = true;
+          st = st.substring(4);
+        }
+        final List<String> orItems = st.split('+');
+
+        ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
+
+        filteredRuns = allRuns.where((dynamic a) {
+          for (String orItem in orItems) {
+            if (orItem.trim().isEmpty) {
+              continue;
+            }
+            orItem = ' ${orItem.trim().toLowerCase()}';
+            if (a.extensions.searchRunsText.toLowerCase().contains(orItem)) {
+              return !negate;
+            }
+          }
+          return negate;
+        }).toList();
       }
+    } else {
+      filteredRuns.addAll(allRuns);
     }
+
     return filteredRuns;
   }
 
   static Future<List<dynamic>> getRunDetailsAggregates(
     bool searchAllRuns, {
-    String eventId,
+    required String eventId,
     EnumRunQueryType queryType = EnumRunQueryType.topRunsPage,
   }) async {
     final List<dynamic> runs = <dynamic>[];
@@ -288,8 +289,8 @@ class QueryRuns {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat,
           G0<DeviceInfo>().deviceLon,
-          kennelItem.kennelLatitude + .0,
-          kennelItem.kennelLongitude + .0,
+          kennelItem.kennelLatitude! + .0,
+          kennelItem.kennelLongitude! + .0,
         );
       } else {
         dist = Geolocator.distanceBetween(

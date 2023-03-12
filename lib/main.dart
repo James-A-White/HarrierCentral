@@ -1,8 +1,6 @@
 // @dart=2.11
 import 'package:harrier_central/imports.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   //debugPaintSizeEnabled=true;

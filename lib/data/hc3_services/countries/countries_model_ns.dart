@@ -1,3 +1,4 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:harrier_central/imports_null_safe.dart';
 
 part 'countries_model_ns.freezed.dart';

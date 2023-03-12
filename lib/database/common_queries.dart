@@ -1,36 +1,34 @@
-// @dart=2.11
-
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class AreWeAtRunResult {
-  String eventId;
-  String eventName;
-  String eventImage;
-  String kennelId;
-  String kennelLogo;
-  String kennelShortName;
-  num eventNumber;
-  num distanceInMeters;
-  num deltaHours;
-  num kennelCredit;
-  num memberPrice;
-  num nonMemberPrice;
-  num extrasCost;
-  num discountAmount;
-  num discountPercent;
-  int attendenceState;
-  int digitsAfterDecimal;
-  int allowSelfPayment;
-  String currencySymbol;
-  bool selected;
-  DateTime membershipExpirationDate;
-  String extrasDescription;
+  String? eventId;
+  String? eventName;
+  String? eventImage;
+  String? kennelId;
+  String? kennelLogo;
+  String? kennelShortName;
+  num? eventNumber;
+  num? distanceInMeters;
+  num? deltaHours;
+  num? kennelCredit;
+  num? memberPrice;
+  num? nonMemberPrice;
+  num? extrasCost;
+  num? discountAmount;
+  num? discountPercent;
+  int? attendenceState;
+  int? digitsAfterDecimal;
+  int? allowSelfPayment;
+  String? currencySymbol;
+  bool? selected;
+  DateTime? membershipExpirationDate;
+  String? extrasDescription;
 }
 
 class CommonQueries {
   // the variable below is there to suppress a warning about defining classes with only static members
-  int unusedVariableToSuppressWarning;
+  int? unusedVariableToSuppressWarning;
 
   static Future<int> countRecords(String tableName) async {
     final String query = '''
@@ -101,7 +99,7 @@ class CommonQueries {
     final List<AreWeAtRunResult> resultList = <AreWeAtRunResult>[];
 
     try {
-      final String userId = getStringPref(StringPrefsEnum.userId);
+      final String? userId = getStringPref(StringPrefsEnum.userId);
       const String dollarSign = r'$^';
 
       final String sql = ''' 
@@ -150,7 +148,7 @@ class CommonQueries {
 
         // start a 6-minute loop where we look for an updated position
         while (escape < 120 && !hasValidPosition) {
-          final DateTime lastLocationUpdate = getDatePref(DatePrefsEnum.lastLocationUpdate);
+          final DateTime? lastLocationUpdate = getDatePref(DatePrefsEnum.lastLocationUpdate);
           if ((lastLocationUpdate != null) && (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() < 15)) {
             hasValidPosition = true;
             continue;
@@ -162,7 +160,7 @@ class CommonQueries {
         if (hasValidPosition) {
           for (int i = 0; i < queryResults.length; i++) {
             if (queryResults[i]['lat'] != null) {
-              final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+              final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat.toDouble(), G0<DeviceInfo>().deviceLon.toDouble(), queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
 
               if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
                 continue;
@@ -197,10 +195,10 @@ class CommonQueries {
               // when events have been uploaded directly to the DB using the HcWeb application.
               // For partial URLs we need to append the root URL. The Root URL is stored in the
               // Server settings table and copied into the string prefs on app startup.
-              if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
+              if ((result.eventImage != null) && (result.eventImage!.isNotEmpty) && (!result.eventImage!.startsWith('http'))) {
                 final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-                if ((s != null) && (s.isNotEmpty)) {
-                  result.eventImage = s + result.eventImage;
+                if (s.isNotEmpty) {
+                  result.eventImage = s + result.eventImage!;
                 }
               }
 

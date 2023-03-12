@@ -1,6 +1,5 @@
-// @dart=2.11
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 // Ambient variable to access the service locator
 // NOTE: I've given this variable a very unique name even if it is against normal
@@ -8,6 +7,8 @@ import 'package:harrier_central/imports.dart';
 
 // ignore: non_constant_identifier_names
 final GetIt G0 = GetIt.instance;
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> setupLocalServices(num deviceWidth, num deviceHeight, double textScaleFactor) async {
   G0.registerSingleton<AppModel>(AppModel());
@@ -207,15 +208,17 @@ enum EdbStatus {
 class AppModel {
   AppModel();
   EnumConnectionStatus connectionStatus = EnumConnectionStatus.not_connected;
-  StreamSubscription<Position> geoLocationStream;
-  DateTime appStartTime;
+  StreamSubscription<Position>? geoLocationStream;
+  late DateTime appStartTime;
   EdbStatus dbStatus = EdbStatus.uninitialized;
 
   bool hasLocationPermissions = false;
 
   // TODO(DevTeam): Make sure this is eventually called
   void dispose() {
-    geoLocationStream.cancel();
+    if (geoLocationStream != null) {
+      geoLocationStream!.cancel();
+    }
   }
 }
 
@@ -296,8 +299,8 @@ class DeviceInfo {
   num deviceMinScaleFactor;
   num deviceWidth;
   num deviceHeight;
-  num deviceLat;
-  num deviceLon;
+  double deviceLat;
+  double deviceLon;
   num deviceTextScaleFactor;
   num textClamp00;
   num textClamp15;

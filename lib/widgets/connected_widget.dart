@@ -1,10 +1,9 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ConnectedWidget extends StatelessWidget {
   const ConnectedWidget({
-    Key key,
-    @required this.child,
+    Key? key,
+    required this.child,
     this.disconnectedChild,
     this.showConnectButton = false,
     this.showHcBackground = false,
@@ -13,11 +12,11 @@ class ConnectedWidget extends StatelessWidget {
   }) : super(key: key);
 
   final Widget child;
-  final Widget disconnectedChild;
+  final Widget? disconnectedChild;
   final bool showConnectButton;
   final bool showHcBackground;
-  final Function refreshFunction;
-  final EdgeInsetsGeometry padding;
+  final Function? refreshFunction;
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,7 @@ class ConnectedWidget extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                if (disconnectedChild != null) ...<Widget>[disconnectedChild],
+                if (disconnectedChild != null) ...<Widget>[disconnectedChild!],
                 if (showConnectButton) ...<Widget>[_connectButton()],
               ],
             ),
@@ -40,7 +39,7 @@ class ConnectedWidget extends StatelessWidget {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            if (disconnectedChild != null) ...<Widget>[disconnectedChild],
+            if (disconnectedChild != null) ...<Widget>[disconnectedChild!],
             if (showConnectButton) ...<Widget>[_connectButton()],
           ],
         );
@@ -70,13 +69,13 @@ class ConnectedWidget extends StatelessWidget {
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
       await Utilities.showAlert(
-        navigatorKey.currentContext,
+        navigatorKey.currentContext!,
         'Connected',
         'You are now connected to the Internet',
         'OK',
       );
       if (refreshFunction != null) {
-        refreshFunction();
+        refreshFunction!();
       }
     }
   }

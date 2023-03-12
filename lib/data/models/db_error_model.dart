@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class DbErrorModel {
   DbErrorModel({
@@ -11,12 +10,12 @@ class DbErrorModel {
     this.errorProc,
   });
 
-  final String errorId;
-  final num errorType;
-  final String errorTitle;
-  final String errorUserMessage;
-  final String debugMessage;
-  final String errorProc;
+  final String? errorId;
+  final num? errorType;
+  final String? errorTitle;
+  final String? errorUserMessage;
+  final String? debugMessage;
+  final String? errorProc;
 
   static DbErrorModel itemFromJson(String jsonResult) {
     final List<DbErrorModel> items = <DbErrorModel>[];
@@ -47,7 +46,7 @@ class DbErrorModel {
     );
 
     if (items.isEmpty) {
-      return null;
+      return DbErrorModel(); // CHECK
     }
 
     return items[0];

@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class HashersTableHelper extends BaseTableHelper with BaseFields {
   HashersTableHelper() {
@@ -89,18 +88,18 @@ class HashersService extends BaseService {
   // ============ Functions go here =============
 
   Future<String> addEditUser(
-      {String targetUserId,
-      String firstName,
-      String lastName,
-      String email,
-      String hashName,
-      String photo,
-      String eventId,
-      String kennelId,
-      String historicalTotalRunCount,
-      String historicalHaringCount,
-      bool historicalCountIsEstimate,
-      int followKennelOnAddNewUser,
+      {required String targetUserId,
+      String? firstName,
+      String? lastName,
+      String? email,
+      String? hashName,
+      String? photo,
+      String? eventId,
+      String? kennelId,
+      String? historicalTotalRunCount,
+      String? historicalHaringCount,
+      bool? historicalCountIsEstimate,
+      int? followKennelOnAddNewUser,
       int includeInGlobalHashDirectory = -1,
       int preferences = -1,
       int nameDisplayPreference = -1}) async {
@@ -112,9 +111,9 @@ class HashersService extends BaseService {
 
     bool newUserForThisDevice = false;
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
-    String userId = getStringPref(StringPrefsEnum.userId);
-    if ((userId == null) || (userId.isEmpty)) {
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<unknown version>';
+    String userId = getStringPref(StringPrefsEnum.userId)!;
+    if (userId.isEmpty) {
       userId = GUID_EMPTY;
       newUserForThisDevice = true;
     }
@@ -126,38 +125,39 @@ class HashersService extends BaseService {
     DateTime hasherKennelMapUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num hashersLastUpdated = await getLastUpdatedTime(
+      final int hashersLastUpdated = await getLastUpdatedTime(
         G0<Database>(),
         G0<TableModel>().hashersTableHelper,
         G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
         G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
       );
-      hashersUpdatedAfter = hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
+      hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
 
       // TODO(James): Check the logic here in this call we are using AppDomainType of event but in the next one we have logic to go between event and kennel
-      final num hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+      final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
             G0<Database>(),
             G0<TableModel>().hasherEventMapTableHelper,
             G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event),
             G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
           );
-      hasherEventMapUpdatedAfter = hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+      hasherEventMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
 
       // this one has event and kennel
-      final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+      final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
             G0<Database>(),
             G0<TableModel>().hasherKennelMapTableHelper,
             G0<TableModel>().hasherKennelMapTableHelper.getTableName(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? AppDomainType.event : AppDomainType.kennel),
             G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
           );
-      hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
+      hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
     } else {
       // do this to suppress any records being returned through the sync mechanism
       hashersUpdatedAfter = DateTime(2050, 1, 1);
       hasherEventMapUpdatedAfter = DateTime(2050, 1, 1);
+      hasherKennelMapUpdatedAfter = DateTime(2050, 1, 1);
     }
 
-    final String body = jsonEncode(<String, String>{
+    final String body = jsonEncode(<String, String?>{
       'userId': userId,
       'accessToken': accessToken,
       'hcVersion': hcVersion,
@@ -189,13 +189,14 @@ class HashersService extends BaseService {
       bool okButtonPressed = false;
       if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
         dbErrorIsDuplicateEmail = true;
-        okButtonPressed = await IveCoreUtilities.showAlert(navigatorKey.currentContext, dbError.errorTitle,
-            'This email address already exists in our server. Would you like an invite code sent to your email that you can use to install the app?', 'Send code',
-            showCancelButton: true);
+        okButtonPressed = await IveCoreUtilities.showAlert(navigatorKey.currentContext!, dbError.errorTitle ?? 'Error',
+                'This email address already exists in our server. Would you like an invite code sent to your email that you can use to install the app?', 'Send code',
+                showCancelButton: true) ??
+            false;
 
         if (okButtonPressed) {
-          final String userMessage = await sendInviteCodeByEmail(email);
-          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Check your email', userMessage, 'OK');
+          final String userMessage = await sendInviteCodeByEmail(email!);
+          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Check your email', userMessage, 'OK');
         }
       }
       return okButtonPressed;
@@ -245,9 +246,7 @@ class HashersService extends BaseService {
 
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
-    if (response == null) {
-      returnValue = ERROR_UNKNOWN_HTTP_ERROR;
-    } else if ((response.statusCode < 200) || (response.statusCode >= 300)) {
+    if ((response.statusCode < 200) || (response.statusCode >= 300)) {
       returnValue = ERROR_UNKNOWN_HTTP_ERROR;
     } else {
       returnValue = response.body;
@@ -255,22 +254,25 @@ class HashersService extends BaseService {
     return returnValue;
   }
 
-  Future<bool> changeProfilePicture({String targetUserId, String photo}) async {
+  Future<bool> changeProfilePicture({
+    required String targetUserId,
+    required String photo,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
-    String userId = getStringPref(StringPrefsEnum.userId);
-    if ((userId == null) || (userId.isEmpty)) {
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<unknown version>';
+    String userId = getStringPref(StringPrefsEnum.userId)!;
+    if (userId.isEmpty) {
       userId = GUID_EMPTY;
     }
 
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
 
-    final String body = jsonEncode(<String, String>{
+    final String body = jsonEncode(<String, String?>{
       'userId': userId,
       'accessToken': accessToken,
       'hcVersion': hcVersion,
@@ -299,9 +301,9 @@ class HashersService extends BaseService {
   }
 
   Future<dynamic> processThirdPartyLogin({
-    ThirdPartyLoginData loginData,
-    String hashName,
-    String email,
+    required ThirdPartyLoginData loginData,
+    required String hashName,
+    required String email,
     int includeInGlobalHashDirectory = -1,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {

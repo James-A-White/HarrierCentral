@@ -1,7 +1,5 @@
-// @dart=2.11
-
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class EventsTableHelper extends BaseTableHelper with BaseFields {
   EventsTableHelper() {
@@ -158,7 +156,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
     // Server settings table and copied into the string prefs on app startup.
     if ((outputMap['eventImage'] != null) && (outputMap['eventImage'].isNotEmpty) && (!outputMap['eventImage'].startsWith('http'))) {
       final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-      if ((s != null) && (s.isNotEmpty)) {
+      if (s.isNotEmpty) {
         outputMap['eventImage'] = s + outputMap['eventImage'];
       }
     }
@@ -174,10 +172,10 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
     // when events have been uploaded directly to the DB using the HcWeb application.
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
-    if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
+    if ((item.eventImage != null) && (item.eventImage!.isNotEmpty) && (!item.eventImage!.startsWith('http'))) {
       final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-      if ((s != null) && (s.isNotEmpty)) {
-        item = item.copyWith(eventImage: s + item.eventImage);
+      if (s.isNotEmpty) {
+        item = item.copyWith(eventImage: s + item.eventImage!);
       }
     }
 
@@ -187,30 +185,30 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
 class EventsService extends BaseService {
   Future<String> addEditEvent({
-    String eventId,
-    bool isVisible,
-    bool isCountedRun,
-    bool isPromotedEvent,
-    int eventGeographicScope,
-    int usersCanEditRunAttendence,
-    int absoluteEventNumber,
-    String kennelId,
-    String eventName,
-    DateTime eventStartDatetime,
-    num lat,
-    num lon,
-    int useFbLatLon,
-    int useFbRunDetails,
-    int useFbImage,
-    int useFbLocation,
-    String eventDescription,
-    num eventPriceForMembers,
-    num eventPriceForNonMembers,
-    num eventPriceForExtras,
-    String extrasDescription,
-    String locationOneLineDesc,
-    String eventImageUrl,
-    String hares,
+    String? eventId,
+    bool? isVisible,
+    bool? isCountedRun,
+    bool? isPromotedEvent,
+    int? eventGeographicScope,
+    int? usersCanEditRunAttendence,
+    int? absoluteEventNumber,
+    String? kennelId,
+    String? eventName,
+    DateTime? eventStartDatetime,
+    num? lat,
+    num? lon,
+    int? useFbLatLon,
+    int? useFbRunDetails,
+    int? useFbImage,
+    int? useFbLocation,
+    String? eventDescription,
+    num? eventPriceForMembers,
+    num? eventPriceForNonMembers,
+    num? eventPriceForExtras,
+    String? extrasDescription,
+    String? locationOneLineDesc,
+    String? eventImageUrl,
+    String? hares,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return '';
@@ -218,17 +216,19 @@ class EventsService extends BaseService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent');
 
-    final num eventsLastUpdated = await getLastUpdatedTime(
+    final int eventsLastUpdated = await getLastUpdatedTime(
       G0<Database>(),
       G0<TableModel>().eventsTableHelper,
       G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
       G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
     );
-    final DateTime eventUpdatedAfter = eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
+    // final DateTime eventUpdatedAfter = eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
+
+    final DateTime eventUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
 
     final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString()};
     if (isVisible != null) {
@@ -343,11 +343,14 @@ class EventsService extends BaseService {
       }
     }
 
-    return eventId;
+    return eventId!; // CHECK
   }
 
-  Future<Map<String, String>> sendRunDetailsByEmail({String eventId, String emailBody = ''}) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+  Future<Map<String, String>> sendRunDetailsByEmail({
+    required String eventId,
+    String emailBody = '',
+  }) async {
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
     final String accessToken = IveCoreUtilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
 
     final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});
@@ -360,16 +363,16 @@ class EventsService extends BaseService {
             )
         .catchError(
       (dynamic error) {
-        return Future<Response>.value(null);
+        return Future<Response>.value(Response('', 500));
       },
     );
 
     return <String, String>{'result': response.body};
   }
 
-  Future<RunDetailsAggregate> getSingleRun(String eventId) async {
+  Future<RunDetailsAggregate?> getSingleRun(String eventId) async {
     //final Geolocator locator = Geolocator();
-    RunDetailsAggregate item;
+    RunDetailsAggregate? item;
 
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
     if (results.isNotEmpty) {
@@ -386,10 +389,10 @@ class EventsService extends BaseService {
 
       String paymentLinkUrl = '';
 
-      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-        paymentLinkUrl = eventItem.eventPaymentUrl;
-      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-        paymentLinkUrl = kennelItem.kennelPaymentUrl;
+      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+        paymentLinkUrl = eventItem.eventPaymentUrl!;
+      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+        paymentLinkUrl = kennelItem.kennelPaymentUrl!;
       }
 
       // final num julianNow = results[0]['nowJulian'];

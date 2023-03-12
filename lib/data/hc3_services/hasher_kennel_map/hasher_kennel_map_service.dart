@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   HasherKennelMapTableHelper() {
@@ -22,7 +21,7 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   String getTableName(dynamic appDomainType) {
-    String tableName;
+    String tableName = '';
     switch (appDomainType) {
       case AppDomainType.event:
         tableName = 'hasherKennelMapForRunAdmin';
@@ -144,31 +143,31 @@ class HasherKennelMapService {
     EnumEmailAlertState<int> emailPreference,
   ) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
-      return null;
+      return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEmailAndNotificationPrefs');
 
-    final num hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherEventMapTableHelper,
           G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherKennelMapTableHelper,
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
 
-    final DateTime hasherEventMapUpdatedAfter = hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
-    final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
+    final DateTime hasherEventMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
-    final Map<String, Object> bodyMap = <String, Object>{
+    final Map<String, Object?> bodyMap = <String, Object?>{
       'userId': userId,
       'accessToken': accessToken,
       'hasherId': hasherId,
@@ -200,8 +199,8 @@ class HasherKennelMapService {
   }
 
   Future<List<dynamic>> updateHasherKennelStatus(String kennelId, AppDomainType appDomainType,
-      {int monthsToAddToMembership,
-      String targetUserId,
+      {int? monthsToAddToMembership,
+      String? targetUserId,
       int notificationState = -1,
       int emailAlertState = -1,
       int followingState = -1,
@@ -220,35 +219,35 @@ class HasherKennelMapService {
       followingState = -1;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final num hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hasherKennelMapTableHelper,
           G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
           G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
         );
-    final num kennelsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    final int kennelsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().kennelsTableHelper,
           G0<TableModel>().kennelsTableHelper.getTableName(appDomainType),
           G0<TableModel>().kennelsTableHelper.colUpdatedAtValue,
         );
-    final num hashersLastUpdated = await G0<TableModel>().hashersService.getLastUpdatedTime(
+    final int hashersLastUpdated = await G0<TableModel>().hashersService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hashersTableHelper,
           G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
           G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
         );
 
-    final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
-    final DateTime kennelsUpdatedAfter = kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(kennelsLastUpdated + 1);
-    final DateTime hashersUpdatedAfter = hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
+    final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(kennelsLastUpdated + 1);
+    final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hashersLastUpdated + 1);
 
     monthsToAddToMembership ??= 0;
 
-    final String body = jsonEncode(<String, Object>{
+    final String body = jsonEncode(<String, Object?>{
       'userId': userId,
       'accessToken': accessToken,
       'kennelId': kennelId,
@@ -268,7 +267,7 @@ class HasherKennelMapService {
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_kennel', body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      if ((responseBody != null) && (responseBody.isNotEmpty)) {
+      if (responseBody.isNotEmpty) {
         if (appDomainType == AppDomainType.event) {
           adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
         } else if (appDomainType == AppDomainType.kennel) {

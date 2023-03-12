@@ -216,7 +216,7 @@ class __$$_CitiesModelCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$_CitiesModel implements _CitiesModel {
-  _$_CitiesModel(
+  const _$_CitiesModel(
       {required this.cityId,
       required this.cityName,
       this.citySearchTags,
@@ -302,7 +302,7 @@ class _$_CitiesModel implements _CitiesModel {
 }
 
 abstract class _CitiesModel implements CitiesModel {
-  factory _CitiesModel(
+  const factory _CitiesModel(
       {required final String cityId,
       required final String cityName,
       final String? citySearchTags,

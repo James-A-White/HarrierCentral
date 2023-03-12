@@ -1,7 +1,5 @@
-// @dart=2.11
 // ignore_for_file: constant_identifier_names
-
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class SyncUserDataService {
   static const int flagHashersTable = 0x00000001;
@@ -30,19 +28,21 @@ class SyncUserDataService {
   static const int pageSize_hkmTable = 250;
   static const int pageSize_hemTable = 250;
 
-  num _hashersLastUpdated;
-  num _citiesLastUpdated;
-  num _regionsLastUpdated;
-  num _countriesLastUpdated;
-  num _kennelsLastUpdated;
-  num _paymentsLastUpdated;
-  num _hasherKennelMapLastUpdated;
-  num _hasherEventMapLastUpdated;
-  num _narrowEventsLastUpdated;
+  static const int FORCE = FORCE_ALL_REPLICATION_TIMESTAMP - 1;
 
-  Future<num> getLastUpdatedTime(String colName, String tableName) async {
+  int _hashersLastUpdated = FORCE;
+  int _citiesLastUpdated = FORCE;
+  int _regionsLastUpdated = FORCE;
+  int _countriesLastUpdated = FORCE;
+  int _kennelsLastUpdated = FORCE;
+  int _paymentsLastUpdated = FORCE;
+  int _hasherKennelMapLastUpdated = FORCE;
+  int _hasherEventMapLastUpdated = FORCE;
+  int _narrowEventsLastUpdated = FORCE;
+
+  Future<int> getLastUpdatedTime(String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
-    final num timeValue = table.first['maxDate'];
+    final int timeValue = table.first['maxDate'];
     //print(timeValue.toString());
     return timeValue;
   }
@@ -86,13 +86,13 @@ class SyncUserDataService {
   Future<bool> updateFromBackend(
     int tablesToSync,
     bool forceRefresh, {
-    String clientAppIdentifer,
-    String singleRecordId,
-    Function informUser,
-    String forceReplicateAllRunsForKennel,
+    String? clientAppIdentifer,
+    String? singleRecordId,
+    Function? informUser,
+    String? forceReplicateAllRunsForKennel,
     String batchText = '',
-    @required String debugText,
-    Client client,
+    required String debugText,
+    required Client client,
     bool usePaging = false,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
@@ -110,27 +110,18 @@ class SyncUserDataService {
       if (forceRefresh || true) {
         await getLastUpdatedTimes(tablesToSync);
 
-        final DateTime hashersUpdatedAfter =
-            _hashersLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
-        final DateTime citiesUpdatedAfter =
-            _citiesLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_citiesLastUpdated + 1);
-        final DateTime regionsUpdatedAfter =
-            _regionsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_regionsLastUpdated + 1);
-        final DateTime countriesUpdatedAfter =
-            _countriesLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_countriesLastUpdated + 1);
-        final DateTime kennelsUpdatedAfter =
-            _kennelsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_kennelsLastUpdated + 1);
-        final DateTime paymentsUpdatedAfter =
-            _paymentsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
-        final DateTime hasherKennelMapUpdatedAfter =
-            _hasherKennelMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
-        final DateTime hasherEventMapUpdatedAfter =
-            _hasherEventMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
-        final DateTime narrowEventsUpdatedAfter =
-            _narrowEventsLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1);
+        final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+        final DateTime citiesUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_citiesLastUpdated + 1);
+        final DateTime regionsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_regionsLastUpdated + 1);
+        final DateTime countriesUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_countriesLastUpdated + 1);
+        final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_kennelsLastUpdated + 1);
+        final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
+        final DateTime hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+        final DateTime hasherEventMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+        final DateTime narrowEventsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1);
 
-        String userId = getStringPref(StringPrefsEnum.userId);
-        if ((userId ?? '').isEmpty) {
+        String userId = getStringPref(StringPrefsEnum.userId) ?? '';
+        if (userId.isEmpty) {
           userId = GUID_EMPTY;
         }
 
@@ -216,7 +207,8 @@ class SyncUserDataService {
     G0<TableModel>().hasherEventMapTableHelper
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromApiWithAdHocData(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
+  Future<List<dynamic>> updateSqlTablesWithResultsFromApiWithAdHocData(String jsonResults,
+      {Function? informUser, bool suppressDeletes = false, String? batchText, List<BaseTableHelper>? tables}) async {
     return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(
           jsonResults,
           tables ?? _userTables,
@@ -224,11 +216,11 @@ class SyncUserDataService {
           AppDomainType.user,
           informUser: informUser,
           suppressDeletes: suppressDeletes,
-          batchText: batchText,
+          batchText: batchText ?? '',
         );
   }
 
-  Future<int> updateSqlTablesWithResultsFromApiWithPaging(String jsonResults, {Function informUser, bool suppressDeletes = false, String batchText, List<BaseTableHelper> tables}) async {
+  Future<int> updateSqlTablesWithResultsFromApiWithPaging(String jsonResults, {Function? informUser, bool suppressDeletes = false, String? batchText, List<BaseTableHelper>? tables}) async {
     return G0<TableModel>().baseService.updateSqlTablesFromJsonWithPaging(
           jsonResults,
           tables ?? _userTables,
@@ -236,7 +228,7 @@ class SyncUserDataService {
           AppDomainType.user,
           informUser: informUser,
           suppressDeletes: suppressDeletes,
-          batchText: batchText,
+          batchText: batchText ?? '',
         );
   }
 }

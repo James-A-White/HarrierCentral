@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: ">=2.14.3 <3.0.0"
-  flutter: ^3.7.5
+  flutter: ^3.7.7
 
 dependencies:   
   audioplayers: 0.20.1 # had problem with low sound volume on iOS on version 1.0.0
@@ -56,17 +56,17 @@ dependencies:
   image_cropper: ^3.0.0
   image_picker: ^0.8.5+3
   internet_connection_checker: ^1.0.0+1
-  intl: ^0.17.0
+  intl: ^0.18.0
   intro_slider: ^4.2.0
   ive_flutter_core:
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core.git
-      ref: 1244c5f8d9757d9247179a0576b0828bbed1b4f2 # Version 1.1.8
+      ref: 102daf51a2da2dae339682722a9338c10c430e37 # Version 1.2.0
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
-      ref: 99f78ae9ec601059829ca8f6f8c276f3a2ea6944 # Version 1.1.8
-  json_annotation: ^4.7.0
+      ref: 3e186592e6ed8bcd7c13af0e0cbf4fafa7450178 # Version 1.2.0a
+  json_annotation: ^4.8.0
   keyboard_actions: ^4.0.0 
   keyboard_avoider: ^0.1.2
   latlong2: ^0.8.1
@@ -109,25 +109,16 @@ dependencies:
   # # bottom_navy_bar
 
 dependency_overrides:
-  # image_picker_android: 0.8.5+1
-  # meta: ^1.7.0
-#   photo_view: ^0.12.0
-
-  
-  # http: ^0.12.2
-  # intl: any
-  # json_annotation: ^3.1.1
-  # path_provider: ^1.6.22
-
+  intl: 0.17.0
 
 dev_dependencies: 
   # flutter_test:
   #   sdk: flutter
-  build_runner: ^2.1.2 
+  build_runner: ^2.3.3
   flutter_launcher_icons: ^0.11.0 
   # intl_translation: ^0.17.10+1 
   flutter_lints: ^2.0.1
-  json_serializable: ^6.0.1
+  json_serializable: ^6.6.1
 
 flutter_icons:
   android: true 

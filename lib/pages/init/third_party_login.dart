@@ -1,8 +1,7 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ThirdPartyLogin extends StatefulWidget {
-  const ThirdPartyLogin(this.isNewUser, {Key key}) : super(key: key);
+  const ThirdPartyLogin(this.isNewUser, {Key? key}) : super(key: key);
 
   final bool isNewUser;
 
@@ -12,7 +11,7 @@ class ThirdPartyLogin extends StatefulWidget {
 
 class LoginPageState extends State<ThirdPartyLogin> {
   bool _isLoggedIn = false;
-  ThirdPartyLoginData _profileData;
+  ThirdPartyLoginData? _profileData;
   //String facebookAccessToken;
 
   // bool _includeInGlobalHashDirectory = true;
@@ -31,12 +30,15 @@ class LoginPageState extends State<ThirdPartyLogin> {
     super.initState();
 
     if (!widget.isNewUser) {
-      _hashNameTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.hashName));
-      _emailTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.email));
+      _hashNameTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.hashName) ?? '');
+      _emailTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.email) ?? '');
     }
   }
 
-  void _onLoginStatusChanged(bool loggedIn, {ThirdPartyLoginData loginData}) {
+  void _onLoginStatusChanged(
+    bool loggedIn, {
+    ThirdPartyLoginData? loginData,
+  }) {
     setState(() {
       _isLoggedIn = loggedIn;
       _profileData = loginData;
@@ -140,21 +142,21 @@ class LoginPageState extends State<ThirdPartyLogin> {
       await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
       await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
       await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
-      await setStringPref(StringPrefsEnum.thirdPartyEmail, appleCredential?.email ?? '');
+      await setStringPref(StringPrefsEnum.thirdPartyEmail, appleCredential.email);
       await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
         'apple',
-        appleCredential.identityToken,
-        appleCredential.userIdentifier,
-        appleCredential.givenName,
-        appleCredential.familyName,
+        appleCredential.identityToken ?? '',
+        appleCredential.userIdentifier ?? '',
+        appleCredential.givenName ?? '',
+        appleCredential.familyName ?? '',
         authorizationCode: appleCredential.authorizationCode,
-        thirdPartyEmail: appleCredential.email,
+        thirdPartyEmail: appleCredential.email ?? '',
       );
 
       if (widget.isNewUser) {
-        _emailTextController.value = TextEditingValue(text: appleCredential?.email ?? '');
+        _emailTextController.value = TextEditingValue(text: appleCredential.email ?? '');
       }
 
       _onLoginStatusChanged(true, loginData: d);
@@ -189,7 +191,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
     // by default the login method has the next permissions ['email','public_profile']
     final LoginResult loginResult = await FacebookAuth.instance.login();
     if (loginResult.status == LoginStatus.success) {
-      final AccessToken accessToken = loginResult.accessToken;
+      final AccessToken accessToken = loginResult.accessToken!;
 
       // get the user data
       final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
@@ -246,7 +248,10 @@ class LoginPageState extends State<ThirdPartyLogin> {
     }
   }
 
-  dynamic _displayUserData(ThirdPartyLoginData profileData) {
+  Widget _displayUserData(ThirdPartyLoginData? profileData) {
+    if (profileData == null) {
+      return const SizedBox();
+    }
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -258,9 +263,9 @@ class LoginPageState extends State<ThirdPartyLogin> {
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 15.0),
-            child: Text(profileData.name, textAlign: TextAlign.center, style: largeTitleStyle),
+            child: Text(profileData.name ?? ('${profileData.firstName} ${profileData.lastName}'), textAlign: TextAlign.center, style: largeTitleStyle),
           ),
-          if ((profileData.photoUrl != null) && (profileData.photoUrl.length > 5)) ...<Widget>[
+          if ((profileData.photoUrl?.length ?? 0) > 5) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20),
               child: SizedBox(
@@ -274,7 +279,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       image: DecorationImage(
                         fit: BoxFit.fill,
                         image: NetworkImage(
-                          profileData.photoUrl,
+                          profileData.photoUrl!,
                         ),
                       ),
                     ),
@@ -346,7 +351,10 @@ class LoginPageState extends State<ThirdPartyLogin> {
                           borderSide: const BorderSide(),
                         ),
                       ),
-                      validator: Utilities.validateEmail,
+                      validator: (String? value) {
+                        return Utilities.validateEmail(value);
+                      },
+                      //,
                       // onSaved: (String val) {
                       //   _email = val;
                       // },
@@ -406,7 +414,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
             child: TextButton(
               child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info', style: textStyleButton),
               onPressed: () async {
-                if (!widget.isNewUser || ((_formKey?.currentState != null) && (_formKey.currentState.validate()))) {
+                if (!widget.isNewUser || ((_formKey.currentState != null) && (_formKey.currentState!.validate()))) {
                   setState(() {
                     _isLoading = true;
                   });
@@ -464,14 +472,14 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         0; // we turn the result into a string and then back into an int to allow the DB to return either int or string without causing an error
                     await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                   } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Account not created',
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Account not created',
                         'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
                     return;
                   }
 
                   if (widget.isNewUser) {
                     //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                    final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
+                    final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode) ?? '';
                     //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
                     if (!mounted) return;
@@ -487,7 +495,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         ));
                   } else {
                     // not a new user, pop back to the User profile page.
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
                       Navigator.of(context).pop();
                     });
                   }
@@ -515,7 +523,7 @@ class ThirdPartyLoginData {
     this.accessTokenExpires,
     this.thirdPartyEmail,
   }) {
-    name ??= '${firstName ?? ''} ${lastName ?? ''}';
+    name ??= '$firstName $lastName';
   }
 
   String loginType;
@@ -524,9 +532,9 @@ class ThirdPartyLoginData {
   String firstName;
   String lastName;
 
-  String name;
-  String photoUrl;
-  String authorizationCode;
-  String thirdPartyEmail;
-  DateTime accessTokenExpires;
+  String? name;
+  String? photoUrl;
+  String? authorizationCode;
+  String? thirdPartyEmail;
+  DateTime? accessTokenExpires;
 }

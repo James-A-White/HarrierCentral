@@ -356,7 +356,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          await setStringPref(StringPrefsEnum.email, _emailController.text);
+          await setStringPref(StringPrefsEnum.email.name, _emailController.text);
           await setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
           _hasherPreferences = _distancePreference + _autoRunPreference;
         }

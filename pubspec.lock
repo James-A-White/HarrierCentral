@@ -837,20 +837,20 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "1244c5f8d9757d9247179a0576b0828bbed1b4f2"
-      resolved-ref: "1244c5f8d9757d9247179a0576b0828bbed1b4f2"
+      ref: "102daf51a2da2dae339682722a9338c10c430e37"
+      resolved-ref: "102daf51a2da2dae339682722a9338c10c430e37"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
-    version: "1.1.8"
+    version: "1.2.0"
   ive_flutter_core_mobile:
     dependency: "direct main"
     description:
       path: "."
-      ref: "99f78ae9ec601059829ca8f6f8c276f3a2ea6944"
-      resolved-ref: "99f78ae9ec601059829ca8f6f8c276f3a2ea6944"
+      ref: "3e186592e6ed8bcd7c13af0e0cbf4fafa7450178"
+      resolved-ref: "3e186592e6ed8bcd7c13af0e0cbf4fafa7450178"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git"
     source: git
-    version: "1.1.8"
+    version: "1.2.0"
   js:
     dependency: transitive
     description:
@@ -1039,10 +1039,10 @@ packages:
     dependency: "direct main"
     description:
       name: path_provider
-      sha256: dcea5feb97d8abf90cab9e9030b497fb7c3cbf26b7a1fe9e3ef7dcb0a1ddec95
+      sha256: "04890b994ee89bfa80bf3080bfec40d5a92c5c7a785ebb02c13084a099d2b6f9"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.12"
+    version: "2.0.13"
   path_provider_android:
     dependency: transitive
     description:
@@ -1436,10 +1436,10 @@ packages:
     dependency: "direct main"
     description:
       name: sqflite
-      sha256: "78324387dc81df14f78df06019175a86a2ee0437624166c382e145d0a7fd9a4f"
+      sha256: "851d5040552cf911f4cabda08d003eca76b27da3ed0002978272e27c8fbf8ecc"
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.4+1"
+    version: "2.2.5"
   sqflite_common:
     dependency: transitive
     description:
@@ -1818,4 +1818,4 @@ packages:
     version: "3.1.1"
 sdks:
   dart: ">=2.19.0 <3.0.0"
-  flutter: ">=3.7.5"
+  flutter: ">=3.7.7"

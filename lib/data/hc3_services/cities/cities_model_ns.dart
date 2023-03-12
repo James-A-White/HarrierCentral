@@ -5,7 +5,7 @@ part 'cities_model_ns.g.dart';
 
 @freezed
 class CitiesModel with _$CitiesModel implements BaseModel {
-  factory CitiesModel({
+  const factory CitiesModel({
     required String cityId,
     required String cityName,
     String? citySearchTags,

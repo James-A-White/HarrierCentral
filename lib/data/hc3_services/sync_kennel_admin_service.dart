@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class SyncKennelAdminService {
   static const int flagKennelTable = 0x00000001;
@@ -8,13 +7,16 @@ class SyncKennelAdminService {
 
   static const int flagsAllData = 0x00000007;
 
-  num _kennelLastUpdated;
-  num _hasherKennelMapLastUpdated;
-  num _hashersLastUpdated;
+  // ignore: constant_identifier_names
+  static const int FORCE = FORCE_ALL_REPLICATION_TIMESTAMP - 1;
 
-  Future<num> getLastUpdatedTime(String colName, String tableName) async {
+  int _kennelLastUpdated = FORCE;
+  int _hasherKennelMapLastUpdated = FORCE;
+  int _hashersLastUpdated = FORCE;
+
+  Future<int> getLastUpdatedTime(String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
-    final num timeValue = table.first['maxDate'];
+    final int timeValue = table.first['maxDate'];
     //print(timeValue.toString());
     return timeValue;
   }
@@ -35,7 +37,7 @@ class SyncKennelAdminService {
     int flags,
     bool forceRefresh,
     String kennelId, {
-    Function informUser,
+    Function? informUser,
     bool usePaging = false,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
@@ -87,15 +89,12 @@ class SyncKennelAdminService {
       // the table and add one second to it
       await getLastUpdatedTimes(flags);
 
-      final DateTime kennelsUpdatedAfter =
-          _kennelLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_kennelLastUpdated + 1);
-      final DateTime hashersUpdatedAfter =
-          _hashersLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
-      final DateTime hasherKennelMapUpdatedAfter =
-          _hasherKennelMapLastUpdated == null ? DateTime.fromMicrosecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+      final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_kennelLastUpdated + 1);
+      final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+      final DateTime hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
 
-      String userId = getStringPref(StringPrefsEnum.userId);
-      if ((userId ?? '').isEmpty) {
+      String userId = getStringPref(StringPrefsEnum.userId) ?? '';
+      if (userId.isEmpty) {
         userId = GUID_EMPTY;
       }
 
@@ -130,7 +129,7 @@ class SyncKennelAdminService {
     G0<TableModel>().hasherKennelMapTableHelper,
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function? informUser}) async {
     return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(jsonResults, kennelTables, G0<Database>(), AppDomainType.kennel);
   }
 }

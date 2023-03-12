@@ -1,12 +1,11 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 //import 'package:geolocator/geolocator.dart';
 
 class RunAdminAggregate {
   RunAdminAggregate({
-    this.event,
-    this.extensions,
-    this.kennel,
+    required this.event,
+    required this.extensions,
+    required this.kennel,
   });
 
   final RunDetailQueryExtensions extensions;
@@ -29,20 +28,20 @@ class RunDetailQueryExtensions {
     this.paymentAmountStr,
   });
 
-  final int appAccessFlags;
-  final int mismanagementRoles;
-  final int digAfterDec;
-  final String curSym;
-  final String curCode;
-  final num memberPrice;
-  final num nonMemberPrice;
-  String paymentUrl;
-  num distToEvent;
-  int distancePreference;
-  num latitude;
-  num longitude;
-  bool isMapAndDistanceValid;
-  String paymentAmountStr;
+  final int? appAccessFlags;
+  final int? mismanagementRoles;
+  final int? digAfterDec;
+  final String? curSym;
+  final String? curCode;
+  final num? memberPrice;
+  final num? nonMemberPrice;
+  String? paymentUrl;
+  num? distToEvent;
+  int? distancePreference;
+  num? latitude;
+  num? longitude;
+  bool? isMapAndDistanceValid;
+  String? paymentAmountStr;
 
   bool isLoading = false;
 
@@ -64,16 +63,19 @@ class RunDetailQueryExtensions {
   }
 
   Mismanagement get mismanagement {
-    return Mismanagement(mismanagementRoles);
+    return Mismanagement(mismanagementRoles ?? 0);
   }
 
   AppAccess get appAccess {
-    return AppAccess(appAccessFlags);
+    return AppAccess(appAccessFlags ?? 0);
   }
 }
 
 class RunAdminPage extends StatefulWidget {
-  const RunAdminPage({Key key, this.eventId}) : super(key: key);
+  const RunAdminPage({
+    Key? key,
+    required this.eventId,
+  }) : super(key: key);
 
   final String eventId;
 
@@ -85,31 +87,31 @@ class RunAdminPageState extends State<RunAdminPage> {
   bool _isLoading = true;
   int _isBetaTester = 0;
 
-  RunAdminAggregate _eventAggregate;
+  late RunAdminAggregate _eventAggregate;
 
   @override
   void initState() {
     _getRunDetails(widget.eventId);
 
-    _isBetaTester = getIntPref(IntPrefsEnum.isBetaTester);
+    _isBetaTester = getIntPref(IntPrefsEnum.isBetaTester) ?? 0;
 
     super.initState();
   }
 
   void _getRunDetails(String eventId) {
     G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId).then((bool result) {
-      CommonQueries.getEventAdminInfoFromLocalCache(widget.eventId, _userId).then((RunAdminAggregate rd) {
+      CommonQueries.getEventAdminInfoFromLocalCache(widget.eventId, _userId).then<dynamic>((RunAdminAggregate rd) {
         _eventAggregate = rd;
         setState(() {
           _isLoading = false;
           //final String resultStr = result ? 'successfully' : 'unsuccessfully';
           //print('Event admin data synchronized $resultStr');
         });
-      });
+      } as FutureOr Function(dynamic value)); // CHECK
     });
   }
 
-  final String _userId = getStringPref(StringPrefsEnum.userId);
+  final String _userId = getStringPref(StringPrefsEnum.userId) ?? '';
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
