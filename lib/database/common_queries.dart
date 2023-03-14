@@ -159,8 +159,9 @@ class CommonQueries {
 
         if (hasValidPosition) {
           for (int i = 0; i < queryResults.length; i++) {
-            if (queryResults[i]['lat'] != null) {
-              final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat.toDouble(), G0<DeviceInfo>().deviceLon.toDouble(), queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+            double? dist;
+            if ((queryResults[i]['lat'] != null) && (G0<DeviceInfo>().deviceLon != null) && (G0<DeviceInfo>().deviceLon != null)) {
+              dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!.toDouble(), G0<DeviceInfo>().deviceLon!.toDouble(), queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
 
               if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
                 continue;
@@ -238,8 +239,8 @@ class CommonQueries {
     return result;
   }
 
-  static Future<RunAdminAggregate> getNewEvent(String kennelId, String userId, DateTime eventStart) async {
-    RunAdminAggregate runDetailAggregate;
+  static Future<RunAdminAggregate?> getNewEvent(String kennelId, String userId, DateTime eventStart) async {
+    RunAdminAggregate? runDetailAggregate;
     try {
       const String dollarSign = r'$^';
       final String sql = '''
@@ -284,14 +285,25 @@ class CommonQueries {
           useFbRunDetails: 0,
           useFbLocation: 0,
           removed: 0,
+          tags1: 0,
+          tags2: 0,
+          tags3: 0,
+          eventId: GUID_EMPTY,
+          doTrackHashCash: 1,
+          eventName: 'Placeholder',
+          useFbImage: 0,
+          publicEventId: GUID_EMPTY,
+          eventNumber: 0,
+          eventInboundIntegrationId: 0,
+          updatedAt: DateTime.now(),
         );
 
         final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
 
         String paymentLinkUrl = '';
 
-        if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-          paymentLinkUrl = kennel.kennelPaymentUrl;
+        if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+          paymentLinkUrl = kennel.kennelPaymentUrl!;
         }
 
         extensions.paymentUrl = paymentLinkUrl;
@@ -306,8 +318,8 @@ class CommonQueries {
     return runDetailAggregate;
   }
 
-  static Future<RunAdminAggregate> getEventAdminInfoFromLocalCache(String eventId, String userId) async {
-    RunAdminAggregate runAdminAggregate;
+  static Future<RunAdminAggregate?> getEventAdminInfoFromLocalCache(String eventId, String userId) async {
+    RunAdminAggregate? runAdminAggregate;
     try {
       const String dollarSign = r'$^';
       final String sql = '''
@@ -342,29 +354,29 @@ class CommonQueries {
         final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
         String paymentLinkUrl = '';
 
-        num dist;
+        double? dist;
 
-        if (extensions.latitude != null) {
+        if ((extensions.latitude != null) && (extensions.longitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
           dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat + .0,
-            G0<DeviceInfo>().deviceLon + .0,
-            extensions.latitude + .0,
-            extensions.longitude + .0,
+            G0<DeviceInfo>().deviceLat! + .0,
+            G0<DeviceInfo>().deviceLon! + .0,
+            extensions.latitude! + .0,
+            extensions.longitude! + .0,
           );
-        } else {
+        } else if ((kennel.kennelLatitude != null) && (kennel.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
           dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat + .0,
-            G0<DeviceInfo>().deviceLon + .0,
-            kennel.kennelLatitude + .0,
-            kennel.kennelLongitude + .0,
+            G0<DeviceInfo>().deviceLat! + .0,
+            G0<DeviceInfo>().deviceLon! + .0,
+            kennel.kennelLatitude! + .0,
+            kennel.kennelLongitude! + .0,
           );
         }
         extensions.distToEvent = dist;
 
-        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-          paymentLinkUrl = eventItem.eventPaymentUrl;
-        } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-          paymentLinkUrl = kennel.kennelPaymentUrl;
+        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+          paymentLinkUrl = eventItem.eventPaymentUrl!;
+        } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+          paymentLinkUrl = kennel.kennelPaymentUrl!;
         }
 
         extensions.paymentUrl = paymentLinkUrl;

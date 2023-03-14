@@ -1,26 +1,25 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 enum KennelLogoZoomGesture { none, tap, longPress }
 
 class KennelLogo extends StatelessWidget {
   const KennelLogo({
-    Key key,
+    Key? key,
     this.kennelId,
-    @required this.kennelLogoUrl,
-    @required this.kennelShortName,
-    @required this.logoHeight,
+    required this.kennelLogoUrl,
+    required this.kennelShortName,
+    required this.logoHeight,
     this.zoomGesture = KennelLogoZoomGesture.longPress,
     this.leftPadding,
     this.rightPadding,
   }) : super(key: key);
 
-  final String kennelId;
+  final String? kennelId;
   final String kennelLogoUrl;
   final String kennelShortName;
-  final num logoHeight;
-  final num leftPadding;
-  final num rightPadding;
+  final double logoHeight;
+  final double? leftPadding;
+  final double? rightPadding;
   final KennelLogoZoomGesture zoomGesture;
 
   void _showZoomPage(BuildContext context) {

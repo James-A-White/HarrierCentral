@@ -1,14 +1,18 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 enum FindHasherPageType { addHasherToRun, addMember }
 
 class FindHasherPage extends StatefulWidget {
-  const FindHasherPage(this.pageType, {Key key, this.kennelId, this.eventId}) : super(key: key);
+  const FindHasherPage(
+    this.pageType, {
+    Key? key,
+    this.kennelId,
+    this.eventId,
+  }) : super(key: key);
 
   final FindHasherPageType pageType;
-  final String kennelId;
-  final String eventId;
+  final String? kennelId;
+  final String? eventId;
 
   @override
   State<FindHasherPage> createState() {
@@ -17,8 +21,8 @@ class FindHasherPage extends StatefulWidget {
 }
 
 class FindHasherPageState extends State<FindHasherPage> {
-  List<HashersModel> _hasherList;
-  List<HashersModel> _filteredList;
+  List<HashersModel> _hasherList = <HashersModel>[];
+  List<HashersModel> _filteredList = <HashersModel>[];
 
   bool _isLoading = true;
 
@@ -33,11 +37,11 @@ class FindHasherPageState extends State<FindHasherPage> {
     svc.selectAllFromLocalDb(G0<Database>(), G0<TableModel>().hashersTableHelper, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)).then((List<BaseModel> list) {
       _hasherList = list.cast<HashersModel>();
       setState(() {
-        if (_hasherList != null) {
+        if (_hasherList.isNotEmpty) {
           _hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
           _filteredList = _hasherList;
         } else {
-          _filteredList = null;
+          _filteredList = <HashersModel>[];
         }
 
         _isLoading = false;
@@ -64,7 +68,7 @@ class FindHasherPageState extends State<FindHasherPage> {
     findHasher();
   }
 
-  GlobalKey<ScaffoldState> _scaffoldKey;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
@@ -177,10 +181,10 @@ class FindHasherPageState extends State<FindHasherPage> {
 
 class HasherListView extends StatelessWidget {
   const HasherListView({
-    Key key,
-    this.hasherList,
-    this.pageType,
-    this.searchController,
+    Key? key,
+    required this.hasherList,
+    required this.pageType,
+    required this.searchController,
     this.kennelId,
     this.eventId,
   }) : super(key: key);
@@ -188,10 +192,10 @@ class HasherListView extends StatelessWidget {
   final List<HashersModel> hasherList;
   final FindHasherPageType pageType;
   final TextEditingController searchController;
-  final String kennelId;
-  final String eventId;
+  final String? kennelId;
+  final String? eventId;
 
-  Future<int> _promptForHasherType(BuildContext context, HashersModel newHasher) {
+  Future<int?> _promptForHasherType(BuildContext context, HashersModel newHasher) async {
     return showDialog<int>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -261,19 +265,18 @@ class HasherListView extends StatelessWidget {
     return InkWell(
       //splashColor: Colors.red,
       highlightColor: Colors.red,
-      onTap: () {
+      onTap: () async {
         if (pageType == FindHasherPageType.addHasherToRun) {
-          return _promptForHasherType(context, hasherList[index]).then((int doAddHasher) {
-            if (doAddHasher != -1) {
-              final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
-              Navigator.of(context).pop(result);
-            }
-          });
+          int? doAddHasher = await _promptForHasherType(context, hasherList[index]);
+          if (doAddHasher != -1) {
+            final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
+            Navigator.of(navigatorKey.currentContext!).pop(result);
+          }
         } else if (pageType == FindHasherPageType.addMember) {
           final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index]};
           Navigator.of(context).pop(result);
         }
-        return null;
+        return;
       },
       child: SizedBox(
         width: MediaQuery.of(context).size.width,

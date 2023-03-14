@@ -376,12 +376,15 @@ class EventsService extends BaseService {
 
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
     if (results.isNotEmpty) {
-      final num dist = Geolocator.distanceBetween(
-        G0<DeviceInfo>().deviceLat,
-        G0<DeviceInfo>().deviceLon,
-        results[0]['evtLat'] + .0,
-        results[0]['evtLon'] + .0,
-      );
+      double? dist;
+      if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+        dist = Geolocator.distanceBetween(
+          G0<DeviceInfo>().deviceLat!,
+          G0<DeviceInfo>().deviceLon!,
+          results[0]['evtLat'] + .0,
+          results[0]['evtLon'] + .0,
+        );
+      }
       final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
       final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[0], eventItem.eventStartDatetime);

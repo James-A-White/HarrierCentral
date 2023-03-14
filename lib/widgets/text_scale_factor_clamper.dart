@@ -1,11 +1,10 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class TextScaleFactorClamper extends StatelessWidget {
   const TextScaleFactorClamper({
-    Key key,
-    this.child,
-    this.textScaleFactor,
+    Key? key,
+    required this.child,
+    required this.textScaleFactor,
   }) : super(key: key);
   final Widget child;
   final double textScaleFactor;

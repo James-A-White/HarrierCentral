@@ -33,13 +33,13 @@ class RunDetailQueryExtensions {
   final int? digAfterDec;
   final String? curSym;
   final String? curCode;
-  final num? memberPrice;
-  final num? nonMemberPrice;
+  final double? memberPrice;
+  final double? nonMemberPrice;
   String? paymentUrl;
-  num? distToEvent;
+  double? distToEvent;
   int? distancePreference;
-  num? latitude;
-  num? longitude;
+  double? latitude;
+  double? longitude;
   bool? isMapAndDistanceValid;
   String? paymentAmountStr;
 

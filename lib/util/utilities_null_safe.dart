@@ -2,7 +2,7 @@
 
 // import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports_null_safe.dart';
-// import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 // import 'package:map_launcher/map_launcher.dart' as maps;
 // import 'package:flutter_svg/flutter_svg.dart';
@@ -196,46 +196,46 @@ class Utilities {
 //     }
 //   }
 
-//   static bool isValidUrl(String url) {
-//     if ((url == null) || (url.isEmpty)) {
-//       return false;
-//     }
-//     final Uri uri = Uri.tryParse(url);
-//     return uri != null && uri.hasAbsolutePath && uri.scheme.startsWith('http');
-//   }
+  static bool isValidUrl(String url) {
+    if (url.isEmpty) {
+      return false;
+    }
+    final Uri? uri = Uri.tryParse(url);
+    return uri != null && uri.hasAbsolutePath && uri.scheme.startsWith('http');
+  }
 
-//   static Future<bool> promptForHare(BuildContext context, String hareList) async {
-//     return showDialog<bool>(
-//       context: context,
-//       barrierDismissible: false, // user must tap button!
-//       builder: (BuildContext context) {
-//         return AlertDialog(
-//           title: const Text('Will you Hare this run?'),
-//           content: SingleChildScrollView(
-//             child: ListBody(
-//               children: <Widget>[
-//                 Text('Please confirm that you are signing up to hare this run${(hareList == null) ? '.' : ' with $hareList'}'),
-//               ],
-//             ),
-//           ),
-//           actions: <Widget>[
-//             TextButton(
-//               child: const Text('No Thanks!'),
-//               onPressed: () {
-//                 Navigator.of(context).pop(false);
-//               },
-//             ),
-//             TextButton(
-//               child: const Text('Yes, I\'ll Hare!'),
-//               onPressed: () {
-//                 Navigator.of(context).pop(true);
-//               },
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
+  static Future<bool?> promptForHare(BuildContext context, String? hareList) async {
+    return await showDialog<bool?>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Will you Hare this run?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No Thanks!'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Yes, I\'ll Hare!'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 //   static bool isOpeeOrTuna() {
 //     bool isOpeeOrTuna = false;
@@ -330,87 +330,86 @@ class Utilities {
 //     return <double>[null, null];
 //   }
 
-//   static String getEventScopeText(int eventGeographicScope) {
-//     String s = 'Special event';
+  static String getEventScopeText(int eventGeographicScope) {
+    String s = 'Special event';
 
-//     switch (eventGeographicScope) {
-//       case 0:
-//         s = 'Not specified';
-//         break;
-//       case 1:
-//         s = 'Normal run';
-//         break;
-//       case 2:
-//         s = 'Special local event';
-//         break;
-//       case 3:
-//         s = 'Special regional / state event';
-//         break;
-//       case 4:
-//         s = 'Nash Hash / national event';
-//         break;
-//       case 5:
-//         s = 'Interhash / continental event';
-//         break;
-//       case 6:
-//         s = 'World Interhash / global event';
-//         break;
-//       case 7:
-//         s = 'Other special event';
-//         break;
-//     }
+    switch (eventGeographicScope) {
+      case 0:
+        s = 'Not specified';
+        break;
+      case 1:
+        s = 'Normal run';
+        break;
+      case 2:
+        s = 'Special local event';
+        break;
+      case 3:
+        s = 'Special regional / state event';
+        break;
+      case 4:
+        s = 'Nash Hash / national event';
+        break;
+      case 5:
+        s = 'Interhash / continental event';
+        break;
+      case 6:
+        s = 'World Interhash / global event';
+        break;
+      case 7:
+        s = 'Other special event';
+        break;
+    }
 
-//     return s;
-//   }
+    return s;
+  }
 
-//   static String getDistance(num meters, BuildContext context, {bool isMetric = true}) {
-//     if (!G0<AppModel>().hasLocationPermissions) {
-//       return '';
-//     }
+  static String getDistance(num meters, BuildContext context, {bool isMetric = true}) {
+    if (!G0<AppModel>().hasLocationPermissions) {
+      return '';
+    }
 
-//     String result = '';
+    String result = '';
 
-//     if (isMetric) {
-//       if (meters < 1000) {
-//         result = '${NumberFormat('####').format(meters)} meters';
-//       } else if (meters < 10000) {
-//         result = '${NumberFormat('#####.0').format(meters / 1000.0)} km';
-//       } else {
-//         result = '${NumberFormat('#####').format(meters / 1000.0)} km';
-//       }
-//     } else {
-//       final num miles = meters * METERS_TO_MILES;
+    if (isMetric) {
+      if (meters < 1000) {
+        result = '${NumberFormat('####').format(meters)} meters';
+      } else if (meters < 10000) {
+        result = '${NumberFormat('#####.0').format(meters / 1000.0)} km';
+      } else {
+        result = '${NumberFormat('#####').format(meters / 1000.0)} km';
+      }
+    } else {
+      final num miles = meters * METERS_TO_MILES;
 
-//       if (miles < 3) {
-//         result = '${NumberFormat('#####.00').format(miles)} miles';
-//       } else if (miles < 10) {
-//         result = '${NumberFormat('#####.0').format(miles)} miles';
-//       } else {
-//         result = '${NumberFormat('#####').format(miles)} miles';
-//       }
-//     }
+      if (miles < 3) {
+        result = '${NumberFormat('#####.00').format(miles)} miles';
+      } else if (miles < 10) {
+        result = '${NumberFormat('#####.0').format(miles)} miles';
+      } else {
+        result = '${NumberFormat('#####').format(miles)} miles';
+      }
+    }
 
-//     return result;
-//   }
+    return result;
+  }
 
-//   static int checkSpecialHaring(int haringCount) {
-//     haringCount ??= 0;
-//     int result = specialRunNo;
+  static int checkSpecialHaring(int haringCount) {
+    int result = specialRunNo;
 
-//     if (haringCount == 1) {
-//       result = specialRunFirstRun;
-//     }
+    if (haringCount == 1) {
+      result = specialRunFirstRun;
+    }
 
-//     if ((haringCount % 5 == 0) && (haringCount > 0)) {
-//       result = specialRunFifthRun;
-//     }
+    if ((haringCount % 5 == 0) && (haringCount > 0)) {
+      result = specialRunFifthRun;
+    }
 
-//     if (haringCount % 100 == 69) {
-//       result = specialRun69;
-//     }
+    if (haringCount % 100 == 69) {
+      result = specialRun69;
+    }
 
-//     return result;
-//   }
+    return result;
+  }
 
 //   static Widget getProfilePic(String image, num width, num height, BuildContext context, String pageTitle) {
 //     return GestureDetector(

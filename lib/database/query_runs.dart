@@ -27,7 +27,7 @@ class RunDetailsQueryExtensions {
   });
 
   final num? daysUntilEvent;
-  num? distToEvent;
+  double? distToEvent;
   final int? appAccessFlags;
   int? digitsAfterDecimal;
   String? currencySymbol;
@@ -277,25 +277,25 @@ class QueryRuns {
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
       final CitiesModel cityItem = G0<TableModel>().citiesTableHelper.fromMap(results[i]);
 
-      num dist;
-      if ((results[i]['evtLat'] != null) && (results[i]['evtLon'] != null)) {
+      double? dist;
+      if ((results[i]['evtLat'] != null) && (results[i]['evtLon'] != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-          G0<DeviceInfo>().deviceLat,
-          G0<DeviceInfo>().deviceLon,
+          G0<DeviceInfo>().deviceLat!,
+          G0<DeviceInfo>().deviceLon!,
           results[i]['evtLat'] + .0,
           results[i]['evtLon'] + .0,
         );
-      } else if ((kennelItem.kennelLatitude != null) && (kennelItem.kennelLongitude != null)) {
+      } else if ((kennelItem.kennelLatitude != null) && (kennelItem.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-          G0<DeviceInfo>().deviceLat,
-          G0<DeviceInfo>().deviceLon,
+          G0<DeviceInfo>().deviceLat!,
+          G0<DeviceInfo>().deviceLon!,
           kennelItem.kennelLatitude! + .0,
           kennelItem.kennelLongitude! + .0,
         );
-      } else {
+      } else if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-          G0<DeviceInfo>().deviceLat,
-          G0<DeviceInfo>().deviceLon,
+          G0<DeviceInfo>().deviceLat!,
+          G0<DeviceInfo>().deviceLon!,
           cityItem.latitude + .0,
           cityItem.longitude + .0,
         );
@@ -306,19 +306,14 @@ class QueryRuns {
 
       String paymentLinkUrl = '';
 
-      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-        paymentLinkUrl = eventItem.eventPaymentUrl;
-      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-        paymentLinkUrl = kennelItem.kennelPaymentUrl;
+      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+        paymentLinkUrl = eventItem.eventPaymentUrl!;
+      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+        paymentLinkUrl = kennelItem.kennelPaymentUrl!;
       }
 
-      // final num julianNow = results[i]['nowJulian'];
-      // final num eventJulian = results[i]['eventJulian'];
-
-      //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
-
       num meters = 0;
-      final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
+      final int userDistPrefs = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceForAutoDisplay;
 
       switch (userDistPrefs) {
         case hasherPref_0:
@@ -364,7 +359,7 @@ class QueryRuns {
       if ((extensionsItem.rsvpState == 3) || (extensionsItem.rsvpState == 2)) {
         // if the RSVP state is yes or maybe make it a class 1 run
         extensionsItem.runClassification = 1;
-      } else if (extensionsItem.distToEvent < meters) {
+      } else if ((extensionsItem.distToEvent ?? 999999.0) < meters) {
         // if the run is close, it's a class 2 run
         extensionsItem.runClassification = 2;
       } else if (extensionsItem.following == 1) {
@@ -375,7 +370,7 @@ class QueryRuns {
         extensionsItem.runClassification = 4;
       }
 
-      if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
+      if ((searchAllRuns == true) || ((extensionsItem.following ?? 0) >= 1) || (((extensionsItem.following ?? 0) == 0) && ((dist ?? 999999999.0) < meters))) {
         final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
         runs.add(item);
       }
@@ -383,10 +378,16 @@ class QueryRuns {
     return runs;
   }
 
-  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext, {String kennelId, bool searchAllRuns = true, String eventId}) async {
+  static Future<List<Map<String, dynamic>>> queryRuns(
+    EnumRunQueryType queryType,
+    EnumRunQueryContext queryContext, {
+    String? kennelId,
+    bool searchAllRuns = true,
+    String? eventId,
+  }) async {
     String hkmTable;
     String hemTable;
-    String paymentsTable;
+    String paymentsTable = '';
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
@@ -498,7 +499,9 @@ class QueryRuns {
             ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
           ''';
 
-    final String whereClauseForKennelDetailsPage = '''
+    final String whereClauseForKennelDetailsPage = kennelId == null
+        ? ''
+        : '''
             WHERE datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
@@ -506,7 +509,9 @@ class QueryRuns {
             LIMIT 10
           ''';
 
-    final String whereClauseForSingleRun = '''
+    final String whereClauseForSingleRun = eventId == null
+        ? ''
+        : '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventId} = "$eventId"
             AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
           ''';

@@ -1,21 +1,20 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class CheckinFiltersCell extends StatelessWidget {
   const CheckinFiltersCell({
-    Key key,
-    @required this.counter,
-    @required this.index,
-    @required this.label,
-    @required this.onTap,
-    @required this.filterValues,
+    Key? key,
+    required this.counter,
+    required this.index,
+    required this.label,
+    required this.onTap,
+    required this.filterValues,
     this.color,
     this.icon,
     this.useTriState = true,
   }) : super(key: key);
 
-  final IconData icon;
-  final Color color;
+  final IconData? icon;
+  final Color? color;
   final Function onTap;
   final num counter;
   final String label;
@@ -33,7 +32,7 @@ class CheckinFiltersCell extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Text(
-            counter < 0 ? '' : (counter ?? 0).toString(),
+            counter < 0 ? '' : (counter).toString(),
             style: textStyle,
           ),
           IconButton(
@@ -48,13 +47,13 @@ class CheckinFiltersCell extends StatelessWidget {
               onTap();
             },
             icon: Icon(
-                icon ?? filterValues[index] == -1
+                (icon ?? filterValues[index]) == -1
                     ? FontAwesome.times_circle
                     : filterValues[index] == 0
                         ? FontAwesome.circle_thin
                         : FontAwesome.check_circle,
                 size: 35,
-                color: color ?? filterValues[index] == -1
+                color: (color ?? filterValues[index]) == -1
                     ? Colors.red
                     : filterValues[index] == 0
                         ? Colors.grey[350]

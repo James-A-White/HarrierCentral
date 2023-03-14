@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class RunDetails extends StatelessWidget {
@@ -13,7 +12,7 @@ class RunDetails extends StatelessWidget {
     this.paymentLinkUrl,
     this.showPaymentOptions,
     this.isMapAndDistanceValid, {
-    Key key,
+    Key? key,
     this.isMember = 0,
     this.isPaid = 0,
     this.rsvpState = 0,
@@ -33,21 +32,21 @@ class RunDetails extends StatelessWidget {
   final int isMember;
   final int isPaid;
   final int rsvpState;
-  final Function processPayment;
-  final String eventUrlWithKennelBackup;
+  final Function? processPayment;
+  final String? eventUrlWithKennelBackup;
 
-  static const int flexLeft = 30;
-  static const int flexRight = 70;
+  static const int _flexLeft = 30;
+  static const int _flexRight = 70;
 
-  static const num spaceBetweenColumns = 11.0;
-  static const num spaceBetweenRows = 26.0;
+  static const double _spaceBetweenColumns = 11.0;
+  static const double _spaceBetweenRows = 26.0;
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
-          ((event.eventImage ?? '').isNotEmpty && event.eventImage.startsWith('http'))
+          ((event.eventImage ?? '').isNotEmpty && event.eventImage!.startsWith('http'))
               ? Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: GestureDetector(
@@ -66,7 +65,7 @@ class RunDetails extends StatelessWidget {
                         );
                       },
                       child: CachedNetworkImage(
-                        imageUrl: event.eventImage,
+                        imageUrl: event.eventImage!,
                         // errorWidget:
                         //     (BuildContext context, String url, Exception error) =>
                         //         const  Icon(Icons.error),
@@ -75,7 +74,7 @@ class RunDetails extends StatelessWidget {
                       ),
                 )
               : Container(),
-          ((event.eventImage ?? '').isNotEmpty && event.eventImage.startsWith('http'))
+          ((event.eventImage ?? '').isNotEmpty && event.eventImage!.startsWith('http'))
               ? const Padding(
                   padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
                   child: FancyDivider(key: Key('666177323'), innerColor: Colors.white),
@@ -106,7 +105,7 @@ class RunDetails extends StatelessWidget {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      flex: flexLeft,
+                      flex: _flexLeft,
                       child: Text(
                         'Kennel:',
                         style: listLabelStyle,
@@ -116,11 +115,11 @@ class RunDetails extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(
-                      height: spaceBetweenRows,
-                      width: spaceBetweenColumns,
+                      height: _spaceBetweenRows,
+                      width: _spaceBetweenColumns,
                     ),
                     Expanded(
-                        flex: flexRight,
+                        flex: _flexRight,
                         child: Text(
                           kennel.kennelName,
                           style: listValueStyle,
@@ -130,12 +129,12 @@ class RunDetails extends StatelessWidget {
                         )),
                   ],
                 ),
-                ((event.eventNumber ?? 0) == 0) || (event.isCountedRun == 0)
+                ((event.eventNumber == 0) || (event.isCountedRun == 0))
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Row(
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
                               'Run #:',
                               style: listLabelStyle,
@@ -145,11 +144,11 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: flexRight,
+                              flex: _flexRight,
                               child: Text(
                                 '${event.eventNumber}',
                                 style: listValueStyle,
@@ -159,65 +158,67 @@ class RunDetails extends StatelessWidget {
                               )),
                         ],
                       ),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: flexLeft,
-                      child: Text(
-                        'Date:',
-                        style: listLabelStyle,
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: spaceBetweenRows,
-                      width: spaceBetweenColumns,
-                    ),
-                    Expanded(
-                        flex: flexRight,
+                if (event.eventStartDatetime != null) ...<Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: _flexLeft,
                         child: Text(
-                          DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime),
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
+                          'Date:',
+                          style: listLabelStyle,
+                          textAlign: TextAlign.right,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        )),
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: flexLeft,
-                      child: Text(
-                        'Time:',
-                        style: listLabelStyle,
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: spaceBetweenRows,
-                      width: spaceBetweenColumns,
-                    ),
-                    Expanded(
-                        flex: flexRight,
+                      const SizedBox(
+                        height: _spaceBetweenRows,
+                        width: _spaceBetweenColumns,
+                      ),
+                      Expanded(
+                          flex: _flexRight,
+                          child: Text(
+                            DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime!),
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: _flexLeft,
                         child: Text(
-                          DateFormat('h:mm a').format(event.eventStartDatetime),
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
+                          'Time:',
+                          style: listLabelStyle,
+                          textAlign: TextAlign.right,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        )),
-                  ],
-                ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: _spaceBetweenRows,
+                        width: _spaceBetweenColumns,
+                      ),
+                      Expanded(
+                          flex: _flexRight,
+                          child: Text(
+                            DateFormat('h:mm a').format(event.eventStartDatetime!),
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ],
+                  ),
+                ],
                 if ((event.locationOneLineDesc ?? '') != '') ...<Widget>[
                   Row(
                     children: <Widget>[
                       Expanded(
-                        flex: flexLeft,
+                        flex: _flexLeft,
                         child: Text(
                           'Place:',
                           style: listLabelStyle,
@@ -226,11 +227,11 @@ class RunDetails extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(
-                        height: spaceBetweenRows,
-                        width: spaceBetweenColumns,
+                        height: _spaceBetweenRows,
+                        width: _spaceBetweenColumns,
                       ),
                       Expanded(
-                          flex: flexRight,
+                          flex: _flexRight,
                           child: Text(
                             event.locationOneLineDesc ?? '',
                             style: listValueStyle,
@@ -242,12 +243,12 @@ class RunDetails extends StatelessWidget {
                     ],
                   ),
                 ],
-                ((event.eventGeographicScope ?? 0) == 0)
+                (event.eventGeographicScope == 0)
                     ? Container()
                     : Row(
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
                               'Event:',
                               style: listLabelStyle,
@@ -257,11 +258,11 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: flexRight,
+                              flex: _flexRight,
                               child: Text(
                                 Utilities.getEventScopeText(event.eventGeographicScope),
                                 style: listValueStyle,
@@ -274,7 +275,7 @@ class RunDetails extends StatelessWidget {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      flex: flexLeft,
+                      flex: _flexLeft,
                       child: Text(
                         'Run fees:',
                         style: listLabelStyle,
@@ -284,14 +285,14 @@ class RunDetails extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(
-                      height: spaceBetweenRows,
-                      width: spaceBetweenColumns,
+                      height: _spaceBetweenRows,
+                      width: _spaceBetweenColumns,
                     ),
                     Expanded(
-                        flex: flexRight,
+                        flex: _flexRight,
                         child: Text(
-                          ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0) > 0)
-                              ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0, digitsAfterDecimal, currencySymbol)} (members)'
+                          ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers) > 0)
+                              ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers, digitsAfterDecimal, currencySymbol)} (members)'
                               : '',
                           style: listValueStyle,
                           textAlign: TextAlign.left,
@@ -303,7 +304,7 @@ class RunDetails extends StatelessWidget {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      flex: flexLeft,
+                      flex: _flexLeft,
                       child: Text(
                         '',
                         style: listLabelStyle,
@@ -314,13 +315,13 @@ class RunDetails extends StatelessWidget {
                     ),
                     const SizedBox(
                       height: 0,
-                      width: spaceBetweenColumns,
+                      width: _spaceBetweenColumns,
                     ),
                     Expanded(
-                        flex: flexRight,
+                        flex: _flexRight,
                         child: Text(
-                          ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0)
-                              ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0, digitsAfterDecimal, currencySymbol)} (non-members)'
+                          ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers) > 0)
+                              ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers, digitsAfterDecimal, currencySymbol)} (non-members)'
                               : '',
                           style: listValueStyle,
                           textAlign: TextAlign.left,
@@ -334,7 +335,7 @@ class RunDetails extends StatelessWidget {
                     : Row(
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
                               'Extra fee:',
                               style: listLabelStyle,
@@ -344,13 +345,13 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: flexRight,
+                              flex: _flexRight,
                               child: Text(
-                                ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0)
+                                ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers) > 0)
                                     ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})'
                                     : '',
                                 style: listValueStyle,
@@ -365,7 +366,7 @@ class RunDetails extends StatelessWidget {
                     : Row(
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
                               'Hares:',
                               style: listLabelStyle,
@@ -375,11 +376,11 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: flexRight,
+                              flex: _flexRight,
                               child: Text(
                                 event.hares ?? '',
                                 style: listValueStyle,
@@ -393,7 +394,7 @@ class RunDetails extends StatelessWidget {
                     ? Row(
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
                               'Distance:',
                               style: listLabelStyle,
@@ -403,15 +404,15 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: G0<AppModel>().hasLocationPermissions ? flexRight : 0,
+                              flex: G0<AppModel>().hasLocationPermissions ? _flexRight : 0,
                               child: Text(
                                 G0<AppModel>().hasLocationPermissions
                                     ? distToEvent >= 0
-                                        ? '${Utilities.getDistance(distToEvent, context, isMetric: ((distancePreference ?? 0) & 0x01) == 0)} from here'
+                                        ? '${Utilities.getDistance(distToEvent, context, isMetric: ((distancePreference) & 0x01) == 0)} from here'
                                         : '<unknown>'
                                     : '',
                                 style: listValueStyle,
@@ -427,7 +428,7 @@ class RunDetails extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Expanded(
-                        flex: flexLeft,
+                        flex: _flexLeft,
                         child: Text(
                           'Street:',
                           style: listLabelStyle,
@@ -437,11 +438,11 @@ class RunDetails extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(
-                        height: spaceBetweenRows,
-                        width: spaceBetweenColumns,
+                        height: _spaceBetweenRows,
+                        width: _spaceBetweenColumns,
                       ),
                       Expanded(
-                          flex: flexRight,
+                          flex: _flexRight,
                           child: Text(
                             event.locationStreet ?? '',
                             style: listValueStyle,
@@ -452,11 +453,11 @@ class RunDetails extends StatelessWidget {
                     ],
                   ),
                 ],
-                if ((((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : '${event.locationPostCode} ') != '') ...<Widget>[
+                if ((((event.locationPostCode == null) || (event.locationPostCode!.isEmpty)) ? '' : '${event.locationPostCode} ') != '') ...<Widget>[
                   Row(
                     children: <Widget>[
                       Expanded(
-                        flex: flexLeft,
+                        flex: _flexLeft,
                         child: Text(
                           'Post Code:',
                           style: listLabelStyle,
@@ -466,13 +467,13 @@ class RunDetails extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(
-                        height: spaceBetweenRows,
-                        width: spaceBetweenColumns,
+                        height: _spaceBetweenRows,
+                        width: _spaceBetweenColumns,
                       ),
                       Expanded(
-                          flex: flexRight,
+                          flex: _flexRight,
                           child: Text(
-                            ((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : '${event.locationPostCode} ',
+                            ((event.locationPostCode == null) || (event.locationPostCode!.isEmpty)) ? '' : '${event.locationPostCode} ',
                             style: listValueStyle,
                             textAlign: TextAlign.left,
                             maxLines: 1,
@@ -485,7 +486,7 @@ class RunDetails extends StatelessWidget {
                   Row(
                     children: <Widget>[
                       Expanded(
-                        flex: flexLeft,
+                        flex: _flexLeft,
                         child: Text(
                           'City:',
                           style: listLabelStyle,
@@ -495,11 +496,11 @@ class RunDetails extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(
-                        height: spaceBetweenRows,
-                        width: spaceBetweenColumns,
+                        height: _spaceBetweenRows,
+                        width: _spaceBetweenColumns,
                       ),
                       Expanded(
-                          flex: flexRight,
+                          flex: _flexRight,
                           child: Text(
                             event.locationCity ?? '',
                             style: listValueStyle,
@@ -511,14 +512,14 @@ class RunDetails extends StatelessWidget {
                   ),
                 ],
                 ((event.locationSubRegion ?? '') == '')
-                    ? const SizedBox(height: 0.0, width: 0.0)
+                    ? const SizedBox()
                     : Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
-                              event.locationCountry.toLowerCase() == 'united states' ? 'County' : 'Region:',
+                              (event.locationCountry ?? '').toLowerCase() == 'united states' ? 'County' : 'Region:',
                               style: listLabelStyle,
                               textAlign: TextAlign.right,
                               maxLines: 1,
@@ -526,11 +527,11 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: flexRight,
+                              flex: _flexRight,
                               child: Text(
                                 event.locationSubRegion ?? '',
                                 style: listValueStyle,
@@ -546,7 +547,7 @@ class RunDetails extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
                               'State:',
                               style: listLabelStyle,
@@ -556,11 +557,11 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: flexRight,
+                              flex: _flexRight,
                               child: Text(
                                 event.locationRegion ?? '',
                                 style: listValueStyle,
@@ -576,7 +577,7 @@ class RunDetails extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Expanded(
-                            flex: flexLeft,
+                            flex: _flexLeft,
                             child: Text(
                               'Country:',
                               style: listLabelStyle,
@@ -586,11 +587,11 @@ class RunDetails extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            height: spaceBetweenRows,
-                            width: spaceBetweenColumns,
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: flexRight,
+                              flex: _flexRight,
                               child: Text(
                                 event.locationCountry ?? '',
                                 style: listValueStyle,
@@ -619,12 +620,12 @@ class RunDetails extends StatelessWidget {
                   false,
                   (int r, int p) {
                     if (processPayment != null) {
-                      processPayment(r, p);
+                      processPayment!(r, p);
                     }
                   },
                 ),
 
-          (event.tags1 ?? 0) == 0 && (event.tags2 ?? 0) == 0
+          (event.tags1) == 0 && (event.tags2) == 0
               ? Container()
               : Column(
                   children: <Widget>[
@@ -649,7 +650,7 @@ class RunDetails extends StatelessWidget {
                         children: <Widget>[
                           SizedBox(width: G0<DeviceInfo>().deviceWidth), // this is required to force the column to be the full width of the device
                           for (int i = 0; i < runTags1.length; i++)
-                            if (((runTags1.values.elementAt(i) ?? 0) & event.tags1) != 0)
+                            if (((runTags1.values.elementAt(i)) & event.tags1) != 0)
                               Container(
                                 margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
                                 child: Text(
@@ -658,7 +659,7 @@ class RunDetails extends StatelessWidget {
                                 ),
                               ),
                           for (int i = 0; i < runTags2.length; i++)
-                            if (((runTags2.values.elementAt(i) ?? 0) & event.tags2) != 0)
+                            if (((runTags2.values.elementAt(i)) & event.tags2) != 0)
                               Container(
                                 margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
                                 child: Text(
@@ -685,7 +686,7 @@ class RunDetails extends StatelessWidget {
               : Padding(
                   padding: const EdgeInsets.only(top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
                   child: Linkify(
-                    text: event.eventDescription.replaceAll('\r\n', '\n'),
+                    text: event.eventDescription!.replaceAll('\r\n', '\n'),
                     style: bodyStyle.copyWith(fontSize: 20 * G0<DeviceInfo>().textClamp50),
                     linkStyle: bodyStyleYellow,
                     onOpen: (LinkableElement link) async {
@@ -695,7 +696,7 @@ class RunDetails extends StatelessWidget {
                           mode: LaunchMode.externalApplication,
                         );
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -704,7 +705,7 @@ class RunDetails extends StatelessWidget {
           // if the actual eventUrl is empty without
           // considering the Kennel Events URL
 
-          if ((((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ||
+          if ((((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl!.isEmpty))) ||
               ((event.evtDisseminateAllowWebLinks == 1) || (kennel.disseminateAllowWebLinks == 1))) ...<Widget>[
             const FancyDivider(
               key: Key('40019292'),
@@ -729,13 +730,13 @@ class RunDetails extends StatelessWidget {
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));
 
-                  await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
+                  await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
                 },
               ),
             ),
           ],
 
-          if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
+          if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl!.isEmpty))) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(
@@ -749,7 +750,7 @@ class RunDetails extends StatelessWidget {
                       mode: LaunchMode.externalApplication,
                     );
                   } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
                   }
                 },
               ),
@@ -758,20 +759,20 @@ class RunDetails extends StatelessWidget {
           //
           if (!(((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK)) &&
               (eventUrlWithKennelBackup != null) &&
-              (eventUrlWithKennelBackup.isNotEmpty)) ...<Widget>[
+              (eventUrlWithKennelBackup!.isNotEmpty)) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(
                 style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
                 child: Image.asset('images/icons/visit_run_on_web.png', height: 60.0, width: 325.0),
                 onPressed: () async {
-                  if (Utilities.isValidUrl(eventUrlWithKennelBackup)) {
+                  if (Utilities.isValidUrl(eventUrlWithKennelBackup!)) {
                     await launchUrl(
-                      Uri.parse(eventUrlWithKennelBackup),
+                      Uri.parse(eventUrlWithKennelBackup!),
                       mode: LaunchMode.externalApplication,
                     );
                   } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
                   }
                 },
               ),

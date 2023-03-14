@@ -1,9 +1,12 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class RunListItem extends StatefulWidget {
-  const RunListItem({Key key, @required this.futureRun, @required this.onItemTapped}) : super(key: key);
+  const RunListItem({
+    Key? key,
+    required this.futureRun,
+    required this.onItemTapped,
+  }) : super(key: key);
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;
@@ -15,7 +18,7 @@ class RunListItem extends StatefulWidget {
 class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   RunListItemState();
 
-  RunDetailsAggregate _rda;
+  late RunDetailsAggregate _rda;
 
   @override
   void initState() {
@@ -39,32 +42,39 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   //Future<Widget> _rsvpIcon;
 
-  Widget _getRsvpWidget(int rsvpState, int willHareState) {
-    String iconFile;
-    switch (rsvpState) {
-      case 0:
-        iconFile = 'images/icons/checkbox_empty.png';
-        break;
-      case 1:
-        iconFile = 'images/icons/checkbox_no.png';
-        break;
-      case 2:
-        iconFile = 'images/icons/checkbox_maybe.png';
-        break;
-      case 3:
-        if (willHareState == 0) {
-          iconFile = 'images/icons/checkbox_yes.png';
-        } else {
-          iconFile = 'images/icons/checkbox_hare.png';
-        }
-        break;
-      case -1:
-        iconFile = 'wait';
-        break;
+  Widget _getRsvpWidget(int? rsvpState, int? willHareState) {
+    String iconFile = '';
+
+    if (rsvpState != null) {
+      switch (rsvpState) {
+        case 0:
+          iconFile = 'images/icons/checkbox_empty.png';
+          break;
+        case 1:
+          iconFile = 'images/icons/checkbox_no.png';
+          break;
+        case 2:
+          iconFile = 'images/icons/checkbox_maybe.png';
+          break;
+        case 3:
+          if ((willHareState ?? 0) == 0) {
+            iconFile = 'images/icons/checkbox_yes.png';
+          } else {
+            iconFile = 'images/icons/checkbox_hare.png';
+          }
+          break;
+        case -1:
+          iconFile = 'wait';
+          break;
+      }
     }
 
     if (iconFile == 'wait') {
       return Icon(delayIcon, color: Colors.blue[800], size: 24.0);
+    }
+
+    if (iconFile.isEmpty) {
+      return const SizedBox();
     }
 
     return Image.asset(iconFile, height: 24.0, width: 24.0);
@@ -75,7 +85,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       _rda.extensions.rsvpState = -1;
     });
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
     final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
           _rda.event.eventId,
           userId,
@@ -106,7 +116,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     });
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'RSVP Result', serverMessage, 'OK');
     }
   }
 
@@ -129,7 +139,12 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   onTap: () {
                     _showRsvpOptionsPopup(context);
                   },
-                  child: Padding(padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0), child: _getRsvpWidget(_rda.extensions.rsvpState, _rda.extensions.isHare)),
+                  child: Padding(
+                      padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0),
+                      child: _getRsvpWidget(
+                        _rda.extensions.rsvpState,
+                        _rda.extensions.isHare,
+                      )),
                 ),
                 Expanded(
                   child: Container(
@@ -165,7 +180,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           ),
                   ),
                 ),
-                _rda.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
+                ((_rda.event.eventStartDatetime == null) || (_rda.event.eventStartDatetime!.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
                     ? Container()
                     : Container(
                         padding: const EdgeInsets.only(right: 10),
@@ -196,7 +211,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               height: 1.0,
               color: Colors.grey[300],
             ),
-            if ((_rda.event.eventImage != null) && (_rda.event.eventImage.isNotEmpty)) ...<Widget>[
+            if ((_rda.event.eventImage != null) && (_rda.event.eventImage!.isNotEmpty)) ...<Widget>[
               GestureDetector(
                 onLongPress: () {
                   Navigator.push<void>(
@@ -213,7 +228,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   );
                 },
                 child: CachedNetworkImage(
-                  imageUrl: _rda.event.eventImage,
+                  imageUrl: _rda.event.eventImage!,
                   // errorWidget:
                   //     (BuildContext context, String url, Exception error) =>
                   //         const  Icon(Icons.error),
@@ -267,37 +282,41 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    Text(
-                                      (_rda.event.isCountedRun == 1 ? 'Run #${_rda.event.eventNumber}, ' : 'Run / Event ') +
-                                          (_rda.extensions.daysUntilEvent <= 14
-                                              ? _rda.extensions.daysUntilEvent.toInt() == -1
-                                                  ? 'Yesterday'
-                                                  : _rda.extensions.daysUntilEvent.toInt() == 0
-                                                      ? 'TODAY'
-                                                      : _rda.extensions.daysUntilEvent.toInt() == 1
-                                                          ? 'Tomorrow'
-                                                          : 'in ${_rda.extensions.daysUntilEvent.toInt().toString()} days'
-                                              : (_rda.extensions.daysUntilEvent <= 30)
-                                                  ? 'in ${_rda.extensions.daysUntilEvent ~/ 7.0}${(_rda.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
-                                                  : _rda.extensions.daysUntilEvent <= 365
-                                                      ? 'in ${_rda.extensions.daysUntilEvent ~/ 30.0}${(_rda.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
-                                                      : 'in ${_rda.extensions.daysUntilEvent ~/ 365.0}${(_rda.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontFamily: 'AvenirNextDemiBold',
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 15.0,
-                                        height: 1,
-                                      ),
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      DateFormat("E, MMM d 'at' h:mm a").format(_rda.event.eventStartDatetime),
-                                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                    _rda.extensions.daysUntilEvent == null
+                                        ? const SizedBox()
+                                        : Text(
+                                            (_rda.event.isCountedRun == 1 ? 'Run #${_rda.event.eventNumber}, ' : 'Run / Event ') +
+                                                (_rda.extensions.daysUntilEvent! <= 14
+                                                    ? _rda.extensions.daysUntilEvent!.toInt() == -1
+                                                        ? 'Yesterday'
+                                                        : _rda.extensions.daysUntilEvent!.toInt() == 0
+                                                            ? 'TODAY'
+                                                            : _rda.extensions.daysUntilEvent!.toInt() == 1
+                                                                ? 'Tomorrow'
+                                                                : 'in ${_rda.extensions.daysUntilEvent!.toInt().toString()} days'
+                                                    : (_rda.extensions.daysUntilEvent! <= 30)
+                                                        ? 'in ${_rda.extensions.daysUntilEvent! ~/ 7.0}${(_rda.extensions.daysUntilEvent! ~/ 7.0) == 1 ? ' week' : ' weeks'}'
+                                                        : _rda.extensions.daysUntilEvent! <= 365
+                                                            ? 'in ${_rda.extensions.daysUntilEvent! ~/ 30.0}${(_rda.extensions.daysUntilEvent! ~/ 30.0) == 1 ? ' month' : ' months'}'
+                                                            : 'in ${_rda.extensions.daysUntilEvent! ~/ 365.0}${(_rda.extensions.daysUntilEvent! ~/ 365.0) == 1 ? ' year' : ' years'}'),
+                                            style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontFamily: 'AvenirNextDemiBold',
+                                              fontStyle: FontStyle.normal,
+                                              fontSize: 15.0,
+                                              height: 1,
+                                            ),
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                    _rda.event.eventStartDatetime == null
+                                        ? const SizedBox()
+                                        : Text(
+                                            DateFormat("E, MMM d 'at' h:mm a").format(_rda.event.eventStartDatetime!),
+                                            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                     (_rda.event.hares ?? '') == ''
                                         ? const SizedBox()
                                         // Text(
@@ -312,11 +331,11 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                    if ((_rda.extensions.latitude != null && _rda.extensions.isMapAndDistanceValid) &&
+                                    if ((_rda.extensions.latitude != null && (_rda.extensions.isMapAndDistanceValid ?? false)) &&
                                         ((_rda.extensions.distToEvent ?? -1.0) >= 0) &&
                                         (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
                                       Text(
-                                        '${Utilities.getDistance(_rda.extensions.distToEvent, context, isMetric: (_rda.extensions.distanceUnitsPref & 0x01) == 0)} from here',
+                                        '${Utilities.getDistance(_rda.extensions.distToEvent!, context, isMetric: ((_rda.extensions.distanceUnitsPref ?? 0) & 0x01) == 0)} from here',
                                         style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
@@ -377,14 +396,14 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             PaymentIcons(
               _rda.event,
               _rda.kennel,
-              _rda.extensions.digitsAfterDecimal,
-              _rda.extensions.currencySymbol,
-              _rda.extensions.distanceUnitsPref,
+              _rda.extensions.digitsAfterDecimal ?? 2,
+              _rda.extensions.currencySymbol = r'$^',
+              _rda.extensions.distanceUnitsPref ?? 0,
               _rda.extensions.distToEvent,
               _rda.paymentUrl,
-              _rda.extensions.rsvpState,
-              _rda.extensions.isMember,
-              _rda.extensions.isPaid,
+              _rda.extensions.rsvpState ?? 0,
+              _rda.extensions.isMember ?? 0,
+              _rda.extensions.isPaid ?? 0,
               true,
               (int r, int p) {
                 _rda.extensions.rsvpState = r;
@@ -451,10 +470,10 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           builder: (BuildContext context) {
             return popup;
           }).then((dynamic retVal) async {
-        if (retVal is EnumRsvpState) {
+        if (retVal is EnumRsvpState<int>) {
           await _setRsvpState(retVal, false);
         } else if (retVal is EnumIsHare) {
-          final bool willHare = await Utilities.promptForHare(context, _rda.event.hares);
+          final bool willHare = await Utilities.promptForHare(context, _rda.event.hares) ?? false;
           await _setRsvpState(rsvpYes, willHare);
         }
       });
@@ -583,13 +602,13 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             return popup;
           }).then((dynamic retVal) async {
         if (retVal is EnumEmailAlertState) {
-          _setEmailAlertState(retVal);
+          _setEmailAlertState(retVal as EnumEmailAlertState<int>);
         } else if (retVal is EnumNotificationState) {
-          _setNotificationState(retVal);
+          _setNotificationState(retVal as EnumNotificationState<int>);
         } else if (retVal is EnumRsvpState) {
-          await _setRsvpState(retVal, false);
+          await _setRsvpState(retVal as EnumRsvpState<int>, false);
         } else if (retVal is EnumIsHare) {
-          final bool willHare = await Utilities.promptForHare(context, _rda.event.hares);
+          final bool willHare = await Utilities.promptForHare(context, _rda.event.hares) ?? false;
           await _setRsvpState(rsvpYes, willHare);
         }
       });
@@ -676,7 +695,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   void _setEmailAlertState(EnumEmailAlertState<int> retVal) {
     if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
-      final String userId = getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumEmailAlertState<int> nState = retVal;
       setState(() {
         _rda.extensions.emailAlertPreference = -1;
@@ -701,7 +720,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   void _setNotificationState(EnumNotificationState<int> retVal) {
     if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
-      final String userId = getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumNotificationState<int> nState = retVal;
       setState(() {
         _rda.extensions.notificationPreference = -1;

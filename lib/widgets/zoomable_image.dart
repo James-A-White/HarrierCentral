@@ -1,14 +1,12 @@
-// @dart=2.11
-
 import 'dart:io' as platform;
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:photo_view/photo_view.dart';
 
 class ZoomableImagePage2 extends StatelessWidget {
   const ZoomableImagePage2({
-    Key key,
+    Key? key,
     this.file,
-    this.pageTitle,
+    required this.pageTitle,
     this.imageUrl,
     this.appBarBackgroundColor,
     this.background,
@@ -18,15 +16,15 @@ class ZoomableImagePage2 extends StatelessWidget {
     this.kennelId,
   }) : super(key: key);
 
-  final platform.File file;
+  final platform.File? file;
   final String pageTitle;
-  final String imageUrl;
-  final Color appBarBackgroundColor;
-  final BoxDecoration background;
-  final String assetImage;
-  final String assetImageText;
-  final num margin;
-  final String kennelId;
+  final String? imageUrl;
+  final Color? appBarBackgroundColor;
+  final BoxDecoration? background;
+  final String? assetImage;
+  final String? assetImageText;
+  final double? margin;
+  final String? kennelId;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +56,7 @@ class ZoomableImagePage2 extends StatelessWidget {
                 padding: const EdgeInsets.all(15.0),
                 child: file != null
                     ? PhotoView(
-                        imageProvider: FileImage(file),
+                        imageProvider: FileImage(file!),
                         minScale: 0.1,
                         maxScale: 100.0,
                         backgroundDecoration: background,
@@ -66,7 +64,7 @@ class ZoomableImagePage2 extends StatelessWidget {
                       )
                     : imageUrl != null
                         ? PhotoView(
-                            imageProvider: CachedNetworkImageProvider(imageUrl),
+                            imageProvider: CachedNetworkImageProvider(imageUrl!),
 
                             // NetworkImage(
                             //   imageUrl,
@@ -76,34 +74,36 @@ class ZoomableImagePage2 extends StatelessWidget {
                             backgroundDecoration: background,
                             // backgroundColor: Colors.transparent,
                           )
-                        : Stack(
-                            alignment: Alignment.center,
-                            children: <Widget>[
-                              PhotoView(
-                                imageProvider: AssetImage(
-                                  assetImage,
-                                ),
-                                minScale: 0.1,
-                                maxScale: 100.0,
-                                backgroundDecoration: background,
-                                // backgroundColor: Colors.transparent,
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: G0<DeviceInfo>().deviceWidth / 6, right: G0<DeviceInfo>().deviceWidth / 6),
-                                child: AutoSizeText(
-                                  (assetImageText ?? '').toLowerCase().contains('my runs')
-                                      ? ''
-                                      : // TODO(James): find a more elegant way of doing this
-                                      '${assetImageText ?? ''}'
-                                          '',
-                                  style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  minFontSize: 1.0,
-                                ),
-                              ),
-                            ],
-                          ),
+                        : assetImage != null
+                            ? Stack(
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  PhotoView(
+                                    imageProvider: AssetImage(
+                                      assetImage!,
+                                    ),
+                                    minScale: 0.1,
+                                    maxScale: 100.0,
+                                    backgroundDecoration: background,
+                                    // backgroundColor: Colors.transparent,
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: G0<DeviceInfo>().deviceWidth / 6, right: G0<DeviceInfo>().deviceWidth / 6),
+                                    child: AutoSizeText(
+                                      (assetImageText ?? '').toLowerCase().contains('my runs')
+                                          ? ''
+                                          : // TODO(James): find a more elegant way of doing this
+                                          '${assetImageText ?? ''}'
+                                              '',
+                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      minFontSize: 1.0,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Container(),
               ),
             ),
             if (kennelId != null) ...<Widget>[
@@ -112,13 +112,14 @@ class ZoomableImagePage2 extends StatelessWidget {
                 child: ElevatedButton(
                   child: Text('View Kennel', style: buttonLabelStyleMedium),
                   onPressed: () async {
-                    final KennelListAggregate kennel = await QueryKennels.getSingleKennel(kennelId);
+                    final KennelListAggregate? kennel = await QueryKennels.getSingleKennel(kennelId!);
 
-                    await Navigator.of(navigatorKey.currentContext).push<dynamic>(
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
-                      ),
-                    );
+                    // NULLSAFETODO
+                    // await Navigator.of(navigatorKey.currentContext!).push<dynamic>(
+                    //   MaterialPageRoute<dynamic>(
+                    //     builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+                    //   ),
+                    // );
                   },
                 ),
               ),

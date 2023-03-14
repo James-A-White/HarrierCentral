@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PaymentIcons extends StatelessWidget {
   const PaymentIcons(
@@ -15,7 +14,7 @@ class PaymentIcons extends StatelessWidget {
     this.isPaid,
     this.showHairlineDivider,
     this.stateSetter, {
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   final EventModel event;
@@ -23,8 +22,8 @@ class PaymentIcons extends StatelessWidget {
   final int digitsAfterDecimal;
   final String currencySymbol;
   final int distancePreference;
-  final num distToEvent;
-  final String paymentLinkUrl;
+  final num? distToEvent;
+  final String? paymentLinkUrl;
   final int rsvpState;
   final int isMember;
   final int isPaid;
@@ -111,17 +110,38 @@ class PaymentIcons extends StatelessWidget {
 
     final KennelsModel k = kennel;
 
-    Widget w = getPaymentIcon(context, k.kennelPaymentUrl, k.kennelPaymentUrlExpires, k.kennelPaymentScheme, k.kennelPaymentMemberSurcharge, k.kennelPaymentNonMemberSurcharge);
+    Widget? w = _getPaymentIcon(
+      context,
+      k.kennelPaymentUrl,
+      k.kennelPaymentUrlExpires,
+      k.kennelPaymentScheme,
+      k.kennelPaymentMemberSurcharge,
+      k.kennelPaymentNonMemberSurcharge,
+    );
     if (w != null) {
       icons.add(w);
     }
 
-    w = getPaymentIcon(context, k.kennelPaymentUrl2, k.kennelPaymentUrlExpires2, k.kennelPaymentScheme2, k.kennelPaymentMemberSurcharge2, k.kennelPaymentNonMemberSurcharge2);
+    w = _getPaymentIcon(
+      context,
+      k.kennelPaymentUrl2,
+      k.kennelPaymentUrlExpires2,
+      k.kennelPaymentScheme2,
+      k.kennelPaymentMemberSurcharge2,
+      k.kennelPaymentNonMemberSurcharge2,
+    );
     if (w != null) {
       icons.add(w);
     }
 
-    w = getPaymentIcon(context, k.kennelPaymentUrl3, k.kennelPaymentUrlExpires3, k.kennelPaymentScheme3, k.kennelPaymentMemberSurcharge3, k.kennelPaymentNonMemberSurcharge3);
+    w = _getPaymentIcon(
+      context,
+      k.kennelPaymentUrl3,
+      k.kennelPaymentUrlExpires3,
+      k.kennelPaymentScheme3,
+      k.kennelPaymentMemberSurcharge3,
+      k.kennelPaymentNonMemberSurcharge3,
+    );
     if (w != null) {
       icons.add(w);
     }
@@ -165,7 +185,14 @@ class PaymentIcons extends StatelessWidget {
         });
   }
 
-  Widget getPaymentIcon(BuildContext context, String url, DateTime urlExpires, String paymentProvider, num memberSurcharge, num nonMemberSurcharge) {
+  Widget? _getPaymentIcon(
+    BuildContext context,
+    String? url,
+    DateTime? urlExpires,
+    String? paymentProvider,
+    num? memberSurcharge,
+    num? nonMemberSurcharge,
+  ) {
     if ((url == null) || (paymentProvider == null) || (urlExpires == null)) {
       return null;
     }
@@ -174,13 +201,13 @@ class PaymentIcons extends StatelessWidget {
       return null;
     }
 
-    if ((urlExpires != null) && ((!urlExpires.isBefore(DateTime(2010))) && (urlExpires.isBefore(DateTime.now())))) {
+    if (((!urlExpires.isBefore(DateTime(2010))) && (urlExpires.isBefore(DateTime.now())))) {
       return null;
     }
 
-    const num imgSize = 70.0;
+    const double imgSize = 70.0;
 
-    Widget w;
+    Widget? w;
 
     switch (paymentProvider.toLowerCase()) {
       case 'paypal':
@@ -200,112 +227,123 @@ class PaymentIcons extends StatelessWidget {
         break;
     }
 
-    return GestureDetector(
-        onTap: () async {
-          // temporarily replace the payment value token (if one exists) with a number
-          // just so we can get a valid URL for testing. This will not be the actual value
-          // sent to the bank, that is done lower down in this method once we've calculated
-          // the total amount to be paid.
-          // final String modifiedUrl = url.replaceAll('/<payment amount>', '');
+    return (w == null)
+        ? const SizedBox()
+        : GestureDetector(
+            onTap: () async {
+              // temporarily replace the payment value token (if one exists) with a number
+              // just so we can get a valid URL for testing. This will not be the actual value
+              // sent to the bank, that is done lower down in this method once we've calculated
+              // the total amount to be paid.
+              // final String modifiedUrl = url.replaceAll('/<payment amount>', '');
 
-          // FUCK ANDRIOD - canLaunch doesn't work properly on Android, so I'm commenting it out for now
-          // canLaunch(modifiedUrl).then((bool canLaunch) async {
-          //   if (canLaunch) {
-          // OK, we have a good URL, so let's figure out how much the hasher needs to pay
+              // FUCK ANDRIOD - canLaunch doesn't work properly on Android, so I'm commenting it out for now
+              // canLaunch(modifiedUrl).then((bool canLaunch) async {
+              //   if (canLaunch) {
+              // OK, we have a good URL, so let's figure out how much the hasher needs to pay
 
-          // start with the extras
-          EnumPayForExtras<int> didPayForExtras = payForRunOnly;
+              // start with the extras
+              EnumPayForExtras<int> didPayForExtras = payForRunOnly;
 
-          String extrasStr = '';
-          num extrasPrice = event.eventPriceForExtras ?? 0;
-          final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
-          final num eventPrice = (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers) ?? 0;
+              String extrasStr = '';
+              num extrasPrice = event.eventPriceForExtras ?? 0;
+              final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
+              final num eventPrice = (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers);
 
-          if (extrasPrice > 0) {
-            // if there are extras, show the extras dialog
-            final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
-            if (x == followTypeCancel) {
-              return;
-            } else {
-              if (x == payForRunOnly) {
-                // if the user wants to pay only for the run, don't process extras, so set the value to zero
-                extrasPrice = 0;
-              } else {
-                didPayForExtras = payForRunAndExtras;
+              if (extrasPrice > 0) {
+                // if there are extras, show the extras dialog
+                final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
+                if (x == followTypeCancel) {
+                  return;
+                } else {
+                  if (x == payForRunOnly) {
+                    // if the user wants to pay only for the run, don't process extras, so set the value to zero
+                    extrasPrice = 0;
+                  } else {
+                    didPayForExtras = payForRunAndExtras;
+                  }
+                }
               }
-            }
-          }
 
-          if (extrasPrice > 0) {
-            // build the string if we need to
-            extrasStr = ' ,and a\r\n${IveCoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol)} charge for ${event.extrasDescription}';
-          }
+              if (extrasPrice > 0) {
+                // build the string if we need to
+                extrasStr = ' ,and a\r\n${IveCoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol)} charge for ${event.extrasDescription}';
+              }
 
-          final num total = surcharge + eventPrice + extrasPrice;
+              final num total = surcharge + eventPrice + extrasPrice;
 
-          // build the other strings for the total price and event prices
-          final String totalStr = IveCoreUtilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
-          final String eventPriceStr = IveCoreUtilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
+              // build the other strings for the total price and event prices
+              final String totalStr = IveCoreUtilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
+              final String eventPriceStr = IveCoreUtilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
 
-          String surchargeStr = '';
-          if (surcharge > 0) {
-            // if there is a surcharge, build the surcharge string
-            surchargeStr = ' ,and a\r\n${IveCoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol)} surcharge for $paymentProvider';
-          }
+              String surchargeStr = '';
+              if (surcharge > 0) {
+                // if there is a surcharge, build the surcharge string
+                surchargeStr = ' ,and a\r\n${IveCoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol)} surcharge for $paymentProvider';
+              }
 
-          // show the alert so the user knows how much to pay
-          final bool result = await IveCoreUtilities.showAlert(
-              navigatorKey.currentContext, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
-              showCancelButton: true, cancelButtonText: 'Cancel');
-
-          if (result) {
-            // now launch into the payment provider
-            await launchUrl(Uri.parse(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))), mode: LaunchMode.externalApplication);
-            if ((kennel.allowSelfPayment & selfPaymentAutoPayAfterBankTransfer) == selfPaymentAutoPayAfterBankTransfer) {
               // show the alert so the user knows how much to pay
-              final bool result2 = await IveCoreUtilities.showAlert(
-                navigatorKey.currentContext,
-                'Were you able to pay?',
-                'Were you able to complete a payment of $totalStr using $paymentProvider',
-                'Yes',
+              final bool? result = await IveCoreUtilities.showAlert(
+                navigatorKey.currentContext!,
+                'Please pay $totalStr',
+                'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr',
+                'OK',
                 showCancelButton: true,
-                cancelButtonText: 'No',
+                cancelButtonText: 'Cancel',
               );
-              if (result2) {
-                //rsvpState = -1;
-                stateSetter(-1, -1); // call setState on the parent
-                final List<dynamic> adHocItems = await payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider);
-                // rsvpState = adHocItems[0]['rsvpState'];
-                // isPaid = 1;
-                stateSetter(adHocItems[0]['rsvpState'], 1);
-              } else {
-                await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+
+              if (result ?? false) {
+                // now launch into the payment provider
+                await launchUrl(Uri.parse(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))), mode: LaunchMode.externalApplication);
+                if ((kennel.allowSelfPayment & selfPaymentAutoPayAfterBankTransfer) == selfPaymentAutoPayAfterBankTransfer) {
+                  // show the alert so the user knows how much to pay
+                  final bool? result2 = await IveCoreUtilities.showAlert(
+                    navigatorKey.currentContext!,
+                    'Were you able to pay?',
+                    'Were you able to complete a payment of $totalStr using $paymentProvider',
+                    'Yes',
+                    showCancelButton: true,
+                    cancelButtonText: 'No',
+                  );
+                  if (result2 ?? false) {
+                    //rsvpState = -1;
+                    stateSetter(-1, -1); // call setState on the parent
+                    final List<dynamic> adHocItems = await payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider);
+                    // rsvpState = adHocItems[0]['rsvpState'];
+                    // isPaid = 1;
+                    stateSetter(adHocItems[0]['rsvpState'], 1);
+                  } else {
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+                  }
+                } else {
+                  await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK');
+                }
               }
-            } else {
-              await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
-            }
-          }
-          // } else {
-          //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Bad payment URL',
-          //       'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
-          // }
-          //});
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: w,
-        ));
+              // } else {
+              //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Bad payment URL',
+              //       'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
+              // }
+              //});
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: w,
+            ),
+          );
   }
 
   bool showPaymentIcons() {
-    if ((DateTime.now().isBefore(event.eventStartDatetime.subtract(Duration(days: daysToDisplayPaymentIcons)))) ||
-        (DateTime.now().isAfter(event.eventStartDatetime.add(Duration(days: daysToDisplayPaymentIcons))))) {
+    if (event.eventStartDatetime == null) {
+      return false;
+    }
+    if ((DateTime.now().isBefore(event.eventStartDatetime!.subtract(Duration(days: daysToDisplayPaymentIcons)))) ||
+        (DateTime.now().isAfter(event.eventStartDatetime!.add(Duration(days: daysToDisplayPaymentIcons))))) {
       return false;
     }
 
     // if the event is more than 10k away, don't show the payment options
     // TODO(James): Need to test what happens here if user doesn't allow location
-    if ((distToEvent == null) || (distToEvent > distanceToDisplayPaymentIcons * 1000)) {
+    if ((distToEvent == null) || (distToEvent! > distanceToDisplayPaymentIcons * 1000)) {
       return false;
     }
 
@@ -316,20 +354,23 @@ class PaymentIcons extends StatelessWidget {
     // TODO(James): Add filter for distance to event after testing is done so we only pay when we are at an event
 
     if ((kennel.kennelPaymentUrl != null) &&
-        (kennel.kennelPaymentUrl.toLowerCase().startsWith('http')) &&
-        (kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+        (kennel.kennelPaymentUrlExpires != null) &&
+        (kennel.kennelPaymentUrl!.toLowerCase().startsWith('http')) &&
+        (kennel.kennelPaymentUrlExpires!.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now()))) {
       return true;
     }
 
     if ((kennel.kennelPaymentUrl2 != null) &&
-        (kennel.kennelPaymentUrl2.toLowerCase().startsWith('http')) &&
-        (kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
+        (kennel.kennelPaymentUrlExpires2 != null) &&
+        (kennel.kennelPaymentUrl2!.toLowerCase().startsWith('http')) &&
+        (kennel.kennelPaymentUrlExpires2!.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires2!.isAfter(DateTime.now()))) {
       return true;
     }
 
     if ((kennel.kennelPaymentUrl3 != null) &&
-        (kennel.kennelPaymentUrl3.toLowerCase().startsWith('http')) &&
-        (kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
+        (kennel.kennelPaymentUrlExpires3 != null) &&
+        (kennel.kennelPaymentUrl3!.toLowerCase().startsWith('http')) &&
+        (kennel.kennelPaymentUrlExpires3!.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires3!.isAfter(DateTime.now()))) {
       return true;
     }
 
@@ -337,7 +378,7 @@ class PaymentIcons extends StatelessWidget {
   }
 
   Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras, num surcharge, String paymentProvider) async {
-    final String hasherId = getStringPref(StringPrefsEnum.userId);
+    final String hasherId = getStringPref(StringPrefsEnum.userId)!;
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
       event.eventId,

@@ -1,6 +1,5 @@
-// @dart=2.11
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class KennelListQueryExtenstions {
   KennelListQueryExtenstions({
@@ -23,26 +22,26 @@ class KennelListQueryExtenstions {
     this.originalDisplayName,
   });
 
-  final String location;
-  num distToKennel;
-  final String nextRunDate;
-  final String lastRunDate;
-  final int digitsAfterDecimal;
-  final String currencySymbol;
-  final int distanceUnitsPref;
-  num cityLat;
-  num cityLon;
-  String cityName;
-  String regionName;
-  String regionAbbreviation;
-  String countryName;
-  final String searchKennelsText;
-  int isKennelMember;
-  int followingRequested;
-  int notificationsRequested;
-  int emailAlertRequested;
-  String originalProfilePhoto;
-  String originalDisplayName;
+  final String? location;
+  double? distToKennel;
+  final String? nextRunDate;
+  final String? lastRunDate;
+  final int? digitsAfterDecimal;
+  final String? currencySymbol;
+  final int? distanceUnitsPref;
+  double? cityLat;
+  double? cityLon;
+  String? cityName;
+  String? regionName;
+  String? regionAbbreviation;
+  String? countryName;
+  final String? searchKennelsText;
+  int? isKennelMember;
+  int? followingRequested;
+  int? notificationsRequested;
+  int? emailAlertRequested;
+  String? originalProfilePhoto;
+  String? originalDisplayName;
 
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
     final KennelListQueryExtenstions item = KennelListQueryExtenstions(
@@ -70,10 +69,10 @@ class KennelListQueryExtenstions {
 
 class KennelListAggregate {
   KennelListAggregate({
-    this.kennel,
-    this.hkm,
-    this.extensions,
-    this.isHomeKennel,
+    required this.kennel,
+    required this.hkm,
+    required this.extensions,
+    this.isHomeKennel = false,
   });
 
   final KennelsModel kennel;
@@ -83,7 +82,7 @@ class KennelListAggregate {
 
   @override
   String toString() {
-    return kennel?.kennelName ?? 'No kennel name';
+    return kennel.kennelName;
   }
 }
 
@@ -93,7 +92,7 @@ enum EnumKennelQueryContext { user, kennelAdmin }
 
 class QueryKennels {
   // the variable below is there to suppress a warning about defining classes with only static members
-  int unusedVariableToSuppressWarning;
+  int? unusedVariableToSuppressWarning;
   // it is important to have the beginning and end of the search field have a space
   // character to ensure that searches run properly.
 
@@ -130,57 +129,63 @@ class QueryKennels {
           as searchKennelsText
           ''';
 
-  static List<KennelListAggregate> doFilter(String searchText, List<KennelListAggregate> allKennels) {
+  // TODO(James): Replace this with improved search from Leaderboards
+  static List<KennelListAggregate> doFilter(
+    String searchText,
+    List<KennelListAggregate> allKennels,
+  ) {
     List<KennelListAggregate> filteredKennels = <KennelListAggregate>[];
-    if (allKennels != null) {
-      filteredKennels.addAll(allKennels);
+    //if (allKennels != null) {
+    filteredKennels.addAll(allKennels);
 
-      // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-      if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
-        for (String st in searchItems) {
-          if (st.trim().isEmpty) {
-            continue;
-          }
-          bool negate = false;
-          if (st.trim().toLowerCase().startsWith('not ')) {
-            negate = true;
-            st = st.substring(4);
-          }
-          final List<String> orItems = st.split('+');
-
-          ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
-
-          filteredKennels = filteredKennels.where((KennelListAggregate a) {
-            for (String orItem in orItems) {
-              if (orItem.trim().isEmpty) {
-                continue;
-              }
-              orItem = ' ${orItem.trim().toLowerCase()}';
-              if (a.extensions.searchKennelsText.toLowerCase().contains(orItem)) {
-                return !negate;
-              }
-            }
-            return negate;
-          }).toList();
+    // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
+    if (searchText.isNotEmpty) {
+      final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+      for (String st in searchItems) {
+        if (st.trim().isEmpty) {
+          continue;
         }
+        bool negate = false;
+        if (st.trim().toLowerCase().startsWith('not ')) {
+          negate = true;
+          st = st.substring(4);
+        }
+        final List<String> orItems = st.split('+');
+
+        filteredKennels = filteredKennels.where((KennelListAggregate a) {
+          for (String orItem in orItems) {
+            if (orItem.trim().isEmpty) {
+              continue;
+            }
+            orItem = ' ${orItem.trim().toLowerCase()}';
+            if ((a.extensions.searchKennelsText ?? '').toLowerCase().contains(orItem)) {
+              return !negate;
+            }
+          }
+          return negate;
+        }).toList();
       }
     }
+    //}
     return filteredKennels;
   }
 
-  static Future<KennelListAggregate> getSingleKennel(String kennelId) async {
+  static Future<KennelListAggregate?> getSingleKennel(String kennelId) async {
     bool isHomeKennel = false;
     if (kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
       isHomeKennel = true;
     }
 
-    KennelListAggregate kennel;
-    final String hasherId = getStringPref(StringPrefsEnum.userId);
+    KennelListAggregate? kennel;
+    final String hasherId = getStringPref(StringPrefsEnum.userId)!;
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
     if (results.isNotEmpty) {
-      final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+      double? dist;
+
+      if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+        dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+      }
 
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
       final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
@@ -195,7 +200,12 @@ class QueryKennels {
     return kennel;
   }
 
-  static Future<List<Map<String, dynamic>>> queryKennels(EnumKennelQueryType queryType, EnumKennelQueryContext queryContext, {String hasherId, String kennelId}) async {
+  static Future<List<Map<String, dynamic>>> queryKennels(
+    EnumKennelQueryType queryType,
+    EnumKennelQueryContext queryContext, {
+    required String hasherId,
+    String? kennelId,
+  }) async {
     String hkmTable;
 
     switch (queryContext) {
@@ -250,7 +260,9 @@ class QueryKennels {
           LEFT OUTER JOIN $hkmTable hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$hasherId"
           ''';
 
-    final String whereClauseForSingleKenenel = '''
+    final String whereClauseForSingleKenenel = kennelId == null
+        ? ''
+        : '''
             WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"
           ''';
 

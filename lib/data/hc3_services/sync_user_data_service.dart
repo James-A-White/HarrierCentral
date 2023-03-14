@@ -92,7 +92,7 @@ class SyncUserDataService {
     String? forceReplicateAllRunsForKennel,
     String batchText = '',
     required String debugText,
-    required Client client,
+    Client? client,
     bool usePaging = false,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {

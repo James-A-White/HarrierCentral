@@ -225,29 +225,29 @@ class AppModel {
 class TableModel {
   TableModel();
 
-  CitiesTableHelper citiesTableHelper;
-  CountriesTableHelper countriesTableHelper;
-  RegionsTableHelper regionsTableHelper;
-  ReceiptsTableHelper receiptsTableHelper;
-  PaymentsTableHelper paymentsTableHelper;
-  HashersTableHelper hashersTableHelper;
+  late CitiesTableHelper citiesTableHelper;
+  late CountriesTableHelper countriesTableHelper;
+  late RegionsTableHelper regionsTableHelper;
+  late ReceiptsTableHelper receiptsTableHelper;
+  late PaymentsTableHelper paymentsTableHelper;
+  late HashersTableHelper hashersTableHelper;
   //KennelCreditsTableHelper kennelCreditsTableHelper;
-  KennelsTableHelper kennelsTableHelper;
-  EventsTableHelper eventsTableHelper;
-  HasherEventMapTableHelper hasherEventMapTableHelper;
-  HasherKennelMapTableHelper hasherKennelMapTableHelper;
+  late KennelsTableHelper kennelsTableHelper;
+  late EventsTableHelper eventsTableHelper;
+  late HasherEventMapTableHelper hasherEventMapTableHelper;
+  late HasherKennelMapTableHelper hasherKennelMapTableHelper;
 
-  SyncUserDataService syncUserDataService;
-  SyncKennelAdminService syncKennelAdminService;
-  SyncEventAdminService syncEventAdminService;
+  late SyncUserDataService syncUserDataService;
+  late SyncKennelAdminService syncKennelAdminService;
+  late SyncEventAdminService syncEventAdminService;
 
-  BaseService baseService;
+  late BaseService baseService;
 
-  HashersService hashersService;
-  PaymentsService paymentsService;
-  EventsService eventsService;
-  HasherEventMapService hasherEventMapService;
-  HasherKennelMapService hasherKennelMapService;
+  late HashersService hashersService;
+  late PaymentsService paymentsService;
+  late EventsService eventsService;
+  late HasherEventMapService hasherEventMapService;
+  late HasherKennelMapService hasherKennelMapService;
 
   List<KennelListAggregate> globalKennelMainPageList = <KennelListAggregate>[];
 
@@ -277,14 +277,14 @@ class TableModel {
     hasherKennelMapService = HasherKennelMapService();
   }
 
-  List<BaseTableHelper> tablesForRemoteSync;
+  List<BaseTableHelper> tablesForRemoteSync = <BaseTableHelper>[];
 }
 
 class DeviceInfo {
   DeviceInfo();
 
-  IosDeviceInfo iosInfo;
-  AndroidDeviceInfo androidInfo;
+  late IosDeviceInfo iosInfo;
+  late AndroidDeviceInfo androidInfo;
 
   String deviceId = 'unknown';
   String deviceType = 'unknown';
@@ -293,21 +293,21 @@ class DeviceInfo {
   String systemVersion = 'unknown';
   String manufacturer = 'unknown';
 
-  num deviceWidthScaleFactor;
-  num deviceHeightScaleFactor;
-  num deviceMaxScaleFactor;
-  num deviceMinScaleFactor;
-  double deviceWidth;
-  double deviceHeight;
-  double deviceLat;
-  double deviceLon;
-  num deviceTextScaleFactor;
-  num textClamp00;
-  num textClamp15;
-  num textClamp25;
-  num textClamp50;
-  num textClamp75;
-  num textClamp99;
+  late double deviceWidthScaleFactor;
+  late double deviceHeightScaleFactor;
+  late double deviceMaxScaleFactor;
+  late double deviceMinScaleFactor;
+  late double deviceWidth;
+  late double deviceHeight;
+  double? deviceLat;
+  double? deviceLon;
+  late double deviceTextScaleFactor;
+  late double textClamp00;
+  late double textClamp15;
+  late double textClamp25;
+  late double textClamp50;
+  late double textClamp75;
+  late double textClamp99;
 
   // a flag to indicate if we are running in the simulator
   bool isPhysicalDevice = true;
@@ -330,21 +330,20 @@ class DeviceInfo {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     if (Platform.isAndroid) {
       androidInfo = await deviceInfo.androidInfo;
-      deviceId = (androidInfo.id ?? '<no Android ID>').toUpperCase();
-      deviceType = '${androidInfo.model ?? '<no Android model>'} / device: ${androidInfo.device ?? '<no Android device'}';
+      deviceId = androidInfo.id.toUpperCase();
+      deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
-      systemName = androidInfo.host ?? '<no Android system name>';
-      systemVersion =
-          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release ?? '<no Android release>'} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
-      manufacturer = androidInfo.brand ?? '<no Android brand>';
+      systemName = androidInfo.host;
+      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
+      manufacturer = androidInfo.brand;
       isPhysicalDevice = androidInfo.isPhysicalDevice;
     } else if (Platform.isIOS) {
       iosInfo = await deviceInfo.iosInfo;
-      deviceId = iosInfo.identifierForVendor.toUpperCase();
-      deviceType = iosInfo.model;
-      deviceName = iosInfo.name;
-      systemName = iosInfo.systemName;
-      systemVersion = iosInfo.systemVersion;
+      deviceId = (iosInfo.identifierForVendor ?? '<no device ID>').toUpperCase();
+      deviceType = iosInfo.model ?? '<no device model>';
+      deviceName = iosInfo.name ?? '<no device name>';
+      systemName = iosInfo.systemName ?? '<no system name>';
+      systemVersion = iosInfo.systemVersion ?? '<no system version>';
       manufacturer = 'Apple';
       isPhysicalDevice = iosInfo.isPhysicalDevice;
     }
