@@ -21,32 +21,32 @@ class SyncEventAdminService {
   int _receiptsLastUpdated = FORCE;
   int _hashersLastUpdated = FORCE;
 
-  Future<int> getLastUpdatedTime(String colName, String tableName) async {
+  Future<int> _getLastUpdatedTime(String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
-    final int timeValue = table.first['maxDate'];
+    int? timeValue = table.first['maxDate'];
     //print(timeValue.toString());
-    return timeValue;
+    return timeValue ?? FORCE_ALL_REPLICATION_TIMESTAMP;
   }
 
-  Future<void> getLastUpdatedTimes(int flags) async {
+  Future<void> _getLastUpdatedTimes(int flags) async {
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event));
+        : await _getLastUpdatedTime(G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event));
+        : await _getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().eventsTableHelper.colUpdatedAtValue, G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().eventsTableHelper.colUpdatedAtValue, G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().paymentsTableHelper.colUpdatedAtValue, G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event));
+        : await _getLastUpdatedTime(G0<TableModel>().paymentsTableHelper.colUpdatedAtValue, G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event));
     _receiptsLastUpdated = (flags & flagReceiptsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().receiptsTableHelper.colUpdatedAtValue, G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event));
+        : await _getLastUpdatedTime(G0<TableModel>().receiptsTableHelper.colUpdatedAtValue, G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event));
     _hashersLastUpdated = (flags & flagHashersTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
   }
 
   Future<bool> updateFromBackend(
@@ -113,7 +113,7 @@ class SyncEventAdminService {
 
       // get the last updated time of any of the records in
       // the table and add one second to it
-      await getLastUpdatedTimes(flags);
+      await _getLastUpdatedTimes(flags);
 
       final DateTime hasherEventMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
       final DateTime hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);

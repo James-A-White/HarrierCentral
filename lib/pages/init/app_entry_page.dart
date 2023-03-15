@@ -29,13 +29,13 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
 
-    G0<DeviceInfo>().deviceWidthScaleFactor ??= MediaQuery.of(navigatorKey.currentContext).size.width / BASE_DEVICE_WIDTH;
-    G0<DeviceInfo>().deviceHeightScaleFactor ??= MediaQuery.of(navigatorKey.currentContext).size.height / BASE_DEVICE_HEIGHT;
-    G0<DeviceInfo>().deviceMaxScaleFactor ??= max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
-    G0<DeviceInfo>().deviceMinScaleFactor ??= min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
+    G0<DeviceInfo>().deviceWidthScaleFactor = MediaQuery.of(navigatorKey.currentContext).size.width / BASE_DEVICE_WIDTH;
+    G0<DeviceInfo>().deviceHeightScaleFactor = MediaQuery.of(navigatorKey.currentContext).size.height / BASE_DEVICE_HEIGHT;
+    G0<DeviceInfo>().deviceMaxScaleFactor = max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
+    G0<DeviceInfo>().deviceMinScaleFactor = min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
 
-    G0<DeviceInfo>().deviceWidth ??= MediaQuery.of(navigatorKey.currentContext).size.width;
-    G0<DeviceInfo>().deviceHeight ??= MediaQuery.of(navigatorKey.currentContext).size.height;
+    G0<DeviceInfo>().deviceWidth = MediaQuery.of(navigatorKey.currentContext).size.width;
+    G0<DeviceInfo>().deviceHeight = MediaQuery.of(navigatorKey.currentContext).size.height;
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 

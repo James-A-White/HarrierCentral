@@ -51,13 +51,15 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   void filterHasherList(String filterText) {
     setState(() {
-      if (_hasherList != null) {
+      if (_hasherList.isNotEmpty) {
         if (filterText.isEmpty) {
           _filteredList = _hasherList;
         } else {
           _filteredList =
               _hasherList.where((dynamic user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase())).toList();
         }
+      } else {
+        _filteredList.clear();
       }
     });
   }
@@ -282,53 +284,55 @@ class HasherListView extends StatelessWidget {
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
-            hasherList[index].photo.startsWith('http')
-                ? CachedNetworkImage(
-                    imageUrl: hasherList[index].photo,
-                    placeholder: (BuildContext context, String url) => const SizedBox(
-                        height: 70.0,
-                        width: 70.0,
-                        child: Center(
-                          child: SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3.0,
-                            ),
-                          ),
-                        )),
-                    errorWidget: (BuildContext context, String url, Object error) {
-                      return Container(
+            if (hasherList[index].photo != null) ...<Widget>[
+              hasherList[index].photo!.startsWith('http')
+                  ? CachedNetworkImage(
+                      imageUrl: hasherList[index].photo!,
+                      placeholder: (BuildContext context, String url) => const SizedBox(
                           height: 70.0,
                           width: 70.0,
-                          color: Colors.white,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text('No Image', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey)),
-                              const Icon(Icons.error, color: Colors.grey),
-                              Text('Available', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey))
-                            ],
-                          ));
-                    },
-                    //fadeOutDuration:  Duration(seconds: 1),
-                    fadeInDuration: const Duration(milliseconds: 0),
-                    width: 70.0,
-                    height: 70.0,
-                    fit: BoxFit.fill)
-                : hasherList[index].photo.startsWith('bundle')
-                    ? Image(
-                        width: 70.0,
-                        height: 70.0,
-                        fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/${hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
-                      )
-                    : const Image(
-                        width: 70.0,
-                        height: 70.0,
-                        fit: BoxFit.fill,
-                        image: AssetImage('images/avatars/avatar-2.jpg'),
-                      ),
+                          child: Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3.0,
+                              ),
+                            ),
+                          )),
+                      errorWidget: (BuildContext context, String url, dynamic error) {
+                        return Container(
+                            height: 70.0,
+                            width: 70.0,
+                            color: Colors.white,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text('No Image', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey)),
+                                const Icon(Icons.error, color: Colors.grey),
+                                Text('Available', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey))
+                              ],
+                            ));
+                      },
+                      //fadeOutDuration:  Duration(seconds: 1),
+                      fadeInDuration: const Duration(milliseconds: 0),
+                      width: 70.0,
+                      height: 70.0,
+                      fit: BoxFit.fill)
+                  : hasherList[index].photo!.startsWith('bundle')
+                      ? Image(
+                          width: 70.0,
+                          height: 70.0,
+                          fit: BoxFit.fill,
+                          image: AssetImage(('images/avatars/${hasherList[index].photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                        )
+                      : const Image(
+                          width: 70.0,
+                          height: 70.0,
+                          fit: BoxFit.fill,
+                          image: AssetImage('images/avatars/avatar-2.jpg'),
+                        ),
+            ],
 
             Positioned(
               left: 77.0,
@@ -352,34 +356,35 @@ class HasherListView extends StatelessWidget {
   Widget _getAddHasherBlock(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push<HashersModel>(
-          context,
-          MaterialPageRoute<HashersModel>(
-            builder: (BuildContext context) => HasherProfilePage(
-              dataContext: pageType == FindHasherPageType.addHasherToRun ? EnumDataContext.event : EnumDataContext.kennel,
-              pageType: EnumMyProfilePageType.newHasherProfile,
-              eventId: pageType == FindHasherPageType.addHasherToRun ? eventId : GUID_EMPTY,
-              kennelId: kennelId,
-              uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-              hashNameFromSearch: capitalizeFirstLetter(searchController.text),
-            ),
-          ),
-        ).then((HashersModel newHasher) {
-          if (newHasher != null) {
-            if (pageType == FindHasherPageType.addHasherToRun) {
-              _promptForHasherType(context, newHasher).then((int doAddHasher) {
-                if (doAddHasher != -1) {
-                  final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher, 'virginVisitorType': doAddHasher};
-                  Navigator.of(context).pop(result);
-                }
-              });
-            } else if (pageType == FindHasherPageType.addMember) {
-              final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher};
-              Navigator.of(context).pop(result);
-            }
-          }
-          return null;
-        });
+        // NULLSAFETODO
+        // Navigator.push<HashersModel>(
+        //   context,
+        //   MaterialPageRoute<HashersModel>(
+        //     builder: (BuildContext context) => HasherProfilePage(
+        //       dataContext: pageType == FindHasherPageType.addHasherToRun ? EnumDataContext.event : EnumDataContext.kennel,
+        //       pageType: EnumMyProfilePageType.newHasherProfile,
+        //       eventId: pageType == FindHasherPageType.addHasherToRun ? eventId : GUID_EMPTY,
+        //       kennelId: kennelId,
+        //       uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+        //       hashNameFromSearch: capitalizeFirstLetter(searchController.text),
+        //     ),
+        //   ),
+        // ).then((HashersModel newHasher) {
+        //   if (newHasher != null) {
+        //     if (pageType == FindHasherPageType.addHasherToRun) {
+        //       _promptForHasherType(context, newHasher).then((int doAddHasher) {
+        //         if (doAddHasher != -1) {
+        //           final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher, 'virginVisitorType': doAddHasher};
+        //           Navigator.of(context).pop(result);
+        //         }
+        //       });
+        //     } else if (pageType == FindHasherPageType.addMember) {
+        //       final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher};
+        //       Navigator.of(context).pop(result);
+        //     }
+        //   }
+        //   return null;
+        // });
       },
       child: Container(
         height: 80,
@@ -410,7 +415,7 @@ class HasherListView extends StatelessWidget {
     );
   }
 
-  String capitalizeFirstLetter(String s) => (s?.isNotEmpty ?? false) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
+  String capitalizeFirstLetter(String s) => (s.isNotEmpty) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
 
   @override
   Widget build(BuildContext context) {
@@ -441,12 +446,12 @@ class HasherListView extends StatelessWidget {
               color: Colors.black45,
             ),
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: (hasherList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
+        itemCount: hasherList.length + (searchController.text.isNotEmpty ? 1 : 0),
         itemBuilder: (BuildContext context, int index) {
-          if ((index == (hasherList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
+          if ((index == hasherList.length) && (searchController.text.isNotEmpty)) {
             return _getAddHasherBlock(context);
           } else {
-            return ((hasherList == null) || (hasherList.isEmpty))
+            return (hasherList.isEmpty)
                 ? Container(
                     color: Colors.grey[300],
                     width: 70.0,

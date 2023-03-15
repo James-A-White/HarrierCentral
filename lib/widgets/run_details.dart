@@ -26,7 +26,7 @@ class RunDetails extends StatelessWidget {
   final String currencySymbol;
   final int distancePreference;
   final bool isMapAndDistanceValid;
-  final num distToEvent;
+  final double? distToEvent;
   final String paymentLinkUrl;
   final bool showPaymentOptions;
   final int isMember;
@@ -411,8 +411,8 @@ class RunDetails extends StatelessWidget {
                               flex: G0<AppModel>().hasLocationPermissions ? _flexRight : 0,
                               child: Text(
                                 G0<AppModel>().hasLocationPermissions
-                                    ? distToEvent >= 0
-                                        ? '${Utilities.getDistance(distToEvent, context, isMetric: ((distancePreference) & 0x01) == 0)} from here'
+                                    ? (distToEvent ?? -1) >= 0
+                                        ? '${Utilities.getDistance(distToEvent!, context, isMetric: ((distancePreference) & 0x01) == 0)} from here'
                                         : '<unknown>'
                                     : '',
                                 style: listValueStyle,

@@ -180,13 +180,13 @@ class RunAdminPageState extends State<RunAdminPage> {
                       RunDetails(
                         _eventAggregate.event,
                         _eventAggregate.kennel,
-                        _eventAggregate.extensions.digAfterDec,
-                        _eventAggregate.extensions.curSym,
-                        _eventAggregate.extensions.distancePreference,
+                        _eventAggregate.extensions.digAfterDec ?? 2,
+                        _eventAggregate.extensions.curSym ?? r'$^',
+                        _eventAggregate.extensions.distancePreference ?? 0,
                         _eventAggregate.extensions.distToEvent,
-                        _eventAggregate.extensions.paymentUrl,
+                        _eventAggregate.extensions.paymentUrl ?? '',
                         false,
-                        _eventAggregate.extensions.isMapAndDistanceValid,
+                        _eventAggregate.extensions.isMapAndDistanceValid ?? false,
                         eventUrlWithKennelBackup: _eventAggregate.event.eventUrl ?? _eventAggregate.kennel.kennelEventsUrl,
                       ),
                     ],
@@ -235,12 +235,13 @@ class RunAdminPageState extends State<RunAdminPage> {
                 ]),
 
                 onPressed: () {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInPackPage(eventAggregate: _eventAggregate),
-                    ),
-                  );
+                  // NULLSAFETODO
+                  // Navigator.push<dynamic>(
+                  //   context,
+                  //   MaterialPageRoute<dynamic>(
+                  //     builder: (BuildContext context) => CheckInPackPage(eventAggregate: _eventAggregate),
+                  //   ),
+                  // );
                 },
               ),
             ),
@@ -273,12 +274,13 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ]),
                 onPressed: () {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInScannerPage(eventAggregate: _eventAggregate),
-                    ),
-                  );
+                  // NULLSAFETODO
+                  // Navigator.push<dynamic>(
+                  //   context,
+                  //   MaterialPageRoute<dynamic>(
+                  //     builder: (BuildContext context) => CheckInScannerPage(eventAggregate: _eventAggregate),
+                  //   ),
+                  // );
                 },
               ),
             ),
@@ -322,16 +324,17 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ]),
                 onPressed: () {
-                  if (_isBetaTester == 1) {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => PaymentReportPage(
-                          eventAggregate: _eventAggregate,
-                        ),
-                      ),
-                    );
-                  }
+                  // NULLSAFETODO
+                  // if (_isBetaTester == 1) {
+                  //   Navigator.push<dynamic>(
+                  //     context,
+                  //     MaterialPageRoute<dynamic>(
+                  //       builder: (BuildContext context) => PaymentReportPage(
+                  //         eventAggregate: _eventAggregate,
+                  //       ),
+                  //     ),
+                  //   );
+                  // }
                 },
               ),
             ),
@@ -367,16 +370,17 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ]),
                 onPressed: () {
-                  if (_isBetaTester == 1) {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => ReceiptsList(
-                          eventAggregate: _eventAggregate,
-                        ),
-                      ),
-                    );
-                  }
+                  // NULLSAFETODO
+                  // if (_isBetaTester == 1) {
+                  //   Navigator.push<dynamic>(
+                  //     context,
+                  //     MaterialPageRoute<dynamic>(
+                  //       builder: (BuildContext context) => ReceiptsList(
+                  //         eventAggregate: _eventAggregate,
+                  //       ),
+                  //     ),
+                  //   );
+                  // }
                 },
               ),
             ),
@@ -422,18 +426,19 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () {
-                    Navigator.push<dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => EventQrCodePage(
-                                kennelShortName: _eventAggregate.kennel.kennelShortName,
-                                qrContent: _eventAggregate.event.publicEventId,
-                                title: _eventAggregate.event.eventName,
-                                runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
-                                runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
-                                runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
-                                showRunLink: true,
-                                eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
+                    // NULLSAFETODO
+                    // Navigator.push<dynamic>(
+                    //     context,
+                    //     MaterialPageRoute<dynamic>(
+                    //         builder: (BuildContext context) => EventQrCodePage(
+                    //             kennelShortName: _eventAggregate.kennel.kennelShortName,
+                    //             qrContent: _eventAggregate.event.publicEventId,
+                    //             title: _eventAggregate.event.eventName,
+                    //             runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                    //             runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                    //             runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
+                    //             showRunLink: true,
+                    //             eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
                   },
                 ),
               ),
@@ -465,14 +470,15 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => EmailEditorPage(
-                          eventId: widget.eventId,
-                        ),
-                      ),
-                    );
+                    // NULLSAFETODO
+                    // Navigator.push<dynamic>(
+                    //   context,
+                    //   MaterialPageRoute<dynamic>(
+                    //     builder: (BuildContext context) => EmailEditorPage(
+                    //       eventId: widget.eventId,
+                    //     ),
+                    //   ),
+                    // );
                   },
                 ),
               ),
@@ -517,15 +523,16 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () async {
-                    await Navigator.push<dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => EditRunDetailsPage(false, _eventAggregate, (String eventId) async {
-                                  _eventAggregate = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, _userId);
-                                  _isLoading = false;
-                                  return _eventAggregate;
-                                })));
-                    _getRunDetails(widget.eventId);
+                    // NULLSAFETODO
+                    // await Navigator.push<dynamic>(
+                    //     context,
+                    //     MaterialPageRoute<dynamic>(
+                    //         builder: (BuildContext context) => EditRunDetailsPage(false, _eventAggregate, (String eventId) async {
+                    //               _eventAggregate = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, _userId);
+                    //               _isLoading = false;
+                    //               return _eventAggregate;
+                    //             })));
+                    // _getRunDetails(widget.eventId);
                   },
                 ),
               ),
@@ -554,10 +561,11 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(builder: (BuildContext context) => DrinksList(eventAggregate: _eventAggregate)),
-                    );
+                    // NULLSAFETODO
+                    // Navigator.push<dynamic>(
+                    //   context,
+                    //   MaterialPageRoute<dynamic>(builder: (BuildContext context) => DrinksList(eventAggregate: _eventAggregate)),
+                    // );
                   },
                 ),
               ),
