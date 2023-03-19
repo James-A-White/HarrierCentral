@@ -138,7 +138,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           
           ''';
 
-    _kennelMemberListFuture = Future<List<dynamic>>.value(<KennelMembersResults>[]);
+    _kennelMemberListFuture = Future<List<dynamic>>.value(<KennelMemberResultsModel>[]);
 
     final List<dynamic> kList = <dynamic>[];
     int lastMemberType = 0;
@@ -146,14 +146,15 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
       for (int i = 0; i < results.length; i++) {
-        final KennelMembersResults hlrItem = KennelMembersResults.fromMap(results[i]);
+        final KennelMemberResultsModel hlrItem = KennelMemberResultsModel.fromMap(results[i]);
 
         if ((hlrItem.memberFollowingStatus != null) && (hlrItem.memberFollowingStatus != lastMemberType)) {
           lastMemberType = hlrItem.memberFollowingStatus!;
           kList.add(lastMemberType);
         }
 
-        hlrItem.isLoading = false;
+        // NULLSAFETODO
+        //hlrItem.isLoading = false;
         kList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
@@ -409,7 +410,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                               ),
                             );
                           } else {
-                            final KennelMembersResults item = snapshot.data![index];
+                            final KennelMemberResultsModel item = snapshot.data![index];
                             return Dismissible(
                               key: Key(item.hasherId),
                               confirmDismiss: (DismissDirection direction) {
@@ -418,7 +419,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   // the hasher either attended the run as a pack
                                   // member or as a hare
                                   if (direction == DismissDirection.endToStart) {
-                                    modifyMembership(item, item.membershipDurationInMonths ?? 6);
+                                    modifyMembership(item, item.membershipDurationInMonths);
                                   } else {
                                     modifyMembership(item, -9999);
                                   }
@@ -816,38 +817,42 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     setState(() {});
   }
 
-  void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
+  void modifyMembership(KennelMemberResultsModel item, int monthsToAddToMembership) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
-    item.memberInfoBeingUpdated = true;
+    // NULLSAFETODO
+    //item.memberInfoBeingUpdated = true;
     setState(() {});
     srv.updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void _) {
       _refreshKennelMembersFromTable(true).then((void _) {
-        item.memberInfoBeingUpdated = false;
+        // NULLSAFETODO
+        //item.memberInfoBeingUpdated = false;
         _refreshCounters(true);
         setState(() {});
       });
     });
   }
 
-  void setUserProperties(KennelMembersResults item, {int appAccessFlags = -1, int mismanagementRoles = -1}) {
+  void setUserProperties(KennelMemberResultsModel item, {int appAccessFlags = -1, int mismanagementRoles = -1}) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
-    item.memberInfoBeingUpdated = true;
+    // NULLSAFETODO
+    //item.memberInfoBeingUpdated = true;
     setState(() {});
 
     srv
         .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, targetUserId: item.hasherId, appAccessFlags: appAccessFlags, mismanagementRoles: mismanagementRoles)
         .then((void _) {
       _refreshKennelMembersFromTable(true).then((void _) {
-        item.memberInfoBeingUpdated = false;
+        // NULLSAFETODO
+        //item.memberInfoBeingUpdated = false;
         _refreshCounters(true);
         setState(() {});
       });
     });
   }
 
-  // void setAsHomeKennel(KennelMembersResults item, int isHomeKennel) {
+  // void setAsHomeKennel(KennelMemberResultsModel item, int isHomeKennel) {
   //   final HasherKennelMapService srv = HasherKennelMapService();
   //   widget.kennel.extensions.followingRequested = -1;
   //   item.homeKennelBeingUpdated = true;

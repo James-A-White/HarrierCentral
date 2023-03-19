@@ -253,12 +253,12 @@ class QueryRuns {
     return filteredRuns;
   }
 
-  static Future<List<dynamic>> getRunDetailsAggregates(
+  static Future<List<RunDetailsAggregate>> getRunDetailsAggregates(
     bool searchAllRuns, {
-    required String eventId,
+    String? eventId,
     EnumRunQueryType queryType = EnumRunQueryType.topRunsPage,
   }) async {
-    final List<dynamic> runs = <dynamic>[];
+    final List<RunDetailsAggregate> runs = <RunDetailsAggregate>[];
 
     //final Geolocator locator = Geolocator();
 

@@ -1,10 +1,9 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PaymentTerminalConfigPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const PaymentTerminalConfigPage({Key key}) : super(key: key);
+  const PaymentTerminalConfigPage({Key? key}) : super(key: key);
 
   @override
   PaymentTerminalConfigPageState createState() => PaymentTerminalConfigPageState();
@@ -43,7 +42,7 @@ class PaymentTerminalConfigPageState extends State<PaymentTerminalConfigPage> {
 }
 
 class PaymentTerminalConfigContent extends StatefulWidget {
-  const PaymentTerminalConfigContent({Key key}) : super(key: key);
+  const PaymentTerminalConfigContent({Key? key}) : super(key: key);
 
   @override
   PaymentTerminalConfigContentState createState() => PaymentTerminalConfigContentState();
@@ -57,7 +56,7 @@ class PaymentTerminalConfigContentState extends State<PaymentTerminalConfigConte
 
   @override
   void initState() {
-    _accountKeyTextController.text = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+    _accountKeyTextController.text = getStringPref(StringPrefsEnum.paymentTerminalAccountKey) ?? '';
 
     super.initState();
   }
@@ -139,7 +138,7 @@ class PaymentTerminalConfigContentState extends State<PaymentTerminalConfigConte
           ElevatedButton(
             child: Text('Test Login', style: headingStyle),
             onPressed: () async {
-              final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+              final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey) ?? '';
               await Sumup.init(affiliateKey);
               await Sumup.login();
             },
@@ -148,7 +147,7 @@ class PaymentTerminalConfigContentState extends State<PaymentTerminalConfigConte
           ElevatedButton(
             child: Text('Open Settings', style: headingStyle),
             onPressed: () async {
-              final bool isLoggedIn = await Sumup.isLoggedIn;
+              final bool isLoggedIn = await Sumup.isLoggedIn ?? false;
               if (isLoggedIn) {
                 await Sumup.openSettings();
               }
@@ -158,15 +157,15 @@ class PaymentTerminalConfigContentState extends State<PaymentTerminalConfigConte
           ElevatedButton(
             child: Text('Test SumUp transaction', style: headingStyle),
             onPressed: () async {
-              final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+              final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey) ?? '';
               await Sumup.init(affiliateKey);
 
-              bool isLoggedIn = await Sumup.isLoggedIn;
+              bool isLoggedIn = await Sumup.isLoggedIn ?? false;
               if (!isLoggedIn) {
                 await Sumup.login();
               }
 
-              isLoggedIn = await Sumup.isLoggedIn;
+              isLoggedIn = await Sumup.isLoggedIn ?? true;
               if (isLoggedIn) {
                 await _doTransaction();
               }
@@ -190,9 +189,9 @@ class PaymentTerminalConfigContentState extends State<PaymentTerminalConfigConte
   }
 
   void _updatePaymentTerminalInfo() {
-    if (_paymentTerminalFormKey.currentState.validate()) {
+    if (_paymentTerminalFormKey.currentState?.validate() ?? false) {
 //    If all data are correct then save data to out variables
-      _paymentTerminalFormKey.currentState.save();
+      _paymentTerminalFormKey.currentState!.save();
     }
   }
 
@@ -205,14 +204,14 @@ class PaymentTerminalConfigContentState extends State<PaymentTerminalConfigConte
           //initialValue: getStringPref(StringPrefsEnum.paymentTerminalAccountKey) ?? '',
           decoration: const InputDecoration(labelText: 'Payment account key'),
           keyboardType: TextInputType.text,
-          validator: (String arg) {
-            if (arg.isEmpty) {
+          validator: (String? arg) {
+            if ((arg ?? '').isEmpty) {
               return 'Payment account cannot be empty';
             } else {
               return null;
             }
           },
-          onSaved: (String val) {
+          onSaved: (String? val) {
             setStringPref(StringPrefsEnum.paymentTerminalAccountKey, val);
           },
         ),

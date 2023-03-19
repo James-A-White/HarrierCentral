@@ -31,7 +31,7 @@ const int INBOUND_INTEGRATION_SAN_DIEGO = 3;
 const int ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT = 1;
 const int ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT = 6;
 
-const int GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN = 1000;
+const int GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN = 1600;
 
 const int ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT = 3;
 const int ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT = 6;
@@ -150,46 +150,46 @@ class AppAccess {
     this.appAccessFlags,
   );
 
-  int appAccessFlags;
+  int? appAccessFlags;
 
   bool getAppAccess(int aaFlag) {
-    return (appAccessFlags) & aaFlag != 0;
+    return (appAccessFlags ?? 0) & aaFlag != 0;
   }
 
   void setAppAccess(int aaFlag, bool value) {
     if (value) {
-      appAccessFlags |= aaFlag;
+      appAccessFlags = aaFlag | (appAccessFlags ?? 0);
     } else {
-      appAccessFlags &= ~aaFlag;
+      appAccessFlags = ~aaFlag & (appAccessFlags ?? 0);
     }
   }
 
   bool get isSuperAdmin {
-    return (appAccessFlags) & authIsSuperAdmin != 0;
+    return (appAccessFlags ?? 0) & authIsSuperAdmin != 0;
   }
 
   bool get isAdmin {
-    return (appAccessFlags) & (authIsAdmin | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authIsAdmin | authIsSuperAdmin) != 0;
   }
 
   bool get canManageKennel {
-    return (appAccessFlags) & (authCanManageKennel | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageKennel | authIsSuperAdmin) != 0;
   }
 
   bool get canManageRuns {
-    return (appAccessFlags) & (authCanManageRuns | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageRuns | authIsSuperAdmin) != 0;
   }
 
   bool get canManageHashCash {
-    return (appAccessFlags) & (authCanManageHashCash | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageHashCash | authIsSuperAdmin) != 0;
   }
 
   bool get canManageMembers {
-    return (appAccessFlags) & (authCanManageMembers | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageMembers | authIsSuperAdmin) != 0;
   }
 
   bool get canManageAwards {
-    return (appAccessFlags) & (authCanManageAwards | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageAwards | authIsSuperAdmin) != 0;
   }
 }
 
@@ -255,22 +255,22 @@ class Mismanagement {
     this.mismanagementFlags,
   );
 
-  int mismanagementFlags;
+  int? mismanagementFlags;
 
   bool getMismanagementState(int mmFlag) {
-    return (mismanagementFlags) & mmFlag != 0;
+    return (mismanagementFlags ?? 0) & mmFlag != 0;
   }
 
   void setMismanagementState(int mmFlag, bool value) {
     if (value) {
-      mismanagementFlags |= mmFlag;
+      mismanagementFlags = mmFlag | (mismanagementFlags ?? 0);
     } else {
-      mismanagementFlags &= ~mmFlag;
+      mismanagementFlags = ~mmFlag & (mismanagementFlags ?? 0);
     }
   }
 
   bool get isOnMismanagement {
-    return (mismanagementFlags) & mmRoleIsOnMm != 0;
+    return (mismanagementFlags ?? 0) & mmRoleIsOnMm != 0;
   }
 
   // set isOnMismanagement(bool value) {

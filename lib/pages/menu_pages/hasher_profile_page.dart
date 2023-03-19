@@ -1,9 +1,8 @@
-// @dart=2.11
 // ignore_for_file: constant_identifier_names
 
 import 'package:harrier_central/data/services/gdpr_delete_service.dart';
 import 'package:harrier_central/data/services/get_invite_code_service.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 
@@ -11,14 +10,14 @@ class HasherProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const HasherProfilePage({
-    Key key,
-    @required this.dataContext,
-    @required this.pageType,
+    Key? key,
+    required this.dataContext,
+    required this.pageType,
     this.hasherId = GUID_EMPTY,
     this.eventId = GUID_EMPTY,
     this.kennelId = GUID_EMPTY,
     this.uiElementsToDisplay = 0,
-    this.kennelShortName,
+    this.kennelShortName = '',
     this.hashNameFromSearch = '',
   }) : super(key: key);
 
@@ -55,8 +54,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   bool _autoValidate = false;
 
-  String _email = getStringPref(StringPrefsEnum.email);
-  int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
+  String? _email = getStringPref(StringPrefsEnum.email);
+  int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
 
   // String _firstName = getStringPref(StringPrefsEnum.firstName);
   // String _lastName = getStringPref(StringPrefsEnum.lastName);
@@ -69,10 +68,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _addAsKennelFollower = false;
   String _photoPrefix = '';
   String _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
-  HashersModel _hasher;
-  HasherKennelMapModel _hkmData;
+  late HashersModel _hasher;
+  HasherKennelMapModel? _hkmData;
 
-  bool isEmptyGuid(String guid) {
+  bool isEmptyGuid(String? guid) {
     if ((guid == null) || (guid.isEmpty) || (guid == GUID_EMPTY)) {
       return true;
     }
@@ -135,25 +134,25 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         _isLoading = true;
       });
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
-      if ((results != null) && (results.isNotEmpty)) {
+      if (results.isNotEmpty) {
         _hasher = HashersModel.fromJson(results[0]);
         if (widget.dataContext == EnumDataContext.kennel) {
           _hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
         }
 
-        _firstNameController.text = _hasher.firstName;
-        _lastNameController.text = _hasher.lastName;
+        _firstNameController.text = _hasher.firstName ?? '';
+        _lastNameController.text = _hasher.lastName ?? '';
         _emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
-        _hashNameController.text = _hasher.hashName;
-        _nameDisplayPreference = _hasher.dispPref ?? 1;
-        _newPhoto = _hasher.photo; // if we have returned from the photo chooser, don't overwrite
+        _hashNameController.text = _hasher.hashName ?? '';
+        _nameDisplayPreference = _hasher.dispPref;
+        _newPhoto = _hasher.photo ?? _newPhoto; // if we have returned from the photo chooser, don't overwrite
         _previousRunCountController.text = (_hkmData?.historicalTotalRunCount ?? 0).toString();
         _previousHaringCountController.text = (_hkmData?.historicalHaringCount ?? 0).toString();
         _historicalCountIsEstimate = (_hkmData?.historicalCountIsEstimate ?? 0) == 1;
 
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          _emailController.text = _email;
+          _emailController.text = _email ?? '';
           _distancePreference = _hasherPreferences & hasherPref_distanceMeasuredIn;
           _autoRunPreference = _hasherPreferences & hasherPref_distanceForAutoDisplay;
         }
@@ -175,7 +174,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   final TextEditingController _previousHaringCountController = TextEditingController();
   bool _historicalCountIsEstimate = false;
 
-  String _externalMapProvider;
+  String? _externalMapProvider;
 
   @override
   void initState() {
@@ -193,10 +192,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _refreshUserDataFromTable(true);
       _photoPrefix = widget.hasherId;
     } else {
-      if ((widget.kennelId != null) && (widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
+      if ((widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
         _addAsKennelFollower = true;
       }
-      _hasher = HashersModel(hasherId: GUID_EMPTY);
+      _hasher = HashersModel.empty();
       _photoPrefix = 'newHcUser_${DateTime.now().microsecondsSinceEpoch}';
 
       _isLoading = false;
@@ -253,22 +252,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       return;
     }
     bool isDirty = false;
-    if (_firstNameController.text != _hasher?.firstName ?? '') {
+    if (_firstNameController.text != (_hasher.firstName ?? '')) {
       isDirty = true;
     }
-    if (_lastNameController.text != _hasher?.lastName ?? '') {
+    if (_lastNameController.text != (_hasher.lastName ?? '')) {
       isDirty = true;
     }
-    if ((_email != null) && ((_emailController.text ?? '') != (_email ?? ''))) {
+    if ((_email != null) && ((_emailController.text) != (_email ?? ''))) {
       isDirty = true;
     }
-    if (_hashNameController.text != _hasher?.hashName ?? '') {
+    if (_hashNameController.text != (_hasher.hashName ?? '')) {
       isDirty = true;
     }
-    if (_nameDisplayPreference != _hasher?.dispPref ?? -1) {
+    if (_nameDisplayPreference != _hasher.dispPref) {
       isDirty = true;
     }
-    if (_newPhoto != _hasher?.photo ?? '') {
+    if (_newPhoto != (_hasher.photo ?? '')) {
       isDirty = true;
     }
     if (_previousRunCountController.text != (_hkmData?.historicalTotalRunCount ?? 0).toString()) {
@@ -281,11 +280,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
-    if (_hasher != null) {
-      _hasherPreferences ??= 0;
-      if (_hasherPreferences != (_distancePreference + _autoRunPreference)) {
-        isDirty = true;
-      }
+    if (_hasherPreferences != (_distancePreference + _autoRunPreference)) {
+      isDirty = true;
     }
 
     if (_historicalCountIsEstimate != ((_hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
@@ -322,12 +318,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  GlobalKey<ScaffoldState> scaffoldKey;
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _updateProfile() async {
-    if (_profileFormKey.currentState.validate()) {
+    if (_profileFormKey.currentState!.validate()) {
 //    If all data are correct then save data to out variables
-      _profileFormKey.currentState.save();
+      _profileFormKey.currentState!.save();
 
       // write the value of the email address to local preferences
 
@@ -345,7 +341,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         hashName: _hashNameController.text,
         photo: _newPhoto,
         eventId: widget.eventId,
-        kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
+        kennelId: ((widget.kennelId.isEmpty)) ? GUID_EMPTY : widget.kennelId,
         historicalTotalRunCount: _previousRunCountController.text,
         historicalHaringCount: _previousHaringCountController.text,
         historicalCountIsEstimate: _historicalCountIsEstimate,
@@ -361,7 +357,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           _hasherPreferences = _distancePreference + _autoRunPreference;
         }
 
-        HashersModel h;
+        HashersModel? h;
         final List<dynamic> jsonResult = json.decode(responseBody);
 
         // look through the returned results and find the
@@ -372,23 +368,25 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         for (int i = 0; i < jsonResult.length; i++) {
           if (jsonResult[i][0].containsKey('hasherId')) {
             for (int j = 0; j < jsonResult[i].length; j++) {
-              if ((jsonResult[i][j]['firstName'].toString().toLowerCase() == _hasher.firstName.toLowerCase()) &&
-                  (jsonResult[i][j]['hashName'].toString().toLowerCase() == _hasher.hashName.toLowerCase())) {
+              if ((jsonResult[i][j]['firstName'].toString().toLowerCase() == (_hasher.firstName ?? '').toLowerCase()) &&
+                  (jsonResult[i][j]['hashName'].toString().toLowerCase() == (_hasher.hashName ?? '').toLowerCase())) {
                 h = HashersModel.fromJson(jsonResult[i][0]);
               }
             }
           }
         }
 
-        if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          await setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
-          await setStringPref(StringPrefsEnum.displayName, h.dispName);
-          // don't set the e-mail with the result from the
-          // api call. Use the local value in hasher.email instead
-          //setStringPref(StringPrefsEnum.email, hasher.email);
-          await setStringPref(StringPrefsEnum.firstName, h.firstName);
-          await setStringPref(StringPrefsEnum.hashName, h.hashName);
-          await setStringPref(StringPrefsEnum.lastName, h.lastName);
+        if (h != null) {
+          if (widget.pageType == EnumMyProfilePageType.myProfile) {
+            await setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
+            await setStringPref(StringPrefsEnum.displayName, h.dispName);
+            // don't set the e-mail with the result from the
+            // api call. Use the local value in hasher.email instead
+            //setStringPref(StringPrefsEnum.email, hasher.email);
+            await setStringPref(StringPrefsEnum.firstName, h.firstName);
+            await setStringPref(StringPrefsEnum.hashName, h.hashName);
+            await setStringPref(StringPrefsEnum.lastName, h.lastName);
+          }
         }
 
         await _refreshUserDataFromTable(true);
@@ -401,11 +399,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           if (!mounted) return;
           Navigator.of(context).pop(h);
         } else {
-          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
+          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
         }
       } else {
         await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
+            navigatorKey.currentContext!, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
       }
     } else {
 //    If all data are not valid then start auto validation.
@@ -424,15 +422,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //initialValue: hasher.firstName,
           decoration: const InputDecoration(labelText: 'First name (or initial)'),
           keyboardType: TextInputType.text,
-          validator: (String arg) {
-            if (arg.isEmpty) {
+          validator: (String? arg) {
+            if ((arg ?? '').isEmpty) {
               return 'First name must have a least one letter';
             } else {
               return null;
             }
           },
-          onSaved: (String val) {
-            _hasher = _hasher.copyWith(firstName: val);
+          onSaved: (String? val) {
+            _hasher = _hasher.copyWith(firstName: val ?? '');
             //_hasher.firstName = val;
           },
         ),
@@ -442,15 +440,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           controller: _lastNameController,
           decoration: const InputDecoration(labelText: 'Last Name (or initial)'),
           keyboardType: TextInputType.text,
-          validator: (String arg) {
-            if (arg.isEmpty) {
+          validator: (String? arg) {
+            if ((arg ?? '').isEmpty) {
               return 'Last name must have a least one letter';
             } else {
               return null;
             }
           },
-          onSaved: (String val) {
-            _hasher = _hasher.copyWith(lastName: val);
+          onSaved: (String? val) {
+            _hasher = _hasher.copyWith(lastName: val ?? '');
             //_hasher.lastName = val;
           },
         ),
@@ -462,8 +460,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             decoration: const InputDecoration(labelText: 'Email'),
             keyboardType: TextInputType.emailAddress,
             validator: Utilities.validateEmail,
-            onSaved: (String val) {
-              _email = val;
+            onSaved: (String? val) {
+              _email = val ?? '';
             },
           ),
         ],
@@ -472,8 +470,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //initialValue: hasher.hashName,
           controller: _hashNameController,
           decoration: const InputDecoration(labelText: 'Hash Name (optional)'),
-          onSaved: (String val) {
-            _hasher = _hasher.copyWith(hashName: val);
+          onSaved: (String? val) {
+            _hasher = _hasher.copyWith(hashName: val ?? '');
             //_hasher.hashName = val;
           },
           keyboardType: TextInputType.text,
@@ -493,8 +491,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           controller: _previousRunCountController,
           decoration: const InputDecoration(labelText: 'Historical run count'),
           keyboardType: TextInputType.number,
-          onSaved: (String val) {
-            _hasher = _hasher.copyWith(firstName: val);
+          onSaved: (String? val) {
+            _hasher = _hasher.copyWith(firstName: val ?? '');
             //_hasher.firstName = val;
           },
         ),
@@ -503,8 +501,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           controller: _previousHaringCountController,
           decoration: const InputDecoration(labelText: 'Historical haring count'),
           keyboardType: TextInputType.number,
-          onSaved: (String val) {
-            _hasher = _hasher.copyWith(firstName: val);
+          onSaved: (String? val) {
+            _hasher = _hasher.copyWith(firstName: val ?? '');
             //_hasher.firstName = val;
           },
         ),
@@ -520,9 +518,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               color: Colors.yellow[100],
               child: Checkbox(
                 value: _historicalCountIsEstimate,
-                onChanged: (bool value) {
+                onChanged: (bool? value) {
                   setState(() {
-                    _historicalCountIsEstimate = value;
+                    _historicalCountIsEstimate = value ?? false;
                     checkDirty();
                   });
                 },
@@ -542,29 +540,29 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  AppBar appBar;
+  AppBar? appBar;
 
   int _nameDisplayPreference = 1;
   int _distancePreference = 0;
   int _autoRunPreference = 2;
 
-  void _handleRadioValueChange0(int value) {
+  void _handleRadioValueChange0(int? value) {
     setState(() {
-      _nameDisplayPreference = value;
+      _nameDisplayPreference = value ?? 0;
       checkDirty();
     });
   }
 
-  void _handleRadioValueChange1(int value) {
+  void _handleRadioValueChange1(int? value) {
     setState(() {
-      _distancePreference = value;
+      _distancePreference = value ?? 0;
       checkDirty();
     });
   }
 
-  void _handleRadioValueChange2(int value) {
+  void _handleRadioValueChange2(int? value) {
     setState(() {
-      _autoRunPreference = value;
+      _autoRunPreference = value ?? 0;
       checkDirty();
     });
   }
@@ -583,10 +581,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             key: scaffoldKey,
             appBar: appBar,
             body: _isLoading
-                ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+                ? Container(height: MediaQuery.of(context).size.height - (appBar?.preferredSize.height ?? 0), decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
-                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
+                    height: MediaQuery.of(context).size.height - (appBar?.preferredSize.height ?? 0),
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onPanDown: (_) {
@@ -724,14 +722,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         builder: (BuildContext context) => ChooseProfileImage(
                                                           isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
                                                           fileNamePrefix: _photoPrefix,
-                                                          currentProfileImage: _hasher?.photo ?? _newPhoto,
+                                                          currentProfileImage: _hasher.photo ?? _newPhoto,
                                                         ),
                                                       ),
-                                                    ).then((String result) {
+                                                    ).then<void>((result) {
                                                       if ((result != null) && (result.isNotEmpty)) {
                                                         _newPhoto = result;
                                                         checkDirty();
-                                                        //setState(() {});
                                                       }
                                                     });
                                                   }
@@ -1029,9 +1026,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       color: Colors.yellow[100],
                                                       child: Checkbox(
                                                         value: _addAsKennelFollower,
-                                                        onChanged: (bool value) {
+                                                        onChanged: (bool? value) {
                                                           setState(() {
-                                                            _addAsKennelFollower = value;
+                                                            _addAsKennelFollower = value ?? false;
                                                           });
                                                         },
                                                       ),
@@ -1107,24 +1104,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         ),
                                                         onPressed: () async {
                                                           final GetInviteCodeService svc = GetInviteCodeService();
-                                                          final SingleResultModel result = await svc.getInviteCode(widget.hasherId);
+                                                          final SingleResultModel? result = await svc.getInviteCode(widget.hasherId);
 
-                                                          if (result.result.startsWith(QR_PREFIX_USER_RESET_CODE)) {
+                                                          if ((result?.result ?? '').startsWith(QR_PREFIX_USER_RESET_CODE)) {
                                                             final QrPopup pp = QrPopup(
                                                               key: const Key('43930293'),
-                                                              dialogTitle: 'The invite code for ${_hasher.dispName} is: \r\n\r\n${result.result.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
-                                                              qrText: result.result,
+                                                              dialogTitle: 'The invite code for ${_hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
+                                                              qrText: result.result!,
                                                             );
 
                                                             await showDialog<void>(
-                                                                context: navigatorKey.currentContext,
+                                                                context: navigatorKey.currentContext!,
                                                                 barrierDismissible: false, // user must tap button!
                                                                 builder: (BuildContext context) {
                                                                   return pp;
                                                                 });
                                                           } else {
                                                             await IveCoreUtilities.showAlert(
-                                                                navigatorKey.currentContext,
+                                                                navigatorKey.currentContext!,
                                                                 'Code Not Available',
                                                                 'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
                                                                 'OK');
@@ -1247,12 +1244,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               'Reload data',
                                                               showCancelButton: true,
                                                               cancelButtonText: 'Cancel')
-                                                          .then((bool result) async {
-                                                        if (result) {
-                                                          final String userId = getStringPref(StringPrefsEnum.userId);
-                                                          final String resetCode = getStringPref(StringPrefsEnum.resetCode);
-                                                          final String facebookAccessToken = getStringPref(StringPrefsEnum.facebookAccessToken);
-                                                          final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+                                                          .then((bool? result) async {
+                                                        if (result ?? false) {
+                                                          final String userId = getStringPref(StringPrefsEnum.userId)!;
+                                                          final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
+                                                          final String facebookAccessToken = getStringPref(StringPrefsEnum.facebookAccessToken) ?? '';
+                                                          final String facebookId = getStringPref(StringPrefsEnum.facebookId) ?? '';
 
                                                           await clearPrefs();
 
@@ -1266,7 +1263,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
                                                           await G0.reset();
 
-                                                          Phoenix.rebirth(navigatorKey.currentContext);
+                                                          Phoenix.rebirth(navigatorKey.currentContext!);
                                                         }
                                                       });
                                                     },
@@ -1292,22 +1289,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                       ),
                                                       onPressed: () async {
-                                                        await IveCoreUtilities.showAlert(
-                                                                context,
-                                                                'Log out?',
-                                                                'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                                                'Log out',
-                                                                showCancelButton: true,
-                                                                cancelButtonText: 'Stay logged in')
-                                                            .then((bool result) async {
-                                                          if (result) {
-                                                            await clearPrefs();
-                                                            await DBProvider.deleteDb(DB_NAME);
-                                                            await G0.reset();
+                                                        bool? result = await IveCoreUtilities.showAlert(
+                                                            context,
+                                                            'Log out?',
+                                                            'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                            'Log out',
+                                                            showCancelButton: true,
+                                                            cancelButtonText: 'Stay logged in');
 
-                                                            Phoenix.rebirth(navigatorKey.currentContext);
-                                                          }
-                                                        });
+                                                        if (result ?? false) {
+                                                          await clearPrefs();
+                                                          await DBProvider.deleteDb(DB_NAME);
+                                                          await G0.reset();
+
+                                                          Phoenix.rebirth(navigatorKey.currentContext!);
+                                                        }
                                                       },
                                                       child: Text(
                                                         'Log out',
@@ -1415,50 +1411,48 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                     ),
                                                     onPressed: () async {
-                                                      await IveCoreUtilities.showAlert(
-                                                              context,
-                                                              'Delete Account',
-                                                              'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
-                                                              'Delete Account',
-                                                              showCancelButton: true,
-                                                              cancelButtonText: 'Keep Account')
-                                                          .then((bool result) async {
-                                                        if (result) {
-                                                          await Future<void>.delayed(const Duration(milliseconds: 1500));
+                                                      bool? result = await IveCoreUtilities.showAlert(
+                                                          context,
+                                                          'Delete Account',
+                                                          'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
+                                                          'Delete Account',
+                                                          showCancelButton: true,
+                                                          cancelButtonText: 'Keep Account');
 
-                                                          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Delete Account',
-                                                                  'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?', 'Delete Account',
-                                                                  showCancelButton: true, cancelButtonText: 'Keep Account')
-                                                              .then((bool result2) async {
-                                                            if (result2) {
-                                                              final GdprDeleteService svc = GdprDeleteService();
-                                                              final SingleResultModel result = await svc.gdprDelete();
+                                                      if (result ?? false) {
+                                                        await Future<void>.delayed(const Duration(milliseconds: 1500));
 
-                                                              if (result.result == 'success') {
-                                                                await IveCoreUtilities.showAlert(
-                                                                  navigatorKey.currentContext,
-                                                                  'Successful',
-                                                                  'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
-                                                                  'OK',
-                                                                );
-                                                              } else {
-                                                                await IveCoreUtilities.showAlert(
-                                                                  navigatorKey.currentContext,
-                                                                  'Contact us',
-                                                                  'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
-                                                                  'OK',
-                                                                );
-                                                              }
+                                                        bool? result2 = await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Delete Account',
+                                                            'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?', 'Delete Account',
+                                                            showCancelButton: true, cancelButtonText: 'Keep Account');
 
-                                                              await clearPrefs();
-                                                              await DBProvider.deleteDb(DB_NAME);
-                                                              await G0.reset();
+                                                        if (result2 ?? false) {
+                                                          final GdprDeleteService svc = GdprDeleteService();
+                                                          final SingleResultModel? result = await svc.gdprDelete();
 
-                                                              Phoenix.rebirth(navigatorKey.currentContext);
-                                                            }
-                                                          });
+                                                          if ((result?.result ?? '') == 'success') {
+                                                            await IveCoreUtilities.showAlert(
+                                                              navigatorKey.currentContext!,
+                                                              'Successful',
+                                                              'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
+                                                              'OK',
+                                                            );
+                                                          } else {
+                                                            await IveCoreUtilities.showAlert(
+                                                              navigatorKey.currentContext!,
+                                                              'Contact us',
+                                                              'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
+                                                              'OK',
+                                                            );
+                                                          }
+
+                                                          await clearPrefs();
+                                                          await DBProvider.deleteDb(DB_NAME);
+                                                          await G0.reset();
+
+                                                          Phoenix.rebirth(navigatorKey.currentContext!);
                                                         }
-                                                      });
+                                                      }
                                                     },
                                                     child: Text(
                                                       'Delete Account',
@@ -1523,19 +1517,20 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       final PermissionStatus ps = await Permission.location.request();
 
       if (ps.isPermanentlyDenied) {
-        final bool openSettings = await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext,
+        final bool? openSettings = await IveCoreUtilities.showAlert(
+            navigatorKey.currentContext!,
             'Phone Settings',
             'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
             'Open Settings',
             showCancelButton: true,
             cancelButtonText: 'Cancel');
 
-        if (openSettings) {
+        if (openSettings ?? false) {
           await openAppSettings();
 
-          success = await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
-              showCancelButton: true, cancelButtonText: 'No');
+          success = await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
+                  showCancelButton: true, cancelButtonText: 'No') ??
+              false;
         }
       }
 
@@ -1553,7 +1548,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         }
       } else {
         await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext,
+            navigatorKey.currentContext!,
             'Location Services problem',
             'Harrier Central was unable to confirm that Location Services have been enabled.\r\n\r\nPlease use the Settings panel to enable Location Services for Harrier Centra. Once you have done this, please close and restart Harrier Central.',
             'Open Settings',
@@ -1564,7 +1559,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
     }
 
-    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Location preferences updated',
+    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Location preferences updated',
         'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
   }
 }

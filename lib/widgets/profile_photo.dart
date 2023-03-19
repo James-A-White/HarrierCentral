@@ -1,20 +1,24 @@
-// @dart=2.11
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePhoto extends StatelessWidget {
-  const ProfilePhoto({Key key, @required this.profilePhotoUrl, this.photoHeight, this.leftPadding}) : super(key: key);
+  const ProfilePhoto({
+    Key? key,
+    required this.profilePhotoUrl,
+    this.photoHeight = 75.0,
+    this.leftPadding = 0,
+  }) : super(key: key);
 
   final String profilePhotoUrl;
-  final num photoHeight;
-  final num leftPadding;
+  final double photoHeight;
+  final double leftPadding;
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: photoHeight,
         height: photoHeight,
-        margin: EdgeInsets.only(left: leftPadding ?? 0),
+        margin: EdgeInsets.only(left: leftPadding),
         alignment: Alignment.centerRight,
         child: profilePhotoUrl.isEmpty
             ? Image.asset(

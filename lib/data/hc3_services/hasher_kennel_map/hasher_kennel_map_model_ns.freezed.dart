@@ -37,8 +37,8 @@ mixin _$HasherKennelMapModel {
   int get historicalTotalRunCount => throw _privateConstructorUsedError;
   int get historicalHaringCount => throw _privateConstructorUsedError;
   int get historicalCountIsEstimate => throw _privateConstructorUsedError;
-  num get kennelCredit => throw _privateConstructorUsedError;
-  num get discountAmount => throw _privateConstructorUsedError;
+  double get kennelCredit => throw _privateConstructorUsedError;
+  double get discountAmount => throw _privateConstructorUsedError;
   int get discountPercent => throw _privateConstructorUsedError;
   String get discountDescription => throw _privateConstructorUsedError;
   DateTime? get dateOfLastRun => throw _privateConstructorUsedError;
@@ -81,8 +81,8 @@ abstract class $HasherKennelMapModelCopyWith<$Res> {
       int historicalTotalRunCount,
       int historicalHaringCount,
       int historicalCountIsEstimate,
-      num kennelCredit,
-      num discountAmount,
+      double kennelCredit,
+      double discountAmount,
       int discountPercent,
       String discountDescription,
       DateTime? dateOfLastRun,
@@ -213,11 +213,11 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
       kennelCredit: null == kennelCredit
           ? _value.kennelCredit
           : kennelCredit // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
@@ -292,8 +292,8 @@ abstract class _$$_HasherKennelMapModelCopyWith<$Res>
       int historicalTotalRunCount,
       int historicalHaringCount,
       int historicalCountIsEstimate,
-      num kennelCredit,
-      num discountAmount,
+      double kennelCredit,
+      double discountAmount,
       int discountPercent,
       String discountDescription,
       DateTime? dateOfLastRun,
@@ -421,11 +421,11 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
       kennelCredit: null == kennelCredit
           ? _value.kennelCredit
           : kennelCredit // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
@@ -547,9 +547,9 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
   @override
   final int historicalCountIsEstimate;
   @override
-  final num kennelCredit;
+  final double kennelCredit;
   @override
-  final num discountAmount;
+  final double discountAmount;
   @override
   final int discountPercent;
   @override
@@ -712,8 +712,8 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
       required final int historicalTotalRunCount,
       required final int historicalHaringCount,
       required final int historicalCountIsEstimate,
-      required final num kennelCredit,
-      required final num discountAmount,
+      required final double kennelCredit,
+      required final double discountAmount,
       required final int discountPercent,
       required final String discountDescription,
       final DateTime? dateOfLastRun,
@@ -764,9 +764,9 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
   @override
   int get historicalCountIsEstimate;
   @override
-  num get kennelCredit;
+  double get kennelCredit;
   @override
-  num get discountAmount;
+  double get discountAmount;
   @override
   int get discountPercent;
   @override

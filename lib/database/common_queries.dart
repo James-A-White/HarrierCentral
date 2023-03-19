@@ -12,10 +12,10 @@ class AreWeAtRunResult {
   num? distanceInMeters;
   num? deltaHours;
   num? kennelCredit;
-  num? memberPrice;
-  num? nonMemberPrice;
-  num? extrasCost;
-  num? discountAmount;
+  double? memberPrice;
+  double? nonMemberPrice;
+  double? extrasCost;
+  double? discountAmount;
   num? discountPercent;
   int? attendenceState;
   int? digitsAfterDecimal;

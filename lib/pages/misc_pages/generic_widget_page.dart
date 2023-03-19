@@ -1,10 +1,12 @@
-// @dart=2.11
-
 //import 'dart:io' as platform;
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class GenericWidgetPage extends StatelessWidget {
-  const GenericWidgetPage({Key key, this.widget, this.appBarTitle}) : super(key: key);
+  const GenericWidgetPage({
+    Key? key,
+    required this.widget,
+    required this.appBarTitle,
+  }) : super(key: key);
 
   final Widget widget;
   final String appBarTitle;
@@ -29,6 +31,3 @@ class GenericWidgetPage extends StatelessWidget {
     );
   }
 }
-
-
-// ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}'

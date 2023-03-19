@@ -1,15 +1,14 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class GetInviteCodeService {
-  Future<SingleResultModel> getInviteCode(String targetUserId) async {
+  Future<SingleResultModel?> getInviteCode(String targetUserId) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'getInviteCode');
 
@@ -17,7 +16,7 @@ class GetInviteCodeService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_get_invite_code', body);
 
-    SingleResultModel result;
+    SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       json.decode(responseBody).forEach(

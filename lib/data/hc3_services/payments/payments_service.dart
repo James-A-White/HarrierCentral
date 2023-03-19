@@ -125,14 +125,14 @@ class PaymentsService {
     String? hasherId,
     String? hasherEventMapId,
     int paymentType,
-    num paymentAmount,
+    double paymentAmount,
     int minimumAttendenceValue,
     EnumPayForExtras<int> doPayForExtras,
     AppDomainType appDomainType, {
-    num? surcharge,
+    double? surcharge,
     String? paymentProvider,
     String? paymentReference,
-    num? specialRunPrice,
+    double? specialRunPrice,
     String? specialRunPriceReason,
     bool? useSpecialPriceAsDefault,
   }) async {

@@ -1,8 +1,9 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class GetResetCodePopup extends StatefulWidget {
-  const GetResetCodePopup({Key key}) : super(key: key);
+  const GetResetCodePopup({
+    Key? key,
+  }) : super(key: key);
 
   @override
   GetResetCodePopupState createState() => GetResetCodePopupState();
@@ -82,9 +83,9 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             child: const Text('Get code'),
             onPressed: () {
               final GetResetCodeService svc = GetResetCodeService();
-              svc.getResetCode(QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text).then((SingleResultModel result) {
+              svc.getResetCode(QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text).then((SingleResultModel? result) {
                 setState(() {
-                  getResetCodeTextController.text = result.result;
+                  getResetCodeTextController.text = result!.result ?? '';
                 });
               });
 
@@ -104,17 +105,17 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
                     await clearPrefs();
                     await DBProvider.deleteDb(DB_NAME);
 
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'App Cleared Successful',
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'App Cleared Successful',
                         'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
                   } else {
                     final AuthorizeDeviceService srv = AuthorizeDeviceService();
                     final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, getResetCodeTextController.text.toUpperCase());
                     final Map<String, String> result = await apiCall;
-                    if (result != null) {
-                      getResetCodeTextController.text = getStringPref(StringPrefsEnum.displayName);
+                    if (result.isNotEmpty) {
+                      getResetCodeTextController.text = getStringPref(StringPrefsEnum.displayName) ?? '';
 
-                      await IveCoreUtilities.showAlert(
-                          navigatorKey.currentContext, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'App Reset Successful',
+                          'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                     }
                   }
                 },

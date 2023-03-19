@@ -56,8 +56,10 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
         exit(0);
       } else if (!responseBody.startsWith(ERROR_PREFIX)) {
-        loginResult = ApproveLoginModel.itemFromJson(responseBody);
-        promoResult = PromoModel.itemsFromJson(responseBody);
+        dynamic responseJson = jsonDecode(responseBody);
+
+        loginResult = ApproveLoginModel.fromJson(responseJson[0]);
+        promoResult = List<PromoModel>.from(responseJson[1]);
       }
     }
 
@@ -89,7 +91,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
               final String responseBody = await svc.approveLogin(navigatorKey.currentContext, facebookAccessToken);
               if (!responseBody.startsWith(ERROR_PREFIX)) {
-                loginResult = ApproveLoginModel.itemFromJson(responseBody);
+                loginResult = ApproveLoginModel.fromJson(json.decode(responseBody));
               }
             } else {
               await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());

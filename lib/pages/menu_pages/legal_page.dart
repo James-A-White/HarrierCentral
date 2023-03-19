@@ -1,12 +1,13 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 //
 
 class LegalPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const LegalPage({Key key}) : super(key: key);
+  const LegalPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   LegalPageState createState() => LegalPageState();
@@ -55,7 +56,9 @@ class LegalPageState extends State<LegalPage> {
 }
 
 class LegalPageContent extends StatefulWidget {
-  const LegalPageContent({Key key}) : super(key: key);
+  const LegalPageContent({
+    Key? key,
+  }) : super(key: key);
 
   @override
   LegalPageContentState createState() => LegalPageContentState();
@@ -75,11 +78,11 @@ class LegalPageContentState extends State<LegalPageContent> {
 
     tapCounter++;
     if (tapCounter == 6) {
-      getResetCode();
+      _getResetCode();
     }
   }
 
-  void getResetCode() {
+  void _getResetCode() {
     const GetResetCodePopup getResetCode = GetResetCodePopup();
 
     final Future<void> dlg = showDialog<void>(

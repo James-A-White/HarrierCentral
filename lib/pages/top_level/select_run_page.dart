@@ -1,8 +1,10 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class SelectRunPage extends StatefulWidget {
-  const SelectRunPage({Key key, @required this.runList}) : super(key: key);
+  const SelectRunPage({
+    Key? key,
+    required this.runList,
+  }) : super(key: key);
 
   final List<AreWeAtRunResult> runList;
 
@@ -126,7 +128,7 @@ class SelectRunPageState extends State<SelectRunPage> {
                         setState(() {
                           _showCheckinButton = false;
                           for (AreWeAtRunResult r in widget.runList) {
-                            if (r.selected) {
+                            if (r.selected ?? false) {
                               _showCheckinButton = true;
                               break;
                             }
@@ -145,9 +147,9 @@ class SelectRunPageState extends State<SelectRunPage> {
 
 class RunListItem extends StatelessWidget {
   const RunListItem({
-    Key key,
-    @required this.item,
-    @required this.callback,
+    Key? key,
+    required this.item,
+    required this.callback,
   }) : super(key: key);
 
   final AreWeAtRunResult item;
@@ -165,9 +167,9 @@ class RunListItem extends StatelessWidget {
       Expanded(
         child: CheckboxListTile(
             value: item.selected,
-            title: Text(item.eventName),
-            onChanged: (bool value) {
-              item.selected = !item.selected;
+            title: Text(item.eventName ?? ''),
+            onChanged: (bool? value) {
+              item.selected = !(item.selected ?? false);
               callback(item);
             }),
       ),

@@ -30,17 +30,19 @@ _$_KennelsModel _$$_KennelsModelFromJson(Map<String, dynamic> json) =>
       canEditRunAttendence: json['canEditRunAttendence'] as int,
       allowNegativeCredit: json['allowNegativeCredit'] as int,
       allowSelfPayment: json['allowSelfPayment'] as int,
-      kennelLatitude: json['kennelLatitude'] as num?,
-      kennelLongitude: json['kennelLongitude'] as num?,
-      defaultPriceForMembers: json['defaultPriceForMembers'] as num,
-      defaultPriceForNonMembers: json['defaultPriceForNonMembers'] as num,
+      kennelLatitude: (json['kennelLatitude'] as num?)?.toDouble(),
+      kennelLongitude: (json['kennelLongitude'] as num?)?.toDouble(),
+      defaultPriceForMembers:
+          (json['defaultPriceForMembers'] as num).toDouble(),
+      defaultPriceForNonMembers:
+          (json['defaultPriceForNonMembers'] as num).toDouble(),
       membershipDurationInMonths: json['membershipDurationInMonths'] as int,
       defaultRunStartTime:
           DateTime.parse(json['defaultRunStartTime'] as String),
       currencyCode: json['currencyCode'] as String?,
       primaryCultureCode: json['primaryCultureCode'] as String?,
       currencySymbol: json['currencySymbol'] as String?,
-      digitsAfterDecimal: json['digitsAfterDecimal'] as num?,
+      digitsAfterDecimal: json['digitsAfterDecimal'] as int?,
       bankScheme: json['bankScheme'] as String?,
       bankAccountNumber: json['bankAccountNumber'] as String?,
       bankBic: json['bankBic'] as String?,
@@ -51,27 +53,27 @@ _$_KennelsModel _$$_KennelsModelFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['kennelPaymentUrlExpires'] as String),
       kennelPaymentMemberSurcharge:
-          json['kennelPaymentMemberSurcharge'] as num?,
+          (json['kennelPaymentMemberSurcharge'] as num?)?.toDouble(),
       kennelPaymentNonMemberSurcharge:
-          json['kennelPaymentNonMemberSurcharge'] as num?,
+          (json['kennelPaymentNonMemberSurcharge'] as num?)?.toDouble(),
       kennelPaymentScheme2: json['kennelPaymentScheme2'] as String?,
       kennelPaymentUrl2: json['kennelPaymentUrl2'] as String?,
       kennelPaymentUrlExpires2: json['kennelPaymentUrlExpires2'] == null
           ? null
           : DateTime.parse(json['kennelPaymentUrlExpires2'] as String),
       kennelPaymentMemberSurcharge2:
-          json['kennelPaymentMemberSurcharge2'] as num?,
+          (json['kennelPaymentMemberSurcharge2'] as num?)?.toDouble(),
       kennelPaymentNonMemberSurcharge2:
-          json['kennelPaymentNonMemberSurcharge2'] as num?,
+          (json['kennelPaymentNonMemberSurcharge2'] as num?)?.toDouble(),
       kennelPaymentScheme3: json['kennelPaymentScheme3'] as String?,
       kennelPaymentUrl3: json['kennelPaymentUrl3'] as String?,
       kennelPaymentUrlExpires3: json['kennelPaymentUrlExpires3'] == null
           ? null
           : DateTime.parse(json['kennelPaymentUrlExpires3'] as String),
       kennelPaymentMemberSurcharge3:
-          json['kennelPaymentMemberSurcharge3'] as num?,
+          (json['kennelPaymentMemberSurcharge3'] as num?)?.toDouble(),
       kennelPaymentNonMemberSurcharge3:
-          json['kennelPaymentNonMemberSurcharge3'] as num?,
+          (json['kennelPaymentNonMemberSurcharge3'] as num?)?.toDouble(),
       runCountStartDate: json['runCountStartDate'] == null
           ? null
           : DateTime.parse(json['runCountStartDate'] as String),

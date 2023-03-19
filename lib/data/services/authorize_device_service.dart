@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class AuthorizeDeviceService {
   Future<Map<String, String>> authorizeDevice(BuildContext context, String scanText, {num includeInGlobalHashDirectory = -1}) async {
@@ -9,16 +8,16 @@ class AuthorizeDeviceService {
 
     if (Platform.isAndroid) {
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId = (androidInfo.id ?? '<no Android Id>').toUpperCase();
+      deviceId = (androidInfo.id).toUpperCase();
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      deviceId = iosInfo.identifierForVendor.toUpperCase();
+      deviceId = iosInfo.identifierForVendor ?? '<no vendor ID>'.toUpperCase();
     }
 
     final String accessToken = IveCoreUtilities.generateToken(GUID_EMPTY, 'authorizeDevice');
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
-    if ((hcVersion ?? '').isEmpty) {
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no HC version>';
+    if (hcVersion.isEmpty) {
       final PackageInfo p = await PackageInfo.fromPlatform();
       final String hcVersion = 'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
 
@@ -28,7 +27,7 @@ class AuthorizeDeviceService {
     final String body = jsonEncode(<String, String>{
       'userId': GUID_EMPTY,
       'accessToken': accessToken,
-      'hcVersion': getStringPref(StringPrefsEnum.harrierCentralVersion),
+      'hcVersion': getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no HC version>',
       'scanText': scanText,
       'deviceId': deviceId,
       'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString()
@@ -42,7 +41,7 @@ class AuthorizeDeviceService {
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         final List<dynamic> result = json.decode(responseBody);
 
-        if ((result == null) || (result.isEmpty) || (result[0].isEmpty)) {
+        if ((result.isEmpty) || (result[0].isEmpty)) {
           resultMap = <String, String>{'result': 'failed', 'message': 'Could not download profile. Check your QR code'};
         } else {
           // Do not clear prefs, because then we clear the prefs that were set by authorize login upon app launch

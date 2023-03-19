@@ -190,8 +190,8 @@ class PaymentIcons extends StatelessWidget {
     String? url,
     DateTime? urlExpires,
     String? paymentProvider,
-    num? memberSurcharge,
-    num? nonMemberSurcharge,
+    double? memberSurcharge,
+    double? nonMemberSurcharge,
   ) {
     if ((url == null) || (paymentProvider == null) || (urlExpires == null)) {
       return null;
@@ -247,8 +247,8 @@ class PaymentIcons extends StatelessWidget {
 
               String extrasStr = '';
               num extrasPrice = event.eventPriceForExtras ?? 0;
-              final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
-              final num eventPrice = (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers);
+              final double surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0.0;
+              final double eventPrice = (isMember == 0.0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers);
 
               if (extrasPrice > 0) {
                 // if there are extras, show the extras dialog
@@ -377,7 +377,7 @@ class PaymentIcons extends StatelessWidget {
     return false;
   }
 
-  Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras, num surcharge, String paymentProvider) async {
+  Future<List<dynamic>> payForEvent(double amount, EnumPayForExtras<int> extras, double surcharge, String paymentProvider) async {
     final String hasherId = getStringPref(StringPrefsEnum.userId)!;
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(

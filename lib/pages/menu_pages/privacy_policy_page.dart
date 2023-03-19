@@ -1,10 +1,11 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const PrivacyPolicyPage({Key key}) : super(key: key);
+  const PrivacyPolicyPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   PrivacyPolicyPageState createState() => PrivacyPolicyPageState();
@@ -89,7 +90,10 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 }
 
 class PDFScreen extends StatelessWidget {
-  const PDFScreen(this.pathPDF, {Key key}) : super(key: key);
+  const PDFScreen(
+    this.pathPDF, {
+    Key? key,
+  }) : super(key: key);
 
   final String pathPDF;
 

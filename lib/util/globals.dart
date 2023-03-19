@@ -249,7 +249,7 @@ class TableModel {
   late HasherEventMapService hasherEventMapService;
   late HasherKennelMapService hasherKennelMapService;
 
-  List<KennelListAggregate> globalKennelMainPageList = <KennelListAggregate>[];
+  List<KennelListAggregate>? globalKennelMainPageList;
 
   void initializeGlobals() {
     citiesTableHelper = CitiesTableHelper();

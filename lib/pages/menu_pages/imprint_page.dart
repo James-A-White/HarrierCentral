@@ -1,10 +1,11 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ImprintPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const ImprintPage({Key key}) : super(key: key);
+  const ImprintPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   ImprintPageState createState() => ImprintPageState();
@@ -53,7 +54,9 @@ class ImprintPageState extends State<ImprintPage> {
 }
 
 class ImprintPageContent extends StatefulWidget {
-  const ImprintPageContent({Key key}) : super(key: key);
+  const ImprintPageContent({
+    Key? key,
+  }) : super(key: key);
 
   @override
   ImprintPageContentState createState() => ImprintPageContentState();
@@ -64,10 +67,10 @@ class ImprintPageContentState extends State<ImprintPageContent> {
 
   TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.2);
 
-  String appName;
-  String packageName;
-  String version;
-  String buildNumber;
+  String appName = '';
+  String packageName = '';
+  String version = '';
+  String buildNumber = '';
 
   @override
   Widget build(BuildContext context) {

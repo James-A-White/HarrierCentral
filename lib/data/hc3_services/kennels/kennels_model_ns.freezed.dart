@@ -42,16 +42,16 @@ mixin _$KennelsModel {
   int get canEditRunAttendence => throw _privateConstructorUsedError;
   int get allowNegativeCredit => throw _privateConstructorUsedError;
   int get allowSelfPayment => throw _privateConstructorUsedError;
-  num? get kennelLatitude => throw _privateConstructorUsedError;
-  num? get kennelLongitude => throw _privateConstructorUsedError;
-  num get defaultPriceForMembers => throw _privateConstructorUsedError;
-  num get defaultPriceForNonMembers => throw _privateConstructorUsedError;
+  double? get kennelLatitude => throw _privateConstructorUsedError;
+  double? get kennelLongitude => throw _privateConstructorUsedError;
+  double get defaultPriceForMembers => throw _privateConstructorUsedError;
+  double get defaultPriceForNonMembers => throw _privateConstructorUsedError;
   int get membershipDurationInMonths => throw _privateConstructorUsedError;
   DateTime get defaultRunStartTime => throw _privateConstructorUsedError;
   String? get currencyCode => throw _privateConstructorUsedError;
   String? get primaryCultureCode => throw _privateConstructorUsedError;
   String? get currencySymbol => throw _privateConstructorUsedError;
-  num? get digitsAfterDecimal => throw _privateConstructorUsedError;
+  int? get digitsAfterDecimal => throw _privateConstructorUsedError;
   String? get bankScheme => throw _privateConstructorUsedError;
   String? get bankAccountNumber => throw _privateConstructorUsedError;
   String? get bankBic => throw _privateConstructorUsedError;
@@ -59,20 +59,23 @@ mixin _$KennelsModel {
   String? get kennelPaymentScheme => throw _privateConstructorUsedError;
   String? get kennelPaymentUrl => throw _privateConstructorUsedError;
   DateTime? get kennelPaymentUrlExpires => throw _privateConstructorUsedError;
-  num? get kennelPaymentMemberSurcharge => throw _privateConstructorUsedError;
-  num? get kennelPaymentNonMemberSurcharge =>
+  double? get kennelPaymentMemberSurcharge =>
+      throw _privateConstructorUsedError;
+  double? get kennelPaymentNonMemberSurcharge =>
       throw _privateConstructorUsedError;
   String? get kennelPaymentScheme2 => throw _privateConstructorUsedError;
   String? get kennelPaymentUrl2 => throw _privateConstructorUsedError;
   DateTime? get kennelPaymentUrlExpires2 => throw _privateConstructorUsedError;
-  num? get kennelPaymentMemberSurcharge2 => throw _privateConstructorUsedError;
-  num? get kennelPaymentNonMemberSurcharge2 =>
+  double? get kennelPaymentMemberSurcharge2 =>
+      throw _privateConstructorUsedError;
+  double? get kennelPaymentNonMemberSurcharge2 =>
       throw _privateConstructorUsedError;
   String? get kennelPaymentScheme3 => throw _privateConstructorUsedError;
   String? get kennelPaymentUrl3 => throw _privateConstructorUsedError;
   DateTime? get kennelPaymentUrlExpires3 => throw _privateConstructorUsedError;
-  num? get kennelPaymentMemberSurcharge3 => throw _privateConstructorUsedError;
-  num? get kennelPaymentNonMemberSurcharge3 =>
+  double? get kennelPaymentMemberSurcharge3 =>
+      throw _privateConstructorUsedError;
+  double? get kennelPaymentNonMemberSurcharge3 =>
       throw _privateConstructorUsedError;
   DateTime? get runCountStartDate => throw _privateConstructorUsedError;
   String? get kennelMismanagementTeam => throw _privateConstructorUsedError;
@@ -115,16 +118,16 @@ abstract class $KennelsModelCopyWith<$Res> {
       int canEditRunAttendence,
       int allowNegativeCredit,
       int allowSelfPayment,
-      num? kennelLatitude,
-      num? kennelLongitude,
-      num defaultPriceForMembers,
-      num defaultPriceForNonMembers,
+      double? kennelLatitude,
+      double? kennelLongitude,
+      double defaultPriceForMembers,
+      double defaultPriceForNonMembers,
       int membershipDurationInMonths,
       DateTime defaultRunStartTime,
       String? currencyCode,
       String? primaryCultureCode,
       String? currencySymbol,
-      num? digitsAfterDecimal,
+      int? digitsAfterDecimal,
       String? bankScheme,
       String? bankAccountNumber,
       String? bankBic,
@@ -132,18 +135,18 @@ abstract class $KennelsModelCopyWith<$Res> {
       String? kennelPaymentScheme,
       String? kennelPaymentUrl,
       DateTime? kennelPaymentUrlExpires,
-      num? kennelPaymentMemberSurcharge,
-      num? kennelPaymentNonMemberSurcharge,
+      double? kennelPaymentMemberSurcharge,
+      double? kennelPaymentNonMemberSurcharge,
       String? kennelPaymentScheme2,
       String? kennelPaymentUrl2,
       DateTime? kennelPaymentUrlExpires2,
-      num? kennelPaymentMemberSurcharge2,
-      num? kennelPaymentNonMemberSurcharge2,
+      double? kennelPaymentMemberSurcharge2,
+      double? kennelPaymentNonMemberSurcharge2,
       String? kennelPaymentScheme3,
       String? kennelPaymentUrl3,
       DateTime? kennelPaymentUrlExpires3,
-      num? kennelPaymentMemberSurcharge3,
-      num? kennelPaymentNonMemberSurcharge3,
+      double? kennelPaymentMemberSurcharge3,
+      double? kennelPaymentNonMemberSurcharge3,
       DateTime? runCountStartDate,
       String? kennelMismanagementTeam,
       int? distancePreference,
@@ -313,19 +316,19 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
       kennelLatitude: freezed == kennelLatitude
           ? _value.kennelLatitude
           : kennelLatitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelLongitude: freezed == kennelLongitude
           ? _value.kennelLongitude
           : kennelLongitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       defaultPriceForMembers: null == defaultPriceForMembers
           ? _value.defaultPriceForMembers
           : defaultPriceForMembers // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       defaultPriceForNonMembers: null == defaultPriceForNonMembers
           ? _value.defaultPriceForNonMembers
           : defaultPriceForNonMembers // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       membershipDurationInMonths: null == membershipDurationInMonths
           ? _value.membershipDurationInMonths
           : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
@@ -349,7 +352,7 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
       digitsAfterDecimal: freezed == digitsAfterDecimal
           ? _value.digitsAfterDecimal
           : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       bankScheme: freezed == bankScheme
           ? _value.bankScheme
           : bankScheme // ignore: cast_nullable_to_non_nullable
@@ -381,12 +384,12 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
       kennelPaymentMemberSurcharge: freezed == kennelPaymentMemberSurcharge
           ? _value.kennelPaymentMemberSurcharge
           : kennelPaymentMemberSurcharge // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentNonMemberSurcharge: freezed ==
               kennelPaymentNonMemberSurcharge
           ? _value.kennelPaymentNonMemberSurcharge
           : kennelPaymentNonMemberSurcharge // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentScheme2: freezed == kennelPaymentScheme2
           ? _value.kennelPaymentScheme2
           : kennelPaymentScheme2 // ignore: cast_nullable_to_non_nullable
@@ -402,12 +405,12 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
       kennelPaymentMemberSurcharge2: freezed == kennelPaymentMemberSurcharge2
           ? _value.kennelPaymentMemberSurcharge2
           : kennelPaymentMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentNonMemberSurcharge2: freezed ==
               kennelPaymentNonMemberSurcharge2
           ? _value.kennelPaymentNonMemberSurcharge2
           : kennelPaymentNonMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentScheme3: freezed == kennelPaymentScheme3
           ? _value.kennelPaymentScheme3
           : kennelPaymentScheme3 // ignore: cast_nullable_to_non_nullable
@@ -423,12 +426,12 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
       kennelPaymentMemberSurcharge3: freezed == kennelPaymentMemberSurcharge3
           ? _value.kennelPaymentMemberSurcharge3
           : kennelPaymentMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentNonMemberSurcharge3: freezed ==
               kennelPaymentNonMemberSurcharge3
           ? _value.kennelPaymentNonMemberSurcharge3
           : kennelPaymentNonMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       runCountStartDate: freezed == runCountStartDate
           ? _value.runCountStartDate
           : runCountStartDate // ignore: cast_nullable_to_non_nullable
@@ -484,16 +487,16 @@ abstract class _$$_KennelsModelCopyWith<$Res>
       int canEditRunAttendence,
       int allowNegativeCredit,
       int allowSelfPayment,
-      num? kennelLatitude,
-      num? kennelLongitude,
-      num defaultPriceForMembers,
-      num defaultPriceForNonMembers,
+      double? kennelLatitude,
+      double? kennelLongitude,
+      double defaultPriceForMembers,
+      double defaultPriceForNonMembers,
       int membershipDurationInMonths,
       DateTime defaultRunStartTime,
       String? currencyCode,
       String? primaryCultureCode,
       String? currencySymbol,
-      num? digitsAfterDecimal,
+      int? digitsAfterDecimal,
       String? bankScheme,
       String? bankAccountNumber,
       String? bankBic,
@@ -501,18 +504,18 @@ abstract class _$$_KennelsModelCopyWith<$Res>
       String? kennelPaymentScheme,
       String? kennelPaymentUrl,
       DateTime? kennelPaymentUrlExpires,
-      num? kennelPaymentMemberSurcharge,
-      num? kennelPaymentNonMemberSurcharge,
+      double? kennelPaymentMemberSurcharge,
+      double? kennelPaymentNonMemberSurcharge,
       String? kennelPaymentScheme2,
       String? kennelPaymentUrl2,
       DateTime? kennelPaymentUrlExpires2,
-      num? kennelPaymentMemberSurcharge2,
-      num? kennelPaymentNonMemberSurcharge2,
+      double? kennelPaymentMemberSurcharge2,
+      double? kennelPaymentNonMemberSurcharge2,
       String? kennelPaymentScheme3,
       String? kennelPaymentUrl3,
       DateTime? kennelPaymentUrlExpires3,
-      num? kennelPaymentMemberSurcharge3,
-      num? kennelPaymentNonMemberSurcharge3,
+      double? kennelPaymentMemberSurcharge3,
+      double? kennelPaymentNonMemberSurcharge3,
       DateTime? runCountStartDate,
       String? kennelMismanagementTeam,
       int? distancePreference,
@@ -680,19 +683,19 @@ class __$$_KennelsModelCopyWithImpl<$Res>
       kennelLatitude: freezed == kennelLatitude
           ? _value.kennelLatitude
           : kennelLatitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelLongitude: freezed == kennelLongitude
           ? _value.kennelLongitude
           : kennelLongitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       defaultPriceForMembers: null == defaultPriceForMembers
           ? _value.defaultPriceForMembers
           : defaultPriceForMembers // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       defaultPriceForNonMembers: null == defaultPriceForNonMembers
           ? _value.defaultPriceForNonMembers
           : defaultPriceForNonMembers // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       membershipDurationInMonths: null == membershipDurationInMonths
           ? _value.membershipDurationInMonths
           : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
@@ -716,7 +719,7 @@ class __$$_KennelsModelCopyWithImpl<$Res>
       digitsAfterDecimal: freezed == digitsAfterDecimal
           ? _value.digitsAfterDecimal
           : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       bankScheme: freezed == bankScheme
           ? _value.bankScheme
           : bankScheme // ignore: cast_nullable_to_non_nullable
@@ -748,12 +751,12 @@ class __$$_KennelsModelCopyWithImpl<$Res>
       kennelPaymentMemberSurcharge: freezed == kennelPaymentMemberSurcharge
           ? _value.kennelPaymentMemberSurcharge
           : kennelPaymentMemberSurcharge // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentNonMemberSurcharge: freezed ==
               kennelPaymentNonMemberSurcharge
           ? _value.kennelPaymentNonMemberSurcharge
           : kennelPaymentNonMemberSurcharge // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentScheme2: freezed == kennelPaymentScheme2
           ? _value.kennelPaymentScheme2
           : kennelPaymentScheme2 // ignore: cast_nullable_to_non_nullable
@@ -769,12 +772,12 @@ class __$$_KennelsModelCopyWithImpl<$Res>
       kennelPaymentMemberSurcharge2: freezed == kennelPaymentMemberSurcharge2
           ? _value.kennelPaymentMemberSurcharge2
           : kennelPaymentMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentNonMemberSurcharge2: freezed ==
               kennelPaymentNonMemberSurcharge2
           ? _value.kennelPaymentNonMemberSurcharge2
           : kennelPaymentNonMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentScheme3: freezed == kennelPaymentScheme3
           ? _value.kennelPaymentScheme3
           : kennelPaymentScheme3 // ignore: cast_nullable_to_non_nullable
@@ -790,12 +793,12 @@ class __$$_KennelsModelCopyWithImpl<$Res>
       kennelPaymentMemberSurcharge3: freezed == kennelPaymentMemberSurcharge3
           ? _value.kennelPaymentMemberSurcharge3
           : kennelPaymentMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       kennelPaymentNonMemberSurcharge3: freezed ==
               kennelPaymentNonMemberSurcharge3
           ? _value.kennelPaymentNonMemberSurcharge3
           : kennelPaymentNonMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       runCountStartDate: freezed == runCountStartDate
           ? _value.runCountStartDate
           : runCountStartDate // ignore: cast_nullable_to_non_nullable
@@ -929,13 +932,13 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final int allowSelfPayment;
   @override
-  final num? kennelLatitude;
+  final double? kennelLatitude;
   @override
-  final num? kennelLongitude;
+  final double? kennelLongitude;
   @override
-  final num defaultPriceForMembers;
+  final double defaultPriceForMembers;
   @override
-  final num defaultPriceForNonMembers;
+  final double defaultPriceForNonMembers;
   @override
   final int membershipDurationInMonths;
   @override
@@ -947,7 +950,7 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final String? currencySymbol;
   @override
-  final num? digitsAfterDecimal;
+  final int? digitsAfterDecimal;
   @override
   final String? bankScheme;
   @override
@@ -963,9 +966,9 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final DateTime? kennelPaymentUrlExpires;
   @override
-  final num? kennelPaymentMemberSurcharge;
+  final double? kennelPaymentMemberSurcharge;
   @override
-  final num? kennelPaymentNonMemberSurcharge;
+  final double? kennelPaymentNonMemberSurcharge;
   @override
   final String? kennelPaymentScheme2;
   @override
@@ -973,9 +976,9 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final DateTime? kennelPaymentUrlExpires2;
   @override
-  final num? kennelPaymentMemberSurcharge2;
+  final double? kennelPaymentMemberSurcharge2;
   @override
-  final num? kennelPaymentNonMemberSurcharge2;
+  final double? kennelPaymentNonMemberSurcharge2;
   @override
   final String? kennelPaymentScheme3;
   @override
@@ -983,9 +986,9 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final DateTime? kennelPaymentUrlExpires3;
   @override
-  final num? kennelPaymentMemberSurcharge3;
+  final double? kennelPaymentMemberSurcharge3;
   @override
-  final num? kennelPaymentNonMemberSurcharge3;
+  final double? kennelPaymentNonMemberSurcharge3;
   @override
   final DateTime? runCountStartDate;
   @override
@@ -1196,16 +1199,16 @@ abstract class _KennelsModel implements KennelsModel {
       required final int canEditRunAttendence,
       required final int allowNegativeCredit,
       required final int allowSelfPayment,
-      final num? kennelLatitude,
-      final num? kennelLongitude,
-      required final num defaultPriceForMembers,
-      required final num defaultPriceForNonMembers,
+      final double? kennelLatitude,
+      final double? kennelLongitude,
+      required final double defaultPriceForMembers,
+      required final double defaultPriceForNonMembers,
       required final int membershipDurationInMonths,
       required final DateTime defaultRunStartTime,
       final String? currencyCode,
       final String? primaryCultureCode,
       final String? currencySymbol,
-      final num? digitsAfterDecimal,
+      final int? digitsAfterDecimal,
       final String? bankScheme,
       final String? bankAccountNumber,
       final String? bankBic,
@@ -1213,18 +1216,18 @@ abstract class _KennelsModel implements KennelsModel {
       final String? kennelPaymentScheme,
       final String? kennelPaymentUrl,
       final DateTime? kennelPaymentUrlExpires,
-      final num? kennelPaymentMemberSurcharge,
-      final num? kennelPaymentNonMemberSurcharge,
+      final double? kennelPaymentMemberSurcharge,
+      final double? kennelPaymentNonMemberSurcharge,
       final String? kennelPaymentScheme2,
       final String? kennelPaymentUrl2,
       final DateTime? kennelPaymentUrlExpires2,
-      final num? kennelPaymentMemberSurcharge2,
-      final num? kennelPaymentNonMemberSurcharge2,
+      final double? kennelPaymentMemberSurcharge2,
+      final double? kennelPaymentNonMemberSurcharge2,
       final String? kennelPaymentScheme3,
       final String? kennelPaymentUrl3,
       final DateTime? kennelPaymentUrlExpires3,
-      final num? kennelPaymentMemberSurcharge3,
-      final num? kennelPaymentNonMemberSurcharge3,
+      final double? kennelPaymentMemberSurcharge3,
+      final double? kennelPaymentNonMemberSurcharge3,
       final DateTime? runCountStartDate,
       final String? kennelMismanagementTeam,
       final int? distancePreference,
@@ -1279,13 +1282,13 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   int get allowSelfPayment;
   @override
-  num? get kennelLatitude;
+  double? get kennelLatitude;
   @override
-  num? get kennelLongitude;
+  double? get kennelLongitude;
   @override
-  num get defaultPriceForMembers;
+  double get defaultPriceForMembers;
   @override
-  num get defaultPriceForNonMembers;
+  double get defaultPriceForNonMembers;
   @override
   int get membershipDurationInMonths;
   @override
@@ -1297,7 +1300,7 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   String? get currencySymbol;
   @override
-  num? get digitsAfterDecimal;
+  int? get digitsAfterDecimal;
   @override
   String? get bankScheme;
   @override
@@ -1313,9 +1316,9 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   DateTime? get kennelPaymentUrlExpires;
   @override
-  num? get kennelPaymentMemberSurcharge;
+  double? get kennelPaymentMemberSurcharge;
   @override
-  num? get kennelPaymentNonMemberSurcharge;
+  double? get kennelPaymentNonMemberSurcharge;
   @override
   String? get kennelPaymentScheme2;
   @override
@@ -1323,9 +1326,9 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   DateTime? get kennelPaymentUrlExpires2;
   @override
-  num? get kennelPaymentMemberSurcharge2;
+  double? get kennelPaymentMemberSurcharge2;
   @override
-  num? get kennelPaymentNonMemberSurcharge2;
+  double? get kennelPaymentNonMemberSurcharge2;
   @override
   String? get kennelPaymentScheme3;
   @override
@@ -1333,9 +1336,9 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   DateTime? get kennelPaymentUrlExpires3;
   @override
-  num? get kennelPaymentMemberSurcharge3;
+  double? get kennelPaymentMemberSurcharge3;
   @override
-  num? get kennelPaymentNonMemberSurcharge3;
+  double? get kennelPaymentNonMemberSurcharge3;
   @override
   DateTime? get runCountStartDate;
   @override

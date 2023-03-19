@@ -22,7 +22,7 @@ class KennelMemberListItem extends StatelessWidget {
   }) : super(key: key);
 
   final KennelListAggregate kennelListAggregate;
-  final KennelMembersResults kennelMember;
+  final KennelMemberResultsModel kennelMember;
   final Function modifyMembershipCallback;
   final Function toggleEmailPreferenceCallback;
   final Function refreshRunCountsCallback;
@@ -32,32 +32,34 @@ class KennelMemberListItem extends StatelessWidget {
     return InkWell(
       onTap: () {
         // NULLSAFETODO
-        // Navigator.of(context)
-        //     .push<HashersModel>(
-        //   MaterialPageRoute<HashersModel>(
-        //     //maintainState: false,
-        //     builder: (BuildContext context) => HasherProfilePage(
-        //       dataContext: EnumDataContext.kennel,
-        //       pageType: EnumMyProfilePageType.anyHasherProfile,
-        //       hasherId: kennelMember.hasherId,
-        //       uiElementsToDisplay: HasherProfilePage.flagUiElement_previousRunCount | HasherProfilePage.flagUiElement_getInviteCodeButton,
-        //       kennelShortName: kennelMember.kennelShortName,
-        //       kennelId: kennelMember.kennelId,
-        //     ),
-        //   ),
-        // )
-        //     .then((HashersModel result) async {
-        //   if (result != null) {
-        //     bool refreshThisUserData = false;
-        //     kennelMember.dispName = result.dispName;
-        //     kennelMember.photo = result.photo;
-        //     if (result.hasherId == getStringPref(StringPrefsEnum.userId)) {
-        //       refreshThisUserData = true;
-        //     }
+        Navigator.of(context)
+            .push<HashersModel>(
+              MaterialPageRoute<HashersModel>(
+                //maintainState: false,
+                builder: (BuildContext context) => HasherProfilePage(
+                  dataContext: EnumDataContext.kennel,
+                  pageType: EnumMyProfilePageType.anyHasherProfile,
+                  hasherId: kennelMember.hasherId,
+                  uiElementsToDisplay: HasherProfilePage.flagUiElement_previousRunCount | HasherProfilePage.flagUiElement_getInviteCodeButton,
+                  kennelShortName: kennelMember.kennelShortName ?? '',
+                  kennelId: kennelMember.kennelId,
+                ),
+              ),
+            )
+            .then<dynamic>((HashersModel result) async {
+              bool refreshThisUserData = false;
 
-        //     await refreshRunCountsCallback(refreshThisUserData);
-        //   }
-        // });
+              kennelMember.dispName = result.dispName;
+              kennelMember.photo = result.photo;
+
+              kennelMember = kennelMember.copyWith();
+
+              if (result.hasherId == getStringPref(StringPrefsEnum.userId)) {
+                refreshThisUserData = true;
+              }
+
+              await refreshRunCountsCallback(refreshThisUserData);
+            } as FutureOr Function(HashersModel? value));
       },
       child: IntrinsicWidth(
         stepWidth: MediaQuery.of(context).size.width,

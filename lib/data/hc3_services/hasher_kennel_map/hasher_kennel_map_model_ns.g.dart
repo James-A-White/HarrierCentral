@@ -26,8 +26,8 @@ _$_HasherKennelMapModel _$$_HasherKennelMapModelFromJson(
       historicalTotalRunCount: json['historicalTotalRunCount'] as int,
       historicalHaringCount: json['historicalHaringCount'] as int,
       historicalCountIsEstimate: json['historicalCountIsEstimate'] as int,
-      kennelCredit: json['kennelCredit'] as num,
-      discountAmount: json['discountAmount'] as num,
+      kennelCredit: (json['kennelCredit'] as num).toDouble(),
+      discountAmount: (json['discountAmount'] as num).toDouble(),
       discountPercent: json['discountPercent'] as int,
       discountDescription: json['discountDescription'] as String,
       dateOfLastRun: json['dateOfLastRun'] == null

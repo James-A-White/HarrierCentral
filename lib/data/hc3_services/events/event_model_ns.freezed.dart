@@ -31,16 +31,16 @@ mixin _$EventModel {
   int get eventInboundIntegrationId => throw _privateConstructorUsedError;
   int get eventNumber => throw _privateConstructorUsedError;
   String get eventName => throw _privateConstructorUsedError;
-  num? get hcLatitude => throw _privateConstructorUsedError;
-  num? get hcLongitude => throw _privateConstructorUsedError;
-  num? get fbLatitude => throw _privateConstructorUsedError;
-  num? get fbLongitude => throw _privateConstructorUsedError;
-  num? get eventPriceForMembers => throw _privateConstructorUsedError;
-  num? get eventPriceForNonMembers => throw _privateConstructorUsedError;
+  double? get hcLatitude => throw _privateConstructorUsedError;
+  double? get hcLongitude => throw _privateConstructorUsedError;
+  double? get fbLatitude => throw _privateConstructorUsedError;
+  double? get fbLongitude => throw _privateConstructorUsedError;
+  double? get eventPriceForMembers => throw _privateConstructorUsedError;
+  double? get eventPriceForNonMembers => throw _privateConstructorUsedError;
   int? get evtDisseminateAllowWebLinks => throw _privateConstructorUsedError;
   String? get eventFacebookId => throw _privateConstructorUsedError;
-  num? get absoluteEventNumber => throw _privateConstructorUsedError;
-  num? get canEditRunAttendence => throw _privateConstructorUsedError;
+  int? get absoluteEventNumber => throw _privateConstructorUsedError;
+  int? get canEditRunAttendence => throw _privateConstructorUsedError;
   String? get eventImage => throw _privateConstructorUsedError;
   String? get eventDescription => throw _privateConstructorUsedError;
   String? get eventUrl => throw _privateConstructorUsedError;
@@ -56,7 +56,7 @@ mixin _$EventModel {
   String? get eventPaymentUrl => throw _privateConstructorUsedError;
   DateTime? get eventPaymentUrlExpires => throw _privateConstructorUsedError;
   int? get unconfirmedBankXferCount => throw _privateConstructorUsedError;
-  num? get eventPriceForExtras => throw _privateConstructorUsedError;
+  double? get eventPriceForExtras => throw _privateConstructorUsedError;
   String? get extrasDescription => throw _privateConstructorUsedError;
   int get doTrackHashCash => throw _privateConstructorUsedError;
   int get tags1 => throw _privateConstructorUsedError;
@@ -93,16 +93,16 @@ abstract class $EventModelCopyWith<$Res> {
       int eventInboundIntegrationId,
       int eventNumber,
       String eventName,
-      num? hcLatitude,
-      num? hcLongitude,
-      num? fbLatitude,
-      num? fbLongitude,
-      num? eventPriceForMembers,
-      num? eventPriceForNonMembers,
+      double? hcLatitude,
+      double? hcLongitude,
+      double? fbLatitude,
+      double? fbLongitude,
+      double? eventPriceForMembers,
+      double? eventPriceForNonMembers,
       int? evtDisseminateAllowWebLinks,
       String? eventFacebookId,
-      num? absoluteEventNumber,
-      num? canEditRunAttendence,
+      int? absoluteEventNumber,
+      int? canEditRunAttendence,
       String? eventImage,
       String? eventDescription,
       String? eventUrl,
@@ -118,7 +118,7 @@ abstract class $EventModelCopyWith<$Res> {
       String? eventPaymentUrl,
       DateTime? eventPaymentUrlExpires,
       int? unconfirmedBankXferCount,
-      num? eventPriceForExtras,
+      double? eventPriceForExtras,
       String? extrasDescription,
       int doTrackHashCash,
       int tags1,
@@ -242,27 +242,27 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
       hcLatitude: freezed == hcLatitude
           ? _value.hcLatitude
           : hcLatitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       hcLongitude: freezed == hcLongitude
           ? _value.hcLongitude
           : hcLongitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       fbLatitude: freezed == fbLatitude
           ? _value.fbLatitude
           : fbLatitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       fbLongitude: freezed == fbLongitude
           ? _value.fbLongitude
           : fbLongitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       eventPriceForMembers: freezed == eventPriceForMembers
           ? _value.eventPriceForMembers
           : eventPriceForMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       eventPriceForNonMembers: freezed == eventPriceForNonMembers
           ? _value.eventPriceForNonMembers
           : eventPriceForNonMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       evtDisseminateAllowWebLinks: freezed == evtDisseminateAllowWebLinks
           ? _value.evtDisseminateAllowWebLinks
           : evtDisseminateAllowWebLinks // ignore: cast_nullable_to_non_nullable
@@ -274,11 +274,11 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
       absoluteEventNumber: freezed == absoluteEventNumber
           ? _value.absoluteEventNumber
           : absoluteEventNumber // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       canEditRunAttendence: freezed == canEditRunAttendence
           ? _value.canEditRunAttendence
           : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       eventImage: freezed == eventImage
           ? _value.eventImage
           : eventImage // ignore: cast_nullable_to_non_nullable
@@ -342,7 +342,7 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
       eventPriceForExtras: freezed == eventPriceForExtras
           ? _value.eventPriceForExtras
           : eventPriceForExtras // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       extrasDescription: freezed == extrasDescription
           ? _value.extrasDescription
           : extrasDescription // ignore: cast_nullable_to_non_nullable
@@ -411,16 +411,16 @@ abstract class _$$_EventModelCopyWith<$Res>
       int eventInboundIntegrationId,
       int eventNumber,
       String eventName,
-      num? hcLatitude,
-      num? hcLongitude,
-      num? fbLatitude,
-      num? fbLongitude,
-      num? eventPriceForMembers,
-      num? eventPriceForNonMembers,
+      double? hcLatitude,
+      double? hcLongitude,
+      double? fbLatitude,
+      double? fbLongitude,
+      double? eventPriceForMembers,
+      double? eventPriceForNonMembers,
       int? evtDisseminateAllowWebLinks,
       String? eventFacebookId,
-      num? absoluteEventNumber,
-      num? canEditRunAttendence,
+      int? absoluteEventNumber,
+      int? canEditRunAttendence,
       String? eventImage,
       String? eventDescription,
       String? eventUrl,
@@ -436,7 +436,7 @@ abstract class _$$_EventModelCopyWith<$Res>
       String? eventPaymentUrl,
       DateTime? eventPaymentUrlExpires,
       int? unconfirmedBankXferCount,
-      num? eventPriceForExtras,
+      double? eventPriceForExtras,
       String? extrasDescription,
       int doTrackHashCash,
       int tags1,
@@ -558,27 +558,27 @@ class __$$_EventModelCopyWithImpl<$Res>
       hcLatitude: freezed == hcLatitude
           ? _value.hcLatitude
           : hcLatitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       hcLongitude: freezed == hcLongitude
           ? _value.hcLongitude
           : hcLongitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       fbLatitude: freezed == fbLatitude
           ? _value.fbLatitude
           : fbLatitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       fbLongitude: freezed == fbLongitude
           ? _value.fbLongitude
           : fbLongitude // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       eventPriceForMembers: freezed == eventPriceForMembers
           ? _value.eventPriceForMembers
           : eventPriceForMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       eventPriceForNonMembers: freezed == eventPriceForNonMembers
           ? _value.eventPriceForNonMembers
           : eventPriceForNonMembers // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       evtDisseminateAllowWebLinks: freezed == evtDisseminateAllowWebLinks
           ? _value.evtDisseminateAllowWebLinks
           : evtDisseminateAllowWebLinks // ignore: cast_nullable_to_non_nullable
@@ -590,11 +590,11 @@ class __$$_EventModelCopyWithImpl<$Res>
       absoluteEventNumber: freezed == absoluteEventNumber
           ? _value.absoluteEventNumber
           : absoluteEventNumber // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       canEditRunAttendence: freezed == canEditRunAttendence
           ? _value.canEditRunAttendence
           : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       eventImage: freezed == eventImage
           ? _value.eventImage
           : eventImage // ignore: cast_nullable_to_non_nullable
@@ -658,7 +658,7 @@ class __$$_EventModelCopyWithImpl<$Res>
       eventPriceForExtras: freezed == eventPriceForExtras
           ? _value.eventPriceForExtras
           : eventPriceForExtras // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       extrasDescription: freezed == extrasDescription
           ? _value.extrasDescription
           : extrasDescription // ignore: cast_nullable_to_non_nullable
@@ -786,25 +786,25 @@ class _$_EventModel implements _EventModel {
   @override
   final String eventName;
   @override
-  final num? hcLatitude;
+  final double? hcLatitude;
   @override
-  final num? hcLongitude;
+  final double? hcLongitude;
   @override
-  final num? fbLatitude;
+  final double? fbLatitude;
   @override
-  final num? fbLongitude;
+  final double? fbLongitude;
   @override
-  final num? eventPriceForMembers;
+  final double? eventPriceForMembers;
   @override
-  final num? eventPriceForNonMembers;
+  final double? eventPriceForNonMembers;
   @override
   final int? evtDisseminateAllowWebLinks;
   @override
   final String? eventFacebookId;
   @override
-  final num? absoluteEventNumber;
+  final int? absoluteEventNumber;
   @override
-  final num? canEditRunAttendence;
+  final int? canEditRunAttendence;
   @override
   final String? eventImage;
   @override
@@ -836,7 +836,7 @@ class _$_EventModel implements _EventModel {
   @override
   final int? unconfirmedBankXferCount;
   @override
-  final num? eventPriceForExtras;
+  final double? eventPriceForExtras;
   @override
   final String? extrasDescription;
   @override
@@ -1032,16 +1032,16 @@ abstract class _EventModel implements EventModel {
       required final int eventInboundIntegrationId,
       required final int eventNumber,
       required final String eventName,
-      final num? hcLatitude,
-      final num? hcLongitude,
-      final num? fbLatitude,
-      final num? fbLongitude,
-      final num? eventPriceForMembers,
-      final num? eventPriceForNonMembers,
+      final double? hcLatitude,
+      final double? hcLongitude,
+      final double? fbLatitude,
+      final double? fbLongitude,
+      final double? eventPriceForMembers,
+      final double? eventPriceForNonMembers,
       final int? evtDisseminateAllowWebLinks,
       final String? eventFacebookId,
-      final num? absoluteEventNumber,
-      final num? canEditRunAttendence,
+      final int? absoluteEventNumber,
+      final int? canEditRunAttendence,
       final String? eventImage,
       final String? eventDescription,
       final String? eventUrl,
@@ -1057,7 +1057,7 @@ abstract class _EventModel implements EventModel {
       final String? eventPaymentUrl,
       final DateTime? eventPaymentUrlExpires,
       final int? unconfirmedBankXferCount,
-      final num? eventPriceForExtras,
+      final double? eventPriceForExtras,
       final String? extrasDescription,
       required final int doTrackHashCash,
       required final int tags1,
@@ -1096,25 +1096,25 @@ abstract class _EventModel implements EventModel {
   @override
   String get eventName;
   @override
-  num? get hcLatitude;
+  double? get hcLatitude;
   @override
-  num? get hcLongitude;
+  double? get hcLongitude;
   @override
-  num? get fbLatitude;
+  double? get fbLatitude;
   @override
-  num? get fbLongitude;
+  double? get fbLongitude;
   @override
-  num? get eventPriceForMembers;
+  double? get eventPriceForMembers;
   @override
-  num? get eventPriceForNonMembers;
+  double? get eventPriceForNonMembers;
   @override
   int? get evtDisseminateAllowWebLinks;
   @override
   String? get eventFacebookId;
   @override
-  num? get absoluteEventNumber;
+  int? get absoluteEventNumber;
   @override
-  num? get canEditRunAttendence;
+  int? get canEditRunAttendence;
   @override
   String? get eventImage;
   @override
@@ -1146,7 +1146,7 @@ abstract class _EventModel implements EventModel {
   @override
   int? get unconfirmedBankXferCount;
   @override
-  num? get eventPriceForExtras;
+  double? get eventPriceForExtras;
   @override
   String? get extrasDescription;
   @override

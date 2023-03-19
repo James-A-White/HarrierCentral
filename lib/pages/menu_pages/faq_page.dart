@@ -1,10 +1,11 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class FaqPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const FaqPage({Key key}) : super(key: key);
+  const FaqPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   FaqPageState createState() => FaqPageState();
@@ -51,7 +52,9 @@ class FaqPageState extends State<FaqPage> {
 }
 
 class FaqPageContent extends StatefulWidget {
-  const FaqPageContent({Key key}) : super(key: key);
+  const FaqPageContent({
+    Key? key,
+  }) : super(key: key);
 
   @override
   FaqPageContentState createState() => FaqPageContentState();
@@ -166,7 +169,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -187,7 +190,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -213,7 +216,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),

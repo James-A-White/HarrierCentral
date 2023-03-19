@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
 
@@ -12,14 +11,14 @@ class FutureRunsListPage extends StatefulWidget {
 
 class FutureRunListPageState extends State<FutureRunsListPage> {
   int pageIndex = 1;
-  List<dynamic> _allRuns;
-  List<dynamic> _filteredRuns;
+  List<dynamic>? _allRuns;
+  List<dynamic>? _filteredRuns;
 
   bool _showRsvpInstructions = false;
 
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
-  String _searchRunsText;
+  String _searchRunsText = '';
   final ScrollController _scrollController = ScrollController(initialScrollOffset: 100.0);
 
   @override
@@ -181,7 +180,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   Future<void> refreshFromTable(bool forceRefresh) async {
-    if (forceRefresh || (_allRuns == null) || (_allRuns.isEmpty)) {
+    if (forceRefresh || (_allRuns == null) || (_allRuns!.isEmpty)) {
       _allRuns = await QueryRuns.getRunDetailsAggregates(true);
       _filterRuns();
 
@@ -202,9 +201,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   ///
   void _filterRuns() {
     _showRsvpInstructions = true;
-    _filteredRuns = QueryRuns.doRunsFilter(_searchRunsText, _allRuns);
+    _filteredRuns = QueryRuns.doRunsFilter(_searchRunsText, _allRuns ?? <dynamic>[]);
 
-    _filteredRuns.sort((dynamic a, dynamic b) {
+    _filteredRuns!.sort((dynamic a, dynamic b) {
       // start by sorting by run classification, closest runs should be listed first, then runs
       // from Kennels the user is following, then the rest
       int result = a.extensions.runClassification.compareTo(b.extensions.runClassification);
@@ -228,28 +227,28 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     int lastInsertedClassification = 4;
 
-    final int listLength = _filteredRuns.length;
+    final int listLength = _filteredRuns!.length;
 
     for (int i = listLength - 1; i >= 0; i--) {
-      if (_filteredRuns[i].extensions.runClassification == 1) {
+      if (_filteredRuns![i].extensions.runClassification == 1) {
         _showRsvpInstructions = false;
       }
 
       int currentClassification = 1;
       if (i > 0) {
-        currentClassification = _filteredRuns[i - 1].extensions.runClassification;
+        currentClassification = _filteredRuns![i - 1].extensions.runClassification ?? 1;
       }
 
       if (currentClassification != lastInsertedClassification) {
         for (int j = lastInsertedClassification - currentClassification - 1; j >= 0; j--) {
-          _filteredRuns.insert(i, currentClassification + j + 1);
+          _filteredRuns!.insert(i, currentClassification + j + 1);
         }
 
         lastInsertedClassification = currentClassification;
       }
     }
 
-    _filteredRuns.insert(0, 1);
+    _filteredRuns!.insert(0, 1);
 
     // if (_filteredRuns.isNotEmpty) {
     //   // make sure the "All runs within..." bar always shows
@@ -278,7 +277,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   Widget _buildListView() {
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
-      child: _allRuns.isEmpty
+      child: (_allRuns ?? <dynamic>[]).isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -332,174 +331,178 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               body: RefreshIndicator(
                 onRefresh: () => _refreshFromBackend(clearLocalTables: false),
                 displacement: 40.0,
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  //padding: const EdgeInsets.only( bottom: 40.0),
-                  itemCount: _filteredRuns.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    if (_filteredRuns[index] is int) {
-                      return Column(
-                        children: <Widget>[
-                          Container(
-                            margin: const EdgeInsets.only(top: 10),
-                            padding: const EdgeInsets.only(top: 2.0),
-                            color: themeButtonColors,
-                            height: 40.0,
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                child: _filteredRuns == null
+                    ? const SizedBox()
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        //padding: const EdgeInsets.only( bottom: 40.0),
+                        itemCount: _filteredRuns?.length ?? 0,
+                        itemBuilder: (BuildContext context, int index) {
+                          if (_filteredRuns![index] is int) {
+                            return Column(
                               children: <Widget>[
-                                if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
-                                  const SizedBox(width: 36.0),
-                                ],
-                                if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
-                                  const SizedBox(width: 36.0),
-                                ],
-                                Text(
-                                  _filteredRuns[index] == 1
-                                      ? _showRsvpInstructions
-                                          ? 'Learn about RSVPs →'
-                                          : 'My upcoming runs'
-                                      : _filteredRuns[index] == 2
-                                          ? _getDistancePreferenceString('Runs within ')
-                                          : _filteredRuns[index] == 3
-                                              ? 'Runs from Kennels I follow'
-                                              : 'All other upcoming runs',
-                                  textAlign: TextAlign.center,
-                                  textScaleFactor: G0<DeviceInfo>().textClamp15,
-                                  style: titleStyle,
+                                Container(
+                                  margin: const EdgeInsets.only(top: 10),
+                                  padding: const EdgeInsets.only(top: 2.0),
+                                  color: themeButtonColors,
+                                  height: 40.0,
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                                        const SizedBox(width: 36.0),
+                                      ],
+                                      if ((_filteredRuns![index] == 1) && _showRsvpInstructions) ...<Widget>[
+                                        const SizedBox(width: 36.0),
+                                      ],
+                                      Text(
+                                        _filteredRuns![index] == 1
+                                            ? _showRsvpInstructions
+                                                ? 'Learn about RSVPs →'
+                                                : 'My upcoming runs'
+                                            : _filteredRuns![index] == 2
+                                                ? _getDistancePreferenceString('Runs within ')
+                                                : _filteredRuns![index] == 3
+                                                    ? 'Runs from Kennels I follow'
+                                                    : 'All other upcoming runs',
+                                        textAlign: TextAlign.center,
+                                        textScaleFactor: G0<DeviceInfo>().textClamp15,
+                                        style: titleStyle,
+                                      ),
+                                      if ((_filteredRuns![index] == 1) && _showRsvpInstructions) ...<Widget>[
+                                        GestureDetector(
+                                          onTap: () async {
+                                            await IveCoreUtilities.showAlert(
+                                              context,
+                                              'Why should I RSVP?',
+                                              'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
+                                              'OK',
+                                            );
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: Icon(FontAwesome.graduation_cap, size: 28.0),
+                                          ),
+                                        )
+                                      ],
+                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                                        GestureDetector(
+                                          onTap: () async {
+                                            bool success = false;
+
+                                            if (!await Permission.location.isGranted) {
+                                              final bool? allow = await IveCoreUtilities.showAlert(
+                                                  navigatorKey.currentContext!,
+                                                  'Location Services Required',
+                                                  'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
+                                                  'Yes',
+                                                  showCancelButton: true,
+                                                  cancelButtonText: 'No');
+
+                                              if (allow ?? false) {
+                                                final PermissionStatus ps = await Permission.location.request();
+
+                                                if (ps.isPermanentlyDenied) {
+                                                  final bool? openSettings = await IveCoreUtilities.showAlert(
+                                                      navigatorKey.currentContext!,
+                                                      'Phone Settings',
+                                                      'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+                                                      'Open Settings',
+                                                      showCancelButton: true,
+                                                      cancelButtonText: 'Cancel');
+                                                  if (openSettings ?? false) {
+                                                    await openAppSettings();
+
+                                                    success = await IveCoreUtilities.showAlert(
+                                                            navigatorKey.currentContext!, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
+                                                            showCancelButton: true, cancelButtonText: 'No') ??
+                                                        false;
+                                                  }
+                                                }
+
+                                                if ((ps.isGranted) || success) {
+                                                  if (await Permission.location.serviceStatus.isEnabled) {
+                                                    G0<AppModel>().hasLocationPermissions = true;
+                                                    await Utilities.subscribeToGeoLocationStream().then((void _) async {
+                                                      await IveCoreUtilities.showAlert(
+                                                        context,
+                                                        'Location Services Enabled',
+                                                        'Location Services have been enabled.',
+                                                        'OK',
+                                                      );
+
+                                                      _showConfigureDistancePopup();
+                                                    });
+                                                  }
+                                                }
+                                              }
+                                            } else {
+                                              _showConfigureDistancePopup();
+                                            }
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: Icon(FontAwesome.gear, size: 28.0),
+                                          ),
+                                        )
+                                      ]
+                                    ],
+                                  ),
                                 ),
-                                if ((_filteredRuns[index] == 1) && _showRsvpInstructions) ...<Widget>[
-                                  GestureDetector(
-                                    onTap: () async {
-                                      await IveCoreUtilities.showAlert(
-                                        context,
-                                        'Why should I RSVP?',
-                                        'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
-                                        'OK',
-                                      );
-                                    },
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Icon(FontAwesome.graduation_cap, size: 28.0),
+                                // add some text if no runs are found within the distance filter
+                                if ((_filteredRuns![index] == 2) && (_filteredRuns![index + 1] == 3)) ...<Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                    child: Text(
+                                      '${_getDistancePreferenceString('[No runs found within ')}]',
+                                      style: headingStyle,
                                     ),
-                                  )
+                                  ),
                                 ],
-                                if ((_filteredRuns[index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
-                                  GestureDetector(
-                                    onTap: () async {
-                                      bool success = false;
-
-                                      if (!await Permission.location.isGranted) {
-                                        final bool allow = await IveCoreUtilities.showAlert(
-                                            navigatorKey.currentContext,
-                                            'Location Services Required',
-                                            'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
-                                            'Yes',
-                                            showCancelButton: true,
-                                            cancelButtonText: 'No');
-
-                                        if (allow) {
-                                          final PermissionStatus ps = await Permission.location.request();
-
-                                          if (ps.isPermanentlyDenied) {
-                                            final bool openSettings = await IveCoreUtilities.showAlert(
-                                                navigatorKey.currentContext,
-                                                'Phone Settings',
-                                                'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
-                                                'Open Settings',
-                                                showCancelButton: true,
-                                                cancelButtonText: 'Cancel');
-                                            if (openSettings) {
-                                              await openAppSettings();
-
-                                              success = await IveCoreUtilities.showAlert(
-                                                  navigatorKey.currentContext, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
-                                                  showCancelButton: true, cancelButtonText: 'No');
-                                            }
-                                          }
-
-                                          if ((ps.isGranted) || success) {
-                                            if (await Permission.location.serviceStatus.isEnabled) {
-                                              G0<AppModel>().hasLocationPermissions = true;
-                                              await Utilities.subscribeToGeoLocationStream().then((void _) async {
-                                                await IveCoreUtilities.showAlert(
-                                                  context,
-                                                  'Location Services Enabled',
-                                                  'Location Services have been enabled.',
-                                                  'OK',
-                                                );
-
-                                                _showConfigureDistancePopup();
-                                              });
-                                            }
-                                          }
-                                        }
-                                      } else {
-                                        _showConfigureDistancePopup();
-                                      }
-                                    },
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Icon(FontAwesome.gear, size: 28.0),
-                                    ),
-                                  )
-                                ]
                               ],
-                            ),
-                          ),
-                          // add some text if no runs are found within the distance filter
-                          if ((_filteredRuns[index] == 2) && (_filteredRuns[index + 1] == 3)) ...<Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
-                              child: Text(
-                                '${_getDistancePreferenceString('[No runs found within ')}]',
-                                style: headingStyle,
-                              ),
-                            ),
-                          ],
-                        ],
-                      );
-                    } else {
-                      return RunListItem(
-                        futureRun: _filteredRuns[index],
-                        onItemTapped: () {
-                          Navigator.push<dynamic>(
-                            this.context,
-                            MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) => RunDetailsPage(
-                                futureRun: _filteredRuns[index],
-                                refreshPage: () async {
-                                  // WARNING!!!!  We need to return the filtered run based
-                                  // on it's ID and not the index
+                            );
+                          } else {
+                            return RunListItem(
+                              futureRun: _filteredRuns![index],
+                              onItemTapped: () {
+                                // NULLSAFETODO
+                                // Navigator.push<dynamic>(
+                                //   this.context,
+                                //   MaterialPageRoute<dynamic>(
+                                //     builder: (BuildContext context) => RunDetailsPage(
+                                //       futureRun: _filteredRuns![index],
+                                //       refreshPage: () async {
+                                //         // WARNING!!!!  We need to return the filtered run based
+                                //         // on it's ID and not the index
 
-                                  //await _refreshFromBackend(clearLocalTables: false);
-                                  await refreshFromTable(true);
-                                  //filterRuns();
-                                  return _filteredRuns[index];
-                                },
-                              ),
-                            ),
-                          ).then((void _) {
-                            _refreshFromBackend(clearLocalTables: false).then((void _) {
-                              setState(() {});
-                            });
-                          });
+                                //         //await _refreshFromBackend(clearLocalTables: false);
+                                //         await refreshFromTable(true);
+                                //         //filterRuns();
+                                //         return _filteredRuns![index];
+                                //       },
+                                //     ),
+                                //   ),
+                                // ).then((void _) {
+                                //   _refreshFromBackend(clearLocalTables: false).then((void _) {
+                                //     setState(() {});
+                                //   });
+                                // });
+                              },
+                            );
+                          }
                         },
-                      );
-                    }
-                  },
-                ),
+                      ),
               ),
             ),
     );
   }
 
   void _showConfigureDistancePopup() {
-    final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
+    final String units = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
 
-    final String switchUnits = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' miles' : ' kilometers';
+    final String switchUnits = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) & hasherPref_distanceMeasuredIn == 2 ? ' miles' : ' kilometers';
 
     const TextStyle ts = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0);
 
@@ -648,13 +651,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
           final HashersService srv = HashersService();
 
-          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
+          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
           final int distanceMeasuredIn = ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3) ? 2 : 3;
 
           final int distance = hasherPreferences & hasherPref_distanceForAutoDisplay;
 
           await srv.addEditUser(
-            targetUserId: getStringPref(StringPrefsEnum.userId),
+            targetUserId: getStringPref(StringPrefsEnum.userId)!,
             preferences: distanceMeasuredIn + distance,
           );
 
@@ -665,13 +668,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
           final HashersService srv = HashersService();
 
-          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
+          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
           final int distanceMeasuredIn = hasherPreferences & hasherPref_distanceMeasuredIn;
           //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
 
           await srv.addEditUser(
-            targetUserId: getStringPref(StringPrefsEnum.userId),
-            preferences: distanceMeasuredIn + retVal,
+            targetUserId: getStringPref(StringPrefsEnum.userId)!,
+            preferences: distanceMeasuredIn + (retVal as int),
           );
 
           await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
@@ -683,9 +686,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   String _getDistancePreferenceString(String precursorText) {
-    int distancePref = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
+    int distancePref = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) & hasherPref_distanceForAutoDisplay;
 
-    final String units = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
+    final String units = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
 
     if (!G0<AppModel>().hasLocationPermissions) {
       distancePref = hasherPref_0;

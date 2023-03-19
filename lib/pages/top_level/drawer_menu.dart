@@ -1,11 +1,14 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:harrier_central/pages/menu_pages/add_kennel_page.dart';
 //import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
 import 'package:harrier_central/pages/menu_pages/payment_terminal_config_page.dart';
 
 class DrawerMenu extends StatefulWidget {
-  const DrawerMenu({Key key, this.scaffoldKey, this.futureRunsListKey}) : super(key: key);
+  const DrawerMenu({
+    Key? key,
+    required this.scaffoldKey,
+    required this.futureRunsListKey,
+  }) : super(key: key);
 
   final GlobalKey<ScaffoldState> scaffoldKey;
   final GlobalKey<FutureRunListPageState> futureRunsListKey;
@@ -24,7 +27,7 @@ class DrawerMenuState extends State<DrawerMenu> {
 
   final TextStyle _style = const TextStyle(fontFamily: 'AvenirNext', fontStyle: FontStyle.normal, color: textColor, fontSize: 24.0, height: 1.0);
 
-  final String _userId = getStringPref(StringPrefsEnum.userId);
+  final String _userId = getStringPref(StringPrefsEnum.userId)!;
 
   @override
   Widget build(BuildContext context) {
@@ -76,29 +79,30 @@ class DrawerMenuState extends State<DrawerMenu> {
                   onTap: () {
                     Navigator.pop(context);
 
-                    Navigator.push<void>(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (BuildContext context) => GenericWidgetPage(
-                          key: const Key('52233311'),
-                          widget: Column(
-                            children: const <Widget>[
-                              // Padding(
-                              //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
-                              //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
-                              // ),
-                              //SizedBox(height: 13.0),
-                              Expanded(
-                                child: Leaderboard(
-                                  kennelId: null,
-                                ),
-                              ),
-                            ],
-                          ),
-                          appBarTitle: 'Get a Life (Leaderboards)',
-                        ),
-                      ),
-                    );
+                    // NULLSAFETODO
+                    // Navigator.push<void>(
+                    //   context,
+                    //   MaterialPageRoute<void>(
+                    //     builder: (BuildContext context) => GenericWidgetPage(
+                    //       key: const Key('52233311'),
+                    //       widget: Column(
+                    //         children: const <Widget>[
+                    //           // Padding(
+                    //           //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
+                    //           //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
+                    //           // ),
+                    //           //SizedBox(height: 13.0),
+                    //           Expanded(
+                    //             child: Leaderboard(
+                    //               kennelId: null,
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //       appBarTitle: 'Get a Life (Leaderboards)',
+                    //     ),
+                    //   ),
+                    // );
                   },
                 ),
 
@@ -142,8 +146,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                         },
                       ),
                     );
-                    if (futureRunsListPageKey != null) {
-                      await futureRunsListPageKey.currentState.refreshFromTable(true);
+                    if (futureRunsListPageKey.currentState != null) {
+                      await futureRunsListPageKey.currentState!.refreshFromTable(true);
                     }
                   },
                 ),
@@ -218,7 +222,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                       ),
                     ).then(
                       (dynamic value) {
-                        widget.scaffoldKey.currentState.setState(() {});
+                        if (widget.scaffoldKey.currentState != null) {
+                          widget.scaffoldKey.currentState!.setState(() {});
+                        }
                       },
                     );
                   },

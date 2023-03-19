@@ -1,14 +1,13 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class KennelsListItem extends StatefulWidget {
   const KennelsListItem({
-    Key key,
-    @required this.kennelItem,
-    @required this.kennelSelected,
-    @required this.kennelFollowingUpdated,
-    @required this.kennelEmailAndNotificationPrefsUpdated,
+    Key? key,
+    required this.kennelItem,
+    required this.kennelSelected,
+    required this.kennelFollowingUpdated,
+    required this.kennelEmailAndNotificationPrefsUpdated,
   }) : super(key: key);
 
   final KennelListAggregate kennelItem;
@@ -25,10 +24,10 @@ class KennelListItemState extends State<KennelsListItem> {
 
   @override
   void initState() {
-    _distancePreference = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn;
+    _distancePreference = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceMeasuredIn;
     // kilometers = 2, miles = 3, auto = 0
     if (_distancePreference == 0) {
-      _distancePreference = widget.kennelItem.extensions.distanceUnitsPref + 2;
+      _distancePreference = (widget.kennelItem.extensions.distanceUnitsPref ?? 0) + 2;
     }
     super.initState();
   }
@@ -206,17 +205,19 @@ class KennelListItemState extends State<KennelsListItem> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           const SizedBox(width: 10.0, height: 10.0),
-                          Text(
-                            widget.kennelItem.extensions.location,
-                            style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
-                          ),
-                          if (G0<AppModel>().hasLocationPermissions) ...<Widget>[
+                          if (widget.kennelItem.extensions.location != null) ...<Widget>[
                             Text(
-                              '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: _distancePreference == 2)} from here',
+                              widget.kennelItem.extensions.location!,
+                              style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                            ),
+                          ],
+                          if ((G0<AppModel>().hasLocationPermissions) && (widget.kennelItem.extensions.distToKennel != null)) ...<Widget>[
+                            Text(
+                              '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, context, isMetric: _distancePreference == 2)} from here',
                               style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                             )
                           ],
-                          if ((widget.kennelItem.hkm.hcTotalRunCount ?? 0) != 0) ...<Widget>[
+                          if (widget.kennelItem.hkm.hcTotalRunCount != 0) ...<Widget>[
                             Text(
                               'Runs: ${widget.kennelItem.hkm.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm.hcTotalRunCount + widget.kennelItem.hkm.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm.hcHaringCount + widget.kennelItem.hkm.historicalHaringCount}',
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
@@ -224,15 +225,15 @@ class KennelListItemState extends State<KennelsListItem> {
                           ],
                           if (widget.kennelItem.hkm.dateOfLastRun != null) ...<Widget>[
                             Text(
-                              'Last run: ${widget.kennelItem.hkm.dateOfLastRun.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm.dateOfLastRun) : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun)}',
+                              'Last run: ${widget.kennelItem.hkm.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun!)}',
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
                             ),
                           ],
-                          if ((widget.kennelItem.hkm.kennelCredit ?? 0) != 0) ...<Widget>[
+                          if ((widget.kennelItem.hkm.kennelCredit) != 0) ...<Widget>[
                             Text(
                               (widget.kennelItem.hkm.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
                                   IveCoreUtilities.getFormattedMoney(
-                                      widget.kennelItem.hkm.kennelCredit.abs() + .0, widget.kennelItem.kennel.digitsAfterDecimal, widget.kennelItem.kennel.currencySymbol),
+                                      widget.kennelItem.hkm.kennelCredit.abs() + .0, widget.kennelItem.kennel.digitsAfterDecimal ?? 2, widget.kennelItem.kennel.currencySymbol ?? r'$^'),
                               style: TextStyle(
                                   fontFamily: 'AvenirNextDemiBold',
                                   fontStyle: FontStyle.normal,
@@ -336,7 +337,7 @@ class KennelListItemState extends State<KennelsListItem> {
 
         final List<dynamic> queryResults = await srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: retVal.value, isHomeKennel: isHomeKennel);
 
-        await setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId ?? '' : '');
+        await setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId : '');
 
         widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
 
@@ -411,7 +412,7 @@ class KennelListItemState extends State<KennelsListItem> {
           widget.kennelItem.extensions.notificationsRequested = retVal.value;
           setState(() {});
 
-          final String userId = getStringPref(StringPrefsEnum.userId);
+          final String userId = getStringPref(StringPrefsEnum.userId)!;
           await G0<TableModel>()
               .hasherKennelMapService
               .setEmailAndNotificationPreferences(
@@ -437,7 +438,7 @@ class KennelListItemState extends State<KennelsListItem> {
   }
 
   String getDistanceString() {
-    final int preferences = getIntPref(IntPrefsEnum.hasherPreferences);
+    final int preferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
     final int distMeasuredIn = preferences & hasherPref_distanceMeasuredIn;
     final int distPref = (preferences & hasherPref_distanceForAutoDisplay) ~/ 4;
 
@@ -544,7 +545,7 @@ class KennelListItemState extends State<KennelsListItem> {
           widget.kennelItem.extensions.emailAlertRequested = retVal.value;
           setState(() {});
 
-          final String userId = getStringPref(StringPrefsEnum.userId);
+          final String userId = getStringPref(StringPrefsEnum.userId)!;
           await G0<TableModel>()
               .hasherKennelMapService
               .setEmailAndNotificationPreferences(

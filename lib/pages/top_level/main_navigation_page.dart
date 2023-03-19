@@ -1,13 +1,12 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({
-    Key key,
-    @required this.promos,
-    @required this.firstPromoImage,
+    Key? key,
+    required this.promos,
+    required this.firstPromoImage,
   }) : super(key: key);
 
   final List<PromoModel> promos;
@@ -24,7 +23,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
   //final List<Widget> _tabs = <Widget>[];
-  final List<String> _tabTitles = <String>[];
+  static final List<String> _tabTitles = <String>[
+    'Upcoming Runs',
+    'Kennels',
+    'Explore Runs',
+    'Run Counts',
+  ];
 
   final List<List<String>> _tutorials = <List<String>>[_tutorialUpcomingRuns, _tutorialKennelsView, _tutorialRunLocations, _tutorialRunCounts];
 
@@ -69,7 +73,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     'images/tutorial/kennels_tutorial_7.jpg',
   ];
 
-  String _appBarText;
+  String _appBarText = _tabTitles[0];
   String _initializationMessage = '';
 
   bool _isFlipped = false;
@@ -80,26 +84,19 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
-  FutureRunsListPage _futureRunsListPage;
-  KennelsListPage _kennelsListPage;
-  HistoryListPage _historyListPage;
-  //final UserQrCodePage userQrCodePage = const UserQrCodePage();
-  RunAndKennelMapPage _runAndKennelMapPage;
+  late FutureRunsListPage _futureRunsListPage;
+  late KennelsListPage _kennelsListPage;
+  late HistoryListPage _historyListPage;
+  late RunAndKennelMapPage _runAndKennelMapPage;
 
-  //Future<bool> _dbReady;
-  PausableTimer _promoTimer;
-  Duration _promoDisplayDuration;
-  int _timeRemaining;
+  PausableTimer? _promoTimer;
+  Duration _promoDisplayDuration = const Duration(seconds: 3);
+  int? _timeRemaining;
 
-  Image _promoImage;
+  Image? _promoImage;
 
   @override
   void initState() {
-    _tabTitles.add('Upcoming Runs');
-    _tabTitles.add('Kennels');
-    _tabTitles.add('Explore Runs');
-    _tabTitles.add('Run Counts');
-
     //_tabTitles.add('Scanner');
     // _tabTitles.add('Friends');
 
@@ -159,25 +156,27 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
       setState(() {});
 
-      if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
+      if (widget.promos.isNotEmpty) {
         setState(() {
           _showPromoScreenTools = true;
         });
         _timeRemaining = widget.promos[0].promoDisplayTimeInMs;
         _steps = widget.promos[0].promoDisplayTimingDotsToDisplay;
-        _promoDisplayDuration = Duration(milliseconds: _timeRemaining ~/ _steps);
+        _promoDisplayDuration = Duration(milliseconds: _timeRemaining! ~/ _steps);
 
-        if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
+        if (widget.promos.isNotEmpty) {
           _promoTimer = PausableTimer(_promoDisplayDuration, () {
-            _timeRemaining -= widget.promos[0].promoDisplayTimeInMs ~/ _steps;
-            if (_timeRemaining < 0) {
-              _promoTimer.cancel();
+            _timeRemaining = _timeRemaining! - widget.promos[0].promoDisplayTimeInMs ~/ _steps;
+            if (_timeRemaining! < 0) {
+              _promoTimer!.cancel();
               _promoTimer = null;
               _showMainScreen = true;
             } else {
-              _promoTimer
-                ..reset()
-                ..start();
+              if (_promoTimer != null) {
+                _promoTimer!
+                  ..reset()
+                  ..start();
+              }
             }
             setState(() {});
           })
@@ -202,50 +201,54 @@ class MainNavigationPageState extends State<MainNavigationPage> {
   Future<void> _checkAreWeAtRunStart() async {
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
     final List<AreWeAtRunResult> resultList = await CommonQueries.areWeAtRunStart();
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     if (resultList.length == 1) {
       final AreWeAtRunResult result = resultList[0];
-      if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) && (result.attendenceState < attendenceAtHash.value)) {
-        final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-          title: 'Check-in to Run',
-          areWeAtRunData: result,
-          okButtonTitle: 'Yes',
-          cancelButtonTitle: 'No',
-        );
-
-        final EnumCheckinOptions<int> retVal = await showDialog<EnumCheckinOptions<int>>(
-            context: navigatorKey.currentContext,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return popup;
-            });
-
-        if (retVal == enumCheckInOption_Yes) {
-          await _checkInAtEvent(result.eventId, userId);
-        } else if ((retVal == enumCheckInOption_YesAndPayByCredit) || (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
-          final PaymentsService paySrv = PaymentsService();
-          await paySrv.payForEvent(
-            result.eventId,
-            userId,
-            GUID_EMPTY,
-            retVal == enumCheckInOption_YesAndPayByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
-            result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice,
-            attendenceAtHash.value,
-            payForRunOnly,
-            AppDomainType.user,
+      if (result.eventId != null) {
+        if ((result.eventId != EMPTY_RESULT) &&
+            ((result.distanceInMeters ?? 99999) <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) &&
+            ((result.attendenceState ?? 9999) < attendenceAtHash.value)) {
+          final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+            title: 'Check-in to Run',
+            areWeAtRunData: result,
+            okButtonTitle: 'Yes',
+            cancelButtonTitle: 'No',
           );
-        } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) || (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
-          final PaymentsService paySrv = PaymentsService();
-          await paySrv.payForEvent(
-              result.eventId,
+
+          final EnumCheckinOptions<int>? retVal = await showDialog<EnumCheckinOptions<int>>(
+              context: navigatorKey.currentContext!,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return popup;
+              });
+
+          if (retVal == enumCheckInOption_Yes) {
+            await _checkInAtEvent(result.eventId!, userId);
+          } else if ((retVal == enumCheckInOption_YesAndPayByCredit) || (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
+            final PaymentsService paySrv = PaymentsService();
+            await paySrv.payForEvent(
+              result.eventId!,
               userId,
               GUID_EMPTY,
-              retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
-              result.extrasCost + (result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice),
+              retVal == enumCheckInOption_YesAndPayByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
+              (result.membershipExpirationDate ?? DateTime(2020)).isAfter(DateTime.now()) ? (result.memberPrice ?? 0.0) : (result.nonMemberPrice ?? 0.0),
               attendenceAtHash.value,
-              payForRunAndExtras,
-              AppDomainType.user);
+              payForRunOnly,
+              AppDomainType.user,
+            );
+          } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) || (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
+            final PaymentsService paySrv = PaymentsService();
+            await paySrv.payForEvent(
+                result.eventId!,
+                userId,
+                GUID_EMPTY,
+                retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
+                (result.extrasCost ?? 0) + ((result.membershipExpirationDate ?? DateTime(2020)).isAfter(DateTime.now()) ? (result.memberPrice ?? 0) : (result.nonMemberPrice ?? 0)),
+                attendenceAtHash.value,
+                payForRunAndExtras,
+                AppDomainType.user);
+          }
         }
       }
     } else if (resultList.length > 1) {
@@ -255,7 +258,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       bool showRunList = true;
 
       for (AreWeAtRunResult result in resultList) {
-        if (result.attendenceState >= attendenceAtHash.value) {
+        if ((result.attendenceState ?? 9999) >= attendenceAtHash.value) {
           showRunList = false;
           break;
         }
@@ -271,8 +274,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
         );
         if ((doCheckIn as bool) == true) {
           for (AreWeAtRunResult result in resultList) {
-            if (result.selected) {
-              await _checkInAtEvent(result.eventId, userId);
+            if ((result.selected ?? false) && (result.eventId != null)) {
+              await _checkInAtEvent(result.eventId!, userId);
             }
           }
         }
@@ -288,8 +291,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           attendenceAtHash.value,
         );
 
-    if (futureRunsListPageKey?.currentState != null) {
-      await futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+    if (futureRunsListPageKey.currentState != null) {
+      await futureRunsListPageKey.currentState!.forceRefreshFromTableExternal();
     }
   }
 
@@ -327,6 +330,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       case 3:
         w = _historyListPage;
         break;
+      default:
+        w = _futureRunsListPage;
+        break;
       // case 3:
       //   w = userQrCodePage;
       //   break;
@@ -334,15 +340,15 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     return w;
   }
 
-  Widget _getFab() {
-    Widget fab;
+  Widget? _getFab() {
+    Widget? fab;
 
-    if ((_runAndKennelMapPageKey?.currentState != null) && !_isFlipped && (currentPage == 2)) {
-      fab = _runAndKennelMapPageKey.currentState.getMapFab();
+    if ((_runAndKennelMapPageKey.currentState != null) && !_isFlipped && (currentPage == 2)) {
+      fab = _runAndKennelMapPageKey.currentState!.getMapFab();
     }
 
-    if ((_kennelLocationsPageKey?.currentState != null) && !_isFlipped && (currentPage == 1)) {
-      fab = _kennelLocationsPageKey.currentState.getKennelFab();
+    if ((_kennelLocationsPageKey.currentState != null) && !_isFlipped && (currentPage == 1)) {
+      fab = _kennelLocationsPageKey.currentState!.getKennelFab();
     }
 
     return fab;
@@ -392,7 +398,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                   ),
             floatingActionButton: _getFab(),
             body: (!_showMainScreen)
-                ? ((widget.promos != null) && (widget.promos.isNotEmpty))
+                ? (widget.promos.isNotEmpty)
                     ? _getPromoScreen()
                     : _getGenericLoadingScreen()
                 : Container(
@@ -690,14 +696,15 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                               ),
                               onPressed: () async {
                                 if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
-                                  await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl), mode: LaunchMode.externalApplication);
+                                  await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl!), mode: LaunchMode.externalApplication);
                                 } else {
-                                  await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
+                                  await IveCoreUtilities.showAlert(
+                                      navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
                                 }
                               },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                                child: Text(widget.promos[0].promoExternalUrlButtonText, style: const TextStyle(fontSize: 20.0)),
+                                child: Text(widget.promos[0].promoExternalUrlButtonText!, style: const TextStyle(fontSize: 20.0)),
                               ),
                             ),
                           ),
@@ -708,10 +715,10 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             GestureDetector(
                               onTap: () {
                                 if (_promoTimer != null) {
-                                  if (_promoTimer.isPaused) {
-                                    _promoTimer.start();
+                                  if (_promoTimer!.isPaused) {
+                                    _promoTimer!.start();
                                   } else {
-                                    _promoTimer.pause();
+                                    _promoTimer!.pause();
                                   }
                                   setState(() {});
                                 }
@@ -732,10 +739,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                               onTap: () async {
                                 final SnoozePromotionService svc = SnoozePromotionService();
                                 await svc.snoozePromotion(widget.promos[0].promotionId, true);
-                                _promoTimer.cancel();
-                                _promoTimer = null;
-                                _showMainScreen = true;
-                                setState(() {});
+                                if (_promoTimer != null) {
+                                  _promoTimer!.cancel();
+                                  _promoTimer = null;
+                                  _showMainScreen = true;
+                                  setState(() {});
+                                }
                               },
                               child: Image.asset(
                                 'images/icons/promo_trash_icon.png',
@@ -747,10 +756,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                               onTap: () async {
                                 final SnoozePromotionService svc = SnoozePromotionService();
                                 await svc.snoozePromotion(widget.promos[0].promotionId, false);
-                                _promoTimer.cancel();
-                                _promoTimer = null;
-                                _showMainScreen = true;
-                                setState(() {});
+                                if (_promoTimer != null) {
+                                  _promoTimer!.cancel();
+                                  _promoTimer = null;
+                                  _showMainScreen = true;
+                                  setState(() {});
+                                }
                               },
                               child: Image.asset(
                                 'images/icons/promo_snooze_icon.png',
@@ -760,10 +771,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                _promoTimer.cancel();
-                                _promoTimer = null;
-                                _showMainScreen = true;
-                                setState(() {});
+                                if (_promoTimer != null) {
+                                  _promoTimer!.cancel();
+                                  _promoTimer = null;
+                                  _showMainScreen = true;
+                                  setState(() {});
+                                }
                               },
                               child: Image.asset(
                                 'images/icons/promo_x_icon.png',
@@ -782,7 +795,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 30.0),
                     child: StepProgressIndicator(
                       totalSteps: _steps,
-                      currentStep: _timeRemaining == null ? 0 : _steps - (_timeRemaining ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
+                      currentStep: _timeRemaining == null ? 0 : _steps - ((_timeRemaining ?? 0) ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
                       //size: 10.0,
                       padding: 0.0,
                       // selectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,

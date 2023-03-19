@@ -30,6 +30,10 @@ num? getNumPref(dynamic key) {
   return _sharedPreferences.getDouble(key.toString());
 }
 
+double? getDoublePref(dynamic key) {
+  return _sharedPreferences.getDouble(key.toString());
+}
+
 Future<bool> setNumPref(dynamic key, num? value) async {
   if (key == null) {
     return false;

@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-// import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
@@ -237,55 +237,54 @@ class Utilities {
     );
   }
 
-//   static bool isOpeeOrTuna() {
-//     bool isOpeeOrTuna = false;
+  static bool isOpeeOrTuna() {
+    bool isOpeeOrTuna = false;
 
-//     final String currentUserId = getStringPref(StringPrefsEnum.userId) ?? '<no user id>';
+    final String currentUserId = getStringPref(StringPrefsEnum.userId) ?? '<no user id>';
 
-//     if ((currentUserId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') || (currentUserId == 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A')) {
-//       isOpeeOrTuna = true;
-//     }
+    if ((currentUserId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') || (currentUserId == 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A')) {
+      isOpeeOrTuna = true;
+    }
 
-//     return isOpeeOrTuna;
-//   }
+    return isOpeeOrTuna;
+  }
 
-//   static Future<void> subscribeToGeoLocationStream() async {
-//     G0<DeviceInfo>().deviceLat = getNumPref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
-//     G0<DeviceInfo>().deviceLon = getNumPref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
+  static Future<void> subscribeToGeoLocationStream() async {
+    G0<DeviceInfo>().deviceLat = getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
+    G0<DeviceInfo>().deviceLon = getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
 
-//     IveCoreUtilities.logTiming('Geostatus query start', G0<AppModel>().appStartTime);
-//     final LocationPermission permission = await Geolocator.checkPermission();
+    IveCoreUtilities.logTiming('Geostatus query start', G0<AppModel>().appStartTime);
+    final LocationPermission permission = await Geolocator.checkPermission();
 
-//     IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
-//     if ((permission == LocationPermission.always) || (permission == LocationPermission.whileInUse)) {
-//       G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
-//         locationSettings: const LocationSettings(accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50),
-//       ).listen((Position position) {
-//         if (position != null) {
-//           G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
-//           G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
-//           setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
-//           setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
-//           setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
-//         }
-//         //print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
-//       });
+    IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
+    if ((permission == LocationPermission.always) || (permission == LocationPermission.whileInUse)) {
+      G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50),
+      ).listen((Position position) {
+        G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
+        G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
+        setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
+        setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
+        setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
 
-//       // don't wait for the position to resolve to return from
-//       // this function because we want the app to start quickly.
+        //print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+      });
 
-//       // ignore: unawaited_futures
-//       Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest).then((Position position) {
-//         G0<DeviceInfo>().deviceLat = position.latitude;
-//         G0<DeviceInfo>().deviceLon = position.longitude;
-//         setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
-//         setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
-//         setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+      // don't wait for the position to resolve to return from
+      // this function because we want the app to start quickly.
 
-//         //print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
-//       });
-//     }
-//   }
+      // ignore: unawaited_futures
+      Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest).then((Position position) {
+        G0<DeviceInfo>().deviceLat = position.latitude;
+        G0<DeviceInfo>().deviceLon = position.longitude;
+        setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
+        setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
+        setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+
+        //print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+      });
+    }
+  }
 
   static String? validateEmail(String? value) {
     if ((value != null) && (value.isNotEmpty)) {
@@ -363,7 +362,7 @@ class Utilities {
     return s;
   }
 
-  static String getDistance(num meters, BuildContext context, {bool isMetric = true}) {
+  static String getDistance(double meters, BuildContext context, {bool isMetric = true}) {
     if (!G0<AppModel>().hasLocationPermissions) {
       return '';
     }
