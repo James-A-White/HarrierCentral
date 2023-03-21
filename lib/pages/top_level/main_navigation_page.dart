@@ -200,55 +200,52 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
   Future<void> _checkAreWeAtRunStart() async {
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
-    final List<AreWeAtRunResult> resultList = await CommonQueries.areWeAtRunStart();
+    final List<AreWeAtRunModel> resultList = await CommonQueries.areWeAtRunStart();
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     if (resultList.length == 1) {
-      final AreWeAtRunResult result = resultList[0];
-      if (result.eventId != null) {
-        if ((result.eventId != EMPTY_RESULT) &&
-            ((result.distanceInMeters ?? 99999) <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) &&
-            ((result.attendenceState ?? 9999) < attendenceAtHash.value)) {
-          final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-            title: 'Check-in to Run',
-            areWeAtRunData: result,
-            okButtonTitle: 'Yes',
-            cancelButtonTitle: 'No',
+      final AreWeAtRunModel result = resultList[0];
+
+      if (result.eventId != EMPTY_RESULT) {
+        final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+          title: 'Check-in to Run',
+          areWeAtRunData: result,
+          okButtonTitle: 'Yes',
+          cancelButtonTitle: 'No',
+        );
+
+        final EnumCheckinOptions<int>? retVal = await showDialog<EnumCheckinOptions<int>>(
+            context: navigatorKey.currentContext!,
+            barrierDismissible: false, // user must tap button!
+            builder: (BuildContext context) {
+              return popup;
+            });
+
+        if (retVal == enumCheckInOption_Yes) {
+          await _checkInAtEvent(result.eventId, userId);
+        } else if ((retVal == enumCheckInOption_YesAndPayByCredit) || (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
+          final PaymentsService paySrv = PaymentsService();
+          await paySrv.payForEvent(
+            result.eventId,
+            userId,
+            GUID_EMPTY,
+            retVal == enumCheckInOption_YesAndPayByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
+            result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice,
+            attendenceAtHash.value,
+            payForRunOnly,
+            AppDomainType.user,
           );
-
-          final EnumCheckinOptions<int>? retVal = await showDialog<EnumCheckinOptions<int>>(
-              context: navigatorKey.currentContext!,
-              barrierDismissible: false, // user must tap button!
-              builder: (BuildContext context) {
-                return popup;
-              });
-
-          if (retVal == enumCheckInOption_Yes) {
-            await _checkInAtEvent(result.eventId!, userId);
-          } else if ((retVal == enumCheckInOption_YesAndPayByCredit) || (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
-            final PaymentsService paySrv = PaymentsService();
-            await paySrv.payForEvent(
-              result.eventId!,
+        } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) || (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
+          final PaymentsService paySrv = PaymentsService();
+          await paySrv.payForEvent(
+              result.eventId,
               userId,
               GUID_EMPTY,
-              retVal == enumCheckInOption_YesAndPayByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
-              (result.membershipExpirationDate ?? DateTime(2020)).isAfter(DateTime.now()) ? (result.memberPrice ?? 0.0) : (result.nonMemberPrice ?? 0.0),
+              retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
+              result.extrasCost + (result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice),
               attendenceAtHash.value,
-              payForRunOnly,
-              AppDomainType.user,
-            );
-          } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) || (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
-            final PaymentsService paySrv = PaymentsService();
-            await paySrv.payForEvent(
-                result.eventId!,
-                userId,
-                GUID_EMPTY,
-                retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
-                (result.extrasCost ?? 0) + ((result.membershipExpirationDate ?? DateTime(2020)).isAfter(DateTime.now()) ? (result.memberPrice ?? 0) : (result.nonMemberPrice ?? 0)),
-                attendenceAtHash.value,
-                payForRunAndExtras,
-                AppDomainType.user);
-          }
+              payForRunAndExtras,
+              AppDomainType.user);
         }
       }
     } else if (resultList.length > 1) {
@@ -256,9 +253,11 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       // at any of the runs on the list. If so, don't show the
       // selection view
       bool showRunList = true;
+      final Map<String, bool> selectedRuns = <String, bool>{};
 
-      for (AreWeAtRunResult result in resultList) {
-        if ((result.attendenceState ?? 9999) >= attendenceAtHash.value) {
+      for (AreWeAtRunModel result in resultList) {
+        selectedRuns[result.eventId] = false; //prepare the selection result list
+        if (result.attendenceState >= attendenceAtHash.value) {
           showRunList = false;
           break;
         }
@@ -269,13 +268,13 @@ class MainNavigationPageState extends State<MainNavigationPage> {
         final dynamic doCheckIn = await Navigator.push<dynamic>(
           context,
           MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) => SelectRunPage(runList: resultList),
+            builder: (BuildContext context) => SelectRunPage(runList: resultList, selected: selectedRuns),
           ),
         );
         if ((doCheckIn as bool) == true) {
-          for (AreWeAtRunResult result in resultList) {
-            if ((result.selected ?? false) && (result.eventId != null)) {
-              await _checkInAtEvent(result.eventId!, userId);
+          for (AreWeAtRunModel result in resultList) {
+            if ((selectedRuns.containsKey(result.eventId)) && (selectedRuns[result.eventId] == true)) {
+              await _checkInAtEvent(result.eventId, userId);
             }
           }
         }
@@ -380,12 +379,13 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                       IconButton(
                           icon: const Icon(Icons.qr_code_scanner_sharp),
                           onPressed: () {
-                            Navigator.push<dynamic>(
-                              context,
-                              MaterialPageRoute<dynamic>(
-                                builder: (BuildContext context) => const UserQrCodePage(),
-                              ),
-                            );
+                            // NULLSAFETODO
+                            // Navigator.push<dynamic>(
+                            //   context,
+                            //   MaterialPageRoute<dynamic>(
+                            //     builder: (BuildContext context) => const UserQrCodePage(),
+                            //   ),
+                            // );
                           }),
                       IconButton(
                           icon: Icon(_isFlipped ? Icons.undo : Icons.info_outline),
