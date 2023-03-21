@@ -33,8 +33,8 @@ mixin _$KennelMemberResultsModel {
   int get historicalTotalRunCount => throw _privateConstructorUsedError;
   int get historicalHaringCount => throw _privateConstructorUsedError;
   int? get kennelEmailAlertPreference => throw _privateConstructorUsedError;
-  DateTime get membershipExpirationDate => throw _privateConstructorUsedError;
-  DateTime get memberSince => throw _privateConstructorUsedError;
+  DateTime? get membershipExpirationDate => throw _privateConstructorUsedError;
+  DateTime? get memberSince => throw _privateConstructorUsedError;
   int get membershipDurationInMonths => throw _privateConstructorUsedError;
   int? get appAccessFlags => throw _privateConstructorUsedError;
   int? get mismanagementRoles => throw _privateConstructorUsedError;
@@ -67,8 +67,8 @@ abstract class $KennelMemberResultsModelCopyWith<$Res> {
       int historicalTotalRunCount,
       int historicalHaringCount,
       int? kennelEmailAlertPreference,
-      DateTime membershipExpirationDate,
-      DateTime memberSince,
+      DateTime? membershipExpirationDate,
+      DateTime? memberSince,
       int membershipDurationInMonths,
       int? appAccessFlags,
       int? mismanagementRoles,
@@ -103,8 +103,8 @@ class _$KennelMemberResultsModelCopyWithImpl<$Res,
     Object? historicalTotalRunCount = null,
     Object? historicalHaringCount = null,
     Object? kennelEmailAlertPreference = freezed,
-    Object? membershipExpirationDate = null,
-    Object? memberSince = null,
+    Object? membershipExpirationDate = freezed,
+    Object? memberSince = freezed,
     Object? membershipDurationInMonths = null,
     Object? appAccessFlags = freezed,
     Object? mismanagementRoles = freezed,
@@ -161,14 +161,14 @@ class _$KennelMemberResultsModelCopyWithImpl<$Res,
           ? _value.kennelEmailAlertPreference
           : kennelEmailAlertPreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      membershipExpirationDate: null == membershipExpirationDate
+      membershipExpirationDate: freezed == membershipExpirationDate
           ? _value.membershipExpirationDate
           : membershipExpirationDate // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      memberSince: null == memberSince
+              as DateTime?,
+      memberSince: freezed == memberSince
           ? _value.memberSince
           : memberSince // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       membershipDurationInMonths: null == membershipDurationInMonths
           ? _value.membershipDurationInMonths
           : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
@@ -219,8 +219,8 @@ abstract class _$$_KennelMemberResultsModelCopyWith<$Res>
       int historicalTotalRunCount,
       int historicalHaringCount,
       int? kennelEmailAlertPreference,
-      DateTime membershipExpirationDate,
-      DateTime memberSince,
+      DateTime? membershipExpirationDate,
+      DateTime? memberSince,
       int membershipDurationInMonths,
       int? appAccessFlags,
       int? mismanagementRoles,
@@ -253,8 +253,8 @@ class __$$_KennelMemberResultsModelCopyWithImpl<$Res>
     Object? historicalTotalRunCount = null,
     Object? historicalHaringCount = null,
     Object? kennelEmailAlertPreference = freezed,
-    Object? membershipExpirationDate = null,
-    Object? memberSince = null,
+    Object? membershipExpirationDate = freezed,
+    Object? memberSince = freezed,
     Object? membershipDurationInMonths = null,
     Object? appAccessFlags = freezed,
     Object? mismanagementRoles = freezed,
@@ -311,14 +311,14 @@ class __$$_KennelMemberResultsModelCopyWithImpl<$Res>
           ? _value.kennelEmailAlertPreference
           : kennelEmailAlertPreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      membershipExpirationDate: null == membershipExpirationDate
+      membershipExpirationDate: freezed == membershipExpirationDate
           ? _value.membershipExpirationDate
           : membershipExpirationDate // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      memberSince: null == memberSince
+              as DateTime?,
+      memberSince: freezed == memberSince
           ? _value.memberSince
           : memberSince // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       membershipDurationInMonths: null == membershipDurationInMonths
           ? _value.membershipDurationInMonths
           : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
@@ -363,8 +363,8 @@ class _$_KennelMemberResultsModel implements _KennelMemberResultsModel {
       required this.historicalTotalRunCount,
       required this.historicalHaringCount,
       this.kennelEmailAlertPreference,
-      required this.membershipExpirationDate,
-      required this.memberSince,
+      this.membershipExpirationDate,
+      this.memberSince,
       required this.membershipDurationInMonths,
       this.appAccessFlags,
       this.mismanagementRoles,
@@ -400,9 +400,9 @@ class _$_KennelMemberResultsModel implements _KennelMemberResultsModel {
   @override
   final int? kennelEmailAlertPreference;
   @override
-  final DateTime membershipExpirationDate;
+  final DateTime? membershipExpirationDate;
   @override
-  final DateTime memberSince;
+  final DateTime? memberSince;
   @override
   final int membershipDurationInMonths;
   @override
@@ -527,8 +527,8 @@ abstract class _KennelMemberResultsModel implements KennelMemberResultsModel {
       required final int historicalTotalRunCount,
       required final int historicalHaringCount,
       final int? kennelEmailAlertPreference,
-      required final DateTime membershipExpirationDate,
-      required final DateTime memberSince,
+      final DateTime? membershipExpirationDate,
+      final DateTime? memberSince,
       required final int membershipDurationInMonths,
       final int? appAccessFlags,
       final int? mismanagementRoles,
@@ -564,9 +564,9 @@ abstract class _KennelMemberResultsModel implements KennelMemberResultsModel {
   @override
   int? get kennelEmailAlertPreference;
   @override
-  DateTime get membershipExpirationDate;
+  DateTime? get membershipExpirationDate;
   @override
-  DateTime get memberSince;
+  DateTime? get memberSince;
   @override
   int get membershipDurationInMonths;
   @override

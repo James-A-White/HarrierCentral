@@ -196,11 +196,11 @@ class Utilities {
 //     }
 //   }
 
-  static bool isValidUrl(String url) {
-    if (url.isEmpty) {
+  static bool isValidUrl(String? url) {
+    if ((url ?? '').isEmpty) {
       return false;
     }
-    final Uri? uri = Uri.tryParse(url);
+    final Uri? uri = Uri.tryParse(url!);
     return uri != null && uri.hasAbsolutePath && uri.scheme.startsWith('http');
   }
 

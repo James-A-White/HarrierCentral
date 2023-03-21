@@ -9,63 +9,6 @@ class HistoryListPage extends StatefulWidget {
   HistoryListPageState createState() => HistoryListPageState();
 }
 
-class HistoryListResults {
-  HistoryListResults({
-    this.totalRunsThisKennel,
-    this.totalHaringThisKennel,
-    this.hcRunsThisKennel,
-    this.hcHaringThisKennel,
-    this.kennelName,
-    this.kennelShortName,
-    this.kennelId,
-    this.kennelLogo,
-    this.currencySymbol,
-    this.kennelCredit,
-    this.historicalTotalRunCount,
-    this.historicalHaringCount,
-    this.historicalCountIsEstimate,
-    this.following,
-    this.digitsAfterDecimal,
-  });
-
-  final int totalRunsThisKennel;
-  final int totalHaringThisKennel;
-  final int hcRunsThisKennel;
-  final int hcHaringThisKennel;
-  final String kennelName;
-  final String kennelShortName;
-  final String kennelId;
-  final String kennelLogo;
-  final String currencySymbol;
-  final num kennelCredit;
-  final int historicalHaringCount;
-  final int historicalTotalRunCount;
-  final int historicalCountIsEstimate;
-  final int following;
-  final int digitsAfterDecimal;
-
-  static HistoryListResults fromMap(Map<String, dynamic> map) {
-    final HistoryListResults item = HistoryListResults(
-      totalRunsThisKennel: map['totalRunsThisKennel'],
-      totalHaringThisKennel: map['totalHaringThisKennel'],
-      hcRunsThisKennel: map['hcRunsThisKennel'],
-      hcHaringThisKennel: map['hcHaringThisKennel'],
-      kennelId: map['kennelId'],
-      historicalTotalRunCount: map['historicalTotalRunCount'],
-      historicalHaringCount: map['historicalHaringCount'],
-      historicalCountIsEstimate: map['historicalCountIsEstimate'],
-      kennelCredit: map['kennelCredit'],
-      kennelLogo: map['kennelLogo'],
-      kennelName: map['kennelName'],
-      kennelShortName: map['kennelShortName'],
-      following: map['following'],
-      digitsAfterDecimal: map['digitsAfterDecimal'],
-      currencySymbol: map['currencySymbol'],
-    );
-    return item;
-  }
-}
-
 class HistoryListPageState extends State<HistoryListPage> {
   HistoryListPageState();
 
@@ -73,7 +16,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   int _totalRuns = 0;
   int _totalHaring = 0;
 
-  List<HistoryListResults> _runCountsList = <HistoryListResults>[];
+  List<RunHistoryModel> _runCountsList = <RunHistoryModel>[];
 
   @override
   void initState() {
@@ -83,7 +26,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     final String query = '''  
           SELECT 
@@ -110,7 +53,7 @@ class HistoryListPageState extends State<HistoryListPage> {
           ORDER BY totalRunsThisKennel desc
           ''';
 
-    _runCountsList = <HistoryListResults>[];
+    _runCountsList = <RunHistoryModel>[];
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
@@ -118,10 +61,10 @@ class HistoryListPageState extends State<HistoryListPage> {
       _totalRuns = 0;
 
       for (int i = 0; i < results.length; i++) {
-        final HistoryListResults hlrItem = HistoryListResults.fromMap(results[i]);
+        final RunHistoryModel hlrItem = RunHistoryModel.fromMap(results[i]);
         _totalHaring += hlrItem.totalHaringThisKennel;
         _totalRuns += hlrItem.totalRunsThisKennel;
-        if (((hlrItem.totalRunsThisKennel ?? 0) > 0) || (hlrItem.following == 1)) {
+        if ((hlrItem.totalRunsThisKennel > 0) || (hlrItem.following == 1)) {
           _runCountsList.add(hlrItem);
         }
 
@@ -168,7 +111,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   Widget _buildListView() {
-    final String photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+    final String? photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
     return Stack(
       children: <Widget>[
         Container(
@@ -202,7 +145,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                               kennelInfo: _runCountsList[index],
                               refreshCounters: (String kennelId) async {
                                 await refreshRunHistoryFromTable(true);
-                                if ((kennelId != null) && (kennelId.isNotEmpty)) {
+                                if (kennelId.isNotEmpty) {
                                   for (int i = 0; i < _runCountsList.length; i++) {
                                     if (_runCountsList[i].kennelId == kennelId) {
                                       return _runCountsList[i];
@@ -240,7 +183,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                   children: <Widget>[
                     ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: photo),
                     const SizedBox(width: 20),
-                    (_runCountsList == null || _runCountsList.isEmpty)
+                    _runCountsList.isEmpty
                         ? Container()
                         : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                             const Text(

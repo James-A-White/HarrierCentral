@@ -1,10 +1,13 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class KennelRunHistoryCountListItem extends StatelessWidget {
-  const KennelRunHistoryCountListItem({Key key, @required this.kennelInfo, @required this.refreshCounters}) : super(key: key);
+  const KennelRunHistoryCountListItem({
+    Key? key,
+    required this.kennelInfo,
+    required this.refreshCounters,
+  }) : super(key: key);
 
-  final HistoryListResults kennelInfo;
+  final RunHistoryModel kennelInfo;
   final Function refreshCounters;
 
   @override
@@ -21,19 +24,20 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () {
-            Navigator.of(context).push<dynamic>(
-              MaterialPageRoute<dynamic>(
-                builder: (BuildContext context) {
-                  return UserRunHistoryListPage(
-                      kennelInfo: kennelInfo,
-                      refreshKennelInfo: () {
-                        return refreshCounters(kennelInfo.kennelId);
-                      });
-                },
-              ),
-            ).then((void _) {
-              refreshCounters(kennelInfo.kennelId);
-            });
+            // NULLSAFETODO
+            // Navigator.of(context).push<dynamic>(
+            //   MaterialPageRoute<dynamic>(
+            //     builder: (BuildContext context) {
+            //       return UserRunHistoryListPage(
+            //           kennelInfo: kennelInfo,
+            //           refreshKennelInfo: () {
+            //             return refreshCounters(kennelInfo.kennelId);
+            //           });
+            //     },
+            //   ),
+            // ).then((void _) {
+            //   refreshCounters(kennelInfo.kennelId);
+            // });
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -41,7 +45,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(left: 20.0),
-                child: (kennelInfo.kennelLogo == null || kennelInfo.kennelLogo.length < 5)
+                child: kennelInfo.kennelLogo.length < 5
                     ? const SizedBox(height: 80, width: 80)
                     : KennelLogo(
                         kennelId: kennelInfo.kennelId,

@@ -1,9 +1,9 @@
 import 'package:harrier_central/imports_null_safe.dart';
 
 class AvatarIconsPage extends StatefulWidget {
-  const AvatarIconsPage({Key? key, required this.selectedAvatarIcon}) : super(key: key);
+  const AvatarIconsPage({Key? key, this.selectedAvatarIcon}) : super(key: key);
 
-  final int selectedAvatarIcon;
+  final int? selectedAvatarIcon;
 
   @override
   State<AvatarIconsPage> createState() => _AvatarIconsPageState();
@@ -49,7 +49,7 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
                       Navigator.of(context).pop(index + 1);
                     },
                     child: Container(
-                      color: widget.selectedAvatarIcon == index + 1 ? Colors.red.shade900 : Theme.of(context).scaffoldBackgroundColor,
+                      color: (widget.selectedAvatarIcon ?? 0) == index + 1 ? Colors.red.shade900 : Theme.of(context).scaffoldBackgroundColor,
                       child: Padding(
                         padding: EdgeInsets.all(imagePadding),
                         child: Image.asset(

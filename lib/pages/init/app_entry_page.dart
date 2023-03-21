@@ -1,15 +1,16 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class AppEntryPage extends StatefulWidget {
-  const AppEntryPage({Key key}) : super(key: key);
+  const AppEntryPage({
+    Key? key,
+  }) : super(key: key);
   @override
   AppEntryPageState createState() => AppEntryPageState();
 }
 
 class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderStateMixin {
-  AnimationController _iconAnimationController;
-  CurvedAnimation _iconAnimation;
+  late AnimationController _iconAnimationController;
+  late CurvedAnimation _iconAnimation;
 
   Future<void> _handleStartup(BuildContext context) async {
     final PackageInfo p = await PackageInfo.fromPlatform();
@@ -18,9 +19,9 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
     await setupLocalServices(
-      MediaQuery.of(navigatorKey.currentContext).size.width,
-      MediaQuery.of(navigatorKey.currentContext).size.height,
-      MediaQuery.of(navigatorKey.currentContext).textScaleFactor,
+      MediaQuery.of(navigatorKey.currentContext!).size.width,
+      MediaQuery.of(navigatorKey.currentContext!).size.height,
+      MediaQuery.of(navigatorKey.currentContext!).textScaleFactor,
     );
 
     await G0.allReady();
@@ -29,21 +30,21 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
 
-    G0<DeviceInfo>().deviceWidthScaleFactor = MediaQuery.of(navigatorKey.currentContext).size.width / BASE_DEVICE_WIDTH;
-    G0<DeviceInfo>().deviceHeightScaleFactor = MediaQuery.of(navigatorKey.currentContext).size.height / BASE_DEVICE_HEIGHT;
+    G0<DeviceInfo>().deviceWidthScaleFactor = MediaQuery.of(navigatorKey.currentContext!).size.width / BASE_DEVICE_WIDTH;
+    G0<DeviceInfo>().deviceHeightScaleFactor = MediaQuery.of(navigatorKey.currentContext!).size.height / BASE_DEVICE_HEIGHT;
     G0<DeviceInfo>().deviceMaxScaleFactor = max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
     G0<DeviceInfo>().deviceMinScaleFactor = min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
 
-    G0<DeviceInfo>().deviceWidth = MediaQuery.of(navigatorKey.currentContext).size.width;
-    G0<DeviceInfo>().deviceHeight = MediaQuery.of(navigatorKey.currentContext).size.height;
+    G0<DeviceInfo>().deviceWidth = MediaQuery.of(navigatorKey.currentContext!).size.width;
+    G0<DeviceInfo>().deviceHeight = MediaQuery.of(navigatorKey.currentContext!).size.height;
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     await Utilities.checkForInternetConnection(false);
 
-    ApproveLoginModel loginResult;
-    List<PromoModel> promoResult;
-    String facebookAccessToken;
+    ApproveLoginModel? loginResult;
+    List<PromoModel>? promoResult;
+    String? facebookAccessToken;
     final ApproveLoginService svc = ApproveLoginService();
 
     await Utilities.subscribeToGeoLocationStream();
@@ -51,14 +52,15 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
       facebookAccessToken = await _checkFacebookLogin();
 
-      final String responseBody = await svc.approveLogin(navigatorKey.currentContext, facebookAccessToken);
+      final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, facebookAccessToken);
 
       if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
         exit(0);
       } else if (!responseBody.startsWith(ERROR_PREFIX)) {
-        dynamic responseJson = jsonDecode(responseBody);
+        List<dynamic> responseJson = jsonDecode(responseBody);
 
-        loginResult = ApproveLoginModel.fromJson(responseJson[0]);
+        loginResult = ApproveLoginModel.fromJson(responseJson[0][0]);
+        // NULLSAFETODO - Test promos to break this line
         promoResult = List<PromoModel>.from(responseJson[1]);
       }
     }
@@ -71,14 +73,14 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       await setStringPref(StringPrefsEnum.email, loginResult.email);
       await setStringPref(StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
 
-      if ((loginResult.thirdPartyForceTokenRefresh.year != 2000) && (loginResult.thirdPartyForceTokenRefresh.toString() != getStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh))) {
-        if (DateTime.now().difference(loginResult.thirdPartyForceTokenRefresh).inDays > 2) {
+      if (((loginResult.thirdPartyForceTokenRefresh?.year ?? 2000) != 2000) && (loginResult.thirdPartyForceTokenRefresh.toString() != getStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh))) {
+        if (DateTime.now().difference(loginResult.thirdPartyForceTokenRefresh!).inDays > 2) {
           final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
           final Duration timeSinceFbCancellaction = DateTime.now().difference(fbLoginCancelled);
 
           if (timeSinceFbCancellaction.inDays > 1) {
             await IveCoreUtilities.showAlert(
-                navigatorKey.currentContext,
+                navigatorKey.currentContext!,
                 'Facebook Login Required',
                 'Our system indicates that you are an admin of a Facebook Group that uses Facebook integration.\r\n\r\nIt appears as though the Facebook Authorization Token we have in our system for your group has expired.\r\n\r\nTo refresh the token, Harrier Central will now ask you to log in to Facebook. Once you log in, your token will be refreshed and Facebook integration will continue to work for your Kennel.\r\n\r\nIf you have questions, please contact us at connect@harriercentral.com.',
                 'OK');
@@ -89,7 +91,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
             if (facebookAccessToken != null) {
               await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
 
-              final String responseBody = await svc.approveLogin(navigatorKey.currentContext, facebookAccessToken);
+              final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, facebookAccessToken);
               if (!responseBody.startsWith(ERROR_PREFIX)) {
                 loginResult = ApproveLoginModel.fromJson(json.decode(responseBody));
               }
@@ -101,11 +103,11 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       }
     }
 
-    if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
+    if ((loginResult == null) && ((userId.isEmpty) || (userId == GUID_EMPTY))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
 
-      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Network Error',
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Network Error',
           'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.', 'Quit');
       exit(0);
     } else if (loginResult == null) {
@@ -113,7 +115,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
 
       await Navigator.pushReplacement<dynamic, dynamic>(
-          navigatorKey.currentContext,
+          navigatorKey.currentContext!,
           MaterialPageRoute<dynamic>(
               builder: (BuildContext context) => const MainNavigationPage(
                     promos: <PromoModel>[],
@@ -127,7 +129,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
         if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-          await _displayAlert(navigatorKey.currentContext, loginResult.loginMessage, loginResult.loginMessageTitle);
+          await _displayAlert(navigatorKey.currentContext!, loginResult.loginMessage ?? 'Harrier Central status is normal', loginResult.loginMessageTitle ?? 'Harrier Central Status');
         }
       }
 
@@ -136,7 +138,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
           if (loginResult.approvalCode == loginApprovalApproved.value) {
             G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
             //if (true) {
-            if (userId == null) {
+            if ((userId.isEmpty || (userId == GUID_EMPTY))) {
               // first time the app has run
               if (!mounted) return;
               await Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
@@ -148,39 +150,41 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                 // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
 
-                final String resetCode = getStringPref(StringPrefsEnum.resetCode);
+                final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
 
-                await DBProvider.deleteDb(DB_NAME);
-                G0<AppModel>().dbStatus = EdbStatus.uninitialized;
+                if (resetCode.isNotEmpty) {
+                  await DBProvider.deleteDb(DB_NAME);
+                  G0<AppModel>().dbStatus = EdbStatus.uninitialized;
 
-                //bool isLoading = true;
-                String userName;
+                  //bool isLoading = true;
+                  String userName;
 
-                final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
-                if (!mounted) return;
-                final Map<String, String> result = await srv.authorizeDevice(context, resetCode.toUpperCase());
+                  if (!mounted) return;
+                  final Map<String, String> result = await srv.authorizeDevice(context, resetCode.toUpperCase());
 
-                setState(() {
-                  //isLoading = false;
-                });
-
-                if (result['result'] != 'failed') {
-                  userName = getStringPref(StringPrefsEnum.displayName);
-
-                  await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-
-                  await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
-                    Navigator.pushReplacement<dynamic, dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => const MainNavigationPage(
-                                  promos: <PromoModel>[],
-                                  firstPromoImage: null,
-                                )));
+                  setState(() {
+                    //isLoading = false;
                   });
-                } else {
-                  // TODO(James): Do something here if the auth device fails
+
+                  if (result['result'] != 'failed') {
+                    userName = getStringPref(StringPrefsEnum.displayName) ?? '<no user name>';
+
+                    await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+
+                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
+                      Navigator.pushReplacement<dynamic, dynamic>(
+                          context,
+                          MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) => const MainNavigationPage(
+                                    promos: <PromoModel>[],
+                                    firstPromoImage: null,
+                                  )));
+                    });
+                  } else {
+                    // TODO(James): Do something here if the auth device fails
+                  }
                 }
               } else {
                 if ((promoResult != null) && (promoResult.isNotEmpty)) {
@@ -190,7 +194,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                     promoImage = Image.network(
                       promoResult[0].promoImage + promoResult[0].promoImageExtension,
                       fit: BoxFit.fitWidth,
-                      errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+                      errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
                         // Appropriate logging or analytics, e.g.
                         // myAnalytics.recordError(
                         //   'An error occurred loading "https://example.does.not.exist/image.jpg"',
@@ -211,7 +215,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                             context,
                             MaterialPageRoute<dynamic>(
                                 builder: (BuildContext context) => MainNavigationPage(
-                                      promos: promoResult,
+                                      promos: promoResult!,
                                       firstPromoImage: promoImage,
                                     )));
                       },
@@ -222,8 +226,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                   await Navigator.pushReplacement<dynamic, dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => MainNavigationPage(
-                                promos: promoResult,
+                          builder: (BuildContext context) => const MainNavigationPage(
+                                promos: <PromoModel>[],
                                 firstPromoImage: null,
                               )));
                 }
@@ -243,10 +247,10 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     //// return Future<void>(() {});((){});
   }
 
-  Future<String> _checkFacebookLogin() async {
+  Future<String?> _checkFacebookLogin() async {
     final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
     final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
-    String facebookAccessToken;
+    String? facebookAccessToken;
 
     if (fbTokenUpdateDelta.inDays > 30) {
       final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
@@ -254,22 +258,20 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
 
       if (daysSinceCancellation.inDays > 30) {
-        final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+        final String? facebookId = getStringPref(StringPrefsEnum.facebookId);
 
         if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
           final LoginResult loginResult = await FacebookAuth.instance.login();
-          if (loginResult != null) {
-            if (loginResult.status == LoginStatus.success) {
-              final AccessToken accessToken = loginResult.accessToken;
-              facebookAccessToken = accessToken?.token;
-              if (facebookAccessToken != null) {
-                await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-                await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
-                await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
-              }
-            } else if (loginResult.status == LoginStatus.cancelled) {
-              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
+          if (loginResult.status == LoginStatus.success) {
+            final AccessToken? accessToken = loginResult.accessToken;
+            facebookAccessToken = accessToken?.token;
+            if (facebookAccessToken != null) {
+              await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+              await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
             }
+          } else if (loginResult.status == LoginStatus.cancelled) {
+            await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
           }
         }
       }
@@ -277,8 +279,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     return facebookAccessToken;
   }
 
-  Future<bool> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
-    return showDialog<bool>(
+  Future<bool?> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
+    return showDialog<bool?>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {

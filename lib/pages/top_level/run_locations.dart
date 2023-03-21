@@ -1,7 +1,5 @@
-// @dart=2.11
-
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 // class MapMarker extends Marker {
@@ -15,9 +13,12 @@ import 'package:latlong2/latlong.dart' as latlng;
 enum RunLocationsViewMode { all, past, recent, myRuns }
 
 class RunAndKennelMapPage extends StatefulWidget {
-  const RunAndKennelMapPage({Key key, this.kennel}) : super(key: key);
+  const RunAndKennelMapPage({
+    Key? key,
+    this.kennel,
+  }) : super(key: key);
 
-  final KennelsModel kennel;
+  final KennelsModel? kennel;
 
   @override
   RunAndKennelMapPageState createState() => RunAndKennelMapPageState();
@@ -29,23 +30,23 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   RunLocationsViewMode _viewMode = RunLocationsViewMode.recent;
 
-  int _mapCenterOption;
+  int _mapCenterOption = centerOnCurrentLocation.value;
 
-  num _homeKennelLat;
-  num _homeKennelLon;
+  double? _homeKennelLat;
+  double? _homeKennelLon;
 
   final MapController _mapController = MapController();
 
   String _textDescription = 'Showing recent runs';
 
-  List<dynamic> _allRuns;
-  List<dynamic> _filteredRuns;
-  List<Map<String, dynamic>> _allKennels;
-  List<Map<String, dynamic>> _filteredKennels;
+  List<dynamic> _allRuns = <dynamic>[];
+  List<dynamic> _filteredRuns = <dynamic>[];
+  List<Map<String, dynamic>> _allKennels = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> _filteredKennels = <Map<String, dynamic>>[];
 
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
-  String _searchRunsAndKennelsText;
+  String _searchRunsAndKennelsText = '';
   bool _showFilters = false;
   bool _showKennels = true;
   bool _trueNorthLock = true;
@@ -55,13 +56,14 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   @override
   void initState() {
-    _homeKennelLat = getNumPref(NumPrefsEnum.homeKennelLat);
-    _homeKennelLon = getNumPref(NumPrefsEnum.homeKennelLon);
+    _homeKennelLat = getDoublePref(NumPrefsEnum.homeKennelLat);
+    _homeKennelLon = getDoublePref(NumPrefsEnum.homeKennelLon);
     _showFilters = (getIntPref(IntPrefsEnum.mapShowSearchBar) ?? 0) == 0 ? false : true;
     _showKennels = (getIntPref(IntPrefsEnum.mapShowKennels) ?? 1) == 0 ? false : true;
 
-    _mapCenterOption = getIntPref(IntPrefsEnum.mapCenterOption);
-    if (_mapCenterOption == null) {
+    _mapCenterOption = getIntPref(IntPrefsEnum.mapCenterOption) ?? centerOnCurrentLocation.value;
+
+    if (getIntPref(IntPrefsEnum.mapCenterOption) == null) {
       _mapCenterOption = centerOnCurrentLocation.value;
       setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
     }
@@ -143,11 +145,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   List<Map<String, dynamic>> _doKennelFilter(String searchKennelsText) {
     _filteredKennels = <Map<String, dynamic>>[];
-    if (_allKennels != null) {
-      _filteredKennels.addAll(_allKennels);
-
+    if (_allKennels.isNotEmpty) {
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-      if ((searchKennelsText != null) && (searchKennelsText.isNotEmpty)) {
+      if (searchKennelsText.isNotEmpty) {
         final List<String> searchItems = searchKennelsText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
@@ -175,6 +175,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             return negate;
           }).toList();
         }
+      } else {
+        _filteredKennels.addAll(_allKennels);
       }
     }
     return _filteredKennels;
@@ -272,11 +274,13 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 if (_mapCenterOption == centerOnCurrentLocation.value) {
                   _mapCenterOption = centerOnHomeKennel.value;
                   setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
-                  _mapController.move(
-                      ((_homeKennelLat != null) && (_homeKennelLon != null))
-                          ? latlng.LatLng(_homeKennelLat + .0, _homeKennelLon + .0)
-                          : latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
-                      _mapController.zoom);
+
+                  if ((_homeKennelLat != null) && (_homeKennelLon != null)) {
+                    _mapController.move(latlng.LatLng(_homeKennelLat! + .0, _homeKennelLon! + .0), _mapController.zoom);
+                  } else if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+                    _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!), _mapController.zoom);
+                  }
+
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
                       'Map will center on home kennel\r\n\r\n',
@@ -289,7 +293,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 } else {
                   _mapCenterOption = centerOnCurrentLocation.value;
                   setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
-                  _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon), _mapController.zoom);
+
+                  if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+                    _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!), _mapController.zoom);
+                  }
 
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
@@ -334,25 +341,19 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   }
 
   Future<void> _loadEvents() async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     String query = ''' 
 
           SELECT 
-            evt.${G0<TableModel>().eventsTableHelper.colEventId} as eventId,
-            evt.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
-            evt.${G0<TableModel>().eventsTableHelper.colIsCountedRun} as isCountedRun,
-            
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as lat,
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLongitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) end as lon,
-          case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
-            
-            evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
-            evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} as eventGeographicScope,
+            evt.*,
+            case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as lat,
+            case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLongitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) end as lon,
+            case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
             coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
-            coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelPinColor},0) as kennelPinColor,
+            k.*,
             ${QueryRuns.searchRunsField}
             FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
             INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on evt.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
@@ -364,33 +365,29 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             
           ''';
 
-    if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
-      query = '''$query            AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel.kennelId}"
+    if ((widget.kennel != null) && (widget.kennel!.kennelId.isNotEmpty)) {
+      query = '''$query AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel!.kennelId}"
           ''';
     }
 
-    query = '''$query    ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
+    query = '''$query ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
     ''';
 
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
-      _allRuns = <RunDetailsAggregate>[];
+      _allRuns = <dynamic>[];
 
       _runLocationMarkers = <Marker>[];
-      if ((results != null) && (results.isNotEmpty)) {
+      if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
-          final num lat = results[i]['lat'] == null ? null : results[i]['lat'] + .0;
-          final num lon = results[i]['lon'] == null ? null : results[i]['lon'] + .0;
+          final double? lat = results[i]['lat'] == null ? null : results[i]['lat'] + .0;
+          final double? lon = results[i]['lon'] == null ? null : results[i]['lon'] + .0;
           if ((lat != null) && (lon != null)) {
             if ((lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
+              EventModel em = EventModel.fromJson(results[i]);
               final DateTime dt = DateTime.parse(results[i]['eventStartDatetime'].substring(0, 19));
               final RunDetailsAggregate item = RunDetailsAggregate(
-                  event: EventModel(
-                    eventStartDatetime: dt,
-                    eventId: results[i]['eventId'],
-                    isCountedRun: results[i]['isCountedRun'],
-                    eventGeographicScope: results[i]['eventGeographicScope'],
-                  ),
+                  event: em,
                   extensions: RunDetailsQueryExtensions(
                       latitude: lat,
                       longitude: lon,
@@ -399,7 +396,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       attendenceState: results[i]['attendenceState'],
                       isHare: results[i]['isHare'],
                       searchRunsText: results[i]['searchRunsText'] + RunDetailsQueryExtensions.getSearchDateString(dt)),
-                  kennel: KennelsModel(kennelPinColor: results[i]['kennelPinColor']));
+                  kennel: KennelsModel.fromJson(results[i]));
               _allRuns.add(item);
             }
           }
@@ -418,11 +415,15 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     for (int i = 0; i < _filteredRuns.length; i++) {
       final RunDetailsAggregate run = _filteredRuns[i];
 
+      if ((run.extensions.latitude == null) || (run.extensions.longitude == null)) {
+        continue;
+      }
+
       final latlng.LatLng ll = latlng.LatLng(
-        run.extensions.latitude,
-        run.extensions.longitude,
+        run.extensions.latitude!,
+        run.extensions.longitude!,
       );
-      final DateTime dt = run.event.eventStartDatetime;
+      final DateTime dt = run.event.eventStartDatetime ?? DateTime.now();
 
       final Marker marker = Marker(
           width: 45.0,
@@ -430,9 +431,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
           point: ll,
           builder: (BuildContext ctx) => _buildRunMarker(run.event.eventId, dt, run.event.eventName,
-              rsvpState: run.extensions.rsvpState,
-              attendenceState: run.extensions.attendenceState,
-              isHare: run.extensions.isHare,
+              rsvpState: run.extensions.rsvpState ?? 0,
+              attendenceState: run.extensions.attendenceState ?? 0,
+              isHare: run.extensions.isHare ?? 0,
               kennelPinColor: run.kennel.kennelPinColor,
               eventScope: run.event.eventGeographicScope,
               isCountedRun: run.event.isCountedRun));
@@ -440,7 +441,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       if ((_viewMode == RunLocationsViewMode.all) ||
           ((_viewMode == RunLocationsViewMode.past) && (dt.isBefore(DateTime.now()))) ||
           ((_viewMode == RunLocationsViewMode.recent) && (dt.isAfter(DateTime.now().subtract(const Duration(days: 90))))) ||
-          ((_viewMode == RunLocationsViewMode.myRuns) && (run.extensions.attendenceState >= attendenceAtHash.value))) {
+          ((_viewMode == RunLocationsViewMode.myRuns) && ((run.extensions.attendenceState ?? 0) >= attendenceAtHash.value))) {
         _runLocationMarkers.add(marker);
       }
     }
@@ -465,8 +466,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
            ''';
 
-    if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
-      query = '''$query            WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "${widget.kennel.kennelId}"''';
+    if ((widget.kennel != null) && (widget.kennel!.kennelId.isNotEmpty)) {
+      query = '''$query WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "${widget.kennel!.kennelId}"''';
     }
 
     _allKennels = await G0<Database>().rawQuery(query);
@@ -479,11 +480,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     try {
       _kennelMarkers = <Marker>[];
 
-      final String homeKennelId = getStringPref(StringPrefsEnum.homeKennelId);
-      if ((_filteredKennels != null) && (_filteredKennels.isNotEmpty)) {
+      final String? homeKennelId = getStringPref(StringPrefsEnum.homeKennelId);
+      if (_filteredKennels.isNotEmpty) {
         for (int i = 0; i < _filteredKennels.length; i++) {
-          final num lat = _filteredKennels[i]['lat'] == null ? null : _filteredKennels[i]['lat'] + .0;
-          final num lon = _filteredKennels[i]['lon'] == null ? null : _filteredKennels[i]['lon'] + .0;
+          final double? lat = _filteredKennels[i]['lat'] == null ? null : _filteredKennels[i]['lat'] + .0;
+          final double? lon = _filteredKennels[i]['lon'] == null ? null : _filteredKennels[i]['lon'] + .0;
 
           if ((lat != null) && (lon != null)) {
             if (_filteredKennels[i]['kennelId'] == homeKennelId) {
@@ -494,11 +495,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               //await setNumPref(NumPrefsEnum.homeKennelLon, _homeKennelLon);
 
               if ((_mapCenterOption == centerOnHomeKennel.value) && (_homeKennelLat != null) && (_homeKennelLon != null)) {
-                _mapController.move(latlng.LatLng(_homeKennelLat + .0, _homeKennelLon + .0), _mapController.zoom);
+                _mapController.move(latlng.LatLng(_homeKennelLat! + .0, _homeKennelLon! + .0), _mapController.zoom);
               }
             }
 
-            if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
+            if ((lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
               final latlng.LatLng ll = latlng.LatLng(lat + .0, lon + .0);
               final Marker marker = Marker(
                   width: KENNEL_PIN_SIZE,
@@ -523,20 +524,30 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     }
   }
 
-  Widget _buildRunMarker(String eventId, DateTime eventStartDatetime, String eventName, {int attendenceState, int rsvpState, int isHare, int kennelPinColor, int eventScope, int isCountedRun}) {
+  Widget _buildRunMarker(String eventId, DateTime? eventStartDatetime, String eventName,
+      {int? attendenceState, int? rsvpState, int? isHare, required int kennelPinColor, int? eventScope, int? isCountedRun}) {
     return GestureDetector(
       onTap: () async {
-        final RunDetailsAggregate run = await G0<TableModel>().eventsService.getSingleRun(eventId);
+        final RunDetailsAggregate? run = await G0<TableModel>().eventsService.getSingleRun(eventId);
 
-        if (!mounted) return;
-        await Navigator.push<dynamic>(
-          context,
-          MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) => RunDetailsPage(futureRun: run),
-          ),
-        );
+        if ((!mounted) || (run == null)) return;
+        // NULLSAFETODO
+        // await Navigator.push<dynamic>(
+        //   context,
+        //   MaterialPageRoute<dynamic>(
+        //     builder: (BuildContext context) => RunDetailsPage(futureRun: run),
+        //   ),
+        // );
       },
-      child: Image.asset(_getPin(eventStartDatetime, rsvpState, attendenceState, isHare, kennelPinColor, eventScope, isCountedRun)),
+      child: Image.asset(_getPin(
+        eventStartDatetime ?? DateTime.now(),
+        rsvpState,
+        attendenceState,
+        isHare,
+        kennelPinColor,
+        eventScope,
+        isCountedRun,
+      )),
     );
   }
 
@@ -549,11 +560,15 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       onTap: () async {
         //final Geolocator locator = Geolocator();
 
-        final String hasherId = getStringPref(StringPrefsEnum.userId);
+        final String hasherId = getStringPref(StringPrefsEnum.userId)!;
         final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
         if (results.isNotEmpty) {
-          final num dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+          double? dist;
+
+          if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+            dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+          }
 
           final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
           final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
@@ -593,7 +608,15 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   static int heroCounter = 0;
   static List<String> colors = <String>['red', 'orange', 'yellow', 'green', 'teal', 'baby_blue', 'blue', 'purple', 'pink'];
 
-  String _getPin(DateTime eventStartDatetime, int rsvpState, int attendenceState, int isHare, int kennelPinColor, int eventScope, int isCountedRun) {
+  String _getPin(
+    DateTime eventStartDatetime,
+    int? rsvpState,
+    int? attendenceState,
+    int? isHare,
+    int kennelPinColor,
+    int? eventScope,
+    int? isCountedRun,
+  ) {
     String pinFileName = 'images/map_pins/${colors[kennelPinColor]}/past_run_no_rsvp.png';
 
     String isEvent = 'run';
@@ -607,7 +630,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
     if (eventStartDatetime.isAfter(DateTime.now())) {
       // run is in the future
-      if ((attendenceState >= attendenceAtHash.value) || (rsvpState >= rsvpYes.value)) {
+      if (((attendenceState ?? 0) >= attendenceAtHash.value) || ((rsvpState ?? 0) >= rsvpYes.value)) {
         if (isHare != 0) {
           pinFileName = 'images/map_pins/${colors[kennelPinColor]}/future_${isEvent}_rsvp_hare.png';
         } else {
@@ -618,7 +641,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       }
     } else {
       // run is in the past
-      if (attendenceState >= attendenceAtHash.value) {
+      if ((attendenceState ?? 0) >= attendenceAtHash.value) {
         if (isHare != 0) {
           pinFileName = 'images/map_pins/${colors[kennelPinColor]}/past_${isEvent}_rsvp_hare.png';
         } else {
@@ -663,11 +686,14 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   mapController: _mapController,
                   options: MapOptions(
                     interactiveFlags: _trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
-                    center: (widget.kennel?.kennelLatitude != null)
-                        ? latlng.LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
-                        : ((_mapCenterOption == centerOnCurrentLocation.value) || (_homeKennelLat == null) || (_homeKennelLon == null))
-                            ? latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon)
-                            : latlng.LatLng(_homeKennelLat + .0, _homeKennelLon + .0),
+                    center: ((_mapCenterOption == centerOnCurrentLocation.value) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null))
+                        ? latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!)
+                        : ((_mapCenterOption == centerOnHomeKennel.value) && (_homeKennelLat != null) && (_homeKennelLat != null))
+                            ? latlng.LatLng(_homeKennelLat!, _homeKennelLon!)
+                            : ((widget.kennel != null) && (widget.kennel!.kennelLatitude != null) && (widget.kennel!.kennelLongitude != null))
+                                ? latlng.LatLng(widget.kennel!.kennelLatitude!, widget.kennel!.kennelLongitude!)
+                                : null,
+
                     zoom: 10.0,
                     minZoom: 1.0,
                     maxZoom: 18.0,
@@ -685,11 +711,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     MarkerLayer(
                       markers: <Marker>[
-                        if (G0<AppModel>().hasLocationPermissions) ...<Marker>[
+                        if ((G0<AppModel>().hasLocationPermissions) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) ...<Marker>[
                           Marker(
                             height: 50.0,
                             width: 50.0,
-                            point: latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+                            point: latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!),
                             builder: (BuildContext ctx) => Container(
                               padding: const EdgeInsets.all(1.0),
                               height: 50.0,
@@ -754,7 +780,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     // )
                   ],
                 ),
-                if (G0<AppModel>().hasLocationPermissions) ...<Widget>[
+                if ((G0<AppModel>().hasLocationPermissions) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) ...<Widget>[
                   Positioned(
                     right: 10.0,
                     top: 60.0,
@@ -762,7 +788,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       onTap: () {
                         setState(() {
                           _mapController.move(
-                            latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+                            latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!),
                             13.0,
                           );
                         });

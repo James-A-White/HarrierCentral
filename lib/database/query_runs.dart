@@ -42,8 +42,8 @@ class RunDetailsQueryExtensions {
   int? distanceUnitsPref;
   //int userPrefs;
   String? searchRunsText;
-  num? latitude;
-  num? longitude;
+  double? latitude;
+  double? longitude;
   bool? isMapAndDistanceValid;
   int? runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
 

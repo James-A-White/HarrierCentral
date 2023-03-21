@@ -11,6 +11,7 @@ dependencies:
   audioplayers: 0.20.1 # had problem with low sound volume on iOS on version 1.0.0
   auto_size_text: ^3.0.0 
   cached_network_image: ^3.2.1
+  card_swiper: ^2.0.4
   chewie: ^1.2.2  
   crypto: ^3.0.1  
   cupertino_icons: ^1.0.3  
@@ -45,7 +46,6 @@ dependencies:
   flutter_staggered_grid_view: ^0.6.1 
   flutter_statusbarcolor_ns: ^0.5.0
   flutter_svg: ^2.0.1
-  flutter_swiper: ^1.1.6
   flutter_vector_icons: ^2.0.0 
   freezed: ^2.3.2
   freezed_annotation: ^2.2.0

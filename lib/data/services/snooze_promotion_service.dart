@@ -1,16 +1,15 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class SnoozePromotionService {
-  Future<SingleResultModel> snoozePromotion(String promotionId, bool deletePromotion) async {
+  Future<SingleResultModel?> snoozePromotion(String promotionId, bool deletePromotion) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'snoozePromotion');
 
@@ -23,7 +22,7 @@ class SnoozePromotionService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_snooze_promotion', body);
 
-    SingleResultModel result;
+    SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       json.decode(responseBody).forEach(

@@ -4,9 +4,11 @@ class SelectRunPage extends StatefulWidget {
   const SelectRunPage({
     Key? key,
     required this.runList,
+    required this.selected,
   }) : super(key: key);
 
-  final List<AreWeAtRunResult> runList;
+  final List<AreWeAtRunModel> runList;
+  final Map<String, bool> selected;
 
   @override
   SelectRunPageState createState() => SelectRunPageState();
@@ -124,11 +126,12 @@ class SelectRunPageState extends State<SelectRunPage> {
                   padding: const EdgeInsets.only(top: 12.0),
                   child: RunListItem(
                       item: widget.runList[index],
-                      callback: (AreWeAtRunResult item) {
+                      selected: widget.selected[widget.runList[index]] ?? false,
+                      callback: (AreWeAtRunModel item) {
                         setState(() {
                           _showCheckinButton = false;
-                          for (AreWeAtRunResult r in widget.runList) {
-                            if (r.selected ?? false) {
+                          for (AreWeAtRunModel r in widget.runList) {
+                            if (widget.selected.containsKey(r.eventId)) {
                               _showCheckinButton = true;
                               break;
                             }
@@ -150,10 +153,12 @@ class RunListItem extends StatelessWidget {
     Key? key,
     required this.item,
     required this.callback,
+    required this.selected,
   }) : super(key: key);
 
-  final AreWeAtRunResult item;
+  final AreWeAtRunModel item;
   final Function callback;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -166,11 +171,10 @@ class RunListItem extends StatelessWidget {
       ),
       Expanded(
         child: CheckboxListTile(
-            value: item.selected,
-            title: Text(item.eventName ?? ''),
+            value: selected,
+            title: Text(item.eventName),
             onChanged: (bool? value) {
-              item.selected = !(item.selected ?? false);
-              callback(item);
+              callback(item, value ?? false);
             }),
       ),
     ]);

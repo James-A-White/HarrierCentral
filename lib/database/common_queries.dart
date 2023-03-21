@@ -1,31 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports_null_safe.dart';
 
-class AreWeAtRunResult {
-  String? eventId;
-  String? eventName;
-  String? eventImage;
-  String? kennelId;
-  String? kennelLogo;
-  String? kennelShortName;
-  num? eventNumber;
-  num? distanceInMeters;
-  num? deltaHours;
-  num? kennelCredit;
-  double? memberPrice;
-  double? nonMemberPrice;
-  double? extrasCost;
-  double? discountAmount;
-  num? discountPercent;
-  int? attendenceState;
-  int? digitsAfterDecimal;
-  int? allowSelfPayment;
-  String? currencySymbol;
-  bool? selected;
-  DateTime? membershipExpirationDate;
-  String? extrasDescription;
-}
-
 class CommonQueries {
   // the variable below is there to suppress a warning about defining classes with only static members
   int? unusedVariableToSuppressWarning;
@@ -95,8 +70,8 @@ class CommonQueries {
     return result;
   }
 
-  static Future<List<AreWeAtRunResult>> areWeAtRunStart() async {
-    final List<AreWeAtRunResult> resultList = <AreWeAtRunResult>[];
+  static Future<List<AreWeAtRunModel>> areWeAtRunStart() async {
+    final List<AreWeAtRunModel> resultList = <AreWeAtRunModel>[];
 
     try {
       final String? userId = getStringPref(StringPrefsEnum.userId);
@@ -167,41 +142,47 @@ class CommonQueries {
                 continue;
               }
 
-              final AreWeAtRunResult result = AreWeAtRunResult();
+              if (queryResults[i]['attendenceState'] >= attendenceAtHash.value) {
+                continue;
+              }
 
-              result.eventId = queryResults[i]['eventId'];
-              result.eventName = queryResults[i]['eventName'];
-              result.eventImage = queryResults[i]['eventImage'];
-              result.kennelId = queryResults[i]['kennelId'];
-              result.kennelLogo = queryResults[i]['kennelLogo'];
-              result.eventNumber = queryResults[i]['eventNumber'];
-              result.deltaHours = queryResults[i]['deltaHours'];
-              result.kennelCredit = queryResults[i]['kennelCredit'];
-              result.memberPrice = queryResults[i]['memberPrice'];
-              result.nonMemberPrice = queryResults[i]['nonMemberPrice'];
-              result.extrasCost = queryResults[i]['extrasCost'];
-              result.extrasDescription = queryResults[i]['extrasDescription'];
-              result.kennelShortName = queryResults[i]['kennelShortName'];
-              result.allowSelfPayment = queryResults[i]['allowSelfPayment'];
-              result.discountAmount = queryResults[i]['discountAmount'];
-              result.discountPercent = queryResults[i]['discountPercent'];
-              result.distanceInMeters = dist;
-              result.attendenceState = queryResults[i]['attendenceState'];
-              result.membershipExpirationDate = DateTime.tryParse(queryResults[i]['membershipExpirationDate']) ?? DateTime(2000, 1, 1);
-              result.currencySymbol = queryResults[i]['curSym'];
-              result.digitsAfterDecimal = queryResults[i]['digAfterDec'];
-              result.selected = false;
+              String? eventImage = queryResults[i]['eventImage'];
+
+              if ((eventImage != null) && (eventImage.isNotEmpty) && (!eventImage.startsWith('http'))) {
+                final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+                if (s.isNotEmpty) {
+                  eventImage = s + eventImage;
+                }
+              }
+
+              final AreWeAtRunModel result = AreWeAtRunModel(
+                eventId: queryResults[i]['eventId'],
+                eventName: queryResults[i]['eventName'],
+                eventImage: eventImage,
+                kennelId: queryResults[i]['kennelId'],
+                kennelLogo: queryResults[i]['kennelLogo'],
+                eventNumber: queryResults[i]['eventNumber'],
+                deltaHours: queryResults[i]['deltaHours'],
+                kennelCredit: queryResults[i]['kennelCredit'],
+                memberPrice: queryResults[i]['memberPrice'],
+                nonMemberPrice: queryResults[i]['nonMemberPrice'],
+                extrasCost: queryResults[i]['extrasCost'],
+                extrasDescription: queryResults[i]['extrasDescription'],
+                kennelShortName: queryResults[i]['kennelShortName'],
+                allowSelfPayment: queryResults[i]['allowSelfPayment'],
+                discountAmount: queryResults[i]['discountAmount'],
+                discountPercent: queryResults[i]['discountPercent'],
+                distanceInMeters: dist,
+                attendenceState: queryResults[i]['attendenceState'],
+                membershipExpirationDate: DateTime.tryParse(queryResults[i]['membershipExpirationDate']) ?? DateTime(2000, 1, 1),
+                currencySymbol: queryResults[i]['curSym'],
+                digitsAfterDecimal: queryResults[i]['digAfterDec'],
+              );
 
               // NOTE: Event images can either be full URLs or they can be partial URLs in the case
               // when events have been uploaded directly to the DB using the HcWeb application.
               // For partial URLs we need to append the root URL. The Root URL is stored in the
               // Server settings table and copied into the string prefs on app startup.
-              if ((result.eventImage != null) && (result.eventImage!.isNotEmpty) && (!result.eventImage!.startsWith('http'))) {
-                final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-                if (s.isNotEmpty) {
-                  result.eventImage = s + result.eventImage!;
-                }
-              }
 
               resultList.add(result);
             }

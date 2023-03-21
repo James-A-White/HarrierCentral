@@ -1,17 +1,16 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ConfirmAutoCheckinPopup extends StatefulWidget {
   const ConfirmAutoCheckinPopup({
-    Key key,
-    @required this.title,
-    @required this.areWeAtRunData,
-    @required this.cancelButtonTitle,
-    @required this.okButtonTitle,
+    Key? key,
+    required this.title,
+    required this.areWeAtRunData,
+    required this.cancelButtonTitle,
+    required this.okButtonTitle,
   }) : super(key: key);
 
   final String title;
-  final AreWeAtRunResult areWeAtRunData;
+  final AreWeAtRunModel areWeAtRunData;
   final String cancelButtonTitle;
   final String okButtonTitle;
 
@@ -46,7 +45,7 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 15.0, bottom: 5.0),
-          child: ((widget.areWeAtRunData.eventNumber != null) && (widget.areWeAtRunData.eventNumber != 0))
+          child: (widget.areWeAtRunData.eventNumber != 0)
               ? Text(
                   (eventPrice <= widget.areWeAtRunData.kennelCredit)
                       ? 'Check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName} (Run #${widget.areWeAtRunData.eventNumber})'
@@ -67,12 +66,12 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
               children: <Widget>[
                 if (eventPrice <= widget.areWeAtRunData.kennelCredit) ...<Widget>[
                   Text(
-                      'You have ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.kennelCredit ?? 0, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} of Hash Credit remaining.'),
+                      'You have ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.kennelCredit, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} of Hash Credit remaining.'),
                   TextButton(
                     style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
                     child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text('Pay ${IveCoreUtilities.getFormattedMoney(eventPrice ?? 0, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit')),
+                        child: Text('Pay ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit')),
                     onPressed: () {
                       Navigator.of(context).pop(enumCheckInOption_YesAndPayByCredit);
                     },
@@ -83,7 +82,7 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                     style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
                     child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text('Paid ${IveCoreUtilities.getFormattedMoney(eventPrice ?? 0, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} by Bank Transfer')),
+                        child: Text('Paid ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} by Bank Transfer')),
                     onPressed: () {
                       Navigator.of(context).pop(enumCheckInOption_YesAndPayByBankXfer);
                     },
@@ -102,14 +101,14 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
             child: Column(
               children: <Widget>[
                 Text(
-                    'You can also pay an additional ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.extrasCost ?? 0, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} for ${widget.areWeAtRunData.extrasDescription}'),
+                    'You can also pay an additional ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.extrasCost, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} for ${widget.areWeAtRunData.extrasDescription}'),
                 if ((widget.areWeAtRunData.extrasCost > 0) && ((eventPrice + widget.areWeAtRunData.extrasCost) <= widget.areWeAtRunData.kennelCredit)) ...<Widget>[
                   TextButton(
                     style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Text(
-                          'Pay ${IveCoreUtilities.getFormattedMoney((eventPrice + widget.areWeAtRunData.extrasCost) ?? 0, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit'),
+                          'Pay ${IveCoreUtilities.getFormattedMoney((eventPrice + widget.areWeAtRunData.extrasCost), widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit'),
                     ),
                     onPressed: () {
                       Navigator.of(context).pop(enumCheckInOption_YesAndPayPlusExtrasByCredit);
@@ -122,7 +121,7 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Text(
-                          'Paid ${IveCoreUtilities.getFormattedMoney((eventPrice + widget.areWeAtRunData.extrasCost) ?? 0, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} by Bank Transfer'),
+                          'Paid ${IveCoreUtilities.getFormattedMoney((eventPrice + widget.areWeAtRunData.extrasCost), widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} by Bank Transfer'),
                     ),
                     onPressed: () {
                       Navigator.of(context).pop(enumCheckInOption_YesAndPayPlusExtrasByBankXfer);

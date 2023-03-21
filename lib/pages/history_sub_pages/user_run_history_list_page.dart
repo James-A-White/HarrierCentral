@@ -8,7 +8,7 @@ class UserRunHistoryListPage extends StatefulWidget {
     @required this.refreshKennelInfo,
   }) : super(key: key);
 
-  final HistoryListResults kennelInfo;
+  final RunHistoryModel kennelInfo;
   final Function refreshKennelInfo;
 
   @override
@@ -88,7 +88,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   List<UserRunHistoryResults> _runCountsList = <UserRunHistoryResults>[];
   final String _userId = getStringPref(StringPrefsEnum.userId);
 
-  HistoryListResults _kennelInfo;
+  RunHistoryModel _kennelInfo;
 
   @override
   void initState() {

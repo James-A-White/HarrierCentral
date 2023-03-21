@@ -23,9 +23,12 @@ _$_KennelMemberResultsModel _$$_KennelMemberResultsModelFromJson(
       historicalTotalRunCount: json['historicalTotalRunCount'] as int,
       historicalHaringCount: json['historicalHaringCount'] as int,
       kennelEmailAlertPreference: json['kennelEmailAlertPreference'] as int?,
-      membershipExpirationDate:
-          DateTime.parse(json['membershipExpirationDate'] as String),
-      memberSince: DateTime.parse(json['memberSince'] as String),
+      membershipExpirationDate: json['membershipExpirationDate'] == null
+          ? null
+          : DateTime.parse(json['membershipExpirationDate'] as String),
+      memberSince: json['memberSince'] == null
+          ? null
+          : DateTime.parse(json['memberSince'] as String),
       membershipDurationInMonths: json['membershipDurationInMonths'] as int,
       appAccessFlags: json['appAccessFlags'] as int?,
       mismanagementRoles: json['mismanagementRoles'] as int?,
@@ -50,8 +53,8 @@ Map<String, dynamic> _$$_KennelMemberResultsModelToJson(
       'historicalHaringCount': instance.historicalHaringCount,
       'kennelEmailAlertPreference': instance.kennelEmailAlertPreference,
       'membershipExpirationDate':
-          instance.membershipExpirationDate.toIso8601String(),
-      'memberSince': instance.memberSince.toIso8601String(),
+          instance.membershipExpirationDate?.toIso8601String(),
+      'memberSince': instance.memberSince?.toIso8601String(),
       'membershipDurationInMonths': instance.membershipDurationInMonths,
       'appAccessFlags': instance.appAccessFlags,
       'mismanagementRoles': instance.mismanagementRoles,

@@ -11,7 +11,7 @@ class UserEventListItem extends StatelessWidget {
   }) : super(key: key);
 
   final UserRunHistoryResults item;
-  final HistoryListResults kennelInfo;
+  final RunHistoryModel kennelInfo;
   final Function setAttendenceStateCallback;
 
   @override

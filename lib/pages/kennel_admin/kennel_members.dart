@@ -468,7 +468,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                               child: KennelMemberListItem(
                                   kennelListAggregate: widget.kennelListAggregate,
                                   kennelMember: snapshot.data![index],
-                                  refreshRunCountsCallback: (bool refreshThisUserData) async {
+                                  refreshRunCountsCallback: (bool refreshThisUserData, String dispName, String photo) async {
                                     // if the user of this device is changing their own run
                                     // counts, make sure to also refresh the HKM users
                                     // table so the run history page is accurate
@@ -479,6 +479,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                             debugText: 'kennel_members: HKM',
                                           );
                                     }
+
+                                    snapshot.data![index] = (snapshot.data![index] as KennelMemberResultsModel).copyWith(dispName: dispName, photo: photo);
+
                                     await _refreshKennelMembersFromTable(true);
                                     await _refreshCounters(true);
                                     setState(() {});

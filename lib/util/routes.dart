@@ -1,7 +1,6 @@
-// @dart=2.11
 // ignore_for_file: constant_identifier_names
 
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 enum RouteNames {
   FACEBOOK_LOGIN,

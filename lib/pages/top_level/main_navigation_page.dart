@@ -6,11 +6,11 @@ class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({
     Key? key,
     required this.promos,
-    required this.firstPromoImage,
+    this.firstPromoImage,
   }) : super(key: key);
 
   final List<PromoModel> promos;
-  final Image firstPromoImage;
+  final Image? firstPromoImage;
 
   @override
   MainNavigationPageState createState() => MainNavigationPageState();

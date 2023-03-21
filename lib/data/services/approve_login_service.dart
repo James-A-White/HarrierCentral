@@ -1,16 +1,16 @@
-// @dart=2.11
-
 import 'package:dart_ipify/dart_ipify.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ApproveLoginService {
-  Future<String> approveLogin(BuildContext context, String facebookAccessToken) async {
-    String userId = getStringPref(StringPrefsEnum.userId);
-    if ((userId ?? '').isEmpty) {
-      userId = GUID_EMPTY;
+  Future<String> approveLogin(BuildContext context, String? facebookAccessToken) async {
+    String? uid = getStringPref(StringPrefsEnum.userId);
+    if ((uid ?? '').isEmpty) {
+      uid = GUID_EMPTY;
     }
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    String userId = uid!;
+
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no version>';
 
     String deviceId = 'unknown';
     String deviceType = 'unknown';
@@ -23,20 +23,19 @@ class ApproveLoginService {
 
     if (Platform.isAndroid) {
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId = (androidInfo.id ?? '<no Android ID>').toUpperCase();
-      deviceType = '${androidInfo.model ?? '<no Android model>'} / device: ${androidInfo.device ?? '<no Android device'}';
+      deviceId = androidInfo.id.toUpperCase();
+      deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
-      systemName = androidInfo.host ?? '<no Android system name>';
-      systemVersion =
-          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release ?? '<no Android release>'} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
-      manufacturer = androidInfo.brand ?? '<no Android brand>';
+      systemName = androidInfo.host;
+      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
+      manufacturer = androidInfo.brand;
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      deviceId = iosInfo.identifierForVendor.toUpperCase();
-      deviceType = iosInfo.model;
-      deviceName = iosInfo.name;
-      systemName = iosInfo.systemName;
-      systemVersion = iosInfo.systemVersion;
+      deviceId = (iosInfo.identifierForVendor ?? '<no vendor id>').toUpperCase();
+      deviceType = iosInfo.model ?? '<no model>';
+      deviceName = iosInfo.name ?? '<no device name>';
+      systemName = iosInfo.systemName ?? '<no system name>';
+      systemVersion = iosInfo.systemVersion ?? '<no system version>';
       manufacturer = 'Apple';
     }
 
@@ -76,7 +75,7 @@ class ApproveLoginService {
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'approveLoginV2', paramString: deviceId);
 
-    final String body = jsonEncode(<String, String>{
+    final String body = jsonEncode(<String, String?>{
       'userId': userId,
       'accessToken': accessToken,
       'deviceId': deviceId,
@@ -89,9 +88,9 @@ class ApproveLoginService {
       'longitude': (G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': hcVersion,
       'fbToken': facebookAccessToken,
-      'usesLocSvcs': (G0<AppModel>().hasLocationPermissions ?? false) ? '1' : '0',
-      'screenWidth': (G0<DeviceInfo>().deviceWidth ?? 0).toInt().toString(),
-      'screenHeight': (G0<DeviceInfo>().deviceHeight ?? 0).toInt().toString(),
+      'usesLocSvcs': (G0<AppModel>().hasLocationPermissions) ? '1' : '0',
+      'screenWidth': (G0<DeviceInfo>().deviceWidth).toInt().toString(),
+      'screenHeight': (G0<DeviceInfo>().deviceHeight).toInt().toString(),
       'ipInfo': responseBody,
     });
 
@@ -103,55 +102,56 @@ class ApproveLoginService {
             )
         .catchError(
       (dynamic error) {
-        // TODO(James): Handle socketException
-        futureResponse = null;
+        return Response('<http error>', 500);
       },
     );
-
-    if (futureResponse == null) {
-      return null;
-    }
 
     //final Future<void> delay = Future<void>.delayed(const Duration(seconds: 25));
 
     // wait 7 seconds then issue the first warning
     Response resp = await futureResponse.timeout(const Duration(seconds: LOGIN_IS_DELAYED_WARNING_1), onTimeout: () {
-      return null;
+      return Response('<timeout error>', 999);
     });
 
-    if (resp == null) {
+    if (resp.statusCode == 999) {
       final bool keepWaiting = await _onLoginDelayed(
-        navigatorKey.currentContext,
+        navigatorKey.currentContext!,
         'Harrier Central is waiting for a response from the server. It appears as though the network is slow. Please stand by while we wait for a server response.',
       );
 
       if (!keepWaiting) {
         futureResponse.ignore();
         //delay.ignore();
-        return null;
+        return '';
+      }
+
+      // wait 15 more seconds then issue another warning
+      resp = await futureResponse.timeout(const Duration(seconds: LOGIN_IS_DELAYED_WARNING_2), onTimeout: () {
+        return Response('<timeout error>', 999);
+      });
+
+      if (resp.statusCode == 999) {
+        final bool keepWaiting = await _onLoginDelayed(
+          navigatorKey.currentContext!,
+          'Harrier Central is still waiting for a response from the server. Let\'s give it just a bit more time.',
+        );
+
+        if (!keepWaiting) {
+          futureResponse.ignore();
+          //delay.ignore();
+          return '';
+        }
+
+        if (resp.statusCode == 999) {
+          // finally, if the response times out again, continue with offline mode
+          resp = await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
+        }
       }
     }
 
-    // wait 15 more seconds then issue another warning
-    resp ??= await futureResponse.timeout(const Duration(seconds: LOGIN_IS_DELAYED_WARNING_2), onTimeout: () {
-      return null;
-    });
-
-    if (resp == null) {
-      final bool keepWaiting = await _onLoginDelayed(
-        navigatorKey.currentContext,
-        'Harrier Central is still waiting for a response from the server. Let\'s give it just a bit more time.',
-      );
-
-      if (!keepWaiting) {
-        futureResponse.ignore();
-        //delay.ignore();
-        return null;
-      }
+    if (resp.statusCode == 999) {
+      return '';
     }
-
-    // finally, if the response times out again, continue with offline mode
-    resp ??= await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
 
     String returnValue = await ServiceCommon.checkHttpPostResponse(resp);
 
@@ -160,13 +160,14 @@ class ApproveLoginService {
 
   Future<bool> _onLoginDelayed(BuildContext context, String message) async {
     final bool isWait = await IveCoreUtilities.showAlert(
-      navigatorKey.currentContext,
-      'Slow Network',
-      message,
-      'Wait',
-      showCancelButton: true,
-      cancelButtonText: 'Continue offline',
-    );
+          navigatorKey.currentContext!,
+          'Slow Network',
+          message,
+          'Wait',
+          showCancelButton: true,
+          cancelButtonText: 'Continue offline',
+        ) ??
+        false;
     if (!isWait) {
       // return an empty response to indicate that the user wants to continue offline.
       return false;
@@ -176,10 +177,10 @@ class ApproveLoginService {
 
   Future<Response> _onTimeout(BuildContext context) async {
     await IveCoreUtilities.showAlert(
-        navigatorKey.currentContext,
+        navigatorKey.currentContext!,
         'Network Error',
         'Harrier Central was not able to contact the server. Please check your network connection.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
         'Use Offline');
-    return null;
+    return Response('<timeout error>', 999);
   }
 }
