@@ -1,10 +1,12 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class EmailPopup extends StatefulWidget {
-  const EmailPopup({Key key, this.initialEmailAddress}) : super(key: key);
+  const EmailPopup({
+    Key? key,
+    this.initialEmailAddress,
+  }) : super(key: key);
 
-  final String initialEmailAddress;
+  final String? initialEmailAddress;
 
   @override
   EmailPopupState createState() => EmailPopupState();
@@ -16,7 +18,7 @@ class EmailPopupState extends State<EmailPopup> {
 
   @override
   void initState() {
-    emailTextController.text = widget.initialEmailAddress;
+    emailTextController.text = widget.initialEmailAddress ?? '';
     super.initState();
   }
 

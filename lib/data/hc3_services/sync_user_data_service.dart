@@ -40,47 +40,47 @@ class SyncUserDataService {
   int _hasherEventMapLastUpdated = FORCE;
   int _narrowEventsLastUpdated = FORCE;
 
-  Future<int> getLastUpdatedTime(String colName, String tableName) async {
+  Future<int> _getLastUpdatedTime(String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
-    final int timeValue = table.first['maxDate'];
+    final int? timeValue = table.first['maxDate'];
     //print(timeValue.toString());
-    return timeValue;
+    return timeValue ?? FORCE;
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
     _hashersLastUpdated = (flags & flagHashersTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
     _citiesLastUpdated = (flags & flagCitiesTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().citiesTableHelper.colUpdatedAtValue, G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().citiesTableHelper.colUpdatedAtValue, G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user));
     _regionsLastUpdated = (flags & flagRegionsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().regionsTableHelper.colUpdatedAtValue, G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().regionsTableHelper.colUpdatedAtValue, G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user));
     _countriesLastUpdated = (flags & flagCountriesTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().countriesTableHelper.colUpdatedAtValue, G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().countriesTableHelper.colUpdatedAtValue, G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user));
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().kennelsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().kennelsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().paymentsTableHelper.colUpdatedAtValue, G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().paymentsTableHelper.colUpdatedAtValue, G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(
+        : await _getLastUpdatedTime(
             G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
             G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user),
           );
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(
+        : await _getLastUpdatedTime(
             G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
             G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user),
           );
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().eventsTableHelper.colUpdatedAtValue, G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().eventsTableHelper.colUpdatedAtValue, G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
   }
 
   Future<bool> updateFromBackend(

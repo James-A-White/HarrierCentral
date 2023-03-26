@@ -398,20 +398,22 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
     }
 
-    if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-      final File? file = await _imageFromCamera;
-      _upload(file, fileName);
-    } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
-      final File? file = await _imageFromGallery;
-      _upload(file, fileName);
-    } else if (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook) {
-      final File? file = await _imageFromFacebook;
-      _upload(file, fileName);
-    }
+    if (_imageTypeSelection != SelectedImageTypeEnum.fromNetwork) {
+      if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
+        final File? file = await _imageFromCamera;
+        _upload(file, fileName);
+      } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
+        final File? file = await _imageFromGallery;
+        _upload(file, fileName);
+      } else if (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook) {
+        final File? file = await _imageFromFacebook;
+        _upload(file, fileName);
+      }
 
-    final int deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
-    if (deltaTime < 1250) {
-      await Future<dynamic>.delayed(Duration(milliseconds: 1500 - deltaTime));
+      final int deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
+      if (deltaTime < 1250) {
+        await Future<dynamic>.delayed(Duration(milliseconds: 1500 - deltaTime));
+      }
     }
 
     if (widget.popToCaller) {
@@ -431,15 +433,14 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
             'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
       }
       if (!mounted) return;
-      // NULLSAFETODO
-      // await Navigator.pushReplacement<dynamic, dynamic>(
-      //     context,
-      //     MaterialPageRoute<dynamic>(
-      //       builder: (BuildContext context) => const MainNavigationPage(
-      //         promos: <PromoModel>[],
-      //         firstPromoImage: null,
-      //       ),
-      //     ));
+      await Navigator.pushReplacement<dynamic, dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => const MainNavigationPage(
+              promos: <PromoModel>[],
+              firstPromoImage: null,
+            ),
+          ));
     }
   }
 

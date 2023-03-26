@@ -16,80 +16,80 @@ class Utilities {
 //   // this is an unused variable to suppress a LINT warning
 //   int suppressWarning = 0;
 
-//   static const int qrScanTypeFlag_user = 0x00000001;
-//   static const int qrScanTypeFlag_userSecretCode = 0x00000002;
-//   static const int qrScanTypeFlag_runStart = 0x00000004;
-//   static const int qrScanTypeFlag_runEnd = 0x00000008;
-//   static const int qrScanTypeFlag_kennelRunStart = 0x00000010;
-//   static const int qrScanTypeFlag_kennelRunEnd = 0x00000020;
-//   static const int qrScanTypeFlag_resetCode = 0x00000040;
-//   static const int qrScanTypeFlag_authenticateWebPortal = 0x00000080;
+  static const int qrScanTypeFlag_user = 0x00000001;
+  static const int qrScanTypeFlag_userSecretCode = 0x00000002;
+  static const int qrScanTypeFlag_runStart = 0x00000004;
+  static const int qrScanTypeFlag_runEnd = 0x00000008;
+  static const int qrScanTypeFlag_kennelRunStart = 0x00000010;
+  static const int qrScanTypeFlag_kennelRunEnd = 0x00000020;
+  static const int qrScanTypeFlag_resetCode = 0x00000040;
+  static const int qrScanTypeFlag_authenticateWebPortal = 0x00000080;
 
 //   static int logCounter = 0;
 
-//   static Map<String, String> validateScan(String scanText, int allowedScanTypes) {
-//     Map<String, String> result;
+  static Map<String, String> validateScan(String scanText, int allowedScanTypes) {
+    Map<String, String> result;
 
-//     if (scanText.contains(BASE_HCWEB_MOBILE_URL)) {
-//       scanText = scanText.replaceAll(BASE_HCWEB_MOBILE_URL, '');
-//     }
+    if (scanText.contains(BASE_HCWEB_MOBILE_URL)) {
+      scanText = scanText.replaceAll(BASE_HCWEB_MOBILE_URL, '');
+    }
 
-//     if (scanText.contains(BASE_HASHRUNS_DOT_ORG_URL)) {
-//       scanText = scanText.replaceAll(BASE_HASHRUNS_DOT_ORG_URL, '');
-//     }
+    if (scanText.contains(BASE_HASHRUNS_DOT_ORG_URL)) {
+      scanText = scanText.replaceAll(BASE_HASHRUNS_DOT_ORG_URL, '');
+    }
 
-//     String prefix = '';
-//     String content = '';
+    String prefix = '';
+    String content = '';
 
-//     // this first option is for HC QR codes that are not URLs
-//     if (scanText.indexOf(':') == 3) {
-//       prefix = scanText.substring(0, 4).toUpperCase();
-//       content = scanText.substring(4);
-//     }
+    // this first option is for HC QR codes that are not URLs
+    if (scanText.indexOf(':') == 3) {
+      prefix = scanText.substring(0, 4).toUpperCase();
+      content = scanText.substring(4);
+    }
 
-//     if (prefix.isEmpty) {
-//       result = <String, String>{'validScan': false.toString(), 'prefix': '', 'content': ''};
-//     } else {
-//       int scanType = 0;
-//       bool validHcQr = true;
+    if (prefix.isEmpty) {
+      result = <String, String>{'validScan': false.toString(), 'prefix': '', 'content': ''};
+    } else {
+      int scanType = 0;
+      bool validHcQr = true;
 
-//       switch (prefix) {
-//         case QR_PREFIX_USER_CODE:
-//           scanType = qrScanTypeFlag_user;
-//           break;
-//         case QR_PREFIX_USER_SECRET_CODE:
-//           scanType = qrScanTypeFlag_userSecretCode;
-//           break;
-//         case QR_PREFIX_USER_RESET_CODE:
-//           scanType = qrScanTypeFlag_resetCode;
-//           break;
-//         case QR_PREFIX_SPECIFIC_RUN_START:
-//           scanType = qrScanTypeFlag_runStart;
-//           break;
-//         case QR_PREFIX_SPECIFIC_RUN_END:
-//           scanType = qrScanTypeFlag_runEnd;
-//           break;
-//         case QR_PREFIX_KENNEL_GENERIC_RUN_START:
-//           scanType = qrScanTypeFlag_kennelRunStart;
-//           break;
-//         case QR_PREFIX_KENNEL_GENERIC_RUN_END:
-//           scanType = qrScanTypeFlag_kennelRunEnd;
-//           break;
-//         case QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN:
-//           scanType = qrScanTypeFlag_authenticateWebPortal;
-//           break;
-//         default:
-//           validHcQr = false;
-//           break;
-//       }
+      switch (prefix) {
+        case QR_PREFIX_USER_CODE:
+          scanType = qrScanTypeFlag_user;
+          break;
+        case QR_PREFIX_USER_SECRET_CODE:
+          scanType = qrScanTypeFlag_userSecretCode;
+          break;
+        case QR_PREFIX_USER_RESET_CODE:
+          scanType = qrScanTypeFlag_resetCode;
+          break;
+        case QR_PREFIX_SPECIFIC_RUN_START:
+          scanType = qrScanTypeFlag_runStart;
+          break;
+        case QR_PREFIX_SPECIFIC_RUN_END:
+          scanType = qrScanTypeFlag_runEnd;
+          break;
+        case QR_PREFIX_KENNEL_GENERIC_RUN_START:
+          scanType = qrScanTypeFlag_kennelRunStart;
+          break;
+        case QR_PREFIX_KENNEL_GENERIC_RUN_END:
+          scanType = qrScanTypeFlag_kennelRunEnd;
+          break;
+        case QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN:
+          scanType = qrScanTypeFlag_authenticateWebPortal;
+          break;
+        default:
+          validHcQr = false;
+          break;
+      }
 
-//       final bool scanAllowed = (scanType & allowedScanTypes) != 0;
+      final bool scanAllowed = (scanType & allowedScanTypes) != 0;
 
-//       result = <String, String>{'validScan': scanAllowed.toString(), 'prefix': prefix, 'content': content, 'validHcQr': validHcQr.toString()};
-//     }
+      result = <String, String>{'validScan': scanAllowed.toString(), 'prefix': prefix, 'content': content, 'validHcQr': validHcQr.toString()};
+    }
 
-//     return result;
-//   }
+    return result;
+  }
 
 //   static Future<void> openMapsSheet(
 //     BuildContext context,

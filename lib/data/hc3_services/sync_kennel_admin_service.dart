@@ -14,23 +14,23 @@ class SyncKennelAdminService {
   int _hasherKennelMapLastUpdated = FORCE;
   int _hashersLastUpdated = FORCE;
 
-  Future<int> getLastUpdatedTime(String colName, String tableName) async {
+  Future<int> _getLastUpdatedTime(String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
-    final int timeValue = table.first['maxDate'];
+    final int? timeValue = table.first['maxDate'];
     //print(timeValue.toString());
-    return timeValue;
+    return timeValue ?? FORCE;
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
     _kennelLastUpdated = (flags & flagKennelTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().kennelsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.kennel));
+        : await _getLastUpdatedTime(G0<TableModel>().kennelsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.kennel));
     _hashersLastUpdated = (flags & flagHashersTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel));
+        : await _getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel));
   }
 
   Future<bool> updateFromBackend(

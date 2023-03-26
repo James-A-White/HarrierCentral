@@ -133,7 +133,7 @@ export 'package:harrier_central/util/routes.dart';
 export 'package:harrier_central/util/secure_prefs.dart';
 export 'package:harrier_central/util/styles.dart';
 export 'package:harrier_central/util/utilities.dart';
-export 'package:harrier_central/widgets/bubble_tab_indicator.dart';
+
 export 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
 export 'package:harrier_central/widgets/connected_widget.dart';
 export 'package:harrier_central/widgets/customize_profile.dart';
@@ -196,3 +196,5 @@ export 'package:sumup/sumup.dart';
 export 'package:table_calendar/table_calendar.dart';
 export 'package:url_launcher/url_launcher.dart';
 export 'package:video_player/video_player.dart';
+
+export 'package:bubble_tab_indicator/bubble_tab_indicator.dart';

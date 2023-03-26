@@ -38,7 +38,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     G0<DeviceInfo>().deviceWidth = MediaQuery.of(navigatorKey.currentContext!).size.width;
     G0<DeviceInfo>().deviceHeight = MediaQuery.of(navigatorKey.currentContext!).size.height;
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String? userId = getStringPref(StringPrefsEnum.userId);
 
     await Utilities.checkForInternetConnection(false);
 
@@ -103,7 +103,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       }
     }
 
-    if ((loginResult == null) && ((userId.isEmpty) || (userId == GUID_EMPTY))) {
+    if ((loginResult == null) && (((userId ?? '').isEmpty) || (userId == GUID_EMPTY))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
 
@@ -138,7 +138,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
           if (loginResult.approvalCode == loginApprovalApproved.value) {
             G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
             //if (true) {
-            if ((userId.isEmpty || (userId == GUID_EMPTY))) {
+            if (((userId == null) || (userId.isEmpty) || (userId == GUID_EMPTY))) {
               // first time the app has run
               if (!mounted) return;
               await Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());

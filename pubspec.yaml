@@ -10,6 +10,7 @@ environment:
 dependencies:   
   audioplayers: 0.20.1 # had problem with low sound volume on iOS on version 1.0.0
   auto_size_text: ^3.0.0 
+  bubble_tab_indicator: ^0.1.6
   cached_network_image: ^3.2.1
   card_swiper: ^2.0.4
   chewie: ^1.2.2  

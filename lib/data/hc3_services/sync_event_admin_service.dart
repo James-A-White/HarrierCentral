@@ -25,7 +25,7 @@ class SyncEventAdminService {
     final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
     int? timeValue = table.first['maxDate'];
     //print(timeValue.toString());
-    return timeValue ?? FORCE_ALL_REPLICATION_TIMESTAMP;
+    return timeValue ?? FORCE;
   }
 
   Future<void> _getLastUpdatedTimes(int flags) async {

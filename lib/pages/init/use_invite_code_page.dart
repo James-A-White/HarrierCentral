@@ -1,10 +1,11 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class UseInviteCodePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const UseInviteCodePage({Key key}) : super(key: key);
+  const UseInviteCodePage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   UseInviteCodePageState createState() => UseInviteCodePageState();
@@ -56,15 +57,17 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
 }
 
 class UseInviteCodePageContent extends StatefulWidget {
-  const UseInviteCodePageContent({Key key}) : super(key: key);
+  const UseInviteCodePageContent({
+    Key? key,
+  }) : super(key: key);
 
   @override
   UseInviteCodePageContentState createState() => UseInviteCodePageContentState();
 }
 
 class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
-  TextEditingController _inviteCodeTextController;
-  InputDecoration _inviteCodeDecoration;
+  late TextEditingController _inviteCodeTextController;
+  late InputDecoration _inviteCodeDecoration;
   final FocusNode _inviteCodeFocusNode = FocusNode();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -78,17 +81,17 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   String _lastQrCode = '';
 
-  String _result;
+  String? _result;
 
   bool _isScanning = false;
 
-  DateTime _lastScan;
+  DateTime? _lastScan;
 
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR123');
 
   // EQrScannerState _state = EQrScannerState.waitingForScan;
 
-  QRViewController _controller;
+  QRViewController? _controller;
   // EQrScannerState _state = EQrScannerState.waitingForScan;
   // bool _isScanning = true;
 
@@ -110,8 +113,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   @override
   void dispose() {
     if (_controller != null) {
-      _controller.pauseCamera();
-      _controller.dispose();
+      _controller!.pauseCamera();
+      _controller!.dispose();
     }
 
     super.dispose();
@@ -122,13 +125,13 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     super.reassemble();
     if (_controller != null) {
       if (Platform.isAndroid) {
-        _controller.pauseCamera().then((void _) {
+        _controller!.pauseCamera().then((void _) {
           // _isScanning = false;
           // _onScreenMessage = 'Scanning paused';
           // _state = EQrScannerState.waitingForScan;
         });
       } else if (Platform.isIOS) {
-        _controller.resumeCamera().then((void _) {
+        _controller!.resumeCamera().then((void _) {
           // _isScanning = true;
           // _onScreenMessage = 'Looking for QR Code';
           // _state = EQrScannerState.scanning;
@@ -140,7 +143,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final num newFontSize = headingStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
+      final double newFontSize = (headingStyle.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
 
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
@@ -196,8 +199,10 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             controller: _inviteCodeTextController,
                             focusNode: _inviteCodeFocusNode,
                             decoration: _inviteCodeDecoration,
-                            validator: (String val) {
-                              if (val.length != 6) {
+                            validator: (String? val) {
+                              if (val == null) {
+                                return 'Application error 1802. Please contact us at connect@harriercentral.com';
+                              } else if (val.length != 6) {
                                 return 'Invite codes are six characters';
                               } else {
                                 return null;
@@ -214,11 +219,13 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             onPressed: () async {
                               setState(() {
                                 _showQrScanner = !_showQrScanner;
-                                if (_showQrScanner) {
-                                  _lastQrCode = '';
-                                  _controller.resumeCamera();
-                                } else {
-                                  _controller.pauseCamera();
+                                if (_controller != null) {
+                                  if (_showQrScanner) {
+                                    _lastQrCode = '';
+                                    _controller!.resumeCamera();
+                                  } else {
+                                    _controller!.pauseCamera();
+                                  }
                                 }
                               });
                             },
@@ -291,21 +298,23 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             initialEmailAddress: _emailAddress,
                           );
 
-                          final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+                          final Future<Map<String, String?>?> dlg = showDialog<Map<String, String>>(
                               context: context,
                               barrierDismissible: false, // user must tap button!
                               builder: (BuildContext context) {
                                 return emailPopup;
                               });
 
-                          final Map<String, String> x = await dlg;
-                          final String email = x['email'];
-                          final String type = x['type'];
+                          final Map<String, String?>? x = await dlg;
+                          if (x != null) {
+                            final String email = x['email'] ?? '';
+                            final String type = x['type'] ?? '';
 
-                          if (type != 'cancel') {
-                            _emailAddress = email;
-                            final String userMessage = await HashersService.sendInviteCodeByEmail(email);
-                            await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Instructions', userMessage, 'OK');
+                            if (type != 'cancel') {
+                              _emailAddress = email;
+                              final String userMessage = await HashersService.sendInviteCodeByEmail(email);
+                              await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Instructions', userMessage, 'OK');
+                            }
                           }
                         },
                         child: Text('Email me a new invite code', style: smallTitleStyle.copyWith(color: Colors.red))),
@@ -323,7 +332,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 : TextButton(
                     child: Text('Get Started!', style: textStyleButton),
                     onPressed: () async {
-                      if (_formKey.currentState.validate()) {
+                      if (_formKey.currentState!.validate()) {
                         // If the form is valid, display a snackbar. In the real world,
                         // you'd often call a server or save the information in a database.
                         setState(() {
@@ -340,21 +349,21 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         });
 
                         if (result['result'] != 'failed') {
-                          final String userName = getStringPref(StringPrefsEnum.displayName);
+                          final String userName = getStringPref(StringPrefsEnum.displayName) ?? '<no name>';
 
-                          String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                          String? profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
                           profilePhotoUrl ??= 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
-                          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
+                          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
 
-                          Navigator.pop(navigatorKey.currentContext);
+                          Navigator.pop(navigatorKey.currentContext!);
                           if (!mounted) return;
                           await Navigator.pushReplacement<dynamic, dynamic>(
                               context,
                               MaterialPageRoute<dynamic>(
                                 builder: (BuildContext context) => ChooseProfileImage(
                                   isForThisDevice: true,
-                                  fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
+                                  fileNamePrefix: getStringPref(StringPrefsEnum.supportCode) ?? '<no code>',
                                   currentProfileImage: profilePhotoUrl,
                                   popToCaller: false,
                                 ),
@@ -372,17 +381,17 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     });
   }
 
-  Future<void> _onCodeRead(String scanResult) async {
-    if (_showQrScanner && (_lastQrCode != scanResult)) {
-      _lastQrCode = scanResult;
+  Future<void> _onCodeRead(String? scanResult) async {
+    if (((scanResult ?? '').isNotEmpty) && _showQrScanner && (_lastQrCode != scanResult)) {
+      _lastQrCode = scanResult!;
       final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_resetCode);
-      await _controller.pauseCamera();
+      await _controller!.pauseCamera();
       setState(() {
         _showQrScanner = false;
       });
 
       if (result['validScan'] == 'false') {
-        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Wrong QR Code',
+        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Wrong QR Code',
             'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
       } else {
         setState(() {
@@ -392,15 +401,15 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     }
   }
 
-  Future<void> _toggleScanning({bool doScanning}) async {
+  Future<void> _toggleScanning({bool? doScanning}) async {
     if (_controller != null) {
       if (_isScanning && ((doScanning == null) || !doScanning)) {
-        await _controller.pauseCamera();
+        await _controller!.pauseCamera();
         _isScanning = false;
         //_state = EQrScannerState.waitingForScan;
       } else {
         if ((doScanning == null) || doScanning) {
-          await _controller.resumeCamera();
+          await _controller!.resumeCamera();
           _isScanning = true;
           // _state = EQrScannerState.scanning;
         }
@@ -417,15 +426,17 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
       //_toggleScanning();
     });
 
-    _controller.scannedDataStream.listen((Barcode scanData) async {
-      _result = scanData.code;
-      // "debounce" the listener to discard multiple scans
-      // that happen within a 5 second window.
-      if ((_lastScan == null) || (_lastScan.difference(DateTime.now()).inSeconds.abs() > 5)) {
-        _lastScan = DateTime.now();
-        await _toggleScanning();
-        await _onCodeRead(_result);
-      }
-    });
+    if (_controller != null) {
+      _controller!.scannedDataStream.listen((Barcode scanData) async {
+        _result = scanData.code;
+        // "debounce" the listener to discard multiple scans
+        // that happen within a 5 second window.
+        if ((_lastScan == null) || (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
+          _lastScan = DateTime.now();
+          await _toggleScanning();
+          await _onCodeRead(_result);
+        }
+      });
+    }
   }
 }

@@ -1,8 +1,9 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class IntroSliderPage extends StatefulWidget {
-  const IntroSliderPage({Key key}) : super(key: key);
+  const IntroSliderPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   IntroSliderPageState createState() => IntroSliderPageState();
@@ -11,10 +12,10 @@ class IntroSliderPage extends StatefulWidget {
 class IntroSliderPageState extends State<IntroSliderPage> {
   List<ContentConfig> slides = <ContentConfig>[];
 
-  TextStyle titleStyle;
-  TextStyle descriptionStyle;
+  final TextStyle _titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
+  final TextStyle _descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
 
-  TextStyle navStyle;
+  final TextStyle _navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
 
   @override
   void initState() {
@@ -22,17 +23,13 @@ class IntroSliderPageState extends State<IntroSliderPage> {
   }
 
   void addSlides() {
-    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
-
     slides.add(
       ContentConfig(
         title: 'Welcome to Harrier Central',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'The World\'s Best Way to Manage Your Hash Life',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/other/hc_app_icon.png',
         heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
@@ -45,9 +42,9 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       ContentConfig(
         title: 'Discover Hash Runs',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'Instantly Find Hash Runs Around the Corner or Across the Globe!',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_map.png',
         heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 172, 255, 161),
@@ -60,9 +57,9 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       ContentConfig(
         title: 'Your Run History',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'Track Your Run Counts Across all Hash Kennels',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_run_counts.png',
         heightImage: 170 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 234, 195, 255),
@@ -75,9 +72,9 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       ContentConfig(
         title: 'Easy\r\nHash Cash',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'With new ways to pay for the Hash, you\'ll never fumble for cash again',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_cash.png',
         heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 255, 244, 210),
@@ -90,9 +87,9 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       ContentConfig(
         title: 'Built for\r\nMis-Management',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'Powerful Tools Designed to Make It Easier to Manage Your Kennel',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_admin_tools.png',
         heightImage: 100 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 200, 200, 255),
@@ -105,9 +102,9 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       ContentConfig(
         title: 'Secure Data',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'We don\'t Share Your Data with *Anyone* Outside of Harrier Central',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_data_security.png',
         heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 255, 190, 180),
@@ -120,9 +117,9 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       ContentConfig(
         title: 'More to Come!',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'There are dozens more features designed just for the Hash coming soon!',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_rocket.png',
         heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 143, 234, 255),
@@ -135,9 +132,9 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       ContentConfig(
         title: 'OK! Let\'s\r\nGet Started!',
         maxLineTitle: 2,
-        styleTitle: titleStyle,
+        styleTitle: _titleStyle,
         description: 'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
-        styleDescription: descriptionStyle,
+        styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_info_sign.png',
         heightImage: 100 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
@@ -169,7 +166,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
     //   size: 35.0,
     // );
 
-    return Text('Next', style: navStyle);
+    return Text('Next', style: _navStyle);
   }
 
   Widget renderDoneBtn() {
@@ -177,7 +174,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
     //   Icons.done,
     //   color: themeAppBarBackground,
     // );
-    return Text('OK', style: navStyle);
+    return Text('OK', style: _navStyle);
   }
 
   Widget renderSkipBtn() {
@@ -185,10 +182,8 @@ class IntroSliderPageState extends State<IntroSliderPage> {
     //   Icons.skip_next,
     //   color: themeAppBarBackground,
     // );
-    return Text('Skip', style: navStyle);
+    return Text('Skip', style: _navStyle);
   }
-
-  IntroSlider slider;
 
   @override
   Widget build(BuildContext context) {

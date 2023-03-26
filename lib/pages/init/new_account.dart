@@ -1,10 +1,11 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class NewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const NewAccountPage({Key key}) : super(key: key);
+  const NewAccountPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   NewAccountPageState createState() => NewAccountPageState();
@@ -54,7 +55,9 @@ class NewAccountPageState extends State<NewAccountPage> {
 }
 
 class NewAccountPageContent extends StatefulWidget {
-  const NewAccountPageContent({Key key}) : super(key: key);
+  const NewAccountPageContent({
+    Key? key,
+  }) : super(key: key);
 
   @override
   NewAccountPageContentState createState() => NewAccountPageContentState();
@@ -64,13 +67,13 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      num newFontSize = smallTitleStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
+      double newFontSize = (smallTitleStyle.fontSize ?? 20.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
       final TextStyle localTitleStyle = smallTitleStyle.copyWith(fontSize: newFontSize, color: Colors.black);
 
-      newFontSize = bodyStyleSc.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
+      newFontSize = (bodyStyleSc.fontSize ?? 12) * G0<DeviceInfo>().deviceWidthScaleFactor;
       final TextStyle localBodyStyle = bodyStyleSc.copyWith(fontSize: newFontSize, color: Colors.black);
 
-      newFontSize = headingStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
+      newFontSize = (headingStyle.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
       return Container(
@@ -88,10 +91,11 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
 
               GestureDetector(
                 onTap: () {
-                  Navigator.pushReplacement<dynamic, dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
-                  );
+                  // NULLSAFETODO
+                  // Navigator.pushReplacement<dynamic, dynamic>(
+                  //   context,
+                  //   MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
+                  // );
                 },
                 child: Container(
                   margin: const EdgeInsets.all(5.0),

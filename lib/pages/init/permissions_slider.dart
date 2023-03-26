@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 // NOTE: The PODFILE needs to include the following lines for
 // Permissions_handler to work properly
@@ -49,7 +48,9 @@ import 'package:harrier_central/imports.dart';
 // end
 
 class PermissionSliderPage extends StatefulWidget {
-  const PermissionSliderPage({Key key}) : super(key: key);
+  const PermissionSliderPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   PermissionSliderPageState createState() => PermissionSliderPageState();
@@ -58,13 +59,13 @@ class PermissionSliderPage extends StatefulWidget {
 class PermissionSliderPageState extends State<PermissionSliderPage> {
   List<ContentConfig> slides = <ContentConfig>[];
 
-  TextStyle titleStyle;
+  late TextStyle titleStyle;
 
-  TextStyle descriptionStyle;
+  late TextStyle descriptionStyle;
 
-  TextStyle navStyle;
+  late TextStyle navStyle;
 
-  Function goToTab;
+  late Function _goToTab;
 
   @override
   void initState() {
@@ -189,21 +190,21 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         }
 
         activeTab = 1;
-        goToTab(1);
+        _goToTab(1);
       } else if (activeTab == 1) {
         await Permission.camera.request().isGranted;
         await Future<void>.delayed(const Duration(milliseconds: 1000));
         await Permission.photos.request().isGranted;
 
         activeTab = 2;
-        goToTab(2);
+        _goToTab(2);
       } else if (activeTab == 2) {
         // final NotificationSupport notifications = NotificationSupport();
         // // ignore: unawaited_futures
         // await notifications.configureNotifications(false);
 
         activeTab = 3;
-        goToTab(3);
+        _goToTab(3);
       }
       _permissionRequestInProgress = false;
     }
@@ -213,25 +214,23 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     return Text('OK', style: navStyle);
   }
 
-  IntroSlider slider;
-
   Widget _renderSkipBtn() {
     return Text('Skip', style: navStyle);
   }
 
   void _onSkipPress() {
     if (activeTab == 0) {
-      IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Location Preference',
+      IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Location Preference',
               'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
-          .then((bool allow) async {
-        if (allow) {
+          .then((bool? allow) async {
+        if (allow ?? false) {
           if (await Permission.locationWhenInUse.request().isGranted) {
             await Utilities.subscribeToGeoLocationStream();
-            goToTab(1);
+            _goToTab(1);
           }
         } else {
-          goToTab(1);
+          _goToTab(1);
         }
       });
     }
@@ -240,29 +239,29 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
       IveCoreUtilities.showAlert(
               context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
-          .then((bool allow) async {
-        if (allow) {
+          .then((bool? allow) async {
+        if (allow ?? false) {
           if (await Permission.camera.request().isGranted) {
             if (await Permission.photos.request().isGranted) {
-              goToTab(2);
+              _goToTab(2);
             }
           }
         } else {
-          goToTab(2);
+          _goToTab(2);
         }
       });
     }
 
     if (activeTab == 2) {
       IveCoreUtilities.showAlert(
-              navigatorKey.currentContext, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
+              navigatorKey.currentContext!, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
-          .then((bool allow) async {
-        if (allow) {
+          .then((bool? allow) async {
+        if (allow ?? false) {
           // final NotificationSupport notifications = NotificationSupport();
           // await notifications.configureNotifications(false);
         }
-        goToTab(3);
+        _goToTab(3);
       });
     }
   }
@@ -361,7 +360,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
       ),
 
       refFuncGoToTab: (dynamic refFunc) {
-        goToTab = refFunc;
+        _goToTab = refFunc;
       },
     );
   }
