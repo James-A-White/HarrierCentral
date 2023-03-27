@@ -91,11 +91,11 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
 
               GestureDetector(
                 onTap: () {
-                  // NULLSAFETODO
-                  // Navigator.pushReplacement<dynamic, dynamic>(
-                  //   context,
-                  //   MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
-                  // );
+                  //NULLSAFETODO
+                  Navigator.pushReplacement<dynamic, dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
+                  );
                 },
                 child: Container(
                   margin: const EdgeInsets.all(5.0),

@@ -1,15 +1,13 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class UserDetailsUi extends StatefulWidget {
-  UserDetailsUi({Key key, this.firstName, this.lastName, this.email, this.hashName}) : super(key: key);
+  const UserDetailsUi({Key? key, this.firstName, this.lastName, this.email, this.hashName}) : super(key: key);
 
-  String firstName;
-  String lastName;
-  String email;
-  String hashName;
-  Function updateUi;
-  Function validateForm;
+  final String? firstName;
+  final String? lastName;
+  final String? email;
+  final String? hashName;
+  // Function updateUi;
 
   @override
   UserDetailsUiState createState() => UserDetailsUiState();
@@ -30,25 +28,33 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
   TextEditingController signupLastNameController = TextEditingController();
   TextEditingController signupHashNameController = TextEditingController();
 
+  late final UserDetailReturnValues _returnValues = UserDetailReturnValues();
+
   @override
   void initState() {
     super.initState();
-    signupEmailController.text = widget.email;
-    signupFirstNameController.text = widget.firstName;
-    signupLastNameController.text = widget.lastName;
-    signupHashNameController.text = widget.hashName;
+
+    _returnValues.email = widget.email;
+    _returnValues.firstName = widget.firstName;
+    _returnValues.lastName = widget.lastName;
+    _returnValues.hashName = widget.hashName;
+
+    signupEmailController.text = widget.email ?? '';
+    signupFirstNameController.text = widget.firstName ?? '';
+    signupLastNameController.text = widget.lastName ?? '';
+    signupHashNameController.text = widget.hashName ?? '';
     WidgetsBinding.instance.addObserver(this);
-    widget.updateUi = updateUi;
-    widget.validateForm = validateForm;
+    // widget.updateUi = updateUi;
+    // widget.validateForm = validateForm;
   }
 
-  void updateUi(String firstName, String lastName, String email) {
-    setState(() {
-      signupEmailController.text = email;
-      signupFirstNameController.text = firstName;
-      signupLastNameController.text = lastName;
-    });
-  }
+  // void updateUi(String firstName, String lastName, String email) {
+  //   setState(() {
+  //     signupEmailController.text = email;
+  //     signupFirstNameController.text = firstName;
+  //     signupLastNameController.text = lastName;
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -61,7 +67,10 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
   }
 
   bool validateForm() {
-    return _formKey.currentState.validate();
+    if (_formKey.currentState != null) {
+      return _formKey.currentState!.validate();
+    }
+    return true;
   }
 
   @override
@@ -87,11 +96,11 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                   focusNode: myFocusNodeFirstName,
                   controller: signupFirstNameController,
                   onChanged: (String text) {
-                    widget.firstName = text;
+                    _returnValues.firstName = text;
                   },
                   keyboardType: TextInputType.text,
-                  validator: (String val) {
-                    if (val.isEmpty) {
+                  validator: (String? val) {
+                    if ((val ?? '').isEmpty) {
                       return 'Please provide a first name';
                     } else {
                       return null;
@@ -119,12 +128,12 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                 padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
                 child: TextFormField(
                   onChanged: (String text) {
-                    widget.lastName = text;
+                    _returnValues.lastName = text;
                   },
                   focusNode: myFocusNodeLastName,
                   controller: signupLastNameController,
-                  validator: (String val) {
-                    if (val.isEmpty) {
+                  validator: (String? val) {
+                    if ((val ?? '').isEmpty) {
                       return 'Please provide a last name';
                     } else {
                       return null;
@@ -153,7 +162,7 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                 padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
                 child: TextFormField(
                   onChanged: (String text) {
-                    widget.email = text;
+                    _returnValues.email = text;
                   },
                   focusNode: myFocusNodeEmail,
                   controller: signupEmailController,
@@ -180,7 +189,7 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                 padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
                 child: TextFormField(
                   onChanged: (String text) {
-                    widget.hashName = text;
+                    _returnValues.hashName = text;
                   },
                   focusNode: myFocusNodeHashName,
                   controller: signupHashNameController,
@@ -205,8 +214,8 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
 }
 
 class UserDetailReturnValues {
-  String firstName;
-  String lastName;
-  String email;
-  String hashName;
+  String? firstName;
+  String? lastName;
+  String? email;
+  String? hashName;
 }

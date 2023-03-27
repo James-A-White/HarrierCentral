@@ -1,10 +1,11 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class CreateNewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const CreateNewAccountPage({Key key}) : super(key: key);
+  const CreateNewAccountPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   CreateNewAccountPageState createState() => CreateNewAccountPageState();
@@ -54,15 +55,17 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
 }
 
 class CreateNewAccountPageContent extends StatefulWidget {
-  const CreateNewAccountPageContent({Key key}) : super(key: key);
+  const CreateNewAccountPageContent({
+    Key? key,
+  }) : super(key: key);
 
   @override
   CreateNewAccountPageContentState createState() => CreateNewAccountPageContentState();
 }
 
 class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent> {
-  TextEditingController inviteCodeTextController;
-  InputDecoration inviteCodeDecoration;
+  // TextEditingController _inviteCodeTextController;
+  // InputDecoration _inviteCodeDecoration;
   final FocusNode inviteCodeFocusNode = FocusNode();
 
   //final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -73,20 +76,18 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
   @override
   void initState() {
     super.initState();
+
+    _userDetailsUi = UserDetailsUi(key: _myDetailsUiStateKey);
   }
 
-  UserDetailsUi userDetailsUi;
+  final GlobalKey<UserDetailsUiState> _myDetailsUiStateKey = GlobalKey<UserDetailsUiState>();
+
+  late final UserDetailsUi _userDetailsUi;
 
   @override
   Widget build(BuildContext context) {
-    userDetailsUi ??= UserDetailsUi(
-      firstName: '',
-      lastName: '',
-      email: '',
-      hashName: '',
-    );
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final num newFontSize = headingStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
+      final double newFontSize = (headingStyle.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
 
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
@@ -132,7 +133,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
                 color: Colors.yellow[100],
                 child: Column(
                   children: <Widget>[
-                    userDetailsUi,
+                    _userDetailsUi,
                     const SizedBox(
                       height: 30,
                       width: 30,
@@ -186,17 +187,17 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
                 TextButton(
                   child: Text('Get Started!', style: textStyleButton),
                   onPressed: () async {
-                    if (userDetailsUi.validateForm()) {
+                    if (_myDetailsUiStateKey.currentState!.validateForm()) {
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
                       setState(() {
                         isLoading = true;
                       });
 
-                      await setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
-                      await setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
-                      await setStringPref(StringPrefsEnum.email, userDetailsUi.email);
-                      await setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
+                      await setStringPref(StringPrefsEnum.firstName, _userDetailsUi.firstName);
+                      await setStringPref(StringPrefsEnum.lastName, _userDetailsUi.lastName);
+                      await setStringPref(StringPrefsEnum.email, _userDetailsUi.email);
+                      await setStringPref(StringPrefsEnum.hashName, _userDetailsUi.hashName);
 
                       final HashersService srv = HashersService();
 
@@ -204,10 +205,10 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
 
                       final String responseBody = await srv.addEditUser(
                           targetUserId: GUID_EMPTY,
-                          firstName: userDetailsUi.firstName,
-                          lastName: userDetailsUi.lastName,
-                          email: userDetailsUi.email,
-                          hashName: userDetailsUi.hashName,
+                          firstName: _userDetailsUi.firstName,
+                          lastName: _userDetailsUi.lastName,
+                          email: _userDetailsUi.email,
+                          hashName: _userDetailsUi.hashName,
                           photo: profilePhotoUrl,
                           // includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
                           includeInGlobalHashDirectory: 0);
@@ -243,7 +244,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
                               isSuccessfulLoad = true;
 
                               //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                              final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
+                              final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode)!;
                               //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
                               if (!mounted) return;
@@ -264,7 +265,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
 
                       if (!isSuccessfulLoad) {
                         await IveCoreUtilities.showAlert(
-                            navigatorKey.currentContext,
+                            navigatorKey.currentContext!,
                             'Account not created',
                             'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
                             'OK');
