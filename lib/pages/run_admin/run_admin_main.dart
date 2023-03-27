@@ -15,26 +15,33 @@ class RunAdminAggregate {
 
 class RunDetailQueryExtensions {
   RunDetailQueryExtensions({
-    this.appAccessFlags,
-    this.mismanagementRoles,
-    this.digAfterDec,
-    this.curSym,
-    this.curCode,
-    this.memberPrice,
-    this.nonMemberPrice,
+    required this.appAccessFlags,
+    required this.mismanagementRoles,
+    required this.digAfterDec,
+    required this.curSym,
+    required this.curCode,
+    required this.memberPrice,
+    required this.nonMemberPrice,
+    required this.kenlLat,
+    required this.kenlLon,
     this.latitude,
     this.longitude,
+    this.distancePreference,
+    this.distToEvent,
     this.isMapAndDistanceValid,
     this.paymentAmountStr,
+    this.paymentUrl,
   });
 
-  final int? appAccessFlags;
-  final int? mismanagementRoles;
-  final int? digAfterDec;
-  final String? curSym;
-  final String? curCode;
-  final double? memberPrice;
-  final double? nonMemberPrice;
+  final int appAccessFlags;
+  final int mismanagementRoles;
+  final int digAfterDec;
+  final String curSym;
+  final String curCode;
+  final double memberPrice;
+  final double nonMemberPrice;
+  final double kenlLat;
+  final double kenlLon;
   String? paymentUrl;
   double? distToEvent;
   int? distancePreference;
@@ -54,20 +61,22 @@ class RunDetailQueryExtensions {
       curCode: map['curCode'],
       memberPrice: map['memberPrice'],
       nonMemberPrice: map['nonMemberPrice'],
+      kenlLat: map['kenlLat'],
+      kenlLon: map['kenlLon'],
       latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
       longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
-      isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
-      paymentAmountStr: '',
+      // isMapAndDistanceValid: map['isMapAndDistanceValid'] == 0,
+      // paymentAmountStr: '',
     );
     return item;
   }
 
   Mismanagement get mismanagement {
-    return Mismanagement(mismanagementRoles ?? 0);
+    return Mismanagement(mismanagementRoles);
   }
 
   AppAccess get appAccess {
-    return AppAccess(appAccessFlags ?? 0);
+    return AppAccess(appAccessFlags);
   }
 }
 
@@ -180,8 +189,8 @@ class RunAdminPageState extends State<RunAdminPage> {
                       RunDetails(
                         _eventAggregate.event,
                         _eventAggregate.kennel,
-                        _eventAggregate.extensions.digAfterDec ?? 2,
-                        _eventAggregate.extensions.curSym ?? r'$^',
+                        _eventAggregate.extensions.digAfterDec,
+                        _eventAggregate.extensions.curSym,
                         _eventAggregate.extensions.distancePreference ?? 0,
                         _eventAggregate.extensions.distToEvent,
                         _eventAggregate.extensions.paymentUrl ?? '',

@@ -1,11 +1,15 @@
-// @dart=2.11
 import 'package:date_time_picker/date_time_picker.dart';
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 class EditRunDetailsPage extends StatefulWidget {
-  const EditRunDetailsPage(this.isNewRun, this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
+  const EditRunDetailsPage(
+    this.isNewRun,
+    this.eventAggregate,
+    this.getUpdatedEventAggregate, {
+    Key? key,
+  }) : super(key: key);
 
   final bool isNewRun;
   final RunAdminAggregate eventAggregate;
@@ -18,14 +22,14 @@ class EditRunDetailsPage extends StatefulWidget {
 class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final List<Tab> _tabs = <Tab>[];
 
-  TabController _tabController;
+  late TabController _tabController;
   bool _isUpdating = false;
 
-  RunAdminAggregate _eventAggregate;
+  late RunAdminAggregate _eventAggregate;
 
-  latlng.LatLng _mapCenter;
+  late latlng.LatLng _mapCenter;
 
-  GlobalKey _tabKey;
+  //GlobalKey _tabKey;
 
   final GlobalKey<FormState> _detailsFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _otherDetailsFormKey = GlobalKey<FormState>();
@@ -56,13 +60,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
   bool _isVisible = true;
   bool _isCountedRun = true;
-  int _usersCanEditRunAttendence;
+  int _usersCanEditRunAttendence = 0;
   bool _isPromotedEvent = false;
   int _eventGeographicScope = 1;
   bool _trueNorthLock = true;
 
   //Future<File> _imageFromCamera;
-  Future<File> _imageFromGallery;
+  Future<File?> _imageFromGallery = Future.value(null);
   //final SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
   //SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
 
@@ -97,20 +101,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
   }
 
   void _setTextFields() {
-    if (_eventAggregate.event != null) {
-      _eventNameController.text = _eventAggregate.event.eventName;
-      _eventDescriptionController.text = _eventAggregate.event.eventDescription;
-      _eventDatetimeController.text = _eventAggregate.event.eventStartDatetime.toString();
-      _locationOneLineDescController.text = _eventAggregate.event.locationOneLineDesc;
-      _haresController.text = _eventAggregate.event.hares;
+    _eventNameController.text = _eventAggregate.event.eventName;
+    _eventDescriptionController.text = _eventAggregate.event.eventDescription ?? '';
+    _eventDatetimeController.text = _eventAggregate.event.eventStartDatetime.toString();
+    _locationOneLineDescController.text = _eventAggregate.event.locationOneLineDesc ?? '';
+    _haresController.text = _eventAggregate.event.hares ?? '';
 
-      _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
-      _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec ?? 2) ?? '';
-      _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec ?? 2) ?? '';
-      _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toStringAsFixed(_eventAggregate.extensions.digAfterDec ?? 2) ?? '';
-      _extrasDescriptionController.text = _eventAggregate.event.extrasDescription ?? '';
-      _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
-    }
+    _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
+    _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ?? '';
+    _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ?? '';
+    _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ?? '';
+    _extrasDescriptionController.text = _eventAggregate.event.extrasDescription ?? '';
+    _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
   }
 
   @override
@@ -208,7 +210,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                 top: 86,
                 bottom: 0,
                 child: SizedBox(
-                  key: _tabKey,
+                  //key: _tabKey,
                   //color: Colors.teal,
                   width: MediaQuery.of(context).size.width,
                   child: TabBarView(
@@ -232,11 +234,17 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
   @override
   void initState() {
     super.initState();
+
+    _tabController = TabController(vsync: this, length: _tabs.length);
+    _tabController.addListener(() {
+      FocusScope.of(context).unfocus();
+    });
+
     _eventAggregate = widget.eventAggregate;
 
     _mapCenter = latlng.LatLng(
-      _eventAggregate.extensions.latitude ?? _eventAggregate.kennel.kennelLatitude + .0,
-      _eventAggregate.extensions.longitude ?? _eventAggregate.kennel.kennelLongitude + .0,
+      _eventAggregate.extensions.latitude ?? _eventAggregate.extensions.kenlLat,
+      _eventAggregate.extensions.longitude ?? _eventAggregate.extensions.kenlLon,
     );
     _initTabs();
 
@@ -276,11 +284,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
     _extrasDescriptionController.addListener(() {
       setState(() {});
-    });
-
-    _tabController = TabController(vsync: this, length: _tabs.length);
-    _tabController.addListener(() {
-      FocusScope.of(context).unfocus();
     });
   }
 
@@ -325,9 +328,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
   Future<void> _updateRunDetails(bool isMainRunDetailsPage) async {
     if (isMainRunDetailsPage) {
-      if (_detailsFormKey.currentState.validate()) {
+      if (_detailsFormKey.currentState?.validate() ?? false) {
         //    If all data are correct then save data to out variables
-        _detailsFormKey.currentState.save();
+        _detailsFormKey.currentState!.save();
 
         FocusScope.of(context).unfocus();
         setState(() {
@@ -352,14 +355,14 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
         _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
       }
     } else {
-      if (_eventAggregate.event.eventId == null) {
+      if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
         await IveCoreUtilities.showAlert(
             context, 'Please save Details first', 'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
         _tabController.animateTo(0);
       } else {
-        if (_otherDetailsFormKey.currentState.validate()) {
+        if (_otherDetailsFormKey.currentState?.validate() ?? false) {
           //    If all data are correct then save data to out variables
-          _otherDetailsFormKey.currentState.save();
+          _otherDetailsFormKey.currentState!.save();
 
           FocusScope.of(context).unfocus();
           _isUpdating = true;
@@ -492,8 +495,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           //widget.EventName = text;
                         },
                         keyboardType: TextInputType.multiline,
-                        validator: (String val) {
-                          if (val.isEmpty) {
+                        validator: (String? val) {
+                          if ((val ?? '').isEmpty) {
                             return 'Please provide an event name';
                           } else {
                             return null;
@@ -523,8 +526,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         maxLines: null,
                         focusNode: _focusNodeEventDescription,
                         controller: _eventDescriptionController,
-                        validator: (String val) {
-                          if (val.isEmpty) {
+                        validator: (String? val) {
+                          if ((val ?? '').isEmpty) {
                             return 'Please provide an event description';
                           } else {
                             return null;
@@ -557,8 +560,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           //widget.EventName = text;
                         },
                         keyboardType: TextInputType.multiline,
-                        validator: (String val) {
-                          if (val.isEmpty) {
+                        validator: (String? val) {
+                          if ((val ?? '').isEmpty) {
                             return 'Please provide a location description';
                           } else {
                             return null;
@@ -613,7 +616,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         //   return true;
                         // },
                         // onChanged: (val) => //print(val),
-                        validator: (String val) {
+                        validator: (String? val) {
                           //print(val);
                           return null;
                         },
@@ -647,7 +650,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         : ElevatedButton(
                             child: Text(widget.isNewRun ? 'Next' : 'Save changes to Harrier Central', style: buttonLabelStyleMedium),
                             onPressed: () async {
-                              if (_detailsFormKey.currentState.validate()) {
+                              if (_detailsFormKey.currentState?.validate() ?? false) {
                                 await _updateRunDetails(true);
 
                                 if (widget.isNewRun) {
@@ -699,9 +702,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
   }
 
   Widget _buildImagePage() {
-    return FutureBuilder<File>(
+    return FutureBuilder<File?>(
         future: _imageFromGallery,
-        builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<File?> snapshot) {
           if (snapshot.hasData) {
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -711,7 +714,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.all(20.0),
-                    child: Image.file(snapshot.data, fit: BoxFit.scaleDown),
+                    child: Image.file(snapshot.data!, fit: BoxFit.scaleDown),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -723,8 +726,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                       child: Text('Use this image', style: buttonLabelStyleMedium),
                       onPressed: () async {
-                        if (_eventAggregate?.event?.eventId != null) {
-                          final String fileName = _upload(snapshot.data, _eventAggregate.event.eventId);
+                        if ((_eventAggregate.event.eventId.isNotEmpty) && (_eventAggregate.event.eventId != GUID_EMPTY)) {
+                          final String fileName = _upload(snapshot.data!, _eventAggregate.event.eventId);
 
                           final EventsService nSvc = EventsService();
                           final String eventId = await nSvc.addEditEvent(
@@ -821,7 +824,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     child: Text('Use original image', style: buttonLabelStyleMedium),
                     onPressed: () {
                       setState(() {
-                        _imageFromGallery = Future<File>.value(null);
+                        _imageFromGallery = Future<File?>.value(null);
                       });
                     },
                   ),
@@ -840,7 +843,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      if (_eventAggregate?.event?.eventImage != null) ...<Widget>[
+                      if (_eventAggregate.event.eventImage != null) ...<Widget>[
                         Expanded(
                           child: Container(
                             margin: const EdgeInsets.all(20.0),
@@ -850,7 +853,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               children: <Widget>[
                                 Expanded(
                                   child: CachedNetworkImage(
-                                    imageUrl: _eventAggregate.event.eventImage,
+                                    imageUrl: _eventAggregate.event.eventImage!,
                                     // errorWidget:
                                     //     (BuildContext context, String url, Exception error) =>
                                     //         const  Icon(Icons.error),
@@ -919,7 +922,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           ),
                         ),
                       ],
-                      if (_eventAggregate?.event?.eventImage == null) ...<Widget>[
+                      if (_eventAggregate.event.eventImage == null) ...<Widget>[
                         Text(
                           'No image provided',
                           textAlign: TextAlign.center,
@@ -979,13 +982,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
   }
 
   Future<void> _getImageFromGallery(ImageSource source) async {
-    if (_eventAggregate.event.eventId == null) {
+    if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
       await IveCoreUtilities.showAlert(
           context, 'Please save Details first', 'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
 
       _tabController.animateTo(0);
     } else {
-      final XFile image = await ImagePicker().pickImage(source: source);
+      final XFile? image = await ImagePicker().pickImage(source: source);
 
       if (image == null) {
         // setState(() {
@@ -994,7 +997,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
         // });
       } else {
         final ImageCropper ic = ImageCropper();
-        final CroppedFile croppedFile = await ic.cropImage(
+        final CroppedFile? croppedFile = await ic.cropImage(
             sourcePath: image.path,
             //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
             //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
@@ -1004,7 +1007,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
             compressQuality: 50);
 
         setState(() {
-          _imageFromGallery = Future<File>.value(File(croppedFile.path));
+          if (croppedFile != null) {
+            _imageFromGallery = Future<File>.value(File(croppedFile.path));
+          }
         });
       }
     }
@@ -1025,9 +1030,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
               //   child:
 
               MyFlutterMap(
-                _eventAggregate.extensions.latitude == null ? null : latlng.LatLng(_eventAggregate.extensions.latitude, _eventAggregate.extensions.longitude),
+                _eventAggregate.extensions.latitude == null ? null : latlng.LatLng(_eventAggregate.extensions.latitude!, _eventAggregate.extensions.longitude!),
                 _mapCenter,
-                latlng.LatLng(_eventAggregate.kennel.kennelLatitude + .0, _eventAggregate.kennel.kennelLongitude + .0),
+                latlng.LatLng(_eventAggregate.extensions.kenlLat, _eventAggregate.extensions.kenlLon),
                 1.0,
                 18.0,
                 14.0,
@@ -1041,7 +1046,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                 GestureDetector(
                   onTapDown: (dynamic tapDownDetails) {
                     setState(() {
-                      _mapCenter = latlng.LatLng(_eventAggregate.kennel.kennelLatitude + .0, _eventAggregate.kennel.kennelLongitude + .0);
+                      _mapCenter = latlng.LatLng(_eventAggregate.extensions.kenlLat, _eventAggregate.extensions.kenlLon);
                     });
                   },
                   child: Container(color: Colors.black54),
@@ -1102,24 +1107,26 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                 ),
               ),
 
-              Positioned(
-                right: 70.0,
-                top: 10.0,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon);
-                    });
-                  },
-                  child: SizedBox(
-                    height: 50.0,
-                    width: 50.0,
-                    child: Image.asset('images/other/set_map_to_current_location.png'),
+              if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) ...<Widget>[
+                Positioned(
+                  right: 70.0,
+                  top: 10.0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!);
+                      });
+                    },
+                    child: SizedBox(
+                      height: 50.0,
+                      width: 50.0,
+                      child: Image.asset('images/other/set_map_to_current_location.png'),
+                    ),
                   ),
                 ),
-              ),
+              ],
 
-              if (_eventAggregate.extensions.isMapAndDistanceValid) ...<Widget>[
+              if (_eventAggregate.extensions.isMapAndDistanceValid ?? false) ...<Widget>[
                 Positioned(
                   right: 130.0,
                   top: 10.0,
@@ -1127,8 +1134,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     onTap: () {
                       setState(() {
                         _mapCenter = latlng.LatLng(
-                          _eventAggregate.extensions.latitude,
-                          _eventAggregate.extensions.longitude,
+                          _eventAggregate.extensions.latitude!,
+                          _eventAggregate.extensions.longitude!,
                         );
                       });
                     },
@@ -1189,7 +1196,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               style: buttonLabelStyleMedium,
                             ),
                             onPressed: () async {
-                              if (_eventAggregate?.event?.eventId == null) {
+                              if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
                                 await IveCoreUtilities.showAlert(
                                     context, 'Please save details first', 'When creating a new event, please save the information on the Details tab before saving the location', 'OK');
 
@@ -1200,8 +1207,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 });
                                 final EventsService nSvc = EventsService();
                                 // check to see if "no location" is set. If so, don't overwrite it
-                                if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG)) {
-                                  _mapCenter = _mapKey.currentState.mapController.center;
+                                if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG) && (_mapKey.currentState?.mapController != null)) {
+                                  _mapCenter = _mapKey.currentState!.mapController.center;
                                 }
                                 final String eventId = await nSvc.addEditEvent(
                                   eventId: _eventAggregate.event.eventId,
@@ -1264,15 +1271,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
                                   _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
                                   setState(() {
-                                    if ((_eventAggregate?.extensions?.latitude == null) || (_eventAggregate?.extensions?.longitude == null)) {
+                                    if ((_eventAggregate.extensions.latitude == null) || (_eventAggregate.extensions.longitude == null)) {
                                       _mapCenter = latlng.LatLng(
-                                        _eventAggregate.kennel.kennelLatitude + .0,
-                                        _eventAggregate.kennel.kennelLongitude + .0,
+                                        _eventAggregate.extensions.kenlLat,
+                                        _eventAggregate.extensions.kenlLon,
                                       );
                                     } else {
                                       _mapCenter = latlng.LatLng(
-                                        _eventAggregate.extensions.latitude + .0,
-                                        _eventAggregate.extensions.longitude + .0,
+                                        _eventAggregate.extensions.latitude!,
+                                        _eventAggregate.extensions.longitude!,
                                       );
                                     }
                                     _isUpdating = false;
@@ -1596,8 +1603,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         children: <Widget>[
                           CheckboxFormField(
                             title: const Text('Show run in Harrier Central'),
-                            validator: (bool result) {
-                              _isVisible = result;
+                            validator: (bool? result) {
+                              _isVisible = result ?? false;
                               return null;
                             },
                             initialValue: _eventAggregate.event.isVisible == 1,
@@ -1605,16 +1612,16 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           CheckboxFormField(
                             title: const Text('Count this run'),
                             initialValue: _eventAggregate.event.isCountedRun == 1,
-                            validator: (bool result) {
-                              _isCountedRun = result;
+                            validator: (bool? result) {
+                              _isCountedRun = result ?? false;
                               return null;
                             },
                           ),
                           CheckboxFormField(
                             title: const Text('Users can edit run history'),
-                            initialValue: _eventAggregate.event.canEditRunAttendence == null ? null : _eventAggregate.event.canEditRunAttendence == 1,
+                            initialValue: _eventAggregate.event.canEditRunAttendence == null ? false : _eventAggregate.event.canEditRunAttendence == 1,
                             tristate: true,
-                            validator: (bool result) {
+                            validator: (bool? result) {
                               if (result == null) {
                                 _usersCanEditRunAttendence = -1;
                               } else {
@@ -1627,8 +1634,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           CheckboxFormField(
                             title: const Text('Promote this run'),
                             initialValue: _eventAggregate.event.isPromotedEvent == 1,
-                            validator: (bool result) {
-                              _isPromotedEvent = result;
+                            validator: (bool? result) {
+                              _isPromotedEvent = result ?? false;
                               return null;
                             },
                           ),
@@ -1658,9 +1665,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 1,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1670,9 +1677,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 2,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1682,9 +1689,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 3,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1694,9 +1701,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 4,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1706,9 +1713,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 5,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1718,9 +1725,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 6,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1730,9 +1737,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 7,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1742,9 +1749,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             leading: Radio<int>(
                               value: 0,
                               groupValue: _eventGeographicScope,
-                              onChanged: (int value) {
+                              onChanged: (int? value) {
                                 setState(() {
-                                  _eventGeographicScope = value;
+                                  _eventGeographicScope = value ?? 0;
                                 });
                               },
                             ),
@@ -1827,8 +1834,14 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 }
 
 class CheckboxFormField extends FormField<bool> {
-  CheckboxFormField({Key key, Widget title, FormFieldSetter<bool> onSaved, FormFieldValidator<bool> validator, bool initialValue = false, bool tristate = false})
-      : super(
+  CheckboxFormField({
+    Key? key,
+    required Widget title,
+    FormFieldSetter<bool>? onSaved,
+    FormFieldValidator<bool>? validator,
+    bool initialValue = false,
+    bool tristate = false,
+  }) : super(
             key: key,
             onSaved: onSaved,
             validator: validator,
@@ -1843,7 +1856,7 @@ class CheckboxFormField extends FormField<bool> {
                 subtitle: state.hasError
                     ? Builder(
                         builder: (BuildContext context) => Text(
-                          state.errorText,
+                          state.errorText ?? '',
                           style: TextStyle(color: Theme.of(context).colorScheme.error),
                         ),
                       )

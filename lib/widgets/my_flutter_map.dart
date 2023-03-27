@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 class MyFlutterMap extends StatefulWidget {
@@ -16,16 +15,16 @@ class MyFlutterMap extends StatefulWidget {
     this.mapMoved,
   }) : super(key: key);
 
-  final latlng.LatLng eventLocation;
+  final latlng.LatLng? eventLocation;
   final latlng.LatLng mapCenter;
   final latlng.LatLng kennelLocation;
-  final num minZoom;
-  final num maxZoom;
-  final num zoom;
+  final double minZoom;
+  final double maxZoom;
+  final double zoom;
   final bool trueNorthLock;
 
-  final Function markerClicked;
-  final Function mapMoved;
+  final Function? markerClicked;
+  final Function? mapMoved;
 
   @override
   MyFlutterMapState createState() => MyFlutterMapState();
@@ -95,11 +94,11 @@ class MyFlutterMapState extends State<MyFlutterMap> {
         ),
         MarkerLayer(
           markers: <Marker>[
-            if (G0<AppModel>().hasLocationPermissions) ...<Marker>[
+            if ((G0<AppModel>().hasLocationPermissions) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) ...<Marker>[
               Marker(
                 height: 50.0,
                 width: 50.0,
-                point: latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon),
+                point: latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!),
                 builder: (BuildContext ctx) => GestureDetector(
                   child: Container(
                     padding: const EdgeInsets.all(1.0),
@@ -121,11 +120,11 @@ class MyFlutterMapState extends State<MyFlutterMap> {
               Marker(
                 width: 120.0,
                 height: 120.0,
-                point: widget.eventLocation,
+                point: widget.eventLocation!,
                 builder: (BuildContext ctx) => GestureDetector(
                   onTap: () {
                     if (widget.markerClicked != null) {
-                      widget.markerClicked();
+                      widget.markerClicked!();
                     }
                   },
                   child: Container(

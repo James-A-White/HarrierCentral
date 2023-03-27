@@ -1,13 +1,12 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class FilterEventListItem extends StatelessWidget {
   const FilterEventListItem({
-    Key key,
-    @required this.event,
-    @required this.kennelShortName,
-    @required this.updateEvent,
+    Key? key,
+    required this.event,
+    required this.kennelShortName,
+    required this.updateEvent,
   }) : super(key: key);
 
   final LiteEventModel event;
@@ -16,7 +15,7 @@ class FilterEventListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final num iconSize = 45 * G0<DeviceInfo>().deviceWidthScaleFactor;
+    final double iconSize = 45 * G0<DeviceInfo>().deviceWidthScaleFactor;
     return GestureDetector(
       onTap: () async {
         await Navigator.push<void>(
@@ -48,11 +47,11 @@ class FilterEventListItem extends StatelessWidget {
                       child: Stack(
                         children: <Widget>[
                           Image.asset(
-                            event.eventInboundIntegrationId <= 2 ? 'images/icons/integration_icon_${event.eventInboundIntegrationId}.png' : 'images/icons/integration_icon_x.png',
+                            (event.eventInboundIntegrationId ?? 0) <= 2 ? 'images/icons/integration_icon_${event.eventInboundIntegrationId}.png' : 'images/icons/integration_icon_x.png',
                             height: iconSize,
                             width: iconSize,
                           ),
-                          if (event.eventInboundIntegrationId > 2) ...<Widget>[
+                          if ((event.eventInboundIntegrationId ?? 0) > 2) ...<Widget>[
                             Positioned(
                               left: 0,
                               right: 0,
@@ -100,9 +99,9 @@ class FilterEventListItem extends StatelessWidget {
                       textAlign: TextAlign.left,
                     ),
                     Text(
-                      event.eventStartDatetime.year != DateTime.now().year
-                          ? DateFormat("E, MMM d, yyyy 'at' h:mm a").format(event.eventStartDatetime)
-                          : DateFormat("E, MMM d 'at' h:mm a").format(event.eventStartDatetime),
+                      (event.eventStartDatetime?.year ?? 2000) != DateTime.now().year
+                          ? DateFormat("E, MMM d, yyyy 'at' h:mm a").format(event.eventStartDatetime ?? DateTime(2000))
+                          : DateFormat("E, MMM d 'at' h:mm a").format(event.eventStartDatetime ?? DateTime(2000)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

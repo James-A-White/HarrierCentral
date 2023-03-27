@@ -1,8 +1,10 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class CreateNewEventPopup extends StatefulWidget {
-  const CreateNewEventPopup(this.title, {Key key}) : super(key: key);
+  const CreateNewEventPopup(
+    this.title, {
+    Key? key,
+  }) : super(key: key);
 
   final String title;
 

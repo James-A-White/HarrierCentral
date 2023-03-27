@@ -228,14 +228,17 @@ class CommonQueries {
 
           SELECT 
           k.*,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},0) as appAccessFlags,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},0) as mismanagementRoles,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencyCode},c.${G0<TableModel>().countriesTableHelper.colCurrencyCode},"USD") as curCode,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},city.${G0<TableModel>().citiesTableHelper.colLatitude}) as kenlLat,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},city.${G0<TableModel>().citiesTableHelper.colLongitude}) as kenlLon
           FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} city on city.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
           LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on "$kennelId" = hkm.kennelId,
           hashers h  
@@ -315,9 +318,12 @@ class CommonQueries {
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
           coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
-          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForNonMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForNonMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},city.${G0<TableModel>().citiesTableHelper.colLatitude}) as kenlLat,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},city.${G0<TableModel>().citiesTableHelper.colLongitude}) as kenlLon
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
+          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} city on city.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
           LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on e.kennelId = hkm.kennelId AND hkm.userId = "$userId",
           hashers h  

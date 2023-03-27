@@ -1,55 +1,14 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 enum FilterEventsPageType { past, future }
 
-class LiteEventModel {
-  LiteEventModel({
-    this.eventId,
-    this.isVisible,
-    this.isCountedRun,
-    this.absoluteEventNumber,
-    this.externalIntegrationId,
-    this.eventName,
-    this.eventNumber,
-    this.eventStartDatetime,
-    this.eventInboundIntegrationId,
-    this.appAccessFlags,
-    this.canEditRunAttendance,
-  });
-
-  factory LiteEventModel.fromJson(Map<String, dynamic> json) {
-    return LiteEventModel(
-      eventId: json[G0<TableModel>().eventsTableHelper.colEventId] as String,
-      isVisible: json[G0<TableModel>().eventsTableHelper.colIsVisible] as int,
-      isCountedRun: json[G0<TableModel>().eventsTableHelper.colIsCountedRun] as int,
-      absoluteEventNumber: json[G0<TableModel>().eventsTableHelper.colAbsoluteEventNumber] as int,
-      externalIntegrationId: json[G0<TableModel>().eventsTableHelper.colEventFacebookId] as String,
-      eventName: json[G0<TableModel>().eventsTableHelper.colEventName] as String,
-      eventNumber: json[G0<TableModel>().eventsTableHelper.colEventNumber] as int,
-      eventStartDatetime: json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] == null ? null : DateTime.parse(json[G0<TableModel>().eventsTableHelper.colEventStartDatetime] as String),
-      eventInboundIntegrationId: json[G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId] as int,
-      appAccessFlags: json[G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags] as int,
-      canEditRunAttendance: json[G0<TableModel>().eventsTableHelper.colCanEditRunAttendence] as int,
-    );
-  }
-
-  final String eventId;
-  final int isVisible;
-  final int isCountedRun;
-  final int absoluteEventNumber;
-  final String externalIntegrationId;
-  final String eventName;
-  final int eventNumber;
-  final DateTime eventStartDatetime;
-  final int eventInboundIntegrationId;
-  final int appAccessFlags;
-  final int canEditRunAttendance;
-}
-
 class AddEditEventsPage extends StatefulWidget {
-  const AddEditEventsPage({Key key, @required this.kennel, @required this.pageType}) : super(key: key);
+  const AddEditEventsPage({
+    Key? key,
+    required this.kennel,
+    required this.pageType,
+  }) : super(key: key);
 
   final KennelListAggregate kennel;
   final FilterEventsPageType pageType;
@@ -73,27 +32,30 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     super.dispose();
   }
 
+  static final DateTime _dateTimeUnassigned = DateTime(1900);
+
   @override
   void initState() {
     _initTabs();
     //_pageController = PageController(initialPage: 0, keepPage: true);
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
     _tabController = TabController(vsync: this, length: _tabs.length);
     _tabController.addListener(() {
       setState(() {});
     });
     _refreshSqlTablesFromBackend(true).then((void _) {
-      _refreshList(selectedDay: _focusedDay?.value ?? DateTime.now(), focusedDay: _focusedDay?.value ?? DateTime.now());
+      _refreshList(selectedDay: _focusedDay.value, focusedDay: _focusedDay.value);
       Future<void>.delayed(const Duration(milliseconds: 500)).then((void _) {
         setState(() {
           // force the buttons on the calendar to be drawn
         });
       });
     });
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
 
     _animationController.forward();
 
@@ -109,16 +71,16 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
   final List<Tab> _tabs = <Tab>[];
 
-  TabController _tabController;
+  late TabController _tabController;
 
   //PageController _pageController;
-  AnimationController _animationController;
+  late AnimationController _animationController;
 
   final List<LiteEventModel> _allEvents = <LiteEventModel>[];
   List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
   final ValueNotifier<List<LiteEventModel>> _selectedEvents = ValueNotifier<List<LiteEventModel>>(<LiteEventModel>[]);
   final Map<DateTime, List<LiteEventModel>> _calendarEvents = <DateTime, List<LiteEventModel>>{};
-  Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(null);
+  Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(_dateTimeUnassigned);
 
   //PageController _pageController;
 
@@ -177,7 +139,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     final String dateComparer = widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
     //final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     //       (SELECT COUNT(*) FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
 
@@ -222,20 +184,20 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
       _calendarEvents.clear();
       _allEvents.clear();
-      if (_selectedEvents.value != null) {
+      if (_selectedEvents.value.isNotEmpty) {
         _selectedEvents.value.clear();
       }
 
       for (int i = 0; i < allEventsSqlResult.length; i++) {
         final LiteEventModel event = LiteEventModel.fromJson(allEventsSqlResult[i]);
         _allEvents.add(event);
-        DateTime eventDate = event.eventStartDatetime;
+        DateTime? eventDate = event.eventStartDatetime;
         if (eventDate != null) {
           eventDate = _toDateOnly(eventDate);
           if (_calendarEvents[eventDate] == null) {
             _calendarEvents[eventDate] = <LiteEventModel>[];
           }
-          _calendarEvents[eventDate].add(event);
+          _calendarEvents[eventDate]!.add(event);
 
           // rebuild the items in _selectedDate so that state changes
           // are reflected in the UI when someone changes an event's
@@ -504,21 +466,23 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         ElevatedButton(
           child: Text('Edit run', style: buttonLabelStyleMedium),
           onPressed: () async {
-            final LiteEventModel rawEvent = _calendarEvents[_toDateOnly(_selectedDay.value)][0];
-            if ((rawEvent != null) && (rawEvent.eventId != null)) {
-              RunAdminAggregate rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent.eventId, getStringPref(StringPrefsEnum.userId));
+            final LiteEventModel? rawEvent = _calendarEvents[_toDateOnly(_selectedDay.value)]?[0];
+            if (rawEvent != null) {
+              RunAdminAggregate? rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent.eventId, getStringPref(StringPrefsEnum.userId)!);
 
-              if (!mounted) return;
-              await Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => EditRunDetailsPage(false, rda, (String eventId) async {
-                            final String userId = getStringPref(StringPrefsEnum.userId);
-                            rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
-                            _isLoading = false;
-                            return rda;
-                          })));
-              await _refreshSqlTablesFromBackend(true);
+              if (rda != null) {
+                if (!mounted) return;
+                await Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => EditRunDetailsPage(false, rda!, (String eventId) async {
+                              final String userId = getStringPref(StringPrefsEnum.userId)!;
+                              rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
+                              _isLoading = false;
+                              return rda;
+                            })));
+                await _refreshSqlTablesFromBackend(true);
+              }
             }
           },
         ),
@@ -534,19 +498,27 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         ElevatedButton(
           child: Text('Add run', style: buttonLabelStyleMedium),
           onPressed: () async {
-            RunAdminAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _selectedDay.value);
+            RunAdminAggregate? rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId)!, _selectedDay.value);
             //RunAdminAggregate rda = null;
 
-            if (!mounted) return;
-            await Navigator.push<dynamic>(
+            if (rda != null) {
+              if (!mounted) return;
+              await Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => EditRunDetailsPage(true, rda, (String eventId) async {
-                          final String userId = getStringPref(StringPrefsEnum.userId);
-                          rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
-                          _isLoading = false;
-                          return rda;
-                        })));
+                  builder: (BuildContext context) => EditRunDetailsPage(
+                    true,
+                    rda!,
+                    (String eventId) async {
+                      final String userId = getStringPref(StringPrefsEnum.userId)!;
+                      rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
+                      _isLoading = false;
+                      return rda;
+                    },
+                  ),
+                ),
+              );
+            }
 
             await _refreshSqlTablesFromBackend(true);
             await _refreshEventFromTables(true);
@@ -570,15 +542,15 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
     final CreateNewEventPopup newEventPopup = CreateNewEventPopup(title);
 
-    final Map<String, String> x = await showDialog<Map<String, String>>(
+    final Map<String, String>? x = await showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return newEventPopup;
         });
 
-    final String eventName = x['eventName'];
-    final String type = x['type'];
+    final String eventName = x?['eventName'] ?? '';
+    final String type = x?['type'] ?? 'cancel';
 
     if (type != 'cancel') {
       setState(() {
@@ -595,7 +567,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
       await _refreshEventFromTables(true);
       setState(() {
-        _dateBeingUpdated = Future<DateTime>.value(null);
+        _dateBeingUpdated = Future<DateTime>.value(_dateTimeUnassigned);
         _refreshList();
       });
     }
@@ -606,7 +578,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   Widget _listView(List<LiteEventModel> listEvents) {
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: listEvents?.length ?? 0,
+      itemCount: listEvents.length,
       padding: const EdgeInsets.only(top: 5),
       separatorBuilder: (BuildContext context, int index) => const Divider(
         height: 1.0,
@@ -732,16 +704,16 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   Future<void> setRunNumber(LiteEventModel event, BuildContext context) async {
     final RunNumberPopup newEventPopup = RunNumberPopup(runNumber: event.absoluteEventNumber);
 
-    final Map<String, String> x = await showDialog<Map<String, String>>(
+    final Map<String, String>? x = await showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return newEventPopup;
         });
 
-    final String runNumber = x['runNumber'];
+    final String runNumber = x?['runNumber'] ?? event.absoluteEventNumber?.toString() ?? event.eventNumber.toString();
 
-    if ((runNumber != null) && (runNumber != 'cancel')) {
+    if (runNumber != 'cancel') {
       int rn = -1;
       if (runNumber == 'auto') {
         rn = 0;
@@ -753,15 +725,19 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     }
   }
 
-  Future<void> _updateEvent({String eventId, bool isVisible, bool isCountedRun, int asboluteEventNumber, String kennelId}) async {
-    if (eventId != null) {
-      await G0<Database>().transaction<dynamic>((Transaction txn) async {
-        final int flag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
-        final String sql = 'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
-        await txn.rawUpdate(sql);
-        //print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-      });
-    }
+  Future<void> _updateEvent({
+    required String eventId,
+    bool? isVisible,
+    bool? isCountedRun,
+    int? asboluteEventNumber,
+    String? kennelId,
+  }) async {
+    await G0<Database>().transaction<dynamic>((Transaction txn) async {
+      final int flag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
+      final String sql = 'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
+      await txn.rawUpdate(sql);
+      //print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    });
 
     final EventsService nSvc = EventsService();
     await nSvc.addEditEvent(eventId: eventId, kennelId: kennelId, isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber);
@@ -800,7 +776,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 onCalendarCreated: (PageController controller) => controller,
                 firstDay: DateTime(2010, 1, 1),
                 lastDay: DateTime(2030, 1, 1),
-                focusedDay: _focusedDay?.value ?? DateTime.now(),
+                focusedDay: _focusedDay.value,
                 calendarFormat: _calendarFormat,
                 rowHeight: 35.0,
                 rangeSelectionMode: RangeSelectionMode.toggledOff,
@@ -836,7 +812,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 // },
 
                 eventLoader: (DateTime dt) {
-                  return _calendarEvents[_toDateOnly(dt)];
+                  return _calendarEvents[_toDateOnly(dt)] as List<dynamic>;
                 },
                 onDaySelected: _onDaySelected,
 
@@ -969,9 +945,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                       : Colors.grey.shade200
                                   : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
                                       ? Colors.red.shade100
-                                      : _calendarEvents[_toDateOnly(date)][0].isVisible == 0
+                                      : _calendarEvents[_toDateOnly(date)]![0].isVisible == 0
                                           ? Colors.grey.shade300
-                                          : _calendarEvents[_toDateOnly(date)][0].isCountedRun == 1
+                                          : _calendarEvents[_toDateOnly(date)]![0].isCountedRun == 1
                                               ? Colors.green.shade100
                                               : Colors.yellow.shade200,
                               border: _toDateOnly(date) != _toDateOnly(_focusedDay.value)
@@ -998,7 +974,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                         const TextStyle().copyWith(fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
                                   ),
                                 ),
-                                if ((snapshot.hasData) && _toDateOnly(snapshot.data) == _toDateOnly(date)) ...<Widget>[
+                                if ((snapshot.hasData) && _toDateOnly(snapshot.data!) == _toDateOnly(date)) ...<Widget>[
                                   Positioned(
                                     right: 1.0,
                                     child: Icon(delayIcon, color: Colors.blue),
@@ -1047,9 +1023,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             //     _toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
             //     (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 0) ...<Widget>[_buildAddButtons()],
 
-            if (_selectedDay.value != null &&
-                _toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-                (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 1) ...<Widget>[_buildEditButton()],
+            if (_toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 && (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 1) ...<Widget>[
+              _buildEditButton()
+            ],
             _buildAddButtons(),
           ],
         ),
@@ -1059,10 +1035,13 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   }
 
   DateTime _toDateOnly(DateTime d) {
-    return d == null ? null : DateTime(d.year, d.month, d.day);
+    return DateTime(d.year, d.month, d.day);
   }
 
-  void _refreshList({DateTime selectedDay, DateTime focusedDay}) {
+  void _refreshList({
+    DateTime? selectedDay,
+    DateTime? focusedDay,
+  }) {
     setState(() {
       if (selectedDay != null) {
         _selectedDay.value = selectedDay;
@@ -1071,8 +1050,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       if (focusedDay != null) {
         _focusedDay.value = focusedDay;
       }
-
-      _selectedEvents.value = _calendarEvents[_toDateOnly(_selectedDay.value)];
+      _selectedEvents.value = _calendarEvents[_toDateOnly(_selectedDay.value)] ?? <LiteEventModel>[];
     });
   }
 

@@ -1,10 +1,12 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class RunNumberPopup extends StatefulWidget {
-  const RunNumberPopup({Key key, @required this.runNumber}) : super(key: key);
+  const RunNumberPopup({
+    Key? key,
+    this.runNumber,
+  }) : super(key: key);
 
-  final int runNumber;
+  final int? runNumber;
 
   @override
   RunNumberPopupState createState() => RunNumberPopupState();
@@ -12,11 +14,11 @@ class RunNumberPopup extends StatefulWidget {
 
 class RunNumberPopupState extends State<RunNumberPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController runNumberAmountTextController;
+  late TextEditingController _runNumberAmountTextController;
 
   @override
   void initState() {
-    runNumberAmountTextController = TextEditingController(text: widget.runNumber == null ? '' : widget.runNumber.toString());
+    _runNumberAmountTextController = TextEditingController(text: widget.runNumber?.toString() ?? '');
 
     super.initState();
   }
@@ -28,7 +30,7 @@ class RunNumberPopupState extends State<RunNumberPopup> {
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
-        controller: runNumberAmountTextController,
+        controller: _runNumberAmountTextController,
         keyboardType: TextInputType.number,
         style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
         decoration: const InputDecoration(
@@ -76,7 +78,7 @@ class RunNumberPopupState extends State<RunNumberPopup> {
             style: TextButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('OK'),
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{'runNumber': runNumberAmountTextController.text});
+              Navigator.of(context).pop(<String, String>{'runNumber': _runNumberAmountTextController.text});
             }),
         // ),
       ],
