@@ -275,12 +275,12 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                   MaterialPageRoute<Map<String, dynamic>>(
                     settings: const RouteSettings(),
                     builder: (BuildContext context) {
-                      return const SizedBox();
-                      // NULLSAFETODO
-                      // return FindHasherPage(
-                      //   FindHasherPageType.addMember,
-                      //   kennelId: widget.kennelListAggregate.kennel.kennelId,
-                      // );
+                      //return const SizedBox();
+                      // NULLSAFEDONE
+                      return FindHasherPage(
+                        FindHasherPageType.addMember,
+                        kennelId: widget.kennelListAggregate.kennel.kennelId,
+                      );
                     },
                   ),
                 ).then<dynamic>((Map<String, dynamic> result) {
@@ -308,23 +308,24 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
               label: 'Add new Hasher\r\nto Harrier Central',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                // NULLSAFETODO
-                // Navigator.push<HashersModel>(
-                //   context,
-                //   MaterialPageRoute<HashersModel>(
-                //     builder: (BuildContext context) => HasherProfilePage(
-                //       dataContext: EnumDataContext.kennel,
-                //       pageType: EnumMyProfilePageType.newHasherProfile,
-                //       kennelId: widget.kennelListAggregate.kennel.kennelId,
-                //       uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-                //       kennelShortName: widget.kennelListAggregate.kennel.kennelShortName,
-                //     ),
-                //   ),
-                // ).then((HashersModel result) {
-                //   _refreshKennelMembersFromTable(true).then((void _) {
-                //     _refreshCounters(true);
-                //   });
-                // });
+                // NULLSAFEDONE
+                Navigator.push<HashersModel>(
+                  context,
+                  MaterialPageRoute<HashersModel>(
+                    builder: (BuildContext context) => HasherProfilePage(
+                      dataContext: EnumDataContext.kennel,
+                      pageType: EnumMyProfilePageType.newHasherProfile,
+                      kennelId: widget.kennelListAggregate.kennel.kennelId,
+                      uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+                      kennelShortName: widget.kennelListAggregate.kennel.kennelShortName,
+                    ),
+                  ),
+                ).then<HashersModel?>((HashersModel? result) {
+                  _refreshKennelMembersFromTable(true).then((void _) {
+                    _refreshCounters(true);
+                  });
+                  return null;
+                });
               }),
         ],
       ),
@@ -504,15 +505,15 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                         modifyMembership(snapshot.data![index], -9999);
                                         break;
                                       case EnumMemberPopupActions.editKennelAdmin:
-                                        // NULLSAFETODO
-                                        // Navigator.push<int>(
-                                        //   context,
-                                        //   MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data[index].appAccessFlags)),
-                                        // ).then((int result) {
-                                        //   if (result != null) {
-                                        //     setUserProperties(snapshot.data[index], appAccessFlags: result);
-                                        //   }
-                                        // });
+                                        // NULLSAFEDONE
+                                        Navigator.push<int>(
+                                          context,
+                                          MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data![index].appAccessFlags)),
+                                        ).then((int? result) {
+                                          if (result != null) {
+                                            _setUserProperties(snapshot.data![index], appAccessFlags: result);
+                                          }
+                                        });
                                         break;
                                       case EnumMemberPopupActions.editMismanagementRole:
                                         // NULLSAFETODO
@@ -836,7 +837,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     });
   }
 
-  void setUserProperties(KennelMemberResultsModel item, {int appAccessFlags = -1, int mismanagementRoles = -1}) {
+  void _setUserProperties(KennelMemberResultsModel item, {int appAccessFlags = -1, int mismanagementRoles = -1}) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
     // NULLSAFETODO

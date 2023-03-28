@@ -1,8 +1,10 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class AppAccessPage extends StatefulWidget {
-  const AppAccessPage({Key key, @required this.appAccess}) : super(key: key);
+  const AppAccessPage({
+    Key? key,
+    required this.appAccess,
+  }) : super(key: key);
 
   final int appAccess;
 
@@ -11,7 +13,7 @@ class AppAccessPage extends StatefulWidget {
 }
 
 class AppAccessPageState extends State<AppAccessPage> {
-  AppAccess appAccess;
+  AppAccess appAccess = AppAccess(0);
 
   @override
   void initState() {
@@ -32,7 +34,7 @@ class AppAccessPageState extends State<AppAccessPage> {
           ),
         ),
       ),
-      body: appAccess == null
+      body: appAccess == AppAccess(0)
           ? Container()
           : Container(
               padding: const EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0, bottom: 70.0),
@@ -70,7 +72,7 @@ class AppAccessPageState extends State<AppAccessPage> {
                       ),
                       onPressed: () {
                         // if appAccessFlags = 1 that means this person has no admin privileges, so set all to zero while at the same time preserving the superAdmin bit, otherwise set the authIsAdmin flag
-                        final int access = (appAccess.appAccessFlags & authAllFlags) <= 1 ? (appAccess.appAccessFlags & authIsSuperAdmin) : appAccess.appAccessFlags | authIsAdmin;
+                        final int access = ((appAccess.appAccessFlags ?? 0) & authAllFlags) <= 1 ? ((appAccess.appAccessFlags ?? 0) & authIsSuperAdmin) : (appAccess.appAccessFlags ?? 0) | authIsAdmin;
                         Navigator.of(context).pop(access);
                       },
                       child: Text('Save changes', style: textStyleButton),
@@ -94,10 +96,12 @@ class AppAccessPageState extends State<AppAccessPage> {
             color: Colors.yellow[100],
             child: Checkbox(
               value: value,
-              onChanged: (bool value) {
-                setState(() {
-                  toggleState(value);
-                });
+              onChanged: (bool? value) {
+                if (value != null) {
+                  setState(() {
+                    toggleState(value);
+                  });
+                }
               },
             ),
           ),

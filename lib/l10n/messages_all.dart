@@ -1,4 +1,3 @@
-// @dart=2.11
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -31,7 +30,7 @@ Map<String, LibraryLoader> _deferredLibraries = <String, LibraryLoader>{
   'pt': () => Future<dynamic>.value(null),
 };
 
-MessageLookupByLibrary _findExact(String localeName) {
+MessageLookupByLibrary? _findExact(String localeName) {
   switch (localeName) {
     case 'de':
       return messages_de.messages;
@@ -50,18 +49,22 @@ MessageLookupByLibrary _findExact(String localeName) {
 
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) async {
-  final String availableLocale = Intl.verifiedLocale(localeName, (String locale) => _deferredLibraries[locale] != null, onFailure: (dynamic _) => null);
-  if (availableLocale == null) {
-    // ignore: unnecessary_new
-    return Future<bool>.value(false);
-  }
-  final LibraryLoader lib = _deferredLibraries[availableLocale];
-  // ignore: unnecessary_new
-  await (lib == null ? Future<bool>.value(false) : lib());
-  // ignore: unnecessary_new
+  final String? availableLocale = Intl.verifiedLocale(
+    localeName,
+    (String locale) => _deferredLibraries[locale] != null,
+    onFailure: (dynamic _) => null,
+  );
+
+  final LibraryLoader lib = _deferredLibraries[availableLocale] ??
+      () {
+        return Future<bool>.value(false);
+      };
+
+  await lib();
+
   initializeInternalMessageLookup(() => CompositeMessageLookup());
-  messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
-  // ignore: unnecessary_new
+  messageLookup.addLocale(availableLocale ?? 'en', _findGeneratedMessagesFor);
+
   return Future<bool>.value(true);
 }
 
@@ -73,8 +76,8 @@ bool _messagesExistFor(String locale) {
   }
 }
 
-MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
-  final String actualLocale = Intl.verifiedLocale(locale, _messagesExistFor, onFailure: (dynamic _) => null);
+MessageLookupByLibrary? _findGeneratedMessagesFor(String locale) {
+  final String? actualLocale = Intl.verifiedLocale(locale, _messagesExistFor, onFailure: (dynamic _) => null);
   if (actualLocale == null) {
     return null;
   }

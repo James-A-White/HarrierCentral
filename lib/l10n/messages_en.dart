@@ -1,4 +1,3 @@
-// @dart=2.11
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that provides messages for a en locale. All the
 // messages from the main program should be duplicated here with the same
@@ -11,7 +10,7 @@ import 'package:intl/message_lookup_by_library.dart';
 final MessageLookup messages = MessageLookup();
 
 // ignore: unused_element
-final String _keepAnalysisHappy = Intl.defaultLocale;
+final String _keepAnalysisHappy = Intl.defaultLocale ?? Intl.systemLocale;
 
 // ignore: non_constant_identifier_names
 typedef MessageIfAbsent = Function(String message_str, List<String> args);

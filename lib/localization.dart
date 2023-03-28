@@ -1,5 +1,3 @@
-// @dart=2.11
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:harrier_central/l10n/messages_all.dart';
@@ -7,7 +5,7 @@ import 'package:intl/intl.dart';
 
 class AppLocalizations {
   static Future<AppLocalizations> load(Locale locale) {
-    final String name = locale.countryCode.isEmpty ? locale.languageCode : locale.toString();
+    final String name = (locale.countryCode ?? '').isEmpty ? locale.languageCode : locale.toString();
     final String localeName = Intl.canonicalizedLocale(name);
 
     return initializeMessages(localeName).then((bool _) {
@@ -16,7 +14,7 @@ class AppLocalizations {
     });
   }
 
-  static AppLocalizations of(BuildContext context) {
+  static AppLocalizations? of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 

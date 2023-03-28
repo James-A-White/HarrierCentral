@@ -1,8 +1,12 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class NotificationsModel {
-  NotificationsModel({this.notificationTag, this.notificationType, this.notificationStatus, this.updatedAtInt});
+  NotificationsModel({
+    required this.notificationTag,
+    required this.notificationType,
+    required this.notificationStatus,
+    required this.updatedAtInt,
+  });
 
   final String notificationTag;
   final String notificationType;
@@ -17,17 +21,14 @@ class NotificationsModel {
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
         item = NotificationsModel(
-            notificationTag: jsonItem['notificationTag'],
-            notificationType: jsonItem['notificationType'],
-            notificationStatus: jsonItem['notificationStatus'],
-            updatedAtInt: jsonItem['updatedAtInt']);
+            notificationTag: jsonItem['notificationTag'], notificationType: jsonItem['notificationType'], notificationStatus: jsonItem['notificationStatus'], updatedAtInt: jsonItem['updatedAtInt']);
 
         items.add(item);
       },
     );
 
     if (items.isEmpty) {
-      return null;
+      return <NotificationsModel>[];
     }
 
     return items;

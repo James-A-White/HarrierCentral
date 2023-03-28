@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,12 +15,12 @@ void main() {
   runApp(
     Phoenix(
       child: MaterialApp(
-        builder: (BuildContext context, Widget child) {
+        builder: (BuildContext context, Widget? child) {
           final MediaQueryData mediaQueryData = MediaQuery.of(context);
-          final num scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.75);
+          final double scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.75);
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
-            child: child,
+            child: child ?? Container(),
           );
         },
         debugShowCheckedModeBanner: false,
@@ -82,16 +81,16 @@ void main() {
   );
 }
 
-class LoginColors {
-  const LoginColors();
+// class LoginColors {
+//   const LoginColors();
 
-  static Color loginGradientStart = Colors.grey[400];
-  static Color loginGradientEnd = Colors.blueGrey[900];
+//   static Color loginGradientStart = Colors.grey[400];
+//   static Color loginGradientEnd = Colors.blueGrey[900];
 
-  static final LinearGradient primaryGradient = LinearGradient(
-    colors: <Color>[loginGradientStart, loginGradientEnd],
-    stops: const <double>[0.0, 1.0],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-}
+//   static final LinearGradient primaryGradient = LinearGradient(
+//     colors: <Color>[loginGradientStart, loginGradientEnd],
+//     stops: const <double>[0.0, 1.0],
+//     begin: Alignment.topCenter,
+//     end: Alignment.bottomCenter,
+//   );
+// }
