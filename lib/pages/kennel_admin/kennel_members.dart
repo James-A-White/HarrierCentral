@@ -148,8 +148,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
       for (int i = 0; i < results.length; i++) {
         final KennelMemberResultsModel hlrItem = KennelMemberResultsModel.fromMap(results[i]);
 
-        if ((hlrItem.memberFollowingStatus != null) && (hlrItem.memberFollowingStatus != lastMemberType)) {
-          lastMemberType = hlrItem.memberFollowingStatus!;
+        if (hlrItem.memberFollowingStatus != lastMemberType) {
+          lastMemberType = hlrItem.memberFollowingStatus;
           kList.add(lastMemberType);
         }
 

@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "53.0.0"
+  after_layout:
+    dependency: transitive
+    description:
+      name: after_layout
+      sha256: "95a1cb2ca1464f44f14769329fbf15987d20ab6c88f8fc5d359bd362be625f29"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   analyzer:
     dependency: transitive
     description:
@@ -65,6 +73,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  avoid_keyboard:
+    dependency: "direct main"
+    description:
+      name: avoid_keyboard
+      sha256: "459dca2b9a0e4fd0715f82215d8f74aba21d403ed529a61cbb9bbe6c068b87fb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   bubble_tab_indicator:
     dependency: "direct main"
     description:
@@ -883,14 +899,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
-  keyboard_avoider:
-    dependency: "direct main"
-    description:
-      name: keyboard_avoider
-      sha256: a6b5944d56b3c9e8594c2cd2a020ea2b76a1115d4946b8bee28c18446f28ac31
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.2"
   latlong2:
     dependency: "direct main"
     description:
@@ -1809,5 +1817,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.19.0 <3.0.0"
-  flutter: ">=3.7.7"
+  dart: ">=2.19.6 <3.0.0"
+  flutter: ">=3.7.9"

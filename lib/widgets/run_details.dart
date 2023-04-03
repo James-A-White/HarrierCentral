@@ -27,7 +27,7 @@ class RunDetails extends StatelessWidget {
   final int distancePreference;
   final bool isMapAndDistanceValid;
   final double? distToEvent;
-  final String paymentLinkUrl;
+  final String? paymentLinkUrl;
   final bool showPaymentOptions;
   final int isMember;
   final int isPaid;
@@ -158,62 +158,60 @@ class RunDetails extends StatelessWidget {
                               )),
                         ],
                       ),
-                if (event.eventStartDatetime != null) ...<Widget>[
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        flex: _flexLeft,
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: _flexLeft,
+                      child: Text(
+                        'Date:',
+                        style: listLabelStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: _spaceBetweenRows,
+                      width: _spaceBetweenColumns,
+                    ),
+                    Expanded(
+                        flex: _flexRight,
                         child: Text(
-                          'Date:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.right,
+                          DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime),
+                          style: listValueStyle,
+                          textAlign: TextAlign.left,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        ),
+                        )),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: _flexLeft,
+                      child: Text(
+                        'Time:',
+                        style: listLabelStyle,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(
-                        height: _spaceBetweenRows,
-                        width: _spaceBetweenColumns,
-                      ),
-                      Expanded(
-                          flex: _flexRight,
-                          child: Text(
-                            DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime!),
-                            style: listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          )),
-                    ],
-                  ),
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        flex: _flexLeft,
+                    ),
+                    const SizedBox(
+                      height: _spaceBetweenRows,
+                      width: _spaceBetweenColumns,
+                    ),
+                    Expanded(
+                        flex: _flexRight,
                         child: Text(
-                          'Time:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.right,
+                          DateFormat('h:mm a').format(event.eventStartDatetime),
+                          style: listValueStyle,
+                          textAlign: TextAlign.left,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(
-                        height: _spaceBetweenRows,
-                        width: _spaceBetweenColumns,
-                      ),
-                      Expanded(
-                          flex: _flexRight,
-                          child: Text(
-                            DateFormat('h:mm a').format(event.eventStartDatetime!),
-                            style: listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          )),
-                    ],
-                  ),
-                ],
+                        )),
+                  ],
+                ),
                 if ((event.locationOneLineDesc ?? '') != '') ...<Widget>[
                   Row(
                     children: <Widget>[

@@ -177,7 +177,7 @@ export 'package:ive_flutter_core_mobile/database/migrations.dart';
 export 'package:ive_flutter_core_mobile/util/connection.dart';
 export 'package:json_annotation/json_annotation.dart';
 export 'package:keyboard_actions/keyboard_actions.dart';
-export 'package:keyboard_avoider/keyboard_avoider.dart';
+// export 'package:keyboard_avoider/keyboard_avoider.dart';
 // export 'package:mobile_scanner/mobile_scanner.dart';
 export 'package:package_info_plus/package_info_plus.dart';
 export 'package:path_provider/path_provider.dart';

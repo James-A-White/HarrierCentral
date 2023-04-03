@@ -22,7 +22,7 @@ EventModel _$EventModelFromJson(Map<String, dynamic> json) {
 mixin _$EventModel {
   String get eventId => throw _privateConstructorUsedError;
   String get publicEventId => throw _privateConstructorUsedError;
-  DateTime? get eventStartDatetime => throw _privateConstructorUsedError;
+  DateTime get eventStartDatetime => throw _privateConstructorUsedError;
   String get kennelId => throw _privateConstructorUsedError;
   int get isVisible => throw _privateConstructorUsedError;
   int get isCountedRun => throw _privateConstructorUsedError;
@@ -84,7 +84,7 @@ abstract class $EventModelCopyWith<$Res> {
   $Res call(
       {String eventId,
       String publicEventId,
-      DateTime? eventStartDatetime,
+      DateTime eventStartDatetime,
       String kennelId,
       int isVisible,
       int isCountedRun,
@@ -147,7 +147,7 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
   $Res call({
     Object? eventId = null,
     Object? publicEventId = null,
-    Object? eventStartDatetime = freezed,
+    Object? eventStartDatetime = null,
     Object? kennelId = null,
     Object? isVisible = null,
     Object? isCountedRun = null,
@@ -203,10 +203,10 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
           ? _value.publicEventId
           : publicEventId // ignore: cast_nullable_to_non_nullable
               as String,
-      eventStartDatetime: freezed == eventStartDatetime
+      eventStartDatetime: null == eventStartDatetime
           ? _value.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
@@ -402,7 +402,7 @@ abstract class _$$_EventModelCopyWith<$Res>
   $Res call(
       {String eventId,
       String publicEventId,
-      DateTime? eventStartDatetime,
+      DateTime eventStartDatetime,
       String kennelId,
       int isVisible,
       int isCountedRun,
@@ -463,7 +463,7 @@ class __$$_EventModelCopyWithImpl<$Res>
   $Res call({
     Object? eventId = null,
     Object? publicEventId = null,
-    Object? eventStartDatetime = freezed,
+    Object? eventStartDatetime = null,
     Object? kennelId = null,
     Object? isVisible = null,
     Object? isCountedRun = null,
@@ -519,10 +519,10 @@ class __$$_EventModelCopyWithImpl<$Res>
           ? _value.publicEventId
           : publicEventId // ignore: cast_nullable_to_non_nullable
               as String,
-      eventStartDatetime: freezed == eventStartDatetime
+      eventStartDatetime: null == eventStartDatetime
           ? _value.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
@@ -713,7 +713,7 @@ class _$_EventModel implements _EventModel {
   _$_EventModel(
       {required this.eventId,
       required this.publicEventId,
-      this.eventStartDatetime,
+      required this.eventStartDatetime,
       required this.kennelId,
       required this.isVisible,
       required this.isCountedRun,
@@ -768,7 +768,7 @@ class _$_EventModel implements _EventModel {
   @override
   final String publicEventId;
   @override
-  final DateTime? eventStartDatetime;
+  final DateTime eventStartDatetime;
   @override
   final String kennelId;
   @override
@@ -1023,7 +1023,7 @@ abstract class _EventModel implements EventModel {
   factory _EventModel(
       {required final String eventId,
       required final String publicEventId,
-      final DateTime? eventStartDatetime,
+      required final DateTime eventStartDatetime,
       required final String kennelId,
       required final int isVisible,
       required final int isCountedRun,
@@ -1078,7 +1078,7 @@ abstract class _EventModel implements EventModel {
   @override
   String get publicEventId;
   @override
-  DateTime? get eventStartDatetime;
+  DateTime get eventStartDatetime;
   @override
   String get kennelId;
   @override

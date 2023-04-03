@@ -1,5 +1,5 @@
 // @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
   const UserRunHistoryListPage({
@@ -15,77 +15,12 @@ class UserRunHistoryListPage extends StatefulWidget {
   UserRunHistoryPageState createState() => UserRunHistoryPageState();
 }
 
-class UserRunHistoryResults {
-  UserRunHistoryResults({
-    this.eventId,
-    this.eventName,
-    this.eventNumber,
-    this.eventStartDatetime,
-    this.canEditRunAttendence,
-    this.hemId,
-    this.attendenceState,
-    this.isHare,
-    this.creditAmount,
-    this.debitAmount,
-    this.creditAvailable,
-    this.paymentType,
-    this.totalHaringThisKennel,
-    this.totalRunsThisKennel,
-    this.isUpdating,
-    this.doPayForExtras,
-    this.extrasDescription,
-    this.extrasPrice,
-  });
-
-  final String eventId;
-  final String eventName;
-  final int eventNumber;
-  final DateTime eventStartDatetime;
-  final int canEditRunAttendence;
-  final String hemId;
-  final int attendenceState;
-  final int isHare;
-  final num creditAmount;
-  final num debitAmount;
-  final num creditAvailable;
-  final int paymentType;
-  final String extrasDescription;
-  final num extrasPrice;
-  final int doPayForExtras;
-  int totalRunsThisKennel;
-  int totalHaringThisKennel;
-  bool isUpdating;
-
-  static UserRunHistoryResults fromMap(Map<String, dynamic> map) {
-    final UserRunHistoryResults item = UserRunHistoryResults(
-      eventName: map['eventName'],
-      eventId: map['eventId'],
-      eventNumber: map['eventNumber'],
-      eventStartDatetime: DateTime.parse(map['eventStartDatetime'].toString().substring(0, 19)),
-      canEditRunAttendence: map['canEditRunAttendence'],
-      hemId: map['hemId'],
-      attendenceState: map['attendenceState'],
-      isHare: map['isHare'],
-      creditAmount: map['creditAmount'],
-      debitAmount: map['debitAmount'],
-      creditAvailable: map['creditAvailable'],
-      paymentType: map['paymentType'],
-      totalRunsThisKennel: map['totalRunsThisKennel'],
-      totalHaringThisKennel: map['totalHaringThisKennel'],
-      extrasDescription: map['extrasDescription'],
-      extrasPrice: map['extrasPrice'],
-      doPayForExtras: map['doPayForExtras'],
-    );
-    return item;
-  }
-}
-
 class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   UserRunHistoryPageState();
 
   bool _isLoading = false;
 
-  List<UserRunHistoryResults> _runCountsList = <UserRunHistoryResults>[];
+  List<UserRunHistoryModel> _runCountsList = <UserRunHistoryModel>[];
   final String _userId = getStringPref(StringPrefsEnum.userId);
 
   RunHistoryModel _kennelInfo;
@@ -138,8 +73,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventName} as eventName,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventNumber} as eventNumber,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
-          "" as extrasDescription,
-          0 as extrasPrice,
+          null as extrasDescription,
+          null as extrasPrice,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
@@ -161,15 +96,16 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           ORDER BY eventStartDatetime desc
           ''';
 
-    _runCountsList = <UserRunHistoryResults>[];
+    _runCountsList = <UserRunHistoryModel>[];
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final UserRunHistoryResults hlrItem = UserRunHistoryResults.fromMap(results[i]);
+        final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(results[i]);
         // hlrItem.totalHaringThisKennel = -1;
         // hlrItem.totalRunsThisKennel = -1;
-        hlrItem.isUpdating = false;
+        // NULLSAFETODO
+        //hlrItem.isUpdating = false;
         _runCountsList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
@@ -564,7 +500,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        final UserRunHistoryResults item = _runCountsList[index];
+                        final UserRunHistoryModel item = _runCountsList[index];
 
                         return Dismissible(
                           key: Key(item.eventId),
@@ -578,10 +514,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 // not at the Hash to being at the Hash,
                                 // so assume that the person was not a hare
                                 if (item.attendenceState < attendenceAtHash.value) {
-                                  item.isUpdating = true;
+                                  // NULLSAFETODO
+                                  //item.isUpdating = true;
                                   await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareNo);
                                 } else {
-                                  item.isUpdating = true;
+                                  // NULLSAFETODO
+                                  //item.isUpdating = true;
                                   await _setAttendenceState(item, rsvpYes, attendenceAtHash, item.isHare == 1 ? isHareNo : isHareYes);
                                 }
                               } else {
@@ -722,7 +660,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               kennelInfo: _kennelInfo ?? widget.kennelInfo,
                               setAttendenceStateCallback: (EnumAttendenceState<int> attendenceState, EnumIsHare<int> isHare) async {
                                 setState(() {
-                                  item.isUpdating = true;
+                                  // NULLSAFETODO
+                                  //item.isUpdating = true;
                                 });
 
                                 if (attendenceState == attendenceNo) {
@@ -736,7 +675,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 }
 
                                 setState(() {
-                                  item.isUpdating = false;
+                                  // NULLSAFETODO
+                                  //item.isUpdating = false;
                                 });
                               },
                             ),
@@ -762,7 +702,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   }
 
   Future<void> _setAttendenceState(
-    UserRunHistoryResults item,
+    UserRunHistoryModel item,
     EnumRsvpState<int> rsvpState,
     EnumAttendenceState<int> attendenceState,
     EnumIsHare<int> isHare,

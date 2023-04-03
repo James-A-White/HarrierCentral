@@ -7,16 +7,16 @@ part 'lite_event_model.g.dart';
 class LiteEventModel with _$LiteEventModel implements BaseModel {
   factory LiteEventModel({
     required String eventId,
-    required int isVisible,
-    required int isCountedRun,
+    @Default(1) int isVisible,
+    @Default(1) int isCountedRun,
     int? absoluteEventNumber,
     String? externalIntegrationId,
     required String eventName,
     required int eventNumber,
-    DateTime? eventStartDatetime,
+    required DateTime eventStartDatetime,
     int? eventInboundIntegrationId,
-    required int appAccessFlags,
-    required int canEditRunAttendance,
+    @Default(0) int appAccessFlags,
+    @Default(0) int canEditRunAttendance,
   }) = _LiteEventModel;
 
   factory LiteEventModel.fromJson(Map<String, dynamic> json) => _$LiteEventModelFromJson(json);

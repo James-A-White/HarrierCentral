@@ -80,7 +80,7 @@ class KennelMemberListItem extends StatelessWidget {
                           MaterialPageRoute<void>(
                             builder: (BuildContext context) => ZoomableImagePage2(
                                 key: const Key('36601939'),
-                                pageTitle: kennelMember.dispName ?? '<no name>',
+                                pageTitle: kennelMember.dispName,
                                 imageUrl: (kennelMember.photo!.startsWith('http')) ? kennelMember.photo : null,
                                 assetImage: kennelMember.photo!.contains('bundle://') ? 'images/avatars/${kennelMember.photo!.replaceAll('bundle://', '')}.jpg' : null,
                                 appBarBackgroundColor: themeAppBarBackground,
@@ -131,7 +131,7 @@ class KennelMemberListItem extends StatelessWidget {
                           child: Row(children: <Widget>[
                             Expanded(
                               child: AutoSizeText(
-                                kennelMember.dispName ?? '<no name>',
+                                kennelMember.dispName,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -200,17 +200,17 @@ class KennelMemberListItem extends StatelessWidget {
                             style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                             textAlign: TextAlign.center,
                           ),
-                    if ((kennelMember.kennelCredit ?? 0) != 0) ...<Widget>[
+                    if ((kennelMember.kennelCredit) != 0) ...<Widget>[
                       Text(
-                        (kennelMember.kennelCredit! >= 0 ? 'Credit available: ' : 'Funds owed: ') +
-                            IveCoreUtilities.getFormattedMoney(
-                                kennelMember.kennelCredit!.abs(), kennelListAggregate.kennel.digitsAfterDecimal ?? 2, kennelListAggregate.kennel.currencySymbol ?? r'$^'),
+                        (kennelMember.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
+                            // NULLSAFETODO - read currency info from country if null!!!!!
+                            IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal ?? 2, kennelListAggregate.kennel.currencySymbol ?? r'$^'),
                         style: TextStyle(
                             fontFamily: 'AvenirNextDemiBold',
                             fontStyle: FontStyle.normal,
                             fontSize: 16.0,
                             height: 1.0,
-                            color: kennelMember.kennelCredit! >= 0 ? Colors.green.shade900 : Colors.red.shade900),
+                            color: kennelMember.kennelCredit >= 0 ? Colors.green.shade900 : Colors.red.shade900),
                       ),
                     ]
                   ],

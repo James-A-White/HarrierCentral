@@ -99,9 +99,9 @@ class FilterEventListItem extends StatelessWidget {
                       textAlign: TextAlign.left,
                     ),
                     Text(
-                      (event.eventStartDatetime?.year ?? 2000) != DateTime.now().year
-                          ? DateFormat("E, MMM d, yyyy 'at' h:mm a").format(event.eventStartDatetime ?? DateTime(2000))
-                          : DateFormat("E, MMM d 'at' h:mm a").format(event.eventStartDatetime ?? DateTime(2000)),
+                      event.eventStartDatetime.year != DateTime.now().year
+                          ? DateFormat("E, MMM d, yyyy 'at' h:mm a").format(event.eventStartDatetime)
+                          : DateFormat("E, MMM d 'at' h:mm a").format(event.eventStartDatetime),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

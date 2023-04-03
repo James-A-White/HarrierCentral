@@ -388,14 +388,14 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               final DateTime dt = DateTime.parse(results[i]['eventStartDatetime'].substring(0, 19));
               final RunDetailsAggregate item = RunDetailsAggregate(
                   event: em,
-                  extensions: RunDetailsQueryExtensions(
+                  extensions: RunQueryExtensionsModel(
                       latitude: lat,
                       longitude: lon,
-                      isMapAndDistanceValid: results[i]['isMapAndDistanceValid'] == 1,
+                      isMapAndDistanceValid: results[i]['isMapAndDistanceValid'],
                       rsvpState: results[i]['rsvpState'],
                       attendenceState: results[i]['attendenceState'],
                       isHare: results[i]['isHare'],
-                      searchRunsText: results[i]['searchRunsText'] + RunDetailsQueryExtensions.getSearchDateString(dt)),
+                      searchRunsText: results[i]['searchRunsText'] + RunQueryExtensionsModel.getSearchDateString(dt)),
                   kennel: KennelsModel.fromJson(results[i]));
               _allRuns.add(item);
             }
@@ -423,7 +423,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         run.extensions.latitude!,
         run.extensions.longitude!,
       );
-      final DateTime dt = run.event.eventStartDatetime ?? DateTime.now();
+      final DateTime dt = run.event.eventStartDatetime;
 
       final Marker marker = Marker(
           width: 45.0,
@@ -431,9 +431,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
           point: ll,
           builder: (BuildContext ctx) => _buildRunMarker(run.event.eventId, dt, run.event.eventName,
-              rsvpState: run.extensions.rsvpState ?? 0,
-              attendenceState: run.extensions.attendenceState ?? 0,
-              isHare: run.extensions.isHare ?? 0,
+              rsvpState: run.extensions.rsvpState,
+              attendenceState: run.extensions.attendenceState,
+              isHare: run.extensions.isHare,
               kennelPinColor: run.kennel.kennelPinColor,
               eventScope: run.event.eventGeographicScope,
               isCountedRun: run.event.isCountedRun));
@@ -441,7 +441,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       if ((_viewMode == RunLocationsViewMode.all) ||
           ((_viewMode == RunLocationsViewMode.past) && (dt.isBefore(DateTime.now()))) ||
           ((_viewMode == RunLocationsViewMode.recent) && (dt.isAfter(DateTime.now().subtract(const Duration(days: 90))))) ||
-          ((_viewMode == RunLocationsViewMode.myRuns) && ((run.extensions.attendenceState ?? 0) >= attendenceAtHash.value))) {
+          ((_viewMode == RunLocationsViewMode.myRuns) && ((run.extensions.attendenceState) >= attendenceAtHash.value))) {
         _runLocationMarkers.add(marker);
       }
     }

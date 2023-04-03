@@ -8,21 +8,21 @@ part of 'run_history_model.dart';
 
 _$_RunHistoryModel _$$_RunHistoryModelFromJson(Map<String, dynamic> json) =>
     _$_RunHistoryModel(
-      totalRunsThisKennel: json['totalRunsThisKennel'] as int,
-      totalHaringThisKennel: json['totalHaringThisKennel'] as int,
-      hcRunsThisKennel: json['hcRunsThisKennel'] as int,
-      hcHaringThisKennel: json['hcHaringThisKennel'] as int,
+      totalRunsThisKennel: json['totalRunsThisKennel'] as int? ?? 0,
+      totalHaringThisKennel: json['totalHaringThisKennel'] as int? ?? 0,
+      hcRunsThisKennel: json['hcRunsThisKennel'] as int? ?? 0,
+      hcHaringThisKennel: json['hcHaringThisKennel'] as int? ?? 0,
       kennelName: json['kennelName'] as String,
       kennelShortName: json['kennelShortName'] as String,
       kennelId: json['kennelId'] as String,
       kennelLogo: json['kennelLogo'] as String,
-      currencySymbol: json['currencySymbol'] as String,
-      kennelCredit: (json['kennelCredit'] as num).toDouble(),
-      historicalHaringCount: json['historicalHaringCount'] as int,
-      historicalTotalRunCount: json['historicalTotalRunCount'] as int,
-      historicalCountIsEstimate: json['historicalCountIsEstimate'] as int,
-      following: json['following'] as int,
-      digitsAfterDecimal: json['digitsAfterDecimal'] as int,
+      currencySymbol: json['currencySymbol'] as String? ?? r'$^',
+      kennelCredit: (json['kennelCredit'] as num?)?.toDouble() ?? 0.0,
+      historicalHaringCount: json['historicalHaringCount'] as int? ?? 0,
+      historicalTotalRunCount: json['historicalTotalRunCount'] as int? ?? 0,
+      historicalCountIsEstimate: json['historicalCountIsEstimate'] as int? ?? 0,
+      following: json['following'] as int? ?? 0,
+      digitsAfterDecimal: json['digitsAfterDecimal'] as int? ?? 2,
     );
 
 Map<String, dynamic> _$$_RunHistoryModelToJson(_$_RunHistoryModel instance) =>

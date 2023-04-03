@@ -1,18 +1,21 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class RunDetailsPage extends StatefulWidget {
-  const RunDetailsPage({Key key, @required this.futureRun, this.refreshPage}) : super(key: key);
+  const RunDetailsPage({
+    Key? key,
+    required this.futureRun,
+    this.refreshPage,
+  }) : super(key: key);
 
   final RunDetailsAggregate futureRun;
-  final Function refreshPage;
+  final Function? refreshPage;
 
   @override
   RunDetailsPageState createState() => RunDetailsPageState();
 }
 
 class RunDetailsPageState extends State<RunDetailsPage> {
-  RunDetailsAggregate _futureRun;
+  late RunDetailsAggregate _futureRun;
 
   @override
   void initState() {
@@ -26,7 +29,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
     return Scaffold(
         appBar: AppBar(
           actions: <Widget>[
-            (_futureRun.extensions.appAccessFlags ?? 0) == 0
+            _futureRun.extensions.appAccessFlags == 0
                 ? Container()
                 : IconButton(
                     icon: const Icon(FontAwesome.gear, color: Colors.white),
@@ -40,7 +43,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                         ),
                       ).then((void _) {
                         if (widget.refreshPage != null) {
-                          widget.refreshPage().then((RunDetailsAggregate rda) {
+                          widget.refreshPage!().then((RunDetailsAggregate? rda) {
                             setState(() {
                               if (rda != null) {
                                 _futureRun = rda;

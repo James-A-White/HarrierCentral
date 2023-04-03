@@ -282,32 +282,36 @@ class __$$_RunHistoryModelCopyWithImpl<$Res>
 @JsonSerializable()
 class _$_RunHistoryModel implements _RunHistoryModel {
   _$_RunHistoryModel(
-      {required this.totalRunsThisKennel,
-      required this.totalHaringThisKennel,
-      required this.hcRunsThisKennel,
-      required this.hcHaringThisKennel,
+      {this.totalRunsThisKennel = 0,
+      this.totalHaringThisKennel = 0,
+      this.hcRunsThisKennel = 0,
+      this.hcHaringThisKennel = 0,
       required this.kennelName,
       required this.kennelShortName,
       required this.kennelId,
       required this.kennelLogo,
-      required this.currencySymbol,
-      required this.kennelCredit,
-      required this.historicalHaringCount,
-      required this.historicalTotalRunCount,
-      required this.historicalCountIsEstimate,
-      required this.following,
-      required this.digitsAfterDecimal});
+      this.currencySymbol = r'$^',
+      this.kennelCredit = 0.0,
+      this.historicalHaringCount = 0,
+      this.historicalTotalRunCount = 0,
+      this.historicalCountIsEstimate = 0,
+      this.following = 0,
+      this.digitsAfterDecimal = 2});
 
   factory _$_RunHistoryModel.fromJson(Map<String, dynamic> json) =>
       _$$_RunHistoryModelFromJson(json);
 
   @override
+  @JsonKey()
   final int totalRunsThisKennel;
   @override
+  @JsonKey()
   final int totalHaringThisKennel;
   @override
+  @JsonKey()
   final int hcRunsThisKennel;
   @override
+  @JsonKey()
   final int hcHaringThisKennel;
   @override
   final String kennelName;
@@ -318,18 +322,25 @@ class _$_RunHistoryModel implements _RunHistoryModel {
   @override
   final String kennelLogo;
   @override
+  @JsonKey()
   final String currencySymbol;
   @override
+  @JsonKey()
   final double kennelCredit;
   @override
+  @JsonKey()
   final int historicalHaringCount;
   @override
+  @JsonKey()
   final int historicalTotalRunCount;
   @override
+  @JsonKey()
   final int historicalCountIsEstimate;
   @override
+  @JsonKey()
   final int following;
   @override
+  @JsonKey()
   final int digitsAfterDecimal;
 
   @override
@@ -412,21 +423,21 @@ class _$_RunHistoryModel implements _RunHistoryModel {
 
 abstract class _RunHistoryModel implements RunHistoryModel {
   factory _RunHistoryModel(
-      {required final int totalRunsThisKennel,
-      required final int totalHaringThisKennel,
-      required final int hcRunsThisKennel,
-      required final int hcHaringThisKennel,
+      {final int totalRunsThisKennel,
+      final int totalHaringThisKennel,
+      final int hcRunsThisKennel,
+      final int hcHaringThisKennel,
       required final String kennelName,
       required final String kennelShortName,
       required final String kennelId,
       required final String kennelLogo,
-      required final String currencySymbol,
-      required final double kennelCredit,
-      required final int historicalHaringCount,
-      required final int historicalTotalRunCount,
-      required final int historicalCountIsEstimate,
-      required final int following,
-      required final int digitsAfterDecimal}) = _$_RunHistoryModel;
+      final String currencySymbol,
+      final double kennelCredit,
+      final int historicalHaringCount,
+      final int historicalTotalRunCount,
+      final int historicalCountIsEstimate,
+      final int following,
+      final int digitsAfterDecimal}) = _$_RunHistoryModel;
 
   factory _RunHistoryModel.fromJson(Map<String, dynamic> json) =
       _$_RunHistoryModel.fromJson;

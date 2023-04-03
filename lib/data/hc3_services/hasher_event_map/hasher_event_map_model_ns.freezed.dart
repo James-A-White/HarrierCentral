@@ -37,7 +37,7 @@ mixin _$HasherEventMapModel {
   int? get totalRunsThisKennel => throw _privateConstructorUsedError;
   num? get eventCountOverride => throw _privateConstructorUsedError;
   num get virginVisitorType => throw _privateConstructorUsedError;
-  String? get displayName => throw _privateConstructorUsedError;
+  String get displayName => throw _privateConstructorUsedError;
   String? get email => throw _privateConstructorUsedError;
   String? get phoneNumber =>
       throw _privateConstructorUsedError; // these fields are cached from the event itself. This enables us to keep run count information without
@@ -83,7 +83,7 @@ abstract class $HasherEventMapModelCopyWith<$Res> {
       int? totalRunsThisKennel,
       num? eventCountOverride,
       num virginVisitorType,
-      String? displayName,
+      String displayName,
       String? email,
       String? phoneNumber,
       String? hemEventName,
@@ -128,7 +128,7 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
     Object? totalRunsThisKennel = freezed,
     Object? eventCountOverride = freezed,
     Object? virginVisitorType = null,
-    Object? displayName = freezed,
+    Object? displayName = null,
     Object? email = freezed,
     Object? phoneNumber = freezed,
     Object? hemEventName = freezed,
@@ -211,10 +211,10 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
               as num,
-      displayName: freezed == displayName
+      displayName: null == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       email: freezed == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
@@ -293,7 +293,7 @@ abstract class _$$_HasherEventMapModelCopyWith<$Res>
       int? totalRunsThisKennel,
       num? eventCountOverride,
       num virginVisitorType,
-      String? displayName,
+      String displayName,
       String? email,
       String? phoneNumber,
       String? hemEventName,
@@ -336,7 +336,7 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
     Object? totalRunsThisKennel = freezed,
     Object? eventCountOverride = freezed,
     Object? virginVisitorType = null,
-    Object? displayName = freezed,
+    Object? displayName = null,
     Object? email = freezed,
     Object? phoneNumber = freezed,
     Object? hemEventName = freezed,
@@ -419,10 +419,10 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
               as num,
-      displayName: freezed == displayName
+      displayName: null == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       email: freezed == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
@@ -496,7 +496,7 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
       this.totalRunsThisKennel,
       this.eventCountOverride,
       required this.virginVisitorType,
-      this.displayName,
+      required this.displayName,
       this.email,
       this.phoneNumber,
       this.hemEventName,
@@ -548,7 +548,7 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @override
   final num virginVisitorType;
   @override
-  final String? displayName;
+  final String displayName;
   @override
   final String? email;
   @override
@@ -715,7 +715,7 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
       final int? totalRunsThisKennel,
       final num? eventCountOverride,
       required final num virginVisitorType,
-      final String? displayName,
+      required final String displayName,
       final String? email,
       final String? phoneNumber,
       final String? hemEventName,
@@ -767,7 +767,7 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   num get virginVisitorType;
   @override
-  String? get displayName;
+  String get displayName;
   @override
   String? get email;
   @override

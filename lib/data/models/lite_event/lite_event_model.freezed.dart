@@ -27,7 +27,7 @@ mixin _$LiteEventModel {
   String? get externalIntegrationId => throw _privateConstructorUsedError;
   String get eventName => throw _privateConstructorUsedError;
   int get eventNumber => throw _privateConstructorUsedError;
-  DateTime? get eventStartDatetime => throw _privateConstructorUsedError;
+  DateTime get eventStartDatetime => throw _privateConstructorUsedError;
   int? get eventInboundIntegrationId => throw _privateConstructorUsedError;
   int get appAccessFlags => throw _privateConstructorUsedError;
   int get canEditRunAttendance => throw _privateConstructorUsedError;
@@ -52,7 +52,7 @@ abstract class $LiteEventModelCopyWith<$Res> {
       String? externalIntegrationId,
       String eventName,
       int eventNumber,
-      DateTime? eventStartDatetime,
+      DateTime eventStartDatetime,
       int? eventInboundIntegrationId,
       int appAccessFlags,
       int canEditRunAttendance});
@@ -78,7 +78,7 @@ class _$LiteEventModelCopyWithImpl<$Res, $Val extends LiteEventModel>
     Object? externalIntegrationId = freezed,
     Object? eventName = null,
     Object? eventNumber = null,
-    Object? eventStartDatetime = freezed,
+    Object? eventStartDatetime = null,
     Object? eventInboundIntegrationId = freezed,
     Object? appAccessFlags = null,
     Object? canEditRunAttendance = null,
@@ -112,10 +112,10 @@ class _$LiteEventModelCopyWithImpl<$Res, $Val extends LiteEventModel>
           ? _value.eventNumber
           : eventNumber // ignore: cast_nullable_to_non_nullable
               as int,
-      eventStartDatetime: freezed == eventStartDatetime
+      eventStartDatetime: null == eventStartDatetime
           ? _value.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       eventInboundIntegrationId: freezed == eventInboundIntegrationId
           ? _value.eventInboundIntegrationId
           : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
@@ -148,7 +148,7 @@ abstract class _$$_LiteEventModelCopyWith<$Res>
       String? externalIntegrationId,
       String eventName,
       int eventNumber,
-      DateTime? eventStartDatetime,
+      DateTime eventStartDatetime,
       int? eventInboundIntegrationId,
       int appAccessFlags,
       int canEditRunAttendance});
@@ -172,7 +172,7 @@ class __$$_LiteEventModelCopyWithImpl<$Res>
     Object? externalIntegrationId = freezed,
     Object? eventName = null,
     Object? eventNumber = null,
-    Object? eventStartDatetime = freezed,
+    Object? eventStartDatetime = null,
     Object? eventInboundIntegrationId = freezed,
     Object? appAccessFlags = null,
     Object? canEditRunAttendance = null,
@@ -206,10 +206,10 @@ class __$$_LiteEventModelCopyWithImpl<$Res>
           ? _value.eventNumber
           : eventNumber // ignore: cast_nullable_to_non_nullable
               as int,
-      eventStartDatetime: freezed == eventStartDatetime
+      eventStartDatetime: null == eventStartDatetime
           ? _value.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       eventInboundIntegrationId: freezed == eventInboundIntegrationId
           ? _value.eventInboundIntegrationId
           : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
@@ -231,16 +231,16 @@ class __$$_LiteEventModelCopyWithImpl<$Res>
 class _$_LiteEventModel implements _LiteEventModel {
   _$_LiteEventModel(
       {required this.eventId,
-      required this.isVisible,
-      required this.isCountedRun,
+      this.isVisible = 1,
+      this.isCountedRun = 1,
       this.absoluteEventNumber,
       this.externalIntegrationId,
       required this.eventName,
       required this.eventNumber,
-      this.eventStartDatetime,
+      required this.eventStartDatetime,
       this.eventInboundIntegrationId,
-      required this.appAccessFlags,
-      required this.canEditRunAttendance});
+      this.appAccessFlags = 0,
+      this.canEditRunAttendance = 0});
 
   factory _$_LiteEventModel.fromJson(Map<String, dynamic> json) =>
       _$$_LiteEventModelFromJson(json);
@@ -248,8 +248,10 @@ class _$_LiteEventModel implements _LiteEventModel {
   @override
   final String eventId;
   @override
+  @JsonKey()
   final int isVisible;
   @override
+  @JsonKey()
   final int isCountedRun;
   @override
   final int? absoluteEventNumber;
@@ -260,12 +262,14 @@ class _$_LiteEventModel implements _LiteEventModel {
   @override
   final int eventNumber;
   @override
-  final DateTime? eventStartDatetime;
+  final DateTime eventStartDatetime;
   @override
   final int? eventInboundIntegrationId;
   @override
+  @JsonKey()
   final int appAccessFlags;
   @override
+  @JsonKey()
   final int canEditRunAttendance;
 
   @override
@@ -335,16 +339,16 @@ class _$_LiteEventModel implements _LiteEventModel {
 abstract class _LiteEventModel implements LiteEventModel {
   factory _LiteEventModel(
       {required final String eventId,
-      required final int isVisible,
-      required final int isCountedRun,
+      final int isVisible,
+      final int isCountedRun,
       final int? absoluteEventNumber,
       final String? externalIntegrationId,
       required final String eventName,
       required final int eventNumber,
-      final DateTime? eventStartDatetime,
+      required final DateTime eventStartDatetime,
       final int? eventInboundIntegrationId,
-      required final int appAccessFlags,
-      required final int canEditRunAttendance}) = _$_LiteEventModel;
+      final int appAccessFlags,
+      final int canEditRunAttendance}) = _$_LiteEventModel;
 
   factory _LiteEventModel.fromJson(Map<String, dynamic> json) =
       _$_LiteEventModel.fromJson;
@@ -364,7 +368,7 @@ abstract class _LiteEventModel implements LiteEventModel {
   @override
   int get eventNumber;
   @override
-  DateTime? get eventStartDatetime;
+  DateTime get eventStartDatetime;
   @override
   int? get eventInboundIntegrationId;
   @override

@@ -86,8 +86,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         }
         final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
         final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-        final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
-        extensionsItem.distToEvent = dist;
+        final RunQueryExtensionsModel extensionsItem = RunQueryExtensionsModel.fromJsonWithDateSearchText(results[i], eventItem.eventStartDatetime, dist);
 
         String paymentLinkUrl = '';
 

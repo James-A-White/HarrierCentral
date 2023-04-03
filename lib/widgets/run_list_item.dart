@@ -81,9 +81,10 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
-    setState(() {
-      _rda.extensions.rsvpState = -1;
-    });
+    // NULLSAFETODO
+    // setState(() {
+    //   _rda.extensions.rsvpState = -1;
+    // });
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
     final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
@@ -109,8 +110,9 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         ),
       );
 
-      _rda.extensions.rsvpState = rsvpResult;
-      _rda.extensions.isHare = willHareResult;
+      // NULLSAFETODO
+      // _rda.extensions.rsvpState = rsvpResult;
+      // _rda.extensions.isHare = willHareResult;
 
       // _rda.event = _rda.event.hares = hares;
     });
@@ -180,7 +182,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           ),
                   ),
                 ),
-                ((_rda.event.eventStartDatetime == null) || (_rda.event.eventStartDatetime!.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
+                ((_rda.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
                     ? Container()
                     : Container(
                         padding: const EdgeInsets.only(right: 10),
@@ -286,19 +288,19 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                         ? const SizedBox()
                                         : Text(
                                             (_rda.event.isCountedRun == 1 ? 'Run #${_rda.event.eventNumber}, ' : 'Run / Event ') +
-                                                (_rda.extensions.daysUntilEvent! <= 14
-                                                    ? _rda.extensions.daysUntilEvent!.toInt() == -1
+                                                (_rda.extensions.daysUntilEvent <= 14
+                                                    ? _rda.extensions.daysUntilEvent.toInt() == -1
                                                         ? 'Yesterday'
-                                                        : _rda.extensions.daysUntilEvent!.toInt() == 0
+                                                        : _rda.extensions.daysUntilEvent.toInt() == 0
                                                             ? 'TODAY'
-                                                            : _rda.extensions.daysUntilEvent!.toInt() == 1
+                                                            : _rda.extensions.daysUntilEvent.toInt() == 1
                                                                 ? 'Tomorrow'
-                                                                : 'in ${_rda.extensions.daysUntilEvent!.toInt().toString()} days'
-                                                    : (_rda.extensions.daysUntilEvent! <= 30)
-                                                        ? 'in ${_rda.extensions.daysUntilEvent! ~/ 7.0}${(_rda.extensions.daysUntilEvent! ~/ 7.0) == 1 ? ' week' : ' weeks'}'
-                                                        : _rda.extensions.daysUntilEvent! <= 365
-                                                            ? 'in ${_rda.extensions.daysUntilEvent! ~/ 30.0}${(_rda.extensions.daysUntilEvent! ~/ 30.0) == 1 ? ' month' : ' months'}'
-                                                            : 'in ${_rda.extensions.daysUntilEvent! ~/ 365.0}${(_rda.extensions.daysUntilEvent! ~/ 365.0) == 1 ? ' year' : ' years'}'),
+                                                                : 'in ${_rda.extensions.daysUntilEvent.toInt().toString()} days'
+                                                    : (_rda.extensions.daysUntilEvent <= 30)
+                                                        ? 'in ${_rda.extensions.daysUntilEvent ~/ 7.0}${(_rda.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
+                                                        : _rda.extensions.daysUntilEvent <= 365
+                                                            ? 'in ${_rda.extensions.daysUntilEvent ~/ 30.0}${(_rda.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
+                                                            : 'in ${_rda.extensions.daysUntilEvent ~/ 365.0}${(_rda.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
                                             style: const TextStyle(
                                               color: Colors.black87,
                                               fontFamily: 'AvenirNextDemiBold',
@@ -309,14 +311,12 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                    _rda.event.eventStartDatetime == null
-                                        ? const SizedBox()
-                                        : Text(
-                                            DateFormat("E, MMM d 'at' h:mm a").format(_rda.event.eventStartDatetime!),
-                                            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                            textAlign: TextAlign.left,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                    Text(
+                                      DateFormat("E, MMM d 'at' h:mm a").format(_rda.event.eventStartDatetime),
+                                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                      textAlign: TextAlign.left,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                     (_rda.event.hares ?? '') == ''
                                         ? const SizedBox()
                                         // Text(
@@ -331,11 +331,11 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                    if ((_rda.extensions.latitude != null && (_rda.extensions.isMapAndDistanceValid ?? false)) &&
+                                    if ((_rda.extensions.latitude != null && _rda.extensions.isMapAndDistanceValid == 1) &&
                                         ((_rda.extensions.distToEvent ?? -1.0) >= 0) &&
                                         (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
                                       Text(
-                                        '${Utilities.getDistance(_rda.extensions.distToEvent!, context, isMetric: ((_rda.extensions.distanceUnitsPref ?? 0) & 0x01) == 0)} from here',
+                                        '${Utilities.getDistance(_rda.extensions.distToEvent!, context, isMetric: ((_rda.extensions.distanceUnitsPref) & 0x01) == 0)} from here',
                                         style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
@@ -396,21 +396,22 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             PaymentIcons(
               _rda.event,
               _rda.kennel,
-              _rda.extensions.digitsAfterDecimal ?? 2,
-              _rda.extensions.currencySymbol = r'$^',
-              _rda.extensions.distanceUnitsPref ?? 0,
+              _rda.extensions.digitsAfterDecimal,
+              _rda.extensions.currencySymbol,
+              _rda.extensions.distanceUnitsPref,
               _rda.extensions.distToEvent,
               _rda.paymentUrl,
-              _rda.extensions.rsvpState ?? 0,
-              _rda.extensions.isMember ?? 0,
-              _rda.extensions.isPaid ?? 0,
+              _rda.extensions.rsvpState,
+              _rda.extensions.isMember,
+              _rda.extensions.isPaid,
               true,
               (int r, int p) {
-                _rda.extensions.rsvpState = r;
-                if (p != -1) {
-                  _rda.extensions.isPaid = p;
-                }
-                setState(() {});
+                // NULLSAFETODO
+                // _rda.extensions.rsvpState = r;
+                // if (p != -1) {
+                //   _rda.extensions.isPaid = p;
+                // }
+                // setState(() {});
               },
             )
           ],
@@ -698,7 +699,8 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumEmailAlertState<int> nState = retVal;
       setState(() {
-        _rda.extensions.emailAlertPreference = -1;
+        // NULLSAFETODO
+        //_rda.extensions.emailAlertPreference = -1;
       });
 
       G0<TableModel>()
@@ -712,7 +714,8 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           )
           .then((List<dynamic> results) {
         setState(() {
-          _rda.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
+          // NULLSAFETODO
+          // _rda.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
         });
       });
     }
@@ -723,7 +726,8 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumNotificationState<int> nState = retVal;
       setState(() {
-        _rda.extensions.notificationPreference = -1;
+        // NULLSAFETODO
+        //_rda.extensions.notificationPreference = -1;
       });
 
       G0<TableModel>()
@@ -741,7 +745,8 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           // notifications.setNotificationState(eventId: _rda.event.eventId);
           // // T0D0(James): Fix this to reflect true value of what is in the DB not just the value
           // // provided to the function
-          _rda.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
+          // NULLSAFETODO
+          // _rda.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
         });
       });
     }

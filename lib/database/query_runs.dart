@@ -1,146 +1,83 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports_null_safe.dart';
 
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 
-class RunDetailsQueryExtensions {
-  RunDetailsQueryExtensions({
-    this.daysUntilEvent,
-    this.distToEvent,
-    this.appAccessFlags,
-    this.currencySymbol,
-    this.digitsAfterDecimal,
-    this.rsvpState,
-    this.isPaid,
-    this.isHare,
-    this.attendenceState,
-    this.isMember,
-    this.following,
-    this.notificationPreference,
-    this.emailAlertPreference,
-    this.distanceUnitsPref,
-    this.searchRunsText,
-    this.latitude,
-    this.longitude,
-    this.isMapAndDistanceValid,
-    this.runClassification,
-  });
+// class RunQueryExtensionsModel {
+//   RunQueryExtensionsModel({
+//     this.daysUntilEvent,
+//     this.distToEvent,
+//     this.appAccessFlags,
+//     this.currencySymbol,
+//     this.digitsAfterDecimal,
+//     this.rsvpState,
+//     this.isPaid,
+//     this.isHare,
+//     this.attendenceState,
+//     this.isMember,
+//     this.following,
+//     this.notificationPreference,
+//     this.emailAlertPreference,
+//     this.distanceUnitsPref,
+//     this.searchRunsText,
+//     this.latitude,
+//     this.longitude,
+//     this.isMapAndDistanceValid,
+//     this.runClassification,
+//   });
 
-  final num? daysUntilEvent;
-  double? distToEvent;
-  final int? appAccessFlags;
-  int? digitsAfterDecimal;
-  String? currencySymbol;
-  int? rsvpState;
-  int? attendenceState;
-  int? isPaid;
-  int? isHare;
-  int? isMember;
-  final int? following;
-  int? notificationPreference;
-  int? emailAlertPreference;
-  int? distanceUnitsPref;
-  //int userPrefs;
-  String? searchRunsText;
-  double? latitude;
-  double? longitude;
-  bool? isMapAndDistanceValid;
-  int? runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+//   final num? daysUntilEvent;
+//   double? distToEvent;
+//   final int? appAccessFlags;
+//   int? digitsAfterDecimal;
+//   String? currencySymbol;
+//   int? rsvpState;
+//   int? attendenceState;
+//   int? isPaid;
+//   int? isHare;
+//   int? isMember;
+//   final int? following;
+//   int? notificationPreference;
+//   int? emailAlertPreference;
+//   int? distanceUnitsPref;
+//   //int userPrefs;
+//   String? searchRunsText;
+//   double? latitude;
+//   double? longitude;
+//   bool? isMapAndDistanceValid;
+//   int? runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
 
-  static String getSearchDateString(DateTime? eventStartDateTime) {
-    if (eventStartDateTime == null) {
-      return '';
-    }
+//   static RunQueryExtensionsModel fromMap(Map<String, dynamic> map, DateTime? eventStartDateTime) {
+//     // make dates and times searchable
 
-    final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
-    String days = '';
-    String weekend = '';
-    String thisDay = '';
+//     int? distanceUnitsPref = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceMeasuredIn;
+//     if (distanceUnitsPref == 0) {
+//       distanceUnitsPref = null;
+//     }
 
-    final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
-    if (deltaDays < 0) {
-      if (deltaDays == 1) {
-        days = ' 1 day ago is yesterday ';
-      } else {
-        days = ' ${-deltaDays} days ago ';
-      }
-    } else if (deltaDays > 0) {
-      if (deltaDays == 1) {
-        days = ' in 1 day is tomorrow ';
-      } else {
-        days = ' in $deltaDays days ';
-      }
-    } else {
-      days = ' is today ';
-    }
-
-    if ((deltaDays > 0) && (deltaDays < 7)) {
-      switch (eventStartDateTime.weekday) {
-        case DateTime.monday:
-          thisDay = ' this Monday ';
-          break;
-        case DateTime.tuesday:
-          thisDay = ' this Tuesday ';
-          break;
-        case DateTime.wednesday:
-          thisDay = ' this Wednesday ';
-          break;
-        case DateTime.thursday:
-          thisDay = ' this Thursday ';
-          break;
-        case DateTime.friday:
-          thisDay = ' this Friday ';
-          break;
-        case DateTime.saturday:
-          thisDay = ' this Saturday ';
-          break;
-        case DateTime.sunday:
-          thisDay = ' this Sunday ';
-          break;
-      }
-    }
-
-    if ((eventStartDateTime.weekday == DateTime.sunday) || (eventStartDateTime.weekday == DateTime.saturday)) {
-      weekend = ' is weekend ';
-    }
-
-    //final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
-    ////print(test);
-
-    return ' ${df.format(eventStartDateTime)} $days$weekend$thisDay';
-  }
-
-  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime? eventStartDateTime) {
-    // make dates and times searchable
-
-    int? distanceUnitsPref = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceMeasuredIn;
-    if (distanceUnitsPref == 0) {
-      distanceUnitsPref = null;
-    }
-
-    final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
-      daysUntilEvent: map['daysUntilEvent'],
-      digitsAfterDecimal: map['digitsAfterDecimal'],
-      currencySymbol: map['currencySymbol'],
-      appAccessFlags: map['appAccessFlags'],
-      following: map['following'],
-      rsvpState: map['rsvpState'],
-      attendenceState: map['attendenceState'],
-      isPaid: map['isPaid'],
-      isHare: map['isHare'],
-      isMember: map['isMember'],
-      notificationPreference: map['notificationPreference'],
-      emailAlertPreference: map['emailAlertPreference'],
-      distanceUnitsPref: distanceUnitsPref ?? map['distanceUnitsPref'],
-      searchRunsText: map['searchRunsText'] + getSearchDateString(eventStartDateTime),
-      latitude: map['evtLat'] == null ? null : map['evtLat'] + 0.0,
-      longitude: map['evtLon'] == null ? null : map['evtLon'] + 0.0,
-      isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
-      runClassification: map['runClassification'] ?? 3, // default to other run
-    );
-    return item;
-  }
-}
+//     final RunQueryExtensionsModel item = RunQueryExtensionsModel(
+//       daysUntilEvent: map['daysUntilEvent'],
+//       digitsAfterDecimal: map['digitsAfterDecimal'],
+//       currencySymbol: map['currencySymbol'],
+//       appAccessFlags: map['appAccessFlags'],
+//       following: map['following'],
+//       rsvpState: map['rsvpState'],
+//       attendenceState: map['attendenceState'],
+//       isPaid: map['isPaid'],
+//       isHare: map['isHare'],
+//       isMember: map['isMember'],
+//       notificationPreference: map['notificationPreference'],
+//       emailAlertPreference: map['emailAlertPreference'],
+//       distanceUnitsPref: distanceUnitsPref ?? map['distanceUnitsPref'],
+//       searchRunsText: map['searchRunsText'] + getSearchDateString(eventStartDateTime),
+//       latitude: map['evtLat'] == null ? null : map['evtLat'] + 0.0,
+//       longitude: map['evtLon'] == null ? null : map['evtLon'] + 0.0,
+//       isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
+//       runClassification: map['runClassification'] ?? 3, // default to other run
+//     );
+//     return item;
+//   }
+// }
 
 class RunDetailsAggregate {
   RunDetailsAggregate({
@@ -152,7 +89,7 @@ class RunDetailsAggregate {
 
   final EventModel event;
   final KennelsModel kennel;
-  final RunDetailsQueryExtensions extensions;
+  final RunQueryExtensionsModel extensions;
   final String? paymentUrl;
 }
 
@@ -301,18 +238,7 @@ class QueryRuns {
         );
       }
 
-      final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
-      extensionsItem.distToEvent = dist;
-
-      String paymentLinkUrl = '';
-
-      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
-        paymentLinkUrl = eventItem.eventPaymentUrl!;
-      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
-        paymentLinkUrl = kennelItem.kennelPaymentUrl!;
-      }
-
-      num meters = 0;
+      double meters = 0;
       final int userDistPrefs = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceForAutoDisplay;
 
       switch (userDistPrefs) {
@@ -348,29 +274,22 @@ class QueryRuns {
           break;
       }
 
-      // if the user has set their preferences to miles or
-      // the user has set their preferences to "auto" and the
-      // distance preference associated with the kennel is miles
-      // then convert our range for runs from meters to miles.
-      if (((userDistPrefs & hasherPref_distanceMeasuredIn) == 3) || (((userDistPrefs & hasherPref_distanceMeasuredIn) == 0) && (extensionsItem.distanceUnitsPref == 3))) {
-        meters = meters * MILES_TO_METERS / 1000; // this calculation is correct!
+      final RunQueryExtensionsModel extensionsItem = RunQueryExtensionsModel.fromJsonWithDateSearchText(
+        results[i],
+        eventItem.eventStartDatetime,
+        dist,
+        meters: meters,
+      );
+
+      String paymentLinkUrl = '';
+
+      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+        paymentLinkUrl = eventItem.eventPaymentUrl!;
+      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+        paymentLinkUrl = kennelItem.kennelPaymentUrl!;
       }
 
-      if ((extensionsItem.rsvpState == 3) || (extensionsItem.rsvpState == 2)) {
-        // if the RSVP state is yes or maybe make it a class 1 run
-        extensionsItem.runClassification = 1;
-      } else if ((extensionsItem.distToEvent ?? 999999.0) < meters) {
-        // if the run is close, it's a class 2 run
-        extensionsItem.runClassification = 2;
-      } else if (extensionsItem.following == 1) {
-        // if user is following a Kennel, it's a class 3 run
-        extensionsItem.runClassification = 3;
-      } else {
-        // otherwise it's a class 4 run
-        extensionsItem.runClassification = 4;
-      }
-
-      if ((searchAllRuns == true) || ((extensionsItem.following ?? 0) >= 1) || (((extensionsItem.following ?? 0) == 0) && ((dist ?? 999999999.0) < meters))) {
+      if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && ((dist ?? 999999999.0) < meters))) {
         final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
         runs.add(item);
       }

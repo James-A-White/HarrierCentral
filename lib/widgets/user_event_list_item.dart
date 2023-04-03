@@ -1,16 +1,15 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class UserEventListItem extends StatelessWidget {
   const UserEventListItem({
-    Key key,
-    @required this.item,
-    @required this.kennelInfo,
-    @required this.setAttendenceStateCallback,
+    Key? key,
+    required this.item,
+    required this.kennelInfo,
+    required this.setAttendenceStateCallback,
   }) : super(key: key);
 
-  final UserRunHistoryResults item;
+  final UserRunHistoryModel item;
   final RunHistoryModel kennelInfo;
   final Function setAttendenceStateCallback;
 
@@ -20,7 +19,7 @@ class UserEventListItem extends StatelessWidget {
   }
 
   Container _listItem(BuildContext context) {
-    num netPayment = (item.creditAmount ?? 0) - (item.debitAmount ?? 0);
+    double netPayment = (item.creditAmount ?? 0) - (item.debitAmount ?? 0);
     Color paymentColor = Colors.green.shade800;
     Color creditAvailableColor = (item.creditAvailable ?? 0) > 0
         ? Colors.green.shade800
@@ -49,16 +48,18 @@ class UserEventListItem extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            item.isUpdating
-                ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
-                : item.attendenceState < attendenceAtHash.value
-                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
-                    : item.isHare == isHareNo.value
-                        ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
-                        : const Padding(
-                            padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                            child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 30.0),
-                          ),
+            // NULLSAFETODO
+            // item.isUpdating
+            //     ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
+            //     :
+            item.attendenceState < attendenceAtHash.value
+                ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
+                : item.isHare == isHareNo.value
+                    ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
+                    : const Padding(
+                        padding: EdgeInsets.only(left: 2.5, right: 2.5),
+                        child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 30.0),
+                      ),
             const Padding(
               padding: EdgeInsets.only(left: 7.0, right: 3.0),
               child: VerticalDivider(
@@ -94,7 +95,7 @@ class UserEventListItem extends StatelessWidget {
                         : Row(
                             children: <Widget>[
                               Text(
-                                'My ${kennelInfo.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (kennelInfo?.historicalTotalRunCount ?? 0)}',
+                                'My ${kennelInfo.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (kennelInfo.historicalTotalRunCount)}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(color: Colors.green[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
@@ -103,7 +104,7 @@ class UserEventListItem extends StatelessWidget {
                               item.isHare == isHareNo.value
                                   ? Container()
                                   : Text(
-                                      ' and #${(item.totalHaringThisKennel ?? 0) + (kennelInfo?.historicalHaringCount ?? 0)} time haring',
+                                      ' and #${(item.totalHaringThisKennel ?? 0) + (kennelInfo.historicalHaringCount)} time haring',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),

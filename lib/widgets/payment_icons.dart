@@ -333,11 +333,11 @@ class PaymentIcons extends StatelessWidget {
   }
 
   bool showPaymentIcons() {
-    if (event.eventStartDatetime == null) {
-      return false;
-    }
-    if ((DateTime.now().isBefore(event.eventStartDatetime!.subtract(Duration(days: daysToDisplayPaymentIcons)))) ||
-        (DateTime.now().isAfter(event.eventStartDatetime!.add(Duration(days: daysToDisplayPaymentIcons))))) {
+    // if (event.eventStartDatetime == null) {
+    //   return false;
+    // }
+    if ((DateTime.now().isBefore(event.eventStartDatetime.subtract(Duration(days: daysToDisplayPaymentIcons)))) ||
+        (DateTime.now().isAfter(event.eventStartDatetime.add(Duration(days: daysToDisplayPaymentIcons))))) {
       return false;
     }
 

@@ -1,44 +1,43 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 //
 
 class SupportPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const SupportPage({Key key}) : super(key: key);
+  const SupportPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   SupportPageState createState() => SupportPageState();
 }
 
 class SupportPageState extends State<SupportPage> {
-  String firstName = getStringPref(StringPrefsEnum.firstName);
-  String lastName = getStringPref(StringPrefsEnum.lastName);
-  String email = getStringPref(StringPrefsEnum.email);
-  String hashName = getStringPref(StringPrefsEnum.hashName);
+  // final String _firstName = getStringPref(StringPrefsEnum.firstName) ?? '';
+  // final String _lastName = getStringPref(StringPrefsEnum.lastName) ?? '';
+  // final String _email = getStringPref(StringPrefsEnum.email) ?? '';
+  // final String _hashName = getStringPref(StringPrefsEnum.hashName) ?? '';
 
-  final FocusNode resetCodeFocusNode = FocusNode();
-  TextEditingController resetCodeTextController;
-  InputDecoration resetCodeDecoration;
+  final FocusNode _resetCodeFocusNode = FocusNode();
+  final TextEditingController _resetCodeTextController = TextEditingController();
+  final InputDecoration _resetCodeDecoration = InputDecoration(
+    labelText: 'Invite Code',
+    fillColor: Colors.red,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(25.0),
+      borderSide: const BorderSide(),
+    ),
+  );
 
   @override
   void initState() {
     super.initState();
-    resetCodeTextController = TextEditingController();
-    resetCodeDecoration = InputDecoration(
-      labelText: 'Invite Code',
-      fillColor: Colors.red,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(25.0),
-        borderSide: const BorderSide(),
-      ),
-    );
   }
 
-  String userName = getStringPref(StringPrefsEnum.displayName);
-  String userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
-  String supportCode = getStringPref(StringPrefsEnum.supportCode);
+  String _userName = getStringPref(StringPrefsEnum.displayName) ?? '';
+  String _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? '';
+  final String _supportCode = getStringPref(StringPrefsEnum.supportCode) ?? '';
 
   bool isLoading = false;
 
@@ -103,7 +102,7 @@ class SupportPageState extends State<SupportPage> {
                                 maxLines: 1,
                                 style: headingStyle),
                             const SizedBox(height: 15.0),
-                            AutoSizeText(userName,
+                            AutoSizeText(_userName,
                                 //'QR Code for xxx',
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
@@ -122,7 +121,7 @@ class SupportPageState extends State<SupportPage> {
                                   QrImage(
                                       backgroundColor: Colors.white,
                                       padding: const EdgeInsets.all(10.0),
-                                      data: '$QR_PREFIX_USER_SECRET_CODE${userSecretCode.toUpperCase()}',
+                                      data: '$QR_PREFIX_USER_SECRET_CODE${_userSecretCode.toUpperCase()}',
                                       //data: 'testing123',
                                       version: 5,
                                       //size: 200.0,
@@ -150,7 +149,7 @@ class SupportPageState extends State<SupportPage> {
                             ),
                             const SizedBox(height: 15.0),
                             Text(
-                              supportCode ?? '<no code>',
+                              _supportCode,
                               style: largeText,
                               textAlign: TextAlign.center,
                             ),
@@ -183,9 +182,9 @@ class SupportPageState extends State<SupportPage> {
                                       //     top: 0.0, bottom: 8.0),
                                       child: TextFormField(
                                         autocorrect: false,
-                                        controller: resetCodeTextController,
-                                        focusNode: resetCodeFocusNode,
-                                        decoration: resetCodeDecoration,
+                                        controller: _resetCodeTextController,
+                                        focusNode: _resetCodeFocusNode,
+                                        decoration: _resetCodeDecoration,
                                         // validator: (val) {
                                         //   if (val.length == 0) {
                                         //     return "Email cannot be empty";
@@ -218,7 +217,7 @@ class SupportPageState extends State<SupportPage> {
                                                 //final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                 //print('Master data synchronized $resultStr');
 
-                                                if (resetCodeTextController.text.length == 6) {
+                                                if (_resetCodeTextController.text.length == 6) {
                                                   setState(() {
                                                     isLoading = true;
                                                   });
@@ -226,17 +225,17 @@ class SupportPageState extends State<SupportPage> {
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                                                   if (!mounted) return;
-                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;
                                                   });
 
                                                   if (result['result'] != 'failed') {
-                                                    userName = getStringPref(StringPrefsEnum.displayName);
-                                                    userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
+                                                    _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
+                                                    _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'App Reset Successful',
+                                                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'App Reset Successful',
                                                         'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
@@ -269,7 +268,7 @@ class SupportPageState extends State<SupportPage> {
                                                 // final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                 // print('Master data synchronized $resultStr');
 
-                                                if (resetCodeTextController.text.length == 6) {
+                                                if (_resetCodeTextController.text.length == 6) {
                                                   setState(() {
                                                     isLoading = true;
                                                   });
@@ -277,17 +276,17 @@ class SupportPageState extends State<SupportPage> {
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                                                   if (!mounted) return;
-                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;
                                                   });
 
                                                   if (result['result'] != 'failed') {
-                                                    userName = getStringPref(StringPrefsEnum.displayName);
-                                                    userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
+                                                    _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
+                                                    _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'App Reset Successful',
+                                                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'App Reset Successful',
                                                         'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
@@ -325,8 +324,8 @@ class SupportPageState extends State<SupportPage> {
     );
   }
 
-  Future<bool> _displayInstructions(BuildContext context) async {
-    return showDialog<bool>(
+  Future<bool?> _displayInstructions(BuildContext context) async {
+    return showDialog<bool?>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {

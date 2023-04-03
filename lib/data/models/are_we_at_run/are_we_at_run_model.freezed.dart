@@ -369,16 +369,16 @@ class _$_AreWeAtRunModel implements _AreWeAtRunModel {
       required this.eventNumber,
       required this.distanceInMeters,
       required this.deltaHours,
-      required this.kennelCredit,
+      this.kennelCredit = 0.0,
       required this.memberPrice,
       required this.nonMemberPrice,
       required this.extrasCost,
-      required this.discountAmount,
-      required this.discountPercent,
-      required this.attendenceState,
-      required this.digitsAfterDecimal,
-      required this.allowSelfPayment,
-      required this.currencySymbol,
+      this.discountAmount = 0.0,
+      this.discountPercent = 0.0,
+      this.attendenceState = 0,
+      this.digitsAfterDecimal = 2,
+      this.allowSelfPayment = 0,
+      this.currencySymbol = r'$^',
       required this.membershipExpirationDate,
       this.extrasDescription});
 
@@ -404,6 +404,7 @@ class _$_AreWeAtRunModel implements _AreWeAtRunModel {
   @override
   final double deltaHours;
   @override
+  @JsonKey()
   final double kennelCredit;
   @override
   final double memberPrice;
@@ -412,16 +413,22 @@ class _$_AreWeAtRunModel implements _AreWeAtRunModel {
   @override
   final double extrasCost;
   @override
+  @JsonKey()
   final double discountAmount;
   @override
+  @JsonKey()
   final double discountPercent;
   @override
+  @JsonKey()
   final int attendenceState;
   @override
+  @JsonKey()
   final int digitsAfterDecimal;
   @override
+  @JsonKey()
   final int allowSelfPayment;
   @override
+  @JsonKey()
   final String currencySymbol;
   @override
   final DateTime membershipExpirationDate;
@@ -534,16 +541,16 @@ abstract class _AreWeAtRunModel implements AreWeAtRunModel {
       required final int eventNumber,
       required final double distanceInMeters,
       required final double deltaHours,
-      required final double kennelCredit,
+      final double kennelCredit,
       required final double memberPrice,
       required final double nonMemberPrice,
       required final double extrasCost,
-      required final double discountAmount,
-      required final double discountPercent,
-      required final int attendenceState,
-      required final int digitsAfterDecimal,
-      required final int allowSelfPayment,
-      required final String currencySymbol,
+      final double discountAmount,
+      final double discountPercent,
+      final int attendenceState,
+      final int digitsAfterDecimal,
+      final int allowSelfPayment,
+      final String currencySymbol,
       required final DateTime membershipExpirationDate,
       final String? extrasDescription}) = _$_AreWeAtRunModel;
 

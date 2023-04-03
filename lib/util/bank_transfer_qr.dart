@@ -1,15 +1,22 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class BankTransferQr {
   // the variable below is there to suppress a warning about defining classes with only static members
-  int unusedVariableToSuppressWarning;
+  int? unusedVariableToSuppressWarning;
 
-  static void showBankTransferSnackbar(RunAdminAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
+  static void showBankTransferSnackbar(
+    RunAdminAggregate eventAggregate,
+    List<dynamic> results,
+    int paymentType,
+    BuildContext context,
+    String packMemberNameForDisplay,
+    int isMember,
+    double otherAmount,
+  ) {
     if (eventAggregate.kennel.bankBic != null) {
       String paymentReference = '';
-      if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
+      if ((results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
         //paymentReference = ', HC Payment Ref: ${results[0]['paymentReference']}';
         paymentReference = '${results[0]['paymentReference']}';
       }
@@ -47,15 +54,26 @@ class BankTransferQr {
     }
   }
 
-  static void showBankTransferQrCode(BuildContext context, RunAdminAggregate eventAggregate, bool member, {String remitString, num remitAmount, String packMemberNameForDisplay}) {
+  static void showBankTransferQrCode(
+    BuildContext context,
+    RunAdminAggregate eventAggregate,
+    bool member, {
+    String? remitString,
+    double? remitAmount,
+    String? packMemberNameForDisplay,
+  }) {
     if (eventAggregate.kennel.bankBic != null) {
       num amount = eventAggregate.extensions.memberPrice;
 
-      String runId = DateFormat('yy-MM-dd').format(eventAggregate.event.eventStartDatetime);
+      String? runId;
+
+      runId = DateFormat('yy-MM-dd').format(eventAggregate.event.eventStartDatetime);
 
       if (eventAggregate.event.isCountedRun != 0) {
         runId = eventAggregate.event.eventNumber.toString();
       }
+
+      //runId ??= Random().nextInt(999999).toString();
 
       String remittanceInfo = '${eventAggregate.kennel.kennelShortName}:R-$runId-';
       String beneficiaryInfo = '${eventAggregate.kennel.kennelShortName}:R-$runId-';

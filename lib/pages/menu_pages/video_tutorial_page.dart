@@ -1,10 +1,13 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class VideoTutorialPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const VideoTutorialPage({Key key, this.title, this.videoUrl}) : super(key: key);
+  const VideoTutorialPage({
+    Key? key,
+    required this.title,
+    required this.videoUrl,
+  }) : super(key: key);
 
   final String title;
   final String videoUrl;
@@ -14,18 +17,22 @@ class VideoTutorialPage extends StatefulWidget {
 }
 
 class VideoTutorialPageState extends State<VideoTutorialPage> {
-  VideoPlayerController _controller;
-  ChewieController _chewieController;
-  VoidCallback listener;
+  VideoPlayerController? _controller;
+  ChewieController? _chewieController;
+  late VoidCallback _listener;
 
   @override
   void initState() {
+    _listener = () {
+      setState(() {});
+    };
+
     _controller = VideoPlayerController.network(widget.videoUrl)
-      ..addListener(listener)
+      ..addListener(_listener)
       ..initialize().then((void _) {
         setState(() {
           _chewieController = ChewieController(
-            videoPlayerController: _controller,
+            videoPlayerController: _controller!,
             aspectRatio: 1080 / 1920,
             autoPlay: true,
             looping: false,
@@ -36,15 +43,12 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
     setState(() {});
 
     super.initState();
-    listener = () {
-      setState(() {});
-    };
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-    _chewieController.dispose();
+    _controller?.dispose();
+    _chewieController?.dispose();
     super.dispose();
   }
 
@@ -80,7 +84,7 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
               child: _chewieController == null
                   ? Container()
                   : Chewie(
-                      controller: _chewieController,
+                      controller: _chewieController!,
                     )),
         ),
       ),

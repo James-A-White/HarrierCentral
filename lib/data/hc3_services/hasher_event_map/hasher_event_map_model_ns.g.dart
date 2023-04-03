@@ -26,7 +26,7 @@ _$_HasherEventMapModel _$$_HasherEventMapModelFromJson(
       totalRunsThisKennel: json['totalRunsThisKennel'] as int?,
       eventCountOverride: json['eventCountOverride'] as num?,
       virginVisitorType: json['virginVisitorType'] as num,
-      displayName: json['displayName'] as String?,
+      displayName: json['displayName'] as String,
       email: json['email'] as String?,
       phoneNumber: json['phoneNumber'] as String?,
       hemEventName: json['hemEventName'] as String?,

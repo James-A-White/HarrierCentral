@@ -8,7 +8,7 @@ class EventModel with _$EventModel implements BaseModel {
   factory EventModel({
     required String eventId,
     required String publicEventId,
-    DateTime? eventStartDatetime,
+    required DateTime eventStartDatetime,
     required String kennelId,
     required int isVisible,
     required int isCountedRun,

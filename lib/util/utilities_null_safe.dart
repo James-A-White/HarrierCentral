@@ -4,8 +4,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
-// import 'package:map_launcher/map_launcher.dart' as maps;
-// import 'package:flutter_svg/flutter_svg.dart';
+import 'package:map_launcher/map_launcher.dart' as maps;
+import 'package:flutter_svg/flutter_svg.dart';
 
 // class LatLon {
 //   num latitude;
@@ -91,110 +91,110 @@ class Utilities {
     return result;
   }
 
-//   static Future<void> openMapsSheet(
-//     BuildContext context,
-//     String title,
-//     maps.Coords coords,
-//     String address,
-//     ValueNotifier<bool> saveUserMapPreference,
-//   ) async {
-//     try {
-//       final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
+  static Future<void> openMapsSheet(
+    BuildContext context,
+    String title,
+    maps.Coords coords,
+    String address,
+    ValueNotifier<bool> saveUserMapPreference,
+  ) async {
+    try {
+      final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
 
-//       await showModalBottomSheet<dynamic>(
-//         context: navigatorKey.currentContext,
-//         shape: RoundedRectangleBorder(
-//           borderRadius: BorderRadius.circular(10.0),
-//         ),
-//         builder: (BuildContext context) {
-//           return SizedBox(
-//             height: (availableMaps.length * 64.0) + 170,
-//             child: SafeArea(
-//               child: Column(
-//                 mainAxisSize: MainAxisSize.min,
-//                 children: [
-//                   const Padding(
-//                     padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
-//                     child: Center(
-//                       child: Text('Select map provider',
-//                           style: TextStyle(
-//                             color: Colors.black,
-//                             fontSize: 24.0,
-//                           )),
-//                     ),
-//                   ),
-//                   const Divider(height: 1.0, color: Colors.black87),
-//                   Expanded(
-//                     child: ListView(
-//                       children: <Widget>[
-//                         for (maps.AvailableMap map in availableMaps)
-//                           Padding(
-//                             padding: const EdgeInsets.symmetric(vertical: 4.0),
-//                             child: ListTile(
-//                               onTap: () async {
-//                                 if (saveUserMapPreference.value) {
-//                                   await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
-//                                 }
-//                                 Navigator.of(navigatorKey.currentContext).pop();
+      await showModalBottomSheet<dynamic>(
+        context: navigatorKey.currentContext!,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        builder: (BuildContext context) {
+          return SizedBox(
+            height: (availableMaps.length * 64.0) + 170,
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
+                    child: Center(
+                      child: Text('Select map provider',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 24.0,
+                          )),
+                    ),
+                  ),
+                  const Divider(height: 1.0, color: Colors.black87),
+                  Expanded(
+                    child: ListView(
+                      children: <Widget>[
+                        for (maps.AvailableMap map in availableMaps)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: ListTile(
+                              onTap: () async {
+                                if (saveUserMapPreference.value) {
+                                  await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
+                                }
+                                Navigator.of(navigatorKey.currentContext!).pop();
 
-//                                 await Future<void>.delayed(const Duration(milliseconds: 200));
+                                await Future<void>.delayed(const Duration(milliseconds: 200));
 
-//                                 // BUG in plugin - doesn't work when sending a title with Google maps
-//                                 await map.showMarker(
-//                                   coords: coords,
-//                                   title: map.mapName.contains('Google') ? '' : title,
-//                                   description: address,
-//                                 );
-//                               },
-//                               title: Text(map.mapName,
-//                                   style: const TextStyle(
-//                                     fontFamily: 'AvenirNextDemiBold',
-//                                     color: Colors.black,
-//                                     fontSize: 26.0,
-//                                   )),
-//                               leading: SvgPicture.asset(
-//                                 map.icon,
-//                                 height: 60.0,
-//                                 width: 60.0,
-//                               ),
-//                             ),
-//                           ),
-//                         const SizedBox(height: 30.0),
-//                       ],
-//                     ),
-//                   ),
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     children: <Widget>[
-//                       // MapSnackbar(saveUserMapPreference, (bool x) {
-//                       //   setState(() {
-//                       //     saveUserMapPreference.value = x;
-//                       //   });
-//                       // }),
-//                       MapSnackbar(saveUserMapPreference),
-//                       const Text(
-//                         'Always use this option',
-//                         style: TextStyle(
-//                           fontFamily: 'AvenirNextDemiBold',
-//                           color: Colors.black,
-//                           fontSize: 22.0,
-//                         ),
-//                       ),
-//                       const SizedBox(width: 20.0)
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           );
-//         },
-//       );
-//     } catch (e) {
-//       if (kDebugMode) {
-//         print(e);
-//       }
-//     }
-//   }
+                                // BUG in plugin - doesn't work when sending a title with Google maps
+                                await map.showMarker(
+                                  coords: coords,
+                                  title: map.mapName.contains('Google') ? '' : title,
+                                  description: address,
+                                );
+                              },
+                              title: Text(map.mapName,
+                                  style: const TextStyle(
+                                    fontFamily: 'AvenirNextDemiBold',
+                                    color: Colors.black,
+                                    fontSize: 26.0,
+                                  )),
+                              leading: SvgPicture.asset(
+                                map.icon,
+                                height: 60.0,
+                                width: 60.0,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 30.0),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      // MapSnackbar(saveUserMapPreference, (bool x) {
+                      //   setState(() {
+                      //     saveUserMapPreference.value = x;
+                      //   });
+                      // }),
+                      MapSnackbar(saveUserMapPreference),
+                      const Text(
+                        'Always use this option',
+                        style: TextStyle(
+                          fontFamily: 'AvenirNextDemiBold',
+                          color: Colors.black,
+                          fontSize: 22.0,
+                        ),
+                      ),
+                      const SizedBox(width: 20.0)
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
 
   static bool isValidUrl(String? url) {
     if ((url ?? '').isEmpty) {
@@ -314,20 +314,22 @@ class Utilities {
 //     return results;
 //   }
 
-//   static List<double> getLatLongFromString(List<String> values) {
-//     for (String value in values) {
-//       if ((value != null) && (value.isNotEmpty)) {
-//         const Pattern pattern = r'[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)';
-//         final RegExp regex = RegExp(pattern, caseSensitive: false);
-//         if (regex.hasMatch(value)) {
-//           final String numStr = regex.allMatches(value).elementAt(0).group(0);
-//           final List<String> str = numStr.split(',');
-//           return <double>[double.tryParse(str[0]), double.tryParse(str[1])];
-//         }
-//       }
-//     }
-//     return <double>[null, null];
-//   }
+  static List<double?> getLatLongFromString(List<String?> values) {
+    for (String? value in values) {
+      if ((value ?? '').isNotEmpty) {
+        const String pattern = r'[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)';
+        final RegExp regex = RegExp(pattern, caseSensitive: false);
+        if (regex.hasMatch(value!)) {
+          final String numStr = regex.allMatches(value).elementAt(0).group(0) ?? '';
+          final List<String> strs = numStr.split(',');
+          if (strs.length == 2) {
+            return <double?>[double.tryParse(strs[0]), double.tryParse(strs[1])];
+          }
+        }
+      }
+    }
+    return <double?>[null, null];
+  }
 
   static String getEventScopeText(int eventGeographicScope) {
     String s = 'Special event';

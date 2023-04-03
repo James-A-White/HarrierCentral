@@ -1,13 +1,14 @@
-// @dart=2.11
-
 // import 'package:flutter/material.dart';
 
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
 
 class RunTabs extends StatefulWidget {
-  const RunTabs({Key key, @required this.futureRun}) : super(key: key);
+  const RunTabs({
+    Key? key,
+    required this.futureRun,
+  }) : super(key: key);
 
   final RunDetailsAggregate futureRun;
 
@@ -19,9 +20,9 @@ class RunTabs extends StatefulWidget {
 
 class PackListAggregate {
   PackListAggregate({
-    this.hem,
-    this.hasher,
-    this.displayName,
+    required this.hem,
+    required this.hasher,
+    required this.displayName,
   });
 
   final HasherEventMapModel hem;
@@ -42,11 +43,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   bool isAdmin = true;
   //bool _isLoading = true;
 
-  latlng.LatLng _mapCenter;
+  latlng.LatLng _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE, G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE);
 
   bool _trueNorthLock = true;
 
-  List<PackListAggregate> _thePackList;
+  Future<List<PackListAggregate>> _thePackList = Future<List<PackListAggregate>>.value(<PackListAggregate>[]);
+
   Map<String, dynamic> _packCount = <String, dynamic>{};
 
   Future<void> _refreshHemTableFromBackend(bool showLoadingIndicator) async {
@@ -60,13 +62,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Pack member data synchronized $resultStr');
 
-    await _refreshPackListFromTable();
+    _thePackList = _refreshPackListFromTable();
     await _refreshPackCountFromTable(true);
   }
 
   int _thisUserIndex = -1;
 
-  Future<void> _refreshPackListFromTable() async {
+  Future<List<PackListAggregate>> _refreshPackListFromTable() async {
+    List<PackListAggregate> pla = <PackListAggregate>[];
+
     final String query = ''' 
         SELECT  
           hem.*,
@@ -77,7 +81,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
 
-    _thePackList = <PackListAggregate>[];
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
@@ -90,26 +93,29 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           displayName = packItem.displayName;
         }
 
-        if ((packItem.hemId != null) && (hasherItem.hasherId != null)) {
-          _thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem, displayName: displayName));
-        }
+        // NULLSAFEDONE
+        //if (_thePackList != null) {
+        pla.add(PackListAggregate(hem: packItem, hasher: hasherItem, displayName: displayName));
+        //}
       }
     } catch (e) {
       //print(e);
     }
 
-    _thePackList.sort(
+    pla.sort(
       (PackListAggregate a, PackListAggregate b) => (a.hem.hemKennelHashName ?? a.displayName).compareTo(b.hem.hemKennelHashName ?? b.displayName),
     );
 
     _thisUserIndex = -1;
 
-    for (int i = 0; i < _thePackList.length; i++) {
-      if (_thePackList[i].hasher.hasherId == _userId) {
+    for (int i = 0; i < pla.length; i++) {
+      if (pla[i].hasher.hasherId == _userId) {
         _thisUserIndex = i;
         break;
       }
     }
+
+    return pla;
   }
 
   Future<void> _refreshPackCountFromTable(bool callSetState) async {
@@ -156,19 +162,33 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _tabs.add(Tab(text: LABEL_GETALIFE));
   }
 
-  TabController _tabController;
-  TabController _gridListTabController;
+  late TabController _tabController;
+  late TabController _gridListTabController;
 
   //final GetPackService _getPackService = GetPackService();
 
-  final String _userId = getStringPref(StringPrefsEnum.userId);
+  final String _userId = getStringPref(StringPrefsEnum.userId)!;
 
   //int _currentTabIndex = -1;
 
   @override
   void initState() {
-    //_scrollController.createScrollPosition(physics, context, oldPosition) = 0;
-    //_refreshHemTableFromBackend(false);
+    _tabController = TabController(vsync: this, length: _tabs.length);
+    _gridListTabController = TabController(vsync: this, length: 2);
+
+    final List<double?> coords = Utilities.getLatLongFromString(
+      <String?>[
+        widget.futureRun.event.locationOneLineDesc,
+        widget.futureRun.event.eventDescription,
+        widget.futureRun.event.eventName,
+      ],
+    );
+
+    double xLat = widget.futureRun.extensions.latitude ?? coords[0] ?? widget.futureRun.kennel.kennelLatitude ?? G0<DeviceInfo>().deviceLon ?? DEFAULT_LATITUDE;
+
+    double xLon = widget.futureRun.extensions.longitude ?? coords[1] ?? widget.futureRun.kennel.kennelLongitude ?? G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE;
+
+    _mapCenter = latlng.LatLng(xLat, xLon);
 
     _saveUserMapPreference.addListener(
       () {
@@ -177,8 +197,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
 
     _initTabs();
-    _tabController = TabController(vsync: this, length: _tabs.length);
-    _gridListTabController = TabController(vsync: this, length: 2);
 
     _tabController.addListener(() async {
       if (_fabIsVisible != (_tabs[_tabController.index].text == LABEL_RSVP)) {
@@ -196,12 +214,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       setState(() {});
     });
 
-    final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
-
-    _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? coords[0] ?? widget.futureRun.kennel.kennelLatitude + .0,
-        widget.futureRun.extensions.longitude ?? coords[1] ?? widget.futureRun.kennel.kennelLongitude + .0);
-
-    if (((widget.futureRun.extensions.rsvpState ?? 0) == 0) &&
+    if ((widget.futureRun.extensions.rsvpState == 0) &&
         (widget.futureRun.event.eventStartDatetime.isAfter(
           DateTime.now().subtract(
             const Duration(hours: 6),
@@ -240,17 +253,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       widget.futureRun.extensions.distToEvent,
       widget.futureRun.paymentUrl,
       true,
-      widget.futureRun.extensions.isMapAndDistanceValid,
+      widget.futureRun.extensions.isMapAndDistanceValid == 1,
       eventUrlWithKennelBackup: widget.futureRun.event.eventUrl ?? widget.futureRun.kennel.kennelEventsUrl,
       isMember: widget.futureRun.extensions.isMember,
       isPaid: widget.futureRun.extensions.isPaid,
       rsvpState: widget.futureRun.extensions.rsvpState,
+      // NULLSAFETODO
       processPayment: (int r, int p) {
-        widget.futureRun.extensions.rsvpState = r;
-        if (p != -1) {
-          widget.futureRun.extensions.isPaid = p;
-        }
-        setState(() {});
+        // widget.futureRun.extensions.rsvpState = r;
+        // if (p != -1) {
+        //   widget.futureRun.extensions.isPaid = p;
+        // }
+        // setState(() {});
       },
     );
   }
@@ -275,440 +289,442 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             textAlign: TextAlign.center,
           )),
         ),
-        child: Center(
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 5.5,
-                      child: Column(
-                        children: <Widget>[
-                          Text(
-                            'Going',
-                            style: rsvpTitlesView,
-                          ),
-                          Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: <Widget>[
-                              Positioned(
-                                // top: 6.5,
-                                // left: 6.5,
-                                child: Container(
-                                  height: 36,
-                                  width: 36,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
+        child: FutureBuilder(
+            future: _thePackList,
+            builder: (BuildContext context, AsyncSnapshot<List<PackListAggregate>> snapshot) {
+              if (snapshot.hasData) {
+                return Center(
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width / 5.5,
+                              child: Column(
+                                children: <Widget>[
+                                  Text(
+                                    'Going',
+                                    style: rsvpTitlesView,
                                   ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(FontAwesome.check_circle),
-                                color: _thisUserIndex == -1
-                                    ? Colors.grey
-                                    : _thePackList[_thisUserIndex].hem.rsvpState == rsvpYes.value
-                                        ? Colors.green
-                                        : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpYes)
-                                            ? Colors.blue
-                                            : Colors.grey,
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 35.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await _setRsvpState(rsvpYes);
-                                },
-                                // ),
-                                // Text(
-                                //   widget.futureRun.attendingEvent +
-                                //               widget.futureRun.haresCount >=
-                                //           0
-                                //       ? (widget.futureRun.attendingEvent +
-                                //               widget.futureRun.haresCount)
-                                //           .toString()
-                                //       : '',
-                                //   style: const TextStyle(
-                                //       fontFamily: 'AvenirNext',
-                                //       fontStyle: FontStyle.normal,
-                                //       fontSize: 20.0,
-                                //       height: 0.85),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            (_packCount['rsvpYesCount'] ?? 0) >= 0 ? (_packCount['rsvpYesCount'] ?? 0).toString() : '',
-                            style: rsvpTitlesView,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 5.5,
-                      child: Column(
-                        children: <Widget>[
-                          Text(
-                            //'Maybe: ' + (widget.futureRun.rsvpMaybeCount >= 0 ? widget.futureRun.rsvpMaybeCount.toString() : ''),
-                            'Maybe',
-                            style: rsvpTitlesView,
-                          ),
-                          Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: <Widget>[
-                              Positioned(
-                                // top: 6.5,
-                                // left: 6.5,
-                                child: Container(
-                                  height: 36,
-                                  width: 36,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
+                                  Stack(
+                                    alignment: AlignmentDirectional.center,
+                                    children: <Widget>[
+                                      Positioned(
+                                        // top: 6.5,
+                                        // left: 6.5,
+                                        child: Container(
+                                          height: 36,
+                                          width: 36,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(FontAwesome.check_circle),
+                                        color: _thisUserIndex == -1
+                                            ? Colors.grey
+                                            : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpYes.value
+                                                ? Colors.green
+                                                : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpYes)
+                                                    ? Colors.blue
+                                                    : Colors.grey,
+                                        //tooltip: 'Select to follow a Kennel',
+                                        iconSize: 35.0,
+                                        alignment: Alignment.topCenter,
+                                        splashColor: Colors.greenAccent,
+                                        onPressed: () async {
+                                          await _setRsvpState(rsvpYes);
+                                        },
+                                        // ),
+                                        // Text(
+                                        //   widget.futureRun.attendingEvent +
+                                        //               widget.futureRun.haresCount >=
+                                        //           0
+                                        //       ? (widget.futureRun.attendingEvent +
+                                        //               widget.futureRun.haresCount)
+                                        //           .toString()
+                                        //       : '',
+                                        //   style: const TextStyle(
+                                        //       fontFamily: 'AvenirNext',
+                                        //       fontStyle: FontStyle.normal,
+                                        //       fontSize: 20.0,
+                                        //       height: 0.85),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(FontAwesome.question_circle),
-                                color: _thisUserIndex == -1
-                                    ? Colors.grey
-                                    : _thePackList[_thisUserIndex].hem.rsvpState == rsvpMaybe.value
-                                        ? Colors.orange
-                                        : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpMaybe)
-                                            ? Colors.blue
-                                            : Colors.grey,
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 35.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await _setRsvpState(rsvpMaybe);
-                                },
-                              ),
-                            ],
-                          ),
-                          Text(
-                            (_packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (_packCount['rsvpMaybeCount'] ?? 0).toString() : '',
-                            style: rsvpTitlesView,
-                          ),
-                          // Text(
-                          //   widget.futureRun.maybeAttendingEvent >= 0
-                          //       ? widget.futureRun.maybeAttendingEvent
-                          //           .toString()
-                          //       : '',
-                          //   style: const TextStyle(
-                          //       fontFamily: 'AvenirNext',
-                          //       fontStyle: FontStyle.normal,
-                          //       fontSize: 20.0,
-                          //       height: 0.85),
-                          // ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 5.5,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                              //'Not go: ' + (widget.futureRun.rsvpNoCount >= 0 ? widget.futureRun.rsvpNoCount.toString() : ''),
-                              'Not go',
-                              style: rsvpTitlesView),
-                          Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: <Widget>[
-                              Positioned(
-                                // top: 6.5,
-                                // left: 6.5,
-                                child: Container(
-                                  height: 36,
-                                  width: 36,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
+                                  Text(
+                                    (_packCount['rsvpYesCount'] ?? 0) >= 0 ? (_packCount['rsvpYesCount'] ?? 0).toString() : '',
+                                    style: rsvpTitlesView,
                                   ),
-                                ),
+                                ],
                               ),
-                              IconButton(
-                                icon: const Icon(FontAwesome.times_circle),
-                                color: _thisUserIndex == -1
-                                    ? Colors.grey
-                                    : _thePackList[_thisUserIndex].hem.rsvpState == rsvpNo.value
-                                        ? Colors.red
-                                        : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpNo)
-                                            ? Colors.blue
-                                            : Colors.grey,
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 35.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await _setRsvpState(rsvpNo);
-                                },
+                            ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width / 5.5,
+                              child: Column(
+                                children: <Widget>[
+                                  Text(
+                                    //'Maybe: ' + (widget.futureRun.rsvpMaybeCount >= 0 ? widget.futureRun.rsvpMaybeCount.toString() : ''),
+                                    'Maybe',
+                                    style: rsvpTitlesView,
+                                  ),
+                                  Stack(
+                                    alignment: AlignmentDirectional.center,
+                                    children: <Widget>[
+                                      Positioned(
+                                        // top: 6.5,
+                                        // left: 6.5,
+                                        child: Container(
+                                          height: 36,
+                                          width: 36,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(FontAwesome.question_circle),
+                                        color: _thisUserIndex == -1
+                                            ? Colors.grey
+                                            : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpMaybe.value
+                                                ? Colors.orange
+                                                : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpMaybe)
+                                                    ? Colors.blue
+                                                    : Colors.grey,
+                                        //tooltip: 'Select to follow a Kennel',
+                                        iconSize: 35.0,
+                                        alignment: Alignment.topCenter,
+                                        splashColor: Colors.greenAccent,
+                                        onPressed: () async {
+                                          await _setRsvpState(rsvpMaybe);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    (_packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (_packCount['rsvpMaybeCount'] ?? 0).toString() : '',
+                                    style: rsvpTitlesView,
+                                  ),
+                                  // Text(
+                                  //   widget.futureRun.maybeAttendingEvent >= 0
+                                  //       ? widget.futureRun.maybeAttendingEvent
+                                  //           .toString()
+                                  //       : '',
+                                  //   style: const TextStyle(
+                                  //       fontFamily: 'AvenirNext',
+                                  //       fontStyle: FontStyle.normal,
+                                  //       fontSize: 20.0,
+                                  //       height: 0.85),
+                                  // ),
+                                ],
                               ),
-                            ],
-                          ),
-                          Text(
-                            (_packCount['rsvpNoCount'] ?? 0) >= 0 ? (_packCount['rsvpNoCount'] ?? 0).toString() : '',
-                            style: rsvpTitlesView,
-                          ),
+                            ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width / 5.5,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                      //'Not go: ' + (widget.futureRun.rsvpNoCount >= 0 ? widget.futureRun.rsvpNoCount.toString() : ''),
+                                      'Not go',
+                                      style: rsvpTitlesView),
+                                  Stack(
+                                    alignment: AlignmentDirectional.center,
+                                    children: <Widget>[
+                                      Positioned(
+                                        // top: 6.5,
+                                        // left: 6.5,
+                                        child: Container(
+                                          height: 36,
+                                          width: 36,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(FontAwesome.times_circle),
+                                        color: _thisUserIndex == -1
+                                            ? Colors.grey
+                                            : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpNo.value
+                                                ? Colors.red
+                                                : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpNo)
+                                                    ? Colors.blue
+                                                    : Colors.grey,
+                                        //tooltip: 'Select to follow a Kennel',
+                                        iconSize: 35.0,
+                                        alignment: Alignment.topCenter,
+                                        splashColor: Colors.greenAccent,
+                                        onPressed: () async {
+                                          await _setRsvpState(rsvpNo);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    (_packCount['rsvpNoCount'] ?? 0) >= 0 ? (_packCount['rsvpNoCount'] ?? 0).toString() : '',
+                                    style: rsvpTitlesView,
+                                  ),
 
-                          // Text(
-                          //   widget.futureRun.notAttendingEvent >= 0
-                          //       ? widget.futureRun.notAttendingEvent
-                          //           .toString()
-                          //       : '',
-                          //   style: const TextStyle(
-                          //       fontFamily: 'AvenirNext',
-                          //       fontStyle: FontStyle.normal,
-                          //       fontSize: 20.0,
-                          //       height: 0.85),
-                          // ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 5.5,
-                      child: Column(
-                        children: <Widget>[
-                          Text(
-                              // 'Hares: ' + (widget.futureRun.haresCount >= 0 ? widget.futureRun.haresCount.toString() : ''),
-                              'Hares',
-                              style: rsvpTitlesView),
-                          Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: <Widget>[
-                              Positioned(
-                                child: Container(
-                                  height: 36,
-                                  width: 36,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
+                                  // Text(
+                                  //   widget.futureRun.notAttendingEvent >= 0
+                                  //       ? widget.futureRun.notAttendingEvent
+                                  //           .toString()
+                                  //       : '',
+                                  //   style: const TextStyle(
+                                  //       fontFamily: 'AvenirNext',
+                                  //       fontStyle: FontStyle.normal,
+                                  //       fontSize: 20.0,
+                                  //       height: 0.85),
+                                  // ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width / 5.5,
+                              child: Column(
+                                children: <Widget>[
+                                  Text(
+                                      // 'Hares: ' + (widget.futureRun.haresCount >= 0 ? widget.futureRun.haresCount.toString() : ''),
+                                      'Hares',
+                                      style: rsvpTitlesView),
+                                  Stack(
+                                    alignment: AlignmentDirectional.center,
+                                    children: <Widget>[
+                                      Positioned(
+                                        child: Container(
+                                          height: 36,
+                                          width: 36,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
+                                        color: _thisUserIndex == -1
+                                            ? Colors.grey
+                                            : snapshot.data![_thisUserIndex].hem.isHare == isHareYes.value
+                                                ? Colors.deepPurple
+                                                : snapshot.data![_thisUserIndex].hem.isHare == -1
+                                                    ? Colors.blue
+                                                    : Colors.grey,
+                                        //tooltip: 'Select to follow a Kennel',
+                                        iconSize: 30.0,
+                                        alignment: Alignment.center,
+                                        splashColor: Colors.greenAccent,
+                                        onPressed: () async {
+                                          await _setRsvpHare();
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
-                                color: _thisUserIndex == -1
-                                    ? Colors.grey
-                                    : _thePackList[_thisUserIndex].hem.isHare == isHareYes.value
-                                        ? Colors.deepPurple
-                                        : _thePackList[_thisUserIndex].hem.isHare == -1
-                                            ? Colors.blue
-                                            : Colors.grey,
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.center,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await _setRsvpHare();
-                                },
-                              ),
-                            ],
-                          ),
-                          Text(
-                            (_packCount['isHareCount'] ?? 0) >= 0 ? (_packCount['isHareCount'] ?? 0).toString() : '',
-                            style: rsvpTitlesView,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: _thePackList == null
-                    ? const SizedBox(
-                        //color: Colors.grey[300],
-                        width: 70.0,
-                        height: 70.0,
-                        child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
-                      )
-                    : ((_thePackList.isEmpty) && (widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().subtract(const Duration(hours: 6)))))
-                        ? Column(
-                            children: <Widget>[
-                              const Expanded(flex: 40, child: SizedBox()),
-                              Text(
-                                'Be the first to RSVP\r\nfor this run!',
-                                style: largeTitleStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                              if (_thisUserIndex == -1) ..._getRsvpButtons(),
-                              const Expanded(flex: 100, child: SizedBox()),
-                            ],
-                          )
-                        : Column(
-                            children: <Widget>[
-                              if ((_thisUserIndex == -1) &&
-                                  (widget.futureRun.event.eventStartDatetime.isAfter(
-                                    DateTime.now().subtract(
-                                      const Duration(hours: 6),
-                                    ),
-                                  )))
-                                ..._getRsvpButtons(),
-                              if (_thisUserIndex == -1) ...<Widget>[const SizedBox(height: 10)],
-                              Container(
-                                padding: const EdgeInsets.all(8.0),
-                                width: 140.0,
-                                child: TabBar(
-                                  onTap: (void _) {
-                                    setState(() {});
-                                  },
-                                  labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                  unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                  isScrollable: false,
-                                  unselectedLabelColor: Colors.white,
-                                  labelColor: Colors.white,
-                                  //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                                  indicatorSize: TabBarIndicatorSize.label,
-                                  indicator: BubbleTabIndicator(
-                                    indicatorHeight: 40.0,
-                                    indicatorColor: Colors.red.shade900,
-                                    tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                    indicatorRadius: 20.0,
+                                  Text(
+                                    (_packCount['isHareCount'] ?? 0) >= 0 ? (_packCount['isHareCount'] ?? 0).toString() : '',
+                                    style: rsvpTitlesView,
                                   ),
-                                  tabs: const <Tab>[
-                                    Tab(icon: Icon(MaterialCommunityIcons.format_list_bulleted_square)),
-                                    Tab(icon: Icon(MaterialCommunityIcons.view_grid_outline)),
-                                  ],
-                                  controller: _gridListTabController,
-                                ),
+                                ],
                               ),
-                              Expanded(
-                                child: Container(
-                                  //key: packListBox,
-                                  color: const Color.fromARGB(60, 255, 255, 255),
-                                  margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
-                                  padding: const EdgeInsets.all(8.0),
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Scrollbar(
-                                    controller: _scrollController,
-                                    child: RefreshIndicator(
-                                      onRefresh: () => _refreshHemTableFromBackend(true),
-                                      child: _gridListTabController.index == 0
-                                          ? ListView.separated(
-                                              separatorBuilder: (BuildContext context, int index) => const Divider(
-                                                    height: 3.0,
-                                                    color: Colors.black45,
-                                                    thickness: 1.5,
-                                                  ),
-                                              physics: const AlwaysScrollableScrollPhysics(),
-                                              controller: _scrollController,
-                                              itemCount: _thePackList.length,
-                                              itemBuilder: (BuildContext context, int index) {
-                                                final PackListAggregate e = _thePackList[index];
-
-                                                return GestureDetector(
-                                                  onTap: () {
-                                                    _getHasherZoomablePhoto(e);
-                                                  },
-                                                  child: Row(
-                                                    children: <Widget>[
-                                                      _rsvpIcon(e),
-                                                      const SizedBox(width: 6.0),
-                                                      Container(height: 60, width: 60, padding: const EdgeInsets.all(4), child: _hasherPhoto(e, false)),
-                                                      const SizedBox(width: 8.0),
-                                                      Expanded(
-                                                          child: Container(
-                                                        padding: const EdgeInsets.only(top: 7.0),
-                                                        child: Text(e.hem.hemKennelHashName ?? e.displayName ?? '<unknown>',
-                                                            style: const TextStyle(
-                                                              fontFamily: 'AvenirNextCondensedMedium',
-                                                              fontStyle: FontStyle.normal,
-                                                              fontSize: 25.0,
-                                                              height: 1.0,
-                                                              color: Colors.white,
-                                                            )),
-                                                      )),
-                                                    ],
-                                                  ),
-                                                );
-                                              })
-                                          : SingleChildScrollView(
-                                              controller: _scrollController,
-                                              child: Column(
-                                                children: <Widget>[
-                                                  StaggeredGrid.count(
-                                                    mainAxisSpacing: 8.0,
-                                                    crossAxisSpacing: 8.0,
-                                                    crossAxisCount: 4,
-                                                    axisDirection: AxisDirection.down,
-                                                    children: _thePackList.map((PackListAggregate e) {
-                                                      return StaggeredGridTile.count(
-                                                        crossAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                                        mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                                        child: GestureDetector(
-                                                          onTap: () {
-                                                            _getHasherZoomablePhoto(e);
-                                                          },
-                                                          child: _hasherPhoto(e, true),
-                                                        ),
-                                                      );
-                                                    }).toList(),
-                                                  ),
-                                                  const SizedBox(height: 100.0),
-                                                ],
-                                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: !snapshot.hasData
+                            ? const SizedBox(
+                                //color: Colors.grey[300],
+                                width: 70.0,
+                                height: 70.0,
+                                child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
+                              )
+                            : ((snapshot.data!.isEmpty) && (widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().subtract(const Duration(hours: 6)))))
+                                ? Column(
+                                    children: <Widget>[
+                                      const Expanded(flex: 40, child: SizedBox()),
+                                      Text(
+                                        'Be the first to RSVP\r\nfor this run!',
+                                        style: largeTitleStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      if (_thisUserIndex == -1) ..._getRsvpButtons(),
+                                      const Expanded(flex: 100, child: SizedBox()),
+                                    ],
+                                  )
+                                : Column(
+                                    children: <Widget>[
+                                      if ((_thisUserIndex == -1) &&
+                                          (widget.futureRun.event.eventStartDatetime.isAfter(
+                                            DateTime.now().subtract(
+                                              const Duration(hours: 6),
                                             ),
-                                    ),
+                                          )))
+                                        ..._getRsvpButtons(),
+                                      if (_thisUserIndex == -1) ...<Widget>[const SizedBox(height: 10)],
+                                      Container(
+                                        padding: const EdgeInsets.all(8.0),
+                                        width: 140.0,
+                                        child: TabBar(
+                                          onTap: (void _) {
+                                            setState(() {});
+                                          },
+                                          labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          isScrollable: false,
+                                          unselectedLabelColor: Colors.white,
+                                          labelColor: Colors.white,
+                                          //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                                          indicatorSize: TabBarIndicatorSize.label,
+                                          indicator: BubbleTabIndicator(
+                                            indicatorHeight: 40.0,
+                                            indicatorColor: Colors.red.shade900,
+                                            tabBarIndicatorSize: TabBarIndicatorSize.label,
+                                            indicatorRadius: 20.0,
+                                          ),
+                                          tabs: const <Tab>[
+                                            Tab(icon: Icon(MaterialCommunityIcons.format_list_bulleted_square)),
+                                            Tab(icon: Icon(MaterialCommunityIcons.view_grid_outline)),
+                                          ],
+                                          controller: _gridListTabController,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          //key: packListBox,
+                                          color: const Color.fromARGB(60, 255, 255, 255),
+                                          margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
+                                          padding: const EdgeInsets.all(8.0),
+                                          width: MediaQuery.of(context).size.width,
+                                          child: Scrollbar(
+                                            controller: _scrollController,
+                                            child: RefreshIndicator(
+                                              onRefresh: () => _refreshHemTableFromBackend(true),
+                                              child: _gridListTabController.index == 0
+                                                  ? ListView.separated(
+                                                      separatorBuilder: (BuildContext context, int index) => const Divider(
+                                                            height: 3.0,
+                                                            color: Colors.black45,
+                                                            thickness: 1.5,
+                                                          ),
+                                                      physics: const AlwaysScrollableScrollPhysics(),
+                                                      controller: _scrollController,
+                                                      itemCount: snapshot.data!.length,
+                                                      itemBuilder: (BuildContext context, int index) {
+                                                        final PackListAggregate e = snapshot.data![index];
+
+                                                        return GestureDetector(
+                                                          onTap: () {
+                                                            if (e.hasher.photo != null) {
+                                                              _getHasherZoomablePhoto(e.hasher.photo!, e.displayName);
+                                                            }
+                                                          },
+                                                          child: Row(
+                                                            children: <Widget>[
+                                                              _rsvpIcon(e),
+                                                              const SizedBox(width: 6.0),
+                                                              Container(height: 60, width: 60, padding: const EdgeInsets.all(4), child: _hasherPhoto(e, false)),
+                                                              const SizedBox(width: 8.0),
+                                                              Expanded(
+                                                                  child: Container(
+                                                                padding: const EdgeInsets.only(top: 7.0),
+                                                                child: Text(e.hem.hemKennelHashName ?? e.displayName,
+                                                                    style: const TextStyle(
+                                                                      fontFamily: 'AvenirNextCondensedMedium',
+                                                                      fontStyle: FontStyle.normal,
+                                                                      fontSize: 25.0,
+                                                                      height: 1.0,
+                                                                      color: Colors.white,
+                                                                    )),
+                                                              )),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      })
+                                                  : SingleChildScrollView(
+                                                      controller: _scrollController,
+                                                      child: Column(
+                                                        children: <Widget>[
+                                                          StaggeredGrid.count(
+                                                            mainAxisSpacing: 8.0,
+                                                            crossAxisSpacing: 8.0,
+                                                            crossAxisCount: 4,
+                                                            axisDirection: AxisDirection.down,
+                                                            children: snapshot.data!.map((PackListAggregate e) {
+                                                              return StaggeredGridTile.count(
+                                                                crossAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
+                                                                mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
+                                                                child: GestureDetector(
+                                                                  onTap: () {
+                                                                    if (e.hasher.photo != null) {
+                                                                      _getHasherZoomablePhoto(e.hasher.photo!, e.displayName);
+                                                                    }
+                                                                  },
+                                                                  child: _hasherPhoto(e, true),
+                                                                ),
+                                                              );
+                                                            }).toList(),
+                                                          ),
+                                                          const SizedBox(height: 100.0),
+                                                        ],
+                                                      ),
+                                                    ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
-              ),
-            ],
-          ),
-        ));
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            }));
   }
 
-  Future<void> _getHasherZoomablePhoto(PackListAggregate e) async {
-    if (e.hasher.hasherId != null) {
-      await Navigator.push<void>(
-        context,
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => ZoomableImagePage2(
-              key: const Key('39392001'),
-              pageTitle: e.hasher.dispName,
-              imageUrl: e.hasher.photo.startsWith('http') ? e.hasher.photo : null,
-              assetImage: e.hasher.photo.contains('bundle://') ? 'images/avatars/${e.hasher.photo.replaceAll('bundle://', '')}.jpg' : null,
-              appBarBackgroundColor: themeAppBarBackground,
-              background: Backgrounds.defaultHcBackground(),
-              margin: 20.0),
-        ),
-      );
-    }
+  Future<void> _getHasherZoomablePhoto(String photo, String dispName) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => ZoomableImagePage2(
+            key: const Key('39392001'),
+            pageTitle: dispName,
+            imageUrl: photo.startsWith('http') ? photo : null,
+            assetImage: photo.contains('bundle://') ? 'images/avatars/${photo.replaceAll('bundle://', '')}.jpg' : null,
+            appBarBackgroundColor: themeAppBarBackground,
+            background: Backgrounds.defaultHcBackground(),
+            margin: 20.0),
+      ),
+    );
   }
 
   Stack _hasherPhoto(PackListAggregate e, bool isGrid) {
     return Stack(
       children: <Widget>[
-        e.hasher.hasherId == null
-            ? const Image(
-                width: 300.0,
-                height: 300.0,
-                fit: BoxFit.fill,
-                image: AssetImage(
-                  'images/avatars/avatar-0.jpg',
-                ))
-            : (e.hem.hemKennelUserPhoto ?? e.hasher.photo).startsWith('http')
-                ? CachedNetworkImage(imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo), fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
-                : (e.hem.hemKennelUserPhoto ?? e.hasher.photo).startsWith('bundle')
-                    ? Image(
-                        width: 300.0,
-                        height: 300.0,
-                        fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo).toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
-                      )
-                    : const Image(
-                        width: 300.0,
-                        height: 300.0,
-                        fit: BoxFit.fill,
-                        image: AssetImage('images/avatars/avatar-2.jpg'),
-                      ),
+        (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('http')
+            ? CachedNetworkImage(imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo!), fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
+            : (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('bundle')
+                ? Image(
+                    width: 300.0,
+                    height: 300.0,
+                    fit: BoxFit.fill,
+                    image: AssetImage(('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo!).toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                  )
+                : const Image(
+                    width: 300.0,
+                    height: 300.0,
+                    fit: BoxFit.fill,
+                    image: AssetImage('images/avatars/avatar-2.jpg'),
+                  ),
         if (isGrid) ...<Widget>[
           Positioned(
             right: 1.0,
@@ -728,16 +744,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           backgroundColor: Colors.white,
           radius: 11.0,
         ),
-        (e?.hem?.rsvpState ?? 0) <= 0
+        (e.hem.rsvpState <= 0)
             ? const CircleAvatar(
                 backgroundColor: Colors.blue,
                 radius: 10.0,
               )
-            : (e?.hem?.rsvpState ?? 0) == 1
+            : (e.hem.rsvpState == 1)
                 ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
-                : (e?.hem?.rsvpState ?? 0) == 2
+                : (e.hem.rsvpState == 2)
                     ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
-                    : (e?.hem?.isHare ?? 0) == 0
+                    : (e.hem.isHare == 0)
                         ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
                         : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
       ],
@@ -745,12 +761,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Future<void> _setRsvpHare() async {
-    final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares ?? '');
+    final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares ?? '') ?? false;
     if (willHare) {
+      List<PackListAggregate> lPla = await _thePackList;
       setState(() {
         if (_thisUserIndex >= 0) {
-          PackListAggregate a = _thePackList[_thisUserIndex];
-          _thePackList[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
+          PackListAggregate a = lPla[_thisUserIndex];
+          lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
 
           // _thePackList[_thisUserIndex].hem.rsvpState = -1;
           // _thePackList[_thisUserIndex].hem.isHare = -1;
@@ -771,19 +788,20 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
       if (serverMessage.isNotEmpty) {
-        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
+        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'RSVP Result', serverMessage, 'OK');
       }
     }
   }
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
+    List<PackListAggregate> lPla = await _thePackList;
     setState(() {
       if (_thisUserIndex >= 0) {
         // _thePackList[_thisUserIndex].hem.rsvpState = -1;
         // _thePackList[_thisUserIndex].hem.isHare = 0;
 
-        PackListAggregate a = _thePackList[_thisUserIndex];
-        _thePackList[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: 0));
+        PackListAggregate a = lPla[_thisUserIndex];
+        lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: 0));
       }
       _rsvpRequested = rsvpState;
     });
@@ -801,12 +819,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'RSVP Result', serverMessage, 'OK');
     }
   }
 
   Widget _buildMapView() {
-    final List<double> coords = Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc, widget.futureRun.event.eventDescription, widget.futureRun.event.eventName]);
+    final List<double?> coords =
+        Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc ?? '', widget.futureRun.event.eventDescription ?? '', widget.futureRun.event.eventName]);
 
     return ConnectedWidget(
       refreshFunction: () {
@@ -832,9 +851,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               MyFlutterMap(
                 (widget.futureRun.extensions.latitude ?? coords[0]) == null
                     ? null
-                    : latlng.LatLng((widget.futureRun.extensions.latitude ?? coords[0]) + .0, (widget.futureRun.extensions.longitude ?? coords[1]) + .0),
+                    : latlng.LatLng((widget.futureRun.extensions.latitude ?? coords[0]!), (widget.futureRun.extensions.longitude ?? coords[1])!),
                 _mapCenter,
-                latlng.LatLng(widget.futureRun.kennel.kennelLatitude + .0, widget.futureRun.kennel.kennelLongitude + .0),
+                latlng.LatLng(widget.futureRun.kennel.kennelLatitude!, widget.futureRun.kennel.kennelLongitude!),
                 1.0,
                 18.0,
                 14.0,
@@ -863,14 +882,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              if (widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
+              if (widget.futureRun.extensions.isMapAndDistanceValid == 0) ...<Widget>[
                 Positioned(
                   right: 10.0,
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
-                      _mapCenter = latlng.LatLng(
-                          widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude + .0, widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude + .0);
+                      _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude ?? DEFAULT_LATITUDE,
+                          widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude ?? DEFAULT_LONGITUDE);
 
                       setState(() {});
                     },
@@ -887,7 +906,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat, G0<DeviceInfo>().deviceLon);
+                        if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+                          _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!);
+                        }
                       });
                     },
                     child: SizedBox(
@@ -898,7 +919,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   ),
                 ),
               ],
-              if (!widget.futureRun.extensions.isMapAndDistanceValid) ...<Widget>[
+              if (widget.futureRun.extensions.isMapAndDistanceValid != 1) ...<Widget>[
                 Container(color: Colors.black54),
                 Container(
                   margin: const EdgeInsets.only(bottom: 60.0),
@@ -1374,8 +1395,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   // }
 
   Future<void> _launchMaps(RunDetailsAggregate rda) async {
-    num lat;
-    num lon;
+    double? lat;
+    double? lon;
     String address = '';
 
     if (rda.extensions.latitude != null) {
@@ -1388,11 +1409,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     if ((lat == null) || (lon == null)) {
       // try to get lat/lons from other sources
-      final List<double> coords = Utilities.getLatLongFromString(<String>[rda.event.locationOneLineDesc, rda.event.eventDescription, rda.event.eventName]);
+      final List<double?> coords = Utilities.getLatLongFromString(<String>[rda.event.locationOneLineDesc ?? '', rda.event.eventDescription ?? '', rda.event.eventName]);
 
       if ((coords[0] != null) && (coords[1] != null)) {
-        lat = coords[0];
-        lon = coords[1];
+        lat = coords[0]!;
+        lon = coords[1]!;
       }
     }
 
@@ -1415,18 +1436,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     address = address.trim();
 
     if ((address.isEmpty) && (lat == null || lon == null)) {
-      address = rda.event.locationOneLineDesc;
+      address = rda.event.locationOneLineDesc ?? '';
     }
 
     // use the native map provider for the selected platform
     if ((lat != null) && (lon != null)) {
-      final String mapName = getStringPref(StringPrefsEnum.mapPreference);
+      final String? mapName = getStringPref(StringPrefsEnum.mapPreference);
       if (mapName == null) {
         await Utilities.openMapsSheet(
           context,
           address,
           maps.Coords(lat, lon),
-          rda.event.eventName ?? '',
+          rda.event.eventName,
           _saveUserMapPreference,
         );
       } else {
@@ -1442,7 +1463,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       }
     } else {
       await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+          navigatorKey.currentContext!, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
     }
   }
 }

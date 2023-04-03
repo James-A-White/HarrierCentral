@@ -387,8 +387,7 @@ class EventsService extends BaseService {
       }
       final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-      final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[0], eventItem.eventStartDatetime);
-      extensionsItem.distToEvent = dist;
+      final RunQueryExtensionsModel extensionsItem = RunQueryExtensionsModel.fromJsonWithDateSearchText(results[0], eventItem.eventStartDatetime, dist);
 
       String paymentLinkUrl = '';
 
