@@ -219,22 +219,22 @@ class QueryRuns {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
-          results[i]['evtLat'] + .0,
-          results[i]['evtLon'] + .0,
+          results[i]['evtLat'],
+          results[i]['evtLon'],
         );
       } else if ((kennelItem.kennelLatitude != null) && (kennelItem.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
-          kennelItem.kennelLatitude! + .0,
-          kennelItem.kennelLongitude! + .0,
+          kennelItem.kennelLatitude!,
+          kennelItem.kennelLongitude!,
         );
       } else if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
-          cityItem.latitude + .0,
-          cityItem.longitude + .0,
+          cityItem.latitude,
+          cityItem.longitude,
         );
       }
 

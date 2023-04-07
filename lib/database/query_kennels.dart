@@ -184,7 +184,7 @@ class QueryKennels {
       double? dist;
 
       if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-        dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+        dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!, results[0]['cityLat'], results[0]['cityLon']);
       }
 
       final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);

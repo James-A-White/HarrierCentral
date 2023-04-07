@@ -233,7 +233,7 @@ class KennelListItemState extends State<KennelsListItem> {
                             Text(
                               (widget.kennelItem.hkm.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
                                   IveCoreUtilities.getFormattedMoney(
-                                      widget.kennelItem.hkm.kennelCredit.abs() + .0, widget.kennelItem.kennel.digitsAfterDecimal ?? 2, widget.kennelItem.kennel.currencySymbol ?? r'$^'),
+                                      widget.kennelItem.hkm.kennelCredit.abs(), widget.kennelItem.kennel.digitsAfterDecimal ?? 2, widget.kennelItem.kennel.currencySymbol ?? r'$^'),
                               style: TextStyle(
                                   fontFamily: 'AvenirNextDemiBold',
                                   fontStyle: FontStyle.normal,

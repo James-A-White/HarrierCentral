@@ -195,16 +195,16 @@ class EventsService extends BaseService {
     String? kennelId,
     String? eventName,
     DateTime? eventStartDatetime,
-    num? lat,
-    num? lon,
+    double? lat,
+    double? lon,
     int? useFbLatLon,
     int? useFbRunDetails,
     int? useFbImage,
     int? useFbLocation,
     String? eventDescription,
-    num? eventPriceForMembers,
-    num? eventPriceForNonMembers,
-    num? eventPriceForExtras,
+    double? eventPriceForMembers,
+    double? eventPriceForNonMembers,
+    double? eventPriceForExtras,
     String? extrasDescription,
     String? locationOneLineDesc,
     String? eventImageUrl,
@@ -381,8 +381,8 @@ class EventsService extends BaseService {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
-          results[0]['evtLat'] + .0,
-          results[0]['evtLon'] + .0,
+          results[0]['evtLat'],
+          results[0]['evtLon'],
         );
       }
       final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
@@ -396,11 +396,6 @@ class EventsService extends BaseService {
       } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
         paymentLinkUrl = kennelItem.kennelPaymentUrl!;
       }
-
-      // final num julianNow = results[0]['nowJulian'];
-      // final num eventJulian = results[0]['eventJulian'];
-
-      ////print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
       item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
     }

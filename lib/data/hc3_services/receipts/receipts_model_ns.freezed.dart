@@ -23,18 +23,18 @@ mixin _$ReceiptsModel {
   String get receiptId => throw _privateConstructorUsedError;
   String get eventId => throw _privateConstructorUsedError;
   String get userId => throw _privateConstructorUsedError;
-  num get receiptAmount => throw _privateConstructorUsedError;
+  double get receiptAmount => throw _privateConstructorUsedError;
   int get costCategory => throw _privateConstructorUsedError;
-  DateTime get dateUploaded => throw _privateConstructorUsedError;
+  DateTime? get dateUploaded => throw _privateConstructorUsedError;
   String? get imageUrl => throw _privateConstructorUsedError;
   String? get receiptShortDescription => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
   String? get reimbursedBy => throw _privateConstructorUsedError;
   String? get reimbursedOn => throw _privateConstructorUsedError;
-  num? get reimbursedAmount => throw _privateConstructorUsedError;
+  double? get reimbursedAmount => throw _privateConstructorUsedError;
   String? get reimbursedNotes => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -52,18 +52,18 @@ abstract class $ReceiptsModelCopyWith<$Res> {
       {String receiptId,
       String eventId,
       String userId,
-      num receiptAmount,
+      double receiptAmount,
       int costCategory,
-      DateTime dateUploaded,
+      DateTime? dateUploaded,
       String? imageUrl,
       String? receiptShortDescription,
       String? notes,
       String? reimbursedBy,
       String? reimbursedOn,
-      num? reimbursedAmount,
+      double? reimbursedAmount,
       String? reimbursedNotes,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -84,7 +84,7 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
     Object? userId = null,
     Object? receiptAmount = null,
     Object? costCategory = null,
-    Object? dateUploaded = null,
+    Object? dateUploaded = freezed,
     Object? imageUrl = freezed,
     Object? receiptShortDescription = freezed,
     Object? notes = freezed,
@@ -92,8 +92,8 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
     Object? reimbursedOn = freezed,
     Object? reimbursedAmount = freezed,
     Object? reimbursedNotes = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       receiptId: null == receiptId
@@ -111,15 +111,15 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
       receiptAmount: null == receiptAmount
           ? _value.receiptAmount
           : receiptAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       costCategory: null == costCategory
           ? _value.costCategory
           : costCategory // ignore: cast_nullable_to_non_nullable
               as int,
-      dateUploaded: null == dateUploaded
+      dateUploaded: freezed == dateUploaded
           ? _value.dateUploaded
           : dateUploaded // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       imageUrl: freezed == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -143,19 +143,19 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
       reimbursedAmount: freezed == reimbursedAmount
           ? _value.reimbursedAmount
           : reimbursedAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       reimbursedNotes: freezed == reimbursedNotes
           ? _value.reimbursedNotes
           : reimbursedNotes // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -172,18 +172,18 @@ abstract class _$$_ReceiptsModelCopyWith<$Res>
       {String receiptId,
       String eventId,
       String userId,
-      num receiptAmount,
+      double receiptAmount,
       int costCategory,
-      DateTime dateUploaded,
+      DateTime? dateUploaded,
       String? imageUrl,
       String? receiptShortDescription,
       String? notes,
       String? reimbursedBy,
       String? reimbursedOn,
-      num? reimbursedAmount,
+      double? reimbursedAmount,
       String? reimbursedNotes,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -202,7 +202,7 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
     Object? userId = null,
     Object? receiptAmount = null,
     Object? costCategory = null,
-    Object? dateUploaded = null,
+    Object? dateUploaded = freezed,
     Object? imageUrl = freezed,
     Object? receiptShortDescription = freezed,
     Object? notes = freezed,
@@ -210,8 +210,8 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
     Object? reimbursedOn = freezed,
     Object? reimbursedAmount = freezed,
     Object? reimbursedNotes = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_ReceiptsModel(
       receiptId: null == receiptId
@@ -229,15 +229,15 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
       receiptAmount: null == receiptAmount
           ? _value.receiptAmount
           : receiptAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       costCategory: null == costCategory
           ? _value.costCategory
           : costCategory // ignore: cast_nullable_to_non_nullable
               as int,
-      dateUploaded: null == dateUploaded
+      dateUploaded: freezed == dateUploaded
           ? _value.dateUploaded
           : dateUploaded // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       imageUrl: freezed == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -261,19 +261,19 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
       reimbursedAmount: freezed == reimbursedAmount
           ? _value.reimbursedAmount
           : reimbursedAmount // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as double?,
       reimbursedNotes: freezed == reimbursedNotes
           ? _value.reimbursedNotes
           : reimbursedNotes // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -285,9 +285,9 @@ class _$_ReceiptsModel implements _ReceiptsModel {
       {required this.receiptId,
       required this.eventId,
       required this.userId,
-      required this.receiptAmount,
-      required this.costCategory,
-      required this.dateUploaded,
+      this.receiptAmount = 0.0,
+      this.costCategory = 0,
+      this.dateUploaded,
       this.imageUrl,
       this.receiptShortDescription,
       this.notes,
@@ -295,8 +295,8 @@ class _$_ReceiptsModel implements _ReceiptsModel {
       this.reimbursedOn,
       this.reimbursedAmount,
       this.reimbursedNotes,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_ReceiptsModel.fromJson(Map<String, dynamic> json) =>
       _$$_ReceiptsModelFromJson(json);
@@ -308,11 +308,13 @@ class _$_ReceiptsModel implements _ReceiptsModel {
   @override
   final String userId;
   @override
-  final num receiptAmount;
+  @JsonKey()
+  final double receiptAmount;
   @override
+  @JsonKey()
   final int costCategory;
   @override
-  final DateTime dateUploaded;
+  final DateTime? dateUploaded;
   @override
   final String? imageUrl;
   @override
@@ -324,13 +326,13 @@ class _$_ReceiptsModel implements _ReceiptsModel {
   @override
   final String? reimbursedOn;
   @override
-  final num? reimbursedAmount;
+  final double? reimbursedAmount;
   @override
   final String? reimbursedNotes;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -410,18 +412,18 @@ abstract class _ReceiptsModel implements ReceiptsModel {
       {required final String receiptId,
       required final String eventId,
       required final String userId,
-      required final num receiptAmount,
-      required final int costCategory,
-      required final DateTime dateUploaded,
+      final double receiptAmount,
+      final int costCategory,
+      final DateTime? dateUploaded,
       final String? imageUrl,
       final String? receiptShortDescription,
       final String? notes,
       final String? reimbursedBy,
       final String? reimbursedOn,
-      final num? reimbursedAmount,
+      final double? reimbursedAmount,
       final String? reimbursedNotes,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_ReceiptsModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_ReceiptsModel;
 
   factory _ReceiptsModel.fromJson(Map<String, dynamic> json) =
       _$_ReceiptsModel.fromJson;
@@ -433,11 +435,11 @@ abstract class _ReceiptsModel implements ReceiptsModel {
   @override
   String get userId;
   @override
-  num get receiptAmount;
+  double get receiptAmount;
   @override
   int get costCategory;
   @override
-  DateTime get dateUploaded;
+  DateTime? get dateUploaded;
   @override
   String? get imageUrl;
   @override
@@ -449,13 +451,13 @@ abstract class _ReceiptsModel implements ReceiptsModel {
   @override
   String? get reimbursedOn;
   @override
-  num? get reimbursedAmount;
+  double? get reimbursedAmount;
   @override
   String? get reimbursedNotes;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_ReceiptsModelCopyWith<_$_ReceiptsModel> get copyWith =>

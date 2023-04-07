@@ -22,8 +22,8 @@ CountriesModel _$CountriesModelFromJson(Map<String, dynamic> json) {
 mixin _$CountriesModel {
   String get countryId => throw _privateConstructorUsedError;
   String get countryCode => throw _privateConstructorUsedError;
-  num get latitude => throw _privateConstructorUsedError;
-  num get longitude => throw _privateConstructorUsedError;
+  double get latitude => throw _privateConstructorUsedError;
+  double get longitude => throw _privateConstructorUsedError;
   String get countryName => throw _privateConstructorUsedError;
   String? get countrySearchTags => throw _privateConstructorUsedError;
   String get continentCode => throw _privateConstructorUsedError;
@@ -52,8 +52,8 @@ abstract class $CountriesModelCopyWith<$Res> {
   $Res call(
       {String countryId,
       String countryCode,
-      num latitude,
-      num longitude,
+      double latitude,
+      double longitude,
       String countryName,
       String? countrySearchTags,
       String continentCode,
@@ -110,11 +110,11 @@ class _$CountriesModelCopyWithImpl<$Res, $Val extends CountriesModel>
       latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       countryName: null == countryName
           ? _value.countryName
           : countryName // ignore: cast_nullable_to_non_nullable
@@ -178,8 +178,8 @@ abstract class _$$_CountriesModelCopyWith<$Res>
   $Res call(
       {String countryId,
       String countryCode,
-      num latitude,
-      num longitude,
+      double latitude,
+      double longitude,
       String countryName,
       String? countrySearchTags,
       String continentCode,
@@ -234,11 +234,11 @@ class __$$_CountriesModelCopyWithImpl<$Res>
       latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       countryName: null == countryName
           ? _value.countryName
           : countryName // ignore: cast_nullable_to_non_nullable
@@ -320,9 +320,9 @@ class _$_CountriesModel implements _CountriesModel {
   @override
   final String countryCode;
   @override
-  final num latitude;
+  final double latitude;
   @override
-  final num longitude;
+  final double longitude;
   @override
   final String countryName;
   @override
@@ -430,8 +430,8 @@ abstract class _CountriesModel implements CountriesModel {
   factory _CountriesModel(
       {required final String countryId,
       required final String countryCode,
-      required final num latitude,
-      required final num longitude,
+      required final double latitude,
+      required final double longitude,
       required final String countryName,
       final String? countrySearchTags,
       required final String continentCode,
@@ -453,9 +453,9 @@ abstract class _CountriesModel implements CountriesModel {
   @override
   String get countryCode;
   @override
-  num get latitude;
+  double get latitude;
   @override
-  num get longitude;
+  double get longitude;
   @override
   String get countryName;
   @override

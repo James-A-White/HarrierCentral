@@ -26,9 +26,9 @@ mixin _$PaymentsModel {
   String get hemId => throw _privateConstructorUsedError;
   String get eventId => throw _privateConstructorUsedError;
   String get paidTo => throw _privateConstructorUsedError;
-  num get creditAmount => throw _privateConstructorUsedError;
-  num get debitAmount => throw _privateConstructorUsedError;
-  num get creditAvailable => throw _privateConstructorUsedError;
+  double get creditAmount => throw _privateConstructorUsedError;
+  double get debitAmount => throw _privateConstructorUsedError;
+  double get creditAvailable => throw _privateConstructorUsedError;
   DateTime get paidDate => throw _privateConstructorUsedError;
   int get paymentType => throw _privateConstructorUsedError;
   int get productType => throw _privateConstructorUsedError;
@@ -39,9 +39,9 @@ mixin _$PaymentsModel {
   String? get paymentReference => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
   int get doPayForExtras => throw _privateConstructorUsedError;
-  num get surcharge => throw _privateConstructorUsedError;
+  double get surcharge => throw _privateConstructorUsedError;
   String? get paymentProvider => throw _privateConstructorUsedError;
-  num get discountAmount => throw _privateConstructorUsedError;
+  double get discountAmount => throw _privateConstructorUsedError;
   int get discountPercent => throw _privateConstructorUsedError;
   String get discountDescription => throw _privateConstructorUsedError;
   String get specialRunPriceReason => throw _privateConstructorUsedError;
@@ -67,9 +67,9 @@ abstract class $PaymentsModelCopyWith<$Res> {
       String hemId,
       String eventId,
       String paidTo,
-      num creditAmount,
-      num debitAmount,
-      num creditAvailable,
+      double creditAmount,
+      double debitAmount,
+      double creditAvailable,
       DateTime paidDate,
       int paymentType,
       int productType,
@@ -80,9 +80,9 @@ abstract class $PaymentsModelCopyWith<$Res> {
       String? paymentReference,
       String? notes,
       int doPayForExtras,
-      num surcharge,
+      double surcharge,
       String? paymentProvider,
-      num discountAmount,
+      double discountAmount,
       int discountPercent,
       String discountDescription,
       String specialRunPriceReason,
@@ -159,15 +159,15 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
       creditAmount: null == creditAmount
           ? _value.creditAmount
           : creditAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       debitAmount: null == debitAmount
           ? _value.debitAmount
           : debitAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       creditAvailable: null == creditAvailable
           ? _value.creditAvailable
           : creditAvailable // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       paidDate: null == paidDate
           ? _value.paidDate
           : paidDate // ignore: cast_nullable_to_non_nullable
@@ -211,7 +211,7 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
       surcharge: null == surcharge
           ? _value.surcharge
           : surcharge // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       paymentProvider: freezed == paymentProvider
           ? _value.paymentProvider
           : paymentProvider // ignore: cast_nullable_to_non_nullable
@@ -219,7 +219,7 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
       discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
@@ -259,9 +259,9 @@ abstract class _$$_PaymentsModelCopyWith<$Res>
       String hemId,
       String eventId,
       String paidTo,
-      num creditAmount,
-      num debitAmount,
-      num creditAvailable,
+      double creditAmount,
+      double debitAmount,
+      double creditAvailable,
       DateTime paidDate,
       int paymentType,
       int productType,
@@ -272,9 +272,9 @@ abstract class _$$_PaymentsModelCopyWith<$Res>
       String? paymentReference,
       String? notes,
       int doPayForExtras,
-      num surcharge,
+      double surcharge,
       String? paymentProvider,
-      num discountAmount,
+      double discountAmount,
       int discountPercent,
       String discountDescription,
       String specialRunPriceReason,
@@ -349,15 +349,15 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
       creditAmount: null == creditAmount
           ? _value.creditAmount
           : creditAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       debitAmount: null == debitAmount
           ? _value.debitAmount
           : debitAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       creditAvailable: null == creditAvailable
           ? _value.creditAvailable
           : creditAvailable // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       paidDate: null == paidDate
           ? _value.paidDate
           : paidDate // ignore: cast_nullable_to_non_nullable
@@ -401,7 +401,7 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
       surcharge: null == surcharge
           ? _value.surcharge
           : surcharge // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       paymentProvider: freezed == paymentProvider
           ? _value.paymentProvider
           : paymentProvider // ignore: cast_nullable_to_non_nullable
@@ -409,7 +409,7 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
       discountAmount: null == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       discountPercent: null == discountPercent
           ? _value.discountPercent
           : discountPercent // ignore: cast_nullable_to_non_nullable
@@ -482,11 +482,11 @@ class _$_PaymentsModel implements _PaymentsModel {
   @override
   final String paidTo;
   @override
-  final num creditAmount;
+  final double creditAmount;
   @override
-  final num debitAmount;
+  final double debitAmount;
   @override
-  final num creditAvailable;
+  final double creditAvailable;
   @override
   final DateTime paidDate;
   @override
@@ -508,11 +508,11 @@ class _$_PaymentsModel implements _PaymentsModel {
   @override
   final int doPayForExtras;
   @override
-  final num surcharge;
+  final double surcharge;
   @override
   final String? paymentProvider;
   @override
-  final num discountAmount;
+  final double discountAmount;
   @override
   final int discountPercent;
   @override
@@ -639,9 +639,9 @@ abstract class _PaymentsModel implements PaymentsModel {
       required final String hemId,
       required final String eventId,
       required final String paidTo,
-      required final num creditAmount,
-      required final num debitAmount,
-      required final num creditAvailable,
+      required final double creditAmount,
+      required final double debitAmount,
+      required final double creditAvailable,
       required final DateTime paidDate,
       required final int paymentType,
       required final int productType,
@@ -652,9 +652,9 @@ abstract class _PaymentsModel implements PaymentsModel {
       final String? paymentReference,
       final String? notes,
       required final int doPayForExtras,
-      required final num surcharge,
+      required final double surcharge,
       final String? paymentProvider,
-      required final num discountAmount,
+      required final double discountAmount,
       required final int discountPercent,
       required final String discountDescription,
       required final String specialRunPriceReason,
@@ -677,11 +677,11 @@ abstract class _PaymentsModel implements PaymentsModel {
   @override
   String get paidTo;
   @override
-  num get creditAmount;
+  double get creditAmount;
   @override
-  num get debitAmount;
+  double get debitAmount;
   @override
-  num get creditAvailable;
+  double get creditAvailable;
   @override
   DateTime get paidDate;
   @override
@@ -703,11 +703,11 @@ abstract class _PaymentsModel implements PaymentsModel {
   @override
   int get doPayForExtras;
   @override
-  num get surcharge;
+  double get surcharge;
   @override
   String? get paymentProvider;
   @override
-  num get discountAmount;
+  double get discountAmount;
   @override
   int get discountPercent;
   @override

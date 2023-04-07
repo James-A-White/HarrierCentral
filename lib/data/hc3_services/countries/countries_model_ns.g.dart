@@ -10,8 +10,8 @@ _$_CountriesModel _$$_CountriesModelFromJson(Map<String, dynamic> json) =>
     _$_CountriesModel(
       countryId: json['countryId'] as String,
       countryCode: json['countryCode'] as String,
-      latitude: json['latitude'] as num,
-      longitude: json['longitude'] as num,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
       countryName: json['countryName'] as String,
       countrySearchTags: json['countrySearchTags'] as String?,
       continentCode: json['continentCode'] as String,

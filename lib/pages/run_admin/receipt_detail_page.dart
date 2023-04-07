@@ -1,11 +1,14 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ReceiptDetailPage extends StatefulWidget {
-  const ReceiptDetailPage({Key key, this.eventId, this.receiptItem}) : super(key: key);
+  const ReceiptDetailPage({
+    Key? key,
+    required this.eventId,
+    this.receiptItem,
+  }) : super(key: key);
 
   final String eventId;
-  final Map<String, dynamic> receiptItem;
+  final Map<String, dynamic>? receiptItem;
 
   @override
   ReceiptDetailPageState createState() => ReceiptDetailPageState();
@@ -17,32 +20,32 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
   // String email = getStringPref(StringPrefsEnum.email);
   // String hashName = getStringPref(StringPrefsEnum.hashName);
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _receiptFormKey = GlobalKey<FormState>();
   bool _autoValidate = false;
 
-  String _shortDescription;
-  String _receiptAmount;
+  String? _shortDescription;
+  String? _receiptAmount;
 
-  File _imageFromCamera;
-  File _imageFromCache;
+  File? _imageFromCamera;
+  File? _imageFromCache;
 
   bool _isLoading = false;
 
-  CachedNetworkImage receiptImageFromWeb;
+  CachedNetworkImage? _receiptImageFromWeb;
 
   @override
   void initState() {
     if (widget.receiptItem != null) {
       _imageFromCamera = null;
 
-      if ((widget.receiptItem['imageUrl'] ?? '') != '') {
-        receiptImageFromWeb = CachedNetworkImage(imageUrl: widget.receiptItem['imageUrl'], fadeInDuration: const Duration(milliseconds: 0));
-        DefaultCacheManager().getSingleFile(widget.receiptItem['imageUrl']).then((File file) {
+      if ((widget.receiptItem!['imageUrl'] ?? '') != '') {
+        _receiptImageFromWeb = CachedNetworkImage(imageUrl: widget.receiptItem!['imageUrl'], fadeInDuration: const Duration(milliseconds: 0));
+        DefaultCacheManager().getSingleFile(widget.receiptItem!['imageUrl']).then((File file) {
           _imageFromCache = file;
         });
       }
-      _shortDescription = widget.receiptItem['receiptShortDesc'];
-      _receiptAmount = widget.receiptItem['receiptAmount'].toString();
+      _shortDescription = widget.receiptItem!['receiptShortDesc'];
+      _receiptAmount = widget.receiptItem!['receiptAmount'].toString();
     }
     super.initState();
   }
@@ -91,65 +94,72 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       // minHeight: 1500,
       quality: 1,
       rotate: 0,
-    ).then((List<int> compressed) {
-      request.bodyBytes = compressed;
-      request.send().then((StreamedResponse response) {
-        //print('Receipt upload response = ${response.statusCode}');
-      });
+    ).then((List<int>? compressed) {
+      if (compressed != null) {
+        request.bodyBytes = compressed;
+        request.send().then((StreamedResponse response) {
+          //print('Receipt upload response = ${response.statusCode}');
+        });
+      }
     });
 
     return '$BASE_RECEIPTS_URL$fileName';
   }
 
   Future<void> _uploadReceipt() async {
-    if (_formKey.currentState.validate()) {
+    if (_receiptFormKey.currentState != null) {
+      if (_receiptFormKey.currentState!.validate()) {
 //    If all data are correct then save data to out variables
-      _formKey.currentState.save();
+        _receiptFormKey.currentState!.save();
 
-      String receiptImageUrl = '';
+        String receiptImageUrl = '';
 
-      if (_imageFromCamera != null) {
-        receiptImageUrl = _upload(_imageFromCamera, '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg');
-      }
+        if (_imageFromCamera != null) {
+          receiptImageUrl = _upload(_imageFromCamera!, '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+        }
 
-      final ReceiptsModel item = ReceiptsModel(
-          receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem['receiptId'],
-          eventId: widget.eventId,
-          receiptShortDescription: _shortDescription,
-          receiptAmount: num.parse(_receiptAmount),
-          notes: '',
-          reimbursedBy: GUID_EMPTY,
-          reimbursedAmount: -1,
-          reimbursedOn: '1999/1/1',
-          reimbursedNotes: '',
-          imageUrl: receiptImageUrl,
-          removed: 0);
+        final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-      setState(() {
-        _isLoading = true;
-      });
+        final ReceiptsModel item = ReceiptsModel(
+            userId: userId,
+            receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem!['receiptId'],
+            eventId: widget.eventId,
+            receiptShortDescription: _shortDescription,
+            receiptAmount: double.parse(_receiptAmount ?? '0.0'),
+            notes: '',
+            reimbursedBy: GUID_EMPTY,
+            reimbursedAmount: -1,
+            reimbursedOn: '1999/1/1',
+            reimbursedNotes: '',
+            imageUrl: receiptImageUrl,
+            removed: 0);
 
-      final ReceiptsService srv = ReceiptsService();
-      final String responseBody = await srv.uploadReceipt(item);
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
-        await G0<TableModel>().baseService.bulkUpdateDatabase(
-              G0<TableModel>().receiptsTableHelper,
-              G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
-              responseBody,
-              G0<Database>(),
-            );
+        setState(() {
+          _isLoading = true;
+        });
 
-        if (!mounted) return;
-        Navigator.of(context).pop();
+        final ReceiptsService srv = ReceiptsService();
+        final String responseBody = await srv.uploadReceipt(item);
+        if (!responseBody.startsWith(ERROR_PREFIX)) {
+          await G0<TableModel>().baseService.bulkUpdateDatabase(
+                G0<TableModel>().receiptsTableHelper,
+                G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+                responseBody,
+                G0<Database>(),
+              );
+
+          if (!mounted) return;
+          Navigator.of(context).pop();
+        } else {
+          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Error uploading receipt',
+              'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+        }
       } else {
-        await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Error uploading receipt',
-            'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
-      }
-    } else {
 //    If all data are not valid then start auto validation.
-      setState(() {
-        _autoValidate = true;
-      });
+        setState(() {
+          _autoValidate = true;
+        });
+      }
     }
   }
 
@@ -161,15 +171,15 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           initialValue: _shortDescription,
           decoration: const InputDecoration(labelText: 'Short description'),
           keyboardType: TextInputType.text,
-          validator: (String arg) {
-            if (arg.length < 4) {
+          validator: (String? arg) {
+            if ((arg != null) || (arg!.length < 4)) {
               return 'Description must be more than 3 charaters';
             } else {
               return null;
             }
           },
-          onSaved: (String val) {
-            _shortDescription = val;
+          onSaved: (String? val) {
+            _shortDescription = val ?? '';
           },
         ),
         TextFormField(
@@ -183,8 +193,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           //   // else
           //   //   return null;
           // },
-          onSaved: (String val) {
-            val = val.replaceAll(',', '.'); // TODO(James): Investigate how to better handle cases where numeric keyboards have commas instead of decimals
+          onSaved: (String? val) {
+            val = (val ?? '').replaceAll(',', '.'); // TODO(James): Investigate how to better handle cases where numeric keyboards have commas instead of decimals
             _receiptAmount = val;
           },
         ),
@@ -195,16 +205,22 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     );
   }
 
-  Future<File> onImageButtonPressed() async {
+  Future<File?> onImageButtonPressed() async {
     //final PickedFile image = await ImagePicker().getImage(source: ImageSource.camera);
 
-    final XFile image = await ImagePicker().pickImage(source: ImageSource.camera);
+    final XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
 
-    final ImageCropper ic = ImageCropper();
+    if (image != null) {
+      final ImageCropper ic = ImageCropper();
 
-    final CroppedFile croppedFile = await ic.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
+      final CroppedFile? croppedFile = await ic.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
 
-    return File(croppedFile.path);
+      if (croppedFile != null) {
+        return File(croppedFile.path);
+      }
+    }
+
+    return null;
   }
 
   @override
@@ -268,7 +284,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                   borderRadius: BorderRadius.circular(5.0),
                                                 ),
                                                 child: Form(
-                                                  key: _formKey,
+                                                  key: _receiptFormKey,
                                                   autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
                                                   child: formUi(),
                                                 ),
@@ -277,7 +293,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                               const SizedBox(height: 20),
                                               ElevatedButton(
                                                 onPressed: () {
-                                                  onImageButtonPressed().then((File imageFile) {
+                                                  onImageButtonPressed().then((File? imageFile) {
                                                     setState(() {
                                                       _imageFromCamera = imageFile;
                                                     });
@@ -316,14 +332,14 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                 color: Colors.white,
                                                 padding: const EdgeInsets.all(10.0),
                                                 margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                                child: Image.file(_imageFromCamera, width: MediaQuery.of(context).size.width))
-                                            : receiptImageFromWeb != null
+                                                child: Image.file(_imageFromCamera!, width: MediaQuery.of(context).size.width))
+                                            : _receiptImageFromWeb != null
                                                 ? Container(
                                                     //height: 220,
                                                     color: Colors.white,
                                                     padding: const EdgeInsets.all(10.0),
                                                     margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                                    child: receiptImageFromWeb)
+                                                    child: _receiptImageFromWeb)
                                                 : Container(),
                                       ),
                                       const SizedBox(width: 40, height: 40),

@@ -1,5 +1,4 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class OtherPaymentPopupResult {
   OtherPaymentPopupResult(
@@ -22,9 +21,16 @@ class OtherPaymentPopupResult {
 }
 
 class OtherPaymentPopup extends StatefulWidget {
-  const OtherPaymentPopup(this.normalPrice, this.decimalDigits, this.currencySymbol, this.showCreditTopup, this.allowDefaultPricing, {Key key}) : super(key: key);
+  const OtherPaymentPopup(
+    this.normalPrice,
+    this.decimalDigits,
+    this.currencySymbol,
+    this.showCreditTopup,
+    this.allowDefaultPricing, {
+    Key? key,
+  }) : super(key: key);
 
-  final num normalPrice;
+  final double normalPrice;
   final int decimalDigits;
   final String currencySymbol;
   final bool showCreditTopup;
@@ -167,13 +173,15 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                                   },
                                 ),
                                 onChanged: _specialPriceEnabled
-                                    ? (bool val) {
-                                        setState(() {
-                                          _paySpecialPriceWithCredit = !_paySpecialPriceWithCredit;
-                                          if (_topUpCreditEnabled && _paySpecialPriceWithCredit) {
-                                            _topUpCreditEnabled = false;
-                                          }
-                                        });
+                                    ? (bool? val) {
+                                        if (val != null) {
+                                          setState(() {
+                                            _paySpecialPriceWithCredit = !_paySpecialPriceWithCredit;
+                                            if (_topUpCreditEnabled && _paySpecialPriceWithCredit) {
+                                              _topUpCreditEnabled = false;
+                                            }
+                                          });
+                                        }
                                       }
                                     : null,
                                 value: _paySpecialPriceWithCredit,
@@ -205,10 +213,12 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                                   },
                                 ),
                                 onChanged: _specialPriceEnabled
-                                    ? (bool val) {
-                                        setState(() {
-                                          _specialPriceIsDefaultForUser = !_specialPriceIsDefaultForUser;
-                                        });
+                                    ? (bool? val) {
+                                        if (val != null) {
+                                          setState(() {
+                                            _specialPriceIsDefaultForUser = !_specialPriceIsDefaultForUser;
+                                          });
+                                        }
                                       }
                                     : null,
                                 value: _specialPriceIsDefaultForUser,
@@ -233,14 +243,16 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                     children: <Widget>[
                       Checkbox(
                         fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
-                        onChanged: (bool val) {
-                          setState(() {
-                            _recalculateTotal();
-                            _specialPriceEnabled = !_specialPriceEnabled;
-                            if (!_specialPriceEnabled) {
-                              _specialPriceTextController.value = TextEditingValue(text: widget.normalPrice.toStringAsFixed(widget.decimalDigits));
-                            }
-                          });
+                        onChanged: (bool? val) {
+                          if (val != null) {
+                            setState(() {
+                              _recalculateTotal();
+                              _specialPriceEnabled = !_specialPriceEnabled;
+                              if (!_specialPriceEnabled) {
+                                _specialPriceTextController.value = TextEditingValue(text: widget.normalPrice.toStringAsFixed(widget.decimalDigits));
+                              }
+                            });
+                          }
                         },
                         value: _specialPriceEnabled,
                       ),
@@ -311,14 +323,16 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                       children: <Widget>[
                         Checkbox(
                           fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
-                          onChanged: (bool val) {
-                            _recalculateTotal();
-                            setState(() {
-                              _topUpCreditEnabled = !_topUpCreditEnabled;
-                              if (_paySpecialPriceWithCredit && _topUpCreditEnabled) {
-                                _paySpecialPriceWithCredit = false;
-                              }
-                            });
+                          onChanged: (bool? val) {
+                            if (val != null) {
+                              _recalculateTotal();
+                              setState(() {
+                                _topUpCreditEnabled = !_topUpCreditEnabled;
+                                if (_paySpecialPriceWithCredit && _topUpCreditEnabled) {
+                                  _paySpecialPriceWithCredit = false;
+                                }
+                              });
+                            }
                           },
                           value: _topUpCreditEnabled,
                         ),
@@ -351,7 +365,15 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
             style: TextButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Cancel'),
             onPressed: () {
-              Navigator.of(context).pop(OtherPaymentPopupResult('cancel', -1, null, null, null, null, _specialPriceIsDefaultForUser));
+              Navigator.of(context).pop(OtherPaymentPopupResult(
+                'cancel',
+                -1,
+                0.0,
+                '',
+                0.0,
+                0.0,
+                _specialPriceIsDefaultForUser,
+              ));
             },
           ),
         ),
@@ -371,9 +393,9 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                   final OtherPaymentPopupResult result = OtherPaymentPopupResult(
                     'process',
                     paymentCashOtherAmount.value,
-                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                    _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) ?? 0.0 : 0.0,
+                    _specialPriceEnabled ? _specialPriceReasonTextController.text : '',
+                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) ?? 0.0 : 0.0,
                     _totalDue,
                     _specialPriceIsDefaultForUser,
                   );
@@ -398,9 +420,9 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                   final OtherPaymentPopupResult result = OtherPaymentPopupResult(
                     'process',
                     paymentBankTransferOtherAmount.value,
-                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                    _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) ?? 0.0 : 0.0,
+                    _specialPriceEnabled ? _specialPriceReasonTextController.text : '',
+                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) ?? 0.0 : 0.0,
                     _totalDue,
                     _specialPriceIsDefaultForUser,
                   );
@@ -420,9 +442,9 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                   final OtherPaymentPopupResult result = OtherPaymentPopupResult(
                     'process',
                     paymentHashCreditOtherAmount.value,
-                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) : null,
-                    _specialPriceEnabled ? _specialPriceReasonTextController.text : null,
-                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) : null,
+                    _specialPriceEnabled ? double.tryParse(_specialPriceTextController.text.replaceAll(',', '.')) ?? 0.0 : 0.0,
+                    _specialPriceEnabled ? _specialPriceReasonTextController.text : '',
+                    _topUpCreditEnabled ? double.tryParse(_topUpTextController.text.replaceAll(',', '.')) ?? 0.0 : 0.0,
                     _totalDue,
                     _specialPriceIsDefaultForUser,
                   );

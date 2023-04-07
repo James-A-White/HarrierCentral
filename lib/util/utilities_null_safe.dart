@@ -433,8 +433,8 @@ class Utilities {
 //             ? CachedNetworkImage(
 //                 imageUrl: image,
 //                 placeholder: (BuildContext context, String url) => SizedBox(
-//                     height: height + .0,
-//                     width: width + .0,
+//                     height: height ,
+//                     width: width ,
 //                     child: const Center(
 //                       child: SizedBox(
 //                         height: 20,
@@ -447,19 +447,19 @@ class Utilities {
 //                 errorWidget: (BuildContext context, String url, Object error) => Icon(Icons.error, size: height, color: Colors.red),
 //                 //fadeOutDuration:  Duration(seconds: 1),
 //                 fadeInDuration: const Duration(milliseconds: 0),
-//                 width: width + .0,
-//                 height: height + .0,
+//                 width: width ,
+//                 height: height ,
 //                 fit: BoxFit.fill)
 //             : image.startsWith('bundle')
 //                 ? Image(
-//                     width: width + .0,
-//                     height: height + .0,
+//                     width: width ,
+//                     height: height ,
 //                     fit: BoxFit.fill,
 //                     image: AssetImage(('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
 //                   )
 //                 : Image(
-//                     width: width + .0,
-//                     height: height + .0,
+//                     width: width ,
+//                     height: height ,
 //                     fit: BoxFit.fill,
 //                     image: const AssetImage('images/avatars/avatar-2.jpg'),
 //                   ));

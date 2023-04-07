@@ -80,8 +80,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           dist = Geolocator.distanceBetween(
             G0<DeviceInfo>().deviceLat!,
             G0<DeviceInfo>().deviceLon!,
-            results[i]['evtLat'] + .0,
-            results[i]['evtLon'] + .0,
+            results[i]['evtLat'],
+            results[i]['evtLon'],
           );
         }
         final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
@@ -701,7 +701,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       widget.kennelAggregateItem.extensions.cityLon!,
                                                     ),
                                                     builder: (BuildContext ctx) => GestureDetector(
-                                                      // onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
+                                                      // onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat , widget.kennelAggregateItem.extensions.cityLon ),
 
                                                       onTap: () async {
                                                         // NULLSAFETODO

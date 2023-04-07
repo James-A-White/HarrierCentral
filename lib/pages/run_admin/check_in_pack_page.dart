@@ -1336,7 +1336,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       if (isLoggedIn) {
         final SumupPayment payment = SumupPayment(
           title: title,
-          total: terminalAmount + .0,
+          total: terminalAmount,
           currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode ?? 'USD',
           foreignTransactionId: paymentReference,
           saleItemsCount: 1,

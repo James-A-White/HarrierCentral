@@ -211,8 +211,8 @@ class KennelsListPageState extends State<KennelsListPage> {
             dist = Geolocator.distanceBetween(
               G0<DeviceInfo>().deviceLat!,
               G0<DeviceInfo>().deviceLon!,
-              results[i]['cityLat'] + .0,
-              results[i]['cityLon'] + .0,
+              results[i]['cityLat'],
+              results[i]['cityLon'],
             );
 
             final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);

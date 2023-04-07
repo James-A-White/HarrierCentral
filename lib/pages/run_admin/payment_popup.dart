@@ -1,30 +1,33 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PaymentPopupResult {
-  PaymentPopupResult({this.transactionType, this.transactionValue, this.otherPayment});
+  PaymentPopupResult({
+    required this.transactionType,
+    required this.transactionValue,
+    this.otherPayment,
+  });
 
   final int transactionType;
-  final num transactionValue;
-  final OtherPaymentPopupResult otherPayment;
+  final double transactionValue;
+  final OtherPaymentPopupResult? otherPayment;
 }
 
 class PaymentPopup extends StatefulWidget {
   const PaymentPopup({
-    Key key,
-    @required this.hemId,
-    @required this.currencySymbol,
-    @required this.amount,
-    @required this.creditRemaining,
-    @required this.creditAllowed,
-    @required this.decimalDigits,
-    @required this.allowDefaultPricing,
+    Key? key,
+    required this.hemId,
+    required this.currencySymbol,
+    required this.amount,
+    required this.creditRemaining,
+    required this.creditAllowed,
+    required this.decimalDigits,
+    required this.allowDefaultPricing,
   }) : super(key: key);
 
   final String hemId;
   final String currencySymbol;
-  final num amount;
-  final num creditRemaining;
+  final double amount;
+  final double creditRemaining;
   final int creditAllowed;
   final int decimalDigits;
   final bool allowDefaultPricing;
@@ -39,7 +42,7 @@ class PaymentPopup extends StatefulWidget {
 
 class PaymentPopupState extends State<PaymentPopup> {
   int _selectedValue = 1;
-  OtherPaymentPopupResult _otherPaymentResult;
+  OtherPaymentPopupResult? _otherPaymentResult;
 
   // @override
   // void initState() {
@@ -193,7 +196,7 @@ class PaymentPopupState extends State<PaymentPopup> {
                 _otherPaymentResult = null;
               }
 
-              final num resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
+              final double resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
               final int resultTransType = _selectedValue;
 
               final PaymentPopupResult result = PaymentPopupResult(
@@ -233,7 +236,7 @@ class PaymentPopupState extends State<PaymentPopup> {
             _otherPaymentResult == null
                 ? const SizedBox(height: 1, width: 1)
                 : Text(
-                    '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult.transType == 5) ? ' cash' : ' bank transfer'}',
+                    '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult!.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult!.transType == 5) ? ' cash' : ' bank transfer'}',
                     style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                   ),
           ],
@@ -242,48 +245,50 @@ class PaymentPopupState extends State<PaymentPopup> {
     );
   }
 
-  Future<void> _handleRadioValueChange1(int value) async {
-    if (value != PaymentPopup.otherAmountRowId) {
-      setState(() {
-        _selectedValue = value;
-      });
-    } else {
-      final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(
-        widget.amount,
-        widget.decimalDigits,
-        widget.currencySymbol,
-        widget.creditAllowed != 0,
-        widget.allowDefaultPricing,
-      );
-
-      final OtherPaymentPopupResult result = await showDialog<OtherPaymentPopupResult>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return otherPaymentPopup;
-          });
-
-      if (result.action != 'cancel') {
+  Future<void> _handleRadioValueChange1(int? value) async {
+    if (value != null) {
+      if (value != PaymentPopup.otherAmountRowId) {
         setState(() {
-          _otherPaymentResult = result;
           _selectedValue = value;
-
-          if (_selectedValue != PaymentPopup.otherAmountRowId) {
-            _otherPaymentResult = null;
-          }
-
-          final num resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
-          final int resultTransType = _selectedValue;
-
-          final PaymentPopupResult ppResult = PaymentPopupResult(
-            transactionType: _otherPaymentResult?.transType ?? resultTransType,
-            transactionValue: resultAmount,
-            otherPayment: _otherPaymentResult,
-          );
-          Navigator.of(context).pop(ppResult);
         });
       } else {
-        _otherPaymentResult = null;
+        final OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup(
+          widget.amount,
+          widget.decimalDigits,
+          widget.currencySymbol,
+          widget.creditAllowed != 0,
+          widget.allowDefaultPricing,
+        );
+
+        final OtherPaymentPopupResult? result = await showDialog<OtherPaymentPopupResult>(
+            context: context,
+            barrierDismissible: false, // user must tap button!
+            builder: (BuildContext context) {
+              return otherPaymentPopup;
+            });
+
+        if ((result != null) && (result.action != 'cancel')) {
+          setState(() {
+            _otherPaymentResult = result;
+            _selectedValue = value;
+
+            if (_selectedValue != PaymentPopup.otherAmountRowId) {
+              _otherPaymentResult = null;
+            }
+
+            final double resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
+            final int resultTransType = _selectedValue;
+
+            final PaymentPopupResult ppResult = PaymentPopupResult(
+              transactionType: _otherPaymentResult?.transType ?? resultTransType,
+              transactionValue: resultAmount,
+              otherPayment: _otherPaymentResult,
+            );
+            Navigator.of(context).pop(ppResult);
+          });
+        } else {
+          _otherPaymentResult = null;
+        }
       }
     }
   }

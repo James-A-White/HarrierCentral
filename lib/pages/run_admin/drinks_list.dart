@@ -63,9 +63,9 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
   bool _isLoading = false;
 
   // ignore: non_constant_identifier_names
-  final int LIST_ITEM_HEIGHT = 84;
+  final double LIST_ITEM_HEIGHT = 84.0;
   // ignore: non_constant_identifier_names
-  final int LIST_ITEM_ELEMENT_HEIGHT = 84;
+  final double LIST_ITEM_ELEMENT_HEIGHT = 84.0;
 
   final List<DrinksResults> _awards = <DrinksResults>[];
 
@@ -203,7 +203,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             SizedBox(
-                              height: LIST_ITEM_HEIGHT + .0,
+                              height: LIST_ITEM_HEIGHT,
                               width: 10.0,
                             ),
                             Utilities.getProfilePic(_awards[index].photo, LIST_ITEM_ELEMENT_HEIGHT, LIST_ITEM_ELEMENT_HEIGHT, context, _awards[index].dispName),
@@ -253,15 +253,15 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                             if (_awards[index].specialRunCount > 0) ...<Widget>[
                               Image.asset(
                                 'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
-                                height: LIST_ITEM_ELEMENT_HEIGHT + .0,
-                                width: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                                height: LIST_ITEM_ELEMENT_HEIGHT,
+                                width: LIST_ITEM_ELEMENT_HEIGHT,
                               ),
                             ],
                             if (_awards[index].specialHaringCount > 0) ...<Widget>[
                               Image.asset(
                                 'images/run_count_icons/rabbit_with_beer.png',
-                                height: LIST_ITEM_ELEMENT_HEIGHT + .0,
-                                width: LIST_ITEM_ELEMENT_HEIGHT + .0,
+                                height: LIST_ITEM_ELEMENT_HEIGHT,
+                                width: LIST_ITEM_ELEMENT_HEIGHT,
                               ),
                             ],
                             const Divider()

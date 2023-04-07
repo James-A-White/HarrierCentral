@@ -276,7 +276,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
 
                   if ((_homeKennelLat != null) && (_homeKennelLon != null)) {
-                    _mapController.move(latlng.LatLng(_homeKennelLat! + .0, _homeKennelLon! + .0), _mapController.zoom);
+                    _mapController.move(latlng.LatLng(_homeKennelLat!, _homeKennelLon!), _mapController.zoom);
                   } else if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
                     _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!), _mapController.zoom);
                   }
@@ -380,8 +380,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       _runLocationMarkers = <Marker>[];
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
-          final double? lat = results[i]['lat'] == null ? null : results[i]['lat'] + .0;
-          final double? lon = results[i]['lon'] == null ? null : results[i]['lon'] + .0;
+          final double? lat = results[i]['lat'] == null ? null : results[i]['lat'];
+          final double? lon = results[i]['lon'] == null ? null : results[i]['lon'];
           if ((lat != null) && (lon != null)) {
             if ((lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
               EventModel em = EventModel.fromJson(results[i]);
@@ -483,8 +483,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       final String? homeKennelId = getStringPref(StringPrefsEnum.homeKennelId);
       if (_filteredKennels.isNotEmpty) {
         for (int i = 0; i < _filteredKennels.length; i++) {
-          final double? lat = _filteredKennels[i]['lat'] == null ? null : _filteredKennels[i]['lat'] + .0;
-          final double? lon = _filteredKennels[i]['lon'] == null ? null : _filteredKennels[i]['lon'] + .0;
+          final double? lat = _filteredKennels[i]['lat'] == null ? null : _filteredKennels[i]['lat'];
+          final double? lon = _filteredKennels[i]['lon'] == null ? null : _filteredKennels[i]['lon'];
 
           if ((lat != null) && (lon != null)) {
             if (_filteredKennels[i]['kennelId'] == homeKennelId) {
@@ -495,12 +495,12 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               //await setNumPref(NumPrefsEnum.homeKennelLon, _homeKennelLon);
 
               if ((_mapCenterOption == centerOnHomeKennel.value) && (_homeKennelLat != null) && (_homeKennelLon != null)) {
-                _mapController.move(latlng.LatLng(_homeKennelLat! + .0, _homeKennelLon! + .0), _mapController.zoom);
+                _mapController.move(latlng.LatLng(_homeKennelLat!, _homeKennelLon!), _mapController.zoom);
               }
             }
 
             if ((lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
-              final latlng.LatLng ll = latlng.LatLng(lat + .0, lon + .0);
+              final latlng.LatLng ll = latlng.LatLng(lat, lon);
               final Marker marker = Marker(
                   width: KENNEL_PIN_SIZE,
                   height: KENNEL_PIN_SIZE,
@@ -567,7 +567,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           double? dist;
 
           if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-            dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!, results[0]['cityLat'] + .0, results[0]['cityLon'] + .0);
+            dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!, results[0]['cityLat'], results[0]['cityLon']);
           }
 
           final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);

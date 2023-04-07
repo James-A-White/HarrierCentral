@@ -345,17 +345,17 @@ class CommonQueries {
 
         if ((extensions.latitude != null) && (extensions.longitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
           dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat! + .0,
-            G0<DeviceInfo>().deviceLon! + .0,
-            extensions.latitude! + .0,
-            extensions.longitude! + .0,
+            G0<DeviceInfo>().deviceLat!,
+            G0<DeviceInfo>().deviceLon!,
+            extensions.latitude!,
+            extensions.longitude!,
           );
         } else if ((kennel.kennelLatitude != null) && (kennel.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
           dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat! + .0,
-            G0<DeviceInfo>().deviceLon! + .0,
-            kennel.kennelLatitude! + .0,
-            kennel.kennelLongitude! + .0,
+            G0<DeviceInfo>().deviceLat!,
+            G0<DeviceInfo>().deviceLon!,
+            kennel.kennelLatitude!,
+            kennel.kennelLongitude!,
           );
         }
         extensions.distToEvent = dist;

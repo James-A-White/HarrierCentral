@@ -9,8 +9,8 @@ class CountriesModel with _$CountriesModel implements BaseModel {
   factory CountriesModel({
     required String countryId,
     required String countryCode,
-    required num latitude,
-    required num longitude,
+    required double latitude,
+    required double longitude,
     required String countryName,
     String? countrySearchTags,
     required String continentCode,

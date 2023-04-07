@@ -35,8 +35,8 @@ mixin _$HasherEventMapModel {
   int? get totalHaringThisKennel => throw _privateConstructorUsedError;
   int? get totalRuns => throw _privateConstructorUsedError;
   int? get totalRunsThisKennel => throw _privateConstructorUsedError;
-  num? get eventCountOverride => throw _privateConstructorUsedError;
-  num get virginVisitorType => throw _privateConstructorUsedError;
+  int? get eventCountOverride => throw _privateConstructorUsedError;
+  int get virginVisitorType => throw _privateConstructorUsedError;
   String get displayName => throw _privateConstructorUsedError;
   String? get email => throw _privateConstructorUsedError;
   String? get phoneNumber =>
@@ -45,7 +45,7 @@ mixin _$HasherEventMapModel {
   String? get hemEventName => throw _privateConstructorUsedError;
   int? get hemEventNumber => throw _privateConstructorUsedError;
   DateTime get hemEventStartDatetime => throw _privateConstructorUsedError;
-  num? get hemCanEditRunAttendence => throw _privateConstructorUsedError;
+  int? get hemCanEditRunAttendence => throw _privateConstructorUsedError;
   String? get hemEventKennelId => throw _privateConstructorUsedError;
   int? get hemEventIsCountedAndVisible => throw _privateConstructorUsedError;
   String? get hemKennelUserPhoto => throw _privateConstructorUsedError;
@@ -81,15 +81,15 @@ abstract class $HasherEventMapModelCopyWith<$Res> {
       int? totalHaringThisKennel,
       int? totalRuns,
       int? totalRunsThisKennel,
-      num? eventCountOverride,
-      num virginVisitorType,
+      int? eventCountOverride,
+      int virginVisitorType,
       String displayName,
       String? email,
       String? phoneNumber,
       String? hemEventName,
       int? hemEventNumber,
       DateTime hemEventStartDatetime,
-      num? hemCanEditRunAttendence,
+      int? hemCanEditRunAttendence,
       String? hemEventKennelId,
       int? hemEventIsCountedAndVisible,
       String? hemKennelUserPhoto,
@@ -206,11 +206,11 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
       eventCountOverride: freezed == eventCountOverride
           ? _value.eventCountOverride
           : eventCountOverride // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       virginVisitorType: null == virginVisitorType
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
-              as num,
+              as int,
       displayName: null == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -238,7 +238,7 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
       hemCanEditRunAttendence: freezed == hemCanEditRunAttendence
           ? _value.hemCanEditRunAttendence
           : hemCanEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       hemEventKennelId: freezed == hemEventKennelId
           ? _value.hemEventKennelId
           : hemEventKennelId // ignore: cast_nullable_to_non_nullable
@@ -291,15 +291,15 @@ abstract class _$$_HasherEventMapModelCopyWith<$Res>
       int? totalHaringThisKennel,
       int? totalRuns,
       int? totalRunsThisKennel,
-      num? eventCountOverride,
-      num virginVisitorType,
+      int? eventCountOverride,
+      int virginVisitorType,
       String displayName,
       String? email,
       String? phoneNumber,
       String? hemEventName,
       int? hemEventNumber,
       DateTime hemEventStartDatetime,
-      num? hemCanEditRunAttendence,
+      int? hemCanEditRunAttendence,
       String? hemEventKennelId,
       int? hemEventIsCountedAndVisible,
       String? hemKennelUserPhoto,
@@ -414,11 +414,11 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
       eventCountOverride: freezed == eventCountOverride
           ? _value.eventCountOverride
           : eventCountOverride // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       virginVisitorType: null == virginVisitorType
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
-              as num,
+              as int,
       displayName: null == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -446,7 +446,7 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
       hemCanEditRunAttendence: freezed == hemCanEditRunAttendence
           ? _value.hemCanEditRunAttendence
           : hemCanEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as num?,
+              as int?,
       hemEventKennelId: freezed == hemEventKennelId
           ? _value.hemEventKennelId
           : hemEventKennelId // ignore: cast_nullable_to_non_nullable
@@ -544,9 +544,9 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @override
   final int? totalRunsThisKennel;
   @override
-  final num? eventCountOverride;
+  final int? eventCountOverride;
   @override
-  final num virginVisitorType;
+  final int virginVisitorType;
   @override
   final String displayName;
   @override
@@ -562,7 +562,7 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @override
   final DateTime hemEventStartDatetime;
   @override
-  final num? hemCanEditRunAttendence;
+  final int? hemCanEditRunAttendence;
   @override
   final String? hemEventKennelId;
   @override
@@ -713,15 +713,15 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
       final int? totalHaringThisKennel,
       final int? totalRuns,
       final int? totalRunsThisKennel,
-      final num? eventCountOverride,
-      required final num virginVisitorType,
+      final int? eventCountOverride,
+      required final int virginVisitorType,
       required final String displayName,
       final String? email,
       final String? phoneNumber,
       final String? hemEventName,
       final int? hemEventNumber,
       required final DateTime hemEventStartDatetime,
-      final num? hemCanEditRunAttendence,
+      final int? hemCanEditRunAttendence,
       final String? hemEventKennelId,
       final int? hemEventIsCountedAndVisible,
       final String? hemKennelUserPhoto,
@@ -763,9 +763,9 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   int? get totalRunsThisKennel;
   @override
-  num? get eventCountOverride;
+  int? get eventCountOverride;
   @override
-  num get virginVisitorType;
+  int get virginVisitorType;
   @override
   String get displayName;
   @override
@@ -780,7 +780,7 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   DateTime get hemEventStartDatetime;
   @override
-  num? get hemCanEditRunAttendence;
+  int? get hemCanEditRunAttendence;
   @override
   String? get hemEventKennelId;
   @override

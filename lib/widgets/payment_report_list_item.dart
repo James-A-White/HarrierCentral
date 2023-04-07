@@ -1,13 +1,12 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PaymentReportListItem extends StatelessWidget {
   const PaymentReportListItem({
-    Key key,
-    @required this.paymentReportItem,
-    @required this.currencySymbol,
-    @required this.digitsAfterDecimal,
-    @required this.onTap,
+    Key? key,
+    required this.paymentReportItem,
+    required this.currencySymbol,
+    required this.digitsAfterDecimal,
+    required this.onTap,
   }) : super(key: key);
 
   final PaymentAggregate paymentReportItem;
@@ -18,10 +17,10 @@ class PaymentReportListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String amountPaid = IveCoreUtilities.getFormattedMoney(
-        paymentReportItem.extensions.isHashCredit ? -(paymentReportItem.payment.debitAmount ?? 0) : paymentReportItem.payment.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+        paymentReportItem.extensions.isHashCredit ? -(paymentReportItem.payment.debitAmount) : paymentReportItem.payment.creditAmount, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
-      onTap: onTap,
+      onTap: onTap(),
       child: Row(
         //mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -61,10 +60,10 @@ class PaymentReportListItem extends StatelessWidget {
                 const SizedBox(width: 10),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 5.0),
-                  child: paymentReportItem.extensions.isLoading
+                  child: paymentReportItem.isLoading
                       ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
-                      : Image.asset('images/icons/payment_type_${paymentReportItem.payment.paymentType ?? paymentNotPaid.value}.png',
-                          height: 30.0, width: 30.0, color: (paymentReportItem.payment.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
+                      : Image.asset('images/icons/payment_type_${paymentReportItem.payment.paymentType}.png',
+                          height: 30.0, width: 30.0, color: (paymentReportItem.payment.paymentType) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
                 ),
                 const SizedBox(width: 10),
               ],
@@ -79,14 +78,14 @@ class PaymentReportListItem extends StatelessWidget {
 
 class PaymentTotalsCell extends StatelessWidget {
   const PaymentTotalsCell({
-    Key key,
-    @required this.creditAmount,
-    @required this.counter,
-    @required this.color,
-    @required this.paymentRecordType,
-    @required this.currencySymbol,
-    @required this.digitsAfterDecimal,
-    @required this.onTap,
+    Key? key,
+    required this.creditAmount,
+    required this.counter,
+    required this.color,
+    required this.paymentRecordType,
+    required this.currencySymbol,
+    required this.digitsAfterDecimal,
+    required this.onTap,
   }) : super(key: key);
 
   final EnumPaymentType<int> paymentRecordType;
@@ -94,12 +93,12 @@ class PaymentTotalsCell extends StatelessWidget {
   final String currencySymbol;
   final int digitsAfterDecimal;
   final Function onTap;
-  final num creditAmount;
-  final num counter;
+  final double creditAmount;
+  final int counter;
 
   @override
   Widget build(BuildContext context) {
-    final String total = (creditAmount ?? 0) == 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String total = creditAmount == 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount, digitsAfterDecimal, currencySymbol);
 
     const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return SizedBox(
@@ -109,13 +108,13 @@ class PaymentTotalsCell extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 0.0),
             child: Text(
-              (counter ?? 0).toString(),
+              counter.toString(),
               style: textStyle,
             ),
           ),
           IconButton(
             padding: const EdgeInsets.all(0),
-            onPressed: onTap,
+            onPressed: onTap(),
             icon: Image.asset('images/icons/payment_type_${paymentRecordType.value}.png', height: 35.0, width: 35.0, color: color),
           ),
           Padding(

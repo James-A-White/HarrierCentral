@@ -1,11 +1,12 @@
-// @dart=2.11
-
 //import 'dart:io' as platform;
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 import 'package:intl/intl.dart';
 
 class HashRunArtGalleryPage extends StatelessWidget {
-  const HashRunArtGalleryPage({Key key, this.items}) : super(key: key);
+  const HashRunArtGalleryPage({
+    Key? key,
+    required this.items,
+  }) : super(key: key);
 
   final List<Map<String, dynamic>> items;
 
@@ -52,14 +53,15 @@ class HashRunArtGalleryPage extends StatelessWidget {
                   children: <Widget>[
                     GestureDetector(
                       onTap: () async {
-                        final RunDetailsAggregate run = await G0<TableModel>().eventsService.getSingleRun(item[G0<TableModel>().eventsTableHelper.colEventId]);
-
-                        await Navigator.push<dynamic>(
-                          navigatorKey.currentContext,
-                          MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => RunDetailsPage(futureRun: run),
-                          ),
-                        );
+                        final RunDetailsAggregate? run = await G0<TableModel>().eventsService.getSingleRun(item[G0<TableModel>().eventsTableHelper.colEventId]);
+                        if (run != null) {
+                          await Navigator.push<dynamic>(
+                            navigatorKey.currentContext!,
+                            MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) => RunDetailsPage(futureRun: run),
+                            ),
+                          );
+                        }
                       },
                       onLongPress: () {
                         Navigator.push<void>(
@@ -77,7 +79,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
                       },
                       child: Image.network(
                         item[G0<TableModel>().eventsTableHelper.colEventImage],
-                        errorBuilder: (BuildContext context, Object error, StackTrace stackTrace) {
+                        errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
                           return Container();
                         },
                       ),
@@ -99,7 +101,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
                                 style: smallTitleStyle.copyWith(color: Colors.grey.shade500),
                                 textAlign: TextAlign.center),
                           )
-                        : '',
+                        : Container(),
                   ],
                 ),
               ),

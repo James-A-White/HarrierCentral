@@ -24,8 +24,8 @@ mixin _$CitiesModel {
   String get cityName => throw _privateConstructorUsedError;
   String? get citySearchTags => throw _privateConstructorUsedError;
   String get regionId => throw _privateConstructorUsedError;
-  num get latitude => throw _privateConstructorUsedError;
-  num get longitude => throw _privateConstructorUsedError;
+  double get latitude => throw _privateConstructorUsedError;
+  double get longitude => throw _privateConstructorUsedError;
   String get cityAscii => throw _privateConstructorUsedError;
   String? get flagFile => throw _privateConstructorUsedError;
   int get removed => throw _privateConstructorUsedError;
@@ -48,8 +48,8 @@ abstract class $CitiesModelCopyWith<$Res> {
       String cityName,
       String? citySearchTags,
       String regionId,
-      num latitude,
-      num longitude,
+      double latitude,
+      double longitude,
       String cityAscii,
       String? flagFile,
       int removed,
@@ -100,11 +100,11 @@ class _$CitiesModelCopyWithImpl<$Res, $Val extends CitiesModel>
       latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       cityAscii: null == cityAscii
           ? _value.cityAscii
           : cityAscii // ignore: cast_nullable_to_non_nullable
@@ -138,8 +138,8 @@ abstract class _$$_CitiesModelCopyWith<$Res>
       String cityName,
       String? citySearchTags,
       String regionId,
-      num latitude,
-      num longitude,
+      double latitude,
+      double longitude,
       String cityAscii,
       String? flagFile,
       int removed,
@@ -188,11 +188,11 @@ class __$$_CitiesModelCopyWithImpl<$Res>
       latitude: null == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       longitude: null == longitude
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
-              as num,
+              as double,
       cityAscii: null == cityAscii
           ? _value.cityAscii
           : cityAscii // ignore: cast_nullable_to_non_nullable
@@ -240,9 +240,9 @@ class _$_CitiesModel implements _CitiesModel {
   @override
   final String regionId;
   @override
-  final num latitude;
+  final double latitude;
   @override
-  final num longitude;
+  final double longitude;
   @override
   final String cityAscii;
   @override
@@ -307,8 +307,8 @@ abstract class _CitiesModel implements CitiesModel {
       required final String cityName,
       final String? citySearchTags,
       required final String regionId,
-      required final num latitude,
-      required final num longitude,
+      required final double latitude,
+      required final double longitude,
       required final String cityAscii,
       final String? flagFile,
       required final int removed,
@@ -326,9 +326,9 @@ abstract class _CitiesModel implements CitiesModel {
   @override
   String get regionId;
   @override
-  num get latitude;
+  double get latitude;
   @override
-  num get longitude;
+  double get longitude;
   @override
   String get cityAscii;
   @override
