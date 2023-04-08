@@ -299,20 +299,22 @@ class Utilities {
     return 'Please enter an email address';
   }
 
-//   static List<String> parseSearchTokens(String searchText, String token) {
-//     List<String> results = <String>[];
+  static List<String> parseSearchTokens(String searchText, String token) {
+    List<String> results = <String>[];
 
-//     if ((searchText != null) && (searchText.isNotEmpty)) {
-//       Pattern pattern = r"[" + token + r"]\w+(?:\s+\w+)*";
-//       final RegExp regex = RegExp(pattern, caseSensitive: false);
-//       if (regex.hasMatch(searchText)) {
-//         for (RegExpMatch match in regex.allMatches(searchText)) {
-//           results.add(match[0].replaceFirst(token.replaceFirst(r'\', ''), '').trim().toLowerCase());
-//         }
-//       }
-//     }
-//     return results;
-//   }
+    if (searchText.isNotEmpty) {
+      String pattern = r"[" + token + r"]\w+(?:\s+\w+)*";
+      final RegExp regex = RegExp(pattern, caseSensitive: false);
+      if (regex.hasMatch(searchText)) {
+        for (RegExpMatch match in regex.allMatches(searchText)) {
+          if (match[0] != null) {
+            results.add(match[0]!.replaceFirst(token.replaceFirst(r'\', ''), '').trim().toLowerCase());
+          }
+        }
+      }
+    }
+    return results;
+  }
 
   static List<double?> getLatLongFromString(List<String?> values) {
     for (String? value in values) {
@@ -412,101 +414,109 @@ class Utilities {
     return result;
   }
 
-//   static Widget getProfilePic(String image, num width, num height, BuildContext context, String pageTitle) {
-//     return GestureDetector(
-//         onTap: () {
-//           Navigator.push<void>(
-//             context,
-//             MaterialPageRoute<void>(
-//               builder: (BuildContext context) => ZoomableImagePage2(
-//                   key: const Key('511203069'),
-//                   pageTitle: pageTitle,
-//                   imageUrl: image.startsWith('http') ? image : null,
-//                   assetImage: image.contains('bundle://') ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg' : null,
-//                   appBarBackgroundColor: themeAppBarBackground,
-//                   background: Backgrounds.defaultHcBackground(),
-//                   margin: 20.0),
-//             ),
-//           );
-//         },
-//         child: image.startsWith('http')
-//             ? CachedNetworkImage(
-//                 imageUrl: image,
-//                 placeholder: (BuildContext context, String url) => SizedBox(
-//                     height: height ,
-//                     width: width ,
-//                     child: const Center(
-//                       child: SizedBox(
-//                         height: 20,
-//                         width: 20,
-//                         child: CircularProgressIndicator(
-//                           strokeWidth: 3.0,
-//                         ),
-//                       ),
-//                     )),
-//                 errorWidget: (BuildContext context, String url, Object error) => Icon(Icons.error, size: height, color: Colors.red),
-//                 //fadeOutDuration:  Duration(seconds: 1),
-//                 fadeInDuration: const Duration(milliseconds: 0),
-//                 width: width ,
-//                 height: height ,
-//                 fit: BoxFit.fill)
-//             : image.startsWith('bundle')
-//                 ? Image(
-//                     width: width ,
-//                     height: height ,
-//                     fit: BoxFit.fill,
-//                     image: AssetImage(('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
-//                   )
-//                 : Image(
-//                     width: width ,
-//                     height: height ,
-//                     fit: BoxFit.fill,
-//                     image: const AssetImage('images/avatars/avatar-2.jpg'),
-//                   ));
-//   }
+  static Widget getProfilePic(
+    String image,
+    double width,
+    double height,
+    BuildContext context,
+    String pageTitle,
+  ) {
+    return GestureDetector(
+        onTap: () {
+          Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => ZoomableImagePage2(
+                  key: const Key('511203069'),
+                  pageTitle: pageTitle,
+                  imageUrl: image.startsWith('http') ? image : null,
+                  assetImage: image.contains('bundle://') ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg' : null,
+                  appBarBackgroundColor: themeAppBarBackground,
+                  background: Backgrounds.defaultHcBackground(),
+                  margin: 20.0),
+            ),
+          );
+        },
+        child: image.startsWith('http')
+            ? CachedNetworkImage(
+                imageUrl: image,
+                placeholder: (BuildContext context, String url) => SizedBox(
+                    height: height,
+                    width: width,
+                    child: const Center(
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3.0,
+                        ),
+                      ),
+                    )),
+                errorWidget: (BuildContext context, String url, dynamic error) => Icon(
+                      Icons.error,
+                      size: height,
+                      color: Colors.red,
+                    ),
+                //fadeOutDuration:  Duration(seconds: 1),
+                fadeInDuration: const Duration(milliseconds: 0),
+                width: width,
+                height: height,
+                fit: BoxFit.fill)
+            : image.startsWith('bundle')
+                ? Image(
+                    width: width,
+                    height: height,
+                    fit: BoxFit.fill,
+                    image: AssetImage(('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                  )
+                : Image(
+                    width: width,
+                    height: height,
+                    fit: BoxFit.fill,
+                    image: const AssetImage('images/avatars/avatar-2.jpg'),
+                  ));
+  }
 
-//   static int checkSpecialRun(int runCount) {
-//     runCount ??= 0;
+  static int checkSpecialRun(int runCount) {
+    int result = specialRunNo;
 
-//     int result = specialRunNo;
+    if (((runCount == 0) || (runCount == 1))) {
+      result = specialRunFirstRun;
+    } else if (runCount == 5) {
+      result = specialRunFifthRun;
+    } else if (runCount == 10) {
+      result = specialRunTenthRun;
+    } else if (runCount % 100 == 69) {
+      result = specialRun69;
+    } else if (runCount > 0) {
+      if (runCount % 25 == 0) {
+        result = specialRun25;
+      }
 
-//     if (((runCount == 0) || (runCount == 1))) {
-//       result = specialRunFirstRun;
-//     } else if (runCount == 5) {
-//       result = specialRunFifthRun;
-//     } else if (runCount == 10) {
-//       result = specialRunTenthRun;
-//     } else if (runCount % 100 == 69) {
-//       result = specialRun69;
-//     } else if (runCount > 0) {
-//       if (runCount % 25 == 0) {
-//         result = specialRun25;
-//       }
+      if (runCount % 100 == 0) {
+        result = specialRun100;
+      }
 
-//       if (runCount % 100 == 0) {
-//         result = specialRun100;
-//       }
+      if (runCount % 250 == 0) {
+        result = specialRun250;
+      }
 
-//       if (runCount % 250 == 0) {
-//         result = specialRun250;
-//       }
+      if (runCount % 1000 == 0) {
+        result = specialRun1000;
+      }
+    }
 
-//       if (runCount % 1000 == 0) {
-//         result = specialRun1000;
-//       }
-//     }
+    if ((result == specialRunNo) && (runCount > 10)) {
+      final String s = runCount.toString();
+      final String reversed = s.split('').reversed.join('');
 
-//     if ((result == specialRunNo) && (runCount > 10)) {
-//       final String s = runCount.toString();
-//       final String reversed = s.split('').reversed.join('');
+      if (s == reversed) {
+        result = specialRunPalindrome;
+      }
+    }
 
-//       if (s == reversed) {
-//         result = specialRunPalindrome;
-//       }
-//     }
-
-//     return result;
-//   }
+    return result;
+  }
 
   static Future<bool?> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false, String cancelButtonText = 'Cancel'}) async {
     return showDialog<bool?>(

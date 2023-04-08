@@ -1,110 +1,12 @@
-// @dart=2.11
-
 // ignore_for_file: constant_identifier_names
 
-import 'package:harrier_central/imports.dart';
-
-class CheckInPackModel {
-  CheckInPackModel({
-    this.hasherId,
-    this.hemId,
-    this.isMember,
-    this.isHare,
-    this.isPaid,
-    this.nameForDisplay,
-    this.nameForSort,
-    this.paymentType,
-    this.creditAmount,
-    this.photo,
-    this.virginVisitorType,
-    this.rsvpState,
-    this.attendenceState,
-    this.discountPercent,
-    this.discountAmount,
-    this.rsvpStateIndicator,
-    this.attendenceStateIndicator,
-    this.paidStateIndicator,
-    this.hcTotalRunCount,
-    this.hcHaringCount,
-    this.historicalTotalRunCount,
-    this.historicalHaringCount,
-    this.historicalCountIsEstimate,
-    this.totalRunsThisKennel,
-    this.totalHaringThisKennel,
-    this.hemUpdatedAt,
-    this.payUpdatedAt,
-    this.credit,
-    this.isFollowing,
-  });
-
-  final String hasherId;
-  final String hemId;
-  final int isMember;
-  final int isHare;
-  final int isPaid;
-  final String nameForDisplay;
-  final String nameForSort;
-  final int paymentType;
-  final num creditAmount;
-  final String photo;
-  final int virginVisitorType;
-  final int rsvpState;
-  final int attendenceState;
-  final int discountPercent;
-  final num discountAmount;
-  Future<int> rsvpStateIndicator;
-  Future<int> attendenceStateIndicator;
-  Future<int> paidStateIndicator;
-  final int hcTotalRunCount;
-  final int hcHaringCount;
-  final int historicalTotalRunCount;
-  final int historicalHaringCount;
-  final int historicalCountIsEstimate;
-  final int totalRunsThisKennel;
-  final int totalHaringThisKennel;
-  final String hemUpdatedAt;
-  final String payUpdatedAt;
-  final num credit;
-  final int isFollowing;
-
-  static CheckInPackModel fromMap(Map<String, dynamic> map) {
-    final CheckInPackModel item = CheckInPackModel(
-      hasherId: map['hasherId'],
-      hemId: map['hemId'],
-      isMember: map['isMember'],
-      isHare: map['isHare'],
-      isPaid: map['isPaid'],
-      nameForDisplay: map['nameForDisplay'],
-      nameForSort: map['nameForSort'],
-      paymentType: map['paymentType'],
-      creditAmount: map['creditAmount'],
-      photo: map['photo'],
-      virginVisitorType: map['virginVisitorType'],
-      rsvpState: map['rsvpState'],
-      attendenceState: map['attendenceState'],
-      rsvpStateIndicator: Future<int>.value(map['rsvpState']),
-      attendenceStateIndicator: map['rsvpState'] != rsvpYes.value ? Future<int>.value(0) : Future<int>.value(map['attendenceState']),
-      discountAmount: map['discountAmount'],
-      discountPercent: map['discountPercent'],
-      paidStateIndicator: map['attendenceState'] >= attendenceAtHash.value ? Future<int>.value(map['isPaid']) : Future<int>.value(-1),
-      hcTotalRunCount: map['hcTotalRunCount'],
-      hcHaringCount: map['hcHaringCount'],
-      historicalTotalRunCount: map['historicalTotalRunCount'],
-      historicalHaringCount: map['historicalHaringCount'],
-      historicalCountIsEstimate: map['historicalCountIsEstimate'],
-      totalRunsThisKennel: map['totalRunsThisKennel'],
-      totalHaringThisKennel: map['totalHaringThisKennel'],
-      hemUpdatedAt: map['hemUpdatedAt'],
-      payUpdatedAt: map['payUpdatedAt'],
-      isFollowing: map['isFollowing'],
-      credit: map['credit'],
-    );
-    return item;
-  }
-}
+import 'package:harrier_central/imports_null_safe.dart';
 
 class CheckInPackPage extends StatefulWidget {
-  const CheckInPackPage({Key key, @required this.eventAggregate}) : super(key: key);
+  const CheckInPackPage({
+    Key? key,
+    required this.eventAggregate,
+  }) : super(key: key);
 
   final RunAdminAggregate eventAggregate;
 
@@ -114,7 +16,15 @@ class CheckInPackPage extends StatefulWidget {
   }
 }
 
-enum FilterOptions { hashersNotHereYet, hashersStillOnTrail, hashersNotPaid, visitors, virgins, clearAllFilters, cancel }
+enum FilterOptions {
+  hashersNotHereYet,
+  hashersStillOnTrail,
+  hashersNotPaid,
+  visitors,
+  virgins,
+  clearAllFilters,
+  cancel,
+}
 
 class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProviderStateMixin {
   //final PackScopedModel _packScopedModel = PackScopedModel();
@@ -125,9 +35,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   bool _isLoading = true;
   final SlidableController _slidableController = SlidableController();
 
-  List<CheckInPackModel> _packList;
-  List<CheckInPackModel> _filteredList;
-  List<CheckInPackModel> _allHashers;
+  List<CheckInPackModel> _packList = <CheckInPackModel>[];
+  List<CheckInPackModel> _filteredList = <CheckInPackModel>[];
+  List<CheckInPackModel> _allHashers = <CheckInPackModel>[];
 
   String _searchText = '';
 
@@ -139,16 +49,18 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   int _memberCount = 0;
   int _drinkCount = 0;
 
-  static const num LIST_ITEM_HEIGHT = 84.0;
+  static const double LIST_ITEM_HEIGHT = 84.0;
 
-  AnimationController _animationController;
-  Animation<double> _buttonAnimation;
-  Animation<Offset> _filterPanelAnimation;
-  Animation<RelativeRect> _hasherListAnimation;
+  late AnimationController _animationController;
+  late Animation<double> _buttonAnimation;
+  late Animation<Offset> _filterPanelAnimation;
+  late Animation<RelativeRect> _hasherListAnimation;
   final ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
-  FocusNode _searchFocusNode;
-  TextEditingController _searchController;
-  String _searchTypeText;
+
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+
+  String _searchTypeText = '';
   bool _showFilter = false;
 
   bool _useTerminalForPayment = false;
@@ -164,22 +76,22 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   @override
   void initState() {
+    _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
+      ..addListener(() {
+        setState(() {});
+      });
+
+    _filterPanelAnimation = Tween<Offset>(begin: const Offset(0, -.35), end: const Offset(0, .71)).animate(_animationController);
+    _hasherListAnimation = RelativeRectTween(begin: const RelativeRect.fromLTRB(0, 86, 0, 0), end: const RelativeRect.fromLTRB(0, 204, 0, 0)).animate(_animationController);
+
     _searchTypeText = _searchKennel;
-    _searchController = TextEditingController();
-    _searchFocusNode = FocusNode();
 
     _getAllHashers().then((void _) {
       // get all Hashers first, then build the tables from the backend
       _refreshSqlTablesFromBackend(true);
     });
     super.initState();
-
-    _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
-
-    _buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
-      ..addListener(() {
-        setState(() {});
-      });
   }
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
@@ -396,34 +308,33 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           
           ''';
 
-      List<Map<String, dynamic>> results;
-
       try {
+        List<Map<String, dynamic>> results;
         results = await G0<Database>().rawQuery(sql);
+
+        setState(() {
+          if (results.isNotEmpty) {
+            _packList = <CheckInPackModel>[];
+            for (int i = 0; i < results.length; i++) {
+              final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
+              if (item.nameForDisplay.toLowerCase().startsWith('placeholder user')) {
+                continue;
+              }
+              _packList.add(item);
+            }
+
+            setState(() {
+              _isLoading = false;
+            });
+          }
+
+          //print('Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}');
+
+          _filterPackListResults();
+        });
       } catch (x) {
         //print(x);
       }
-
-      setState(() {
-        if (results.isNotEmpty) {
-          _packList = <CheckInPackModel>[];
-          for (int i = 0; i < results.length; i++) {
-            final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
-            if (item.nameForDisplay.toLowerCase().startsWith('placeholder user')) {
-              continue;
-            }
-            _packList.add(item);
-          }
-
-          setState(() {
-            _isLoading = false;
-          });
-        }
-
-        //print('Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}');
-
-        _filterPackListResults();
-      });
     } catch (e) {
       //print(e);
     }
@@ -439,19 +350,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     if (_showFilter) {
       _filteredList = _packList
           .where((CheckInPackModel a) =>
-              ((_filterValues[0] == 0) || (_filterValues[0] == -1 && ((a.rsvpState ?? 0) <= 1)) || (_filterValues[0] == 1 && (a.rsvpState ?? 0) >= 2)) &&
+              ((_filterValues[0] == 0) || (_filterValues[0] == -1 && ((a.rsvpState) <= 1)) || (_filterValues[0] == 1 && (a.rsvpState) >= 2)) &&
               ((_filterValues[1] == 0)
-                  //|| (filterValues[1] == -1 && ((a.attendenceState ?? 0) < 20))
+                  //|| (filterValues[1] == -1 && ((a.attendenceState) < 20))
                   ||
-                  (_filterValues[1] == 1 && (a.attendenceState ?? 0) < 20 && (a.rsvpState ?? 0) >= 2)) &&
-              ((_filterValues[2] == 0) || (_filterValues[2] == -1 && ((a.attendenceState ?? 0) < 20)) || (_filterValues[2] == 1 && (a.attendenceState ?? 0) >= 20)) &&
-              ((_filterValues[3] == 0) || (_filterValues[3] == -1 && ((a.isPaid ?? 0) == 0)) || (_filterValues[3] == 1 && (a.isPaid ?? 0) == 1)) &&
-              ((_filterValues[4] == 0) || (_filterValues[4] == -1 && ((a.attendenceState ?? 0) < 30)) || (_filterValues[4] == 1 && (a.attendenceState ?? 0) >= 30)) &&
-              ((_filterValues[5] == 0) || (_filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (_filterValues[5] == 1 && (a.isMember ?? 0) == 1)) &&
+                  (_filterValues[1] == 1 && (a.attendenceState) < 20 && (a.rsvpState) >= 2)) &&
+              ((_filterValues[2] == 0) || (_filterValues[2] == -1 && ((a.attendenceState) < 20)) || (_filterValues[2] == 1 && (a.attendenceState) >= 20)) &&
+              ((_filterValues[3] == 0) || (_filterValues[3] == -1 && ((a.isPaid) == 0)) || (_filterValues[3] == 1 && (a.isPaid) == 1)) &&
+              ((_filterValues[4] == 0) || (_filterValues[4] == -1 && ((a.attendenceState) < 30)) || (_filterValues[4] == 1 && (a.attendenceState) >= 30)) &&
+              ((_filterValues[5] == 0) || (_filterValues[5] == -1 && ((a.isMember) == 0)) || (_filterValues[5] == 1 && (a.isMember) == 1)) &&
               ((_filterValues[6] == 0) ||
                   (_filterValues[6] == -1) ||
-                  (_filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && ((_checkSpecialRun((a.totalRunsThisKennel ?? 0) + (a.historicalTotalRunCount ?? 0)))) ||
-                      (_checkSpecialHaring((a.totalHaringThisKennel ?? 0) + (a.historicalHaringCount ?? 0))))))
+                  (_filterValues[6] == 1 && ((a.attendenceState) >= 20) && ((_checkSpecialRun((a.totalRunsThisKennel) + (a.historicalTotalRunCount)))) ||
+                      (_checkSpecialHaring((a.totalHaringThisKennel) + (a.historicalHaringCount))))))
           .toList();
 
       _filteredList.sort((CheckInPackModel a, CheckInPackModel b) => a.nameForDisplay.compareTo(b.nameForDisplay));
@@ -460,7 +371,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       _filteredList.addAll(_packList);
     }
 
-    if ((_searchText != null) && (_searchText.isNotEmpty)) {
+    if (_searchText.isNotEmpty) {
       _filteredList = _filteredList.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(_searchText.toLowerCase())).toList();
       if (_filteredList.isEmpty) {
         // if (!ignoreTextFilter) {
@@ -524,12 +435,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         _memberCount = results[0]['memberCount'];
       }
 
-      if (_packList != null) {
+      if (_packList.isNotEmpty) {
         final List<CheckInPackModel> specialRunNumbers =
-            _packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount ?? 0) + (a.totalRunsThisKennel ?? 0)))).toList();
+            _packList.where((CheckInPackModel a) => ((a.attendenceState) >= 20) && (_checkSpecialRun((a.historicalTotalRunCount) + (a.totalRunsThisKennel)))).toList();
 
-        specialRunNumbers
-            .addAll(_packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (_checkSpecialHaring((a.historicalHaringCount ?? 0) + (a.totalHaringThisKennel ?? 0)))).toList());
+        specialRunNumbers.addAll(_packList.where((CheckInPackModel a) => ((a.attendenceState) >= 20) && (_checkSpecialHaring((a.historicalHaringCount) + (a.totalHaringThisKennel)))).toList());
 
         _drinkCount = specialRunNumbers.length;
       } else {
@@ -547,7 +457,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _findHasher() async {
-    final Map<String, dynamic> result = await Navigator.push<Map<String, dynamic>>(
+    final Map<String, dynamic>? result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute<Map<String, dynamic>>(
         settings: const RouteSettings(),
@@ -572,82 +482,87 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   void _showVirginVisitorPopup(BuildContext parentContext) {
-    int scrollIndex = -1;
+    int? scrollIndex = -1;
 
     const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
 
-    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+    final Future<Map<String, String>?> dlg = showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return addVirginVisitorPopup;
         });
 
-    dlg.then((Map<String, String> x) {
-      final String name = x['name'];
-      final String type = x['type'];
-      final String email = x['email'] ?? '';
-      final String phoneNumber = x['phone'] ?? '';
+    dlg.then<Map<String, String>?>(
+      (Map<String, String>? x) {
+        if (x != null) {
+          final String name = x['name'] ?? '';
+          final String type = x['type'] ?? '';
+          final String email = x['email'] ?? '';
+          final String phoneNumber = x['phone'] ?? '';
 
-      EnumVirginVisitor<int> evv = enumVirgin;
-      if (type == enumAnonymousVisitor.value.toString()) {
-        evv = enumAnonymousVisitor;
-      }
+          EnumVirginVisitor<int> evv = enumVirgin;
+          if (type == enumAnonymousVisitor.value.toString()) {
+            evv = enumAnonymousVisitor;
+          }
 
-      if (type != 'cancel') {
-        setState(() {
-          _isLoading = true;
-        });
-        final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEventAsVisitor(
-              widget.eventAggregate.event.eventId,
-              name,
-              evv.value,
-              attendenceUnknown.value,
-              email,
-              phoneNumber,
-              AppDomainType.event,
-            );
-
-        retVal.then((List<dynamic> adHocData) {
-          _refreshPackListFromTables(false).then((void _) {
-            _refreshCounters(true);
-            // if (name?.isNotEmpty ?? false) {
-            //   searchText = name;
-            //   searchController.text = searchText;
-            //   filterPackListResults();
-            // }
-
+          if (type != 'cancel') {
             setState(() {
-              _isLoading = false;
+              _isLoading = true;
             });
+            final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEventAsVisitor(
+                  widget.eventAggregate.event.eventId,
+                  name,
+                  evv.value,
+                  attendenceUnknown.value,
+                  email,
+                  phoneNumber,
+                  AppDomainType.event,
+                );
 
-            if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
-              if ((adHocData != null) && (adHocData.isNotEmpty)) {
-                final String hem = adHocData[0]['hasherEventMapId'].toString().toLowerCase();
-                scrollIndex = _packList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
-                if ((scrollIndex ?? -1) >= 0) {
-                  final CheckInPackModel hasher = _packList[scrollIndex];
-                  if (hasher != null) {
-                    final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, hasher);
+            retVal.then((List<dynamic> adHocData) {
+              _refreshPackListFromTables(false).then((void _) {
+                _refreshCounters(true);
+                // if (name?.isNotEmpty ?? false) {
+                //   searchText = name;
+                //   searchController.text = searchText;
+                //   filterPackListResults();
+                // }
 
-                    ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
-                      setState(() {
-                        if ((scrollIndex ?? -1) >= 0) {
-                          if (_scrollController.hasClients) {
-                            _scrollController.animateTo(scrollIndex * LIST_ITEM_HEIGHT, duration: const Duration(seconds: 1), curve: Curves.ease);
+                setState(() {
+                  _isLoading = false;
+                });
+
+                if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
+                  if (adHocData.isNotEmpty) {
+                    final String hem = adHocData[0]['hasherEventMapId'].toString().toLowerCase();
+                    scrollIndex = _packList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
+                    if ((scrollIndex ?? -1) >= 0) {
+                      final CheckInPackModel hasher = _packList[scrollIndex!];
+                      //if (hasher != null) {
+                      final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState!, hasher);
+
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
+                        setState(() {
+                          if ((scrollIndex ?? -1) >= 0) {
+                            if (_scrollController.hasClients) {
+                              _scrollController.animateTo(scrollIndex! * LIST_ITEM_HEIGHT, duration: const Duration(seconds: 1), curve: Curves.ease);
+                            }
                           }
-                        }
+                        });
                       });
-                    });
+                      // }
+                    }
                   }
                 }
-              }
-            }
-          });
-        });
-      }
-    });
+              });
+            });
+          }
+        }
+        return;
+      },
+    );
 
     // dlg.whenComplete(action)
   }
@@ -986,11 +901,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
-    ////print('mediaQuery = ${MediaQuery.of(context).size.toString()}');
-    ////print('filter dx = ${filterPanelAnimation.value.dy}');
-    _filterPanelAnimation ??= Tween<Offset>(begin: const Offset(0, -.35), end: const Offset(0, .71)).animate(_animationController);
-    _hasherListAnimation ??= RelativeRectTween(begin: const RelativeRect.fromLTRB(0, 86, 0, 0), end: const RelativeRect.fromLTRB(0, 204, 0, 0)).animate(_animationController);
-    ////print('rect = ${filterPanelAnimation.value}');
     return Scaffold(
       key: _scaffoldKey,
       floatingActionButton: SpeedDial(
@@ -1082,7 +992,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
                             )),
                   )),
-          if ((widget.eventAggregate?.kennel?.bankScheme != null) && (widget.eventAggregate?.kennel?.bankScheme != '')) ...<SpeedDialChild>[
+          if ((widget.eventAggregate.kennel.bankScheme != null) && (widget.eventAggregate.kennel.bankScheme != '')) ...<SpeedDialChild>[
             SpeedDialChild(
               child: const Icon(MaterialCommunityIcons.bank),
               backgroundColor: Colors.purple,
@@ -1104,12 +1014,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ],
         ],
       ),
-      appBar: _getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : '${widget?.eventAggregate?.event?.eventName ?? ''} Check In'),
+      appBar: _getAppBar((_isLoading || (widget.eventAggregate.event.eventName.isEmpty)) ? '... Loading' : '${widget.eventAggregate.event.eventName} Check In'),
       body: _isLoading
           ? const HcCircularProgressIndicator(key: Key('430320291'))
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
               SizedBox(height: MediaQuery.of(context).size.height, width: 10),
-              (_filteredList == null || _filteredList.isEmpty)
+              (_filteredList.isEmpty)
                   //? Positioned(top: showFilter ? 210 : 95, left:0, right: 0, child: getAddHasherBlock())
                   ? Positioned(top: (_filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: _getAddHasherBlock())
                   : PositionedTransition(
@@ -1122,26 +1032,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  // Widget buildScanResultSnackbar(BuildContext contextl, String resultStr) {
-  //   final SnackBar snackbar = SnackBar(
-  //     duration: const Duration(seconds: 4),
-  //     content: Column(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: <Widget>[
-  //         Text(
-  //           resultStr,
-  //           style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
-  //         ),
-  //       ],
-  //     ),
-  //     backgroundColor: Theme.of(context).accentColor,
-  //   );
-
-  //   return snackbar;
-  // }
-
   SnackBar _buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, CheckInPackModel packMember) {
-    num amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+    double amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
 
     amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
     amountOwed -= packMember.discountAmount;
@@ -1161,30 +1053,37 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         if ((rsvpState != -1) && (attendenceState == -1)) {
           setState(() {
-            packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
+            // NULLSAFETODO
+            //packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           });
           await _updateRsvpState(packMember, rsvpState, isHare);
           setState(() {});
         } else if (attendenceState != -1) {
           setState(() {
-            packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
-            packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+            // NULLSAFETODO
+            // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
+            // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
           });
           await _updateAttendenceState(packMember, rsvpState, attendenceState, isHare);
           setState(() {});
         }
       },
-      onPaidCallback: (CheckInPackModel packMember, int paymentType, {OtherPaymentPopupResult userInput}) async {
-        final num totalDue = userInput?.totalAmount;
-        //final num topUpAmount = userInput['topUpAmount'];
-        final num specialPriceAmount = userInput == null ? null : userInput.specialPriceAmount ?? amountOwed;
-        final String specialPriceReason = userInput?.specialPriceReason;
-        final bool useSpecialPriceAsDefault = userInput?.useSpecialPriceAsDefault;
+      onPaidCallback: (
+        CheckInPackModel packMember,
+        int paymentType, {
+        OtherPaymentPopupResult? userInput,
+      }) async {
+        final double? totalDue = userInput?.totalAmount;
+        //final double topUpAmount = userInput['topUpAmount'];
+        final double? specialPriceAmount = userInput == null ? null : userInput.specialPriceAmount ?? amountOwed;
+        final String? specialPriceReason = userInput?.specialPriceReason;
+        final bool? useSpecialPriceAsDefault = userInput?.useSpecialPriceAsDefault;
 
         setState(() {
-          packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
-          packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
-          packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+          // NULLSAFETODO
+          // packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
+          // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
+          // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
         });
         await _payForEvent(
           context,
@@ -1207,10 +1106,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     ScaffoldState scaffoldState,
     int paymentType,
     CheckInPackModel packMember,
-    num otherAmount, {
-    num specialRunPrice,
-    String specialRunPriceReason,
-    bool useSpecialPriceAsDefault,
+    double? otherAmount, {
+    double? specialRunPrice,
+    String? specialRunPriceReason,
+    bool? useSpecialPriceAsDefault,
   }) async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     dynamic payForExtras = payForRunOnly;
@@ -1221,9 +1120,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             (paymentType == paymentCashOtherAmount.value) ||
             (paymentType == paymentHashCredit.value) ||
             (paymentType == paymentBankTransferOtherAmount.value)) &&
-        ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
-      final num runOnlyPrice = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-      final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
+        ((widget.eventAggregate.event.eventPriceForExtras) != 0)) {
+      final double runOnlyPrice = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+      final double runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras!;
 
       final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
       final String runPlusExtrasPriceStr = IveCoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
@@ -1261,7 +1160,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           });
     }
 
-    final List<dynamic> results = await _processPayment(
+    final List<dynamic>? results = await _processPayment(
       packMember,
       paymentType,
       otherAmount: otherAmount,
@@ -1273,34 +1172,43 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     if (results != null) {
       if ((results[0]['terminalWasUsedForPayment'] == null) || (!results[0]['terminalWasUsedForPayment'])) {
         if (!mounted) return;
-        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
+        BankTransferQr.showBankTransferSnackbar(
+          widget.eventAggregate,
+          results,
+          paymentType,
+          context,
+          packMember.nameForDisplay,
+          packMember.isMember,
+          otherAmount,
+        );
       }
     }
     await _refreshPackListFromTables(false);
     await _refreshCounters(true);
   }
 
-  Future<List<dynamic>> _processPayment(
+  Future<List<dynamic>?> _processPayment(
     CheckInPackModel packMember,
     int paymentType, {
-    num otherAmount = -1,
+    double? otherAmount = -1,
     EnumPayForExtras<int> doPayForExtras = payForRunOnly,
-    num specialRunPrice,
-    String specialRunPriceReason,
-    bool useSpecialPriceAsDefault = false,
+    double? specialRunPrice,
+    String? specialRunPriceReason,
+    bool? useSpecialPriceAsDefault = false,
   }) async {
     bool paymentCancelled = false;
     bool terminalWasUsedForPayment = false;
 
     setState(() {
-      packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
-      packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
-      packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+      // NULLSAFETODO
+      // packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
+      // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
+      // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
     });
 
     final String hemId = packMember.hemId;
     final String hasherId = packMember.hasherId;
-    num amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+    double amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
     if ((otherAmount != null) && (otherAmount != -1)) {
       amount = otherAmount;
     }
@@ -1308,7 +1216,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final Random random = Random.secure();
     final List<int> values = List<int>.generate(6, (int i) => random.nextInt(26));
     final String randomString = String.fromCharCodes(Iterable<int>.generate(values.length, (int i) => values[i] + 65));
-    String paymentReference;
+
+    String paymentReference = '';
 
     if (_useTerminalForPayment) {
       // this is a bit of a hack to use this boolean to indicate if the
@@ -1316,49 +1225,53 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       _useTerminalForPayment = false;
       terminalWasUsedForPayment = true;
 
-      num terminalAmount = amount;
-      if (doPayForExtras == payForRunAndExtras) {
-        terminalAmount += widget.eventAggregate.event.eventPriceForExtras;
+      double terminalAmount = amount;
+      if ((doPayForExtras == payForRunAndExtras) && (widget.eventAggregate.event.eventPriceForExtras != null)) {
+        terminalAmount += widget.eventAggregate.event.eventPriceForExtras!;
       }
 
-      final String affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
-      await Sumup.init(affiliateKey);
+      String? affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
+      if (affiliateKey != null) {
+        await Sumup.init(affiliateKey);
 
-      bool isLoggedIn = await Sumup.isLoggedIn;
-      if (!isLoggedIn) {
-        await Sumup.login();
-      }
+        bool isLoggedIn = await Sumup.isLoggedIn ?? false;
+        if (!isLoggedIn) {
+          await Sumup.login();
+        }
 
-      final String title = '${widget.eventAggregate.event.eventName} (${packMember.nameForDisplay})';
-      paymentReference = 'HC:$randomString';
+        final String title = '${widget.eventAggregate.event.eventName} (${packMember.nameForDisplay})';
+        paymentReference = 'HC:$randomString';
 
-      isLoggedIn = await Sumup.isLoggedIn;
-      if (isLoggedIn) {
-        final SumupPayment payment = SumupPayment(
-          title: title,
-          total: terminalAmount,
-          currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode ?? 'USD',
-          foreignTransactionId: paymentReference,
-          saleItemsCount: 1,
-          skipSuccessScreen: true,
-          tip: .0,
-        );
+        isLoggedIn = await Sumup.isLoggedIn ?? false;
+        if (isLoggedIn) {
+          final SumupPayment payment = SumupPayment(
+            title: title,
+            total: terminalAmount,
+            // // NULLSAFETODO - TEST
+            //             currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode,
+            currency: widget.eventAggregate.extensions.curCode,
+            foreignTransactionId: paymentReference,
+            saleItemsCount: 1,
+            skipSuccessScreen: true,
+            tip: .0,
+          );
 
-        //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
+          //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
 
-        final SumupPaymentRequest request = SumupPaymentRequest(payment);
+          final SumupPaymentRequest request = SumupPaymentRequest(payment);
 
-        request.info = <String, String>{
-          'hashName': 'packMember.nameForDisplay',
-          'foreignTransId': paymentReference,
-        };
+          request.info = <String, String>{
+            'hashName': 'packMember.nameForDisplay',
+            'foreignTransId': paymentReference,
+          };
 
-        final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
-        if ((checkoutResult == null) || (!checkoutResult.success)) {
-          paymentCancelled = true;
-        } else {
-          if (checkoutResult?.transactionCode != null) {
-            paymentReference = 'SU:${checkoutResult.transactionCode}';
+          final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
+          if (!(checkoutResult.success ?? false)) {
+            paymentCancelled = true;
+          } else {
+            if (checkoutResult.transactionCode != null) {
+              paymentReference = 'SU:${checkoutResult.transactionCode}';
+            }
           }
         }
       }
@@ -1372,8 +1285,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       final PaymentsService paySrv = PaymentsService();
       final List<dynamic> result = await paySrv.payForEvent(
         widget.eventAggregate.event.eventId,
-        ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
-        ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
+        ((hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
+        ((hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
         paymentType,
         amount,
         attendenceAtHash.value,
@@ -1385,7 +1298,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         useSpecialPriceAsDefault: useSpecialPriceAsDefault,
       );
 
-      if ((result != null) && (result.isNotEmpty)) {
+      if (result.isNotEmpty) {
         final Map<String, dynamic> m = result[0];
         m.addAll(<String, dynamic>{'terminalWasUsedForPayment': terminalWasUsedForPayment});
       }
@@ -1394,14 +1307,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
   }
 
-  static const num LIST_ITEM_LEFT_MARGIN = 88.0;
+  static const double LIST_ITEM_LEFT_MARGIN = 88.0;
 
   Widget _listItem(BuildContext context, CheckInPackModel packMember) {
     return GestureDetector(
       onTap: () {
         _searchFocusNode.unfocus();
         if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
-          final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, packMember);
+          final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState!, packMember);
 
           ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -1410,8 +1323,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       child: Container(
         color: ((widget.eventAggregate.event.isCountedRun == 1) &&
                 (packMember.attendenceState >= attendenceAtHash.value) &&
-                ((_checkSpecialRun((packMember.totalRunsThisKennel ?? 0) + (packMember.historicalTotalRunCount ?? 0))) ||
-                    (_checkSpecialHaring((packMember.totalHaringThisKennel ?? 0) + (packMember.historicalHaringCount ?? 0)))))
+                ((_checkSpecialRun((packMember.totalRunsThisKennel) + (packMember.historicalTotalRunCount))) ||
+                    (_checkSpecialHaring((packMember.totalHaringThisKennel) + (packMember.historicalHaringCount)))))
             ? Colors.amber.shade100
             : Colors.white,
         width: MediaQuery.of(context).size.width,
@@ -1426,12 +1339,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   style: TextStyle(fontFamily: (packMember.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
             ),
 
-            //(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount ?? 0)
+            //(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount)
 
             if ((widget.eventAggregate.event.isCountedRun == 1) &&
                 (packMember.attendenceState >= attendenceAtHash.value) &&
-                ((_checkSpecialRun((packMember.totalRunsThisKennel ?? 0) + (packMember.historicalTotalRunCount ?? 0))) ||
-                    (_checkSpecialHaring((packMember.totalHaringThisKennel ?? 0) + (packMember.historicalHaringCount ?? 0))))) ...<Widget>[
+                ((_checkSpecialRun((packMember.totalRunsThisKennel) + (packMember.historicalTotalRunCount))) ||
+                    (_checkSpecialHaring((packMember.totalHaringThisKennel) + (packMember.historicalHaringCount))))) ...<Widget>[
               Positioned(right: 8.0, top: 9.0, width: 35.0, height: 35.0, child: Image.asset('images/icons/beer_mug.png')),
             ],
 
@@ -1453,106 +1366,105 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             ),
 
             Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 0.0,
-              bottom: 5.0,
-              child: FutureBuilder<int>(
-                  future: packMember.rsvpStateIndicator,
-                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                    return Stack(
-                      alignment: AlignmentDirectional.center,
-                      children: <Widget>[
-                        Container(height: 30, width: 30, color: Colors.transparent),
-                        CircleAvatar(
-                          backgroundColor: ((snapshot?.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
-                          radius: 14.0,
-                        ),
-                        ((snapshot?.data ?? 0) == 0)
-                            ? Container()
-                            : snapshot.data == rsvpUpdating.value
-                                ? Icon(delayIcon, color: Colors.blue[800])
-                                : snapshot.data == rsvpNo.value
-                                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
-                                    : snapshot.data == rsvpMaybe.value
-                                        ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
-                                        : packMember.isHare == 0
-                                            ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0)
-                                            : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0)
-                      ],
-                    );
-                  }),
-            ),
+                left: LIST_ITEM_LEFT_MARGIN + 0.0,
+                bottom: 5.0,
+                // NULLSAFETODO
+                child: Container()
+                // child: FutureBuilder<int>(
+                //     future: packMember.rsvpStateIndicator,
+                //     builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                //       return Stack(
+                //         alignment: AlignmentDirectional.center,
+                //         children: <Widget>[
+                //           Container(height: 30, width: 30, color: Colors.transparent),
+                //           CircleAvatar(
+                //             backgroundColor: ((snapshot.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
+                //             radius: 14.0,
+                //           ),
+                //           ((snapshot.data) == 0)
+                //               ? Container()
+                //               : snapshot.data == rsvpUpdating.value
+                //                   ? Icon(delayIcon, color: Colors.blue[800])
+                //                   : snapshot.data == rsvpNo.value
+                //                       ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
+                //                       : snapshot.data == rsvpMaybe.value
+                //                           ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
+                //                           : packMember.isHare == 0
+                //                               ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0)
+                //                               : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0)
+                //         ],
+                //       );
+                //     }),
+                ),
 
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 35.0,
-              bottom: 5.0,
-              child: FutureBuilder<int>(
-                  future: packMember.attendenceStateIndicator,
-                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                    return Stack(
-                      alignment: AlignmentDirectional.center,
-                      children: <Widget>[
-                        Container(height: 30, width: 30, color: Colors.transparent),
-                        CircleAvatar(
-                          backgroundColor: ((snapshot?.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
-                          radius: 14.0,
-                        ),
-                        ((!snapshot.hasData) || ((snapshot?.data ?? 0) == 0))
-                            ? Container()
-                            : snapshot.data == attendenceUpdating.value
-                                ? Icon(delayIcon, color: Colors.blue[800])
-                                : snapshot.data == attendenceNo.value
-                                    ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
-                                    : snapshot.data == attendenceAtHash.value
-                                        ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
-                                        : snapshot.data >= attendenceOnIn.value
-                                            ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green)
-                                            : Container()
-                      ],
-                    );
-                  }),
-            ),
+            Positioned(left: LIST_ITEM_LEFT_MARGIN + 35.0, bottom: 5.0, child: Container()
+                // child: FutureBuilder<int>(
+                //     future: packMember.attendenceStateIndicator,
+                //     builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                //       return Stack(
+                //         alignment: AlignmentDirectional.center,
+                //         children: <Widget>[
+                //           Container(height: 30, width: 30, color: Colors.transparent),
+                //           CircleAvatar(
+                //             backgroundColor: ((snapshot.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
+                //             radius: 14.0,
+                //           ),
+                //           ((!snapshot.hasData) || ((snapshot.data) == 0))
+                //               ? Container()
+                //               : snapshot.data == attendenceUpdating.value
+                //                   ? Icon(delayIcon, color: Colors.blue[800])
+                //                   : snapshot.data == attendenceNo.value
+                //                       ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
+                //                       : snapshot.data == attendenceAtHash.value
+                //                           ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
+                //                           : snapshot.data >= attendenceOnIn.value
+                //                               ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green)
+                //                               : Container()
+                //         ],
+                //       );
+                //     }),
+                ),
 
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 70.0,
-              bottom: 5.0,
-              child: FutureBuilder<int>(
-                  future: packMember.paidStateIndicator,
-                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                    return Stack(
-                      alignment: AlignmentDirectional.center,
-                      children: <Widget>[
-                        Container(height: 30, width: 30, color: Colors.transparent),
-                        CircleAvatar(
-                          backgroundColor: ((snapshot?.data == null) || (snapshot.data < 0)) ? Colors.grey[350] : Colors.white,
-                          radius: 14.0,
-                        ),
-                        ((snapshot?.data ?? -1) == -1)
-                            ? Container()
-                            : snapshot.data == isPaidUpdating.value
-                                ? Icon(delayIcon, color: Colors.blue[800])
-                                : snapshot.data == isPaidNo.value
-                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
-                                    : packMember.isPaid == isPaidYes.value
-                                        ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
-                                        : Container()
-                      ],
-                    );
-                  }),
-            ),
+            Positioned(left: LIST_ITEM_LEFT_MARGIN + 70.0, bottom: 5.0, child: Container()
+                // NULLSAFETODO
+                // child: FutureBuilder<int>(
+                //     future: packMember.paidStateIndicator,
+                //     builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                //       return Stack(
+                //         alignment: AlignmentDirectional.center,
+                //         children: <Widget>[
+                //           Container(height: 30, width: 30, color: Colors.transparent),
+                //           CircleAvatar(
+                //             backgroundColor: ((snapshot.data == null) || (snapshot.data < 0)) ? Colors.grey[350] : Colors.white,
+                //             radius: 14.0,
+                //           ),
+                //           ((snapshot.data ?? -1) == -1)
+                //               ? Container()
+                //               : snapshot.data == isPaidUpdating.value
+                //                   ? Icon(delayIcon, color: Colors.blue[800])
+                //                   : snapshot.data == isPaidNo.value
+                //                       ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                //                       : packMember.isPaid == isPaidYes.value
+                //                           ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
+                //                           : Container()
+                //         ],
+                //       );
+                //     }),
+                ),
 
             if ((packMember.totalHaringThisKennel != null) && (packMember.totalHaringThisKennel != 0))
               Positioned(
                 right: 4,
                 bottom: 17,
-                child: Text('Hared = ${packMember.totalHaringThisKennel + (packMember.historicalHaringCount ?? 0)}',
-                    style: _getHaringLabelStyle(packMember.totalHaringThisKennel + (packMember.historicalHaringCount ?? 0), packMember.attendenceState)),
+                child: Text('Hared = ${packMember.totalHaringThisKennel + (packMember.historicalHaringCount)}',
+                    style: _getHaringLabelStyle(packMember.totalHaringThisKennel + (packMember.historicalHaringCount), packMember.attendenceState)),
               ),
             if ((packMember.totalRunsThisKennel != null) && (packMember.totalRunsThisKennel != 0))
               Positioned(
                 right: 4,
                 bottom: 1,
-                child: Text('Total Runs = ${packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount ?? 0)}',
-                    style: _getRunLabelStyle(packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount ?? 0), packMember.attendenceState)),
+                child: Text('Total Runs = ${packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount)}',
+                    style: _getRunLabelStyle(packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount), packMember.attendenceState)),
               ),
           ],
         ),
@@ -1564,7 +1476,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     if (widget.eventAggregate.event.isCountedRun == 0) {
       return mediumText.copyWith(color: Colors.grey);
     } else if (attendenceState >= attendenceAtHash.value) {
-      if (_checkSpecialRun(numRuns ?? 0)) {
+      if (_checkSpecialRun(numRuns)) {
         return mediumTextRed;
       }
     }
@@ -1575,7 +1487,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     if (widget.eventAggregate.event.isCountedRun == 0) {
       return mediumText.copyWith(color: Colors.grey);
     } else if (attendenceState >= attendenceAtHash.value) {
-      if (_checkSpecialHaring(numHaring ?? 0)) {
+      if (_checkSpecialHaring(numHaring)) {
         return mediumTextRed;
       }
     }
@@ -1601,7 +1513,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'RSVP Result', serverMessage, 'OK');
+      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'RSVP Result', serverMessage, 'OK');
     }
 
     await _refreshPackListFromTables(false);
@@ -1641,16 +1553,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             physics: const AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,
             controller: _scrollController,
-            itemCount: (_filteredList?.length ?? 0) + 2,
+            itemCount: (_filteredList.length) + 2,
             itemBuilder: (BuildContext context, int index) {
-              if (index == (_filteredList?.length ?? 0)) {
+              if (index == (_filteredList.length)) {
                 return _getAddHasherBlock();
-              } else if (index == (_filteredList?.length ?? 0) + 1) {
+              } else if (index == (_filteredList.length) + 1) {
                 return const SizedBox(height: 120);
               } else {
                 final CheckInPackModel packMember = _filteredList[index];
 
-                num amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+                double amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
 
                 amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
                 amountOwed -= packMember.discountAmount;
@@ -1666,33 +1578,35 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   actionPane: const SlidableBehindActionPane(),
                   actionExtentRatio: 0.35,
                   dismissal: SlidableDismissal(
-                    onWillDismiss: (SlideActionType actionType) {
-                      if (actionType == SlideActionType.secondary) {
-                        _useTerminalForPayment = false;
-                      }
-                      if (packMember.isPaid != 1) {
-                        _payForEvent(
-                          context,
-                          _scaffoldKey.currentState,
-                          actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
-                          packMember,
-                          -1,
-                        );
-                      } else {
+                    onWillDismiss: (SlideActionType? actionType) {
+                      if (actionType != null) {
                         if (actionType == SlideActionType.secondary) {
-                          _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
+                          _useTerminalForPayment = false;
                         }
-                      }
+                        if (packMember.isPaid != 1) {
+                          _payForEvent(
+                            context,
+                            _scaffoldKey.currentState!,
+                            actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
+                            packMember,
+                            -1,
+                          );
+                        } else {
+                          if (actionType == SlideActionType.secondary) {
+                            _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
+                          }
+                        }
 
-                      Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
-                        _slidableController.activeState.close();
-                      });
+                        Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
+                          _slidableController.activeState?.close();
+                        });
+                      }
 
                       return false;
                     },
                     dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
                     child: const SlidableDrawerDismissal(),
-                    onDismissed: (SlideActionType actionType) {
+                    onDismissed: (SlideActionType? actionType) {
                       setState(() {});
                     },
                   ),
@@ -1730,7 +1644,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 10.0),
-                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
+                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
                                           textAlign: TextAlign.center,
                                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                                     ),
@@ -1739,7 +1653,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               ),
                         onTap: () {
                           _useTerminalForPayment = false;
-                          _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
+                          _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
                         }),
                     if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
                       IconSlideAction(
@@ -1754,7 +1668,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 10.0),
-                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
+                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
                                 ),
@@ -1763,7 +1677,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                           ),
                           onTap: () {
                             _useTerminalForPayment = true;
-                            _slidableController.activeState.dismiss(actionType: SlideActionType.primary);
+                            _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
                           }),
                     ],
                   ],
@@ -1826,7 +1740,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 5.0),
-                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                                   ),
@@ -1848,7 +1762,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  String _capitalizeFirstLetter(String s) => (s?.isNotEmpty ?? false) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
+  String _capitalizeFirstLetter(String s) => s.isNotEmpty ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
 
   Widget _getAddHasherBlock() {
     return GestureDetector(
@@ -1865,17 +1779,18 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               hashNameFromSearch: _capitalizeFirstLetter(_searchController.text),
             ),
           ),
-        ).then((HashersModel result) {
+        ).then((HashersModel? result) {
           if (result != null) {
             _refreshPackListFromTables(true);
-            if (result.dispName == '') {
-              result = result.copyWith(dispName: null);
-            }
-            if (result.hashName == '') {
-              result = result.copyWith(hashName: null);
-            }
+            // NULLSAFETODO - TEST
+            // if (result.dispName == '') {
+            //   result = result.copyWith(dispName: null);
+            // }
+            // if (result.hashName == '') {
+            //   result = result.copyWith(hashName: null);
+            // }
 
-            _searchText = result.dispName ?? result.hashName ?? '${result.firstName} ${result.lastName}' ?? '<error no name entered>';
+            _searchText = result.dispName;
             _searchController.text = _searchText;
             _filterPackListResults();
           }
@@ -1912,7 +1827,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 }
 
 class AddVisitorVirginPopup extends StatefulWidget {
-  const AddVisitorVirginPopup({Key key}) : super(key: key);
+  const AddVisitorVirginPopup({
+    Key? key,
+  }) : super(key: key);
 
   @override
   AddVisitorVirginPopupState createState() => AddVisitorVirginPopupState();

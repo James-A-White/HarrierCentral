@@ -1,15 +1,14 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class PaymentSnackBar extends SnackBar {
   const PaymentSnackBar({
-    Key key,
-    @required this.context,
-    @required this.packMember,
-    @required this.eventAggregate,
-    @required this.onRsvpCallback,
-    @required this.onPaidCallback,
-    @required this.amountOwed,
+    Key? key,
+    required this.context,
+    required this.packMember,
+    required this.eventAggregate,
+    required this.onRsvpCallback,
+    required this.onPaidCallback,
+    required this.amountOwed,
   }) : super(key: key, content: const Text('test'));
 
   final BuildContext context;
@@ -17,7 +16,7 @@ class PaymentSnackBar extends SnackBar {
   final RunAdminAggregate eventAggregate;
   final Function onRsvpCallback;
   final Function onPaidCallback;
-  final num amountOwed;
+  final double amountOwed;
 
   @override
   Duration get duration => const Duration(seconds: 30);
@@ -26,7 +25,7 @@ class PaymentSnackBar extends SnackBar {
   Color get backgroundColor => Colors.red.shade900;
 
   String formatMoney(num money) {
-    return IveCoreUtilities.getFormattedMoney(money, eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym);
+    return IveCoreUtilities.getFormattedMoney(money, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym);
   }
 
   @override
@@ -58,7 +57,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/x_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpNo.value)) ? Colors.yellow : Colors.white,
+                              color: ((packMember.rsvpState == rsvpNo.value)) ? Colors.yellow : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -98,7 +97,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/question_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpMaybe.value)) ? Colors.yellow : Colors.white,
+                              color: ((packMember.rsvpState == rsvpMaybe.value)) ? Colors.yellow : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -138,9 +137,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/check_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: (((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)) && ((packMember.isHare == null) || (packMember.isHare == isHareNo.value)))
-                                  ? Colors.yellow
-                                  : Colors.white,
+                              color: (((packMember.rsvpState == rsvpYes.value)) && ((packMember.isHare == isHareNo.value))) ? Colors.yellow : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -179,9 +176,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/hare_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: (((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)) && ((packMember.isHare != null) && (packMember.isHare == isHareYes.value)))
-                                  ? Colors.yellow
-                                  : Colors.white,
+                              color: (((packMember.rsvpState == rsvpYes.value)) && ((packMember.isHare == isHareYes.value))) ? Colors.yellow : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -233,7 +228,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/not_at_hash_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: ((packMember.attendenceState == attendenceNo.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
+                              color: ((packMember.attendenceState == attendenceNo.value) && ((packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -271,9 +266,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/runner_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: ((packMember.attendenceState == attendenceAtHash.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value)))
-                                  ? Colors.yellow
-                                  : Colors.white,
+                              color: ((packMember.attendenceState == attendenceAtHash.value) && ((packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -311,8 +304,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/beer_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color:
-                                  ((packMember.attendenceState == attendenceOnIn.value) && ((packMember.rsvpState != null) && (packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
+                              color: ((packMember.attendenceState == attendenceOnIn.value) && ((packMember.rsvpState == rsvpYes.value))) ? Colors.yellow : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -529,8 +521,8 @@ class PaymentSnackBar extends SnackBar {
                                     ),
                                     Text(
                                       (eventAggregate.event.eventPriceForExtras ?? 0) != 0
-                                          ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})'
-                                          : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})',
+                                          ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})'
+                                          : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})',
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -569,14 +561,14 @@ class PaymentSnackBar extends SnackBar {
       (packMember.isMember != 0) || (packMember.isFollowing != 0),
     );
 
-    final OtherPaymentPopupResult userInput = await showDialog<OtherPaymentPopupResult>(
+    final OtherPaymentPopupResult? userInput = await showDialog<OtherPaymentPopupResult>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return otherPaymentPopup;
         });
 
-    if (userInput.action == 'process') {
+    if ((userInput != null) && (userInput.action == 'process')) {
       await onPaidCallback(packMember, userInput.transType, userInput: userInput);
     }
   }

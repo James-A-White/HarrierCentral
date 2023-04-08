@@ -1,10 +1,12 @@
-// @dart=2.11
 // ignore_for_file: constant_identifier_names
 
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class DrinksList extends StatefulWidget {
-  const DrinksList({Key key, @required this.eventAggregate}) : super(key: key);
+  const DrinksList({
+    Key? key,
+    required this.eventAggregate,
+  }) : super(key: key);
 
   final RunAdminAggregate eventAggregate;
 
@@ -14,14 +16,14 @@ class DrinksList extends StatefulWidget {
 
 class DrinksResults {
   DrinksResults({
-    this.hasherId,
-    this.dispName,
-    this.nameForSort,
-    this.photo,
-    this.totalRunsThisKennel,
-    this.totalHaringThisKennel,
-    this.specialRunCount,
-    this.specialHaringCount,
+    required this.hasherId,
+    required this.dispName,
+    required this.nameForSort,
+    required this.photo,
+    required this.totalRunsThisKennel,
+    required this.totalHaringThisKennel,
+    this.specialRunCount = 0,
+    this.specialHaringCount = 0,
   });
 
   final String hasherId;
@@ -159,11 +161,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
     }
   }
 
-  String sortBySpeedDialLabel = '';
-  IconData sortBySpeedDialIcon;
-  EnumSortByType sortBySpeedDialType;
-
-  AppBar appBar;
+  late AppBar appBar;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 

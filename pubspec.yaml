@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: ">=2.19.6 <3.0.0"
-  flutter: ^3.7.9
+  flutter: ^3.7.10
 
 dependencies:   
   audioplayers: 0.20.1 # had problem with low sound volume on iOS on version 1.0.0

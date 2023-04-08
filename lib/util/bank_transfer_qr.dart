@@ -12,7 +12,7 @@ class BankTransferQr {
     BuildContext context,
     String packMemberNameForDisplay,
     int isMember,
-    double otherAmount,
+    double? otherAmount,
   ) {
     if (eventAggregate.kennel.bankBic != null) {
       String paymentReference = '';
@@ -45,8 +45,14 @@ class BankTransferQr {
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   final String remittanceInfo = '$paymentReference-$packMemberNameForDisplay';
-                  BankTransferQr.showBankTransferQrCode(context, eventAggregate, isMember != 0,
-                      remitString: remittanceInfo, remitAmount: otherAmount, packMemberNameForDisplay: packMemberNameForDisplay);
+                  BankTransferQr.showBankTransferQrCode(
+                    context,
+                    eventAggregate,
+                    isMember != 0,
+                    remitString: remittanceInfo,
+                    remitAmount: otherAmount,
+                    packMemberNameForDisplay: packMemberNameForDisplay,
+                  );
                 },
               ),
             )));

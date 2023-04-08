@@ -13,8 +13,8 @@ class OtherPaymentPopupResult {
 
   final String action;
   final int transType;
-  final double specialPriceAmount;
-  final String specialPriceReason;
+  final double? specialPriceAmount;
+  final String? specialPriceReason;
   final double topUpAmount;
   final double totalAmount;
   final bool useSpecialPriceAsDefault;
@@ -403,11 +403,6 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                   Navigator.of(context).pop(result);
                 }),
           ),
-          // ),
-          // Container(
-          //   width: 60.0,
-          //child:
-
           SizedBox(
             height: 55.0,
             child: TextButton(
@@ -456,28 +451,5 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
         // ),
       ],
     );
-
-    //     Image.network(kennel.kennelLogo,
-    //         fit: BoxFit.fitHeight, height: logoHeight),
-    // alignment: Alignment.centerRight);
   }
-
-  // void _handleRadioValueChange1(int value) {
-  //   setState(() {
-  //     //widget.selectedValue = value;
-
-  //     // switch (_radioValue1) {
-  //     //   case 0:
-  //     //     Fluttertoast.showToast(msg: 'Correct !',toastLength: Toast.LENGTH_SHORT);
-  //     //     correctScore++;
-  //     //     break;
-  //     //   case 1:
-  //     //     Fluttertoast.showToast(msg: 'Try again !',toastLength: Toast.LENGTH_SHORT);
-  //     //     break;
-  //     //   case 2:
-  //     //     Fluttertoast.showToast(msg: 'Try again !',toastLength: Toast.LENGTH_SHORT);
-  //     //     break;
-  //     //}
-  //   });
-  // }
 }
