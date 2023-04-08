@@ -1,11 +1,10 @@
-// @dart=2.11
 import 'package:harrier_central/imports_null_safe.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
   const UserRunHistoryListPage({
-    Key key,
-    @required this.kennelInfo,
-    @required this.refreshKennelInfo,
+    Key? key,
+    required this.kennelInfo,
+    required this.refreshKennelInfo,
   }) : super(key: key);
 
   final RunHistoryModel kennelInfo;
@@ -21,9 +20,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   bool _isLoading = false;
 
   List<UserRunHistoryModel> _runCountsList = <UserRunHistoryModel>[];
-  final String _userId = getStringPref(StringPrefsEnum.userId);
+  final String _userId = getStringPref(StringPrefsEnum.userId)!;
 
-  RunHistoryModel _kennelInfo;
+  RunHistoryModel? _kennelInfo;
 
   @override
   void initState() {
@@ -165,7 +164,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               //onClose: () => //print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
               heroTag: 'speed-dial-hero-tag',
-              backgroundColor: Theme.of(context).buttonTheme.colorScheme.primary,
+              backgroundColor: Theme.of(context).buttonTheme.colorScheme?.primary ?? Colors.red.shade900,
               foregroundColor: Colors.white,
               elevation: 8.0,
               shape: const CircleBorder(),
@@ -181,8 +180,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         .sendRunCountReportByEmail(kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId, kennelName: (_kennelInfo ?? widget.kennelInfo).kennelName)
                         .then((Map<String, String> result) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      if (result['result'].toLowerCase().startsWith('success')) {
-                        IveCoreUtilities.showAlert(navigatorKey.currentContext, 'E-mail successfully sent',
+                      if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
+                        IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent',
                             'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
@@ -197,8 +196,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   onTap: () {
                     G0<TableModel>().hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      if (result['result'].toLowerCase().startsWith('success')) {
-                        IveCoreUtilities.showAlert(navigatorKey.currentContext, 'E-mail successfully sent',
+                      if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
+                        IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent',
                             'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
@@ -294,7 +293,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: () {
   //                   model.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },
@@ -307,7 +306,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: ()  {
   //                   model.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },
@@ -450,7 +449,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               textAlign: TextAlign.center,
                             ),
                             AutoSizeText(
-                              'Kennel credit: ${IveCoreUtilities.getFormattedMoney((_kennelInfo ?? widget.kennelInfo).kennelCredit ?? 0, widget.kennelInfo.digitsAfterDecimal, widget.kennelInfo.currencySymbol)}',
+                              'Kennel credit: ${IveCoreUtilities.getFormattedMoney((_kennelInfo ?? widget.kennelInfo).kennelCredit, widget.kennelInfo.digitsAfterDecimal, widget.kennelInfo.currencySymbol)}',
                               //'Super fucking long text thats sure to overflow and more',
                               //'999',
                               overflow: TextOverflow.ellipsis,
@@ -459,7 +458,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               style: numberStyle,
                               textAlign: TextAlign.center,
                             ),
-                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount ?? 0) == 0
+                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount) == 0
                                 ? Container()
                                 : AutoSizeText(
                                     'Historical run count: ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount}',
@@ -471,10 +470,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     style: numberStyle,
                                     textAlign: TextAlign.center,
                                   ),
-                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount ?? 0) == 0
+                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount) == 0
                                 ? Container()
                                 : AutoSizeText(
-                                    'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount ?? 0}',
+                                    'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount}',
                                     //'Super fucking long text thats sure to overflow and more',
                                     //'999',
                                     overflow: TextOverflow.ellipsis,
@@ -640,7 +639,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 queryType: EnumRunQueryType.singleRun,
                               );
 
-                              if ((run != null) && (run.isNotEmpty)) {
+                              if (run.isNotEmpty) {
                                 if (!mounted) return;
                                 await Navigator.push<dynamic>(
                                   context,

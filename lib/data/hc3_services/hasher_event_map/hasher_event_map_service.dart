@@ -295,7 +295,7 @@ class HasherEventMapService {
 
   Future<List<dynamic>> setEventAttendence(
     String eventId,
-    String hasherId,
+    String? hasherId,
     AppDomainType appDomainType,
     int attendenceState, {
     int isHare = -1,

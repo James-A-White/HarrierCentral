@@ -1,20 +1,19 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
-import 'package:intl/intl.dart';
+import 'package:harrier_central/imports_null_safe.dart';
+// import 'package:intl/intl.dart';
 
 class CustomizeProfile extends StatefulWidget {
   const CustomizeProfile({
-    Key key,
-    @required this.originalProfilePhoto,
-    @required this.originalDisplayName,
-    @required this.customKennelPhoto,
-    @required this.customKennelHashName,
+    Key? key,
+    required this.originalProfilePhoto,
+    required this.originalDisplayName,
+    this.customKennelPhoto,
+    this.customKennelHashName,
   }) : super(key: key);
 
   final String originalProfilePhoto;
   final String originalDisplayName;
-  final String customKennelPhoto;
-  final String customKennelHashName;
+  final String? customKennelPhoto;
+  final String? customKennelHashName;
 
   @override
   CustomizeProfileState createState() => CustomizeProfileState();

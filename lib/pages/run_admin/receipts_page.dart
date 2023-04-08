@@ -1,8 +1,10 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class ReceiptsList extends StatefulWidget {
-  const ReceiptsList({Key key, @required this.eventAggregate}) : super(key: key);
+  const ReceiptsList({
+    Key? key,
+    required this.eventAggregate,
+  }) : super(key: key);
 
   final RunAdminAggregate eventAggregate;
 
@@ -111,7 +113,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> setReceiptReimbursementStatus(String receiptId, bool cancelReimbursement) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     await G0<Database>().transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
@@ -122,6 +124,7 @@ class ReceiptsListState extends State<ReceiptsList> {
     });
 
     final ReceiptsModel item = ReceiptsModel(
+        userId: userId,
         receiptId: receiptId,
         eventId: widget.eventAggregate.event.eventId,
         receiptShortDescription: '',
@@ -147,7 +150,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       refreshFromTable();
     } else {
       await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+          navigatorKey.currentContext!, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
     }
   }
 
@@ -160,7 +163,10 @@ class ReceiptsListState extends State<ReceiptsList> {
       refreshFromTable();
     });
 
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
+
     final ReceiptsModel item = ReceiptsModel(
+        userId: userId,
         receiptId: receiptId,
         eventId: widget.eventAggregate.event.eventId,
         receiptShortDescription: '',
@@ -185,7 +191,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       refreshFromTable();
     } else {
       await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+          navigatorKey.currentContext!, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
     }
   }
 
@@ -347,7 +353,13 @@ class ReceiptsListState extends State<ReceiptsList> {
 }
 
 class ReceiptListItem extends StatelessWidget {
-  const ReceiptListItem({Key key, @required this.receipt, @required this.itemPressed, @required this.currencySymbol, @required this.digitsAfterDecimal}) : super(key: key);
+  const ReceiptListItem({
+    Key? key,
+    required this.receipt,
+    required this.itemPressed,
+    required this.currencySymbol,
+    required this.digitsAfterDecimal,
+  }) : super(key: key);
 
   final Map<String, dynamic> receipt;
   final Function itemPressed;

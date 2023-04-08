@@ -1,18 +1,17 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 //import 'dart:math' as math;
 
 class EventQrCodePage extends StatefulWidget {
   const EventQrCodePage({
-    Key key,
-    @required this.kennelShortName,
-    @required this.qrContent,
-    @required this.title,
-    @required this.runStartPrefix,
-    @required this.runEndPrefix,
-    @required this.runLink,
-    @required this.showRunLink,
+    Key? key,
+    required this.kennelShortName,
+    required this.qrContent,
+    required this.title,
+    required this.runStartPrefix,
+    required this.runEndPrefix,
+    required this.runLink,
+    required this.showRunLink,
     this.eventStartDatetime,
   }) : super(key: key);
 
@@ -22,7 +21,7 @@ class EventQrCodePage extends StatefulWidget {
   final String runStartPrefix;
   final String runEndPrefix;
   final String runLink;
-  final DateTime eventStartDatetime;
+  final DateTime? eventStartDatetime;
   final bool showRunLink;
 
   @override
@@ -35,12 +34,12 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
   String barcode = '';
   bool isAdmin = true;
 
-  PageController _pageController;
-  TabController _tabController;
+  final PageController _pageController = PageController(initialPage: 0, keepPage: true);
+  late TabController _tabController;
 
-  final String userId = getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-  GlobalKey tabKey;
+  GlobalKey<State<EventQrCodePage>> tabKey = GlobalKey<State<EventQrCodePage>>();
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +163,7 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
 
   @override
   void dispose() {
-    _pageController?.dispose();
+    _pageController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -174,7 +173,6 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
     super.initState();
     _initTabs();
 
-    _pageController = PageController(initialPage: 0, keepPage: true);
     _tabController = TabController(vsync: this, length: tabs.length);
   }
 
@@ -225,15 +223,15 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
 
 class QrTab extends StatefulWidget {
   const QrTab({
-    Key key,
-    @required this.isRunStart,
-    @required this.qrContent,
-    @required this.title,
-    @required this.qrPrefix,
-    @required this.helpText,
-    @required this.subtitle,
-    @required this.instructionTitle,
-    @required this.instructions,
+    Key? key,
+    required this.isRunStart,
+    required this.qrContent,
+    required this.title,
+    required this.qrPrefix,
+    required this.helpText,
+    required this.subtitle,
+    required this.instructionTitle,
+    required this.instructions,
     this.eventStartDatetime,
   }) : super(key: key);
 
@@ -245,7 +243,7 @@ class QrTab extends StatefulWidget {
   final String subtitle;
   final String instructionTitle;
   final String instructions;
-  final DateTime eventStartDatetime;
+  final DateTime? eventStartDatetime;
 
   @override
   QrTabState createState() => QrTabState();
@@ -255,7 +253,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
   @override
   bool get wantKeepAlive => true;
 
-  Future<bool> _displayInstructions(BuildContext context) async {
+  Future<bool?> _displayInstructions(BuildContext context) {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -286,9 +284,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
     );
   }
 
-  Key tabKey;
-
-  num spacer = 12.0 + (G0<DeviceInfo>().deviceMaxScaleFactor * 30);
+  double spacer = 12.0 + (G0<DeviceInfo>().deviceMaxScaleFactor * 30);
 
   @override
   Widget build(BuildContext context) {

@@ -1,8 +1,10 @@
-// @dart=2.11
-import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/imports_null_safe.dart';
 
 class CheckInScannerPage extends StatefulWidget {
-  const CheckInScannerPage({Key key, @required this.eventAggregate}) : super(key: key);
+  const CheckInScannerPage({
+    Key? key,
+    required this.eventAggregate,
+  }) : super(key: key);
 
   final RunAdminAggregate eventAggregate;
 
@@ -54,7 +56,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                         padding: const EdgeInsets.only(bottom: 20.0),
                         child: ElevatedButton(
                             style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                              backgroundColor: MaterialStateProperty.resolveWith<Color?>(
                                 (Set<MaterialState> states) {
                                   if (states.contains(MaterialState.disabled)) {
                                     return Colors.grey.shade700;
@@ -62,7 +64,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   return null; // Use the component's default.
                                 },
                               ),
-                              textStyle: MaterialStateProperty.resolveWith<TextStyle>(
+                              textStyle: MaterialStateProperty.resolveWith<TextStyle?>(
                                 (Set<MaterialState> states) {
                                   if (states.contains(MaterialState.disabled)) {
                                     return TextStyle(color: Colors.grey.shade200);
@@ -134,7 +136,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                         padding: const EdgeInsets.only(top: 20.0),
                         child: ElevatedButton(
                             style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                              backgroundColor: MaterialStateProperty.resolveWith<Color?>(
                                 (Set<MaterialState> states) {
                                   if (states.contains(MaterialState.disabled)) {
                                     return Colors.grey.shade700;
@@ -142,7 +144,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   return null; // Use the component's default.
                                 },
                               ),
-                              textStyle: MaterialStateProperty.resolveWith<TextStyle>(
+                              textStyle: MaterialStateProperty.resolveWith<TextStyle?>(
                                 (Set<MaterialState> states) {
                                   if (states.contains(MaterialState.disabled)) {
                                     return TextStyle(color: Colors.grey.shade200);
@@ -193,10 +195,10 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
   }
 
   String _onScreenMessage = 'Waiting to scan';
-  String _result;
+  String? _result;
   bool _isScanning = false;
 
-  QRViewController _controller;
+  QRViewController? _controller;
   EQrScannerState _state = EQrScannerState.waitingForScan;
 
   void _onQRViewCreated(QRViewController controller) {
@@ -208,31 +210,33 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
       //_toggleScanning();
     });
 
-    _controller.scannedDataStream.listen((Barcode scanData) async {
-      _result = scanData.code;
-      // "debounce" the listener to discard multiple scans
-      // that happen within a 5 second window.
-      if ((_lastScan == null) || (_lastScan.difference(DateTime.now()).inSeconds.abs() > 5)) {
-        _lastScan = DateTime.now();
-        await _toggleScanning();
-        await _onCodeRead(_result);
-      }
-    });
+    if (_controller != null) {
+      _controller!.scannedDataStream.listen((Barcode scanData) async {
+        _result = scanData.code;
+        // "debounce" the listener to discard multiple scans
+        // that happen within a 5 second window.
+        if ((_lastScan == null) || (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
+          _lastScan = DateTime.now();
+          await _toggleScanning();
+          await _onCodeRead(_result);
+        }
+      });
+    }
   }
 
-  DateTime _lastScan;
+  DateTime? _lastScan;
 
   @override
   void reassemble() {
     super.reassemble();
     if (_controller != null) {
       if (Platform.isAndroid) {
-        _controller.pauseCamera();
+        _controller!.pauseCamera();
         _isScanning = false;
         _onScreenMessage = 'Scanning paused';
         _state = EQrScannerState.waitingForScan;
       } else if (Platform.isIOS) {
-        _controller.resumeCamera();
+        _controller!.resumeCamera();
         _isScanning = true;
         _onScreenMessage = 'Looking for QR Code';
         _state = EQrScannerState.scanning;
@@ -240,10 +244,10 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
     }
   }
 
-  Future<void> _toggleScanning({bool doScanning}) async {
+  Future<void> _toggleScanning({bool? doScanning}) async {
     if (_controller != null) {
       if (_isScanning && ((doScanning == null) || !doScanning)) {
-        await _controller.pauseCamera();
+        await _controller!.pauseCamera();
         _isScanning = false;
         setState(() {
           _onScreenMessage = 'Scanning paused';
@@ -251,7 +255,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
         _state = EQrScannerState.waitingForScan;
       } else {
         if ((doScanning == null) || doScanning) {
-          await _controller.resumeCamera();
+          await _controller!.resumeCamera();
           _isScanning = true;
           setState(() {
             _onScreenMessage = 'Looking for QR Code';
@@ -275,84 +279,86 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
         _onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
       });
     } else {
-      final String prefix = result['prefix'];
-      final String content = result['content'];
+      if ((result['prefix'] != null) && (result['content'] != null)) {
+        final String prefix = result['prefix']!;
+        final String content = result['content']!;
 
-      if (prefix != QR_PREFIX_USER_CODE) {
-        // NOTE: We should never get to this point in, but set
-        //print('ERROR! The app should never reach this point.');
-      } else {
-        setState(() {
-          _onScreenMessage = 'Processing QR Scan';
-        });
-        final int attendenceState = _isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
+        if (prefix != QR_PREFIX_USER_CODE) {
+          // NOTE: We should never get to this point in, but set
+          //print('ERROR! The app should never reach this point.');
+        } else {
+          setState(() {
+            _onScreenMessage = 'Processing QR Scan';
+          });
+          final int attendenceState = _isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
-        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
-              widget.eventAggregate.event.eventId,
-              null, // result['hasher'].hasherId,
-              AppDomainType.event,
-              attendenceState,
-              qrScanText: prefix + content,
-            );
+          final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
+                widget.eventAggregate.event.eventId,
+                null, // result['hasher'].hasherId,
+                AppDomainType.event,
+                attendenceState,
+                qrScanText: prefix + content,
+              );
 
-        if ((adHocData != null) && (adHocData.isNotEmpty)) {
-          num amountOwed = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+          if (adHocData.isNotEmpty) {
+            double amountOwed = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
 
-          final num discountAmount = adHocData[0]['discountAmount'];
-          final int discountPercent = adHocData[0]['discountPercent'];
-          //final String discountDescription = adHocData[0]['discountDescription'];
+            final num discountAmount = adHocData[0]['discountAmount'];
+            final int discountPercent = adHocData[0]['discountPercent'];
+            //final String discountDescription = adHocData[0]['discountDescription'];
 
-          amountOwed -= discountAmount;
-          amountOwed -= amountOwed * (discountPercent / 100.0);
+            amountOwed -= discountAmount;
+            amountOwed -= amountOwed * (discountPercent / 100.0);
 
-          if (!mounted) return;
-          IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
-          //
-          if ((adHocData[0]['isPaid'] != 0) || (amountOwed <= 0)) {
-            //scanUserBarcode();
-            // Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
-            //   scanUserBarcode();
-            // });
-          } else {
-            final PaymentPopup pp = PaymentPopup(
-              amount: amountOwed,
-              creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-              creditRemaining: 0,
-              currencySymbol: widget.eventAggregate.extensions.curSym,
-              hemId: adHocData[0]['hasherEventMapId'],
-              decimalDigits: widget.eventAggregate.extensions.digAfterDec,
-              allowDefaultPricing: adHocData[0]['isMember'] == 1,
-              // valueChanged: (num value) {
-              //   finalValue = value;
-              // },
-            );
+            if (!mounted) return;
+            IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
+            //
+            if ((adHocData[0]['isPaid'] != 0) || (amountOwed <= 0)) {
+              //scanUserBarcode();
+              // Future<void>.delayed(const Duration(seconds: 4)).then((void _) {
+              //   scanUserBarcode();
+              // });
+            } else {
+              final PaymentPopup pp = PaymentPopup(
+                amount: amountOwed,
+                creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+                creditRemaining: 0,
+                currencySymbol: widget.eventAggregate.extensions.curSym,
+                hemId: adHocData[0]['hasherEventMapId'],
+                decimalDigits: widget.eventAggregate.extensions.digAfterDec,
+                allowDefaultPricing: adHocData[0]['isMember'] == 1,
+                // valueChanged: (num value) {
+                //   finalValue = value;
+                // },
+              );
 
-            final PaymentPopupResult popupResult = await showDialog<PaymentPopupResult>(
-                context: context,
-                barrierDismissible: false, // user must tap button!
-                builder: (BuildContext context) {
-                  return pp;
+              final PaymentPopupResult? popupResult = await showDialog<PaymentPopupResult>(
+                  context: context,
+                  barrierDismissible: false, // user must tap button!
+                  builder: (BuildContext context) {
+                    return pp;
+                  });
+
+              if ((popupResult != null) && (popupResult.transactionType != -1)) {
+                setState(() {
+                  _onScreenMessage = 'Please wait, processing payment';
                 });
 
-            if (popupResult.transactionType != -1) {
-              setState(() {
-                _onScreenMessage = 'Please wait, processing payment';
-              });
-
-              await _payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
+                await _payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
+              }
             }
           }
+          setState(() {
+            _onScreenMessage = 'Processing Complete';
+          });
+          await Future<void>.delayed(const Duration(seconds: 2));
+          await _toggleScanning(doScanning: true);
         }
-        setState(() {
-          _onScreenMessage = 'Processing Complete';
-        });
-        await Future<void>.delayed(const Duration(seconds: 2));
-        await _toggleScanning(doScanning: true);
       }
     }
   }
 
-  Future<void> _payForEvent(String hemId, int paymentType, num amount) async {
+  Future<void> _payForEvent(String hemId, int paymentType, double amount) async {
     final PaymentsService paySrv = PaymentsService();
     final List<dynamic> paymentResult =
         await paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly, AppDomainType.event);
