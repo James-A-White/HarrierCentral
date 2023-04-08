@@ -1,5 +1,5 @@
 // ignore_for_file: constant_identifier_names
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 class SyncUserDataService {
   static const int flagHashersTable = 0x00000001;

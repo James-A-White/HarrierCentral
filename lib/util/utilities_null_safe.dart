@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 import 'package:map_launcher/map_launcher.dart' as maps;

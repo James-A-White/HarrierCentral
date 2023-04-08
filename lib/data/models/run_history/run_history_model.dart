@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'run_history_model.freezed.dart';
 part 'run_history_model.g.dart';

@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'kennel_member_results_model.freezed.dart';
 part 'kennel_member_results_model.g.dart';

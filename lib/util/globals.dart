@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 // Ambient variable to access the service locator
 // NOTE: I've given this variable a very unique name even if it is against normal

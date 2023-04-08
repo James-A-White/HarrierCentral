@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'approve_login_model.freezed.dart';
 part 'approve_login_model.g.dart';

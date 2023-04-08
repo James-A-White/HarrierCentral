@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
@@ -379,13 +379,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                       IconButton(
                           icon: const Icon(Icons.qr_code_scanner_sharp),
                           onPressed: () {
-                            // NULLSAFETODO
-                            // Navigator.push<dynamic>(
-                            //   context,
-                            //   MaterialPageRoute<dynamic>(
-                            //     builder: (BuildContext context) => const UserQrCodePage(),
-                            //   ),
-                            // );
+                            Navigator.push<dynamic>(
+                              context,
+                              MaterialPageRoute<dynamic>(
+                                builder: (BuildContext context) => const UserQrCodePage(),
+                              ),
+                            );
                           }),
                       IconButton(
                           icon: Icon(_isFlipped ? Icons.undo : Icons.info_outline),

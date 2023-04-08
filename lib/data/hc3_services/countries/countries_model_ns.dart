@@ -1,5 +1,5 @@
 //import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'countries_model_ns.freezed.dart';
 part 'countries_model_ns.g.dart';

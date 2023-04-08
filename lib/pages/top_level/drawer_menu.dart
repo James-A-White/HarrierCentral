@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/menu_pages/add_kennel_page.dart';
 //import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
 import 'package:harrier_central/pages/menu_pages/payment_terminal_config_page.dart';
@@ -78,31 +78,29 @@ class DrawerMenuState extends State<DrawerMenu> {
                   title: Text('Global Leaders', style: _style),
                   onTap: () {
                     Navigator.pop(context);
-
-                    // NULLSAFETODO
-                    // Navigator.push<void>(
-                    //   context,
-                    //   MaterialPageRoute<void>(
-                    //     builder: (BuildContext context) => GenericWidgetPage(
-                    //       key: const Key('52233311'),
-                    //       widget: Column(
-                    //         children: const <Widget>[
-                    //           // Padding(
-                    //           //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
-                    //           //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
-                    //           // ),
-                    //           //SizedBox(height: 13.0),
-                    //           Expanded(
-                    //             child: Leaderboard(
-                    //               kennelId: null,
-                    //             ),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //       appBarTitle: 'Get a Life (Leaderboards)',
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) => GenericWidgetPage(
+                          key: const Key('52233311'),
+                          widget: Column(
+                            children: const <Widget>[
+                              // Padding(
+                              //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
+                              //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
+                              // ),
+                              //SizedBox(height: 13.0),
+                              Expanded(
+                                child: Leaderboard(
+                                  kennelId: null,
+                                ),
+                              ),
+                            ],
+                          ),
+                          appBarTitle: 'Get a Life (Leaderboards)',
+                        ),
+                      ),
+                    );
                   },
                 ),
 

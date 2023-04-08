@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 class KennelMembersList extends StatefulWidget {
   const KennelMembersList({
@@ -153,7 +153,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           kList.add(lastMemberType);
         }
 
-        // NULLSAFETODO
+        // NULLSAFETODO1
         //hlrItem.isLoading = false;
         kList.add(hlrItem);
 
@@ -171,7 +171,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // NULLSAFETODO - figure out why these seem to be out of order
+  // NULLSAFETODO1 - figure out why these seem to be out of order
   void setSortBySpeedDial() {
     switch (_sortBy) {
       case EnumSortByType.sortByName:
@@ -516,15 +516,14 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                         });
                                         break;
                                       case EnumMemberPopupActions.editMismanagementRole:
-                                        // NULLSAFETODO
-                                        // Navigator.push<int>(
-                                        //   context,
-                                        //   MaterialPageRoute<int>(builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data[index].mismanagementRoles)),
-                                        // ).then((int result) {
-                                        //   if (result != null) {
-                                        //     setUserProperties(snapshot.data[index], mismanagementRoles: result);
-                                        //   }
-                                        // });
+                                        Navigator.push<int>(
+                                          context,
+                                          MaterialPageRoute<int>(builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data![index].mismanagementRoles)),
+                                        ).then((int? result) {
+                                          if (result != null) {
+                                            _setUserProperties(snapshot.data![index], mismanagementRoles: result);
+                                          }
+                                        });
                                         break;
                                       // case EnumMemberPopupActions.setHomeKennel:
                                       //   setAsHomeKennel(snapshot.data[index], 1);
@@ -824,12 +823,12 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   void modifyMembership(KennelMemberResultsModel item, int monthsToAddToMembership) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
-    // NULLSAFETODO
+    // NULLSAFETODO1
     //item.memberInfoBeingUpdated = true;
     setState(() {});
     srv.updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void _) {
       _refreshKennelMembersFromTable(true).then((void _) {
-        // NULLSAFETODO
+        // NULLSAFETODO1
         //item.memberInfoBeingUpdated = false;
         _refreshCounters(true);
         setState(() {});
@@ -840,7 +839,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   void _setUserProperties(KennelMemberResultsModel item, {int appAccessFlags = -1, int mismanagementRoles = -1}) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
-    // NULLSAFETODO
+    // NULLSAFETODO1
     //item.memberInfoBeingUpdated = true;
     setState(() {});
 
@@ -848,7 +847,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, targetUserId: item.hasherId, appAccessFlags: appAccessFlags, mismanagementRoles: mismanagementRoles)
         .then((void _) {
       _refreshKennelMembersFromTable(true).then((void _) {
-        // NULLSAFETODO
+        // NULLSAFETODO1
         //item.memberInfoBeingUpdated = false;
         _refreshCounters(true);
         setState(() {});

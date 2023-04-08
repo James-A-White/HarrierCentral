@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 class ThirdPartyLogin extends StatefulWidget {
   const ThirdPartyLogin(this.isNewUser, {Key? key}) : super(key: key);

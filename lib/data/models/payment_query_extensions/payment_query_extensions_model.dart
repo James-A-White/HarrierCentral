@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'payment_query_extensions_model.freezed.dart';
 part 'payment_query_extensions_model.g.dart';

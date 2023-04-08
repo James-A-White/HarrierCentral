@@ -2,7 +2,7 @@
 
 import 'package:harrier_central/data/services/gdpr_delete_service.dart';
 import 'package:harrier_central/data/services/get_invite_code_service.dart';
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 

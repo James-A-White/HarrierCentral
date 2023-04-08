@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 /// The ValueListenableBuilder rebuilds whenever [snackMsg] changes.
 class MapSnackbar extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'hasher_event_map_model_ns.freezed.dart';
 part 'hasher_event_map_model_ns.g.dart';

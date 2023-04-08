@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'leaderboard_model.freezed.dart';
 part 'leaderboard_model.g.dart';

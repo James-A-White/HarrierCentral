@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class UserEventListItem extends StatelessWidget {
@@ -48,7 +48,7 @@ class UserEventListItem extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            // NULLSAFETODO
+            // NULLSAFETODO1
             // item.isUpdating
             //     ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
             //     :

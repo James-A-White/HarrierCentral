@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 //import 'package:geolocator/geolocator.dart';
 
 class RunAdminAggregate {
@@ -244,13 +244,12 @@ class RunAdminPageState extends State<RunAdminPage> {
                 ]),
 
                 onPressed: () {
-                  // NULLSAFETODO
-                  // Navigator.push<dynamic>(
-                  //   context,
-                  //   MaterialPageRoute<dynamic>(
-                  //     builder: (BuildContext context) => CheckInPackPage(eventAggregate: _eventAggregate),
-                  //   ),
-                  // );
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => CheckInPackPage(eventAggregate: _eventAggregate),
+                    ),
+                  );
                 },
               ),
             ),
@@ -283,13 +282,12 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ]),
                 onPressed: () {
-                  // NULLSAFETODO
-                  // Navigator.push<dynamic>(
-                  //   context,
-                  //   MaterialPageRoute<dynamic>(
-                  //     builder: (BuildContext context) => CheckInScannerPage(eventAggregate: _eventAggregate),
-                  //   ),
-                  // );
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => CheckInScannerPage(eventAggregate: _eventAggregate),
+                    ),
+                  );
                 },
               ),
             ),
@@ -333,17 +331,16 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ]),
                 onPressed: () {
-                  // NULLSAFETODO
-                  // if (_isBetaTester == 1) {
-                  //   Navigator.push<dynamic>(
-                  //     context,
-                  //     MaterialPageRoute<dynamic>(
-                  //       builder: (BuildContext context) => PaymentReportPage(
-                  //         eventAggregate: _eventAggregate,
-                  //       ),
-                  //     ),
-                  //   );
-                  // }
+                  if (_isBetaTester == 1) {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => PaymentReportPage(
+                          eventAggregate: _eventAggregate,
+                        ),
+                      ),
+                    );
+                  }
                 },
               ),
             ),
@@ -379,17 +376,16 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ]),
                 onPressed: () {
-                  // NULLSAFETODO
-                  // if (_isBetaTester == 1) {
-                  //   Navigator.push<dynamic>(
-                  //     context,
-                  //     MaterialPageRoute<dynamic>(
-                  //       builder: (BuildContext context) => ReceiptsList(
-                  //         eventAggregate: _eventAggregate,
-                  //       ),
-                  //     ),
-                  //   );
-                  // }
+                  if (_isBetaTester == 1) {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => ReceiptsList(
+                          eventAggregate: _eventAggregate,
+                        ),
+                      ),
+                    );
+                  }
                 },
               ),
             ),
@@ -435,19 +431,18 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () {
-                    // NULLSAFETODO
-                    // Navigator.push<dynamic>(
-                    //     context,
-                    //     MaterialPageRoute<dynamic>(
-                    //         builder: (BuildContext context) => EventQrCodePage(
-                    //             kennelShortName: _eventAggregate.kennel.kennelShortName,
-                    //             qrContent: _eventAggregate.event.publicEventId,
-                    //             title: _eventAggregate.event.eventName,
-                    //             runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
-                    //             runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
-                    //             runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
-                    //             showRunLink: true,
-                    //             eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
+                    Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                            builder: (BuildContext context) => EventQrCodePage(
+                                kennelShortName: _eventAggregate.kennel.kennelShortName,
+                                qrContent: _eventAggregate.event.publicEventId,
+                                title: _eventAggregate.event.eventName,
+                                runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                                runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                                runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
+                                showRunLink: true,
+                                eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
                   },
                 ),
               ),
@@ -479,15 +474,14 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () {
-                    // NULLSAFETODO
-                    // Navigator.push<dynamic>(
-                    //   context,
-                    //   MaterialPageRoute<dynamic>(
-                    //     builder: (BuildContext context) => EmailEditorPage(
-                    //       eventId: widget.eventId,
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => EmailEditorPage(
+                          eventId: widget.eventId,
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -532,7 +526,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () async {
-                    // NULLSAFETODO
+                    // NULLSAFETODO1
                     // await Navigator.push<dynamic>(
                     //     context,
                     //     MaterialPageRoute<dynamic>(
@@ -570,11 +564,10 @@ class RunAdminPageState extends State<RunAdminPage> {
                     ),
                   ]),
                   onPressed: () {
-                    // NULLSAFETODO
-                    // Navigator.push<dynamic>(
-                    //   context,
-                    //   MaterialPageRoute<dynamic>(builder: (BuildContext context) => DrinksList(eventAggregate: _eventAggregate)),
-                    // );
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(builder: (BuildContext context) => DrinksList(eventAggregate: _eventAggregate)),
+                    );
                   },
                 ),
               ),

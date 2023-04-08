@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 // class MapMarker extends Marker {
@@ -531,13 +531,12 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         final RunDetailsAggregate? run = await G0<TableModel>().eventsService.getSingleRun(eventId);
 
         if ((!mounted) || (run == null)) return;
-        // NULLSAFETODO
-        // await Navigator.push<dynamic>(
-        //   context,
-        //   MaterialPageRoute<dynamic>(
-        //     builder: (BuildContext context) => RunDetailsPage(futureRun: run),
-        //   ),
-        // );
+        await Navigator.push<dynamic>(
+          navigatorKey.currentContext!,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => RunDetailsPage(futureRun: run),
+          ),
+        );
       },
       child: Image.asset(_getPin(
         eventStartDatetime ?? DateTime.now(),

@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class RunListItem extends StatefulWidget {
@@ -81,7 +81,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
-    // NULLSAFETODO
+    // NULLSAFETODO1
     // setState(() {
     //   _rda.extensions.rsvpState = -1;
     // });
@@ -110,7 +110,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         ),
       );
 
-      // NULLSAFETODO
+      // NULLSAFETODO1
       // _rda.extensions.rsvpState = rsvpResult;
       // _rda.extensions.isHare = willHareResult;
 
@@ -406,7 +406,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               _rda.extensions.isPaid,
               true,
               (int r, int p) {
-                // NULLSAFETODO
+                // NULLSAFETODO1
                 // _rda.extensions.rsvpState = r;
                 // if (p != -1) {
                 //   _rda.extensions.isPaid = p;
@@ -699,7 +699,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumEmailAlertState<int> nState = retVal;
       setState(() {
-        // NULLSAFETODO
+        // NULLSAFETODO1
         //_rda.extensions.emailAlertPreference = -1;
       });
 
@@ -714,7 +714,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           )
           .then((List<dynamic> results) {
         setState(() {
-          // NULLSAFETODO
+          // NULLSAFETODO1
           // _rda.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
         });
       });
@@ -726,7 +726,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumNotificationState<int> nState = retVal;
       setState(() {
-        // NULLSAFETODO
+        // NULLSAFETODO1
         //_rda.extensions.notificationPreference = -1;
       });
 
@@ -745,7 +745,7 @@ class RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           // notifications.setNotificationState(eventId: _rda.event.eventId);
           // // T0D0(James): Fix this to reflect true value of what is in the DB not just the value
           // // provided to the function
-          // NULLSAFETODO
+          // NULLSAFETODO1
           // _rda.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
         });
       });

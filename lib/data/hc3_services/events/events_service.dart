@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 class EventsTableHelper extends BaseTableHelper with BaseFields {
   EventsTableHelper() {

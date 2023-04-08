@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 class ServiceCommon {
   // the variable below is there to suppress a warning about defining classes with only static members

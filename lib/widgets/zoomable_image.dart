@@ -1,5 +1,5 @@
 import 'dart:io' as platform;
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:photo_view/photo_view.dart';
 
 class ZoomableImagePage2 extends StatelessWidget {

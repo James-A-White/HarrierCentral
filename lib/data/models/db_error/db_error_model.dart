@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'db_error_model.freezed.dart';
 part 'db_error_model.g.dart';

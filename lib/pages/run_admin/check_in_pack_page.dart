@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
@@ -1053,14 +1053,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         if ((rsvpState != -1) && (attendenceState == -1)) {
           setState(() {
-            // NULLSAFETODO
+            // NULLSAFETODO1
             //packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           });
           await _updateRsvpState(packMember, rsvpState, isHare);
           setState(() {});
         } else if (attendenceState != -1) {
           setState(() {
-            // NULLSAFETODO
+            // NULLSAFETODO1
             // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
             // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
           });
@@ -1080,7 +1080,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         final bool? useSpecialPriceAsDefault = userInput?.useSpecialPriceAsDefault;
 
         setState(() {
-          // NULLSAFETODO
+          // NULLSAFETODO1
           // packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
           // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
@@ -1200,7 +1200,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     bool terminalWasUsedForPayment = false;
 
     setState(() {
-      // NULLSAFETODO
+      // NULLSAFETODO1
       // packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
       // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
       // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
@@ -1247,7 +1247,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           final SumupPayment payment = SumupPayment(
             title: title,
             total: terminalAmount,
-            // // NULLSAFETODO - TEST
+            // // NULLSAFETODO1 - TEST
             //             currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode,
             currency: widget.eventAggregate.extensions.curCode,
             foreignTransactionId: paymentReference,
@@ -1368,7 +1368,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             Positioned(
                 left: LIST_ITEM_LEFT_MARGIN + 0.0,
                 bottom: 5.0,
-                // NULLSAFETODO
+                // NULLSAFETODO1
                 child: Container()
                 // child: FutureBuilder<int>(
                 //     future: packMember.rsvpStateIndicator,
@@ -1426,7 +1426,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 ),
 
             Positioned(left: LIST_ITEM_LEFT_MARGIN + 70.0, bottom: 5.0, child: Container()
-                // NULLSAFETODO
+                // NULLSAFETODO1
                 // child: FutureBuilder<int>(
                 //     future: packMember.paidStateIndicator,
                 //     builder: (BuildContext context, AsyncSnapshot<int> snapshot) {

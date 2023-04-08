@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -245,22 +245,21 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ),
                                             ]),
                                             onPressed: () {
-                                              // NULLSAFETODO
-                                              // if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                              //   Navigator.push<dynamic>(
-                                              //     context,
-                                              //     MaterialPageRoute<dynamic>(
-                                              //       builder: (BuildContext context) => AddEditEventsPage(
-                                              //         kennel: widget.kennelAggregateItem,
-                                              //         pageType: FilterEventsPageType.future,
-                                              //       ),
-                                              //     ),
-                                              //   ).then((void _) {
-                                              //     _refreshFromTable(true).then((void _) {
-                                              //       setState(() {});
-                                              //     });
-                                              //   });
-                                              // }
+                                              if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                Navigator.push<dynamic>(
+                                                  context,
+                                                  MaterialPageRoute<dynamic>(
+                                                    builder: (BuildContext context) => AddEditEventsPage(
+                                                      kennel: widget.kennelAggregateItem,
+                                                      pageType: FilterEventsPageType.future,
+                                                    ),
+                                                  ),
+                                                ).then((void _) {
+                                                  _refreshFromTable(true).then((void _) {
+                                                    setState(() {});
+                                                  });
+                                                });
+                                              }
                                             },
                                           ),
                                         ),
@@ -292,22 +291,21 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ),
                                             ]),
                                             onPressed: () {
-                                              // NULLSAFETODO
-                                              // if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                              //   Navigator.push<dynamic>(
-                                              //     context,
-                                              //     MaterialPageRoute<dynamic>(
-                                              //       builder: (BuildContext context) => AddEditEventsPage(
-                                              //         kennel: widget.kennelAggregateItem,
-                                              //         pageType: FilterEventsPageType.past,
-                                              //       ),
-                                              //     ),
-                                              //   ).then((void _) {
-                                              //     _refreshFromTable(true).then((void _) {
-                                              //       setState(() {});
-                                              //     });
-                                              //   });
-                                              // }
+                                              if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                Navigator.push<dynamic>(
+                                                  context,
+                                                  MaterialPageRoute<dynamic>(
+                                                    builder: (BuildContext context) => AddEditEventsPage(
+                                                      kennel: widget.kennelAggregateItem,
+                                                      pageType: FilterEventsPageType.past,
+                                                    ),
+                                                  ),
+                                                ).then((void _) {
+                                                  _refreshFromTable(true).then((void _) {
+                                                    setState(() {});
+                                                  });
+                                                });
+                                              }
                                             },
                                           ),
                                         ),
@@ -344,7 +342,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ),
                                               ]),
                                               onPressed: () {
-                                                // NULLSAFETODO
+                                                // NULLSAFETODO1
                                                 // if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
                                                 //   _kennelMembersList = KennelMembersList(kennelListAggregate: widget.kennelAggregateItem);
                                                 //   Navigator.push<dynamic>(
@@ -398,7 +396,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ),
                                               ]),
                                               onPressed: () async {
-                                                // NULLSAFETODO
+                                                // NULLSAFETODO1
                                                 // if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
                                                 //   final bool isPreviewBool = await _promptForSending(context);
 
@@ -501,18 +499,17 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ),
                                               ]),
                                               onPressed: () {
-                                                // NULLSAFETODO
-                                                // Navigator.push<dynamic>(
-                                                //     context,
-                                                //     MaterialPageRoute<dynamic>(
-                                                //         builder: (BuildContext context) => EventQrCodePage(
-                                                //             kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                                //             qrContent: widget.kennelAggregateItem.kennel.kennelId,
-                                                //             runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END,
-                                                //             runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
-                                                //             runLink: '',
-                                                //             showRunLink: false,
-                                                //             title: 'Any ${widget.kennelAggregateItem.kennel.kennelShortName} run')));
+                                                Navigator.push<dynamic>(
+                                                    context,
+                                                    MaterialPageRoute<dynamic>(
+                                                        builder: (BuildContext context) => EventQrCodePage(
+                                                            kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                                            qrContent: widget.kennelAggregateItem.kennel.kennelId,
+                                                            runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END,
+                                                            runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
+                                                            runLink: '',
+                                                            showRunLink: false,
+                                                            title: 'Any ${widget.kennelAggregateItem.kennel.kennelShortName} run')));
                                               },
                                             ),
                                           ),
@@ -544,13 +541,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ),
                                               ]),
                                               onPressed: () {
-                                                // NULLSAFETODO
-                                                // Navigator.push<dynamic>(
-                                                //   context,
-                                                //   MaterialPageRoute<dynamic>(
-                                                //     builder: (BuildContext context) => RunAndKennelMapPage(kennel: widget.kennelAggregateItem.kennel),
-                                                //   ),
-                                                // );
+                                                Navigator.push<dynamic>(
+                                                  context,
+                                                  MaterialPageRoute<dynamic>(
+                                                    builder: (BuildContext context) => RunAndKennelMapPage(kennel: widget.kennelAggregateItem.kennel),
+                                                  ),
+                                                );
                                               },
                                             ),
                                           ),
@@ -587,7 +583,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ),
                                             ]),
                                             onPressed: () {
-                                              // NULLSAFETODO
+                                              // NULLSAFETODO1
                                               // if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
                                               //   final EmailReportsService svc = EmailReportsService();
                                               //   svc
@@ -704,7 +700,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       // onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat , widget.kennelAggregateItem.extensions.cityLon ),
 
                                                       onTap: () async {
-                                                        // NULLSAFETODO
+                                                        // NULLSAFETODO1
                                                         // final String? mapName = getStringPref(StringPrefsEnum.mapPreference);
                                                         // if (mapName == null) {
                                                         //   await Utilities.openMapsSheet(
@@ -1010,16 +1006,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           ),
                                         ]),
                                         onPressed: () async {
-                                          // NULLSAFETODO
-                                          // final List<Map<String, dynamic>> results = await QueryKennels.queryKennelGallery(widget.kennelAggregateItem.kennel.kennelId);
+                                          final List<Map<String, dynamic>> results = await QueryKennels.queryKennelGallery(widget.kennelAggregateItem.kennel.kennelId);
 
-                                          // if (!mounted) return;
-                                          // await Navigator.push<void>(
-                                          //   context,
-                                          //   MaterialPageRoute<void>(
-                                          //     builder: (BuildContext context) => HashRunArtGalleryPage(key: const Key('52233311'), items: results),
-                                          //   ),
-                                          // );
+                                          if (!mounted) return;
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder: (BuildContext context) => HashRunArtGalleryPage(key: const Key('52233311'), items: results),
+                                            ),
+                                          );
                                         },
                                       ),
                                     ),
@@ -1042,21 +1037,20 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           ),
                                         ]),
                                         onPressed: () async {
-                                          // NULLSAFETODO
-                                          // if (!mounted) return;
-                                          // await Navigator.push<void>(
-                                          //   context,
-                                          //   MaterialPageRoute<void>(
-                                          //     builder: (BuildContext context) => GenericWidgetPage(
-                                          //       key: const Key('52233311'),
-                                          //       widget: Leaderboard(
-                                          //         kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                          //         //kennelId: null,
-                                          //       ),
-                                          //       appBarTitle: 'Get a Life (Leaderboards)',
-                                          //     ),
-                                          //   ),
-                                          // );
+                                          if (!mounted) return;
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder: (BuildContext context) => GenericWidgetPage(
+                                                key: const Key('52233311'),
+                                                widget: Leaderboard(
+                                                  kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                  //kennelId: null,
+                                                ),
+                                                appBarTitle: 'Get a Life (Leaderboards)',
+                                              ),
+                                            ),
+                                          );
                                         },
                                       ),
                                     ),
@@ -1086,7 +1080,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ),
                                           ]),
                                           onPressed: () async {
-                                            // NULLSAFETODO
+                                            // NULLSAFETODO1
                                             // if (!mounted) return;
                                             // await Navigator.push<void>(
                                             //   context,
@@ -1209,17 +1203,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     return RunListItem(
       futureRun: s,
       onItemTapped: () {
-        // NULLSAFETODO
-        // Navigator.push<dynamic>(
-        //   context,
-        //   MaterialPageRoute<dynamic>(
-        //     builder: (BuildContext context) => RunDetailsPage(futureRun: s),
-        //   ),
-        // ).then((void _) {
-        //   // _refreshFromBackend(clearLocalTables: false).then((void _) {
-        //   //   setState(() {});
-        //   // });
-        // });
+        Navigator.push<dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => RunDetailsPage(futureRun: s),
+          ),
+        ).then((void _) {
+          // _refreshFromBackend(clearLocalTables: false).then((void _) {
+          //   setState(() {});
+          // });
+        });
       },
     );
   }

@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 // NOTE: The PODFILE needs to include the following lines for
 // Permissions_handler to work properly

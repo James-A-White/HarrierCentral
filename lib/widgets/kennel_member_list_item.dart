@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 enum EnumMemberPopupActions {
@@ -31,7 +31,6 @@ class KennelMemberListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // NULLSAFETODO
         Navigator.of(context)
             .push<HashersModel>(
               MaterialPageRoute<HashersModel>(
@@ -179,7 +178,7 @@ class KennelMemberListItem extends StatelessWidget {
                             style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                             textAlign: TextAlign.center,
                           ),
-                    // NULLSAFETODO
+                    // NULLSAFETODO1
                     // kennelMember.memberInfoBeingUpdated ?? false
                     //     ? Text(
                     //         '<Updating membership>',
@@ -203,7 +202,7 @@ class KennelMemberListItem extends StatelessWidget {
                     if ((kennelMember.kennelCredit) != 0) ...<Widget>[
                       Text(
                         (kennelMember.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
-                            // NULLSAFETODO - read currency info from country if null!!!!!
+                            // NULLSAFETODO1- read currency info from country if null!!!!!
                             IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal ?? 2, kennelListAggregate.kennel.currencySymbol ?? r'$^'),
                         style: TextStyle(
                             fontFamily: 'AvenirNextDemiBold',

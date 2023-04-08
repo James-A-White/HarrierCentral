@@ -1,4 +1,4 @@
-import 'package:harrier_central/imports_null_safe.dart';
+import 'package:harrier_central/imports.dart';
 
 class KennelRunHistoryCountListItem extends StatelessWidget {
   const KennelRunHistoryCountListItem({
@@ -24,20 +24,19 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () {
-            // NULLSAFETODO
-            // Navigator.of(context).push<dynamic>(
-            //   MaterialPageRoute<dynamic>(
-            //     builder: (BuildContext context) {
-            //       return UserRunHistoryListPage(
-            //           kennelInfo: kennelInfo,
-            //           refreshKennelInfo: () {
-            //             return refreshCounters(kennelInfo.kennelId);
-            //           });
-            //     },
-            //   ),
-            // ).then((void _) {
-            //   refreshCounters(kennelInfo.kennelId);
-            // });
+            Navigator.of(context).push<dynamic>(
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) {
+                  return UserRunHistoryListPage(
+                      kennelInfo: kennelInfo,
+                      refreshKennelInfo: () {
+                        return refreshCounters(kennelInfo.kennelId);
+                      });
+                },
+              ),
+            ).then((void _) {
+              refreshCounters(kennelInfo.kennelId);
+            });
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
