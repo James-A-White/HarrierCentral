@@ -44,7 +44,7 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
               resizeToAvoidBottomInset: false),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -167,8 +167,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 ),
                 GestureDetector(
                   onTap: () async {
-                    await IveCoreUtilities.showAlert(
-                        context,
+                    await Utilities.showAlert(
                         'What is an "Invite Code"?',
                         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nYou can ask any Harrier Central admin from your Home Kennel to provide you with your invite code using their Harrier Central app.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
                         'OK');
@@ -273,7 +272,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     //     ),
                     //     GestureDetector(
                     //       onTap: () async {
-                    //         await IveCoreUtilities.showAlert(
+                    //         await Utilities.showAlert(
                     //             context,
                     //             'What is the Global Hash Directory?',
                     //             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -313,7 +312,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             if (type != 'cancel') {
                               _emailAddress = email;
                               final String userMessage = await HashersService.sendInviteCodeByEmail(email);
-                              await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Instructions', userMessage, 'OK');
+                              await Utilities.showAlert('Instructions', userMessage, 'OK');
                             }
                           }
                         },
@@ -354,7 +353,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           String? profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
                           profilePhotoUrl ??= 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
-                          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Success!', 'The app has been successfully set up for $userName.', 'OK');
+                          await Utilities.showAlert('Success!', 'The app has been successfully set up for $userName.', 'OK');
 
                           Navigator.pop(navigatorKey.currentContext!);
                           if (!mounted) return;
@@ -391,8 +390,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
       });
 
       if (result['validScan'] == 'false') {
-        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Wrong QR Code',
-            'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
+        await Utilities.showAlert(
+            'Wrong QR Code', 'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
       } else {
         setState(() {
           _inviteCodeTextController.text = scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');

@@ -410,7 +410,7 @@ class RunDetails extends StatelessWidget {
                               child: Text(
                                 G0<AppModel>().hasLocationPermissions
                                     ? (distToEvent ?? -1) >= 0
-                                        ? '${Utilities.getDistance(distToEvent!, context, isMetric: ((distancePreference) & 0x01) == 0)} from here'
+                                        ? '${Utilities.getDistance(distToEvent!, isMetric: ((distancePreference) & 0x01) == 0)} from here'
                                         : '<unknown>'
                                     : '',
                                 style: listValueStyle,
@@ -694,7 +694,7 @@ class RunDetails extends StatelessWidget {
                           mode: LaunchMode.externalApplication,
                         );
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -728,7 +728,7 @@ class RunDetails extends StatelessWidget {
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));
 
-                  await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
+                  await Utilities.showAlert('Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
                 },
               ),
             ),
@@ -748,7 +748,7 @@ class RunDetails extends StatelessWidget {
                       mode: LaunchMode.externalApplication,
                     );
                   } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
+                    await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
                   }
                 },
               ),
@@ -770,7 +770,7 @@ class RunDetails extends StatelessWidget {
                       mode: LaunchMode.externalApplication,
                     );
                   } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
+                    await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
                   }
                 },
               ),

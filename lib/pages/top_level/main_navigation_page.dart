@@ -540,7 +540,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -697,8 +697,11 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                 if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
                                   await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl!), mode: LaunchMode.externalApplication);
                                 } else {
-                                  await IveCoreUtilities.showAlert(
-                                      navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}', 'OK');
+                                  await Utilities.showAlert(
+                                    'Unable to open link',
+                                    'Harrier Central was unable to open ${widget.promos[0].promoExternalUrl}',
+                                    'OK',
+                                  );
                                 }
                               },
                               child: Padding(

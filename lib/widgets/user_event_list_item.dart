@@ -210,7 +210,7 @@ class UserEventListItem extends StatelessWidget {
                 ),
               ),
             ),
-            if ((G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) && (item.canEditRunAttendence != 0)) ...<Widget>[
+            if ((G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) && (item.canEditRunAttendence != 0)) ...<Widget>[
               IconButton(
                 icon: const Icon(MaterialCommunityIcons.dots_vertical),
                 iconSize: Theme.of(context).iconTheme.size,
@@ -228,7 +228,10 @@ class UserEventListItem extends StatelessWidget {
   }
 
   Future<void> _showRunAttendencePopup(BuildContext context) async {
-    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+    if (Connection2.checkForConnection(
+      G0<AppModel>().connectionStatus,
+      message: 'Setting run options is not available in offline mode. Please connect to the Internet.',
+    )) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I was at this Hash',

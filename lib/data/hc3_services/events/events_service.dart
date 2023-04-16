@@ -210,7 +210,7 @@ class EventsService extends BaseService {
     String? eventImageUrl,
     String? hares,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;

@@ -40,7 +40,7 @@
 //           ),
 //         ),
 //         OfflineModeRibbon(
-//           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+//           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
 //           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
 //           ribbonImage: 'images/icons/offline_mode.png',
 //         ),
@@ -129,7 +129,7 @@
 //             ),
 //             GestureDetector(
 //               onTap: () {
-//                 await IveCoreUtilities.showAlert(
+//                 await Utilities.showAlert(
 //                     context,
 //                     'Why login with Facebook?',
 //                     'In order for the Harrier Central server to automatically receive events from groups on Facebook at least one Facebook user with admin permissions on the group must be logged in using the Harrier Central app.\r\n\r\nWhen you login to Facebook using this page, Harrier Central receives credentials that enable our server to access runs from your group.',
@@ -245,7 +245,7 @@
 //       final int preferences = int.tryParse(result[0]['preferences']) ?? 0;
 //       await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
 //     } else {
-//       await IveCoreUtilities.showAlert(
+//       await Utilities.showAlert(
 //           context,
 //           'Problem saving Facebook data',
 //           'There was a problem saving your Facebook infomration to Harrier Central.\r\n\r\nPlease try again later or let us know by contacting us at connect@harriercentral.com. Sorry for the inconvenience!',

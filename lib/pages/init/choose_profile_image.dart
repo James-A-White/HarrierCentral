@@ -429,7 +429,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       if (updateWasSuccessful) {
         await setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
       } else {
-        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Profile photo not updated.',
+        await Utilities.showAlert('Profile photo not updated.',
             'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
       }
       if (!mounted) return;

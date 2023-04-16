@@ -103,7 +103,7 @@ class HashersService extends BaseService {
       int includeInGlobalHashDirectory = -1,
       int preferences = -1,
       int nameDisplayPreference = -1}) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -189,14 +189,14 @@ class HashersService extends BaseService {
       bool okButtonPressed = false;
       if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
         dbErrorIsDuplicateEmail = true;
-        okButtonPressed = await IveCoreUtilities.showAlert(navigatorKey.currentContext!, dbError.errorTitle ?? 'Error',
-                'This email address already exists in our server. Would you like an invite code sent to your email that you can use to install the app?', 'Send code',
+        okButtonPressed = await Utilities.showAlert(
+                dbError.errorTitle ?? 'Error', 'This email address already exists in our server. Would you like an invite code sent to your email that you can use to install the app?', 'Send code',
                 showCancelButton: true) ??
             false;
 
         if (okButtonPressed) {
           final String userMessage = await sendInviteCodeByEmail(email!);
-          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Check your email', userMessage, 'OK');
+          await Utilities.showAlert('Check your email', userMessage, 'OK');
         }
       }
       return okButtonPressed;
@@ -258,7 +258,7 @@ class HashersService extends BaseService {
     required String targetUserId,
     required String photo,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return false;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -306,7 +306,7 @@ class HashersService extends BaseService {
     required String email,
     int includeInGlobalHashDirectory = -1,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;

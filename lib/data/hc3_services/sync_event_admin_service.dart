@@ -56,7 +56,7 @@ class SyncEventAdminService {
     Function? informUser,
     bool usePaging = false,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return false;
     }
 

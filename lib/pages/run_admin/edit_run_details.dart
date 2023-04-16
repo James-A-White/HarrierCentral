@@ -356,8 +356,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
       }
     } else {
       if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
-        await IveCoreUtilities.showAlert(
-            context, 'Please save Details first', 'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
+        await Utilities.showAlert(
+          'Please save Details first',
+          'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.',
+          'OK',
+        );
         _tabController.animateTo(0);
       } else {
         if (_otherDetailsFormKey.currentState?.validate() ?? false) {
@@ -983,8 +986,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
   Future<void> _getImageFromGallery(ImageSource source) async {
     if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
-      await IveCoreUtilities.showAlert(
-          context, 'Please save Details first', 'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK');
+      await Utilities.showAlert(
+        'Please save Details first',
+        'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.',
+        'OK',
+      );
 
       _tabController.animateTo(0);
     } else {
@@ -1197,8 +1203,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                             onPressed: () async {
                               if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
-                                await IveCoreUtilities.showAlert(
-                                    context, 'Please save details first', 'When creating a new event, please save the information on the Details tab before saving the location', 'OK');
+                                await Utilities.showAlert(
+                                  'Please save details first',
+                                  'When creating a new event, please save the information on the Details tab before saving the location',
+                                  'OK',
+                                );
 
                                 _tabController.animateTo(0);
                               } else {

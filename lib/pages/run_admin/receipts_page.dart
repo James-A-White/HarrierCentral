@@ -149,8 +149,11 @@ class ReceiptsListState extends State<ReceiptsList> {
 
       refreshFromTable();
     } else {
-      await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext!, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+      await Utilities.showAlert(
+        'Error uploading receipt',
+        'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!',
+        'OK',
+      );
     }
   }
 
@@ -190,8 +193,11 @@ class ReceiptsListState extends State<ReceiptsList> {
           );
       refreshFromTable();
     } else {
-      await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext!, 'Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+      await Utilities.showAlert(
+        'Error uploading receipt',
+        'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!',
+        'OK',
+      );
     }
   }
 

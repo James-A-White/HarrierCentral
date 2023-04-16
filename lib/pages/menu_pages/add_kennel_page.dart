@@ -38,7 +38,7 @@ class AddKennelPageState extends State<AddKennelPage> {
         ),
       ),
       OfflineModeRibbon(
-        showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+        showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
         lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
         ribbonImage: 'images/icons/offline_mode.png',
         refreshFunction: () {
@@ -92,7 +92,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                   const SizedBox(
                     height: 20.0,
                   ),
-                  Connection.styleForConnected(
+                  Connection2.styleForConnected(
                     G0<AppModel>().connectionStatus,
                     Center(
                       child: ElevatedButton(
@@ -115,7 +115,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                   const SizedBox(
                     height: 20.0,
                   ),
-                  Connection.styleForConnected(
+                  Connection2.styleForConnected(
                     G0<AppModel>().connectionStatus,
                     Center(
                       child: ElevatedButton(

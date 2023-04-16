@@ -399,11 +399,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           if (!mounted) return;
           Navigator.of(context).pop(h);
         } else {
-          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
+          await Utilities.showAlert('Profile Updated', 'Your profile was updated successfully.', 'OK');
         }
       } else {
-        await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext!, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
+        await Utilities.showAlert(
+          'Profile Not Updated',
+          'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.',
+          'OK',
+        );
       }
     } else {
 //    If all data are not valid then start auto validation.
@@ -708,14 +711,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                     ),
                                             ),
-                                            Connection.styleForConnected(
+                                            Connection2.styleForConnected(
                                               G0<AppModel>().connectionStatus,
                                               ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                 ),
                                                 onPressed: () {
-                                                  if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                                  if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
                                                     Navigator.push(
                                                       context,
                                                       MaterialPageRoute<String>(
@@ -1096,7 +1099,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                                   children: <Widget>[
-                                                    Connection.styleForConnected(
+                                                    Connection2.styleForConnected(
                                                       G0<AppModel>().connectionStatus,
                                                       ElevatedButton(
                                                         style: ElevatedButton.styleFrom(
@@ -1120,8 +1123,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   return pp;
                                                                 });
                                                           } else {
-                                                            await IveCoreUtilities.showAlert(
-                                                                navigatorKey.currentContext!,
+                                                            await Utilities.showAlert(
                                                                 'Code Not Available',
                                                                 'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
                                                                 'OK');
@@ -1174,8 +1176,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15.0),
                                                   ),
                                                   onPressed: () async {
-                                                    await IveCoreUtilities.showAlert(
-                                                      context,
+                                                    await Utilities.showAlert(
                                                       'Map preferences cleared',
                                                       'Your map preference has been cleared. Next time you access an external map application, you will be prompted again to select a map preference.',
                                                       'OK',
@@ -1230,15 +1231,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                                               children: <Widget>[
-                                                Connection.styleForConnected(
+                                                Connection2.styleForConnected(
                                                   G0<AppModel>().connectionStatus,
                                                   ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
                                                       padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                     ),
                                                     onPressed: () async {
-                                                      await IveCoreUtilities.showAlert(
-                                                              context,
+                                                      await Utilities.showAlert(
                                                               'Reload Data',
                                                               'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
                                                               'Reload data',
@@ -1282,15 +1282,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               child: Row(
                                                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                                                 children: <Widget>[
-                                                  Connection.styleForConnected(
+                                                  Connection2.styleForConnected(
                                                     G0<AppModel>().connectionStatus,
                                                     ElevatedButton(
                                                       style: ElevatedButton.styleFrom(
                                                         padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                       ),
                                                       onPressed: () async {
-                                                        bool? result = await IveCoreUtilities.showAlert(
-                                                            context,
+                                                        bool? result = await Utilities.showAlert(
                                                             'Log out?',
                                                             'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
                                                             'Log out',
@@ -1349,7 +1348,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                                               children: <Widget>[
-                                                Connection.styleForConnected(
+                                                Connection2.styleForConnected(
                                                   G0<AppModel>().connectionStatus,
                                                   ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
@@ -1404,15 +1403,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                                               children: <Widget>[
-                                                Connection.styleForConnected(
+                                                Connection2.styleForConnected(
                                                   G0<AppModel>().connectionStatus,
                                                   ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
                                                       padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                                     ),
                                                     onPressed: () async {
-                                                      bool? result = await IveCoreUtilities.showAlert(
-                                                          context,
+                                                      bool? result = await Utilities.showAlert(
                                                           'Delete Account',
                                                           'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
                                                           'Delete Account',
@@ -1422,7 +1420,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       if (result ?? false) {
                                                         await Future<void>.delayed(const Duration(milliseconds: 1500));
 
-                                                        bool? result2 = await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Delete Account',
+                                                        bool? result2 = await Utilities.showAlert('Delete Account',
                                                             'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?', 'Delete Account',
                                                             showCancelButton: true, cancelButtonText: 'Keep Account');
 
@@ -1431,15 +1429,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           final SingleResultModel? result = await svc.gdprDelete();
 
                                                           if ((result?.result ?? '') == 'success') {
-                                                            await IveCoreUtilities.showAlert(
-                                                              navigatorKey.currentContext!,
+                                                            await Utilities.showAlert(
                                                               'Successful',
                                                               'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
                                                               'OK',
                                                             );
                                                           } else {
-                                                            await IveCoreUtilities.showAlert(
-                                                              navigatorKey.currentContext!,
+                                                            await Utilities.showAlert(
                                                               'Contact us',
                                                               'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
                                                               'OK',
@@ -1485,14 +1481,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 height: 60,
                 width: MediaQuery.of(context).size.width,
                 color: Colors.yellow[100],
-                child: Connection.styleForConnected(
+                child: Connection2.styleForConnected(
                   G0<AppModel>().connectionStatus,
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _isDirty ? Colors.red.shade900 : Colors.grey,
                     ),
                     onPressed: () {
-                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus) && _isDirty) {
+                      if (Connection2.checkForConnection(G0<AppModel>().connectionStatus) && _isDirty) {
                         _updateProfile();
                       }
                     },
@@ -1500,7 +1496,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                   ),
                 ))),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -1517,8 +1513,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       final PermissionStatus ps = await Permission.location.request();
 
       if (ps.isPermanentlyDenied) {
-        final bool? openSettings = await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext!,
+        final bool? openSettings = await Utilities.showAlert(
             'Phone Settings',
             'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
             'Open Settings',
@@ -1528,9 +1523,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         if (openSettings ?? false) {
           await openAppSettings();
 
-          success = await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
-                  showCancelButton: true, cancelButtonText: 'No') ??
-              false;
+          success = await Utilities.showAlert('Success?', 'Were you able to change the settings to enable location services?', 'Yes', showCancelButton: true, cancelButtonText: 'No') ?? false;
         }
       }
 
@@ -1538,8 +1531,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         if (await Permission.location.serviceStatus.isEnabled) {
           G0<AppModel>().hasLocationPermissions = true;
           await Utilities.subscribeToGeoLocationStream().then((void _) async {
-            await IveCoreUtilities.showAlert(
-              context,
+            await Utilities.showAlert(
               'Location Services Enabled',
               'Location Services have been enabled.',
               'OK',
@@ -1547,8 +1539,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           });
         }
       } else {
-        await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext!,
+        await Utilities.showAlert(
             'Location Services problem',
             'Harrier Central was unable to confirm that Location Services have been enabled.\r\n\r\nPlease use the Settings panel to enable Location Services for Harrier Centra. Once you have done this, please close and restart Harrier Central.',
             'Open Settings',
@@ -1559,7 +1550,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
     }
 
-    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Location preferences updated',
+    await Utilities.showAlert('Location preferences updated',
         'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
   }
 }

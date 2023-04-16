@@ -207,7 +207,7 @@ enum EdbStatus {
 
 class AppModel {
   AppModel();
-  EnumConnectionStatus connectionStatus = EnumConnectionStatus.not_connected;
+  EnumConnectionStatus2 connectionStatus = EnumConnectionStatus2.notConnected;
   StreamSubscription<Position>? geoLocationStream;
   late DateTime appStartTime;
   EdbStatus dbStatus = EdbStatus.uninitialized;

@@ -674,7 +674,7 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
             margin: const EdgeInsets.all(10.0),
             //width: 280.0,
             height: 40.0,
-            child: Connection.styleForConnected(
+            child: Connection2.styleForConnected(
               G0<AppModel>().connectionStatus,
               ElevatedButton(
                   child: Text(
@@ -682,7 +682,7 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
                     style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0),
                   ),
                   onPressed: () async {
-                    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
                       await _toggleScanning();
                     }
                   }),

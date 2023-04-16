@@ -867,7 +867,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   body: _runLocationsBody()),
         ),
         // OfflineModeRibbon(
-        //   showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+        //   showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
         //   lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
         //   ribbonImage: 'images/icons/offline_mode.png',
         // ),

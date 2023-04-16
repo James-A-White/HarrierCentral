@@ -306,9 +306,12 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   }
 
   Future<void> sendEmail(BuildContext context, String emailBody) async {
-    final bool? doEmail = await IveCoreUtilities.showAlert(
-        navigatorKey.currentContext!, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK',
-        showCancelButton: true);
+    final bool? doEmail = await Utilities.showAlert(
+      'Email run details',
+      'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?',
+      'OK',
+      showCancelButton: true,
+    );
 
     if (doEmail ?? false) {
       final Map<String, String> result = await G0<TableModel>().eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody);
@@ -317,10 +320,10 @@ class EmailEditorPageState extends State<EmailEditorPage> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       if (result['result'] != null) {
         if (result['result']!.toLowerCase().startsWith('success')) {
-          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mails successfully sent', result['result']!, 'OK');
+          await Utilities.showAlert('E-mails successfully sent', result['result']!, 'OK');
         } else {
-          await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Error sending emails',
-              'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+          await Utilities.showAlert(
+              'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
         }
 
         IveCoreUtilities.showInSnackBar(navigatorKey.currentContext!, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);

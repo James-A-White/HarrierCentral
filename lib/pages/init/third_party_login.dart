@@ -389,7 +389,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                     //     ),
                     //     GestureDetector(
                     //       onTap: () async {
-                    //         await IveCoreUtilities.showAlert(
+                    //         await Utilities.showAlert(
                     //             context,
                     //             'What is the Global Hash Directory?',
                     //             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -472,7 +472,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         0; // we turn the result into a string and then back into an int to allow the DB to return either int or string without causing an error
                     await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                   } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Account not created',
+                    await Utilities.showAlert('Account not created',
                         'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
                     return;
                   }
@@ -495,7 +495,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         ));
                   } else {
                     // not a new user, pop back to the User profile page.
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
+                    await Utilities.showAlert('Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
                       Navigator.of(context).pop();
                     });
                   }

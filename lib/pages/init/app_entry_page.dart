@@ -49,7 +49,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     await Utilities.subscribeToGeoLocationStream();
 
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
       facebookAccessToken = await _checkFacebookLogin();
 
       final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, facebookAccessToken);
@@ -79,8 +79,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
           final Duration timeSinceFbCancellaction = DateTime.now().difference(fbLoginCancelled);
 
           if (timeSinceFbCancellaction.inDays > 1) {
-            await IveCoreUtilities.showAlert(
-                navigatorKey.currentContext!,
+            await Utilities.showAlert(
                 'Facebook Login Required',
                 'Our system indicates that you are an admin of a Facebook Group that uses Facebook integration.\r\n\r\nIt appears as though the Facebook Authorization Token we have in our system for your group has expired.\r\n\r\nTo refresh the token, Harrier Central will now ask you to log in to Facebook. Once you log in, your token will be refreshed and Facebook integration will continue to work for your Kennel.\r\n\r\nIf you have questions, please contact us at connect@harriercentral.com.',
                 'OK');
@@ -107,12 +106,12 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
 
-      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Network Error',
+      await Utilities.showAlert('Network Error',
           'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.', 'Quit');
       exit(0);
     } else if (loginResult == null) {
       // open app in offline mode
-      G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+      G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
 
       await Navigator.pushReplacement<dynamic, dynamic>(
           navigatorKey.currentContext!,
@@ -136,7 +135,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       if (allowContinueFromMessage) {
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
-            G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
+            G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
             //if (true) {
             if (((userId == null) || (userId.isEmpty) || (userId == GUID_EMPTY))) {
               // first time the app has run
@@ -173,7 +172,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
+                    await Utilities.showAlert('Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
                       Navigator.pushReplacement<dynamic, dynamic>(
                           context,
                           MaterialPageRoute<dynamic>(

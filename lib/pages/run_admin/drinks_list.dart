@@ -72,7 +72,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
   final List<DrinksResults> _awards = <DrinksResults>[];
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
       if (showLoadingIndicator) {
         setState(() {
           _isLoading = true;

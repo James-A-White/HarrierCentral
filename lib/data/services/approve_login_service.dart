@@ -159,8 +159,7 @@ class ApproveLoginService {
   }
 
   Future<bool> _onLoginDelayed(BuildContext context, String message) async {
-    final bool isWait = await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext!,
+    final bool isWait = await Utilities.showAlert(
           'Slow Network',
           message,
           'Wait',
@@ -176,8 +175,7 @@ class ApproveLoginService {
   }
 
   Future<Response> _onTimeout(BuildContext context) async {
-    await IveCoreUtilities.showAlert(
-        navigatorKey.currentContext!,
+    await Utilities.showAlert(
         'Network Error',
         'Harrier Central was not able to contact the server. Please check your network connection.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
         'Use Offline');

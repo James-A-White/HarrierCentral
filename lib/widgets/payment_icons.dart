@@ -283,8 +283,7 @@ class PaymentIcons extends StatelessWidget {
               }
 
               // show the alert so the user knows how much to pay
-              final bool? result = await IveCoreUtilities.showAlert(
-                navigatorKey.currentContext!,
+              final bool? result = await Utilities.showAlert(
                 'Please pay $totalStr',
                 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr',
                 'OK',
@@ -297,8 +296,7 @@ class PaymentIcons extends StatelessWidget {
                 await launchUrl(Uri.parse(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))), mode: LaunchMode.externalApplication);
                 if ((kennel.allowSelfPayment & selfPaymentAutoPayAfterBankTransfer) == selfPaymentAutoPayAfterBankTransfer) {
                   // show the alert so the user knows how much to pay
-                  final bool? result2 = await IveCoreUtilities.showAlert(
-                    navigatorKey.currentContext!,
+                  final bool? result2 = await Utilities.showAlert(
                     'Were you able to pay?',
                     'Were you able to complete a payment of $totalStr using $paymentProvider',
                     'Yes',
@@ -313,14 +311,14 @@ class PaymentIcons extends StatelessWidget {
                     // isPaid = 1;
                     stateSetter(adHocItems[0]['rsvpState'], 1);
                   } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+                    await Utilities.showAlert('Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
                   }
                 } else {
-                  await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK');
+                  await Utilities.showAlert('Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK');
                 }
               }
               // } else {
-              //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Bad payment URL',
+              //   await Utilities.showAlert(navigatorKey.currentContext, 'Bad payment URL',
               //       'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
               // }
               //});

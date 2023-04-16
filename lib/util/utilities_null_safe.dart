@@ -398,7 +398,7 @@ class Utilities {
     return s;
   }
 
-  static String getDistance(double meters, BuildContext context, {bool isMetric = true}) {
+  static String getDistance(double meters, {bool isMetric = true}) {
     if (!G0<AppModel>().hasLocationPermissions) {
       return '';
     }
@@ -550,42 +550,89 @@ class Utilities {
     return result;
   }
 
-  static Future<bool?> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false, String cancelButtonText = 'Cancel'}) async {
-    return showDialog<bool?>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  body,
-                  textAlign: TextAlign.justify,
-                  style: Theme.of(context).textTheme.titleMedium,
-                )
-              ],
-            ),
+  static Future<bool?> showAlert(
+    String title,
+    String body,
+    String buttonText, {
+    bool showCancelButton = false,
+    String cancelButtonText = 'Cancel',
+    TextAlign textAlign = TextAlign.justify,
+  }) async {
+    return Get.dialog<bool?>(
+      AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text(
+                body,
+                textAlign: textAlign,
+                style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+              )
+            ],
           ),
-          actions: <Widget>[
-            showCancelButton == true
-                ? TextButton(
-                    child: Text(cancelButtonText),
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                  )
-                : Container(),
+        ),
+        actions: <Widget>[
+          if (showCancelButton)
             TextButton(
-              child: Text(buttonText),
+              child: Text(cancelButtonText),
               onPressed: () {
-                Navigator.of(context).pop(true);
+                Get.back(result: false, canPop: true);
               },
-            ),
-          ],
-        );
-      },
+            )
+          else
+            Container(),
+          TextButton(
+            child: Text(buttonText),
+            onPressed: () {
+              Get.back(result: true, canPop: true);
+            },
+          ),
+        ],
+      ),
+      barrierDismissible: false, // user must tap button!
+    );
+  }
+
+  static Future<bool?> showAlert2(
+    String title,
+    String body,
+    String buttonText, {
+    bool showCancelButton = false,
+    String cancelButtonText = 'Cancel',
+  }) async {
+    return Get.dialog<bool?>(
+      AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text(
+                body,
+                textAlign: TextAlign.justify,
+                style: titleStyle,
+              )
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          showCancelButton == true
+              ? TextButton(
+                  child: Text(cancelButtonText),
+                  onPressed: () {
+                    Get.back<bool?>(result: false, canPop: true);
+                  },
+                )
+              : Container(),
+          TextButton(
+            child: Text(buttonText),
+            onPressed: () {
+              Get.back<bool?>(result: true, canPop: true);
+            },
+          ),
+        ],
+      ),
+      barrierDismissible: false, // user must tap button!
     );
   }
 
@@ -593,8 +640,7 @@ class Utilities {
     final InternetConnectionChecker checker = InternetConnectionChecker();
 
     while (!await checker.hasConnection) {
-      final bool? useOffline = await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext!,
+      final bool? useOffline = await Utilities.showAlert(
           'Check Network',
           'Harrier Central is unable to detect a network connection.\r\n\r\nPlease check the network connection on your phone and try again, or you can continue to use the app in Offline Mode.',
           'Use Offline',
@@ -608,7 +654,7 @@ class Utilities {
     }
 
     if (await checker.hasConnection) {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
+      G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
 
       final List<AddressCheckOptions> addressesToCheck = <AddressCheckOptions>[];
 
@@ -626,16 +672,15 @@ class Utilities {
       checker.addresses = addressesToCheck;
 
       if (!await checker.hasConnection) {
-        await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext!, // CHECK
+        await Utilities.showAlert(
             'Server Offline',
             'The Harrier Central App is able to access the network but is unable to connect to our backend server.\r\n\r\nThis can happen if there is a problem with the network or our service is down for maintenance.\r\n\r\nYou can use the app offline or close the app and try again later.',
             'OK');
 
-        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
       }
     } else {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+      G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
     }
   }
 }

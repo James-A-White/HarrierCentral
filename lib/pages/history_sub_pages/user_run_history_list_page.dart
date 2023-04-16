@@ -181,7 +181,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         .then((Map<String, String> result) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
-                        IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent',
+                        Utilities.showAlert('E-mail successfully sent',
                             'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
@@ -197,7 +197,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                     G0<TableModel>().hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
-                        IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent',
+                        Utilities.showAlert('E-mail successfully sent',
                             'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
@@ -210,7 +210,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -293,7 +293,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: () {
   //                   model.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       await Utilities.showAlert( 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },
@@ -306,7 +306,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: ()  {
   //                   model.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       await Utilities.showAlert( 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },

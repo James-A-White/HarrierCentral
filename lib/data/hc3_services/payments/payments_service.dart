@@ -138,7 +138,7 @@ class PaymentsService {
   }) async {
     List<dynamic> results = <dynamic>[];
 
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return results;
       // TODO(James): fix this so we can return a bool
       //return false;

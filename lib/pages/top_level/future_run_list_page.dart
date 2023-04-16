@@ -351,7 +351,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
-                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected)) ...<Widget>[
                                         const SizedBox(width: 36.0),
                                       ],
                                       if ((_filteredRuns![index] == 1) && _showRsvpInstructions) ...<Widget>[
@@ -374,8 +374,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                       if ((_filteredRuns![index] == 1) && _showRsvpInstructions) ...<Widget>[
                                         GestureDetector(
                                           onTap: () async {
-                                            await IveCoreUtilities.showAlert(
-                                              context,
+                                            await Utilities.showAlert(
                                               'Why should I RSVP?',
                                               'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
                                               'OK',
@@ -387,14 +386,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                           ),
                                         )
                                       ],
-                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected)) ...<Widget>[
+                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected)) ...<Widget>[
                                         GestureDetector(
                                           onTap: () async {
                                             bool success = false;
 
                                             if (!await Permission.location.isGranted) {
-                                              final bool? allow = await IveCoreUtilities.showAlert(
-                                                  navigatorKey.currentContext!,
+                                              final bool? allow = await Utilities.showAlert(
                                                   'Location Services Required',
                                                   'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
                                                   'Yes',
@@ -405,8 +403,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                                 final PermissionStatus ps = await Permission.location.request();
 
                                                 if (ps.isPermanentlyDenied) {
-                                                  final bool? openSettings = await IveCoreUtilities.showAlert(
-                                                      navigatorKey.currentContext!,
+                                                  final bool? openSettings = await Utilities.showAlert(
                                                       'Phone Settings',
                                                       'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
                                                       'Open Settings',
@@ -415,8 +412,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                                   if (openSettings ?? false) {
                                                     await openAppSettings();
 
-                                                    success = await IveCoreUtilities.showAlert(
-                                                            navigatorKey.currentContext!, 'Success?', 'Were you able to change the settings to enable location services?', 'Yes',
+                                                    success = await Utilities.showAlert('Success?', 'Were you able to change the settings to enable location services?', 'Yes',
                                                             showCancelButton: true, cancelButtonText: 'No') ??
                                                         false;
                                                   }
@@ -426,8 +422,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                                   if (await Permission.location.serviceStatus.isEnabled) {
                                                     G0<AppModel>().hasLocationPermissions = true;
                                                     await Utilities.subscribeToGeoLocationStream().then((void _) async {
-                                                      await IveCoreUtilities.showAlert(
-                                                        context,
+                                                      await Utilities.showAlert(
                                                         'Location Services Enabled',
                                                         'Location Services have been enabled.',
                                                         'OK',
@@ -647,7 +642,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           return popup;
         }).then((dynamic retVal) async {
       if (retVal == 9999) {
-        if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+        if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
           final HashersService srv = HashersService();
 
           final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
@@ -664,7 +659,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           await refreshFromTable(true);
         }
       } else if ((retVal is! EnumFollowType) && (retVal >= hasherPref_0) && (retVal <= hasherPref_500)) {
-        if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+        if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
           final HashersService srv = HashersService();
 
           final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;

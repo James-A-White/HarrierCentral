@@ -220,8 +220,8 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
   void _onSkipPress() {
     if (activeTab == 0) {
-      IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Location Preference',
-              'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow',
+      Utilities.showAlert(
+              'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool? allow) async {
         if (allow ?? false) {
@@ -236,8 +236,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      IveCoreUtilities.showAlert(
-              context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
+      Utilities.showAlert('Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool? allow) async {
         if (allow ?? false) {
@@ -253,8 +252,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      IveCoreUtilities.showAlert(
-              navigatorKey.currentContext!, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
+      Utilities.showAlert('Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
               showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool? allow) async {
         if (allow ?? false) {

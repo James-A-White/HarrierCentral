@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 class SnoozePromotionService {
   Future<SingleResultModel?> snoozePromotion(String promotionId, bool deletePromotion) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;

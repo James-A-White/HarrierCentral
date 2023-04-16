@@ -10,7 +10,7 @@ class ServiceCommon {
     Function? errorCallback,
     Client? client,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return ERROR_NO_CONNECTION;
     }
 
@@ -40,19 +40,17 @@ class ServiceCommon {
 
     if ((response.statusCode < 200) || (response.statusCode >= 300)) {
       if (response.reasonPhrase == 'Site Disabled') {
-        await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext!, // CHECK
+        await Utilities.showAlert(
             'Down for Maintenance',
             'The Harrier Central server is temporarily offline for maintenance.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
             'Use Offline');
-        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
       } else {
-        await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext!, // CHECK,
+        await Utilities.showAlert(
             'Unknown Server Error',
             'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at connect@harriercentral.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',
             'Use Offline');
-        G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
       }
     } else if (response.body.contains('"errorId"')) {
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
@@ -62,8 +60,7 @@ class ServiceCommon {
         final bool errorCallbackResult = await errorCallback(errorResult);
         returnValue = errorCallbackResult ? ERROR_HANDLED : ERROR_NOT_HANDLED;
       } else {
-        final bool alertResult = (await IveCoreUtilities.showAlert(
-              navigatorKey.currentContext!,
+        final bool alertResult = (await Utilities.showAlert(
               errorResult.errorTitle ?? '',
               (errorResult.errorUserMessage ?? '').replaceAll('~', '\r\n'),
               'Quit',

@@ -534,7 +534,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                     }
                                   },
                                   toggleEmailPreferenceCallback: () {
-                                    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+                                    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus,
                                         message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
                                       final HasherKennelMapService srv = HasherKennelMapService();
                                       final int emailAlertStatus = snapshot.data![index].kennelEmailAlertPreference != 1 ? 1 : 2;

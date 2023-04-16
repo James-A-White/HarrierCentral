@@ -27,13 +27,12 @@ class OfflineModeRibbon extends StatelessWidget {
                 bool tryReconnect = false;
 
                 if (lastSync != null) {
-                  tryReconnect = !(await Utilities.showAlert(navigatorKey.currentContext!, 'Offline Mode',
+                  tryReconnect = !(await Utilities.showAlert2('Offline Mode',
                           'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d 'at' h:mm a").format(lastSync!)}', 'OK',
                           showCancelButton: true, cancelButtonText: 'Try reconnect') ??
                       false);
                 } else {
-                  tryReconnect = !(await Utilities.showAlert(
-                          navigatorKey.currentContext!, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK',
+                  tryReconnect = !(await Utilities.showAlert2('Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK',
                           showCancelButton: true, cancelButtonText: 'Try reconnect') ??
                       false);
                 }
@@ -41,9 +40,8 @@ class OfflineModeRibbon extends StatelessWidget {
                 if (tryReconnect) {
                   await Utilities.checkForInternetConnection(true);
 
-                  if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
-                    await Utilities.showAlert(
-                      navigatorKey.currentContext!,
+                  if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
+                    await Utilities.showAlert2(
                       'Connected',
                       'You are now connected to the Internet',
                       'OK',

@@ -95,7 +95,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
       if (showLoadingIndicator) {
         setState(() {
           _isLoading = true;
@@ -1513,7 +1513,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'RSVP Result', serverMessage, 'OK');
+      await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
     }
 
     await _refreshPackListFromTables(false);

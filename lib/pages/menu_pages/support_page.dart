@@ -201,14 +201,14 @@ class SupportPageState extends State<SupportPage> {
                                     Padding(
                                       padding: const EdgeInsets.only(top: 25),
                                       child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                        Connection.styleForConnected(
+                                        Connection2.styleForConnected(
                                           G0<AppModel>().connectionStatus,
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
                                               padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                             ),
                                             onPressed: () async {
-                                              if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                              if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
                                                 await G0<TableModel>().syncUserDataService.updateFromBackend(
                                                       SyncUserDataService.flagAllMasterData,
                                                       false,
@@ -235,7 +235,7 @@ class SupportPageState extends State<SupportPage> {
                                                     _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
                                                     _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'App Reset Successful',
+                                                    await Utilities.showAlert('App Reset Successful',
                                                         'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
@@ -252,14 +252,14 @@ class SupportPageState extends State<SupportPage> {
                                     Padding(
                                       padding: const EdgeInsets.only(top: 25),
                                       child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                        Connection.styleForConnected(
+                                        Connection2.styleForConnected(
                                           G0<AppModel>().connectionStatus,
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
                                               padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                             ),
                                             onPressed: () async {
-                                              if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                                              if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
                                                 await G0<TableModel>().syncUserDataService.updateFromBackend(
                                                       SyncUserDataService.flagAllMasterData,
                                                       false,
@@ -286,7 +286,7 @@ class SupportPageState extends State<SupportPage> {
                                                     _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
                                                     _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'App Reset Successful',
+                                                    await Utilities.showAlert('App Reset Successful',
                                                         'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
@@ -313,7 +313,7 @@ class SupportPageState extends State<SupportPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {

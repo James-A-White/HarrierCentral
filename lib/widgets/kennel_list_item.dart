@@ -213,7 +213,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           ],
                           if ((G0<AppModel>().hasLocationPermissions) && (widget.kennelItem.extensions.distToKennel != null)) ...<Widget>[
                             Text(
-                              '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, context, isMetric: _distancePreference == 2)} from here',
+                              '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
                               style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                             )
                           ],
@@ -246,7 +246,7 @@ class KennelListItemState extends State<KennelsListItem> {
                       ),
                     ),
                   ),
-                  if (G0<AppModel>().connectionStatus == EnumConnectionStatus.connected) ...<Widget>[
+                  if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) ...<Widget>[
                     IconButton(
                       icon: const Icon(MaterialCommunityIcons.dots_vertical),
                       iconSize: Theme.of(context).iconTheme.size,
@@ -265,7 +265,7 @@ class KennelListItemState extends State<KennelsListItem> {
   }
 
   Future<void> _showFollowingPopup() async {
-    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus,
         message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -407,8 +407,10 @@ class KennelListItemState extends State<KennelsListItem> {
     if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
       {
         if (!mounted) return;
-        if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
-            message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+        if (Connection2.checkForConnection(
+          G0<AppModel>().connectionStatus,
+          message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
+        )) {
           widget.kennelItem.extensions.notificationsRequested = retVal.value;
           setState(() {});
 
@@ -540,8 +542,10 @@ class KennelListItemState extends State<KennelsListItem> {
           return popup;
         }).then((dynamic retVal) async {
       if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
-        if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
-            message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+        if (Connection2.checkForConnection(
+          G0<AppModel>().connectionStatus,
+          message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
+        )) {
           widget.kennelItem.extensions.emailAlertRequested = retVal.value;
           setState(() {});
 

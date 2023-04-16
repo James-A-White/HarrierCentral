@@ -783,7 +783,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
       if (serverMessage.isNotEmpty) {
-        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'RSVP Result', serverMessage, 'OK');
+        await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
       }
     }
   }
@@ -816,7 +816,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
-      await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'RSVP Result', serverMessage, 'OK');
+      await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
     }
   }
 
@@ -1459,8 +1459,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         );
       }
     } else {
-      await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext!, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+      await Utilities.showAlert(
+        'No location information available',
+        'There is no location information available for this run and so we cannot display a map',
+        'OK',
+      );
     }
   }
 }

@@ -40,7 +40,7 @@ class FaqPageState extends State<FaqPage> {
         ),
       ),
       OfflineModeRibbon(
-        showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+        showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
         lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
         ribbonImage: 'images/icons/offline_mode.png',
         refreshFunction: () {
@@ -169,7 +169,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -190,7 +190,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
@@ -216,12 +216,12 @@ class FaqPageContentState extends State<FaqPageContent> {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
                       } else {
-                        await IveCoreUtilities.showAlert(navigatorKey.currentContext!, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                       }
                     },
                   ),
 
-                  Connection.styleForConnected(
+                  Connection2.styleForConnected(
                     G0<AppModel>().connectionStatus,
                     Center(
                       child: ElevatedButton(

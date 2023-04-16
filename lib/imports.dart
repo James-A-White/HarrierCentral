@@ -149,6 +149,7 @@ export 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 export 'package:harrier_central/pages/top_level/run_locations.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 export 'package:harrier_central/util/bank_transfer_qr.dart';
+export 'package:harrier_central/util/connection2.dart';
 export 'package:harrier_central/util/globals.dart';
 export 'package:harrier_central/util/hc_enums.dart';
 export 'package:harrier_central/util/offline_mode_ribbon.dart';
