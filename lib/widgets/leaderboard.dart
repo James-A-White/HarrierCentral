@@ -1,5 +1,5 @@
 import 'package:harrier_central/imports.dart';
-// import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 class Leaderboard extends StatefulWidget {
   const Leaderboard({
@@ -11,6 +11,16 @@ class Leaderboard extends StatefulWidget {
 
   @override
   LeaderboardState createState() => LeaderboardState();
+}
+
+class LeaderboardAggregate {
+  LeaderboardAggregate({
+    required this.lm,
+    this.searchString,
+  });
+
+  final LeaderboardModel lm;
+  final String? searchString;
 }
 
 // NULLSAFETODO1

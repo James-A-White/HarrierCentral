@@ -3,6 +3,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:flutter_svg/flutter_svg.dart';
@@ -204,36 +205,67 @@ class Utilities {
     return uri != null && uri.hasAbsolutePath && uri.scheme.startsWith('http');
   }
 
-  static Future<bool?> promptForHare(BuildContext context, String? hareList) async {
-    return await showDialog<bool?>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Will you Hare this run?'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}'),
-              ],
-            ),
+  // static Future<bool?> promptForHare(BuildContext context, String? hareList) async {
+  //   return await showDialog<bool?>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Will you Hare this run?'),
+  //         content: SingleChildScrollView(
+  //           child: ListBody(
+  //             children: <Widget>[
+  //               Text('Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}'),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: const Text('No Thanks!'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(false);
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: const Text('Yes, I\'ll Hare!'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  static Future<bool?> promptForHare(String? hareList) async {
+    return await Get.dialog<bool?>(
+      AlertDialog(
+        title: const Text('Will you Hare this run?'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text('Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}'),
+            ],
           ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('No Thanks!'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text('Yes, I\'ll Hare!'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('No Thanks!'),
+            onPressed: () {
+              Get.back<bool?>(result: false, canPop: true);
+            },
+          ),
+          TextButton(
+            child: const Text('Yes, I\'ll Hare!'),
+            onPressed: () {
+              Get.back<bool?>(result: true, canPop: true);
+            },
+          ),
+        ],
+      ),
+
+      barrierDismissible: false, // user must tap button!
     );
   }
 

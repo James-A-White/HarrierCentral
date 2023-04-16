@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:get/get.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +15,7 @@ void main() {
 
   runApp(
     Phoenix(
-      child: MaterialApp(
+      child: GetMaterialApp(
         builder: (BuildContext context, Widget? child) {
           final MediaQueryData mediaQueryData = MediaQuery.of(context);
           final double scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.75);

@@ -467,28 +467,27 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                             return RunListItem(
                               futureRun: _filteredRuns![index],
                               onItemTapped: () {
-                                // NULLSAFETODO
-                                // Navigator.push<dynamic>(
-                                //   this.context,
-                                //   MaterialPageRoute<dynamic>(
-                                //     builder: (BuildContext context) => RunDetailsPage(
-                                //       futureRun: _filteredRuns![index],
-                                //       refreshPage: () async {
-                                //         // WARNING!!!!  We need to return the filtered run based
-                                //         // on it's ID and not the index
+                                Navigator.push<dynamic>(
+                                  this.context,
+                                  MaterialPageRoute<dynamic>(
+                                    builder: (BuildContext context) => RunDetailsPage(
+                                      futureRun: _filteredRuns![index],
+                                      refreshPage: () async {
+                                        // WARNING!!!!  We need to return the filtered run based
+                                        // on it's ID and not the index
 
-                                //         //await _refreshFromBackend(clearLocalTables: false);
-                                //         await refreshFromTable(true);
-                                //         //filterRuns();
-                                //         return _filteredRuns![index];
-                                //       },
-                                //     ),
-                                //   ),
-                                // ).then((void _) {
-                                //   _refreshFromBackend(clearLocalTables: false).then((void _) {
-                                //     setState(() {});
-                                //   });
-                                // });
+                                        //await _refreshFromBackend(clearLocalTables: false);
+                                        await refreshFromTable(true);
+                                        //filterRuns();
+                                        return _filteredRuns![index];
+                                      },
+                                    ),
+                                  ),
+                                ).then((void _) {
+                                  _refreshFromBackend(clearLocalTables: false).then((void _) {
+                                    setState(() {});
+                                  });
+                                });
                               },
                             );
                           }

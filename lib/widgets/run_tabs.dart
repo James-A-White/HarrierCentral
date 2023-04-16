@@ -1,5 +1,7 @@
 // import 'package:flutter/material.dart';
 
+// ignore_for_file: constant_identifier_names
+
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -31,7 +33,17 @@ class PackListAggregate {
 }
 
 class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
-  final List<Tab> _tabs = <Tab>[];
+  static const String LABEL_DETAILS = 'Details';
+  static const String LABEL_MAP = 'Map';
+  static const String LABEL_RSVP = 'RSVP';
+  static const String LABEL_GETALIFE = 'Get A Life';
+
+  final List<Tab> _tabs = <Tab>[
+    const Tab(text: LABEL_DETAILS),
+    const Tab(text: LABEL_RSVP),
+    const Tab(text: LABEL_MAP),
+    const Tab(text: LABEL_GETALIFE),
+  ];
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -47,7 +59,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   bool _trueNorthLock = true;
 
-  Future<List<PackListAggregate>> _thePackList = Future<List<PackListAggregate>>.value(<PackListAggregate>[]);
+  Future<List<PackListAggregate>?> _thePackList = Future<List<PackListAggregate>?>.value(null);
 
   Map<String, dynamic> _packCount = <String, dynamic>{};
 
@@ -145,23 +157,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
-  // ignore: non_constant_identifier_names
-  final String LABEL_DETAILS = 'Details';
-  // ignore: non_constant_identifier_names
-  final String LABEL_MAP = 'Map';
-  // ignore: non_constant_identifier_names
-  final String LABEL_RSVP = 'RSVP';
-  // ignore: non_constant_identifier_names
-  final String LABEL_GETALIFE = 'Get A Life';
-
-  void _initTabs() {
-    _tabs.clear();
-    _tabs.add(Tab(text: LABEL_DETAILS));
-    _tabs.add(Tab(text: LABEL_RSVP));
-    _tabs.add(Tab(text: LABEL_MAP));
-    _tabs.add(Tab(text: LABEL_GETALIFE));
-  }
-
   late TabController _tabController;
   late TabController _gridListTabController;
 
@@ -195,8 +190,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         setState(() {});
       },
     );
-
-    _initTabs();
 
     _tabController.addListener(() async {
       if (_fabIsVisible != (_tabs[_tabController.index].text == LABEL_RSVP)) {
@@ -291,8 +284,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         ),
         child: FutureBuilder(
             future: _thePackList,
-            builder: (BuildContext context, AsyncSnapshot<List<PackListAggregate>> snapshot) {
-              if (snapshot.hasData) {
+            builder: (BuildContext context, AsyncSnapshot<List<PackListAggregate>?> snapshot) {
+              if ((!snapshot.hasData) || (snapshot.data == null)) {
+                return const HcCircularProgressIndicator(key: Key('42223995'));
+              } else {
                 return Center(
                   child: Column(
                     children: <Widget>[
@@ -685,8 +680,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     ],
                   ),
                 );
-              } else {
-                return Container();
               }
             }));
   }
@@ -761,19 +754,21 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Future<void> _setRsvpHare() async {
-    final bool willHare = await Utilities.promptForHare(context, widget.futureRun.event.hares ?? '') ?? false;
+    final bool willHare = await Utilities.promptForHare(widget.futureRun.event.hares ?? '') ?? false;
     if (willHare) {
-      List<PackListAggregate> lPla = await _thePackList;
-      setState(() {
-        if (_thisUserIndex >= 0) {
-          PackListAggregate a = lPla[_thisUserIndex];
-          lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
+      List<PackListAggregate>? lPla = await _thePackList;
+      if (lPla != null) {
+        setState(() {
+          if (_thisUserIndex >= 0) {
+            PackListAggregate a = lPla[_thisUserIndex];
+            lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
 
-          // _thePackList[_thisUserIndex].hem.rsvpState = -1;
-          // _thePackList[_thisUserIndex].hem.isHare = -1;
-          _rsvpRequested = rsvpYes;
-        }
-      });
+            // _thePackList[_thisUserIndex].hem.rsvpState = -1;
+            // _thePackList[_thisUserIndex].hem.isHare = -1;
+            _rsvpRequested = rsvpYes;
+          }
+        });
+      }
 
       //final String userId = getStringPref(StringPrefsEnum.userId);
       final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
@@ -794,17 +789,19 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
-    List<PackListAggregate> lPla = await _thePackList;
-    setState(() {
-      if (_thisUserIndex >= 0) {
-        // _thePackList[_thisUserIndex].hem.rsvpState = -1;
-        // _thePackList[_thisUserIndex].hem.isHare = 0;
+    List<PackListAggregate>? lPla = await _thePackList;
+    if (lPla != null) {
+      setState(() {
+        if (_thisUserIndex >= 0) {
+          // _thePackList[_thisUserIndex].hem.rsvpState = -1;
+          // _thePackList[_thisUserIndex].hem.isHare = 0;
 
-        PackListAggregate a = lPla[_thisUserIndex];
-        lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: 0));
-      }
-      _rsvpRequested = rsvpState;
-    });
+          PackListAggregate a = lPla[_thisUserIndex];
+          lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: 0));
+        }
+        _rsvpRequested = rsvpState;
+      });
+    }
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
     final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
