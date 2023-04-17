@@ -26,8 +26,8 @@ mixin _$RegionsModel {
   String? get regionAbbreviation => throw _privateConstructorUsedError;
   String get countryId => throw _privateConstructorUsedError;
   String? get flagFile => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -48,8 +48,8 @@ abstract class $RegionsModelCopyWith<$Res> {
       String? regionAbbreviation,
       String countryId,
       String? flagFile,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -71,8 +71,8 @@ class _$RegionsModelCopyWithImpl<$Res, $Val extends RegionsModel>
     Object? regionAbbreviation = freezed,
     Object? countryId = null,
     Object? flagFile = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       regionId: null == regionId
@@ -99,14 +99,14 @@ class _$RegionsModelCopyWithImpl<$Res, $Val extends RegionsModel>
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -126,8 +126,8 @@ abstract class _$$_RegionsModelCopyWith<$Res>
       String? regionAbbreviation,
       String countryId,
       String? flagFile,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -147,8 +147,8 @@ class __$$_RegionsModelCopyWithImpl<$Res>
     Object? regionAbbreviation = freezed,
     Object? countryId = null,
     Object? flagFile = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_RegionsModel(
       regionId: null == regionId
@@ -175,14 +175,14 @@ class __$$_RegionsModelCopyWithImpl<$Res>
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -197,8 +197,8 @@ class _$_RegionsModel implements _RegionsModel {
       this.regionAbbreviation,
       required this.countryId,
       this.flagFile,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_RegionsModel.fromJson(Map<String, dynamic> json) =>
       _$$_RegionsModelFromJson(json);
@@ -216,9 +216,9 @@ class _$_RegionsModel implements _RegionsModel {
   @override
   final String? flagFile;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -282,8 +282,8 @@ abstract class _RegionsModel implements RegionsModel {
       final String? regionAbbreviation,
       required final String countryId,
       final String? flagFile,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_RegionsModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_RegionsModel;
 
   factory _RegionsModel.fromJson(Map<String, dynamic> json) =
       _$_RegionsModel.fromJson;
@@ -301,9 +301,9 @@ abstract class _RegionsModel implements RegionsModel {
   @override
   String? get flagFile;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_RegionsModelCopyWith<_$_RegionsModel> get copyWith =>

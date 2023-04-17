@@ -22,8 +22,10 @@ _$_CountriesModel _$$_CountriesModelFromJson(Map<String, dynamic> json) =>
       currencySymbol: json['currencySymbol'] as String?,
       digitsAfterDecimal: json['digitsAfterDecimal'] as int?,
       distancePreference: json['distancePreference'] as int?,
-      removed: json['removed'] as int,
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      removed: json['removed'] as int?,
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$$_CountriesModelToJson(_$_CountriesModel instance) =>
@@ -43,5 +45,5 @@ Map<String, dynamic> _$$_CountriesModelToJson(_$_CountriesModel instance) =>
       'digitsAfterDecimal': instance.digitsAfterDecimal,
       'distancePreference': instance.distancePreference,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
     };

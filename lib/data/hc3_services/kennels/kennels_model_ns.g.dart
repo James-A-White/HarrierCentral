@@ -79,8 +79,10 @@ _$_KennelsModel _$$_KennelsModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['runCountStartDate'] as String),
       kennelMismanagementTeam: json['kennelMismanagementTeam'] as String?,
       distancePreference: json['distancePreference'] as int?,
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      removed: json['removed'] as int,
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
+      removed: json['removed'] as int?,
     );
 
 Map<String, dynamic> _$$_KennelsModelToJson(_$_KennelsModel instance) =>
@@ -145,6 +147,6 @@ Map<String, dynamic> _$$_KennelsModelToJson(_$_KennelsModel instance) =>
       'runCountStartDate': instance.runCountStartDate?.toIso8601String(),
       'kennelMismanagementTeam': instance.kennelMismanagementTeam,
       'distancePreference': instance.distancePreference,
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
       'removed': instance.removed,
     };

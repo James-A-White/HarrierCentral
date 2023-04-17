@@ -37,8 +37,10 @@ _$_PaymentsModel _$$_PaymentsModelFromJson(Map<String, dynamic> json) =>
       discountPercent: json['discountPercent'] as int,
       discountDescription: json['discountDescription'] as String,
       specialRunPriceReason: json['specialRunPriceReason'] as String,
-      removed: json['removed'] as int,
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      removed: json['removed'] as int?,
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$$_PaymentsModelToJson(_$_PaymentsModel instance) =>
@@ -69,5 +71,5 @@ Map<String, dynamic> _$$_PaymentsModelToJson(_$_PaymentsModel instance) =>
       'discountDescription': instance.discountDescription,
       'specialRunPriceReason': instance.specialRunPriceReason,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
     };

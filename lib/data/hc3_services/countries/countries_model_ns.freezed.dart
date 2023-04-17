@@ -34,8 +34,8 @@ mixin _$CountriesModel {
   String? get currencySymbol => throw _privateConstructorUsedError;
   int? get digitsAfterDecimal => throw _privateConstructorUsedError;
   int? get distancePreference => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -64,8 +64,8 @@ abstract class $CountriesModelCopyWith<$Res> {
       String? currencySymbol,
       int? digitsAfterDecimal,
       int? distancePreference,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -95,8 +95,8 @@ class _$CountriesModelCopyWithImpl<$Res, $Val extends CountriesModel>
     Object? currencySymbol = freezed,
     Object? digitsAfterDecimal = freezed,
     Object? distancePreference = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       countryId: null == countryId
@@ -155,14 +155,14 @@ class _$CountriesModelCopyWithImpl<$Res, $Val extends CountriesModel>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -190,8 +190,8 @@ abstract class _$$_CountriesModelCopyWith<$Res>
       String? currencySymbol,
       int? digitsAfterDecimal,
       int? distancePreference,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -219,8 +219,8 @@ class __$$_CountriesModelCopyWithImpl<$Res>
     Object? currencySymbol = freezed,
     Object? digitsAfterDecimal = freezed,
     Object? distancePreference = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_CountriesModel(
       countryId: null == countryId
@@ -279,14 +279,14 @@ class __$$_CountriesModelCopyWithImpl<$Res>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -309,8 +309,8 @@ class _$_CountriesModel implements _CountriesModel {
       this.currencySymbol,
       this.digitsAfterDecimal,
       this.distancePreference,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_CountriesModel.fromJson(Map<String, dynamic> json) =>
       _$$_CountriesModelFromJson(json);
@@ -344,9 +344,9 @@ class _$_CountriesModel implements _CountriesModel {
   @override
   final int? distancePreference;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -442,8 +442,8 @@ abstract class _CountriesModel implements CountriesModel {
       final String? currencySymbol,
       final int? digitsAfterDecimal,
       final int? distancePreference,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_CountriesModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_CountriesModel;
 
   factory _CountriesModel.fromJson(Map<String, dynamic> json) =
       _$_CountriesModel.fromJson;
@@ -477,9 +477,9 @@ abstract class _CountriesModel implements CountriesModel {
   @override
   int? get distancePreference;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_CountriesModelCopyWith<_$_CountriesModel> get copyWith =>

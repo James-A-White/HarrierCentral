@@ -80,8 +80,8 @@ mixin _$KennelsModel {
   DateTime? get runCountStartDate => throw _privateConstructorUsedError;
   String? get kennelMismanagementTeam => throw _privateConstructorUsedError;
   int? get distancePreference => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -150,8 +150,8 @@ abstract class $KennelsModelCopyWith<$Res> {
       DateTime? runCountStartDate,
       String? kennelMismanagementTeam,
       int? distancePreference,
-      DateTime updatedAt,
-      int removed});
+      DateTime? updatedAt,
+      int? removed});
 }
 
 /// @nodoc
@@ -221,8 +221,8 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
     Object? runCountStartDate = freezed,
     Object? kennelMismanagementTeam = freezed,
     Object? distancePreference = freezed,
-    Object? updatedAt = null,
-    Object? removed = null,
+    Object? updatedAt = freezed,
+    Object? removed = freezed,
   }) {
     return _then(_value.copyWith(
       kennelId: null == kennelId
@@ -444,14 +444,14 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      updatedAt: null == updatedAt
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      removed: null == removed
+              as DateTime?,
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ) as $Val);
   }
 }
@@ -519,8 +519,8 @@ abstract class _$$_KennelsModelCopyWith<$Res>
       DateTime? runCountStartDate,
       String? kennelMismanagementTeam,
       int? distancePreference,
-      DateTime updatedAt,
-      int removed});
+      DateTime? updatedAt,
+      int? removed});
 }
 
 /// @nodoc
@@ -588,8 +588,8 @@ class __$$_KennelsModelCopyWithImpl<$Res>
     Object? runCountStartDate = freezed,
     Object? kennelMismanagementTeam = freezed,
     Object? distancePreference = freezed,
-    Object? updatedAt = null,
-    Object? removed = null,
+    Object? updatedAt = freezed,
+    Object? removed = freezed,
   }) {
     return _then(_$_KennelsModel(
       kennelId: null == kennelId
@@ -811,14 +811,14 @@ class __$$_KennelsModelCopyWithImpl<$Res>
           ? _value.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
-      updatedAt: null == updatedAt
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      removed: null == removed
+              as DateTime?,
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ));
   }
 }
@@ -881,8 +881,8 @@ class _$_KennelsModel implements _KennelsModel {
       this.runCountStartDate,
       this.kennelMismanagementTeam,
       this.distancePreference,
-      required this.updatedAt,
-      required this.removed});
+      this.updatedAt,
+      this.removed});
 
   factory _$_KennelsModel.fromJson(Map<String, dynamic> json) =>
       _$$_KennelsModelFromJson(json);
@@ -996,9 +996,9 @@ class _$_KennelsModel implements _KennelsModel {
   @override
   final int? distancePreference;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
   @override
-  final int removed;
+  final int? removed;
 
   @override
   String toString() {
@@ -1231,8 +1231,8 @@ abstract class _KennelsModel implements KennelsModel {
       final DateTime? runCountStartDate,
       final String? kennelMismanagementTeam,
       final int? distancePreference,
-      required final DateTime updatedAt,
-      required final int removed}) = _$_KennelsModel;
+      final DateTime? updatedAt,
+      final int? removed}) = _$_KennelsModel;
 
   factory _KennelsModel.fromJson(Map<String, dynamic> json) =
       _$_KennelsModel.fromJson;
@@ -1346,9 +1346,9 @@ abstract class _KennelsModel implements KennelsModel {
   @override
   int? get distancePreference;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
-  int get removed;
+  int? get removed;
   @override
   @JsonKey(ignore: true)
   _$$_KennelsModelCopyWith<_$_KennelsModel> get copyWith =>

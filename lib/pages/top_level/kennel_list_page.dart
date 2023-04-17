@@ -206,32 +206,44 @@ class KennelsListPageState extends State<KennelsListPage> {
 
         double? dist;
 
-        if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-          for (int i = 0; i < results.length; i++) {
+        for (int i = 0; i < results.length; i++) {
+          final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+
+          final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
+
+          HasherKennelMapModel? hkmItem;
+
+          if (results[i][G0<TableModel>().hasherKennelMapTableHelper.colHkmId] != null) {
+            hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);
+          }
+
+          if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null) && (extensionsItem.cityLat != null) && (extensionsItem.cityLon != null)) {
             dist = Geolocator.distanceBetween(
               G0<DeviceInfo>().deviceLat!,
               G0<DeviceInfo>().deviceLon!,
-              results[i]['cityLat'],
-              results[i]['cityLon'],
+              extensionsItem.cityLat!,
+              extensionsItem.cityLon!,
             );
-
-            final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-            final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);
-            final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
-            extensionsItem.distToKennel = dist;
-            extensionsItem.followingRequested = -1;
-            extensionsItem.notificationsRequested = -1;
-            extensionsItem.emailAlertRequested = -1;
-
-            bool isHomeKennel = false;
-            if (kennelItem.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
-              isHomeKennel = true;
-            }
-
-            final KennelListAggregate item = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem, isHomeKennel: isHomeKennel);
-
-            G0<TableModel>().globalKennelMainPageList!.add(item);
           }
+
+          extensionsItem.distToKennel = dist;
+          extensionsItem.followingRequested = -1;
+          extensionsItem.notificationsRequested = -1;
+          extensionsItem.emailAlertRequested = -1;
+
+          bool isHomeKennel = false;
+          if (kennelItem.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+            isHomeKennel = true;
+          }
+
+          final KennelListAggregate item = KennelListAggregate(
+            kennel: kennelItem,
+            extensions: extensionsItem,
+            hkm: hkmItem,
+            isHomeKennel: isHomeKennel,
+          );
+
+          G0<TableModel>().globalKennelMainPageList!.add(item);
         }
 
         setState(() {
@@ -304,14 +316,17 @@ class KennelsListPageState extends State<KennelsListPage> {
             return 1;
           }
 
-          int result = (a.hkm.following == 1
+          int aFollow = a.hkm?.following ?? 0;
+          int bFollow = b.hkm?.following ?? 0;
+
+          int result = (aFollow == 1
                   ? 0
-                  : a.hkm.following == 2
+                  : aFollow == 2
                       ? 2
                       : 1)
-              .compareTo(b.hkm.following == 1
+              .compareTo(bFollow == 1
                   ? 0
-                  : b.hkm.following == 2
+                  : bFollow == 2
                       ? 2
                       : 1);
 
@@ -367,7 +382,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                 ? Container(height: 100.0)
                                 : Padding(
                                     padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                                    child: KennelsListItem(
+                                    child: KennelListItem(
                                       kennelItem: _filteredList[index],
                                       kennelEmailAndNotificationPrefsUpdated: (int? notificationStatus, int? emailAlertStatus) async {
                                         setState(() {
@@ -382,7 +397,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                               kennel: a.kennel,
                                               extensions: a.extensions,
                                               isHomeKennel: a.isHomeKennel,
-                                              hkm: a.hkm.copyWith(kennelNotificationPreference: notificationStatus),
+                                              hkm: a.hkm?.copyWith(kennelNotificationPreference: notificationStatus),
                                             );
                                           }
 
@@ -393,7 +408,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                               kennel: a.kennel,
                                               extensions: a.extensions,
                                               isHomeKennel: a.isHomeKennel,
-                                              hkm: a.hkm.copyWith(kennelEmailAlertPreference: emailAlertStatus),
+                                              hkm: a.hkm?.copyWith(kennelEmailAlertPreference: emailAlertStatus),
                                             );
 
                                             // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
@@ -411,7 +426,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                             kennel: a.kennel,
                                             isHomeKennel: a.isHomeKennel,
                                             extensions: a.extensions,
-                                            hkm: a.hkm.copyWith(following: following, kennelNotificationPreference: notificationStatus, kennelEmailAlertPreference: emailAlertStatus));
+                                            hkm: a.hkm?.copyWith(following: following, kennelNotificationPreference: notificationStatus, kennelEmailAlertPreference: emailAlertStatus));
 
                                         // _filteredList[index].hkm.following = following;
                                         // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;

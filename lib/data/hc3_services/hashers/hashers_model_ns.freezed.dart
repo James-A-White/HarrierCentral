@@ -28,8 +28,8 @@ mixin _$HashersModel {
   String? get photo => throw _privateConstructorUsedError;
   int get dispPref => throw _privateConstructorUsedError;
   int get includeInGlobalHashDirectory => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -52,8 +52,8 @@ abstract class $HashersModelCopyWith<$Res> {
       String? photo,
       int dispPref,
       int includeInGlobalHashDirectory,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -77,8 +77,8 @@ class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
     Object? photo = freezed,
     Object? dispPref = null,
     Object? includeInGlobalHashDirectory = null,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       hasherId: null == hasherId
@@ -113,14 +113,14 @@ class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
           ? _value.includeInGlobalHashDirectory
           : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
               as int,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -142,8 +142,8 @@ abstract class _$$_HashersModelCopyWith<$Res>
       String? photo,
       int dispPref,
       int includeInGlobalHashDirectory,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -165,8 +165,8 @@ class __$$_HashersModelCopyWithImpl<$Res>
     Object? photo = freezed,
     Object? dispPref = null,
     Object? includeInGlobalHashDirectory = null,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_HashersModel(
       hasherId: null == hasherId
@@ -201,14 +201,14 @@ class __$$_HashersModelCopyWithImpl<$Res>
           ? _value.includeInGlobalHashDirectory
           : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
               as int,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -225,8 +225,8 @@ class _$_HashersModel implements _HashersModel {
       this.photo,
       required this.dispPref,
       required this.includeInGlobalHashDirectory,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_HashersModel.fromJson(Map<String, dynamic> json) =>
       _$$_HashersModelFromJson(json);
@@ -248,9 +248,9 @@ class _$_HashersModel implements _HashersModel {
   @override
   final int includeInGlobalHashDirectory;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -323,8 +323,8 @@ abstract class _HashersModel implements HashersModel {
       final String? photo,
       required final int dispPref,
       required final int includeInGlobalHashDirectory,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_HashersModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_HashersModel;
 
   factory _HashersModel.fromJson(Map<String, dynamic> json) =
       _$_HashersModel.fromJson;
@@ -346,9 +346,9 @@ abstract class _HashersModel implements HashersModel {
   @override
   int get includeInGlobalHashDirectory;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_HashersModelCopyWith<_$_HashersModel> get copyWith =>

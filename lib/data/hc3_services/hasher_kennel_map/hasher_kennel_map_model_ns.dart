@@ -40,8 +40,8 @@ class HasherKennelMapModel with _$HasherKennelMapModel implements BaseModel {
     required int mismanagementRoles,
     String? kennelUserPhoto,
     String? kennelHashName,
-    required final DateTime updatedAt,
-    required final int removed,
+    DateTime? updatedAt,
+    int? removed,
   }) = _HasherKennelMapModel;
 
   factory HasherKennelMapModel.fromJson(Map<String, dynamic> json) => _$HasherKennelMapModelFromJson(json);

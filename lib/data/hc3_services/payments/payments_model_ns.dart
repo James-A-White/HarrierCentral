@@ -31,8 +31,8 @@ class PaymentsModel with _$PaymentsModel implements BaseModel {
     required int discountPercent,
     required String discountDescription,
     required String specialRunPriceReason,
-    required int removed,
-    required DateTime updatedAt,
+    int? removed,
+    DateTime? updatedAt,
   }) = _PaymentsModel;
 
   factory PaymentsModel.fromJson(Map<String, dynamic> json) => _$PaymentsModelFromJson(json);

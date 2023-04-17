@@ -14,8 +14,8 @@ class HashersModel with _$HashersModel implements BaseModel {
     String? photo,
     required int dispPref,
     required int includeInGlobalHashDirectory,
-    required int removed,
-    required DateTime updatedAt,
+    int? removed,
+    DateTime? updatedAt,
   }) = _HashersModel;
 
   factory HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);

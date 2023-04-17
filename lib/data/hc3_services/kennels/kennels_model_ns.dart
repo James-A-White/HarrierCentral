@@ -60,8 +60,8 @@ class KennelsModel with _$KennelsModel implements BaseModel {
     DateTime? runCountStartDate,
     String? kennelMismanagementTeam,
     int? distancePreference,
-    required DateTime updatedAt,
-    required int removed,
+    DateTime? updatedAt,
+    int? removed,
   }) = _KennelsModel;
 
   factory KennelsModel.fromJson(Map<String, dynamic> json) => _$KennelsModelFromJson(json);

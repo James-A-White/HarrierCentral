@@ -35,9 +35,6 @@ mixin _$CheckInPackModel {
   int get attendenceState => throw _privateConstructorUsedError;
   int get discountPercent => throw _privateConstructorUsedError;
   double get discountAmount => throw _privateConstructorUsedError;
-  int get rsvpStateIndicator => throw _privateConstructorUsedError;
-  int get attendenceStateIndicator => throw _privateConstructorUsedError;
-  int get paidStateIndicator => throw _privateConstructorUsedError;
   int get hcTotalRunCount => throw _privateConstructorUsedError;
   int get hcHaringCount => throw _privateConstructorUsedError;
   int get historicalTotalRunCount => throw _privateConstructorUsedError;
@@ -78,9 +75,6 @@ abstract class $CheckInPackModelCopyWith<$Res> {
       int attendenceState,
       int discountPercent,
       double discountAmount,
-      int rsvpStateIndicator,
-      int attendenceStateIndicator,
-      int paidStateIndicator,
       int hcTotalRunCount,
       int hcHaringCount,
       int historicalTotalRunCount,
@@ -122,9 +116,6 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
     Object? attendenceState = null,
     Object? discountPercent = null,
     Object? discountAmount = null,
-    Object? rsvpStateIndicator = null,
-    Object? attendenceStateIndicator = null,
-    Object? paidStateIndicator = null,
     Object? hcTotalRunCount = null,
     Object? hcHaringCount = null,
     Object? historicalTotalRunCount = null,
@@ -198,18 +189,6 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
               as double,
-      rsvpStateIndicator: null == rsvpStateIndicator
-          ? _value.rsvpStateIndicator
-          : rsvpStateIndicator // ignore: cast_nullable_to_non_nullable
-              as int,
-      attendenceStateIndicator: null == attendenceStateIndicator
-          ? _value.attendenceStateIndicator
-          : attendenceStateIndicator // ignore: cast_nullable_to_non_nullable
-              as int,
-      paidStateIndicator: null == paidStateIndicator
-          ? _value.paidStateIndicator
-          : paidStateIndicator // ignore: cast_nullable_to_non_nullable
-              as int,
       hcTotalRunCount: null == hcTotalRunCount
           ? _value.hcTotalRunCount
           : hcTotalRunCount // ignore: cast_nullable_to_non_nullable
@@ -282,9 +261,6 @@ abstract class _$$_CheckInPackModelCopyWith<$Res>
       int attendenceState,
       int discountPercent,
       double discountAmount,
-      int rsvpStateIndicator,
-      int attendenceStateIndicator,
-      int paidStateIndicator,
       int hcTotalRunCount,
       int hcHaringCount,
       int historicalTotalRunCount,
@@ -324,9 +300,6 @@ class __$$_CheckInPackModelCopyWithImpl<$Res>
     Object? attendenceState = null,
     Object? discountPercent = null,
     Object? discountAmount = null,
-    Object? rsvpStateIndicator = null,
-    Object? attendenceStateIndicator = null,
-    Object? paidStateIndicator = null,
     Object? hcTotalRunCount = null,
     Object? hcHaringCount = null,
     Object? historicalTotalRunCount = null,
@@ -400,18 +373,6 @@ class __$$_CheckInPackModelCopyWithImpl<$Res>
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
               as double,
-      rsvpStateIndicator: null == rsvpStateIndicator
-          ? _value.rsvpStateIndicator
-          : rsvpStateIndicator // ignore: cast_nullable_to_non_nullable
-              as int,
-      attendenceStateIndicator: null == attendenceStateIndicator
-          ? _value.attendenceStateIndicator
-          : attendenceStateIndicator // ignore: cast_nullable_to_non_nullable
-              as int,
-      paidStateIndicator: null == paidStateIndicator
-          ? _value.paidStateIndicator
-          : paidStateIndicator // ignore: cast_nullable_to_non_nullable
-              as int,
       hcTotalRunCount: null == hcTotalRunCount
           ? _value.hcTotalRunCount
           : hcTotalRunCount // ignore: cast_nullable_to_non_nullable
@@ -479,9 +440,6 @@ class _$_CheckInPackModel implements _CheckInPackModel {
       this.attendenceState = 0,
       this.discountPercent = 0,
       this.discountAmount = 0.0,
-      this.rsvpStateIndicator = 0,
-      this.attendenceStateIndicator = 0,
-      this.paidStateIndicator = 0,
       this.hcTotalRunCount = 0,
       this.hcHaringCount = 0,
       this.historicalTotalRunCount = 0,
@@ -542,15 +500,6 @@ class _$_CheckInPackModel implements _CheckInPackModel {
   final double discountAmount;
   @override
   @JsonKey()
-  final int rsvpStateIndicator;
-  @override
-  @JsonKey()
-  final int attendenceStateIndicator;
-  @override
-  @JsonKey()
-  final int paidStateIndicator;
-  @override
-  @JsonKey()
   final int hcTotalRunCount;
   @override
   @JsonKey()
@@ -583,7 +532,7 @@ class _$_CheckInPackModel implements _CheckInPackModel {
 
   @override
   String toString() {
-    return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, rsvpStateIndicator: $rsvpStateIndicator, attendenceStateIndicator: $attendenceStateIndicator, paidStateIndicator: $paidStateIndicator, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing)';
+    return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing)';
   }
 
   @override
@@ -617,13 +566,6 @@ class _$_CheckInPackModel implements _CheckInPackModel {
                 other.discountPercent == discountPercent) &&
             (identical(other.discountAmount, discountAmount) ||
                 other.discountAmount == discountAmount) &&
-            (identical(other.rsvpStateIndicator, rsvpStateIndicator) ||
-                other.rsvpStateIndicator == rsvpStateIndicator) &&
-            (identical(
-                    other.attendenceStateIndicator, attendenceStateIndicator) ||
-                other.attendenceStateIndicator == attendenceStateIndicator) &&
-            (identical(other.paidStateIndicator, paidStateIndicator) ||
-                other.paidStateIndicator == paidStateIndicator) &&
             (identical(other.hcTotalRunCount, hcTotalRunCount) ||
                 other.hcTotalRunCount == hcTotalRunCount) &&
             (identical(other.hcHaringCount, hcHaringCount) ||
@@ -668,9 +610,6 @@ class _$_CheckInPackModel implements _CheckInPackModel {
         attendenceState,
         discountPercent,
         discountAmount,
-        rsvpStateIndicator,
-        attendenceStateIndicator,
-        paidStateIndicator,
         hcTotalRunCount,
         hcHaringCount,
         historicalTotalRunCount,
@@ -715,9 +654,6 @@ abstract class _CheckInPackModel implements CheckInPackModel {
       final int attendenceState,
       final int discountPercent,
       final double discountAmount,
-      final int rsvpStateIndicator,
-      final int attendenceStateIndicator,
-      final int paidStateIndicator,
       final int hcTotalRunCount,
       final int hcHaringCount,
       final int historicalTotalRunCount,
@@ -763,12 +699,6 @@ abstract class _CheckInPackModel implements CheckInPackModel {
   int get discountPercent;
   @override
   double get discountAmount;
-  @override
-  int get rsvpStateIndicator;
-  @override
-  int get attendenceStateIndicator;
-  @override
-  int get paidStateIndicator;
   @override
   int get hcTotalRunCount;
   @override

@@ -43,8 +43,10 @@ _$_HasherKennelMapModel _$$_HasherKennelMapModelFromJson(
       mismanagementRoles: json['mismanagementRoles'] as int,
       kennelUserPhoto: json['kennelUserPhoto'] as String?,
       kennelHashName: json['kennelHashName'] as String?,
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      removed: json['removed'] as int,
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
+      removed: json['removed'] as int?,
     );
 
 Map<String, dynamic> _$$_HasherKennelMapModelToJson(
@@ -79,6 +81,6 @@ Map<String, dynamic> _$$_HasherKennelMapModelToJson(
       'mismanagementRoles': instance.mismanagementRoles,
       'kennelUserPhoto': instance.kennelUserPhoto,
       'kennelHashName': instance.kennelHashName,
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
       'removed': instance.removed,
     };

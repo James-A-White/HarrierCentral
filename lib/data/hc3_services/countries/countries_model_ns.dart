@@ -21,8 +21,8 @@ class CountriesModel with _$CountriesModel implements BaseModel {
     String? currencySymbol,
     int? digitsAfterDecimal,
     int? distancePreference,
-    required int removed,
-    required DateTime updatedAt,
+    int? removed,
+    DateTime? updatedAt,
   }) = _CountriesModel;
 
   factory CountriesModel.fromJson(Map<String, dynamic> json) => _$CountriesModelFromJson(json);

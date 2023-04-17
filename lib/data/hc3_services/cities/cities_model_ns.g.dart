@@ -16,8 +16,10 @@ _$_CitiesModel _$$_CitiesModelFromJson(Map<String, dynamic> json) =>
       longitude: (json['longitude'] as num).toDouble(),
       cityAscii: json['cityAscii'] as String,
       flagFile: json['flagFile'] as String?,
-      removed: json['removed'] as int,
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      removed: json['removed'] as int?,
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$$_CitiesModelToJson(_$_CitiesModel instance) =>
@@ -31,5 +33,5 @@ Map<String, dynamic> _$$_CitiesModelToJson(_$_CitiesModel instance) =>
       'cityAscii': instance.cityAscii,
       'flagFile': instance.flagFile,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
     };

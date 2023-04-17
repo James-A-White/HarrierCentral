@@ -28,8 +28,8 @@ mixin _$CitiesModel {
   double get longitude => throw _privateConstructorUsedError;
   String get cityAscii => throw _privateConstructorUsedError;
   String? get flagFile => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -52,8 +52,8 @@ abstract class $CitiesModelCopyWith<$Res> {
       double longitude,
       String cityAscii,
       String? flagFile,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -77,8 +77,8 @@ class _$CitiesModelCopyWithImpl<$Res, $Val extends CitiesModel>
     Object? longitude = null,
     Object? cityAscii = null,
     Object? flagFile = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       cityId: null == cityId
@@ -113,14 +113,14 @@ class _$CitiesModelCopyWithImpl<$Res, $Val extends CitiesModel>
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -142,8 +142,8 @@ abstract class _$$_CitiesModelCopyWith<$Res>
       double longitude,
       String cityAscii,
       String? flagFile,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -165,8 +165,8 @@ class __$$_CitiesModelCopyWithImpl<$Res>
     Object? longitude = null,
     Object? cityAscii = null,
     Object? flagFile = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_CitiesModel(
       cityId: null == cityId
@@ -201,14 +201,14 @@ class __$$_CitiesModelCopyWithImpl<$Res>
           ? _value.flagFile
           : flagFile // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -225,8 +225,8 @@ class _$_CitiesModel implements _CitiesModel {
       required this.longitude,
       required this.cityAscii,
       this.flagFile,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_CitiesModel.fromJson(Map<String, dynamic> json) =>
       _$$_CitiesModelFromJson(json);
@@ -248,9 +248,9 @@ class _$_CitiesModel implements _CitiesModel {
   @override
   final String? flagFile;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -311,8 +311,8 @@ abstract class _CitiesModel implements CitiesModel {
       required final double longitude,
       required final String cityAscii,
       final String? flagFile,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_CitiesModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_CitiesModel;
 
   factory _CitiesModel.fromJson(Map<String, dynamic> json) =
       _$_CitiesModel.fromJson;
@@ -334,9 +334,9 @@ abstract class _CitiesModel implements CitiesModel {
   @override
   String? get flagFile;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_CitiesModelCopyWith<_$_CitiesModel> get copyWith =>

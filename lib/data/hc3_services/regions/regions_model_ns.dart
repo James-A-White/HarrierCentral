@@ -12,8 +12,8 @@ class RegionsModel with _$RegionsModel implements BaseModel {
     String? regionAbbreviation,
     required String countryId,
     String? flagFile,
-    required int removed,
-    required DateTime updatedAt,
+    int? removed,
+    DateTime? updatedAt,
   }) = _RegionsModel;
 
   factory RegionsModel.fromJson(Map<String, dynamic> json) => _$RegionsModelFromJson(json);

@@ -48,8 +48,8 @@ mixin _$HasherKennelMapModel {
   int get mismanagementRoles => throw _privateConstructorUsedError;
   String? get kennelUserPhoto => throw _privateConstructorUsedError;
   String? get kennelHashName => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -92,8 +92,8 @@ abstract class $HasherKennelMapModelCopyWith<$Res> {
       int mismanagementRoles,
       String? kennelUserPhoto,
       String? kennelHashName,
-      DateTime updatedAt,
-      int removed});
+      DateTime? updatedAt,
+      int? removed});
 }
 
 /// @nodoc
@@ -138,8 +138,8 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
     Object? mismanagementRoles = null,
     Object? kennelUserPhoto = freezed,
     Object? kennelHashName = freezed,
-    Object? updatedAt = null,
-    Object? removed = null,
+    Object? updatedAt = freezed,
+    Object? removed = freezed,
   }) {
     return _then(_value.copyWith(
       hkmId: null == hkmId
@@ -254,14 +254,14 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
           ? _value.kennelHashName
           : kennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      updatedAt: null == updatedAt
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      removed: null == removed
+              as DateTime?,
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ) as $Val);
   }
 }
@@ -303,8 +303,8 @@ abstract class _$$_HasherKennelMapModelCopyWith<$Res>
       int mismanagementRoles,
       String? kennelUserPhoto,
       String? kennelHashName,
-      DateTime updatedAt,
-      int removed});
+      DateTime? updatedAt,
+      int? removed});
 }
 
 /// @nodoc
@@ -346,8 +346,8 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
     Object? mismanagementRoles = null,
     Object? kennelUserPhoto = freezed,
     Object? kennelHashName = freezed,
-    Object? updatedAt = null,
-    Object? removed = null,
+    Object? updatedAt = freezed,
+    Object? removed = freezed,
   }) {
     return _then(_$_HasherKennelMapModel(
       hkmId: null == hkmId
@@ -462,14 +462,14 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
           ? _value.kennelHashName
           : kennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      updatedAt: null == updatedAt
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      removed: null == removed
+              as DateTime?,
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ));
   }
 }
@@ -506,8 +506,8 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
       required this.mismanagementRoles,
       this.kennelUserPhoto,
       this.kennelHashName,
-      required this.updatedAt,
-      required this.removed});
+      this.updatedAt,
+      this.removed});
 
   factory _$_HasherKennelMapModel.fromJson(Map<String, dynamic> json) =>
       _$$_HasherKennelMapModelFromJson(json);
@@ -569,9 +569,9 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
   @override
   final String? kennelHashName;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
   @override
-  final int removed;
+  final int? removed;
 
   @override
   String toString() {
@@ -723,8 +723,8 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
       required final int mismanagementRoles,
       final String? kennelUserPhoto,
       final String? kennelHashName,
-      required final DateTime updatedAt,
-      required final int removed}) = _$_HasherKennelMapModel;
+      final DateTime? updatedAt,
+      final int? removed}) = _$_HasherKennelMapModel;
 
   factory _HasherKennelMapModel.fromJson(Map<String, dynamic> json) =
       _$_HasherKennelMapModel.fromJson;
@@ -786,9 +786,9 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
   @override
   String? get kennelHashName;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
-  int get removed;
+  int? get removed;
   @override
   @JsonKey(ignore: true)
   _$$_HasherKennelMapModelCopyWith<_$_HasherKennelMapModel> get copyWith =>

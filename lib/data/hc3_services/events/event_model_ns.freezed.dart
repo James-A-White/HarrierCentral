@@ -66,8 +66,8 @@ mixin _$EventModel {
   int get useFbLatLon => throw _privateConstructorUsedError;
   int get useFbRunDetails => throw _privateConstructorUsedError;
   int get useFbImage => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -128,8 +128,8 @@ abstract class $EventModelCopyWith<$Res> {
       int useFbLatLon,
       int useFbRunDetails,
       int useFbImage,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -191,8 +191,8 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
     Object? useFbLatLon = null,
     Object? useFbRunDetails = null,
     Object? useFbImage = null,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       eventId: null == eventId
@@ -379,14 +379,14 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
           ? _value.useFbImage
           : useFbImage // ignore: cast_nullable_to_non_nullable
               as int,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -446,8 +446,8 @@ abstract class _$$_EventModelCopyWith<$Res>
       int useFbLatLon,
       int useFbRunDetails,
       int useFbImage,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -507,8 +507,8 @@ class __$$_EventModelCopyWithImpl<$Res>
     Object? useFbLatLon = null,
     Object? useFbRunDetails = null,
     Object? useFbImage = null,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_EventModel(
       eventId: null == eventId
@@ -695,14 +695,14 @@ class __$$_EventModelCopyWithImpl<$Res>
           ? _value.useFbImage
           : useFbImage // ignore: cast_nullable_to_non_nullable
               as int,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -757,8 +757,8 @@ class _$_EventModel implements _EventModel {
       required this.useFbLatLon,
       required this.useFbRunDetails,
       required this.useFbImage,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_EventModel.fromJson(Map<String, dynamic> json) =>
       _$$_EventModelFromJson(json);
@@ -856,9 +856,9 @@ class _$_EventModel implements _EventModel {
   @override
   final int useFbImage;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -1067,8 +1067,8 @@ abstract class _EventModel implements EventModel {
       required final int useFbLatLon,
       required final int useFbRunDetails,
       required final int useFbImage,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_EventModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_EventModel;
 
   factory _EventModel.fromJson(Map<String, dynamic> json) =
       _$_EventModel.fromJson;
@@ -1166,9 +1166,9 @@ abstract class _EventModel implements EventModel {
   @override
   int get useFbImage;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_EventModelCopyWith<_$_EventModel> get copyWith =>

@@ -1,8 +1,8 @@
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
-class KennelsListItem extends StatefulWidget {
-  const KennelsListItem({
+class KennelListItem extends StatefulWidget {
+  const KennelListItem({
     Key? key,
     required this.kennelItem,
     required this.kennelSelected,
@@ -19,7 +19,7 @@ class KennelsListItem extends StatefulWidget {
   KennelListItemState createState() => KennelListItemState();
 }
 
-class KennelListItemState extends State<KennelsListItem> {
+class KennelListItemState extends State<KennelListItem> {
   int _distancePreference = 0;
 
   @override
@@ -74,9 +74,9 @@ class KennelListItemState extends State<KennelsListItem> {
                         children: <Widget>[
                           if (widget.kennelItem.extensions.followingRequested != -1)
                             Image.asset(delayIconAsset, width: 24, height: 24)
-                          else if (widget.kennelItem.hkm.following == 1)
+                          else if (widget.kennelItem.hkm?.following == 1)
                             Image.asset('images/icons/checkbox_yes.png', width: 24, height: 24)
-                          else if (widget.kennelItem.hkm.following == 2)
+                          else if (widget.kennelItem.hkm?.following == 2)
                             Image.asset('images/icons/checkbox_no.png', width: 24, height: 24)
                           else
                             Image.asset('images/icons/checkbox_empty.png', width: 24, height: 24),
@@ -135,7 +135,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           width: 24.0,
                           height: 24.0,
                           fit: BoxFit.fill,
-                          image: widget.kennelItem.hkm.kennelEmailAlertPreference == 1
+                          image: widget.kennelItem.hkm?.kennelEmailAlertPreference == 1
                               ? const AssetImage('images/icons/envelope_gold_50px.png')
                               : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
                         ),
@@ -153,7 +153,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           width: 24.0,
                           height: 24.0,
                           fit: BoxFit.fill,
-                          image: widget.kennelItem.hkm.kennelNotificationPreference == 1
+                          image: widget.kennelItem.hkm?.kennelNotificationPreference == 1
                               ? const AssetImage('images/icons/bell_gold_50px.png')
                               : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
                         ),
@@ -217,29 +217,29 @@ class KennelListItemState extends State<KennelsListItem> {
                               style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                             )
                           ],
-                          if (widget.kennelItem.hkm.hcTotalRunCount != 0) ...<Widget>[
+                          if ((widget.kennelItem.hkm != null) && (widget.kennelItem.hkm!.hcTotalRunCount != 0)) ...<Widget>[
                             Text(
-                              'Runs: ${widget.kennelItem.hkm.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm.hcTotalRunCount + widget.kennelItem.hkm.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm.hcHaringCount + widget.kennelItem.hkm.historicalHaringCount}',
+                              'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
                             ),
                           ],
-                          if (widget.kennelItem.hkm.dateOfLastRun != null) ...<Widget>[
+                          if (widget.kennelItem.hkm?.dateOfLastRun != null) ...<Widget>[
                             Text(
-                              'Last run: ${widget.kennelItem.hkm.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm.dateOfLastRun!)}',
+                              'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
                               style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
                             ),
                           ],
-                          if ((widget.kennelItem.hkm.kennelCredit) != 0) ...<Widget>[
+                          if ((widget.kennelItem.hkm != null) && (widget.kennelItem.hkm!.kennelCredit != 0)) ...<Widget>[
                             Text(
-                              (widget.kennelItem.hkm.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
+                              (widget.kennelItem.hkm!.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
                                   IveCoreUtilities.getFormattedMoney(
-                                      widget.kennelItem.hkm.kennelCredit.abs(), widget.kennelItem.kennel.digitsAfterDecimal ?? 2, widget.kennelItem.kennel.currencySymbol ?? r'$^'),
+                                      widget.kennelItem.hkm!.kennelCredit.abs(), widget.kennelItem.kennel.digitsAfterDecimal ?? 2, widget.kennelItem.kennel.currencySymbol ?? r'$^'),
                               style: TextStyle(
                                   fontFamily: 'AvenirNextDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 16.0,
                                   height: 1.0,
-                                  color: widget.kennelItem.hkm.kennelCredit >= 0 ? Colors.green.shade900 : Colors.red.shade900),
+                                  color: widget.kennelItem.hkm!.kennelCredit >= 0 ? Colors.green.shade900 : Colors.red.shade900),
                             ),
                           ],
                         ],

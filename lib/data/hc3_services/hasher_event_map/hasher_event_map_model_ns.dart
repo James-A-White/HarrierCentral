@@ -37,8 +37,8 @@ class HasherEventMapModel with _$HasherEventMapModel implements BaseModel {
     int? hemEventIsCountedAndVisible,
     String? hemKennelUserPhoto,
     String? hemKennelHashName,
-    required int removed,
-    required DateTime updatedAt,
+    int? removed,
+    DateTime? updatedAt,
   }) = _HasherEventMapModel;
 
   factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);

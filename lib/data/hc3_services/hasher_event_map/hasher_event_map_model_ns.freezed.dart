@@ -50,8 +50,8 @@ mixin _$HasherEventMapModel {
   int? get hemEventIsCountedAndVisible => throw _privateConstructorUsedError;
   String? get hemKennelUserPhoto => throw _privateConstructorUsedError;
   String? get hemKennelHashName => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -94,8 +94,8 @@ abstract class $HasherEventMapModelCopyWith<$Res> {
       int? hemEventIsCountedAndVisible,
       String? hemKennelUserPhoto,
       String? hemKennelHashName,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -139,8 +139,8 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
     Object? hemEventIsCountedAndVisible = freezed,
     Object? hemKennelUserPhoto = freezed,
     Object? hemKennelHashName = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       hemId: null == hemId
@@ -255,14 +255,14 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
           ? _value.hemKennelHashName
           : hemKennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -304,8 +304,8 @@ abstract class _$$_HasherEventMapModelCopyWith<$Res>
       int? hemEventIsCountedAndVisible,
       String? hemKennelUserPhoto,
       String? hemKennelHashName,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -347,8 +347,8 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
     Object? hemEventIsCountedAndVisible = freezed,
     Object? hemKennelUserPhoto = freezed,
     Object? hemKennelHashName = freezed,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_HasherEventMapModel(
       hemId: null == hemId
@@ -463,14 +463,14 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
           ? _value.hemKennelHashName
           : hemKennelHashName // ignore: cast_nullable_to_non_nullable
               as String?,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -507,8 +507,8 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
       this.hemEventIsCountedAndVisible,
       this.hemKennelUserPhoto,
       this.hemKennelHashName,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_HasherEventMapModel.fromJson(Map<String, dynamic> json) =>
       _$$_HasherEventMapModelFromJson(json);
@@ -572,9 +572,9 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @override
   final String? hemKennelHashName;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -726,8 +726,8 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
       final int? hemEventIsCountedAndVisible,
       final String? hemKennelUserPhoto,
       final String? hemKennelHashName,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_HasherEventMapModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_HasherEventMapModel;
 
   factory _HasherEventMapModel.fromJson(Map<String, dynamic> json) =
       _$_HasherEventMapModel.fromJson;
@@ -790,9 +790,9 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   String? get hemKennelHashName;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_HasherEventMapModelCopyWith<_$_HasherEventMapModel> get copyWith =>

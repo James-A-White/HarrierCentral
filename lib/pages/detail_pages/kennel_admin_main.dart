@@ -209,7 +209,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                             padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
                             child: FancyDivider(key: Key('16613234'), innerColor: Colors.white),
                           ),
-                          if (widget.kennelAggregateItem.hkm.appAccess.isAdmin)
+                          if (widget.kennelAggregateItem.hkm?.appAccess.isAdmin ?? false)
                             Column(
                               children: <Widget>[
                                 Text(
@@ -217,7 +217,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   style: headingStyle,
                                   textAlign: TextAlign.center,
                                 ),
-                                if (widget.kennelAggregateItem.hkm.appAccess.canManageRuns)
+                                if (widget.kennelAggregateItem.hkm!.appAccess.canManageRuns)
                                   Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
                                     Padding(
                                       padding: const EdgeInsets.only(top: 15, bottom: 15),
@@ -312,7 +312,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       ),
                                     ),
                                   ]),
-                                if (widget.kennelAggregateItem.hkm.appAccess.canManageMembers)
+                                if (widget.kennelAggregateItem.hkm?.appAccess.canManageMembers ?? false)
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: <Widget>[
@@ -469,7 +469,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       // ),
                                     ],
                                   ),
-                                if (widget.kennelAggregateItem.hkm.appAccess.canManageRuns)
+                                if (widget.kennelAggregateItem.hkm?.appAccess.canManageRuns ?? false)
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: <Widget>[
@@ -554,7 +554,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       ),
                                     ],
                                   ),
-                                if (widget.kennelAggregateItem.hkm.appAccess.canManageRuns)
+                                if (widget.kennelAggregateItem.hkm?.appAccess.canManageRuns ?? false)
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: <Widget>[

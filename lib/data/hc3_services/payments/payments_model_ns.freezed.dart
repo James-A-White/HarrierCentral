@@ -45,8 +45,8 @@ mixin _$PaymentsModel {
   int get discountPercent => throw _privateConstructorUsedError;
   String get discountDescription => throw _privateConstructorUsedError;
   String get specialRunPriceReason => throw _privateConstructorUsedError;
-  int get removed => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  int? get removed => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -86,8 +86,8 @@ abstract class $PaymentsModelCopyWith<$Res> {
       int discountPercent,
       String discountDescription,
       String specialRunPriceReason,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -128,8 +128,8 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
     Object? discountPercent = null,
     Object? discountDescription = null,
     Object? specialRunPriceReason = null,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       paymentId: null == paymentId
@@ -232,14 +232,14 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
           ? _value.specialRunPriceReason
           : specialRunPriceReason // ignore: cast_nullable_to_non_nullable
               as String,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -278,8 +278,8 @@ abstract class _$$_PaymentsModelCopyWith<$Res>
       int discountPercent,
       String discountDescription,
       String specialRunPriceReason,
-      int removed,
-      DateTime updatedAt});
+      int? removed,
+      DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -318,8 +318,8 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
     Object? discountPercent = null,
     Object? discountDescription = null,
     Object? specialRunPriceReason = null,
-    Object? removed = null,
-    Object? updatedAt = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_PaymentsModel(
       paymentId: null == paymentId
@@ -422,14 +422,14 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
           ? _value.specialRunPriceReason
           : specialRunPriceReason // ignore: cast_nullable_to_non_nullable
               as String,
-      removed: null == removed
+      removed: freezed == removed
           ? _value.removed
           : removed // ignore: cast_nullable_to_non_nullable
-              as int,
-      updatedAt: null == updatedAt
+              as int?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -463,8 +463,8 @@ class _$_PaymentsModel implements _PaymentsModel {
       required this.discountPercent,
       required this.discountDescription,
       required this.specialRunPriceReason,
-      required this.removed,
-      required this.updatedAt});
+      this.removed,
+      this.updatedAt});
 
   factory _$_PaymentsModel.fromJson(Map<String, dynamic> json) =>
       _$$_PaymentsModelFromJson(json);
@@ -520,9 +520,9 @@ class _$_PaymentsModel implements _PaymentsModel {
   @override
   final String specialRunPriceReason;
   @override
-  final int removed;
+  final int? removed;
   @override
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @override
   String toString() {
@@ -658,8 +658,8 @@ abstract class _PaymentsModel implements PaymentsModel {
       required final int discountPercent,
       required final String discountDescription,
       required final String specialRunPriceReason,
-      required final int removed,
-      required final DateTime updatedAt}) = _$_PaymentsModel;
+      final int? removed,
+      final DateTime? updatedAt}) = _$_PaymentsModel;
 
   factory _PaymentsModel.fromJson(Map<String, dynamic> json) =
       _$_PaymentsModel.fromJson;
@@ -715,9 +715,9 @@ abstract class _PaymentsModel implements PaymentsModel {
   @override
   String get specialRunPriceReason;
   @override
-  int get removed;
+  int? get removed;
   @override
-  DateTime get updatedAt;
+  DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentsModelCopyWith<_$_PaymentsModel> get copyWith =>

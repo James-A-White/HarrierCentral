@@ -52,8 +52,8 @@ class EventModel with _$EventModel implements BaseModel {
     required int useFbLatLon,
     required int useFbRunDetails,
     required int useFbImage,
-    required int removed,
-    required DateTime updatedAt,
+    int? removed,
+    DateTime? updatedAt,
   }) = _EventModel;
 
   factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);

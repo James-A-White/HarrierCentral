@@ -14,8 +14,8 @@ class CitiesModel with _$CitiesModel implements BaseModel {
     required double longitude,
     required String cityAscii,
     String? flagFile,
-    required int removed,
-    required DateTime updatedAt,
+    int? removed,
+    DateTime? updatedAt,
   }) = _CitiesModel;
 
   factory CitiesModel.fromJson(Map<String, dynamic> json) => _$CitiesModelFromJson(json);

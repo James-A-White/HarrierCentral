@@ -70,14 +70,14 @@ class KennelListQueryExtenstions {
 class KennelListAggregate {
   KennelListAggregate({
     required this.kennel,
-    required this.hkm,
     required this.extensions,
+    this.hkm,
     this.isHomeKennel = false,
   });
 
   final KennelsModel kennel;
-  final HasherKennelMapModel hkm;
   final KennelListQueryExtenstions extensions;
+  HasherKennelMapModel? hkm;
   bool isHomeKennel;
 
   @override
@@ -221,21 +221,9 @@ class QueryKennels {
       
         SELECT  
           k.*, 
+          hkm.*,
           h.${G0<TableModel>().hashersTableHelper.colPhoto} as originalProfilePhoto,
           h.${G0<TableModel>().hashersTableHelper.colDispName} as originalDisplayName,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHkmId}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun}, 
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelNotificationPreference},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
           case when datetime(coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},"2000-01-01")) <= datetime('now') then 0 else 1 end as isKennelMember,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as following,
           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},0) as appAccessFlags,

@@ -306,7 +306,7 @@ class KennelMemberListItem extends StatelessWidget {
                     // if the current user of this device is a superAdmin
                     // give them the ability to set and clear admin flags for other
                     // users
-                    if (kennelListAggregate.hkm.appAccess.isSuperAdmin) {
+                    if (kennelListAggregate.hkm?.appAccess.isSuperAdmin ?? false) {
                       buttons.add(
                         <String, dynamic>{
                           'title': 'Edit HC admin roles',
