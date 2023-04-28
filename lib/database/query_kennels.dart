@@ -140,7 +140,9 @@ class QueryKennels {
 
     // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
     if (searchText.isNotEmpty) {
-      final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+      // searchText = '$searchText , ${removeDiacritics(searchText)}';
+      final List<String> searchItems =
+          searchText.trim().toLowerCase().split(',');
       for (String st in searchItems) {
         if (st.trim().isEmpty) {
           continue;
@@ -158,7 +160,13 @@ class QueryKennels {
               continue;
             }
             orItem = ' ${orItem.trim().toLowerCase()}';
-            if ((a.extensions.searchKennelsText ?? '').toLowerCase().contains(orItem)) {
+
+            if (((a.extensions.searchKennelsText ?? '')
+                    .toLowerCase()
+                    .contains(orItem)) ||
+                ((removeDiacritics(
+                        (a.extensions.searchKennelsText ?? '').toLowerCase()))
+                    .contains(orItem))) {
               return !negate;
             }
           }
@@ -178,24 +186,38 @@ class QueryKennels {
 
     KennelListAggregate? kennel;
     final String hasherId = getStringPref(StringPrefsEnum.userId)!;
-    final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
+    final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
+        EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user,
+        hasherId: hasherId, kennelId: kennelId);
 
     if (results.isNotEmpty) {
       double? dist;
 
-      if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-        dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!, results[0]['cityLat'], results[0]['cityLon']);
+      if ((G0<DeviceInfo>().deviceLat != null) &&
+          (G0<DeviceInfo>().deviceLon != null)) {
+        dist = Geolocator.distanceBetween(
+            G0<DeviceInfo>().deviceLat!,
+            G0<DeviceInfo>().deviceLon!,
+            results[0]['cityLat'],
+            results[0]['cityLon']);
       }
 
-      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-      final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
-      final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[0]);
+      final KennelsModel kennelItem =
+          G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+      final HasherKennelMapModel hkmItem =
+          G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+      final KennelListQueryExtenstions extensionsItem =
+          KennelListQueryExtenstions.fromMap(results[0]);
       extensionsItem.distToKennel = dist;
       extensionsItem.followingRequested = -1;
       extensionsItem.notificationsRequested = -1;
       extensionsItem.emailAlertRequested = -1;
 
-      kennel = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem, isHomeKennel: isHomeKennel);
+      kennel = KennelListAggregate(
+          kennel: kennelItem,
+          extensions: extensionsItem,
+          hkm: hkmItem,
+          isHomeKennel: isHomeKennel);
     }
     return kennel;
   }
@@ -210,10 +232,14 @@ class QueryKennels {
 
     switch (queryContext) {
       case EnumKennelQueryContext.user:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.user);
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.kennel);
         break;
     }
 
@@ -293,7 +319,8 @@ class QueryKennels {
     return G0<Database>().rawQuery(query);
   }
 
-  static Future<List<Map<String, dynamic>>> queryKennelGallery(String kennelId) async {
+  static Future<List<Map<String, dynamic>>> queryKennelGallery(
+      String kennelId) async {
     final String query = '''
       
         SELECT  

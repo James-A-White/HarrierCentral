@@ -151,12 +151,15 @@ class QueryRuns {
           as searchRunsText
           ''';
 
-  static List<dynamic> doRunsFilter(String searchRunsText, List<dynamic> allRuns) {
+  static List<dynamic> doRunsFilter(
+      String searchRunsText, List<dynamic> allRuns) {
     List<dynamic> filteredRuns = <dynamic>[];
 
     // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
     if (searchRunsText.isNotEmpty) {
-      final List<String> searchItems = searchRunsText.trim().toLowerCase().split(',');
+      // searchRunsText = '$searchRunsText , ${removeDiacritics(searchRunsText)}';
+      final List<String> searchItems =
+          searchRunsText.trim().toLowerCase().split(',');
       for (String st in searchItems) {
         if (st.trim().isEmpty) {
           continue;
@@ -176,7 +179,9 @@ class QueryRuns {
               continue;
             }
             orItem = ' ${orItem.trim().toLowerCase()}';
-            if (a.extensions.searchRunsText.toLowerCase().contains(orItem)) {
+            if ((a.extensions.searchRunsText.toLowerCase().contains(orItem)) ||
+                (removeDiacritics(a.extensions.searchRunsText.toLowerCase())
+                    .contains(orItem))) {
               return !negate;
             }
           }
@@ -213,26 +218,36 @@ class QueryRuns {
     IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
 
     for (int i = 0; i < results.length; i++) {
-      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
-      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-      final CitiesModel cityItem = G0<TableModel>().citiesTableHelper.fromMap(results[i]);
+      final EventModel eventItem =
+          G0<TableModel>().eventsTableHelper.fromMap(results[i]);
+      final KennelsModel kennelItem =
+          G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+      final CitiesModel cityItem =
+          G0<TableModel>().citiesTableHelper.fromMap(results[i]);
 
       double? dist;
-      if ((results[i]['evtLat'] != null) && (results[i]['evtLon'] != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+      if ((results[i]['evtLat'] != null) &&
+          (results[i]['evtLon'] != null) &&
+          (G0<DeviceInfo>().deviceLat != null) &&
+          (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
           results[i]['evtLat'],
           results[i]['evtLon'],
         );
-      } else if ((kennelItem.kennelLatitude != null) && (kennelItem.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+      } else if ((kennelItem.kennelLatitude != null) &&
+          (kennelItem.kennelLongitude != null) &&
+          (G0<DeviceInfo>().deviceLat != null) &&
+          (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
           kennelItem.kennelLatitude!,
           kennelItem.kennelLongitude!,
         );
-      } else if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+      } else if ((G0<DeviceInfo>().deviceLat != null) &&
+          (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
@@ -242,7 +257,9 @@ class QueryRuns {
       }
 
       double meters = 0;
-      final int userDistPrefs = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceForAutoDisplay;
+      final int userDistPrefs =
+          (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
+              hasherPref_distanceForAutoDisplay;
 
       switch (userDistPrefs) {
         case hasherPref_0:
@@ -277,7 +294,8 @@ class QueryRuns {
           break;
       }
 
-      final RunQueryExtensionsModel extensionsItem = RunQueryExtensionsModel.fromJsonWithDateSearchText(
+      final RunQueryExtensionsModel extensionsItem =
+          RunQueryExtensionsModel.fromJsonWithDateSearchText(
         results[i],
         eventItem.eventStartDatetime,
         dist,
@@ -286,14 +304,25 @@ class QueryRuns {
 
       String paymentLinkUrl = '';
 
-      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+      if (((eventItem.eventPaymentUrl ?? '') != '') &&
+          ((eventItem.eventPaymentUrlExpires == null) ||
+              (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
         paymentLinkUrl = eventItem.eventPaymentUrl!;
-      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
+          ((kennelItem.kennelPaymentUrlExpires == null) ||
+              (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
         paymentLinkUrl = kennelItem.kennelPaymentUrl!;
       }
 
-      if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && ((dist ?? 999999999.0) < meters))) {
-        final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+      if ((searchAllRuns == true) ||
+          (extensionsItem.following >= 1) ||
+          ((extensionsItem.following == 0) &&
+              ((dist ?? 999999999.0) < meters))) {
+        final RunDetailsAggregate item = RunDetailsAggregate(
+            event: eventItem,
+            kennel: kennelItem,
+            extensions: extensionsItem,
+            paymentUrl: paymentLinkUrl);
         runs.add(item);
       }
     }
@@ -313,19 +342,35 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user);
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.user);
+        hemTable = G0<TableModel>()
+            .hasherEventMapTableHelper
+            .getTableName(AppDomainType.user);
+        paymentsTable = G0<TableModel>()
+            .paymentsTableHelper
+            .getTableName(AppDomainType.user);
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.kennel);
+        hemTable = G0<TableModel>()
+            .hasherEventMapTableHelper
+            .getTableName(AppDomainType.user);
         //paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event);
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event);
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.event);
+        hemTable = G0<TableModel>()
+            .hasherEventMapTableHelper
+            .getTableName(AppDomainType.event);
+        paymentsTable = G0<TableModel>()
+            .paymentsTableHelper
+            .getTableName(AppDomainType.event);
         break;
     }
 

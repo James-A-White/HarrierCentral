@@ -19,6 +19,7 @@ dependencies:
   cupertino_icons: ^1.0.3  
   dart_ipify: ^1.1.1
   date_time_picker: 2.0.0  # NOTE: There's a bug in 2.1.0 with AM/PM selection so stick with 2.0.0
+  diacritic: ^0.1.6
   device_info_plus: ^11.3.0
   fancy_bottom_navigation_2: ^0.3.5
   flutter:
