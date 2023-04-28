@@ -46,7 +46,8 @@ class RunDetails extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
-          ((event.eventImage ?? '').isNotEmpty && event.eventImage!.startsWith('http'))
+          ((event.eventImage ?? '').isNotEmpty &&
+                  event.eventImage!.startsWith('http'))
               ? Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: GestureDetector(
@@ -54,7 +55,8 @@ class RunDetails extends StatelessWidget {
                         Navigator.push<void>(
                           context,
                           MaterialPageRoute<void>(
-                            builder: (BuildContext context) => ZoomableImagePage2(
+                            builder: (BuildContext context) =>
+                                ZoomableImagePage2(
                               key: const Key('50201112'),
                               pageTitle: 'Zoomable Event Image',
                               imageUrl: event.eventImage,
@@ -74,15 +76,19 @@ class RunDetails extends StatelessWidget {
                       ),
                 )
               : Container(),
-          ((event.eventImage ?? '').isNotEmpty && event.eventImage!.startsWith('http'))
+          ((event.eventImage ?? '').isNotEmpty &&
+                  event.eventImage!.startsWith('http'))
               ? const Padding(
                   padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
-                  child: FancyDivider(key: Key('666177323'), innerColor: Colors.white),
+                  child: FancyDivider(
+                      key: Key('666177323'), innerColor: Colors.white),
                 )
               : Container(),
           Padding(
-            padding: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
-            child: AutoSizeText(event.eventName, style: ts_titleLarge, textAlign: TextAlign.center, maxLines: 2),
+            padding:
+                const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
+            child: AutoSizeText(event.eventName,
+                style: ts_titleLarge, textAlign: TextAlign.center, maxLines: 2),
           ),
           const Padding(
             padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
@@ -177,7 +183,8 @@ class RunDetails extends StatelessWidget {
                     Expanded(
                         flex: _flexRight,
                         child: Text(
-                          DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime),
+                          DateFormat('E, MMM d, yyyy')
+                              .format(event.eventStartDatetime),
                           style: ts_listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 1,
@@ -262,7 +269,8 @@ class RunDetails extends StatelessWidget {
                           Expanded(
                               flex: _flexRight,
                               child: Text(
-                                Utilities.getEventScopeText(event.eventGeographicScope),
+                                Utilities.getEventScopeText(
+                                    event.eventGeographicScope),
                                 style: ts_listValueStyle,
                                 textAlign: TextAlign.left,
                                 maxLines: 1,
@@ -289,7 +297,9 @@ class RunDetails extends StatelessWidget {
                     Expanded(
                         flex: _flexRight,
                         child: Text(
-                          ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers) > 0)
+                          ((event.eventPriceForMembers ??
+                                      kennel.defaultPriceForMembers) >
+                                  0)
                               ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers, digitsAfterDecimal, currencySymbol)} (members)'
                               : '',
                           style: ts_listValueStyle,
@@ -318,7 +328,9 @@ class RunDetails extends StatelessWidget {
                     Expanded(
                         flex: _flexRight,
                         child: Text(
-                          ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers) > 0)
+                          ((event.eventPriceForNonMembers ??
+                                      kennel.defaultPriceForNonMembers) >
+                                  0)
                               ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers, digitsAfterDecimal, currencySymbol)} (non-members)'
                               : '',
                           style: ts_listValueStyle,
@@ -349,7 +361,9 @@ class RunDetails extends StatelessWidget {
                           Expanded(
                               flex: _flexRight,
                               child: Text(
-                                ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers) > 0)
+                                ((event.eventPriceForNonMembers ??
+                                            kennel.defaultPriceForNonMembers) >
+                                        0)
                                     ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})'
                                     : '',
                                 style: ts_listValueStyle,
@@ -406,7 +420,9 @@ class RunDetails extends StatelessWidget {
                             width: _spaceBetweenColumns,
                           ),
                           Expanded(
-                              flex: G0<AppModel>().hasLocationPermissions ? _flexRight : 0,
+                              flex: G0<AppModel>().hasLocationPermissions
+                                  ? _flexRight
+                                  : 0,
                               child: Text(
                                 G0<AppModel>().hasLocationPermissions
                                     ? (distToEvent ?? -1) >= 0
@@ -451,7 +467,11 @@ class RunDetails extends StatelessWidget {
                     ],
                   ),
                 ],
-                if ((((event.locationPostCode == null) || (event.locationPostCode!.isEmpty)) ? '' : '${event.locationPostCode} ') != '') ...<Widget>[
+                if ((((event.locationPostCode == null) ||
+                            (event.locationPostCode!.isEmpty))
+                        ? ''
+                        : '${event.locationPostCode} ') !=
+                    '') ...<Widget>[
                   Row(
                     children: <Widget>[
                       Expanded(
@@ -471,7 +491,10 @@ class RunDetails extends StatelessWidget {
                       Expanded(
                           flex: _flexRight,
                           child: Text(
-                            ((event.locationPostCode == null) || (event.locationPostCode!.isEmpty)) ? '' : '${event.locationPostCode} ',
+                            ((event.locationPostCode == null) ||
+                                    (event.locationPostCode!.isEmpty))
+                                ? ''
+                                : '${event.locationPostCode} ',
                             style: ts_listValueStyle,
                             textAlign: TextAlign.left,
                             maxLines: 1,
@@ -517,7 +540,10 @@ class RunDetails extends StatelessWidget {
                           Expanded(
                             flex: _flexLeft,
                             child: Text(
-                              (event.locationCountry ?? '').toLowerCase() == 'united states' ? 'County' : 'Region:',
+                              (event.locationCountry ?? '').toLowerCase() ==
+                                      'united states'
+                                  ? 'County'
+                                  : 'Region:',
                               style: ts_listLabelStyle,
                               textAlign: TextAlign.right,
                               maxLines: 1,
@@ -646,20 +672,28 @@ class RunDetails extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          SizedBox(width: G0<DeviceInfo>().deviceWidth), // this is required to force the column to be the full width of the device
+                          SizedBox(
+                              width: G0<DeviceInfo>()
+                                  .deviceWidth), // this is required to force the column to be the full width of the device
                           for (int i = 0; i < runTags1.length; i++)
-                            if (((runTags1.values.elementAt(i)) & event.tags1) != 0)
+                            if (((runTags1.values.elementAt(i)) &
+                                    event.tags1) !=
+                                0)
                               Container(
-                                margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
+                                margin: const EdgeInsets.only(
+                                    left: 30.0, bottom: 10.0),
                                 child: Text(
                                   '•  ${runTags1.keys.elementAt(i)}',
                                   style: ts_listValueStyle,
                                 ),
                               ),
                           for (int i = 0; i < runTags2.length; i++)
-                            if (((runTags2.values.elementAt(i)) & event.tags2) != 0)
+                            if (((runTags2.values.elementAt(i)) &
+                                    event.tags2) !=
+                                0)
                               Container(
-                                margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
+                                margin: const EdgeInsets.only(
+                                    left: 30.0, bottom: 10.0),
                                 child: Text(
                                   '•  ${runTags2.keys.elementAt(i)}',
                                   style: ts_listValueStyle,
@@ -682,10 +716,12 @@ class RunDetails extends StatelessWidget {
           (event.eventDescription ?? '') == ''
               ? Container()
               : Padding(
-                  padding: const EdgeInsets.only(top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
+                  padding: const EdgeInsets.only(
+                      top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
                   child: Linkify(
                     text: event.eventDescription!.replaceAll('\r\n', '\n'),
-                    style: ts_body.copyWith(fontSize: 20 * G0<DeviceInfo>().textClamp50),
+                    style: ts_body.copyWith(
+                        fontSize: 20 * G0<DeviceInfo>().textClamp50),
                     linkStyle: ts_bodyYellow,
                     onOpen: (LinkableElement link) async {
                       if (Utilities.isValidUrl(link.url)) {
@@ -694,7 +730,10 @@ class RunDetails extends StatelessWidget {
                           mode: LaunchMode.externalApplication,
                         );
                       } else {
-                        await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        await Utilities.showAlert(
+                            'Unable to open link',
+                            'Harrier Central was unable to open ${link.url}',
+                            'OK');
                       }
                     },
                   ),
@@ -703,8 +742,12 @@ class RunDetails extends StatelessWidget {
           // if the actual eventUrl is empty without
           // considering the Kennel Events URL
 
-          if ((((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl!.isEmpty))) ||
-              ((event.evtDisseminateAllowWebLinks == 1) || (kennel.disseminateAllowWebLinks == 1))) ...<Widget>[
+          if ((((event.eventFacebookId ?? '') != '') &&
+                  (event.eventInboundIntegrationId ==
+                      INBOUND_INTEGRATION_FACEBOOK) &&
+                  ((event.eventUrl == null) || (event.eventUrl!.isEmpty))) ||
+              ((event.evtDisseminateAllowWebLinks == 1) ||
+                  (kennel.disseminateAllowWebLinks == 1))) ...<Widget>[
             const FancyDivider(
               key: Key('40019292'),
               innerColor: Colors.white,
@@ -712,7 +755,8 @@ class RunDetails extends StatelessWidget {
             ),
           ],
 
-          if ((event.evtDisseminateAllowWebLinks == 1) || (kennel.disseminateAllowWebLinks == 1)) ...<Widget>[
+          if ((event.evtDisseminateAllowWebLinks == 1) ||
+              (kennel.disseminateAllowWebLinks == 1)) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: ElevatedButton(
@@ -726,43 +770,54 @@ class RunDetails extends StatelessWidget {
                   //textScaleFactor: G0<DeviceInfo>().textClamp50,
                 ),
                 onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));
+                  await Clipboard.setData(ClipboardData(
+                      text:
+                          'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));
 
-                  await Utilities.showAlert('Link copied', 'A link to the event on Harrier Central has been copied to you clipboard', 'OK');
+                  await Utilities.showAlert(
+                      'Link copied',
+                      'A link to the event on Harrier Central has been copied to you clipboard',
+                      'OK');
                 },
               ),
             ),
           ],
 
-          if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl!.isEmpty))) ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
-              child: ElevatedButton(
-                style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
-                child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
-                onPressed: () async {
-                  final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
-                  if (Utilities.isValidUrl(linkUrl)) {
-                    await launchUrl(
-                      Uri.parse(linkUrl),
-                      mode: LaunchMode.externalApplication,
-                    );
-                  } else {
-                    await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
-                  }
-                },
-              ),
-            ),
-          ],
+          // if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
+          //     child: ElevatedButton(
+          //       style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+          //       child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
+          //       onPressed: () async {
+          //         final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
+          //         if (Utilities.isValidUrl(linkUrl)) {
+          //           await launchUrl(
+          //             Uri.parse(linkUrl),
+          //             mode: LaunchMode.externalApplication,
+          //           );
+          //         } else {
+          //           await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
+          //         }
+          //       },
+          //     ),
+          //   ),
+          // ],
           //
-          if (!(((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK)) &&
+          if (!(((event.eventFacebookId ?? '') != '') &&
+                  (event.eventInboundIntegrationId ==
+                      INBOUND_INTEGRATION_FACEBOOK)) &&
               (eventUrlWithKennelBackup != null) &&
               (eventUrlWithKennelBackup!.isNotEmpty)) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(
-                style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
-                child: Image.asset('images/icons/visit_run_on_web.png', height: 60.0, width: 325.0),
+                style: ButtonStyle(
+                    shadowColor: WidgetStateProperty.all(Colors.transparent),
+                    backgroundColor:
+                        WidgetStateProperty.all(Colors.transparent)),
+                child: Image.asset('images/icons/visit_run_on_web.png',
+                    height: 60.0, width: 325.0),
                 onPressed: () async {
                   if (Utilities.isValidUrl(eventUrlWithKennelBackup!)) {
                     await launchUrl(
@@ -770,7 +825,10 @@ class RunDetails extends StatelessWidget {
                       mode: LaunchMode.externalApplication,
                     );
                   } else {
-                    await Utilities.showAlert('Unable to open link', 'Harrier Central was unable to open $eventUrlWithKennelBackup', 'OK');
+                    await Utilities.showAlert(
+                        'Unable to open link',
+                        'Harrier Central was unable to open $eventUrlWithKennelBackup',
+                        'OK');
                   }
                 },
               ),
