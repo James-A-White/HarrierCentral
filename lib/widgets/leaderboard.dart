@@ -886,10 +886,10 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   }
 
   void _filterResults(String filter) {
+    // start by removing any white space after a plus/minus
     while (filter.contains('+ ')) {
       filter = filter.replaceAll('+ ', '+');
     }
-
     while (filter.contains('- ')) {
       filter = filter.replaceAll('- ', '-');
     }
@@ -897,25 +897,41 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
     List<String> addParams = <String>[];
     List<String> subParams = <String>[];
 
+    // find the first occurrence of a '+'
     int firstPositive = filter.indexOf('+');
+    // if a '+' exists, parse the string to get the add params
     if (firstPositive >= 0) {
       addParams = Utilities.parseSearchTokens(filter, r"\+");
+      // addParams.addAll(Utilities.parseSearchTokens(removeDiacritics(filter), r"\+"));
     }
 
+    // find the first occurrence of a '-'
     int firstNegative = filter.indexOf('-');
+    // if a '-' exists, parse the string to get all of the subtract params
     if (firstNegative >= 0) {
       subParams = Utilities.parseSearchTokens(filter, r"-");
+      // subParams.addAll(Utilities.parseSearchTokens(removeDiacritics(filter), r"\-"));
     }
 
+    // now we need to find the first search token in the filter list,
+    // normally this would not be preceded by a '+' or a '-',
+    String firstTokenString = '';
     if ((firstPositive > 0) && (firstNegative > 0)) {
       int firstToken = min(firstPositive, firstNegative);
-      addParams.add(filter.substring(0, firstToken).trim().toLowerCase());
+      firstTokenString = filter.substring(0, firstToken).trim().toLowerCase();
     } else if (firstPositive > 0) {
-      addParams.add(filter.substring(0, firstPositive).trim().toLowerCase());
+      firstTokenString = filter.substring(0, firstPositive).trim().toLowerCase();
     } else if (firstNegative > 0) {
-      addParams.add(filter.substring(0, firstNegative).trim().toLowerCase());
+      firstTokenString = filter.substring(0, firstNegative).trim().toLowerCase();
     } else {
-      addParams.add(filter.trim().toLowerCase());
+      firstTokenString = filter.trim().toLowerCase();
+    }
+
+    if (firstTokenString.isNotEmpty) {
+      // the first token is assumed to be adding to the search list
+      // so include it in the addParams list
+      addParams.add(firstTokenString);
+      //addParams.add(removeDiacritics(firstTokenString));
     }
 
     _filteredLeaderboardList ??= <LeaderboardModel>[];
@@ -928,13 +944,13 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
       if (_leaderboardList != null) {
         _filteredLeaderboardList = _leaderboardList.where((LeaderboardModel a) {
           for (String param in subParams) {
-            if (a.searchText.toLowerCase().contains(param)) {
+            if ((a.searchText.toLowerCase().contains(param)) || (removeDiacritics(a.searchText.toLowerCase()).contains(param))) {
               return false;
             }
           }
 
           for (String param in addParams) {
-            if (a.searchText.toLowerCase().contains(param)) {
+            if ((a.searchText.toLowerCase().contains(param)) || (removeDiacritics(a.searchText.toLowerCase()).contains(param))) {
               return true;
             }
           }
@@ -946,13 +962,13 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
       if (_leaderboardAggregateList != null) {
         _filteredLeaderboardAggregateList = _leaderboardAggregateList.where((LeaderboardModel a) {
           for (String param in subParams) {
-            if (a.searchText.toLowerCase().contains(param)) {
+            if ((a.searchText.toLowerCase().contains(param)) || (removeDiacritics(a.searchText.toLowerCase()).contains(param))) {
               return false;
             }
           }
 
           for (String param in addParams) {
-            if (a.searchText.toLowerCase().contains(param)) {
+            if ((a.searchText.toLowerCase().contains(param)) || (removeDiacritics(a.searchText.toLowerCase()).contains(param))) {
               return true;
             }
           }

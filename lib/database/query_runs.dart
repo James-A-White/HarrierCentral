@@ -218,6 +218,7 @@ class QueryRuns {
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchRunsText != null) && (searchRunsText.isNotEmpty)) {
+        // searchRunsText = '$searchRunsText , ${removeDiacritics(searchRunsText)}';
         final List<String> searchItems = searchRunsText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
@@ -238,7 +239,7 @@ class QueryRuns {
                 continue;
               }
               orItem = ' ${orItem.trim().toLowerCase()}';
-              if (a.extensions.searchRunsText.toLowerCase().contains(orItem)) {
+              if ((a.extensions.searchRunsText.toLowerCase().contains(orItem)) || (removeDiacritics(a.extensions.searchRunsText.toLowerCase()).contains(orItem))) {
                 return !negate;
               }
             }

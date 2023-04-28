@@ -142,6 +142,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   }
 
   List<Map<String, dynamic>> _doKennelFilter(String searchKennelsText) {
+    // searchKennelsText = '$searchKennelsText , ${removeDiacritics(searchKennelsText)}';
     _filteredKennels = <Map<String, dynamic>>[];
     if (_allKennels != null) {
       _filteredKennels.addAll(_allKennels);
@@ -168,7 +169,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 continue;
               }
               orItem = ' ${orItem.trim().toLowerCase()}';
-              if (a['searchKennelsText'].toLowerCase().contains(orItem)) {
+              if ((a['searchKennelsText'].toLowerCase().contains(orItem)) || (removeDiacritics(a['searchKennelsText'].toLowerCase()).contains(orItem))) {
                 return !negate;
               }
             }
