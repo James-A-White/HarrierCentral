@@ -735,26 +735,26 @@ class RunDetails extends StatelessWidget {
             ),
           ],
 
-          if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
-              child: ElevatedButton(
-                style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-                child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
-                onPressed: () async {
-                  final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
-                  if (Utilities.isValidUrl(linkUrl)) {
-                    await launchUrl(
-                      Uri.parse(linkUrl),
-                      mode: LaunchMode.externalApplication,
-                    );
-                  } else {
-                    await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
-                  }
-                },
-              ),
-            ),
-          ],
+          // if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
+          //     child: ElevatedButton(
+          //       style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+          //       child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
+          //       onPressed: () async {
+          //         final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
+          //         if (Utilities.isValidUrl(linkUrl)) {
+          //           await launchUrl(
+          //             Uri.parse(linkUrl),
+          //             mode: LaunchMode.externalApplication,
+          //           );
+          //         } else {
+          //           await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
+          //         }
+          //       },
+          //     ),
+          //   ),
+          // ],
           //
           if (!(((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK)) &&
               (eventUrlWithKennelBackup != null) &&
