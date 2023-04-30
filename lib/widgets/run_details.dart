@@ -442,12 +442,14 @@ class RunDetails extends StatelessWidget {
                       ),
                       Expanded(
                           flex: flexRight,
-                          child: Text(
+                          child: SelectableText(
                             event.locationStreet ?? '',
                             style: listValueStyle,
                             textAlign: TextAlign.left,
                             maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
+                            contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+                              return _addressContextMenu(editableTextState);
+                            },
                           )),
                     ],
                   ),
@@ -471,12 +473,15 @@ class RunDetails extends StatelessWidget {
                       ),
                       Expanded(
                           flex: flexRight,
-                          child: Text(
+                          child: SelectableText(
                             ((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : '${event.locationPostCode} ',
                             style: listValueStyle,
                             textAlign: TextAlign.left,
                             maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+                              return _addressContextMenu(editableTextState);
+                            },
+                            //overflow: TextOverflow.ellipsis,
                           )),
                     ],
                   ),
@@ -500,12 +505,15 @@ class RunDetails extends StatelessWidget {
                       ),
                       Expanded(
                           flex: flexRight,
-                          child: Text(
+                          child: SelectableText(
                             event.locationCity ?? '',
                             style: listValueStyle,
                             textAlign: TextAlign.left,
                             maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+                              return _addressContextMenu(editableTextState);
+                            },
+                            //overflow: TextOverflow.ellipsis,
                           )),
                     ],
                   ),
@@ -531,12 +539,15 @@ class RunDetails extends StatelessWidget {
                           ),
                           Expanded(
                               flex: flexRight,
-                              child: Text(
+                              child: SelectableText(
                                 event.locationSubRegion ?? '',
                                 style: listValueStyle,
                                 textAlign: TextAlign.left,
                                 maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
+                                contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+                                  return _addressContextMenu(editableTextState);
+                                },
+                                //overflow: TextOverflow.ellipsis,
                               )),
                         ],
                       ),
@@ -561,12 +572,15 @@ class RunDetails extends StatelessWidget {
                           ),
                           Expanded(
                               flex: flexRight,
-                              child: Text(
+                              child: SelectableText(
                                 event.locationRegion ?? '',
                                 style: listValueStyle,
                                 textAlign: TextAlign.left,
                                 maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
+                                contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+                                  return _addressContextMenu(editableTextState);
+                                },
+                                //overflow: TextOverflow.ellipsis,
                               )),
                         ],
                       ),
@@ -591,12 +605,15 @@ class RunDetails extends StatelessWidget {
                           ),
                           Expanded(
                               flex: flexRight,
-                              child: Text(
+                              child: SelectableText(
                                 event.locationCountry ?? '',
                                 style: listValueStyle,
                                 textAlign: TextAlign.left,
                                 maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
+                                contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+                                  return _addressContextMenu(editableTextState);
+                                },
+                                //overflow: TextOverflow.ellipsis,
                               )),
                         ],
                       ),
@@ -779,6 +796,91 @@ class RunDetails extends StatelessWidget {
           ]
         ],
       ),
+    );
+  }
+
+  Widget _addressContextMenu(EditableTextState editableTextState) {
+    final List<ContextMenuButtonItem> buttonItems = editableTextState.contextMenuButtonItems;
+    buttonItems.add(
+      ContextMenuButtonItem(
+        label: 'Copy Full Address',
+        type: ContextMenuButtonType.custom,
+        onPressed: () {
+          String s = '';
+
+          if ((event.locationStreet ?? '').isNotEmpty) {
+            s = event.locationStreet;
+          }
+
+          if ((event.locationCity ?? '').isNotEmpty) {
+            if (s.isNotEmpty) {
+              s += ', ';
+            }
+            s += event.locationCity;
+          }
+
+          if ((event.locationSubRegion ?? '').isNotEmpty) {
+            if (s.isNotEmpty) {
+              s += ', ';
+            }
+            s += event.locationSubRegion;
+          }
+
+          if ((event.locationRegion ?? '').isNotEmpty) {
+            if (s.isNotEmpty) {
+              s += ', ';
+            }
+            s += event.locationRegion;
+          }
+
+          if ((event.locationCountry ?? '').isNotEmpty) {
+            if (s.isNotEmpty) {
+              s += ', ';
+            }
+            s += event.locationCountry;
+          }
+
+          if ((event.locationPostCode ?? '').isNotEmpty) {
+            if (s.isNotEmpty) {
+              s += ', ';
+            }
+            s += event.locationPostCode;
+          }
+
+          Clipboard.setData(ClipboardData(text: s));
+          ContextMenuController.removeAny();
+        },
+      ),
+    );
+
+    double lat = event.hcLatitude;
+    double lon = event.hcLongitude;
+
+    if (event.useFbLatLon != 0) {
+      lat = event.fbLatitude;
+      lon = event.fbLongitude;
+    }
+
+    if ((lat != null) && (lon != null)) {
+      buttonItems.add(
+        ContextMenuButtonItem(
+          label: 'Copy Lat/Lon',
+          type: ContextMenuButtonType.custom,
+          onPressed: () {
+            String s = '';
+
+            s = '$lat, $lon';
+
+            Clipboard.setData(ClipboardData(text: s));
+            ContextMenuController.removeAny();
+          },
+        ),
+      );
+    }
+
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      anchors: editableTextState.contextMenuAnchors,
+      buttonItems: buttonItems,
     );
   }
 }
