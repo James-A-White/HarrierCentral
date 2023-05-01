@@ -139,12 +139,13 @@ class LoginPageState extends State<ThirdPartyLogin> {
       await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, appleCredential.authorizationCode);
       await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
       await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
-      await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
+      await setStringPref(StringPrefsEnum.thirdPartyLoginType, ThirdPartyLoginType.apple.name);
       await setStringPref(StringPrefsEnum.thirdPartyEmail, appleCredential?.email ?? '');
+
       await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
-        'apple',
+        ThirdPartyLoginType.apple.name,
         appleCredential.identityToken,
         appleCredential.userIdentifier,
         appleCredential.givenName,
@@ -194,22 +195,23 @@ class LoginPageState extends State<ThirdPartyLogin> {
       // get the user data
       final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
 
-      await setStringPref(StringPrefsEnum.facebookId, accessToken.userId);
-      await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.token);
-      await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
+      // await setStringPref(StringPrefsEnum.facebookId, accessToken.userId);
+      // await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.token);
+      // await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
       await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
       await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
 
       await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, ''); // facebook does not have an auth code
       await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.token);
       await setStringPref(StringPrefsEnum.thirdPartyUserId, accessToken.userId);
-      await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'facebook');
+      await setStringPref(StringPrefsEnum.thirdPartyLoginType, ThirdPartyLoginType.facebook.name);
       await setStringPref(StringPrefsEnum.thirdPartyEmail, (userData['email'] ?? '').toString());
+
       await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
       await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, accessToken.expires);
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
-        'facebook',
+        ThirdPartyLoginType.facebook.name,
         accessToken.token,
         userData['id'],
         userData['first_name'],
@@ -432,9 +434,9 @@ class LoginPageState extends State<ThirdPartyLogin> {
                     final String thirdPartyLoginType = result[0]['thirdPartyLoginType'] ?? 'none';
                     await setStringPref(StringPrefsEnum.thirdPartyLoginType, thirdPartyLoginType);
 
-                    await setStringPref(StringPrefsEnum.facebookId, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyUserId'] : '');
-                    await setStringPref(StringPrefsEnum.facebookAccessToken, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyAccessToken'] : '');
-                    await setStringPref(StringPrefsEnum.facebookProfilePhoto, thirdPartyLoginType == 'facebook' ? result[0]['photo'] : '');
+                    // await setStringPref(StringPrefsEnum.facebookId, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyUserId'] : '');
+                    // await setStringPref(StringPrefsEnum.facebookAccessToken, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyAccessToken'] : '');
+                    await setStringPref(StringPrefsEnum.facebookProfilePhoto, thirdPartyLoginType == ThirdPartyLoginType.facebook.name ? result[0]['photo'] : '');
 
                     await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, result[0]['thirdPartyAuthorizationCode']);
                     await setStringPref(StringPrefsEnum.thirdPartyAccessToken, result[0]['thirdPartyAccessToken']);

@@ -39,6 +39,7 @@ class HasherProfilePage extends StatefulWidget {
   static const int flagUiElement_refresh3rdPartyLogin = 0x00000020;
   static const int flagUiElement_gdprDeleteAccount = 0x00000040;
   static const int flagUiElement_getInviteCodeButton = 0x00000080;
+  static const int flagUiElement_logOutOfFacebook = 0x00000100;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -566,6 +567,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    //String s = getStringPref(StringPrefsEnum.facebookEmail);
+    String s1 = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+    String s2 = getStringPref(StringPrefsEnum.thirdPartyEmail);
+    String s3 = getStringPref(StringPrefsEnum.thirdPartyUserId);
+    String s4 = getStringPref(StringPrefsEnum.thirdPartyAccessToken);
+    String s5 = getStringPref(StringPrefsEnum.thirdPartyLoginEmail);
+
     return Stack(
       children: <Widget>[
         SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
@@ -1244,24 +1252,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               cancelButtonText: 'Cancel')
                                                           .then((bool result) async {
                                                         if (result) {
-                                                          final String userId = getStringPref(StringPrefsEnum.userId);
-                                                          final String resetCode = getStringPref(StringPrefsEnum.resetCode);
-                                                          final String facebookAccessToken = getStringPref(StringPrefsEnum.facebookAccessToken);
-                                                          final String facebookId = getStringPref(StringPrefsEnum.facebookId);
-
-                                                          await clearPrefs();
-
-                                                          await setStringPref(StringPrefsEnum.userId, userId);
-                                                          await setStringPref(StringPrefsEnum.resetCode, resetCode);
-                                                          await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-                                                          await setStringPref(StringPrefsEnum.facebookId, facebookId);
-                                                          await setIntPref(IntPrefsEnum.isResettingCache, 1);
-
-                                                          await DBProvider.deleteDb(DB_NAME);
-
-                                                          await G0.reset();
-
-                                                          Phoenix.rebirth(navigatorKey.currentContext);
+                                                          await _reloadData(
+                                                            isLogOutOfFacebook: false,
+                                                          );
                                                         }
                                                       });
                                                     },
@@ -1274,46 +1267,188 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ],
                                             ),
                                           ),
-                                          if (Utilities.isOpeeOrTuna()) ...<Widget>[
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 15, bottom: 40),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                children: <Widget>[
-                                                  Connection.styleForConnected(
-                                                    G0<AppModel>().connectionStatus,
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                                      ),
-                                                      onPressed: () async {
-                                                        await IveCoreUtilities.showAlert(
-                                                                context,
-                                                                'Log out?',
-                                                                'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                                                'Log out',
-                                                                showCancelButton: true,
-                                                                cancelButtonText: 'Stay logged in')
-                                                            .then((bool result) async {
-                                                          if (result) {
-                                                            await clearPrefs();
-                                                            await DBProvider.deleteDb(DB_NAME);
-                                                            await G0.reset();
+                                          // Padding(
+                                          //   padding: const EdgeInsets.only(top: 15, bottom: 40),
+                                          //   child: Row(
+                                          //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          //     children: <Widget>[
+                                          //       Connection.styleForConnected(
+                                          //         G0<AppModel>().connectionStatus,
+                                          //         ElevatedButton(
+                                          //           style: ElevatedButton.styleFrom(
+                                          //             padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                          //           ),
+                                          //           onPressed: () async {
+                                          //             await IveCoreUtilities.showAlert(
+                                          //                     context,
+                                          //                     'Log out?',
+                                          //                     'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                          //                     'Log out',
+                                          //                     showCancelButton: true,
+                                          //                     cancelButtonText: 'Stay logged in')
+                                          //                 .then((bool result) async {
+                                          //               if (result) {
+                                          //                 String fbId = getStringPref(StringPrefsEnum.thirdPartyLoginType);
 
-                                                            Phoenix.rebirth(navigatorKey.currentContext);
+                                          //                 if ((fbId != null) && (fbId.isNotEmpty)) {
+                                          //                   FacebookAuth.instance.logOut();
+                                          //                 }
+
+                                          //                 await clearPrefs();
+                                          //                 await DBProvider.deleteDb(DB_NAME);
+                                          //                 await G0.reset();
+
+                                          //                 Phoenix.rebirth(navigatorKey.currentContext);
+                                          //               }
+                                          //             });
+                                          //           },
+                                          //           child: Text(
+                                          //             'Log out',
+                                          //             style: textStyleButton,
+                                          //           ),
+                                          //         ),
+                                          //       ),
+                                          //     ],
+                                          //   ),
+                                          // ),
+                                        ],
+                                      ),
+                                    ],
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: <Widget>[
+                                        const FancyDivider(
+                                          key: Key('655522013'),
+                                          innerColor: Colors.white,
+                                          topMargin: 30.0,
+                                          bottomMargin: 20.0,
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'Log out of Harrier Central',
+                                            style: headingStyle,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
+                                            style: bodyStyle,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                            children: <Widget>[
+                                              Connection.styleForConnected(
+                                                G0<AppModel>().connectionStatus,
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                  ),
+                                                  onPressed: () async {
+                                                    await IveCoreUtilities.showAlert(
+                                                            context,
+                                                            'Log out?',
+                                                            'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                            'Log out',
+                                                            showCancelButton: true,
+                                                            cancelButtonText: 'Stay logged in')
+                                                        .then((bool result) async {
+                                                      if (result) {
+                                                        String tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+
+                                                        if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
+                                                          await FacebookAuth.instance.logOut();
+                                                        }
+
+                                                        await clearPrefs();
+                                                        await DBProvider.deleteDb(DB_NAME);
+
+                                                        await G0.reset();
+                                                        Phoenix.rebirth(navigatorKey.currentContext);
+                                                      }
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    'Log out of Harrier Central',
+                                                    style: textStyleButton,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if ((widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_logOutOfFacebook != 0) &&
+                                        ((getStringPref(StringPrefsEnum.thirdPartyLoginType) ?? '') == ThirdPartyLoginType.facebook.name)) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('655522013'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Log out of Facebook',
+                                              style: headingStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'This app is currently logged in to a Facebook account.\r\n\r\nYou disconnect this app from Facebook without logging out of the app by pressing the button below. When you log out from Facebook the app will automatically restart.',
+                                              style: bodyStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection.styleForConnected(
+                                                  G0<AppModel>().connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                    ),
+                                                    onPressed: () async {
+                                                      await IveCoreUtilities.showAlert(context, 'Log out of Facebook',
+                                                              'This app has been logged in using a Facebook account.\r\n\r\nSelect \'Disconnect\' below to log out of Facebook.', 'Disconnect',
+                                                              showCancelButton: true, cancelButtonText: 'Cancel')
+                                                          .then((bool result) async {
+                                                        if (result) {
+                                                          String tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+
+                                                          if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
+                                                            await FacebookAuth.instance.logOut();
                                                           }
-                                                        });
-                                                      },
-                                                      child: Text(
-                                                        'Log out',
-                                                        style: textStyleButton,
-                                                      ),
+                                                          await _reloadData(
+                                                            isLogOutOfFacebook: true,
+                                                          );
+                                                        }
+                                                      });
+                                                    },
+                                                    child: Text(
+                                                      'Log out of Facebook',
+                                                      style: textStyleButton,
                                                     ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
-                                          ]
+                                          ),
                                         ],
                                       ),
                                     ],
@@ -1426,6 +1561,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   showCancelButton: true, cancelButtonText: 'Keep Account')
                                                               .then((bool result2) async {
                                                             if (result2) {
+                                                              String tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+                                                              if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
+                                                                await FacebookAuth.instance.logOut();
+                                                              }
+
                                                               final GdprDeleteService svc = GdprDeleteService();
                                                               final SingleResultModel result = await svc.gdprDelete();
 
@@ -1447,8 +1587,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
                                                               await clearPrefs();
                                                               await DBProvider.deleteDb(DB_NAME);
-                                                              await G0.reset();
 
+                                                              await G0.reset();
                                                               Phoenix.rebirth(navigatorKey.currentContext);
                                                             }
                                                           });
@@ -1510,6 +1650,55 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         ),
       ],
     );
+  }
+
+  Future<void> _reloadData({
+    bool isLogOutOfFacebook = false,
+  }) async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String resetCode = getStringPref(StringPrefsEnum.resetCode);
+
+    final String thirdPartyAccessToken = getStringPref(StringPrefsEnum.thirdPartyAccessToken);
+    final String thirdPartyAuthorizationCode = getStringPref(StringPrefsEnum.thirdPartyAuthorizationCode);
+    final String thirdPartyEmail = getStringPref(StringPrefsEnum.thirdPartyEmail);
+    final String thirdPartyForceTokenRefresh = getStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh);
+    final String thirdPartyLoginEmail = getStringPref(StringPrefsEnum.thirdPartyLoginEmail);
+    final String thirdPartyLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+    final String thirdPartyUserId = getStringPref(StringPrefsEnum.thirdPartyUserId);
+
+    final DateTime thirdPartyTokenLastUpdated = getDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated);
+    final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled);
+    final DateTime lastFbTokenUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate);
+    final DateTime thirdPartyTokenExpires = getDatePref(DatePrefsEnum.thirdPartyTokenExpires);
+
+    await clearPrefs();
+
+    await setStringPref(StringPrefsEnum.userId, userId);
+    await setStringPref(StringPrefsEnum.resetCode, resetCode);
+
+    await setStringPref(StringPrefsEnum.thirdPartyAccessToken, thirdPartyAccessToken);
+    await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, thirdPartyAuthorizationCode);
+    await setStringPref(StringPrefsEnum.thirdPartyEmail, thirdPartyEmail);
+    await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, thirdPartyForceTokenRefresh);
+    await setStringPref(StringPrefsEnum.thirdPartyLoginEmail, thirdPartyLoginEmail);
+    await setStringPref(StringPrefsEnum.thirdPartyLoginType, thirdPartyLoginType);
+    await setStringPref(StringPrefsEnum.thirdPartyUserId, thirdPartyUserId);
+
+    await setDatePref(DatePrefsEnum.fbLoginCancelled, fbLoginCancelled);
+
+    await setDatePref(DatePrefsEnum.lastFbTokenUpdate, lastFbTokenUpdate);
+
+    await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, thirdPartyTokenExpires);
+
+    await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, thirdPartyTokenLastUpdated);
+
+    //await setIntPref(IntPrefsEnum.isResettingCache, 1);
+    await setIntPref(IntPrefsEnum.isLoggingOutOfFacebook, isLogOutOfFacebook ? 1 : 0);
+
+    await DBProvider.deleteDb(DB_NAME);
+
+    await G0.reset();
+    Phoenix.rebirth(navigatorKey.currentContext);
   }
 
   Future<void> _enableLocationServices() async {

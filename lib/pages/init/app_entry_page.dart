@@ -252,7 +252,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
 
       if (daysSinceCancellation.inDays > 30) {
-        final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+        final String facebookId = getStringPref(StringPrefsEnum.thirdPartyUserId);
 
         if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
           final LoginResult loginResult = await FacebookAuth.instance.login();
@@ -261,7 +261,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
               final AccessToken accessToken = loginResult.accessToken;
               facebookAccessToken = accessToken?.token;
               if (facebookAccessToken != null) {
-                await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+                await setStringPref(StringPrefsEnum.thirdPartyAccessToken, facebookAccessToken);
                 await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
                 await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
               }

@@ -6,41 +6,38 @@ import 'package:harrier_central/imports.dart';
 enum EnumAppPages { settings, futureRuns, kennelList, runCounts, qrCodePage, friends, fab }
 
 enum StringPrefsEnum {
-  userId,
-  qrCode,
-  supportCode,
-  resetCode,
-  qrSecretCode,
-  displayName,
-  firstName,
-  lastName,
-  harrierCentralVersion,
-  hashName,
-  email,
-  thirdPartyLoginEmail,
-  gender,
-  profilePhotoUrl,
   adminEventId,
   adminKennelId,
-  customEmailBody,
-  iosDownloadLink,
   androidDownloadLink,
-  imageRootUrl,
-  homeKennelId,
-  ssoAuthType,
-  facebookId,
-  facebookAccessToken,
+  customEmailBody,
+  displayName,
+  email,
   facebookProfilePhoto,
-  facebookEmail,
-  thirdPartyAccessToken,
-  thirdPartyUserId,
-  thirdPartyAuthorizationCode,
-  thirdPartyLoginType,
-  thirdPartyEmail,
-  paymentTerminalAccountKey,
-  thirdPartyForceTokenRefresh,
-  mapPreference,
+  firstName,
+  gender,
+  harrierCentralVersion,
+  hashName,
+  homeKennelId,
+  imageRootUrl,
+  iosDownloadLink,
+  lastName,
   leaderboardJson,
+  mapPreference,
+  paymentTerminalAccountKey,
+  profilePhotoUrl,
+  qrCode,
+  qrSecretCode,
+  resetCode,
+  ssoAuthType,
+  supportCode,
+  thirdPartyAccessToken,
+  thirdPartyAuthorizationCode,
+  thirdPartyEmail,
+  thirdPartyForceTokenRefresh,
+  thirdPartyLoginEmail,
+  thirdPartyLoginType,
+  thirdPartyUserId,
+  userId,
 }
 
 enum NumPrefsEnum {
@@ -62,6 +59,7 @@ enum IntPrefsEnum {
   mapShowKennels,
   isBetaTester,
   isResettingCache,
+  isLoggingOutOfFacebook,
   //usePlatformNativeMapApp,
 }
 
@@ -74,6 +72,8 @@ enum DatePrefsEnum {
   lastLocationUpdate,
   lastLeaderboardUpdate,
 }
+
+enum ThirdPartyLoginType { apple, facebook, none }
 
 enum EnumDataContext { user, event, kennel }
 
