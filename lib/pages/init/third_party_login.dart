@@ -31,8 +31,10 @@ class LoginPageState extends State<ThirdPartyLogin> {
     super.initState();
 
     if (!widget.isNewUser) {
-      _hashNameTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.hashName) ?? '');
-      _emailTextController.value = TextEditingValue(text: getStringPref(StringPrefsEnum.email) ?? '');
+      _hashNameTextController.value =
+          TextEditingValue(text: getStringPref(StringPrefsEnum.hashName) ?? '');
+      _emailTextController.value =
+          TextEditingValue(text: getStringPref(StringPrefsEnum.email) ?? '');
     }
   }
 
@@ -89,11 +91,13 @@ class LoginPageState extends State<ThirdPartyLogin> {
                             _facebookLogin();
                           },
                           child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 0.0, vertical: 20.0),
                             child: Image(
                               height: 60,
                               fit: BoxFit.fitWidth,
-                              image: AssetImage('images/init/facebook_login.png'),
+                              image:
+                                  AssetImage('images/init/facebook_login.png'),
                             ),
                           ),
                         ),
@@ -104,11 +108,13 @@ class LoginPageState extends State<ThirdPartyLogin> {
                               _appleLogin();
                             },
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 0.0, vertical: 20.0),
                               child: Image(
                                 height: 60,
                                 fit: BoxFit.fitWidth,
-                                image: AssetImage('images/init/sign_in_with_apple.png'),
+                                image: AssetImage(
+                                    'images/init/sign_in_with_apple.png'),
                               ),
                             ),
                           ),
@@ -131,7 +137,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
 
   Future<void> _appleLogin() async {
     try {
-      final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
+      final AuthorizationCredentialAppleID appleCredential =
+          await SignInWithApple.getAppleIDCredential(
         scopes: <AppleIDAuthorizationScopes>[
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
@@ -146,15 +153,22 @@ class LoginPageState extends State<ThirdPartyLogin> {
         state: 'Test',
       );
 
-      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, appleCredential.authorizationCode);
-      await setStringPref(StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
-      await setStringPref(StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
-      await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'apple');
-      await setStringPref(StringPrefsEnum.thirdPartyEmail, appleCredential.email);
-      await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
+      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
+          appleCredential.authorizationCode);
+      await setStringPref(
+          StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
+      await setStringPref(
+          StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
+      await setStringPref(
+          StringPrefsEnum.thirdPartyLoginType, ThirdPartyLoginType.apple.name);
+      await setStringPref(
+          StringPrefsEnum.thirdPartyEmail, appleCredential.email);
+
+      await setDatePref(
+          DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
-        'apple',
+        ThirdPartyLoginType.apple.name,
         appleCredential.identityToken ?? '',
         appleCredential.userIdentifier ?? '',
         appleCredential.givenName ?? '',
@@ -164,7 +178,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
       );
 
       if (widget.isNewUser) {
-        _emailTextController.value = TextEditingValue(text: appleCredential.email ?? '');
+        _emailTextController.value =
+            TextEditingValue(text: appleCredential.email ?? '');
       }
 
       _onLoginStatusChanged(true, loginData: d);
@@ -202,25 +217,33 @@ class LoginPageState extends State<ThirdPartyLogin> {
       final AccessToken accessToken = loginResult.accessToken!;
 
       // get the user data
-      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
+      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(
+          fields:
+              'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
 
-      await setStringPref(StringPrefsEnum.facebookId, userData['id']);
-      await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.tokenString);
-      await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
+      // await setStringPref(StringPrefsEnum.facebookId, userData['id']);
+      // await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.tokenString);
+      // await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
       await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
       await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
 
-      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, ''); // facebook does not have an auth code
-      await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.tokenString);
+      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
+          ''); // facebook does not have an auth code
+      await setStringPref(
+          StringPrefsEnum.thirdPartyAccessToken, accessToken.tokenString);
       await setStringPref(StringPrefsEnum.thirdPartyUserId, userData['id']);
-      await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'facebook');
-      await setStringPref(StringPrefsEnum.thirdPartyEmail, (userData['email'] ?? '').toString());
-      await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
+      await setStringPref(StringPrefsEnum.thirdPartyLoginType,
+          ThirdPartyLoginType.facebook.name);
+      await setStringPref(StringPrefsEnum.thirdPartyEmail,
+          (userData['email'] ?? '').toString());
+
+      await setDatePref(
+          DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
       // TODO: Fix this eventually (maybe?)
       await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, DateTime(2030));
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
-        'facebook',
+        ThirdPartyLoginType.facebook.name,
         accessToken.tokenString,
         userData['id'],
         userData['first_name'],
@@ -231,7 +254,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
       );
 
       if (widget.isNewUser) {
-        _emailTextController.value = TextEditingValue(text: (userData['email'] ?? '').toString());
+        _emailTextController.value =
+            TextEditingValue(text: (userData['email'] ?? '').toString());
       }
 
       _onLoginStatusChanged(true, loginData: d);
@@ -268,11 +292,16 @@ class LoginPageState extends State<ThirdPartyLogin> {
           //const SizedBox(height: 28.0),
           Padding(
             padding: const EdgeInsets.only(top: 25.0, bottom: 15.0),
-            child: Text('Logged in as:', textAlign: TextAlign.center, style: ts_title),
+            child: Text('Logged in as:',
+                textAlign: TextAlign.center, style: ts_title),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 15.0),
-            child: Text(profileData.name ?? ('${profileData.firstName} ${profileData.lastName}'), textAlign: TextAlign.center, style: ts_headingVeryLarge),
+            child: Text(
+                profileData.name ??
+                    ('${profileData.firstName} ${profileData.lastName}'),
+                textAlign: TextAlign.center,
+                style: ts_headingVeryLarge),
           ),
           if ((profileData.photoUrl?.length ?? 0) > 5) ...<Widget>[
             Padding(
@@ -284,7 +313,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
-                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10.0)),
                       image: DecorationImage(
                         fit: BoxFit.fill,
                         image: NetworkImage(
@@ -309,7 +339,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
               key: _formKey,
               child: Container(
                 margin: const EdgeInsets.only(left: 15, right: 15),
-                padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
+                padding: const EdgeInsets.only(
+                    left: 15, right: 15, top: 15, bottom: 5),
 
                 decoration: BoxDecoration(
                   shape: BoxShape.rectangle,
@@ -422,9 +453,12 @@ class LoginPageState extends State<ThirdPartyLogin> {
             padding: const EdgeInsets.only(top: 25.0),
             child: TextButton(
               style: text_button_style,
-              child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info', style: ts_button),
+              child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info',
+                  style: ts_button),
               onPressed: () async {
-                if (!widget.isNewUser || ((_formKey.currentState != null) && (_formKey.currentState!.validate()))) {
+                if (!widget.isNewUser ||
+                    ((_formKey.currentState != null) &&
+                        (_formKey.currentState!.validate()))) {
                   setState(() {
                     _isLoading = true;
                   });
@@ -439,57 +473,93 @@ class LoginPageState extends State<ThirdPartyLogin> {
                   );
 
                   if (result != null) {
-                    await setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
-                    await setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
+                    await setStringPref(
+                        StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
+                    await setStringPref(
+                        StringPrefsEnum.displayName, result[0]['displayName']);
                     // if the email has not already been set, populate it with the email address received by the third party identity provider
-                    if ((getStringPref(StringPrefsEnum.email) ?? '').trim().isEmpty) {
-                      await setStringPref(StringPrefsEnum.email, result[0]['email']);
+                    if ((getStringPref(StringPrefsEnum.email) ?? '')
+                        .trim()
+                        .isEmpty) {
+                      await setStringPref(
+                          StringPrefsEnum.email, result[0]['email']);
                     }
-                    await setStringPref(StringPrefsEnum.thirdPartyLoginEmail, result[0]['thirdPartyEmail']);
+                    await setStringPref(StringPrefsEnum.thirdPartyLoginEmail,
+                        result[0]['thirdPartyEmail']);
 
-                    final String thirdPartyLoginType = result[0]['thirdPartyLoginType'] ?? 'none';
-                    await setStringPref(StringPrefsEnum.thirdPartyLoginType, thirdPartyLoginType);
+                    final String thirdPartyLoginType =
+                        result[0]['thirdPartyLoginType'] ?? 'none';
+                    await setStringPref(StringPrefsEnum.thirdPartyLoginType,
+                        thirdPartyLoginType);
 
-                    await setStringPref(StringPrefsEnum.facebookId, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyUserId'] : '');
-                    await setStringPref(StringPrefsEnum.facebookAccessToken, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyAccessToken'] : '');
-                    await setStringPref(StringPrefsEnum.facebookProfilePhoto, thirdPartyLoginType == 'facebook' ? result[0]['photo'] : '');
+                    // await setStringPref(StringPrefsEnum.facebookId, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyUserId'] : '');
+                    // await setStringPref(StringPrefsEnum.facebookAccessToken, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyAccessToken'] : '');
+                    await setStringPref(
+                        StringPrefsEnum.facebookProfilePhoto,
+                        thirdPartyLoginType == ThirdPartyLoginType.facebook.name
+                            ? result[0]['photo']
+                            : '');
 
-                    await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, result[0]['thirdPartyAuthorizationCode']);
-                    await setStringPref(StringPrefsEnum.thirdPartyAccessToken, result[0]['thirdPartyAccessToken']);
-                    await setStringPref(StringPrefsEnum.thirdPartyUserId, result[0]['thirdPartyUserId']);
+                    await setStringPref(
+                        StringPrefsEnum.thirdPartyAuthorizationCode,
+                        result[0]['thirdPartyAuthorizationCode']);
+                    await setStringPref(StringPrefsEnum.thirdPartyAccessToken,
+                        result[0]['thirdPartyAccessToken']);
+                    await setStringPref(StringPrefsEnum.thirdPartyUserId,
+                        result[0]['thirdPartyUserId']);
 
                     if (result[0]['thirdPartyTokenLastUpdated'] != null) {
-                      await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.tryParse(result[0]['thirdPartyTokenLastUpdated']));
+                      await setDatePref(
+                          DatePrefsEnum.thirdPartyTokenLastUpdated,
+                          DateTime.tryParse(
+                              result[0]['thirdPartyTokenLastUpdated']));
                     } else {
-                      await removePref(DatePrefsEnum.thirdPartyTokenLastUpdated);
+                      await removePref(
+                          DatePrefsEnum.thirdPartyTokenLastUpdated);
                     }
 
                     if (result[0]['thirdPartyAccessTokenExpires'] != null) {
-                      await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, DateTime.tryParse(result[0]['thirdPartyAccessTokenExpires']));
+                      await setDatePref(
+                          DatePrefsEnum.thirdPartyTokenExpires,
+                          DateTime.tryParse(
+                              result[0]['thirdPartyAccessTokenExpires']));
                     } else {
                       await removePref(DatePrefsEnum.thirdPartyTokenExpires);
                     }
 
-                    await setStringPref(StringPrefsEnum.firstName, result[0]['firstName']);
-                    await setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
-                    await setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
-                    await setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
-                    await setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
-                    await setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
-                    await setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
-                    await setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
-                    final int preferences = int.tryParse(result[0]['preferences'].toString()) ??
+                    await setStringPref(
+                        StringPrefsEnum.firstName, result[0]['firstName']);
+                    await setStringPref(
+                        StringPrefsEnum.hashName, result[0]['hashName']);
+                    await setStringPref(
+                        StringPrefsEnum.lastName, result[0]['lastName']);
+                    await setStringPref(
+                        StringPrefsEnum.qrCode, result[0]['qrCode']);
+                    await setStringPref(
+                        StringPrefsEnum.supportCode, result[0]['supportCode']);
+                    await setStringPref(
+                        StringPrefsEnum.resetCode, result[0]['resetCode']);
+                    await setStringPref(StringPrefsEnum.qrSecretCode,
+                        result[0]['qrSecretCode']);
+                    await setStringPref(
+                        StringPrefsEnum.userId, result[0]['hasherId']);
+                    final int preferences = int.tryParse(
+                            result[0]['preferences'].toString()) ??
                         0; // we turn the result into a string and then back into an int to allow the DB to return either int or string without causing an error
-                    await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
+                    await setIntPref(
+                        IntPrefsEnum.hasherPreferences, preferences);
                   } else {
-                    await Utilities.showAlert('Account not created',
-                        'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
+                    await Utilities.showAlert(
+                        'Account not created',
+                        'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
+                        'OK');
                     return;
                   }
 
                   if (widget.isNewUser) {
                     //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                    final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode) ?? '';
+                    final String fileNamePrefix =
+                        getStringPref(StringPrefsEnum.supportCode) ?? '';
                     //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
                     if (!mounted) return;
@@ -505,7 +575,11 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         ));
                   } else {
                     // not a new user, pop back to the User profile page.
-                    await Utilities.showAlert('Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
+                    await Utilities.showAlert(
+                            'Login Successful',
+                            'Your login was successful and your access has been upated.',
+                            'OK')
+                        .then((_) {
                       Navigator.of(navigatorKey.currentContext!).pop();
                     });
                   }

@@ -230,7 +230,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
                               await setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
                               await setStringPref(StringPrefsEnum.displayName, result['displayName']);
                               //setStringPref(StringPrefsEnum.email, result['email']);
-                              await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
+                              // await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
                               await setStringPref(StringPrefsEnum.firstName, result['firstName']);
                               await setStringPref(StringPrefsEnum.hashName, result['hashName']);
                               await setStringPref(StringPrefsEnum.lastName, result['lastName']);

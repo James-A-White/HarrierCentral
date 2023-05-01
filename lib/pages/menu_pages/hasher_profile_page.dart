@@ -38,6 +38,7 @@ class HasherProfilePage extends StatefulWidget {
   static const int flagUiElement_refresh3rdPartyLogin = 0x00000020;
   static const int flagUiElement_gdprDeleteAccount = 0x00000040;
   static const int flagUiElement_getInviteCodeButton = 0x00000080;
+  //static const int flagUiElement_logOutOfFacebook = 0x00000100;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -98,9 +99,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       // TODO(James): Make this AppDomainType correct
       switch (widget.dataContext) {
         case EnumDataContext.event:
-          await G0<TableModel>()
-              .syncEventAdminService
-              .updateFromBackend(SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
+          await G0<TableModel>().syncEventAdminService.updateFromBackend(
+              SyncEventAdminService.flagHashersTable |
+                  SyncEventAdminService.flagHasherKennelMapTable |
+                  SyncEventAdminService.flagHasherEventMapTable,
+              true,
+              widget.eventId);
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
@@ -114,7 +118,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
-          await G0<TableModel>().syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
+          await G0<TableModel>().syncKennelAdminService.updateFromBackend(
+              SyncKennelAdminService.flagHashersTable |
+                  SyncKennelAdminService.flagHasherKennelMapTable,
+              true,
+              widget.kennelId);
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
@@ -138,7 +146,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       setState(() {
         _isLoading = true;
       });
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(query);
       if (results.isNotEmpty) {
         _hasher = HashersModel.fromJson(results[0]);
 
@@ -146,25 +155,33 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           // _hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
           _historicalTotalRunCount = results[0]['historicalTotalRunCount'];
           _historicalHaringCount = results[0]['historicalHaringCount'];
-          _historicalCountIsEstimate = ((results[0]['historicalCountIsEstimate'] ?? 0) == 1);
+          _historicalCountIsEstimate =
+              ((results[0]['historicalCountIsEstimate'] ?? 0) == 1);
           _historicalCountIsEstimateWidget = _historicalCountIsEstimate;
         }
 
         _firstNameController.text = _hasher.firstName ?? '';
         _lastNameController.text = _hasher.lastName ?? '';
-        _emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
+        _emailController.text =
+            ''; // we don't reveal e-mail in the app for users other than the user of the app
         _hashNameController.text = _hasher.hashName ?? '';
         _nameDisplayPreference = _hasher.dispPref;
-        _newPhoto = _hasher.photo ?? _newPhoto; // if we have returned from the photo chooser, don't overwrite
-        _previousRunCountController.text = (_historicalTotalRunCount ?? 0).toString();
-        _previousHaringCountController.text = (_historicalHaringCount ?? 0).toString();
-        _historicalCountIsEstimateWidget = (_historicalCountIsEstimate ?? false);
+        _newPhoto = _hasher.photo ??
+            _newPhoto; // if we have returned from the photo chooser, don't overwrite
+        _previousRunCountController.text =
+            (_historicalTotalRunCount ?? 0).toString();
+        _previousHaringCountController.text =
+            (_historicalHaringCount ?? 0).toString();
+        _historicalCountIsEstimateWidget =
+            (_historicalCountIsEstimate ?? false);
 
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           _emailController.text = _email ?? '';
-          _distancePreference = _hasherPreferences & hasherPref_distanceMeasuredIn;
-          _autoRunPreference = _hasherPreferences & hasherPref_distanceForAutoDisplay;
+          _distancePreference =
+              _hasherPreferences & hasherPref_distanceMeasuredIn;
+          _autoRunPreference =
+              _hasherPreferences & hasherPref_distanceForAutoDisplay;
         }
       }
 
@@ -180,8 +197,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _hashNameController = TextEditingController();
-  final TextEditingController _previousRunCountController = TextEditingController();
-  final TextEditingController _previousHaringCountController = TextEditingController();
+  final TextEditingController _previousRunCountController =
+      TextEditingController();
+  final TextEditingController _previousHaringCountController =
+      TextEditingController();
 
   String? _externalMapProvider;
 
@@ -217,7 +236,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         color: Colors.white,
         size: 28.0,
       ),
-      title: Text(widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile' : 'Hasher Profile', style: ts_appBarTitle),
+      title: Text(
+          widget.pageType == EnumMyProfilePageType.myProfile
+              ? 'My Profile'
+              : 'Hasher Profile',
+          style: ts_appBarTitle),
     );
 
     _firstNameController.addListener(() {
@@ -282,14 +305,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (_newPhoto != (_hasher.photo ?? '')) {
       isDirty = true;
     }
-    if (_previousRunCountController.text != (_historicalTotalRunCount ?? 0).toString()) {
+    if (_previousRunCountController.text !=
+        (_historicalTotalRunCount ?? 0).toString()) {
       isDirty = true;
     }
-    if (_previousHaringCountController.text != (_historicalHaringCount ?? 0).toString()) {
+    if (_previousHaringCountController.text !=
+        (_historicalHaringCount ?? 0).toString()) {
       isDirty = true;
     }
 
-    if (_historicalCountIsEstimateWidget != (_historicalCountIsEstimate ?? false)) {
+    if (_historicalCountIsEstimateWidget !=
+        (_historicalCountIsEstimate ?? false)) {
       isDirty = true;
     }
 
@@ -306,17 +332,19 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-        Text(
-          'Loading / Updating User Profile',
-          style: ts_headingLarge,
-          textAlign: TextAlign.center,
-        ),
-        Container(height: 30),
-        const HcCircularProgressIndicator(
-          key: Key('887262'),
-        ),
-      ]),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Loading / Updating User Profile',
+              style: ts_headingLarge,
+              textAlign: TextAlign.center,
+            ),
+            Container(height: 30),
+            const HcCircularProgressIndicator(
+              key: Key('887262'),
+            ),
+          ]),
     );
   }
 
@@ -354,8 +382,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          await setStringPref(StringPrefsEnum.email.name, _emailController.text);
-          await setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
+          await setStringPref(
+              StringPrefsEnum.email.name, _emailController.text);
+          await setIntPref(IntPrefsEnum.hasherPreferences,
+              _distancePreference + _autoRunPreference);
           _hasherPreferences = _distancePreference + _autoRunPreference;
         }
 
@@ -370,8 +400,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         for (int i = 0; i < jsonResult.length; i++) {
           if (jsonResult[i][0].containsKey('hasherId')) {
             for (int j = 0; j < jsonResult[i].length; j++) {
-              if ((jsonResult[i][j]['firstName'].toString().toLowerCase() == (_hasher.firstName ?? '').toLowerCase()) &&
-                  (jsonResult[i][j]['hashName'].toString().toLowerCase() == (_hasher.hashName ?? '').toLowerCase())) {
+              if ((jsonResult[i][j]['firstName'].toString().toLowerCase() ==
+                      (_hasher.firstName ?? '').toLowerCase()) &&
+                  (jsonResult[i][j]['hashName'].toString().toLowerCase() ==
+                      (_hasher.hashName ?? '').toLowerCase())) {
                 h = HashersModel.fromJson(jsonResult[i][0]);
               }
             }
@@ -403,7 +435,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           if (!mounted) return;
           Navigator.of(context).pop(h);
         } else {
-          await Utilities.showAlert('Profile Updated', 'Your profile was updated successfully.', 'OK');
+          await Utilities.showAlert('Profile Updated',
+              'Your profile was updated successfully.', 'OK');
         }
       } else {
         await Utilities.showAlert(
@@ -427,7 +460,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           controller: _firstNameController,
           //initialValue: hasher.firstName,
-          decoration: const InputDecoration(labelText: 'First name (or initial)'),
+          decoration:
+              const InputDecoration(labelText: 'First name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String? arg) {
             if ((arg ?? '').isEmpty) {
@@ -445,7 +479,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           //initialValue: hasher.lastName,
           controller: _lastNameController,
-          decoration: const InputDecoration(labelText: 'Last Name (or initial)'),
+          decoration:
+              const InputDecoration(labelText: 'Last Name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String? arg) {
             if ((arg ?? '').isEmpty) {
@@ -459,7 +494,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             //_hasher.lastName = val;
           },
         ),
-        if ((widget.pageType == EnumMyProfilePageType.myProfile) || (widget.pageType == EnumMyProfilePageType.newHasherProfile)) ...<Widget>[
+        if ((widget.pageType == EnumMyProfilePageType.myProfile) ||
+            (widget.pageType ==
+                EnumMyProfilePageType.newHasherProfile)) ...<Widget>[
           TextFormField(
             autocorrect: false,
             //initialValue: hasher.email,
@@ -506,7 +543,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         TextFormField(
           autocorrect: false,
           controller: _previousHaringCountController,
-          decoration: const InputDecoration(labelText: 'Historical haring count'),
+          decoration:
+              const InputDecoration(labelText: 'Historical haring count'),
           keyboardType: TextInputType.number,
           onSaved: (String? val) {
             _hasher = _hasher.copyWith(firstName: val ?? '');
@@ -578,7 +616,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -588,10 +628,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             key: scaffoldKey,
             appBar: appBar,
             body: _isLoading
-                ? Container(height: MediaQuery.of(context).size.height - (appBar?.preferredSize.height ?? 0), decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+                ? Container(
+                    height: MediaQuery.of(context).size.height -
+                        (appBar?.preferredSize.height ?? 0),
+                    decoration: Backgrounds.defaultHcBackground(),
+                    child: _buildCircularProgressIndicator())
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
-                    height: MediaQuery.of(context).size.height - (appBar?.preferredSize.height ?? 0),
+                    height: MediaQuery.of(context).size.height -
+                        (appBar?.preferredSize.height ?? 0),
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onPanDown: (_) {
@@ -599,7 +644,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                       },
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
+                          padding: const EdgeInsets.only(
+                              top: 30, left: 20, right: 20),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -609,33 +655,52 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                 child: Column(
                                   children: <Widget>[
                                     Text(
-                                      widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile Information' : 'Hasher Profile Information',
+                                      widget.pageType ==
+                                              EnumMyProfilePageType.myProfile
+                                          ? 'My Profile Information'
+                                          : 'Hasher Profile Information',
                                       style: ts_headingLarge,
                                       textAlign: TextAlign.center,
                                     ),
                                     Container(
-                                      padding: EdgeInsets.only(top: 30.0, left: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30, right: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30),
+                                      padding: EdgeInsets.only(
+                                          top: 30.0,
+                                          left: (G0<DeviceInfo>()
+                                                      .deviceWidthScaleFactor -
+                                                  1) *
+                                              30,
+                                          right: (G0<DeviceInfo>()
+                                                      .deviceWidthScaleFactor -
+                                                  1) *
+                                              30),
                                       child: Center(
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: <Widget>[
                                             Container(
-                                              padding: const EdgeInsets.all(10.0),
-                                              margin: const EdgeInsets.only(bottom: 30),
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              margin: const EdgeInsets.only(
+                                                  bottom: 30),
                                               decoration: BoxDecoration(
                                                 color: Colors.yellow[100],
-                                                borderRadius: BorderRadius.circular(5.0),
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
                                               ),
                                               child: Form(
                                                 key: _profileFormKey,
-                                                autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+                                                autovalidateMode: _autoValidate
+                                                    ? AutovalidateMode.always
+                                                    : AutovalidateMode.disabled,
                                                 child: profileFormUi(),
                                               ),
                                             ),
                                             Container(
                                               decoration: BoxDecoration(
                                                 color: Colors.yellow[100],
-                                                borderRadius: BorderRadius.circular(5.0),
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
                                               ),
                                               child: Column(
                                                 children: <Widget>[
@@ -655,12 +720,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     children: <Widget>[
                                                       Radio<int>(
                                                         value: 1,
-                                                        groupValue: _nameDisplayPreference,
-                                                        onChanged: _handleRadioValueChange0,
+                                                        groupValue:
+                                                            _nameDisplayPreference,
+                                                        onChanged:
+                                                            _handleRadioValueChange0,
                                                       ),
                                                       const Text(
                                                         'Use Hash name',
-                                                        style: TextStyle(fontSize: 16.0),
+                                                        style: TextStyle(
+                                                            fontSize: 16.0),
                                                       ),
                                                     ],
                                                   ),
@@ -668,35 +736,48 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     children: <Widget>[
                                                       Radio<int>(
                                                         value: 2,
-                                                        groupValue: _nameDisplayPreference,
-                                                        onChanged: _handleRadioValueChange0,
+                                                        groupValue:
+                                                            _nameDisplayPreference,
+                                                        onChanged:
+                                                            _handleRadioValueChange0,
                                                       ),
                                                       const Text(
                                                         'Use mortal name',
-                                                        style: TextStyle(fontSize: 16.0),
+                                                        style: TextStyle(
+                                                            fontSize: 16.0),
                                                       ),
                                                     ],
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            const FancyDivider(key: Key('11203961'), innerColor: Colors.white, topMargin: 45.0, bottomMargin: 5.0),
+                                            const FancyDivider(
+                                                key: Key('11203961'),
+                                                innerColor: Colors.white,
+                                                topMargin: 45.0,
+                                                bottomMargin: 5.0),
                                             Container(
                                               height: 220,
                                               color: Colors.white,
-                                              padding: const EdgeInsets.all(10.0),
-                                              margin: const EdgeInsets.only(top: 20, bottom: 30),
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              margin: const EdgeInsets.only(
+                                                  top: 20, bottom: 30),
                                               child: _newPhoto.isEmpty
                                                   ? Image.asset(
                                                       'images/icons/create_profile_photo.png',
                                                     )
                                                   : Padding(
-                                                      padding: const EdgeInsets.only(left: 0, right: 0),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 0,
+                                                              right: 0),
                                                       child: AspectRatio(
                                                         aspectRatio: 1.0,
                                                         child: ProfilePhoto(
-                                                          profilePhotoUrl: _newPhoto,
-                                                          //photoHeight: 200.0,
+                                                          profilePhotoUrl:
+                                                              _newPhoto,
+                                                          photoHeight: 200.0,
                                                           //leftPadding: 0.0,
                                                         ),
 
@@ -719,45 +800,73 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               G0<AppModel>().connectionStatus,
                                               ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
-                                                  padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8,
+                                                          bottom: 8,
+                                                          left: 20,
+                                                          right: 20),
                                                 ),
                                                 onPressed: () {
-                                                  if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
+                                                  if (Connection2
+                                                      .checkForConnection(G0<
+                                                              AppModel>()
+                                                          .connectionStatus)) {
                                                     Navigator.push(
                                                       context,
                                                       MaterialPageRoute<String>(
-                                                        builder: (BuildContext context) => ChooseProfileImage(
-                                                          isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
-                                                          fileNamePrefix: _photoPrefix,
-                                                          currentProfileImage: _hasher.photo ?? _newPhoto,
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            ChooseProfileImage(
+                                                          isForThisDevice: widget
+                                                                  .pageType ==
+                                                              EnumMyProfilePageType
+                                                                  .myProfile,
+                                                          fileNamePrefix:
+                                                              _photoPrefix,
+                                                          currentProfileImage:
+                                                              _hasher.photo ??
+                                                                  _newPhoto,
                                                         ),
                                                       ),
                                                     ).then<void>((result) {
-                                                      if ((result != null) && (result.isNotEmpty)) {
+                                                      if ((result != null) &&
+                                                          (result.isNotEmpty)) {
                                                         _newPhoto = result;
                                                         _checkDirty();
                                                       }
                                                     });
                                                   }
                                                 },
-                                                child: Text('Update Profile Image', style: ts_button),
+                                                child: Text(
+                                                    'Update Profile Image',
+                                                    style: ts_button),
                                               ),
                                             ),
                                             const SizedBox(height: 15),
-                                            (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_distancePref == 0)
+                                            (widget.uiElementsToDisplay &
+                                                        HasherProfilePage
+                                                            .flagUiElement_distancePref ==
+                                                    0)
                                                 ? Container()
                                                 : Column(
                                                     children: <Widget>[
                                                       const FancyDivider(
                                                         key: Key('422030201'),
-                                                        innerColor: Colors.white,
+                                                        innerColor:
+                                                            Colors.white,
                                                         topMargin: 30.0,
                                                         bottomMargin: 20.0,
                                                       ),
                                                       Container(
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.yellow[100],
-                                                          borderRadius: BorderRadius.circular(5.0),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors
+                                                              .yellow[100],
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      5.0),
                                                         ),
                                                         child: Column(
                                                           children: <Widget>[
@@ -767,7 +876,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             ),
                                                             Text(
                                                               'Distance Preference',
-                                                              style: ts_headingBlack,
+                                                              style:
+                                                                  ts_headingBlack,
                                                             ),
                                                             const SizedBox(
                                                               height: 10,
@@ -777,12 +887,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               children: <Widget>[
                                                                 Radio<int>(
                                                                   value: 0,
-                                                                  groupValue: _distancePreference,
-                                                                  onChanged: _handleRadioValueChange1,
+                                                                  groupValue:
+                                                                      _distancePreference,
+                                                                  onChanged:
+                                                                      _handleRadioValueChange1,
                                                                 ),
                                                                 const Text(
                                                                   'Auto',
-                                                                  style: TextStyle(fontSize: 16.0),
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          16.0),
                                                                 ),
                                                               ],
                                                             ),
@@ -790,12 +904,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               children: <Widget>[
                                                                 Radio<int>(
                                                                   value: 2,
-                                                                  groupValue: _distancePreference,
-                                                                  onChanged: _handleRadioValueChange1,
+                                                                  groupValue:
+                                                                      _distancePreference,
+                                                                  onChanged:
+                                                                      _handleRadioValueChange1,
                                                                 ),
                                                                 const Text(
                                                                   'Kilometers',
-                                                                  style: TextStyle(fontSize: 16.0),
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          16.0),
                                                                 ),
                                                               ],
                                                             ),
@@ -803,12 +921,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               children: <Widget>[
                                                                 Radio<int>(
                                                                   value: 3,
-                                                                  groupValue: _distancePreference,
-                                                                  onChanged: _handleRadioValueChange1,
+                                                                  groupValue:
+                                                                      _distancePreference,
+                                                                  onChanged:
+                                                                      _handleRadioValueChange1,
                                                                 ),
                                                                 const Text(
                                                                   'Miles',
-                                                                  style: TextStyle(fontSize: 16.0),
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          16.0),
                                                                 ),
                                                               ],
                                                             ),
@@ -817,21 +939,31 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                     ],
                                                   ),
-                                            (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_autoDisplayRunsDistance == 0)
+                                            (widget.uiElementsToDisplay &
+                                                        HasherProfilePage
+                                                            .flagUiElement_autoDisplayRunsDistance ==
+                                                    0)
                                                 ? Container()
                                                 : Column(
                                                     children: <Widget>[
                                                       const FancyDivider(
                                                         key: Key('51344451'),
-                                                        innerColor: Colors.white,
+                                                        innerColor:
+                                                            Colors.white,
                                                         topMargin: 45.0,
                                                         bottomMargin: 20.0,
                                                       ),
-                                                      if (G0<AppModel>().hasLocationPermissions)
+                                                      if (G0<AppModel>()
+                                                          .hasLocationPermissions)
                                                         Container(
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.yellow[100],
-                                                            borderRadius: BorderRadius.circular(5.0),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors
+                                                                .yellow[100],
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5.0),
                                                           ),
                                                           child: Column(
                                                             children: <Widget>[
@@ -843,19 +975,26 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 0,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   const Text(
                                                                     'Do not auto show runs',
-                                                                    style: TextStyle(fontSize: 16.0),
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Text(
                                                                 'Or...\r\n...Automatically Show\r\nAll Runs Within...',
-                                                                textAlign: TextAlign.center,
-                                                                style: ts_headingBlack,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style:
+                                                                    ts_headingBlack,
                                                               ),
                                                               const SizedBox(
                                                                 height: 10,
@@ -864,137 +1003,202 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_10,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_10,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '10 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_25,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_25,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '25 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_50,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_50,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '50 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_75,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_75,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '75 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_100,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_100,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '100 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_150,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_150,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '150 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_250,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_250,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '250 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: hasherPref_500,
-                                                                    groupValue: _autoRunPreference,
-                                                                    onChanged: _handleRadioValueChange2,
+                                                                    value:
+                                                                        hasherPref_500,
+                                                                    groupValue:
+                                                                        _autoRunPreference,
+                                                                    onChanged:
+                                                                        _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
                                                                     '500 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                             ],
                                                           ),
                                                         ),
-                                                      if (!G0<AppModel>().hasLocationPermissions) ...<Widget>[
+                                                      if (!G0<AppModel>()
+                                                          .hasLocationPermissions) ...<Widget>[
                                                         Padding(
-                                                          padding: const EdgeInsets.all(8.0),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
                                                           child: Text(
                                                             'Distance to Runs',
-                                                            style: ts_headingLarge,
-                                                            textAlign: TextAlign.center,
+                                                            style:
+                                                                ts_headingLarge,
+                                                            textAlign: TextAlign
+                                                                .center,
                                                           ),
                                                         ),
                                                         Padding(
-                                                          padding: const EdgeInsets.all(8.0),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
                                                           child: Text(
                                                             'Harrier Central can help you find runs that are nearby. In order to do this, the app needs to have access to the phone\'s current location, but currently location is disabled for this app.\r\n\r\nTo start using the distance features of Harrier Central please press the "Use Location" button below and follow the prompts.',
                                                             style: ts_body,
-                                                            textAlign: TextAlign.center,
+                                                            textAlign: TextAlign
+                                                                .center,
                                                           ),
                                                         ),
                                                         Padding(
-                                                          padding: const EdgeInsets.only(top: 22.0, bottom: 0.0),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 22.0,
+                                                                  bottom: 0.0),
                                                           child: ElevatedButton(
-                                                            style: ElevatedButton.styleFrom(
-                                                              padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      top: 8,
+                                                                      bottom: 8,
+                                                                      left: 20,
+                                                                      right:
+                                                                          20),
                                                             ),
-                                                            onPressed: () async {
+                                                            onPressed:
+                                                                () async {
                                                               await _enableLocationServices();
                                                             },
-                                                            child: Text('Use Location', style: ts_button),
+                                                            child: Text(
+                                                                'Use Location',
+                                                                style:
+                                                                    ts_button),
                                                           ),
                                                         ),
                                                       ],
@@ -1008,7 +1212,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ),
                                       ),
                                     ),
-                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel == 0)
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_followKennel ==
+                                            0)
                                         ? Container()
                                         : Column(
                                             children: <Widget>[
@@ -1018,24 +1225,33 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 bottomMargin: 20.0,
                                               ),
                                               Container(
-                                                padding: const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(bottom: 45),
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 45),
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
-                                                  borderRadius: BorderRadius.circular(5.0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
                                                 ),
                                                 child: Row(
                                                   children: <Widget>[
                                                     Container(
-                                                      margin: const EdgeInsets.only(right: 10),
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              right: 10),
                                                       height: 25,
                                                       width: 25,
                                                       color: Colors.yellow[100],
                                                       child: Checkbox(
-                                                        value: _addAsKennelFollower,
-                                                        onChanged: (bool? value) {
+                                                        value:
+                                                            _addAsKennelFollower,
+                                                        onChanged:
+                                                            (bool? value) {
                                                           setState(() {
-                                                            _addAsKennelFollower = value ?? false;
+                                                            _addAsKennelFollower =
+                                                                value ?? false;
                                                           });
                                                         },
                                                       ),
@@ -1043,17 +1259,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     const Text(
                                                       'Follow this Kennel',
                                                       //style: headingStyle,
-                                                      textAlign: TextAlign.center,
+                                                      textAlign:
+                                                          TextAlign.center,
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_previousRunCount == 0)
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_previousRunCount ==
+                                            0)
                                         ? Container()
                                         : Column(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
                                             children: <Widget>[
                                               const FancyDivider(
                                                 key: Key('612233999'),
@@ -1071,26 +1292,39 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 textAlign: TextAlign.center,
                                               ),
                                               Container(
-                                                padding: const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(top: 20, bottom: 40),
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(
+                                                    top: 20, bottom: 40),
                                                 // width: 100,
                                                 // height: 50,
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
-                                                  borderRadius: BorderRadius.circular(5.0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
                                                 ),
                                                 child: Form(
                                                   key: _runCountFormKey,
-                                                  autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+                                                  autovalidateMode:
+                                                      _autoValidate
+                                                          ? AutovalidateMode
+                                                              .always
+                                                          : AutovalidateMode
+                                                              .disabled,
                                                   child: runCountUi(),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_getInviteCodeButton == 0)
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_getInviteCodeButton ==
+                                            0)
                                         ? Container()
                                         : Column(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
                                             children: <Widget>[
                                               const FancyDivider(
                                                 key: Key('4542543'),
@@ -1099,31 +1333,62 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 topMargin: 10.0,
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.only(top: 15, bottom: 40),
+                                                padding: const EdgeInsets.only(
+                                                    top: 15, bottom: 40),
                                                 child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceAround,
                                                   children: <Widget>[
-                                                    Connection2.styleForConnected(
-                                                      G0<AppModel>().connectionStatus,
+                                                    Connection2
+                                                        .styleForConnected(
+                                                      G0<AppModel>()
+                                                          .connectionStatus,
                                                       ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 8,
+                                                                  bottom: 8,
+                                                                  left: 20,
+                                                                  right: 20),
                                                         ),
                                                         onPressed: () async {
-                                                          final GetInviteCodeService svc = GetInviteCodeService();
-                                                          final SingleResultModel? result = await svc.getInviteCode(widget.hasherId);
+                                                          final GetInviteCodeService
+                                                              svc =
+                                                              GetInviteCodeService();
+                                                          final SingleResultModel?
+                                                              result = await svc
+                                                                  .getInviteCode(
+                                                                      widget
+                                                                          .hasherId);
 
-                                                          if ((result?.result ?? '').startsWith(QR_PREFIX_USER_RESET_CODE)) {
-                                                            final QrPopup pp = QrPopup(
-                                                              key: const Key('43930293'),
-                                                              dialogTitle: 'The invite code for ${_hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
-                                                              qrText: result.result!,
+                                                          if ((result?.result ??
+                                                                  '')
+                                                              .startsWith(
+                                                                  QR_PREFIX_USER_RESET_CODE)) {
+                                                            final QrPopup pp =
+                                                                QrPopup(
+                                                              key: const Key(
+                                                                  '43930293'),
+                                                              dialogTitle:
+                                                                  'The invite code for ${_hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
+                                                              qrText: result
+                                                                  .result!,
                                                             );
 
-                                                            await showDialog<void>(
-                                                                context: navigatorKey.currentContext!,
-                                                                barrierDismissible: false, // user must tap button!
-                                                                builder: (BuildContext context) {
+                                                            await showDialog<
+                                                                    void>(
+                                                                context:
+                                                                    navigatorKey
+                                                                        .currentContext!,
+                                                                barrierDismissible:
+                                                                    false, // user must tap button!
+                                                                builder:
+                                                                    (BuildContext
+                                                                        context) {
                                                                   return pp;
                                                                 });
                                                           } else {
@@ -1144,9 +1409,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    if (_externalMapProvider != null) ...<Widget>[
+                                    if (_externalMapProvider !=
+                                        null) ...<Widget>[
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
                                         children: <Widget>[
                                           const FancyDivider(
                                             key: Key('8552133039'),
@@ -1171,13 +1438,19 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 15.0),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 15.0),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
                                               children: <Widget>[
                                                 ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15.0),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 8.0,
+                                                        horizontal: 15.0),
                                                   ),
                                                   onPressed: () async {
                                                     await Utilities.showAlert(
@@ -1187,10 +1460,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       showCancelButton: false,
                                                     );
 
-                                                    await removePref(StringPrefsEnum.mapPreference);
+                                                    await removePref(
+                                                        StringPrefsEnum
+                                                            .mapPreference);
 
                                                     setState(() {
-                                                      _externalMapProvider = null;
+                                                      _externalMapProvider =
+                                                          null;
                                                     });
                                                   },
                                                   child: Text(
@@ -1204,9 +1480,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ],
                                       ),
                                     ],
-                                    if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_logOutAndRefreshButton != 0) ...<Widget>[
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_logOutAndRefreshButton !=
+                                        0) ...<Widget>[
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
                                         children: <Widget>[
                                           const FancyDivider(
                                             key: Key('8552133039'),
@@ -1231,43 +1511,38 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 15),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 15),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
                                               children: <Widget>[
                                                 Connection2.styleForConnected(
-                                                  G0<AppModel>().connectionStatus,
+                                                  G0<AppModel>()
+                                                      .connectionStatus,
                                                   ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
-                                                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20),
                                                     ),
                                                     onPressed: () async {
                                                       await Utilities.showAlert(
                                                               'Reload Data',
                                                               'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
                                                               'Reload data',
-                                                              showCancelButton: true,
-                                                              cancelButtonText: 'Cancel')
-                                                          .then((bool? result) async {
+                                                              showCancelButton:
+                                                                  true,
+                                                              cancelButtonText:
+                                                                  'Cancel')
+                                                          .then((bool?
+                                                              result) async {
                                                         if (result ?? false) {
-                                                          final String userId = getStringPref(StringPrefsEnum.userId)!;
-                                                          final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
-                                                          final String facebookAccessToken = getStringPref(StringPrefsEnum.facebookAccessToken) ?? '';
-                                                          final String facebookId = getStringPref(StringPrefsEnum.facebookId) ?? '';
-
-                                                          await clearPrefs();
-
-                                                          await setStringPref(StringPrefsEnum.userId, userId);
-                                                          await setStringPref(StringPrefsEnum.resetCode, resetCode);
-                                                          await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-                                                          await setStringPref(StringPrefsEnum.facebookId, facebookId);
-                                                          await setIntPref(IntPrefsEnum.isResettingCache, 1);
-
-                                                          await DBProvider.deleteDb(DB_NAME);
-
-                                                          await G0.reset();
-
-                                                          Phoenix.rebirth(navigatorKey.currentContext!);
+                                                          await _reloadData();
                                                         }
                                                       });
                                                     },
@@ -1280,50 +1555,96 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ],
                                             ),
                                           ),
-                                          if (Utilities.isOpeeOrTuna()) ...<Widget>[
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 15, bottom: 40),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                children: <Widget>[
-                                                  Connection2.styleForConnected(
-                                                    G0<AppModel>().connectionStatus,
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                                      ),
-                                                      onPressed: () async {
-                                                        bool? result = await Utilities.showAlert(
-                                                            'Log out?',
-                                                            'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                                            'Log out',
-                                                            showCancelButton: true,
-                                                            cancelButtonText: 'Stay logged in');
-
-                                                        if (result ?? false) {
-                                                          await clearPrefs();
-                                                          await DBProvider.deleteDb(DB_NAME);
-                                                          await G0.reset();
-
-                                                          Phoenix.rebirth(navigatorKey.currentContext!);
-                                                        }
-                                                      },
-                                                      child: Text(
-                                                        'Log out',
-                                                        style: ts_button,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ]
                                         ],
                                       ),
                                     ],
-                                    if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_refresh3rdPartyLogin != 0) ...<Widget>[
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: <Widget>[
+                                        const FancyDivider(
+                                          key: Key('655522013'),
+                                          innerColor: Colors.white,
+                                          topMargin: 30.0,
+                                          bottomMargin: 20.0,
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'Log out of Harrier Central',
+                                            style: ts_heading,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
+                                            style: ts_body,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 15, bottom: 15),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: <Widget>[
+                                              Connection2.styleForConnected(
+                                                G0<AppModel>().connectionStatus,
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 8,
+                                                            bottom: 8,
+                                                            left: 20,
+                                                            right: 20),
+                                                  ),
+                                                  onPressed: () async {
+                                                    await IveCoreUtilities.showAlert(
+                                                            context,
+                                                            'Log out?',
+                                                            'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                            'Log out',
+                                                            showCancelButton:
+                                                                true,
+                                                            cancelButtonText:
+                                                                'Stay logged in')
+                                                        .then((bool?
+                                                            result) async {
+                                                      if (result ?? false) {
+                                                        await clearPrefs();
+                                                        await DBProvider
+                                                            .deleteDb(DB_NAME);
+
+                                                        await G0.reset();
+                                                        Phoenix.rebirth(
+                                                            navigatorKey
+                                                                .currentContext!);
+                                                      }
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    'Log out of Harrier Central',
+                                                    style: ts_button,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_refresh3rdPartyLogin !=
+                                        0) ...<Widget>[
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
                                         children: <Widget>[
                                           const FancyDivider(
                                             key: Key('655522013'),
@@ -1348,20 +1669,35 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                            padding: const EdgeInsets.only(
+                                                top: 15, bottom: 15),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
                                               children: <Widget>[
                                                 Connection2.styleForConnected(
-                                                  G0<AppModel>().connectionStatus,
+                                                  G0<AppModel>()
+                                                      .connectionStatus,
                                                   ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
-                                                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20),
                                                     ),
                                                     onPressed: () async {
-                                                      await Navigator.push<dynamic>(
+                                                      await Navigator.push<
+                                                          dynamic>(
                                                         context,
-                                                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => const ThirdPartyLogin(false)),
+                                                        MaterialPageRoute<
+                                                                dynamic>(
+                                                            builder: (BuildContext
+                                                                    context) =>
+                                                                const ThirdPartyLogin(
+                                                                    false)),
                                                       );
                                                     },
                                                     child: Text(
@@ -1376,9 +1712,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ],
                                       ),
                                     ],
-                                    if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_gdprDeleteAccount != 0) ...<Widget>[
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_gdprDeleteAccount !=
+                                        0) ...<Widget>[
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
                                         children: <Widget>[
                                           const FancyDivider(
                                             key: Key('655522013'),
@@ -1403,43 +1743,77 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                            padding: const EdgeInsets.only(
+                                                top: 15, bottom: 15),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
                                               children: <Widget>[
                                                 Connection2.styleForConnected(
-                                                  G0<AppModel>().connectionStatus,
+                                                  G0<AppModel>()
+                                                      .connectionStatus,
                                                   ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
-                                                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20),
                                                     ),
                                                     onPressed: () async {
-                                                      bool? result = await Utilities.showAlert(
-                                                          'Delete Account',
-                                                          'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
-                                                          'Delete Account',
-                                                          showCancelButton: true,
-                                                          cancelButtonText: 'Keep Account');
+                                                      bool? result =
+                                                          await Utilities.showAlert(
+                                                              'Delete Account',
+                                                              'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
+                                                              'Delete Account',
+                                                              showCancelButton:
+                                                                  true,
+                                                              cancelButtonText:
+                                                                  'Keep Account');
 
                                                       if (result ?? false) {
-                                                        await Future<void>.delayed(const Duration(milliseconds: 1500));
+                                                        await Future<
+                                                                void>.delayed(
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    1500));
 
-                                                        bool? result2 = await Utilities.showAlert('Delete Account',
-                                                            'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?', 'Delete Account',
-                                                            showCancelButton: true, cancelButtonText: 'Keep Account');
+                                                        bool? result2 = await Utilities.showAlert(
+                                                            'Delete Account',
+                                                            'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?',
+                                                            'Delete Account',
+                                                            showCancelButton:
+                                                                true,
+                                                            cancelButtonText:
+                                                                'Keep Account');
 
                                                         if (result2 ?? false) {
-                                                          final GdprDeleteService svc = GdprDeleteService();
-                                                          final SingleResultModel? result = await svc.gdprDelete();
+                                                          // String? tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+                                                          // if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
+                                                          //   await FacebookAuth.instance.logOut();
+                                                          // }
 
-                                                          if ((result?.result ?? '') == 'success') {
-                                                            await Utilities.showAlert(
+                                                          final GdprDeleteService
+                                                              svc =
+                                                              GdprDeleteService();
+                                                          final SingleResultModel?
+                                                              result = await svc
+                                                                  .gdprDelete();
+
+                                                          if ((result?.result ??
+                                                                  '') ==
+                                                              'success') {
+                                                            await Utilities
+                                                                .showAlert(
                                                               'Successful',
                                                               'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
                                                               'OK',
                                                             );
                                                           } else {
-                                                            await Utilities.showAlert(
+                                                            await Utilities
+                                                                .showAlert(
                                                               'Contact us',
                                                               'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
                                                               'OK',
@@ -1447,10 +1821,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           }
 
                                                           await clearPrefs();
-                                                          await DBProvider.deleteDb(DB_NAME);
+                                                          await DBProvider
+                                                              .deleteDb(
+                                                                  DB_NAME);
                                                           await G0.reset();
 
-                                                          Phoenix.rebirth(navigatorKey.currentContext!);
+                                                          await G0.reset();
+                                                          Phoenix.rebirth(
+                                                              navigatorKey
+                                                                  .currentContext!);
                                                         }
                                                       }
                                                     },
@@ -1481,7 +1860,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         Positioned(
             bottom: 0,
             child: Container(
-                padding: const EdgeInsets.only(top: 10, right: 20, bottom: 10, left: 20),
+                padding: const EdgeInsets.only(
+                    top: 10, right: 20, bottom: 10, left: 20),
                 height: 60,
                 width: MediaQuery.of(context).size.width,
                 color: Colors.yellow[100],
@@ -1492,15 +1872,23 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                       backgroundColor: _isDirty ? hc_red : Colors.grey,
                     ),
                     onPressed: () {
-                      if (Connection2.checkForConnection(G0<AppModel>().connectionStatus) && _isDirty) {
+                      if (Connection2.checkForConnection(
+                              G0<AppModel>().connectionStatus) &&
+                          _isDirty) {
                         _updateProfile();
                       }
                     },
-                    child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: ts_button),
+                    child: Text(
+                        widget.pageType ==
+                                EnumMyProfilePageType.newHasherProfile
+                            ? 'Add Hasher'
+                            : 'Save Changes',
+                        style: ts_button),
                   ),
                 ))),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -1509,6 +1897,60 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         ),
       ],
     );
+  }
+
+  Future<void> _reloadData() async {
+    final String? userId = getStringPref(StringPrefsEnum.userId);
+    final String? resetCode = getStringPref(StringPrefsEnum.resetCode);
+
+    final String? thirdPartyAccessToken =
+        getStringPref(StringPrefsEnum.thirdPartyAccessToken);
+    final String? thirdPartyAuthorizationCode =
+        getStringPref(StringPrefsEnum.thirdPartyAuthorizationCode);
+    final String? thirdPartyEmail =
+        getStringPref(StringPrefsEnum.thirdPartyEmail);
+    final String? thirdPartyForceTokenRefresh =
+        getStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh);
+    final String? thirdPartyLoginEmail =
+        getStringPref(StringPrefsEnum.thirdPartyLoginEmail);
+    final String? thirdPartyLoginType =
+        getStringPref(StringPrefsEnum.thirdPartyLoginType);
+    final String? thirdPartyUserId =
+        getStringPref(StringPrefsEnum.thirdPartyUserId);
+
+    final DateTime? thirdPartyTokenLastUpdated =
+        getDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated);
+    final DateTime? thirdPartyTokenExpires =
+        getDatePref(DatePrefsEnum.thirdPartyTokenExpires);
+
+    await clearPrefs();
+
+    await setStringPref(StringPrefsEnum.userId, userId);
+    await setStringPref(StringPrefsEnum.resetCode, resetCode);
+
+    await setStringPref(
+        StringPrefsEnum.thirdPartyAccessToken, thirdPartyAccessToken);
+    await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
+        thirdPartyAuthorizationCode);
+    await setStringPref(StringPrefsEnum.thirdPartyEmail, thirdPartyEmail);
+    await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh,
+        thirdPartyForceTokenRefresh);
+    await setStringPref(
+        StringPrefsEnum.thirdPartyLoginEmail, thirdPartyLoginEmail);
+    await setStringPref(
+        StringPrefsEnum.thirdPartyLoginType, thirdPartyLoginType);
+    await setStringPref(StringPrefsEnum.thirdPartyUserId, thirdPartyUserId);
+
+    await setDatePref(
+        DatePrefsEnum.thirdPartyTokenExpires, thirdPartyTokenExpires);
+
+    await setDatePref(
+        DatePrefsEnum.thirdPartyTokenLastUpdated, thirdPartyTokenLastUpdated);
+
+    await DBProvider.deleteDb(DB_NAME);
+
+    await G0.reset();
+    Phoenix.rebirth(navigatorKey.currentContext!);
   }
 
   Future<void> _enableLocationServices() async {
@@ -1527,7 +1969,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         if (openSettings ?? false) {
           await openAppSettings();
 
-          success = await Utilities.showAlert('Success?', 'Were you able to change the settings to enable location services?', 'Yes', showCancelButton: true, cancelButtonText: 'No') ?? false;
+          success = await Utilities.showAlert(
+                  'Success?',
+                  'Were you able to change the settings to enable location services?',
+                  'Yes',
+                  showCancelButton: true,
+                  cancelButtonText: 'No') ??
+              false;
         }
       }
 
@@ -1554,7 +2002,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
     }
 
-    await Utilities.showAlert('Location preferences updated',
-        'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
+    await Utilities.showAlert(
+        'Location preferences updated',
+        'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
+        'OK');
   }
 }

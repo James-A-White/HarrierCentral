@@ -101,12 +101,8 @@ class SupportPageState extends State<SupportPage> {
                                 style: ts_titleVeryLarge),
                             const SizedBox(height: 15.0),
                             SizedBox(
-                              height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4)
-                                  ? MediaQuery.of(context).size.width * 0.8
-                                  : MediaQuery.of(context).size.height * 0.4,
-                              width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4)
-                                  ? MediaQuery.of(context).size.width * 0.8
-                                  : MediaQuery.of(context).size.height * 0.4,
+                              height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                              width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
                               child: Stack(
                                 alignment: AlignmentDirectional.center,
                                 children: <Widget>[
@@ -222,8 +218,7 @@ class SupportPageState extends State<SupportPage> {
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                                                   if (!mounted) return;
-                                                  final Map<String, String> result =
-                                                      await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;
@@ -233,8 +228,7 @@ class SupportPageState extends State<SupportPage> {
                                                     _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
                                                     _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await Utilities.showAlert('App Reset Successful',
-                                                        'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                    await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
                                               }
@@ -274,8 +268,7 @@ class SupportPageState extends State<SupportPage> {
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                                                   if (!mounted) return;
-                                                  final Map<String, String> result =
-                                                      await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;
@@ -285,8 +278,7 @@ class SupportPageState extends State<SupportPage> {
                                                     _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
                                                     _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await Utilities.showAlert('App Reset Successful',
-                                                        'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                    await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                   }
                                                 }
                                               }

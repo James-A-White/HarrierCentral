@@ -30,7 +30,8 @@ class AuthorizeDeviceService {
       'hcVersion': getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no HC version>',
       'scanText': scanText,
       'deviceId': deviceId,
-      'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString()
+      'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
+      'isLoggingOutOfFacebook': (getIntPref(IntPrefsEnum.isLoggingOutOfFacebook) ?? 0).toString(),
     });
 
     Map<String, String> resultMap = <String, String>{};
@@ -49,7 +50,7 @@ class AuthorizeDeviceService {
           await setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
           await setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
           await setStringPref(StringPrefsEnum.email, result[0]['email']);
-          await setStringPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
+          //await setStringPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
           await setStringPref(StringPrefsEnum.firstName, result[0]['firstName']);
           await setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
           await setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
@@ -62,6 +63,14 @@ class AuthorizeDeviceService {
           await setIntPref(IntPrefsEnum.isBetaTester, result[0]['isBetaTester']);
           final int preferences = result[0]['preferences'] ?? 0;
           await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
+
+          await setStringPref(StringPrefsEnum.thirdPartyAccessToken, result[0]['thirdPartyAccessToken']);
+          await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, result[0]['thirdPartyAuthorizationCode']);
+          await setStringPref(StringPrefsEnum.thirdPartyEmail, result[0]['thirdPartyEmail']);
+          await setStringPref(StringPrefsEnum.thirdPartyLoginEmail, result[0]['thirdPartyEmail']);
+          await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, result[0]['thirdPartyForceTokenRefresh']);
+          await setStringPref(StringPrefsEnum.thirdPartyLoginType, result[0]['thirdPartyLoginType']);
+          await setStringPref(StringPrefsEnum.thirdPartyUserId, result[0]['thirdPartyUserId']);
 
           resultMap = <String, String>{'result': 'success', 'message': 'Successfully loaded profile'};
         }

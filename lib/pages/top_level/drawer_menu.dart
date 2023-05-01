@@ -43,7 +43,10 @@ class DrawerMenuState extends State<DrawerMenu> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Image.asset('images/other/drawer_image.jpg', fit: BoxFit.fill, height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+                  Image.asset('images/other/drawer_image.jpg',
+                      fit: BoxFit.fill,
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width),
                 ],
               ),
             ),
@@ -81,7 +84,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                     Navigator.push<void>(
                       context,
                       MaterialPageRoute<void>(
-                        builder: (BuildContext context) => const GenericWidgetPage(
+                        builder: (BuildContext context) =>
+                            const GenericWidgetPage(
                           key: Key('52233311'),
                           widget: Column(
                             children: <Widget>[
@@ -136,16 +140,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                               dataContext: EnumDataContext.user,
                               pageType: EnumMyProfilePageType.myProfile,
                               hasherId: _userId,
-                              uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref |
-                                  HasherProfilePage.flagUiElement_autoDisplayRunsDistance |
-                                  HasherProfilePage.flagUiElement_logOutAndRefreshButton |
-                                  HasherProfilePage.flagUiElement_refresh3rdPartyLogin |
-                                  HasherProfilePage.flagUiElement_gdprDeleteAccount);
+                              uiElementsToDisplay: HasherProfilePage
+                                      .flagUiElement_distancePref |
+                                  HasherProfilePage
+                                      .flagUiElement_autoDisplayRunsDistance |
+                                  HasherProfilePage
+                                      .flagUiElement_logOutAndRefreshButton |
+                                  HasherProfilePage
+                                      .flagUiElement_refresh3rdPartyLogin |
+                                  HasherProfilePage
+                                      .flagUiElement_gdprDeleteAccount);
                         },
                       ),
                     );
                     if (futureRunsListPageKey.currentState != null) {
-                      await futureRunsListPageKey.currentState!.forceRefreshFromTableExternal();
+                      await futureRunsListPageKey.currentState!
+                          .forceRefreshFromTableExternal();
                     }
                   },
                 ),
@@ -174,7 +184,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                 //   },
                 // ),
                 ListTile(
-                  leading: const Icon(FontAwesome.question_circle, color: textColor),
+                  leading:
+                      const Icon(FontAwesome.question_circle, color: textColor),
                   title: Text('FAQs', style: _style),
                   onTap: () {
                     Navigator.pop(context);
@@ -246,7 +257,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                 ),
 
                 ListTile(
-                  leading: const Icon(MaterialCommunityIcons.shield_lock, color: textColor),
+                  leading: const Icon(MaterialCommunityIcons.shield_lock,
+                      color: textColor),
                   title: Text('Privacy Policy', style: _style),
                   onTap: () {
                     Navigator.pop(context);

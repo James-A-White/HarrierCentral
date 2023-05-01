@@ -159,8 +159,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                   Text('\r\n3. App usage for Hashers', style: sectionStyle),
                   Text('\r\n3.1. What can I get for free?', style: headingStyle),
                   Linkify(
-                    text:
-                        'Visit:\r\n\r\nhttps://www.harriercentral.com/index.php/pricing/\r\n\r\nfor the full list of features, including searching for run information and keeping track of your run counts at Kennels around the world',
+                    text: 'Visit:\r\n\r\nhttps://www.harriercentral.com/index.php/pricing/\r\n\r\nfor the full list of features, including searching for run information and keeping track of your run counts at Kennels around the world',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                     linkStyle: ts_bodyPink,

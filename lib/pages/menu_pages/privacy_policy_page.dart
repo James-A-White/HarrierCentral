@@ -70,8 +70,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                     ),
                     Container(
                       margin: const EdgeInsets.all(30),
-                      child: Text('The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
-                          textAlign: TextAlign.center, style: ts_medium),
+                      child: Text('The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com', textAlign: TextAlign.center, style: ts_medium),
                     ),
                   ],
                 ),

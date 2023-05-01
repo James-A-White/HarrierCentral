@@ -178,8 +178,8 @@
 //   //     builder: (BuildContext context) {
 //   //       return AlertDialog(
 //   //         title: const Text('About your QR Scanner',
-          //   style: ts_alertDialogTitle,
-          // ),
+//   style: ts_alertDialogTitle,
+// ),
 //   //         content: SingleChildScrollView(
 //   //           child: ListBody(
 //   //             children: const <Widget>[
@@ -240,8 +240,8 @@
 //       builder: (BuildContext context) {
 //         return AlertDialog(
 //           title: const Text('App QR Codes',
-          //   style: ts_alertDialogTitle,
-          // ),
+//   style: ts_alertDialogTitle,
+// ),
 //           content: SingleChildScrollView(
 //             child: ListBody(
 //               children: const <Widget>[
@@ -363,8 +363,8 @@
 //       builder: (BuildContext context) {
 //         return AlertDialog(
 //           title: const Text('App QR Codes',
-          //   style: ts_alertDialogTitle,
-          // ),
+//   style: ts_alertDialogTitle,
+// ),
 //           content: SingleChildScrollView(
 //             child: ListBody(
 //               children: const <Widget>[

@@ -147,9 +147,7 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                       Text('\r\nTechnical data:', style: ts_headingLarge),
                     ],
                   ),
-                  Text(
-                      'The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.',
-                      style: ts_regular),
+                  Text('The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.', style: ts_regular),
                   const SizedBox(width: 40, height: 40),
                 ],
               ),

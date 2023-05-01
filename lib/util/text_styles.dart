@@ -7,7 +7,8 @@ OutlinedBorder button_shape = RoundedRectangleBorder(
   borderRadius: BorderRadius.circular(10), // Set the radius here
 );
 
-WidgetStatePropertyAll<OutlinedBorder?> button_shape_property = WidgetStatePropertyAll(
+WidgetStatePropertyAll<OutlinedBorder?> button_shape_property =
+    WidgetStatePropertyAll(
   RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(10), // Set the radius here
   ),

@@ -937,9 +937,7 @@ class RunDetails extends StatelessWidget {
           type: ContextMenuButtonType.custom,
           onPressed: () {
             String s = '';
-
             s = '$lat, $lon';
-
             Clipboard.setData(ClipboardData(text: s));
             ContextMenuController.removeAny();
           },
