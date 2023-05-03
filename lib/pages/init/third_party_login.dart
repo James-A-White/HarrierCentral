@@ -274,7 +274,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       shape: BoxShape.rectangle,
                       borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       image: DecorationImage(
-                        fit: BoxFit.fill,
+                        //fit: BoxFit.fitWidth,
                         image: NetworkImage(
                           profileData.photoUrl,
                         ),

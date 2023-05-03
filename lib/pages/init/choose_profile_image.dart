@@ -556,8 +556,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 50);
 
-      final File file = File.fromRawPath(await croppedFile.readAsBytes());
-      _imageFromGallery = Future<File>.value(file);
+      final File file = File(croppedFile.path);
+
+      _imageFromFacebook = Future<File>.value(file);
 
       await _imageFromFacebook;
       setState(() {});
