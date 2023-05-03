@@ -213,8 +213,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         ),
                         const SizedBox(width: 15.0),
                         TextButton(
-                            style: text_button_style.copyWith(
-                                padding: const WidgetStatePropertyAll(EdgeInsets.all(8.0)), minimumSize: const WidgetStatePropertyAll(Size.zero), alignment: Alignment.center),
+                            style: text_button_style.copyWith(padding: const WidgetStatePropertyAll(EdgeInsets.all(8.0)), minimumSize: const WidgetStatePropertyAll(Size.zero), alignment: Alignment.center),
                             onPressed: () async {
                               setState(() {
                                 _showQrScanner = !_showQrScanner;
@@ -394,8 +393,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
       });
 
       if (result['validScan'] == 'false') {
-        await Utilities.showAlert(
-            'Wrong QR Code', 'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
+        await Utilities.showAlert('Wrong QR Code', 'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
       } else {
         setState(() {
           _inviteCodeTextController.text = scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');

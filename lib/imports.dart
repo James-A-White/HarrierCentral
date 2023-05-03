@@ -32,7 +32,6 @@ export 'package:flutter/material.dart';
 export 'package:flutter/rendering.dart';
 export 'package:flutter/services.dart';
 export 'package:flutter_cache_manager/flutter_cache_manager.dart';
-export 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 export 'package:flutter/foundation.dart';
 export 'package:flutter_image_compress/flutter_image_compress.dart';
 export 'package:flutter_linkify/flutter_linkify.dart';

@@ -14,28 +14,39 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
+    print('>>> http post >>> $procName');
+
     Response response;
 
     if (client == null) {
-      response = await post(Uri.parse(BASE_API_URL + procName), headers: <String, String>{'content-type': 'application/json'}, body: requestBody).catchError(
+      response = await post(Uri.parse(BASE_API_URL + procName),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: requestBody)
+          .catchError(
         (dynamic error) {
           return Future<Response>.value(Response('', 500)); // CHECK
         },
       );
     } else {
-      response = await client.post(Uri.parse(BASE_API_URL + procName), headers: <String, String>{'content-type': 'application/json'}, body: requestBody).catchError(
+      response = await client
+          .post(Uri.parse(BASE_API_URL + procName),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: requestBody)
+          .catchError(
         (dynamic error) {
           return Future<Response>.value(Response('', 500)); // CHECK
         },
       );
     }
 
-    String returnValue = await checkHttpPostResponse(response, errorCallback: errorCallback);
+    String returnValue =
+        await checkHttpPostResponse(response, errorCallback: errorCallback);
 
     return returnValue;
   }
 
-  static Future<String> checkHttpPostResponse(Response response, {Function? errorCallback}) async {
+  static Future<String> checkHttpPostResponse(Response response,
+      {Function? errorCallback}) async {
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
     if ((response.statusCode < 200) || (response.statusCode >= 300)) {
@@ -54,7 +65,8 @@ class ServiceCommon {
       }
     } else if (response.body.contains('"errorId"')) {
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
-      final DbErrorModel errorResult = DbErrorModel.fromJson(json.decode(response.body));
+      final DbErrorModel errorResult =
+          DbErrorModel.fromJson(json.decode(response.body));
 
       if (errorCallback != null) {
         final bool errorCallbackResult = await errorCallback(errorResult);
@@ -67,7 +79,9 @@ class ServiceCommon {
             )) ??
             false; // CHECK
 
-        returnValue = alertResult ? ERROR_KEY_OK_BTN_PRESSED : ERROR_KEY_CANCEL_BTN_PRESSED;
+        returnValue = alertResult
+            ? ERROR_KEY_OK_BTN_PRESSED
+            : ERROR_KEY_CANCEL_BTN_PRESSED;
       }
     } else {
       returnValue = response.body;

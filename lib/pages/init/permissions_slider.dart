@@ -220,10 +220,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
   void _onSkipPress() {
     if (activeTab == 0) {
-      Utilities.showAlert(
-              'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow',
-              showCancelButton: true, cancelButtonText: 'Disallow')
-          .then((bool? allow) async {
+      Utilities.showAlert('Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool? allow) async {
         if (allow ?? false) {
           if (await Permission.locationWhenInUse.request().isGranted) {
             await Utilities.subscribeToGeoLocationStream();
@@ -236,9 +233,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      Utilities.showAlert('Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
-              showCancelButton: true, cancelButtonText: 'Disallow')
-          .then((bool? allow) async {
+      Utilities.showAlert('Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool? allow) async {
         if (allow ?? false) {
           if (await Permission.camera.request().isGranted) {
             if (await Permission.photos.request().isGranted) {
@@ -252,9 +247,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      Utilities.showAlert('Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
-              showCancelButton: true, cancelButtonText: 'Disallow')
-          .then((bool? allow) async {
+      Utilities.showAlert('Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool? allow) async {
         if (allow ?? false) {
           // final NotificationSupport notifications = NotificationSupport();
           // await notifications.configureNotifications(false);

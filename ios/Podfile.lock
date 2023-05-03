@@ -5,26 +5,13 @@ PODS:
     - Flutter
   - device_info_plus (0.0.1):
     - Flutter
-  - FBAEMKit (17.1.0):
-    - FBSDKCoreKit_Basics (= 17.1.0)
-  - FBSDKCoreKit (17.1.0):
-    - FBAEMKit (= 17.1.0)
-    - FBSDKCoreKit_Basics (= 17.1.0)
-  - FBSDKCoreKit_Basics (17.1.0)
-  - FBSDKLoginKit (17.1.0):
-    - FBSDKCoreKit (= 17.1.0)
   - Flutter (1.0.0)
-  - flutter_facebook_auth (7.1.1):
-    - FBSDKLoginKit (~> 17.1.0)
-    - Flutter
   - flutter_image_compress_common (1.0.0):
     - Flutter
     - Mantle
     - SDWebImage
     - SDWebImageWebPCoder
   - flutter_native_splash (2.4.3):
-    - Flutter
-  - flutter_secure_storage (6.0.0):
     - Flutter
   - flutter_statusbarcolor_ns (0.0.1):
     - Flutter
@@ -93,10 +80,8 @@ DEPENDENCIES:
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
-  - flutter_facebook_auth (from `.symlinks/plugins/flutter_facebook_auth/ios`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
-  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - flutter_statusbarcolor_ns (from `.symlinks/plugins/flutter_statusbarcolor_ns/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
@@ -116,10 +101,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - FBAEMKit
-    - FBSDKCoreKit
-    - FBSDKCoreKit_Basics
-    - FBSDKLoginKit
     - libwebp
     - Mantle
     - MTBBarcodeScanner
@@ -136,14 +117,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/device_info_plus/ios"
   Flutter:
     :path: Flutter
-  flutter_facebook_auth:
-    :path: ".symlinks/plugins/flutter_facebook_auth/ios"
   flutter_image_compress_common:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
-  flutter_secure_storage:
-    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   flutter_statusbarcolor_ns:
     :path: ".symlinks/plugins/flutter_statusbarcolor_ns/ios"
   geolocator_apple:
@@ -181,15 +158,9 @@ SPEC CHECKSUMS:
   audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
-  FBAEMKit: cb719c53575a3be86ea873279f30d6a2c4e15881
-  FBSDKCoreKit: ecdb980a24633ccb012700299ceb16d0235e14d2
-  FBSDKCoreKit_Basics: 045101c4a9ef10c845347424d73a29aae02c3e43
-  FBSDKLoginKit: 69eb59b2f839aba635616df6e422acd0ca88030a
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_facebook_auth: 8a9ad5fbfc25b77e7a53ea8986866950b27edcae
   flutter_image_compress_common: 1697a328fd72bfb335507c6bca1a65fa5ad87df1
   flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
-  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   flutter_statusbarcolor_ns: 28ea17050f37c962fe05a4722a6d43afc4fca76b
   geolocator_apple: 1560c3c875af2a412242c7a923e15d0d401966ff
   image_cropper: c4326ea50132b1e1564499e5d32a84f01fb03537

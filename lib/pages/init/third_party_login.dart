@@ -88,7 +88,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       children: <Widget>[
                         GestureDetector(
                           onTap: () {
-                            _facebookLogin();
+                            //_facebookLogin();
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(
@@ -210,76 +210,68 @@ class LoginPageState extends State<ThirdPartyLogin> {
     // after they have been validated with Apple (see `Integration` section for more information on how to do this)
   }
 
-  Future<void> _facebookLogin() async {
-    // by default the login method has the next permissions ['email','public_profile']
-    final LoginResult loginResult = await FacebookAuth.instance.login();
-    if (loginResult.status == LoginStatus.success) {
-      final AccessToken accessToken = loginResult.accessToken!;
+  // Future<void> _facebookLogin() async {
+  //   // by default the login method has the next permissions ['email','public_profile']
+  //   final LoginResult loginResult = await FacebookAuth.instance.login();
+  //   if (loginResult.status == LoginStatus.success) {
+  //     final AccessToken accessToken = loginResult.accessToken!;
 
-      // get the user data
-      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(
-          fields:
-              'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
+  //     // get the user data
+  //     final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
 
-      // await setStringPref(StringPrefsEnum.facebookId, userData['id']);
-      // await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.tokenString);
-      // await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
-      await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
-      await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
+  //     // await setStringPref(StringPrefsEnum.facebookId, userData['id']);
+  //     // await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.tokenString);
+  //     // await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
+  //     await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+  //     await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
 
-      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
-          ''); // facebook does not have an auth code
-      await setStringPref(
-          StringPrefsEnum.thirdPartyAccessToken, accessToken.tokenString);
-      await setStringPref(StringPrefsEnum.thirdPartyUserId, userData['id']);
-      await setStringPref(StringPrefsEnum.thirdPartyLoginType,
-          ThirdPartyLoginType.facebook.name);
-      await setStringPref(StringPrefsEnum.thirdPartyEmail,
-          (userData['email'] ?? '').toString());
+  //     await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, ''); // facebook does not have an auth code
+  //     await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.tokenString);
+  //     await setStringPref(StringPrefsEnum.thirdPartyUserId, userData['id']);
+  //     await setStringPref(StringPrefsEnum.thirdPartyLoginType, ThirdPartyLoginType.facebook.name);
+  //     await setStringPref(StringPrefsEnum.thirdPartyEmail, (userData['email'] ?? '').toString());
 
-      await setDatePref(
-          DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
-      // TODO: Fix this eventually (maybe?)
-      await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, DateTime(2030));
+  //     await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
+  //     // TODO: Fix this eventually (maybe?)
+  //     await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, DateTime(2030));
 
-      final ThirdPartyLoginData d = ThirdPartyLoginData(
-        ThirdPartyLoginType.facebook.name,
-        accessToken.tokenString,
-        userData['id'],
-        userData['first_name'],
-        userData['last_name'],
-        photoUrl: userData['picture']['data']['url'],
-        accessTokenExpires: DateTime(2030),
-        thirdPartyEmail: userData['email'],
-      );
+  //     final ThirdPartyLoginData d = ThirdPartyLoginData(
+  //       ThirdPartyLoginType.facebook.name,
+  //       accessToken.tokenString,
+  //       userData['id'],
+  //       userData['first_name'],
+  //       userData['last_name'],
+  //       photoUrl: userData['picture']['data']['url'],
+  //       accessTokenExpires: DateTime(2030),
+  //       thirdPartyEmail: userData['email'],
+  //     );
 
-      if (widget.isNewUser) {
-        _emailTextController.value =
-            TextEditingValue(text: (userData['email'] ?? '').toString());
-      }
+  //     if (widget.isNewUser) {
+  //       _emailTextController.value = TextEditingValue(text: (userData['email'] ?? '').toString());
+  //     }
 
-      _onLoginStatusChanged(true, loginData: d);
-    } else {
-      switch (loginResult.status) {
-        case LoginStatus.cancelled:
-          await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
-          _onLoginStatusChanged(false);
-          break;
-        case LoginStatus.failed:
-          //print('login failed');
-          _onLoginStatusChanged(false);
-          break;
-        case LoginStatus.operationInProgress:
-          //print('another operation is already in progress');
-          _onLoginStatusChanged(false);
-          break;
-        default:
-          //print('Unknown Facebook login error');
-          _onLoginStatusChanged(false);
-          break;
-      }
-    }
-  }
+  //     _onLoginStatusChanged(true, loginData: d);
+  //   } else {
+  //     switch (loginResult.status) {
+  //       case LoginStatus.cancelled:
+  //         await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
+  //         _onLoginStatusChanged(false);
+  //         break;
+  //       case LoginStatus.failed:
+  //         //print('login failed');
+  //         _onLoginStatusChanged(false);
+  //         break;
+  //       case LoginStatus.operationInProgress:
+  //         //print('another operation is already in progress');
+  //         _onLoginStatusChanged(false);
+  //         break;
+  //       default:
+  //         //print('Unknown Facebook login error');
+  //         _onLoginStatusChanged(false);
+  //         break;
+  //     }
+  //   }
+  // }
 
   Widget _displayUserData(ThirdPartyLoginData? profileData) {
     if (profileData == null) {
@@ -316,7 +308,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       borderRadius:
                           const BorderRadius.all(Radius.circular(10.0)),
                       image: DecorationImage(
-                        fit: BoxFit.fill,
+                        //fit: BoxFit.fitWidth,
                         image: NetworkImage(
                           profileData.photoUrl!,
                         ),
