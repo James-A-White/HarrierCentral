@@ -1407,7 +1407,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                           Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
-                                              'This app is currently logged in to a Facebook account.\r\n\r\nYou disconnect this app from Facebook without logging out of the app by pressing the button below. When you log out from Facebook the app will automatically restart.',
+                                              'This app is currently logged in to a Facebook account.\r\n\r\nYou can disconnect this app from Facebook without logging out of the app by pressing the button below. When you log out from Facebook the app will automatically restart.',
                                               style: bodyStyle,
                                               textAlign: TextAlign.center,
                                             ),
@@ -1434,6 +1434,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
                                                             await FacebookAuth.instance.logOut();
                                                           }
+
                                                           await _reloadData(
                                                             isLogOutOfFacebook: true,
                                                           );

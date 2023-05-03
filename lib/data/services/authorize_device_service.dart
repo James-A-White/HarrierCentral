@@ -74,6 +74,8 @@ class AuthorizeDeviceService {
           await setStringPref(StringPrefsEnum.thirdPartyUserId, result[0]['thirdPartyUserId']);
 
           resultMap = <String, String>{'result': 'success', 'message': 'Successfully loaded profile'};
+
+          removePref(IntPrefsEnum.isLoggingOutOfFacebook);
         }
       } else {
         return <String, String>{'result': 'failed', 'message': 'Error calling authorize device'};
