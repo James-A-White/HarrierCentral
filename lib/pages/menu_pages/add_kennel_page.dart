@@ -3,7 +3,7 @@ import 'package:harrier_central/imports.dart';
 class AddKennelPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const AddKennelPage({Key? key}) : super(key: key);
+  const AddKennelPage({super.key});
 
   @override
   AddKennelPageState createState() => AddKennelPageState();
@@ -50,7 +50,7 @@ class AddKennelPageState extends State<AddKennelPage> {
 }
 
 class FaqPageContent extends StatefulWidget {
-  const FaqPageContent({Key? key}) : super(key: key);
+  const FaqPageContent({super.key});
 
   @override
   FaqPageContentState createState() => FaqPageContentState();

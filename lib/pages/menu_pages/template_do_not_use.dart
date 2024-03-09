@@ -4,8 +4,8 @@ class DoNotUse extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const DoNotUse({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   DoNotUseState createState() => DoNotUseState();
@@ -27,9 +27,9 @@ class DoNotUseState extends State<DoNotUse> {
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        child: Stack(
+        child: const Stack(
           alignment: AlignmentDirectional.center,
-          children: const <Widget>[
+          children: <Widget>[
             Positioned(
                 top: 10,
                 left: 20,
@@ -43,7 +43,7 @@ class DoNotUseState extends State<DoNotUse> {
 }
 
 class XPageContent extends StatefulWidget {
-  const XPageContent({Key? key}) : super(key: key);
+  const XPageContent({super.key});
 
   @override
   XPageContentState createState() => XPageContentState();

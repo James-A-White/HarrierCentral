@@ -4,9 +4,9 @@ import 'package:harrier_central/imports.dart';
 
 class DrinksList extends StatefulWidget {
   const DrinksList({
-    Key? key,
+    super.key,
     required this.eventAggregate,
-  }) : super(key: key);
+  });
 
   final RunAdminAggregate eventAggregate;
 

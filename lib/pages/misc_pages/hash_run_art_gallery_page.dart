@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 
 class HashRunArtGalleryPage extends StatelessWidget {
   const HashRunArtGalleryPage({
-    Key? key,
+    super.key,
     required this.items,
-  }) : super(key: key);
+  });
 
   final List<Map<String, dynamic>> items;
 

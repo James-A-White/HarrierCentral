@@ -82,9 +82,9 @@ class RunDetailQueryExtensions {
 
 class RunAdminPage extends StatefulWidget {
   const RunAdminPage({
-    Key? key,
+    super.key,
     required this.eventId,
-  }) : super(key: key);
+  });
 
   final String eventId;
 

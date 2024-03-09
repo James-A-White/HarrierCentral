@@ -1,7 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class AvatarIconsPage extends StatefulWidget {
-  const AvatarIconsPage({Key? key, this.selectedAvatarIcon}) : super(key: key);
+  const AvatarIconsPage({super.key, this.selectedAvatarIcon});
 
   final int? selectedAvatarIcon;
 

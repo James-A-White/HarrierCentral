@@ -2,9 +2,9 @@ import 'package:harrier_central/imports.dart';
 
 class EmailPopup extends StatefulWidget {
   const EmailPopup({
-    Key? key,
+    super.key,
     this.initialEmailAddress,
-  }) : super(key: key);
+  });
 
   final String? initialEmailAddress;
 

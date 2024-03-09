@@ -2,14 +2,14 @@ import 'package:harrier_central/imports.dart';
 
 class ConnectedWidget extends StatelessWidget {
   const ConnectedWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.disconnectedChild,
     this.showConnectButton = false,
     this.showHcBackground = false,
     this.refreshFunction,
     this.padding,
-  }) : super(key: key);
+  });
 
   final Widget child;
   final Widget? disconnectedChild;

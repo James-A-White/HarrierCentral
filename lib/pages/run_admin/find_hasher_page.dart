@@ -5,10 +5,10 @@ enum FindHasherPageType { addHasherToRun, addMember }
 class FindHasherPage extends StatefulWidget {
   const FindHasherPage(
     this.pageType, {
-    Key? key,
+    super.key,
     this.kennelId,
     this.eventId,
-  }) : super(key: key);
+  });
 
   final FindHasherPageType pageType;
   final String? kennelId;
@@ -183,13 +183,13 @@ class FindHasherPageState extends State<FindHasherPage> {
 
 class HasherListView extends StatelessWidget {
   const HasherListView({
-    Key? key,
+    super.key,
     required this.hasherList,
     required this.pageType,
     required this.searchController,
     this.kennelId,
     this.eventId,
-  }) : super(key: key);
+  });
 
   final List<HashersModel> hasherList;
   final FindHasherPageType pageType;

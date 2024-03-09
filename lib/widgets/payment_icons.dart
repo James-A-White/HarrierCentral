@@ -14,8 +14,8 @@ class PaymentIcons extends StatelessWidget {
     this.isPaid,
     this.showHairlineDivider,
     this.stateSetter, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final EventModel event;
   final KennelsModel kennel;

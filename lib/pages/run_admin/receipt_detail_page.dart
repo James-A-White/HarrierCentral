@@ -2,10 +2,10 @@ import 'package:harrier_central/imports.dart';
 
 class ReceiptDetailPage extends StatefulWidget {
   const ReceiptDetailPage({
-    Key? key,
+    super.key,
     required this.eventId,
     this.receiptItem,
-  }) : super(key: key);
+  });
 
   final String eventId;
   final Map<String, dynamic>? receiptItem;

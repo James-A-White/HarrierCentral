@@ -2,8 +2,8 @@ import 'package:harrier_central/imports.dart';
 
 class IntroSliderPage extends StatefulWidget {
   const IntroSliderPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   IntroSliderPageState createState() => IntroSliderPageState();

@@ -2,10 +2,10 @@ import 'package:harrier_central/imports.dart';
 
 class SelectRunPage extends StatefulWidget {
   const SelectRunPage({
-    Key? key,
+    super.key,
     required this.runList,
     required this.selected,
-  }) : super(key: key);
+  });
 
   final List<AreWeAtRunModel> runList;
   final Map<String, bool> selected;
@@ -126,7 +126,7 @@ class SelectRunPageState extends State<SelectRunPage> {
                   padding: const EdgeInsets.only(top: 12.0),
                   child: RunListItem(
                       item: widget.runList[index],
-                      selected: widget.selected[widget.runList[index]] ?? false,
+                      selected: widget.selected[widget.runList[index].eventId] ?? false,
                       callback: (AreWeAtRunModel item) {
                         setState(() {
                           _showCheckinButton = false;
@@ -150,11 +150,11 @@ class SelectRunPageState extends State<SelectRunPage> {
 
 class RunListItem extends StatelessWidget {
   const RunListItem({
-    Key? key,
+    super.key,
     required this.item,
     required this.callback,
     required this.selected,
-  }) : super(key: key);
+  });
 
   final AreWeAtRunModel item;
   final Function callback;

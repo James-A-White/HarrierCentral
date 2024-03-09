@@ -12,7 +12,7 @@ part of 'check_in_pack_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 CheckInPackModel _$CheckInPackModelFromJson(Map<String, dynamic> json) {
   return _CheckInPackModel.fromJson(json);
@@ -238,11 +238,11 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
 }
 
 /// @nodoc
-abstract class _$$_CheckInPackModelCopyWith<$Res>
+abstract class _$$CheckInPackModelImplCopyWith<$Res>
     implements $CheckInPackModelCopyWith<$Res> {
-  factory _$$_CheckInPackModelCopyWith(
-          _$_CheckInPackModel value, $Res Function(_$_CheckInPackModel) then) =
-      __$$_CheckInPackModelCopyWithImpl<$Res>;
+  factory _$$CheckInPackModelImplCopyWith(_$CheckInPackModelImpl value,
+          $Res Function(_$CheckInPackModelImpl) then) =
+      __$$CheckInPackModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -275,11 +275,11 @@ abstract class _$$_CheckInPackModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_CheckInPackModelCopyWithImpl<$Res>
-    extends _$CheckInPackModelCopyWithImpl<$Res, _$_CheckInPackModel>
-    implements _$$_CheckInPackModelCopyWith<$Res> {
-  __$$_CheckInPackModelCopyWithImpl(
-      _$_CheckInPackModel _value, $Res Function(_$_CheckInPackModel) _then)
+class __$$CheckInPackModelImplCopyWithImpl<$Res>
+    extends _$CheckInPackModelCopyWithImpl<$Res, _$CheckInPackModelImpl>
+    implements _$$CheckInPackModelImplCopyWith<$Res> {
+  __$$CheckInPackModelImplCopyWithImpl(_$CheckInPackModelImpl _value,
+      $Res Function(_$CheckInPackModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -312,7 +312,7 @@ class __$$_CheckInPackModelCopyWithImpl<$Res>
     Object? credit = null,
     Object? isFollowing = null,
   }) {
-    return _then(_$_CheckInPackModel(
+    return _then(_$CheckInPackModelImpl(
       hasherId: null == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
@@ -423,8 +423,8 @@ class __$$_CheckInPackModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_CheckInPackModel implements _CheckInPackModel {
-  _$_CheckInPackModel(
+class _$CheckInPackModelImpl implements _CheckInPackModel {
+  _$CheckInPackModelImpl(
       {required this.hasherId,
       required this.hemId,
       this.isMember = 0,
@@ -452,8 +452,8 @@ class _$_CheckInPackModel implements _CheckInPackModel {
       this.credit = 0.0,
       this.isFollowing = 0});
 
-  factory _$_CheckInPackModel.fromJson(Map<String, dynamic> json) =>
-      _$$_CheckInPackModelFromJson(json);
+  factory _$CheckInPackModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CheckInPackModelImplFromJson(json);
 
   @override
   final String hasherId;
@@ -536,10 +536,10 @@ class _$_CheckInPackModel implements _CheckInPackModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_CheckInPackModel &&
+            other is _$CheckInPackModelImpl &&
             (identical(other.hasherId, hasherId) ||
                 other.hasherId == hasherId) &&
             (identical(other.hemId, hemId) || other.hemId == hemId) &&
@@ -626,12 +626,13 @@ class _$_CheckInPackModel implements _CheckInPackModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_CheckInPackModelCopyWith<_$_CheckInPackModel> get copyWith =>
-      __$$_CheckInPackModelCopyWithImpl<_$_CheckInPackModel>(this, _$identity);
+  _$$CheckInPackModelImplCopyWith<_$CheckInPackModelImpl> get copyWith =>
+      __$$CheckInPackModelImplCopyWithImpl<_$CheckInPackModelImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_CheckInPackModelToJson(
+    return _$$CheckInPackModelImplToJson(
       this,
     );
   }
@@ -664,10 +665,10 @@ abstract class _CheckInPackModel implements CheckInPackModel {
       required final String hemUpdatedAt,
       required final String payUpdatedAt,
       final double credit,
-      final int isFollowing}) = _$_CheckInPackModel;
+      final int isFollowing}) = _$CheckInPackModelImpl;
 
   factory _CheckInPackModel.fromJson(Map<String, dynamic> json) =
-      _$_CheckInPackModel.fromJson;
+      _$CheckInPackModelImpl.fromJson;
 
   @override
   String get hasherId;
@@ -723,6 +724,6 @@ abstract class _CheckInPackModel implements CheckInPackModel {
   int get isFollowing;
   @override
   @JsonKey(ignore: true)
-  _$$_CheckInPackModelCopyWith<_$_CheckInPackModel> get copyWith =>
+  _$$CheckInPackModelImplCopyWith<_$CheckInPackModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

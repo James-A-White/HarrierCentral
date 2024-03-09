@@ -12,7 +12,7 @@ part of 'kennels_model_ns.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 KennelsModel _$KennelsModelFromJson(Map<String, dynamic> json) {
   return _KennelsModel.fromJson(json);
@@ -457,11 +457,11 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
 }
 
 /// @nodoc
-abstract class _$$_KennelsModelCopyWith<$Res>
+abstract class _$$KennelsModelImplCopyWith<$Res>
     implements $KennelsModelCopyWith<$Res> {
-  factory _$$_KennelsModelCopyWith(
-          _$_KennelsModel value, $Res Function(_$_KennelsModel) then) =
-      __$$_KennelsModelCopyWithImpl<$Res>;
+  factory _$$KennelsModelImplCopyWith(
+          _$KennelsModelImpl value, $Res Function(_$KennelsModelImpl) then) =
+      __$$KennelsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -524,11 +524,11 @@ abstract class _$$_KennelsModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_KennelsModelCopyWithImpl<$Res>
-    extends _$KennelsModelCopyWithImpl<$Res, _$_KennelsModel>
-    implements _$$_KennelsModelCopyWith<$Res> {
-  __$$_KennelsModelCopyWithImpl(
-      _$_KennelsModel _value, $Res Function(_$_KennelsModel) _then)
+class __$$KennelsModelImplCopyWithImpl<$Res>
+    extends _$KennelsModelCopyWithImpl<$Res, _$KennelsModelImpl>
+    implements _$$KennelsModelImplCopyWith<$Res> {
+  __$$KennelsModelImplCopyWithImpl(
+      _$KennelsModelImpl _value, $Res Function(_$KennelsModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -591,7 +591,7 @@ class __$$_KennelsModelCopyWithImpl<$Res>
     Object? updatedAt = freezed,
     Object? removed = freezed,
   }) {
-    return _then(_$_KennelsModel(
+    return _then(_$KennelsModelImpl(
       kennelId: null == kennelId
           ? _value.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
@@ -825,8 +825,8 @@ class __$$_KennelsModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_KennelsModel implements _KennelsModel {
-  _$_KennelsModel(
+class _$KennelsModelImpl implements _KennelsModel {
+  _$KennelsModelImpl(
       {required this.kennelId,
       required this.publicKennelId,
       required this.cityId,
@@ -884,8 +884,8 @@ class _$_KennelsModel implements _KennelsModel {
       this.updatedAt,
       this.removed});
 
-  factory _$_KennelsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_KennelsModelFromJson(json);
+  factory _$KennelsModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$KennelsModelImplFromJson(json);
 
   @override
   final String kennelId;
@@ -1006,10 +1006,10 @@ class _$_KennelsModel implements _KennelsModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_KennelsModel &&
+            other is _$KennelsModelImpl &&
             (identical(other.kennelId, kennelId) ||
                 other.kennelId == kennelId) &&
             (identical(other.publicKennelId, publicKennelId) ||
@@ -1164,12 +1164,12 @@ class _$_KennelsModel implements _KennelsModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_KennelsModelCopyWith<_$_KennelsModel> get copyWith =>
-      __$$_KennelsModelCopyWithImpl<_$_KennelsModel>(this, _$identity);
+  _$$KennelsModelImplCopyWith<_$KennelsModelImpl> get copyWith =>
+      __$$KennelsModelImplCopyWithImpl<_$KennelsModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_KennelsModelToJson(
+    return _$$KennelsModelImplToJson(
       this,
     );
   }
@@ -1232,10 +1232,10 @@ abstract class _KennelsModel implements KennelsModel {
       final String? kennelMismanagementTeam,
       final int? distancePreference,
       final DateTime? updatedAt,
-      final int? removed}) = _$_KennelsModel;
+      final int? removed}) = _$KennelsModelImpl;
 
   factory _KennelsModel.fromJson(Map<String, dynamic> json) =
-      _$_KennelsModel.fromJson;
+      _$KennelsModelImpl.fromJson;
 
   @override
   String get kennelId;
@@ -1351,6 +1351,6 @@ abstract class _KennelsModel implements KennelsModel {
   int? get removed;
   @override
   @JsonKey(ignore: true)
-  _$$_KennelsModelCopyWith<_$_KennelsModel> get copyWith =>
+  _$$KennelsModelImplCopyWith<_$KennelsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

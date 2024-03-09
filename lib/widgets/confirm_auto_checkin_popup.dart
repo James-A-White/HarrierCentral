@@ -2,12 +2,12 @@ import 'package:harrier_central/imports.dart';
 
 class ConfirmAutoCheckinPopup extends StatefulWidget {
   const ConfirmAutoCheckinPopup({
-    Key? key,
+    super.key,
     required this.title,
     required this.areWeAtRunData,
     required this.cancelButtonTitle,
     required this.okButtonTitle,
-  }) : super(key: key);
+  });
 
   final String title;
   final AreWeAtRunModel areWeAtRunData;

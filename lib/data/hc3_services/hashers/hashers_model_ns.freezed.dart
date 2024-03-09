@@ -12,7 +12,7 @@ part of 'hashers_model_ns.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 HashersModel _$HashersModelFromJson(Map<String, dynamic> json) {
   return _HashersModel.fromJson(json);
@@ -126,11 +126,11 @@ class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
 }
 
 /// @nodoc
-abstract class _$$_HashersModelCopyWith<$Res>
+abstract class _$$HashersModelImplCopyWith<$Res>
     implements $HashersModelCopyWith<$Res> {
-  factory _$$_HashersModelCopyWith(
-          _$_HashersModel value, $Res Function(_$_HashersModel) then) =
-      __$$_HashersModelCopyWithImpl<$Res>;
+  factory _$$HashersModelImplCopyWith(
+          _$HashersModelImpl value, $Res Function(_$HashersModelImpl) then) =
+      __$$HashersModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -147,11 +147,11 @@ abstract class _$$_HashersModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_HashersModelCopyWithImpl<$Res>
-    extends _$HashersModelCopyWithImpl<$Res, _$_HashersModel>
-    implements _$$_HashersModelCopyWith<$Res> {
-  __$$_HashersModelCopyWithImpl(
-      _$_HashersModel _value, $Res Function(_$_HashersModel) _then)
+class __$$HashersModelImplCopyWithImpl<$Res>
+    extends _$HashersModelCopyWithImpl<$Res, _$HashersModelImpl>
+    implements _$$HashersModelImplCopyWith<$Res> {
+  __$$HashersModelImplCopyWithImpl(
+      _$HashersModelImpl _value, $Res Function(_$HashersModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -168,7 +168,7 @@ class __$$_HashersModelCopyWithImpl<$Res>
     Object? removed = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_$_HashersModel(
+    return _then(_$HashersModelImpl(
       hasherId: null == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
@@ -215,8 +215,8 @@ class __$$_HashersModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_HashersModel implements _HashersModel {
-  _$_HashersModel(
+class _$HashersModelImpl implements _HashersModel {
+  _$HashersModelImpl(
       {required this.hasherId,
       this.firstName,
       this.lastName,
@@ -228,8 +228,8 @@ class _$_HashersModel implements _HashersModel {
       this.removed,
       this.updatedAt});
 
-  factory _$_HashersModel.fromJson(Map<String, dynamic> json) =>
-      _$$_HashersModelFromJson(json);
+  factory _$HashersModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$HashersModelImplFromJson(json);
 
   @override
   final String hasherId;
@@ -258,10 +258,10 @@ class _$_HashersModel implements _HashersModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_HashersModel &&
+            other is _$HashersModelImpl &&
             (identical(other.hasherId, hasherId) ||
                 other.hasherId == hasherId) &&
             (identical(other.firstName, firstName) ||
@@ -302,12 +302,12 @@ class _$_HashersModel implements _HashersModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_HashersModelCopyWith<_$_HashersModel> get copyWith =>
-      __$$_HashersModelCopyWithImpl<_$_HashersModel>(this, _$identity);
+  _$$HashersModelImplCopyWith<_$HashersModelImpl> get copyWith =>
+      __$$HashersModelImplCopyWithImpl<_$HashersModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_HashersModelToJson(
+    return _$$HashersModelImplToJson(
       this,
     );
   }
@@ -324,10 +324,10 @@ abstract class _HashersModel implements HashersModel {
       required final int dispPref,
       required final int includeInGlobalHashDirectory,
       final int? removed,
-      final DateTime? updatedAt}) = _$_HashersModel;
+      final DateTime? updatedAt}) = _$HashersModelImpl;
 
   factory _HashersModel.fromJson(Map<String, dynamic> json) =
-      _$_HashersModel.fromJson;
+      _$HashersModelImpl.fromJson;
 
   @override
   String get hasherId;
@@ -351,6 +351,6 @@ abstract class _HashersModel implements HashersModel {
   DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
-  _$$_HashersModelCopyWith<_$_HashersModel> get copyWith =>
+  _$$HashersModelImplCopyWith<_$HashersModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

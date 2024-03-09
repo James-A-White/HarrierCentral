@@ -12,7 +12,7 @@ part of 'single_result_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 SingleResultModel _$SingleResultModelFromJson(Map<String, dynamic> json) {
   return _SingleResultModel.fromJson(json);
@@ -62,22 +62,22 @@ class _$SingleResultModelCopyWithImpl<$Res, $Val extends SingleResultModel>
 }
 
 /// @nodoc
-abstract class _$$_SingleResultModelCopyWith<$Res>
+abstract class _$$SingleResultModelImplCopyWith<$Res>
     implements $SingleResultModelCopyWith<$Res> {
-  factory _$$_SingleResultModelCopyWith(_$_SingleResultModel value,
-          $Res Function(_$_SingleResultModel) then) =
-      __$$_SingleResultModelCopyWithImpl<$Res>;
+  factory _$$SingleResultModelImplCopyWith(_$SingleResultModelImpl value,
+          $Res Function(_$SingleResultModelImpl) then) =
+      __$$SingleResultModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? result});
 }
 
 /// @nodoc
-class __$$_SingleResultModelCopyWithImpl<$Res>
-    extends _$SingleResultModelCopyWithImpl<$Res, _$_SingleResultModel>
-    implements _$$_SingleResultModelCopyWith<$Res> {
-  __$$_SingleResultModelCopyWithImpl(
-      _$_SingleResultModel _value, $Res Function(_$_SingleResultModel) _then)
+class __$$SingleResultModelImplCopyWithImpl<$Res>
+    extends _$SingleResultModelCopyWithImpl<$Res, _$SingleResultModelImpl>
+    implements _$$SingleResultModelImplCopyWith<$Res> {
+  __$$SingleResultModelImplCopyWithImpl(_$SingleResultModelImpl _value,
+      $Res Function(_$SingleResultModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -85,7 +85,7 @@ class __$$_SingleResultModelCopyWithImpl<$Res>
   $Res call({
     Object? result = freezed,
   }) {
-    return _then(_$_SingleResultModel(
+    return _then(_$SingleResultModelImpl(
       result: freezed == result
           ? _value.result
           : result // ignore: cast_nullable_to_non_nullable
@@ -96,11 +96,11 @@ class __$$_SingleResultModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_SingleResultModel implements _SingleResultModel {
-  _$_SingleResultModel({this.result});
+class _$SingleResultModelImpl implements _SingleResultModel {
+  _$SingleResultModelImpl({this.result});
 
-  factory _$_SingleResultModel.fromJson(Map<String, dynamic> json) =>
-      _$$_SingleResultModelFromJson(json);
+  factory _$SingleResultModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SingleResultModelImplFromJson(json);
 
   @override
   final String? result;
@@ -111,10 +111,10 @@ class _$_SingleResultModel implements _SingleResultModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_SingleResultModel &&
+            other is _$SingleResultModelImpl &&
             (identical(other.result, result) || other.result == result));
   }
 
@@ -125,28 +125,28 @@ class _$_SingleResultModel implements _SingleResultModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_SingleResultModelCopyWith<_$_SingleResultModel> get copyWith =>
-      __$$_SingleResultModelCopyWithImpl<_$_SingleResultModel>(
+  _$$SingleResultModelImplCopyWith<_$SingleResultModelImpl> get copyWith =>
+      __$$SingleResultModelImplCopyWithImpl<_$SingleResultModelImpl>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_SingleResultModelToJson(
+    return _$$SingleResultModelImplToJson(
       this,
     );
   }
 }
 
 abstract class _SingleResultModel implements SingleResultModel {
-  factory _SingleResultModel({final String? result}) = _$_SingleResultModel;
+  factory _SingleResultModel({final String? result}) = _$SingleResultModelImpl;
 
   factory _SingleResultModel.fromJson(Map<String, dynamic> json) =
-      _$_SingleResultModel.fromJson;
+      _$SingleResultModelImpl.fromJson;
 
   @override
   String? get result;
   @override
   @JsonKey(ignore: true)
-  _$$_SingleResultModelCopyWith<_$_SingleResultModel> get copyWith =>
+  _$$SingleResultModelImplCopyWith<_$SingleResultModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

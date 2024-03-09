@@ -2,8 +2,8 @@ import 'package:harrier_central/imports.dart';
 
 class AppEntryPage extends StatefulWidget {
   const AppEntryPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   @override
   AppEntryPageState createState() => AppEntryPageState();
 }
@@ -21,7 +21,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     await setupLocalServices(
       MediaQuery.of(navigatorKey.currentContext!).size.width,
       MediaQuery.of(navigatorKey.currentContext!).size.height,
-      MediaQuery.of(navigatorKey.currentContext!).textScaleFactor,
+      MediaQuery.of(navigatorKey.currentContext!).textScaler.scale(1.0),
     );
 
     await G0.allReady();
@@ -44,15 +44,15 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     ApproveLoginModel? loginResult;
     List<PromoModel>? promoResult;
-    String? facebookAccessToken;
+    //String? facebookAccessToken;
     final ApproveLoginService svc = ApproveLoginService();
 
     await Utilities.subscribeToGeoLocationStream();
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
-      facebookAccessToken = await _checkFacebookLogin();
+      //facebookAccessToken = await _checkFacebookLogin();
 
-      final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, facebookAccessToken);
+      final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, null);
 
       if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
         exit(0);
@@ -84,19 +84,19 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                 'Our system indicates that you are an admin of a Facebook Group that uses Facebook integration.\r\n\r\nIt appears as though the Facebook Authorization Token we have in our system for your group has expired.\r\n\r\nTo refresh the token, Harrier Central will now ask you to log in to Facebook. Once you log in, your token will be refreshed and Facebook integration will continue to work for your Kennel.\r\n\r\nIf you have questions, please contact us at connect@harriercentral.com.',
                 'OK');
 
-            await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime(2020));
-            await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
-            facebookAccessToken = await _checkFacebookLogin();
-            if (facebookAccessToken != null) {
-              await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
+            // await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime(2020));
+            // await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
+            //facebookAccessToken = await _checkFacebookLogin();
+            // if (facebookAccessToken != null) {
+            //   await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
 
-              final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, facebookAccessToken);
-              if (!responseBody.startsWith(ERROR_PREFIX)) {
-                loginResult = ApproveLoginModel.fromJson(json.decode(responseBody));
-              }
-            } else {
-              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
-            }
+            //   final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, facebookAccessToken);
+            //   if (!responseBody.startsWith(ERROR_PREFIX)) {
+            //     loginResult = ApproveLoginModel.fromJson(json.decode(responseBody));
+            //   }
+            // } else {
+            //   await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
+            // }
           }
         }
       }
@@ -140,7 +140,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
             if (((userId == null) || (userId.isEmpty) || (userId == GUID_EMPTY))) {
               // first time the app has run
               if (!mounted) return;
-              await Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+              await Navigator.of(navigatorKey.currentContext!).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
               // app has been run before... let's check the DB version.
               final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
@@ -161,7 +161,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                   if (!mounted) return;
-                  final Map<String, String> result = await srv.authorizeDevice(context, resetCode.toUpperCase());
+                  final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, resetCode.toUpperCase());
 
                   setState(() {
                     //isLoading = false;
@@ -223,7 +223,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                 } else {
                   if (!mounted) return;
                   await Navigator.pushReplacement<dynamic, dynamic>(
-                      context,
+                      navigatorKey.currentContext!,
                       MaterialPageRoute<dynamic>(
                           builder: (BuildContext context) => const MainNavigationPage(
                                 promos: <PromoModel>[],
@@ -238,6 +238,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
         } else {
           // TODO(James): Handle cases where server is down
         }
+        // ignore: dead_code
       } else {
         // TODO(James): Handle case where not allowed to continue after a message
       }
@@ -246,37 +247,37 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     //// return Future<void>(() {});((){});
   }
 
-  Future<String?> _checkFacebookLogin() async {
-    final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
-    final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
-    String? facebookAccessToken;
+  // Future<String?> _checkFacebookLogin() async {
+  //   final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
+  //   final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
+  //   String? facebookAccessToken;
 
-    if (fbTokenUpdateDelta.inDays > 30) {
-      final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
+  //   if (fbTokenUpdateDelta.inDays > 30) {
+  //     final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
 
-      final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
+  //     final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
 
-      if (daysSinceCancellation.inDays > 30) {
-        final String? facebookId = getStringPref(StringPrefsEnum.facebookId);
+  //     if (daysSinceCancellation.inDays > 30) {
+  //       final String? facebookId = getStringPref(StringPrefsEnum.facebookId);
 
-        if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
-          final LoginResult loginResult = await FacebookAuth.instance.login();
-          if (loginResult.status == LoginStatus.success) {
-            final AccessToken? accessToken = loginResult.accessToken;
-            facebookAccessToken = accessToken?.token;
-            if (facebookAccessToken != null) {
-              await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-              await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
-              await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
-            }
-          } else if (loginResult.status == LoginStatus.cancelled) {
-            await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
-          }
-        }
-      }
-    }
-    return facebookAccessToken;
-  }
+  //       if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
+  //         final LoginResult loginResult = await FacebookAuth.instance.login();
+  //         if (loginResult.status == LoginStatus.success) {
+  //           final AccessToken? accessToken = loginResult.accessToken;
+  //           facebookAccessToken = accessToken?.token;
+  //           if (facebookAccessToken != null) {
+  //             await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+  //             await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+  //             await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
+  //           }
+  //         } else if (loginResult.status == LoginStatus.cancelled) {
+  //           await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return facebookAccessToken;
+  // }
 
   Future<bool?> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
     return showDialog<bool?>(

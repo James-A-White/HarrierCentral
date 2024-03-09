@@ -3,12 +3,12 @@ import 'package:intl/intl.dart';
 
 class KennelListItem extends StatefulWidget {
   const KennelListItem({
-    Key? key,
+    super.key,
     required this.kennelItem,
     required this.kennelSelected,
     required this.kennelFollowingUpdated,
     required this.kennelEmailAndNotificationPrefsUpdated,
-  }) : super(key: key);
+  });
 
   final KennelListAggregate kennelItem;
   final Function kennelSelected;

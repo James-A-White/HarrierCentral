@@ -6,8 +6,9 @@ part of 'run_history_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_RunHistoryModel _$$_RunHistoryModelFromJson(Map<String, dynamic> json) =>
-    _$_RunHistoryModel(
+_$RunHistoryModelImpl _$$RunHistoryModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$RunHistoryModelImpl(
       totalRunsThisKennel: json['totalRunsThisKennel'] as int? ?? 0,
       totalHaringThisKennel: json['totalHaringThisKennel'] as int? ?? 0,
       hcRunsThisKennel: json['hcRunsThisKennel'] as int? ?? 0,
@@ -25,7 +26,8 @@ _$_RunHistoryModel _$$_RunHistoryModelFromJson(Map<String, dynamic> json) =>
       digitsAfterDecimal: json['digitsAfterDecimal'] as int? ?? 2,
     );
 
-Map<String, dynamic> _$$_RunHistoryModelToJson(_$_RunHistoryModel instance) =>
+Map<String, dynamic> _$$RunHistoryModelImplToJson(
+        _$RunHistoryModelImpl instance) =>
     <String, dynamic>{
       'totalRunsThisKennel': instance.totalRunsThisKennel,
       'totalHaringThisKennel': instance.totalHaringThisKennel,

@@ -2,13 +2,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
-import 'package:map_launcher/map_launcher.dart' as maps;
 
 class KennelAdminMainPage extends StatefulWidget {
   const KennelAdminMainPage({
-    Key? key,
+    super.key,
     required this.kennelAggregateItem,
-  }) : super(key: key);
+  });
   final KennelListAggregate kennelAggregateItem;
 
   @override
@@ -59,7 +58,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  KennelMembersList? _kennelMembersList;
+  //KennelMembersList? _kennelMembersList;
 
   final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
 
@@ -672,11 +671,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             mapController: _mapController,
                                             options: MapOptions(
                                               //interactive: false,
-                                              center: latlng.LatLng(
+                                              initialCenter: latlng.LatLng(
                                                 widget.kennelAggregateItem.extensions.cityLat!,
                                                 widget.kennelAggregateItem.extensions.cityLon!,
                                               ),
-                                              zoom: _sliderValue,
+                                              initialZoom: _sliderValue,
                                               minZoom: 1.0,
                                               maxZoom: 18.0,
                                             ),
@@ -1010,7 +1009,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
                                           if (!mounted) return;
                                           await Navigator.push<void>(
-                                            context,
+                                            navigatorKey.currentContext!,
                                             MaterialPageRoute<void>(
                                               builder: (BuildContext context) => HashRunArtGalleryPage(key: const Key('52233311'), items: results),
                                             ),
@@ -1125,45 +1124,45 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     ]);
   }
 
-  static Future<bool?> _promptForSending(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Send invite codes'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text(
-                    'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-            ),
-            TextButton(
-              child: const Text('Preview'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-            TextButton(
-              child: const Text('Send'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // static Future<bool?> _promptForSending(BuildContext context) async {
+  //   return showDialog<bool>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Send invite codes'),
+  //         content: const SingleChildScrollView(
+  //           child: ListBody(
+  //             children: <Widget>[
+  //               Text(
+  //                   'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.'),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: const Text('Cancel'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(null);
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: const Text('Preview'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: const Text('Send'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(false);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _mmRow(String s) {
     if (s.isEmpty) {

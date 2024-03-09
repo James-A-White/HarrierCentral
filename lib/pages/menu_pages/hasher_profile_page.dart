@@ -10,7 +10,7 @@ class HasherProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const HasherProfilePage({
-    Key? key,
+    super.key,
     required this.dataContext,
     required this.pageType,
     this.hasherId = GUID_EMPTY,
@@ -19,7 +19,7 @@ class HasherProfilePage extends StatefulWidget {
     this.uiElementsToDisplay = 0,
     this.kennelShortName = '',
     this.hashNameFromSearch = '',
-  }) : super(key: key);
+  });
 
   final EnumDataContext dataContext;
   final EnumMyProfilePageType pageType;

@@ -3,8 +3,8 @@ import 'package:harrier_central/imports.dart';
 class CreateNewEventPopup extends StatefulWidget {
   const CreateNewEventPopup(
     this.title, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String title;
 

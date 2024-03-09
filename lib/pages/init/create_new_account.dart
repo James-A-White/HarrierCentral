@@ -4,8 +4,8 @@ class CreateNewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const CreateNewAccountPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   CreateNewAccountPageState createState() => CreateNewAccountPageState();
@@ -56,8 +56,8 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
 
 class CreateNewAccountPageContent extends StatefulWidget {
   const CreateNewAccountPageContent({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   CreateNewAccountPageContentState createState() => CreateNewAccountPageContentState();
@@ -219,7 +219,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
                         isSuccessfulLoad = true;
 
                         if (!mounted) return;
-                        await Navigator.push<dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
+                        await Navigator.push<dynamic>(navigatorKey.currentContext!, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
                       } else if (!responseBody.startsWith(ERROR_PREFIX)) {
                         final List<dynamic> jsonResultSets = json.decode(responseBody);
                         if (jsonResultSets.isNotEmpty) {
@@ -249,7 +249,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
 
                               if (!mounted) return;
                               await Navigator.pushReplacement<dynamic, dynamic>(
-                                  context,
+                                  navigatorKey.currentContext!,
                                   MaterialPageRoute<dynamic>(
                                     builder: (BuildContext context) => ChooseProfileImage(
                                       isForThisDevice: true,

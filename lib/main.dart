@@ -18,9 +18,12 @@ void main() {
       child: GetMaterialApp(
         builder: (BuildContext context, Widget? child) {
           final MediaQueryData mediaQueryData = MediaQuery.of(context);
-          final double scale = mediaQueryData.textScaleFactor.clamp(0.8, 1.75);
+          final TextScaler scale = mediaQueryData.textScaler.clamp(
+            minScaleFactor: .8,
+            maxScaleFactor: 1.75,
+          );
           return MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
+            data: MediaQuery.of(context).copyWith(textScaler: scale),
             child: child ?? Container(),
           );
         },

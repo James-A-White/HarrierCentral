@@ -12,7 +12,7 @@ part of 'leaderboard_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 LeaderboardModel _$LeaderboardModelFromJson(Map<String, dynamic> json) {
   return _LeaderboardModel.fromJson(json);
@@ -154,11 +154,11 @@ class _$LeaderboardModelCopyWithImpl<$Res, $Val extends LeaderboardModel>
 }
 
 /// @nodoc
-abstract class _$$_LeaderboardModelCopyWith<$Res>
+abstract class _$$LeaderboardModelImplCopyWith<$Res>
     implements $LeaderboardModelCopyWith<$Res> {
-  factory _$$_LeaderboardModelCopyWith(
-          _$_LeaderboardModel value, $Res Function(_$_LeaderboardModel) then) =
-      __$$_LeaderboardModelCopyWithImpl<$Res>;
+  factory _$$LeaderboardModelImplCopyWith(_$LeaderboardModelImpl value,
+          $Res Function(_$LeaderboardModelImpl) then) =
+      __$$LeaderboardModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -179,11 +179,11 @@ abstract class _$$_LeaderboardModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_LeaderboardModelCopyWithImpl<$Res>
-    extends _$LeaderboardModelCopyWithImpl<$Res, _$_LeaderboardModel>
-    implements _$$_LeaderboardModelCopyWith<$Res> {
-  __$$_LeaderboardModelCopyWithImpl(
-      _$_LeaderboardModel _value, $Res Function(_$_LeaderboardModel) _then)
+class __$$LeaderboardModelImplCopyWithImpl<$Res>
+    extends _$LeaderboardModelCopyWithImpl<$Res, _$LeaderboardModelImpl>
+    implements _$$LeaderboardModelImplCopyWith<$Res> {
+  __$$LeaderboardModelImplCopyWithImpl(_$LeaderboardModelImpl _value,
+      $Res Function(_$LeaderboardModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -204,7 +204,7 @@ class __$$_LeaderboardModelCopyWithImpl<$Res>
     Object? kennelCountRollingYear = null,
     Object? searchText = freezed,
   }) {
-    return _then(_$_LeaderboardModel(
+    return _then(_$LeaderboardModelImpl(
       displayName: null == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -267,8 +267,8 @@ class __$$_LeaderboardModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_LeaderboardModel implements _LeaderboardModel {
-  _$_LeaderboardModel(
+class _$LeaderboardModelImpl implements _LeaderboardModel {
+  _$LeaderboardModelImpl(
       {required this.displayName,
       required this.totalRunCount,
       required this.totalHaringCount,
@@ -284,8 +284,8 @@ class _$_LeaderboardModel implements _LeaderboardModel {
       required this.kennelCountRollingYear,
       this.searchText});
 
-  factory _$_LeaderboardModel.fromJson(Map<String, dynamic> json) =>
-      _$$_LeaderboardModelFromJson(json);
+  factory _$LeaderboardModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$LeaderboardModelImplFromJson(json);
 
   @override
   final String displayName;
@@ -322,10 +322,10 @@ class _$_LeaderboardModel implements _LeaderboardModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_LeaderboardModel &&
+            other is _$LeaderboardModelImpl &&
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
             (identical(other.totalRunCount, totalRunCount) ||
@@ -379,12 +379,13 @@ class _$_LeaderboardModel implements _LeaderboardModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_LeaderboardModelCopyWith<_$_LeaderboardModel> get copyWith =>
-      __$$_LeaderboardModelCopyWithImpl<_$_LeaderboardModel>(this, _$identity);
+  _$$LeaderboardModelImplCopyWith<_$LeaderboardModelImpl> get copyWith =>
+      __$$LeaderboardModelImplCopyWithImpl<_$LeaderboardModelImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_LeaderboardModelToJson(
+    return _$$LeaderboardModelImplToJson(
       this,
     );
   }
@@ -405,10 +406,10 @@ abstract class _LeaderboardModel implements LeaderboardModel {
       required final int kennelCountTotal,
       required final int kennelCountYtd,
       required final int kennelCountRollingYear,
-      final String? searchText}) = _$_LeaderboardModel;
+      final String? searchText}) = _$LeaderboardModelImpl;
 
   factory _LeaderboardModel.fromJson(Map<String, dynamic> json) =
-      _$_LeaderboardModel.fromJson;
+      _$LeaderboardModelImpl.fromJson;
 
   @override
   String get displayName;
@@ -440,6 +441,6 @@ abstract class _LeaderboardModel implements LeaderboardModel {
   String? get searchText;
   @override
   @JsonKey(ignore: true)
-  _$$_LeaderboardModelCopyWith<_$_LeaderboardModel> get copyWith =>
+  _$$LeaderboardModelImplCopyWith<_$LeaderboardModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

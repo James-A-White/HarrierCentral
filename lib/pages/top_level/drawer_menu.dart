@@ -5,10 +5,10 @@ import 'package:harrier_central/pages/menu_pages/payment_terminal_config_page.da
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({
-    Key? key,
+    super.key,
     required this.scaffoldKey,
     required this.futureRunsListKey,
-  }) : super(key: key);
+  });
 
   final GlobalKey<ScaffoldState> scaffoldKey;
   final GlobalKey<FutureRunListPageState> futureRunsListKey;
@@ -81,10 +81,10 @@ class DrawerMenuState extends State<DrawerMenu> {
                     Navigator.push<void>(
                       context,
                       MaterialPageRoute<void>(
-                        builder: (BuildContext context) => GenericWidgetPage(
-                          key: const Key('52233311'),
+                        builder: (BuildContext context) => const GenericWidgetPage(
+                          key: Key('52233311'),
                           widget: Column(
-                            children: const <Widget>[
+                            children: <Widget>[
                               // Padding(
                               //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
                               //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),

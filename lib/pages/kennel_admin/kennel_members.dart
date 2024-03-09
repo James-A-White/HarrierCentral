@@ -4,9 +4,9 @@ import 'package:harrier_central/imports.dart';
 
 class KennelMembersList extends StatefulWidget {
   const KennelMembersList({
-    Key? key,
+    super.key,
     required this.kennelListAggregate,
-  }) : super(key: key);
+  });
 
   final KennelListAggregate kennelListAggregate;
 
@@ -430,7 +430,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                               },
                               background: Container(
                                   color: Colors.red,
-                                  child: Row(children: const <Widget>[
+                                  child: const Row(children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),

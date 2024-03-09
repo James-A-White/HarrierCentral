@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 
 class UserQrCodePage extends StatefulWidget {
   const UserQrCodePage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   UserQrCodePageState createState() => UserQrCodePageState();
@@ -224,8 +224,8 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
 
 class QrCodeTab extends StatefulWidget {
   const QrCodeTab({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   QrCodeTabState createState() => QrCodeTabState();
@@ -312,8 +312,8 @@ class QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin
 
 class QrScannerTab extends StatefulWidget {
   const QrScannerTab({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   QrScannerTabState createState() => QrScannerTabState();

@@ -12,7 +12,7 @@ part of 'approve_login_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 ApproveLoginModel _$ApproveLoginModelFromJson(Map<String, dynamic> json) {
   return _ApproveLoginModel.fromJson(json);
@@ -155,11 +155,11 @@ class _$ApproveLoginModelCopyWithImpl<$Res, $Val extends ApproveLoginModel>
 }
 
 /// @nodoc
-abstract class _$$_ApproveLoginModelCopyWith<$Res>
+abstract class _$$ApproveLoginModelImplCopyWith<$Res>
     implements $ApproveLoginModelCopyWith<$Res> {
-  factory _$$_ApproveLoginModelCopyWith(_$_ApproveLoginModel value,
-          $Res Function(_$_ApproveLoginModel) then) =
-      __$$_ApproveLoginModelCopyWithImpl<$Res>;
+  factory _$$ApproveLoginModelImplCopyWith(_$ApproveLoginModelImpl value,
+          $Res Function(_$ApproveLoginModelImpl) then) =
+      __$$ApproveLoginModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -180,11 +180,11 @@ abstract class _$$_ApproveLoginModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_ApproveLoginModelCopyWithImpl<$Res>
-    extends _$ApproveLoginModelCopyWithImpl<$Res, _$_ApproveLoginModel>
-    implements _$$_ApproveLoginModelCopyWith<$Res> {
-  __$$_ApproveLoginModelCopyWithImpl(
-      _$_ApproveLoginModel _value, $Res Function(_$_ApproveLoginModel) _then)
+class __$$ApproveLoginModelImplCopyWithImpl<$Res>
+    extends _$ApproveLoginModelCopyWithImpl<$Res, _$ApproveLoginModelImpl>
+    implements _$$ApproveLoginModelImplCopyWith<$Res> {
+  __$$ApproveLoginModelImplCopyWithImpl(_$ApproveLoginModelImpl _value,
+      $Res Function(_$ApproveLoginModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -205,7 +205,7 @@ class __$$_ApproveLoginModelCopyWithImpl<$Res>
     Object? homeKennelId = freezed,
     Object? thirdPartyForceTokenRefresh = freezed,
   }) {
-    return _then(_$_ApproveLoginModel(
+    return _then(_$ApproveLoginModelImpl(
       apiVersion: freezed == apiVersion
           ? _value.apiVersion
           : apiVersion // ignore: cast_nullable_to_non_nullable
@@ -268,8 +268,8 @@ class __$$_ApproveLoginModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_ApproveLoginModel implements _ApproveLoginModel {
-  _$_ApproveLoginModel(
+class _$ApproveLoginModelImpl implements _ApproveLoginModel {
+  _$ApproveLoginModelImpl(
       {this.apiVersion,
       this.approvalCode,
       this.loginMessage,
@@ -285,8 +285,8 @@ class _$_ApproveLoginModel implements _ApproveLoginModel {
       this.homeKennelId,
       this.thirdPartyForceTokenRefresh});
 
-  factory _$_ApproveLoginModel.fromJson(Map<String, dynamic> json) =>
-      _$$_ApproveLoginModelFromJson(json);
+  factory _$ApproveLoginModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ApproveLoginModelImplFromJson(json);
 
   @override
   final String? apiVersion;
@@ -323,10 +323,10 @@ class _$_ApproveLoginModel implements _ApproveLoginModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_ApproveLoginModel &&
+            other is _$ApproveLoginModelImpl &&
             (identical(other.apiVersion, apiVersion) ||
                 other.apiVersion == apiVersion) &&
             (identical(other.approvalCode, approvalCode) ||
@@ -380,13 +380,13 @@ class _$_ApproveLoginModel implements _ApproveLoginModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_ApproveLoginModelCopyWith<_$_ApproveLoginModel> get copyWith =>
-      __$$_ApproveLoginModelCopyWithImpl<_$_ApproveLoginModel>(
+  _$$ApproveLoginModelImplCopyWith<_$ApproveLoginModelImpl> get copyWith =>
+      __$$ApproveLoginModelImplCopyWithImpl<_$ApproveLoginModelImpl>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_ApproveLoginModelToJson(
+    return _$$ApproveLoginModelImplToJson(
       this,
     );
   }
@@ -407,10 +407,10 @@ abstract class _ApproveLoginModel implements ApproveLoginModel {
       final int? isBetaTester,
       final String? email,
       final String? homeKennelId,
-      final DateTime? thirdPartyForceTokenRefresh}) = _$_ApproveLoginModel;
+      final DateTime? thirdPartyForceTokenRefresh}) = _$ApproveLoginModelImpl;
 
   factory _ApproveLoginModel.fromJson(Map<String, dynamic> json) =
-      _$_ApproveLoginModel.fromJson;
+      _$ApproveLoginModelImpl.fromJson;
 
   @override
   String? get apiVersion;
@@ -442,6 +442,6 @@ abstract class _ApproveLoginModel implements ApproveLoginModel {
   DateTime? get thirdPartyForceTokenRefresh;
   @override
   @JsonKey(ignore: true)
-  _$$_ApproveLoginModelCopyWith<_$_ApproveLoginModel> get copyWith =>
+  _$$ApproveLoginModelImplCopyWith<_$ApproveLoginModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

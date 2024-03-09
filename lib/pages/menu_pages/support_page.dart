@@ -6,8 +6,8 @@ class SupportPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const SupportPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   SupportPageState createState() => SupportPageState();
@@ -225,7 +225,8 @@ class SupportPageState extends State<SupportPage> {
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                                                   if (!mounted) return;
-                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result =
+                                                      await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;
@@ -276,7 +277,8 @@ class SupportPageState extends State<SupportPage> {
                                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                                                   if (!mounted) return;
-                                                  final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
+                                                  final Map<String, String> result =
+                                                      await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
                                                   setState(() {
                                                     isLoading = false;
@@ -331,9 +333,9 @@ class SupportPageState extends State<SupportPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('About your QR Secret Code'),
-          content: SingleChildScrollView(
+          content: const SingleChildScrollView(
             child: ListBody(
-              children: const <Widget>[
+              children: <Widget>[
                 Text(
                   'Harrier Central does not use either usernames or passwords. Instead we identify you using a \'secret QR code\'. This QR code can be used to allow Harrier Central running on another device to access your account. If you want to install Harrier Central on another device, when you first install the app, select \'existing user\' and use the scanner to scan this code. The app on the new device will then be configured to access your account',
                   textAlign: TextAlign.justify,

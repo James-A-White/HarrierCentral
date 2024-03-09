@@ -6,8 +6,8 @@ part of 'kennels_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_KennelsModel _$$_KennelsModelFromJson(Map<String, dynamic> json) =>
-    _$_KennelsModel(
+_$KennelsModelImpl _$$KennelsModelImplFromJson(Map<String, dynamic> json) =>
+    _$KennelsModelImpl(
       kennelId: json['kennelId'] as String,
       publicKennelId: json['publicKennelId'] as String,
       cityId: json['cityId'] as String,
@@ -85,7 +85,7 @@ _$_KennelsModel _$$_KennelsModelFromJson(Map<String, dynamic> json) =>
       removed: json['removed'] as int?,
     );
 
-Map<String, dynamic> _$$_KennelsModelToJson(_$_KennelsModel instance) =>
+Map<String, dynamic> _$$KennelsModelImplToJson(_$KennelsModelImpl instance) =>
     <String, dynamic>{
       'kennelId': instance.kennelId,
       'publicKennelId': instance.publicKennelId,

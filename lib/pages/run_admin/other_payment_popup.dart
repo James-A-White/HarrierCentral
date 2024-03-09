@@ -27,8 +27,8 @@ class OtherPaymentPopup extends StatefulWidget {
     this.currencySymbol,
     this.showCreditTopup,
     this.allowDefaultPricing, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final double normalPrice;
   final int decimalDigits;

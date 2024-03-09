@@ -12,7 +12,7 @@ part of 'promo_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 PromoModel _$PromoModelFromJson(Map<String, dynamic> json) {
   return _PromoModel.fromJson(json);
@@ -224,11 +224,11 @@ class _$PromoModelCopyWithImpl<$Res, $Val extends PromoModel>
 }
 
 /// @nodoc
-abstract class _$$_PromoModelCopyWith<$Res>
+abstract class _$$PromoModelImplCopyWith<$Res>
     implements $PromoModelCopyWith<$Res> {
-  factory _$$_PromoModelCopyWith(
-          _$_PromoModel value, $Res Function(_$_PromoModel) then) =
-      __$$_PromoModelCopyWithImpl<$Res>;
+  factory _$$PromoModelImplCopyWith(
+          _$PromoModelImpl value, $Res Function(_$PromoModelImpl) then) =
+      __$$PromoModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -259,11 +259,11 @@ abstract class _$$_PromoModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_PromoModelCopyWithImpl<$Res>
-    extends _$PromoModelCopyWithImpl<$Res, _$_PromoModel>
-    implements _$$_PromoModelCopyWith<$Res> {
-  __$$_PromoModelCopyWithImpl(
-      _$_PromoModel _value, $Res Function(_$_PromoModel) _then)
+class __$$PromoModelImplCopyWithImpl<$Res>
+    extends _$PromoModelCopyWithImpl<$Res, _$PromoModelImpl>
+    implements _$$PromoModelImplCopyWith<$Res> {
+  __$$PromoModelImplCopyWithImpl(
+      _$PromoModelImpl _value, $Res Function(_$PromoModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -294,7 +294,7 @@ class __$$_PromoModelCopyWithImpl<$Res>
     Object? promoImageIsDark = null,
     Object? promoDisplayTimeInMs = null,
   }) {
-    return _then(_$_PromoModel(
+    return _then(_$PromoModelImpl(
       promotionId: null == promotionId
           ? _value.promotionId
           : promotionId // ignore: cast_nullable_to_non_nullable
@@ -397,8 +397,8 @@ class __$$_PromoModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_PromoModel implements _PromoModel {
-  _$_PromoModel(
+class _$PromoModelImpl implements _PromoModel {
+  _$PromoModelImpl(
       {required this.promotionId,
       this.kennelId,
       this.cityId,
@@ -424,8 +424,8 @@ class _$_PromoModel implements _PromoModel {
       required this.promoImageIsDark,
       required this.promoDisplayTimeInMs});
 
-  factory _$_PromoModel.fromJson(Map<String, dynamic> json) =>
-      _$$_PromoModelFromJson(json);
+  factory _$PromoModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PromoModelImplFromJson(json);
 
   @override
   final String promotionId;
@@ -482,10 +482,10 @@ class _$_PromoModel implements _PromoModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_PromoModel &&
+            other is _$PromoModelImpl &&
             (identical(other.promotionId, promotionId) ||
                 other.promotionId == promotionId) &&
             (identical(other.kennelId, kennelId) ||
@@ -574,12 +574,12 @@ class _$_PromoModel implements _PromoModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_PromoModelCopyWith<_$_PromoModel> get copyWith =>
-      __$$_PromoModelCopyWithImpl<_$_PromoModel>(this, _$identity);
+  _$$PromoModelImplCopyWith<_$PromoModelImpl> get copyWith =>
+      __$$PromoModelImplCopyWithImpl<_$PromoModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PromoModelToJson(
+    return _$$PromoModelImplToJson(
       this,
     );
   }
@@ -610,10 +610,10 @@ abstract class _PromoModel implements PromoModel {
       required final int promoDisplayTimingDotsSize,
       required final int promoGeographicScope,
       required final int promoImageIsDark,
-      required final int promoDisplayTimeInMs}) = _$_PromoModel;
+      required final int promoDisplayTimeInMs}) = _$PromoModelImpl;
 
   factory _PromoModel.fromJson(Map<String, dynamic> json) =
-      _$_PromoModel.fromJson;
+      _$PromoModelImpl.fromJson;
 
   @override
   String get promotionId;
@@ -665,6 +665,6 @@ abstract class _PromoModel implements PromoModel {
   int get promoDisplayTimeInMs;
   @override
   @JsonKey(ignore: true)
-  _$$_PromoModelCopyWith<_$_PromoModel> get copyWith =>
+  _$$PromoModelImplCopyWith<_$PromoModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -4,8 +4,8 @@ class PrivacyPolicyPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const PrivacyPolicyPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   PrivacyPolicyPageState createState() => PrivacyPolicyPageState();
@@ -92,8 +92,8 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 class PDFScreen extends StatelessWidget {
   const PDFScreen(
     this.pathPDF, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String pathPDF;
 

@@ -12,7 +12,7 @@ part of 'kennel_member_results_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 KennelMemberResultsModel _$KennelMemberResultsModelFromJson(
     Map<String, dynamic> json) {
@@ -198,12 +198,12 @@ class _$KennelMemberResultsModelCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$_KennelMemberResultsModelCopyWith<$Res>
+abstract class _$$KennelMemberResultsModelImplCopyWith<$Res>
     implements $KennelMemberResultsModelCopyWith<$Res> {
-  factory _$$_KennelMemberResultsModelCopyWith(
-          _$_KennelMemberResultsModel value,
-          $Res Function(_$_KennelMemberResultsModel) then) =
-      __$$_KennelMemberResultsModelCopyWithImpl<$Res>;
+  factory _$$KennelMemberResultsModelImplCopyWith(
+          _$KennelMemberResultsModelImpl value,
+          $Res Function(_$KennelMemberResultsModelImpl) then) =
+      __$$KennelMemberResultsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -230,12 +230,13 @@ abstract class _$$_KennelMemberResultsModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_KennelMemberResultsModelCopyWithImpl<$Res>
+class __$$KennelMemberResultsModelImplCopyWithImpl<$Res>
     extends _$KennelMemberResultsModelCopyWithImpl<$Res,
-        _$_KennelMemberResultsModel>
-    implements _$$_KennelMemberResultsModelCopyWith<$Res> {
-  __$$_KennelMemberResultsModelCopyWithImpl(_$_KennelMemberResultsModel _value,
-      $Res Function(_$_KennelMemberResultsModel) _then)
+        _$KennelMemberResultsModelImpl>
+    implements _$$KennelMemberResultsModelImplCopyWith<$Res> {
+  __$$KennelMemberResultsModelImplCopyWithImpl(
+      _$KennelMemberResultsModelImpl _value,
+      $Res Function(_$KennelMemberResultsModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -262,7 +263,7 @@ class __$$_KennelMemberResultsModelCopyWithImpl<$Res>
     Object? kennelCredit = null,
     Object? memberFollowingStatus = null,
   }) {
-    return _then(_$_KennelMemberResultsModel(
+    return _then(_$KennelMemberResultsModelImpl(
       hasherId: null == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
@@ -349,8 +350,8 @@ class __$$_KennelMemberResultsModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_KennelMemberResultsModel implements _KennelMemberResultsModel {
-  _$_KennelMemberResultsModel(
+class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
+  _$KennelMemberResultsModelImpl(
       {required this.hasherId,
       required this.dispName,
       required this.nameForSort,
@@ -372,8 +373,8 @@ class _$_KennelMemberResultsModel implements _KennelMemberResultsModel {
       this.kennelCredit = 0.0,
       this.memberFollowingStatus = 0});
 
-  factory _$_KennelMemberResultsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_KennelMemberResultsModelFromJson(json);
+  factory _$KennelMemberResultsModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$KennelMemberResultsModelImplFromJson(json);
 
   @override
   final String hasherId;
@@ -433,10 +434,10 @@ class _$_KennelMemberResultsModel implements _KennelMemberResultsModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_KennelMemberResultsModel &&
+            other is _$KennelMemberResultsModelImpl &&
             (identical(other.hasherId, hasherId) ||
                 other.hasherId == hasherId) &&
             (identical(other.dispName, dispName) ||
@@ -512,13 +513,13 @@ class _$_KennelMemberResultsModel implements _KennelMemberResultsModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_KennelMemberResultsModelCopyWith<_$_KennelMemberResultsModel>
-      get copyWith => __$$_KennelMemberResultsModelCopyWithImpl<
-          _$_KennelMemberResultsModel>(this, _$identity);
+  _$$KennelMemberResultsModelImplCopyWith<_$KennelMemberResultsModelImpl>
+      get copyWith => __$$KennelMemberResultsModelImplCopyWithImpl<
+          _$KennelMemberResultsModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_KennelMemberResultsModelToJson(
+    return _$$KennelMemberResultsModelImplToJson(
       this,
     );
   }
@@ -545,10 +546,10 @@ abstract class _KennelMemberResultsModel implements KennelMemberResultsModel {
       final int mismanagementRoles,
       final String? kennelShortName,
       final double kennelCredit,
-      final int memberFollowingStatus}) = _$_KennelMemberResultsModel;
+      final int memberFollowingStatus}) = _$KennelMemberResultsModelImpl;
 
   factory _KennelMemberResultsModel.fromJson(Map<String, dynamic> json) =
-      _$_KennelMemberResultsModel.fromJson;
+      _$KennelMemberResultsModelImpl.fromJson;
 
   @override
   String get hasherId;
@@ -592,6 +593,6 @@ abstract class _KennelMemberResultsModel implements KennelMemberResultsModel {
   int get memberFollowingStatus;
   @override
   @JsonKey(ignore: true)
-  _$$_KennelMemberResultsModelCopyWith<_$_KennelMemberResultsModel>
+  _$$KennelMemberResultsModelImplCopyWith<_$KennelMemberResultsModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

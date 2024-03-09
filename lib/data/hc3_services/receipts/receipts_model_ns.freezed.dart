@@ -12,7 +12,7 @@ part of 'receipts_model_ns.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 ReceiptsModel _$ReceiptsModelFromJson(Map<String, dynamic> json) {
   return _ReceiptsModel.fromJson(json);
@@ -161,11 +161,11 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
 }
 
 /// @nodoc
-abstract class _$$_ReceiptsModelCopyWith<$Res>
+abstract class _$$ReceiptsModelImplCopyWith<$Res>
     implements $ReceiptsModelCopyWith<$Res> {
-  factory _$$_ReceiptsModelCopyWith(
-          _$_ReceiptsModel value, $Res Function(_$_ReceiptsModel) then) =
-      __$$_ReceiptsModelCopyWithImpl<$Res>;
+  factory _$$ReceiptsModelImplCopyWith(
+          _$ReceiptsModelImpl value, $Res Function(_$ReceiptsModelImpl) then) =
+      __$$ReceiptsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -187,11 +187,11 @@ abstract class _$$_ReceiptsModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_ReceiptsModelCopyWithImpl<$Res>
-    extends _$ReceiptsModelCopyWithImpl<$Res, _$_ReceiptsModel>
-    implements _$$_ReceiptsModelCopyWith<$Res> {
-  __$$_ReceiptsModelCopyWithImpl(
-      _$_ReceiptsModel _value, $Res Function(_$_ReceiptsModel) _then)
+class __$$ReceiptsModelImplCopyWithImpl<$Res>
+    extends _$ReceiptsModelCopyWithImpl<$Res, _$ReceiptsModelImpl>
+    implements _$$ReceiptsModelImplCopyWith<$Res> {
+  __$$ReceiptsModelImplCopyWithImpl(
+      _$ReceiptsModelImpl _value, $Res Function(_$ReceiptsModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -213,7 +213,7 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
     Object? removed = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_$_ReceiptsModel(
+    return _then(_$ReceiptsModelImpl(
       receiptId: null == receiptId
           ? _value.receiptId
           : receiptId // ignore: cast_nullable_to_non_nullable
@@ -280,8 +280,8 @@ class __$$_ReceiptsModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_ReceiptsModel implements _ReceiptsModel {
-  _$_ReceiptsModel(
+class _$ReceiptsModelImpl implements _ReceiptsModel {
+  _$ReceiptsModelImpl(
       {required this.receiptId,
       required this.eventId,
       required this.userId,
@@ -298,8 +298,8 @@ class _$_ReceiptsModel implements _ReceiptsModel {
       this.removed,
       this.updatedAt});
 
-  factory _$_ReceiptsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_ReceiptsModelFromJson(json);
+  factory _$ReceiptsModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ReceiptsModelImplFromJson(json);
 
   @override
   final String receiptId;
@@ -340,10 +340,10 @@ class _$_ReceiptsModel implements _ReceiptsModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_ReceiptsModel &&
+            other is _$ReceiptsModelImpl &&
             (identical(other.receiptId, receiptId) ||
                 other.receiptId == receiptId) &&
             (identical(other.eventId, eventId) || other.eventId == eventId) &&
@@ -396,12 +396,12 @@ class _$_ReceiptsModel implements _ReceiptsModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_ReceiptsModelCopyWith<_$_ReceiptsModel> get copyWith =>
-      __$$_ReceiptsModelCopyWithImpl<_$_ReceiptsModel>(this, _$identity);
+  _$$ReceiptsModelImplCopyWith<_$ReceiptsModelImpl> get copyWith =>
+      __$$ReceiptsModelImplCopyWithImpl<_$ReceiptsModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_ReceiptsModelToJson(
+    return _$$ReceiptsModelImplToJson(
       this,
     );
   }
@@ -423,10 +423,10 @@ abstract class _ReceiptsModel implements ReceiptsModel {
       final double? reimbursedAmount,
       final String? reimbursedNotes,
       final int? removed,
-      final DateTime? updatedAt}) = _$_ReceiptsModel;
+      final DateTime? updatedAt}) = _$ReceiptsModelImpl;
 
   factory _ReceiptsModel.fromJson(Map<String, dynamic> json) =
-      _$_ReceiptsModel.fromJson;
+      _$ReceiptsModelImpl.fromJson;
 
   @override
   String get receiptId;
@@ -460,6 +460,6 @@ abstract class _ReceiptsModel implements ReceiptsModel {
   DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
-  _$$_ReceiptsModelCopyWith<_$_ReceiptsModel> get copyWith =>
+  _$$ReceiptsModelImplCopyWith<_$ReceiptsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

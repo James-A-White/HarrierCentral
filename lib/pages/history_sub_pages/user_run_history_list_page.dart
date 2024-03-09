@@ -2,10 +2,10 @@ import 'package:harrier_central/imports.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
   const UserRunHistoryListPage({
-    Key? key,
+    super.key,
     required this.kennelInfo,
     required this.refreshKennelInfo,
-  }) : super(key: key);
+  });
 
   final RunHistoryModel kennelInfo;
   final Function refreshKennelInfo;
@@ -35,7 +35,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     // of the current runs for a kennel that are cached on the phone and joins to HEM.
     // But for runs that are old and no longer cached on the phone, it looks at the
     // HEM record only in the second half of the UNION statement.
-    final String query = ''' 
+    final String query = '''
           SELECT
           hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
@@ -539,7 +539,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           background: item.canEditRunAttendence == 0
                               ? Container(
                                   color: Colors.grey,
-                                  child: Row(children: const <Widget>[
+                                  child: const Row(children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
@@ -554,7 +554,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   ]))
                               : Container(
                                   color: Colors.red,
-                                  child: Row(children: const <Widget>[
+                                  child: const Row(children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
@@ -571,7 +571,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           secondaryBackground: item.canEditRunAttendence == 0
                               ? Container(
                                   color: Colors.grey,
-                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: const <Widget>[
+                                  child: const Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(right: 15.0),
                                       child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
@@ -587,9 +587,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               : (item.attendenceState < attendenceAtHash.value) || ((item.attendenceState >= attendenceAtHash.value) && (item.isHare == isHareYes.value))
                                   ? Container(
                                       color: Colors.green,
-                                      child: Row(
+                                      child: const Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
-                                        children: const <Widget>[
+                                        children: <Widget>[
                                           Padding(
                                             padding: EdgeInsets.only(right: 15.0),
                                             child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
@@ -608,9 +608,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     )
                                   : Container(
                                       color: Colors.purple,
-                                      child: Row(
+                                      child: const Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
-                                        children: const <Widget>[
+                                        children: <Widget>[
                                           Padding(
                                             padding: EdgeInsets.only(right: 15.0),
                                             child: Padding(
@@ -642,7 +642,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               if (run.isNotEmpty) {
                                 if (!mounted) return;
                                 await Navigator.push<dynamic>(
-                                  context,
+                                  navigatorKey.currentContext!,
                                   MaterialPageRoute<dynamic>(
                                     builder: (BuildContext context) {
                                       return RunDetailsPage(

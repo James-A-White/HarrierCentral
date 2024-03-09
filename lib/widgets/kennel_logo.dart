@@ -4,7 +4,7 @@ enum KennelLogoZoomGesture { none, tap, longPress }
 
 class KennelLogo extends StatelessWidget {
   const KennelLogo({
-    Key? key,
+    super.key,
     this.kennelId,
     required this.kennelLogoUrl,
     required this.kennelShortName,
@@ -12,7 +12,7 @@ class KennelLogo extends StatelessWidget {
     this.zoomGesture = KennelLogoZoomGesture.longPress,
     this.leftPadding,
     this.rightPadding,
-  }) : super(key: key);
+  });
 
   final String? kennelId;
   final String? kennelLogoUrl;

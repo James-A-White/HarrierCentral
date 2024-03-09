@@ -3,10 +3,10 @@ import 'package:harrier_central/imports.dart';
 
 class GenericWidgetPage extends StatelessWidget {
   const GenericWidgetPage({
-    Key? key,
+    super.key,
     required this.widget,
     required this.appBarTitle,
-  }) : super(key: key);
+  });
 
   final Widget widget;
   final String appBarTitle;

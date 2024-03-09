@@ -12,13 +12,13 @@ class RunDetails extends StatelessWidget {
     this.paymentLinkUrl,
     this.showPaymentOptions,
     this.isMapAndDistanceValid, {
-    Key? key,
+    super.key,
     this.isMember = 0,
     this.isPaid = 0,
     this.rsvpState = 0,
     this.processPayment,
     this.eventUrlWithKennelBackup,
-  }) : super(key: key);
+  });
 
   final EventModel event;
   final KennelsModel kennel;
@@ -91,7 +91,7 @@ class RunDetails extends StatelessWidget {
           Text(
             'Event details',
             style: headingStyle,
-            textScaleFactor: G0<DeviceInfo>().textClamp50,
+            //textScaleFactor: G0<DeviceInfo>().textClamp50,
           ),
           const SizedBox(
             height: 15.0,
@@ -636,7 +636,7 @@ class RunDetails extends StatelessWidget {
                     Text(
                       'Event tags',
                       style: headingStyle,
-                      textScaleFactor: G0<DeviceInfo>().textClamp50,
+                      //textScaleFactor: G0<DeviceInfo>().textClamp50,
                     ),
                     const SizedBox(
                       height: 15.0,
@@ -723,7 +723,7 @@ class RunDetails extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  textScaleFactor: G0<DeviceInfo>().textClamp50,
+                  //textScaleFactor: G0<DeviceInfo>().textClamp50,
                 ),
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light'));

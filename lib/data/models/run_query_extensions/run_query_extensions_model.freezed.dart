@@ -12,7 +12,7 @@ part of 'run_query_extensions_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 RunQueryExtensionsModel _$RunQueryExtensionsModelFromJson(
     Map<String, dynamic> json) {
@@ -192,11 +192,12 @@ class _$RunQueryExtensionsModelCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$_RunQueryExtensionsModelCopyWith<$Res>
+abstract class _$$RunQueryExtensionsModelImplCopyWith<$Res>
     implements $RunQueryExtensionsModelCopyWith<$Res> {
-  factory _$$_RunQueryExtensionsModelCopyWith(_$_RunQueryExtensionsModel value,
-          $Res Function(_$_RunQueryExtensionsModel) then) =
-      __$$_RunQueryExtensionsModelCopyWithImpl<$Res>;
+  factory _$$RunQueryExtensionsModelImplCopyWith(
+          _$RunQueryExtensionsModelImpl value,
+          $Res Function(_$RunQueryExtensionsModelImpl) then) =
+      __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -222,12 +223,13 @@ abstract class _$$_RunQueryExtensionsModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_RunQueryExtensionsModelCopyWithImpl<$Res>
+class __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>
     extends _$RunQueryExtensionsModelCopyWithImpl<$Res,
-        _$_RunQueryExtensionsModel>
-    implements _$$_RunQueryExtensionsModelCopyWith<$Res> {
-  __$$_RunQueryExtensionsModelCopyWithImpl(_$_RunQueryExtensionsModel _value,
-      $Res Function(_$_RunQueryExtensionsModel) _then)
+        _$RunQueryExtensionsModelImpl>
+    implements _$$RunQueryExtensionsModelImplCopyWith<$Res> {
+  __$$RunQueryExtensionsModelImplCopyWithImpl(
+      _$RunQueryExtensionsModelImpl _value,
+      $Res Function(_$RunQueryExtensionsModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -253,7 +255,7 @@ class __$$_RunQueryExtensionsModelCopyWithImpl<$Res>
     Object? isMapAndDistanceValid = null,
     Object? runClassification = null,
   }) {
-    return _then(_$_RunQueryExtensionsModel(
+    return _then(_$RunQueryExtensionsModelImpl(
       daysUntilEvent: null == daysUntilEvent
           ? _value.daysUntilEvent
           : daysUntilEvent // ignore: cast_nullable_to_non_nullable
@@ -336,8 +338,8 @@ class __$$_RunQueryExtensionsModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_RunQueryExtensionsModel implements _RunQueryExtensionsModel {
-  _$_RunQueryExtensionsModel(
+class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
+  _$RunQueryExtensionsModelImpl(
       {this.daysUntilEvent = 0,
       this.appAccessFlags = 0,
       this.digitsAfterDecimal = 2,
@@ -358,8 +360,8 @@ class _$_RunQueryExtensionsModel implements _RunQueryExtensionsModel {
       this.isMapAndDistanceValid = 0,
       this.runClassification = 3});
 
-  factory _$_RunQueryExtensionsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_RunQueryExtensionsModelFromJson(json);
+  factory _$RunQueryExtensionsModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$RunQueryExtensionsModelImplFromJson(json);
 
   @override
   @JsonKey()
@@ -423,10 +425,10 @@ class _$_RunQueryExtensionsModel implements _RunQueryExtensionsModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_RunQueryExtensionsModel &&
+            other is _$RunQueryExtensionsModelImpl &&
             (identical(other.daysUntilEvent, daysUntilEvent) ||
                 other.daysUntilEvent == daysUntilEvent) &&
             (identical(other.appAccessFlags, appAccessFlags) ||
@@ -493,14 +495,13 @@ class _$_RunQueryExtensionsModel implements _RunQueryExtensionsModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_RunQueryExtensionsModelCopyWith<_$_RunQueryExtensionsModel>
-      get copyWith =>
-          __$$_RunQueryExtensionsModelCopyWithImpl<_$_RunQueryExtensionsModel>(
-              this, _$identity);
+  _$$RunQueryExtensionsModelImplCopyWith<_$RunQueryExtensionsModelImpl>
+      get copyWith => __$$RunQueryExtensionsModelImplCopyWithImpl<
+          _$RunQueryExtensionsModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_RunQueryExtensionsModelToJson(
+    return _$$RunQueryExtensionsModelImplToJson(
       this,
     );
   }
@@ -526,10 +527,10 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
       final double? longitude,
       final double? distToEvent,
       final int isMapAndDistanceValid,
-      final int runClassification}) = _$_RunQueryExtensionsModel;
+      final int runClassification}) = _$RunQueryExtensionsModelImpl;
 
   factory _RunQueryExtensionsModel.fromJson(Map<String, dynamic> json) =
-      _$_RunQueryExtensionsModel.fromJson;
+      _$RunQueryExtensionsModelImpl.fromJson;
 
   @override
   int get daysUntilEvent;
@@ -571,6 +572,6 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
   int get runClassification;
   @override
   @JsonKey(ignore: true)
-  _$$_RunQueryExtensionsModelCopyWith<_$_RunQueryExtensionsModel>
+  _$$RunQueryExtensionsModelImplCopyWith<_$RunQueryExtensionsModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

@@ -12,7 +12,7 @@ part of 'hasher_event_map_model_ns.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) {
   return _HasherEventMapModel.fromJson(json);
@@ -268,11 +268,11 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
 }
 
 /// @nodoc
-abstract class _$$_HasherEventMapModelCopyWith<$Res>
+abstract class _$$HasherEventMapModelImplCopyWith<$Res>
     implements $HasherEventMapModelCopyWith<$Res> {
-  factory _$$_HasherEventMapModelCopyWith(_$_HasherEventMapModel value,
-          $Res Function(_$_HasherEventMapModel) then) =
-      __$$_HasherEventMapModelCopyWithImpl<$Res>;
+  factory _$$HasherEventMapModelImplCopyWith(_$HasherEventMapModelImpl value,
+          $Res Function(_$HasherEventMapModelImpl) then) =
+      __$$HasherEventMapModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -309,11 +309,11 @@ abstract class _$$_HasherEventMapModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_HasherEventMapModelCopyWithImpl<$Res>
-    extends _$HasherEventMapModelCopyWithImpl<$Res, _$_HasherEventMapModel>
-    implements _$$_HasherEventMapModelCopyWith<$Res> {
-  __$$_HasherEventMapModelCopyWithImpl(_$_HasherEventMapModel _value,
-      $Res Function(_$_HasherEventMapModel) _then)
+class __$$HasherEventMapModelImplCopyWithImpl<$Res>
+    extends _$HasherEventMapModelCopyWithImpl<$Res, _$HasherEventMapModelImpl>
+    implements _$$HasherEventMapModelImplCopyWith<$Res> {
+  __$$HasherEventMapModelImplCopyWithImpl(_$HasherEventMapModelImpl _value,
+      $Res Function(_$HasherEventMapModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -350,7 +350,7 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
     Object? removed = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_$_HasherEventMapModel(
+    return _then(_$HasherEventMapModelImpl(
       hemId: null == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
@@ -477,8 +477,8 @@ class __$$_HasherEventMapModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_HasherEventMapModel implements _HasherEventMapModel {
-  _$_HasherEventMapModel(
+class _$HasherEventMapModelImpl implements _HasherEventMapModel {
+  _$HasherEventMapModelImpl(
       {required this.hemId,
       required this.userId,
       required this.eventId,
@@ -510,8 +510,8 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
       this.removed,
       this.updatedAt});
 
-  factory _$_HasherEventMapModel.fromJson(Map<String, dynamic> json) =>
-      _$$_HasherEventMapModelFromJson(json);
+  factory _$HasherEventMapModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$HasherEventMapModelImplFromJson(json);
 
   @override
   final String hemId;
@@ -582,10 +582,10 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_HasherEventMapModel &&
+            other is _$HasherEventMapModelImpl &&
             (identical(other.hemId, hemId) || other.hemId == hemId) &&
             (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.eventId, eventId) || other.eventId == eventId) &&
@@ -684,13 +684,13 @@ class _$_HasherEventMapModel implements _HasherEventMapModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_HasherEventMapModelCopyWith<_$_HasherEventMapModel> get copyWith =>
-      __$$_HasherEventMapModelCopyWithImpl<_$_HasherEventMapModel>(
+  _$$HasherEventMapModelImplCopyWith<_$HasherEventMapModelImpl> get copyWith =>
+      __$$HasherEventMapModelImplCopyWithImpl<_$HasherEventMapModelImpl>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_HasherEventMapModelToJson(
+    return _$$HasherEventMapModelImplToJson(
       this,
     );
   }
@@ -727,10 +727,10 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
       final String? hemKennelUserPhoto,
       final String? hemKennelHashName,
       final int? removed,
-      final DateTime? updatedAt}) = _$_HasherEventMapModel;
+      final DateTime? updatedAt}) = _$HasherEventMapModelImpl;
 
   factory _HasherEventMapModel.fromJson(Map<String, dynamic> json) =
-      _$_HasherEventMapModel.fromJson;
+      _$HasherEventMapModelImpl.fromJson;
 
   @override
   String get hemId;
@@ -795,6 +795,6 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
-  _$$_HasherEventMapModelCopyWith<_$_HasherEventMapModel> get copyWith =>
+  _$$HasherEventMapModelImplCopyWith<_$HasherEventMapModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

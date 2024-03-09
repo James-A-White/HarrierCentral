@@ -4,8 +4,8 @@ class FaqPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const FaqPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   FaqPageState createState() => FaqPageState();
@@ -53,8 +53,8 @@ class FaqPageState extends State<FaqPage> {
 
 class FaqPageContent extends StatefulWidget {
   const FaqPageContent({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   FaqPageContentState createState() => FaqPageContentState();

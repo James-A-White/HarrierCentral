@@ -3,11 +3,11 @@ import 'package:intl/intl.dart';
 
 class FilterEventListItem extends StatelessWidget {
   const FilterEventListItem({
-    Key? key,
+    super.key,
     required this.event,
     required this.kennelShortName,
     required this.updateEvent,
-  }) : super(key: key);
+  });
 
   final LiteEventModel event;
   final String kennelShortName;

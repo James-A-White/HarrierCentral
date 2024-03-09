@@ -12,7 +12,7 @@ part of 'hasher_kennel_map_model_ns.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 HasherKennelMapModel _$HasherKennelMapModelFromJson(Map<String, dynamic> json) {
   return _HasherKennelMapModel.fromJson(json);
@@ -267,11 +267,11 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$_HasherKennelMapModelCopyWith<$Res>
+abstract class _$$HasherKennelMapModelImplCopyWith<$Res>
     implements $HasherKennelMapModelCopyWith<$Res> {
-  factory _$$_HasherKennelMapModelCopyWith(_$_HasherKennelMapModel value,
-          $Res Function(_$_HasherKennelMapModel) then) =
-      __$$_HasherKennelMapModelCopyWithImpl<$Res>;
+  factory _$$HasherKennelMapModelImplCopyWith(_$HasherKennelMapModelImpl value,
+          $Res Function(_$HasherKennelMapModelImpl) then) =
+      __$$HasherKennelMapModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -308,11 +308,11 @@ abstract class _$$_HasherKennelMapModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_HasherKennelMapModelCopyWithImpl<$Res>
-    extends _$HasherKennelMapModelCopyWithImpl<$Res, _$_HasherKennelMapModel>
-    implements _$$_HasherKennelMapModelCopyWith<$Res> {
-  __$$_HasherKennelMapModelCopyWithImpl(_$_HasherKennelMapModel _value,
-      $Res Function(_$_HasherKennelMapModel) _then)
+class __$$HasherKennelMapModelImplCopyWithImpl<$Res>
+    extends _$HasherKennelMapModelCopyWithImpl<$Res, _$HasherKennelMapModelImpl>
+    implements _$$HasherKennelMapModelImplCopyWith<$Res> {
+  __$$HasherKennelMapModelImplCopyWithImpl(_$HasherKennelMapModelImpl _value,
+      $Res Function(_$HasherKennelMapModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -349,7 +349,7 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
     Object? updatedAt = freezed,
     Object? removed = freezed,
   }) {
-    return _then(_$_HasherKennelMapModel(
+    return _then(_$HasherKennelMapModelImpl(
       hkmId: null == hkmId
           ? _value.hkmId
           : hkmId // ignore: cast_nullable_to_non_nullable
@@ -476,8 +476,8 @@ class __$$_HasherKennelMapModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_HasherKennelMapModel implements _HasherKennelMapModel {
-  _$_HasherKennelMapModel(
+class _$HasherKennelMapModelImpl implements _HasherKennelMapModel {
+  _$HasherKennelMapModelImpl(
       {required this.hkmId,
       required this.userId,
       required this.kennelId,
@@ -509,8 +509,8 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
       this.updatedAt,
       this.removed});
 
-  factory _$_HasherKennelMapModel.fromJson(Map<String, dynamic> json) =>
-      _$$_HasherKennelMapModelFromJson(json);
+  factory _$HasherKennelMapModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$HasherKennelMapModelImplFromJson(json);
 
   @override
   final String hkmId;
@@ -579,10 +579,10 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_HasherKennelMapModel &&
+            other is _$HasherKennelMapModelImpl &&
             (identical(other.hkmId, hkmId) || other.hkmId == hkmId) &&
             (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.kennelId, kennelId) ||
@@ -681,13 +681,14 @@ class _$_HasherKennelMapModel implements _HasherKennelMapModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_HasherKennelMapModelCopyWith<_$_HasherKennelMapModel> get copyWith =>
-      __$$_HasherKennelMapModelCopyWithImpl<_$_HasherKennelMapModel>(
-          this, _$identity);
+  _$$HasherKennelMapModelImplCopyWith<_$HasherKennelMapModelImpl>
+      get copyWith =>
+          __$$HasherKennelMapModelImplCopyWithImpl<_$HasherKennelMapModelImpl>(
+              this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_HasherKennelMapModelToJson(
+    return _$$HasherKennelMapModelImplToJson(
       this,
     );
   }
@@ -724,10 +725,10 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
       final String? kennelUserPhoto,
       final String? kennelHashName,
       final DateTime? updatedAt,
-      final int? removed}) = _$_HasherKennelMapModel;
+      final int? removed}) = _$HasherKennelMapModelImpl;
 
   factory _HasherKennelMapModel.fromJson(Map<String, dynamic> json) =
-      _$_HasherKennelMapModel.fromJson;
+      _$HasherKennelMapModelImpl.fromJson;
 
   @override
   String get hkmId;
@@ -791,6 +792,6 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
   int? get removed;
   @override
   @JsonKey(ignore: true)
-  _$$_HasherKennelMapModelCopyWith<_$_HasherKennelMapModel> get copyWith =>
-      throw _privateConstructorUsedError;
+  _$$HasherKennelMapModelImplCopyWith<_$HasherKennelMapModelImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }

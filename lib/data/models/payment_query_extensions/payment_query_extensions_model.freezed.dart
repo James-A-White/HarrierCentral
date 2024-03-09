@@ -12,7 +12,7 @@ part of 'payment_query_extensions_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 PaymentQueryExtensionsModel _$PaymentQueryExtensionsModelFromJson(
     Map<String, dynamic> json) {
@@ -166,12 +166,12 @@ class _$PaymentQueryExtensionsModelCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$_PaymentQueryExtensionsModelCopyWith<$Res>
+abstract class _$$PaymentQueryExtensionsModelImplCopyWith<$Res>
     implements $PaymentQueryExtensionsModelCopyWith<$Res> {
-  factory _$$_PaymentQueryExtensionsModelCopyWith(
-          _$_PaymentQueryExtensionsModel value,
-          $Res Function(_$_PaymentQueryExtensionsModel) then) =
-      __$$_PaymentQueryExtensionsModelCopyWithImpl<$Res>;
+  factory _$$PaymentQueryExtensionsModelImplCopyWith(
+          _$PaymentQueryExtensionsModelImpl value,
+          $Res Function(_$PaymentQueryExtensionsModelImpl) then) =
+      __$$PaymentQueryExtensionsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -193,13 +193,13 @@ abstract class _$$_PaymentQueryExtensionsModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_PaymentQueryExtensionsModelCopyWithImpl<$Res>
+class __$$PaymentQueryExtensionsModelImplCopyWithImpl<$Res>
     extends _$PaymentQueryExtensionsModelCopyWithImpl<$Res,
-        _$_PaymentQueryExtensionsModel>
-    implements _$$_PaymentQueryExtensionsModelCopyWith<$Res> {
-  __$$_PaymentQueryExtensionsModelCopyWithImpl(
-      _$_PaymentQueryExtensionsModel _value,
-      $Res Function(_$_PaymentQueryExtensionsModel) _then)
+        _$PaymentQueryExtensionsModelImpl>
+    implements _$$PaymentQueryExtensionsModelImplCopyWith<$Res> {
+  __$$PaymentQueryExtensionsModelImplCopyWithImpl(
+      _$PaymentQueryExtensionsModelImpl _value,
+      $Res Function(_$PaymentQueryExtensionsModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -221,7 +221,7 @@ class __$$_PaymentQueryExtensionsModelCopyWithImpl<$Res>
     Object? discountAvailableDescription = freezed,
     Object? isHashCredit = null,
   }) {
-    return _then(_$_PaymentQueryExtensionsModel(
+    return _then(_$PaymentQueryExtensionsModelImpl(
       pkHemId: null == pkHemId
           ? _value.pkHemId
           : pkHemId // ignore: cast_nullable_to_non_nullable
@@ -288,8 +288,9 @@ class __$$_PaymentQueryExtensionsModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_PaymentQueryExtensionsModel implements _PaymentQueryExtensionsModel {
-  _$_PaymentQueryExtensionsModel(
+class _$PaymentQueryExtensionsModelImpl
+    implements _PaymentQueryExtensionsModel {
+  _$PaymentQueryExtensionsModelImpl(
       {required this.pkHemId,
       required this.paidByName,
       required this.paidToName,
@@ -306,8 +307,9 @@ class _$_PaymentQueryExtensionsModel implements _PaymentQueryExtensionsModel {
       this.discountAvailableDescription,
       this.isHashCredit = false});
 
-  factory _$_PaymentQueryExtensionsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_PaymentQueryExtensionsModelFromJson(json);
+  factory _$PaymentQueryExtensionsModelImpl.fromJson(
+          Map<String, dynamic> json) =>
+      _$$PaymentQueryExtensionsModelImplFromJson(json);
 
   @override
   final String pkHemId;
@@ -355,10 +357,10 @@ class _$_PaymentQueryExtensionsModel implements _PaymentQueryExtensionsModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_PaymentQueryExtensionsModel &&
+            other is _$PaymentQueryExtensionsModelImpl &&
             (identical(other.pkHemId, pkHemId) || other.pkHemId == pkHemId) &&
             (identical(other.paidByName, paidByName) ||
                 other.paidByName == paidByName) &&
@@ -418,13 +420,13 @@ class _$_PaymentQueryExtensionsModel implements _PaymentQueryExtensionsModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_PaymentQueryExtensionsModelCopyWith<_$_PaymentQueryExtensionsModel>
-      get copyWith => __$$_PaymentQueryExtensionsModelCopyWithImpl<
-          _$_PaymentQueryExtensionsModel>(this, _$identity);
+  _$$PaymentQueryExtensionsModelImplCopyWith<_$PaymentQueryExtensionsModelImpl>
+      get copyWith => __$$PaymentQueryExtensionsModelImplCopyWithImpl<
+          _$PaymentQueryExtensionsModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentQueryExtensionsModelToJson(
+    return _$$PaymentQueryExtensionsModelImplToJson(
       this,
     );
   }
@@ -447,10 +449,10 @@ abstract class _PaymentQueryExtensionsModel
       final int discountPercentAvailable,
       final int isFollowing,
       final String? discountAvailableDescription,
-      final bool isHashCredit}) = _$_PaymentQueryExtensionsModel;
+      final bool isHashCredit}) = _$PaymentQueryExtensionsModelImpl;
 
   factory _PaymentQueryExtensionsModel.fromJson(Map<String, dynamic> json) =
-      _$_PaymentQueryExtensionsModel.fromJson;
+      _$PaymentQueryExtensionsModelImpl.fromJson;
 
   @override
   String get pkHemId;
@@ -484,6 +486,6 @@ abstract class _PaymentQueryExtensionsModel
   bool get isHashCredit;
   @override
   @JsonKey(ignore: true)
-  _$$_PaymentQueryExtensionsModelCopyWith<_$_PaymentQueryExtensionsModel>
+  _$$PaymentQueryExtensionsModelImplCopyWith<_$PaymentQueryExtensionsModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

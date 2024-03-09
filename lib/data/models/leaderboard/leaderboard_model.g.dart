@@ -6,8 +6,9 @@ part of 'leaderboard_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_LeaderboardModel _$$_LeaderboardModelFromJson(Map<String, dynamic> json) =>
-    _$_LeaderboardModel(
+_$LeaderboardModelImpl _$$LeaderboardModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$LeaderboardModelImpl(
       displayName: json['displayName'] as String,
       totalRunCount: json['totalRunCount'] as int,
       totalHaringCount: json['totalHaringCount'] as int,
@@ -24,7 +25,8 @@ _$_LeaderboardModel _$$_LeaderboardModelFromJson(Map<String, dynamic> json) =>
       searchText: json['searchText'] as String?,
     );
 
-Map<String, dynamic> _$$_LeaderboardModelToJson(_$_LeaderboardModel instance) =>
+Map<String, dynamic> _$$LeaderboardModelImplToJson(
+        _$LeaderboardModelImpl instance) =>
     <String, dynamic>{
       'displayName': instance.displayName,
       'totalRunCount': instance.totalRunCount,

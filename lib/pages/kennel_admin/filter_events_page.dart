@@ -5,10 +5,10 @@ enum FilterEventsPageType { past, future }
 
 class AddEditEventsPage extends StatefulWidget {
   const AddEditEventsPage({
-    Key? key,
+    super.key,
     required this.kennel,
     required this.pageType,
-  }) : super(key: key);
+  });
 
   final KennelListAggregate kennel;
   final FilterEventsPageType pageType;
@@ -192,23 +192,21 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         final LiteEventModel event = LiteEventModel.fromJson(allEventsSqlResult[i]);
         _allEvents.add(event);
         DateTime? eventDate = event.eventStartDatetime;
-        if (eventDate != null) {
-          eventDate = _toDateOnly(eventDate);
-          if (_calendarEvents[eventDate] == null) {
-            _calendarEvents[eventDate] = <LiteEventModel>[];
-          }
-          _calendarEvents[eventDate]!.add(event);
-
-          // rebuild the items in _selectedDate so that state changes
-          // are reflected in the UI when someone changes an event's
-          // properties
-          // if (_calendarController?.selectedDay != null) {
-          //   if (eventDate == _toDateOnly(_calendarController.selectedDay)) {
-          //     _selectedEvents.add(event);
-          //   }
-          // }
+        eventDate = _toDateOnly(eventDate);
+        if (_calendarEvents[eventDate] == null) {
+          _calendarEvents[eventDate] = <LiteEventModel>[];
         }
-      }
+        _calendarEvents[eventDate]!.add(event);
+
+        // rebuild the items in _selectedDate so that state changes
+        // are reflected in the UI when someone changes an event's
+        // properties
+        // if (_calendarController?.selectedDay != null) {
+        //   if (eventDate == _toDateOnly(_calendarController.selectedDay)) {
+        //     _selectedEvents.add(event);
+        //   }
+        // }
+            }
 
       _isLoading = false;
     } catch (e) {
@@ -604,7 +602,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           },
           background: Container(
               color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.red,
-              child: Row(children: const <Widget>[
+              child: const Row(children: <Widget>[
                 Padding(
                   padding: EdgeInsets.only(left: 10.0),
                   child: Icon(Ionicons.ios_eye_off, color: Colors.white, size: 35.0),
@@ -619,9 +617,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               ])),
           secondaryBackground: Container(
             color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.green,
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: const <Widget>[
+              children: <Widget>[
                 Padding(
                   padding: EdgeInsets.only(right: 15.0),
                   child: Icon(Ionicons.ios_eye, color: Colors.white, size: 35.0),

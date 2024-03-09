@@ -1,7 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class UserDetailsUi extends StatefulWidget {
-  const UserDetailsUi({Key? key, this.firstName, this.lastName, this.email, this.hashName}) : super(key: key);
+  const UserDetailsUi({super.key, this.firstName, this.lastName, this.email, this.hashName});
 
   final String? firstName;
   final String? lastName;

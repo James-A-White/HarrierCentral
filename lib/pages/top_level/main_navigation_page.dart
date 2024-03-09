@@ -4,10 +4,10 @@ import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({
-    Key? key,
+    super.key,
     required this.promos,
     this.firstPromoImage,
-  }) : super(key: key);
+  });
 
   final List<PromoModel> promos;
   final Image? firstPromoImage;
@@ -372,7 +372,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                     backgroundColor: themeAppBarBackground,
                     title: Text(
                       _appBarText,
-                      textScaleFactor: G0<DeviceInfo>().textClamp00,
+                      textScaler: TextScaler.linear(G0<DeviceInfo>().textClamp00),
+                      //textScaleFactor: G0<DeviceInfo>().textClamp00,
                     ),
                     centerTitle: true,
                     actions: <IconButton>[

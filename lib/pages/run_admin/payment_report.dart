@@ -21,9 +21,9 @@ class PaymentAggregate {
 
 class PaymentReportPage extends StatefulWidget {
   const PaymentReportPage({
-    Key? key,
+    super.key,
     required this.eventAggregate,
-  }) : super(key: key);
+  });
 
   final RunAdminAggregate eventAggregate;
 
@@ -275,7 +275,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                       );
 
                   if (!mounted) return;
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
                   if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
                     await Utilities.showAlert('E-mail successfully sent',
                         'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');

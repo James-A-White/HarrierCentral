@@ -8,8 +8,8 @@ class EditRunDetailsPage extends StatefulWidget {
     this.isNewRun,
     this.eventAggregate,
     this.getUpdatedEventAggregate, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final bool isNewRun;
   final RunAdminAggregate eventAggregate;
@@ -672,7 +672,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                   );
 
                                   if (!mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
                                 }
                                 await Future<void>.delayed(const Duration(milliseconds: 500));
                                 setState(() {
@@ -763,7 +763,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             );
 
                             if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
                           }
                         }
                       }),
@@ -1102,7 +1102,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _mapCenter = latlng.LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
+                      _mapCenter = const latlng.LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
                     });
                   },
                   child: SizedBox(
@@ -1217,7 +1217,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 final EventsService nSvc = EventsService();
                                 // check to see if "no location" is set. If so, don't overwrite it
                                 if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG) && (_mapKey.currentState?.mapController != null)) {
-                                  _mapCenter = _mapKey.currentState!.mapController.center;
+                                  _mapCenter = _mapKey.currentState!.mapController.camera.center;
                                 }
                                 final String eventId = await nSvc.addEditEvent(
                                   eventId: _eventAggregate.event.eventId,
@@ -1792,7 +1792,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
                                       if (widget.isNewRun) {
                                         if (!mounted) return;
-                                        Navigator.of(context).pop();
+                                        Navigator.of(navigatorKey.currentContext!).pop();
                                       } else {
                                         final SnackBar snackBar = SnackBar(
                                           duration: const Duration(seconds: 3),
@@ -1805,7 +1805,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                         );
 
                                         if (!mounted) return;
-                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
                                       }
                                       setState(() {
                                         _isUpdating = false;
@@ -1844,33 +1844,28 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
 class CheckboxFormField extends FormField<bool> {
   CheckboxFormField({
-    Key? key,
+    super.key,
     required Widget title,
-    FormFieldSetter<bool>? onSaved,
-    FormFieldValidator<bool>? validator,
-    bool initialValue = false,
+    super.onSaved,
+    super.validator,
+    bool super.initialValue = false,
     bool tristate = false,
-  }) : super(
-            key: key,
-            onSaved: onSaved,
-            validator: validator,
-            initialValue: initialValue,
-            builder: (FormFieldState<bool> state) {
-              return CheckboxListTile(
-                dense: state.hasError,
-                title: title,
-                tristate: tristate,
-                value: state.value,
-                onChanged: state.didChange,
-                subtitle: state.hasError
-                    ? Builder(
-                        builder: (BuildContext context) => Text(
-                          state.errorText ?? '',
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
-                        ),
-                      )
-                    : null,
-                controlAffinity: ListTileControlAffinity.leading,
-              );
-            });
+  }) : super(builder: (FormFieldState<bool> state) {
+          return CheckboxListTile(
+            dense: state.hasError,
+            title: title,
+            tristate: tristate,
+            value: state.value,
+            onChanged: state.didChange,
+            subtitle: state.hasError
+                ? Builder(
+                    builder: (BuildContext context) => Text(
+                      state.errorText ?? '',
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                  )
+                : null,
+            controlAffinity: ListTileControlAffinity.leading,
+          );
+        });
 }

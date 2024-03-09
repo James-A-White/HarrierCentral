@@ -12,7 +12,7 @@ part of 'db_error_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 DbErrorModel _$DbErrorModelFromJson(Map<String, dynamic> json) {
   return _DbErrorModel.fromJson(json);
@@ -98,11 +98,11 @@ class _$DbErrorModelCopyWithImpl<$Res, $Val extends DbErrorModel>
 }
 
 /// @nodoc
-abstract class _$$_DbErrorModelCopyWith<$Res>
+abstract class _$$DbErrorModelImplCopyWith<$Res>
     implements $DbErrorModelCopyWith<$Res> {
-  factory _$$_DbErrorModelCopyWith(
-          _$_DbErrorModel value, $Res Function(_$_DbErrorModel) then) =
-      __$$_DbErrorModelCopyWithImpl<$Res>;
+  factory _$$DbErrorModelImplCopyWith(
+          _$DbErrorModelImpl value, $Res Function(_$DbErrorModelImpl) then) =
+      __$$DbErrorModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -115,11 +115,11 @@ abstract class _$$_DbErrorModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_DbErrorModelCopyWithImpl<$Res>
-    extends _$DbErrorModelCopyWithImpl<$Res, _$_DbErrorModel>
-    implements _$$_DbErrorModelCopyWith<$Res> {
-  __$$_DbErrorModelCopyWithImpl(
-      _$_DbErrorModel _value, $Res Function(_$_DbErrorModel) _then)
+class __$$DbErrorModelImplCopyWithImpl<$Res>
+    extends _$DbErrorModelCopyWithImpl<$Res, _$DbErrorModelImpl>
+    implements _$$DbErrorModelImplCopyWith<$Res> {
+  __$$DbErrorModelImplCopyWithImpl(
+      _$DbErrorModelImpl _value, $Res Function(_$DbErrorModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -132,7 +132,7 @@ class __$$_DbErrorModelCopyWithImpl<$Res>
     Object? debugMessage = freezed,
     Object? errorProc = freezed,
   }) {
-    return _then(_$_DbErrorModel(
+    return _then(_$DbErrorModelImpl(
       errorId: freezed == errorId
           ? _value.errorId
           : errorId // ignore: cast_nullable_to_non_nullable
@@ -163,8 +163,8 @@ class __$$_DbErrorModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_DbErrorModel implements _DbErrorModel {
-  _$_DbErrorModel(
+class _$DbErrorModelImpl implements _DbErrorModel {
+  _$DbErrorModelImpl(
       {this.errorId,
       this.errorType,
       this.errorTitle,
@@ -172,8 +172,8 @@ class _$_DbErrorModel implements _DbErrorModel {
       this.debugMessage,
       this.errorProc});
 
-  factory _$_DbErrorModel.fromJson(Map<String, dynamic> json) =>
-      _$$_DbErrorModelFromJson(json);
+  factory _$DbErrorModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$DbErrorModelImplFromJson(json);
 
   @override
   final String? errorId;
@@ -194,10 +194,10 @@ class _$_DbErrorModel implements _DbErrorModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_DbErrorModel &&
+            other is _$DbErrorModelImpl &&
             (identical(other.errorId, errorId) || other.errorId == errorId) &&
             (identical(other.errorType, errorType) ||
                 other.errorType == errorType) &&
@@ -219,12 +219,12 @@ class _$_DbErrorModel implements _DbErrorModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_DbErrorModelCopyWith<_$_DbErrorModel> get copyWith =>
-      __$$_DbErrorModelCopyWithImpl<_$_DbErrorModel>(this, _$identity);
+  _$$DbErrorModelImplCopyWith<_$DbErrorModelImpl> get copyWith =>
+      __$$DbErrorModelImplCopyWithImpl<_$DbErrorModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_DbErrorModelToJson(
+    return _$$DbErrorModelImplToJson(
       this,
     );
   }
@@ -237,10 +237,10 @@ abstract class _DbErrorModel implements DbErrorModel {
       final String? errorTitle,
       final String? errorUserMessage,
       final String? debugMessage,
-      final String? errorProc}) = _$_DbErrorModel;
+      final String? errorProc}) = _$DbErrorModelImpl;
 
   factory _DbErrorModel.fromJson(Map<String, dynamic> json) =
-      _$_DbErrorModel.fromJson;
+      _$DbErrorModelImpl.fromJson;
 
   @override
   String? get errorId;
@@ -256,6 +256,6 @@ abstract class _DbErrorModel implements DbErrorModel {
   String? get errorProc;
   @override
   @JsonKey(ignore: true)
-  _$$_DbErrorModelCopyWith<_$_DbErrorModel> get copyWith =>
+  _$$DbErrorModelImplCopyWith<_$DbErrorModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

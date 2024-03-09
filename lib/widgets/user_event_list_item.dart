@@ -3,11 +3,11 @@ import 'package:intl/intl.dart';
 
 class UserEventListItem extends StatelessWidget {
   const UserEventListItem({
-    Key? key,
+    super.key,
     required this.item,
     required this.kennelInfo,
     required this.setAttendenceStateCallback,
-  }) : super(key: key);
+  });
 
   final UserRunHistoryModel item;
   final RunHistoryModel kennelInfo;
@@ -149,12 +149,10 @@ class UserEventListItem extends StatelessWidget {
                                 Text(
                                   creditWasUsed ? 'From credit' : 'Paid',
                                   style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor),
-                                  textScaleFactor: 1.0,
                                 ),
                                 Text(
                                   creditWasUsed ? amountDue : creditAmount,
                                   style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor),
-                                  textScaleFactor: 1.0,
                                 ),
                               ],
                             ),
@@ -166,7 +164,6 @@ class UserEventListItem extends StatelessWidget {
                                 Text(
                                   'Credit left',
                                   style: netPayment == 0 ? smallTextBlack.copyWith(color: creditAvailableColor) : smallTextBlackBold.copyWith(color: creditAvailableColor),
-                                  textScaleFactor: 1.0,
                                 ),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -192,7 +189,6 @@ class UserEventListItem extends StatelessWidget {
                                     Text(
                                       creditAvailable,
                                       style: netPayment == 0 ? smallTextBlack.copyWith(color: creditAvailableColor) : smallTextBlackBold.copyWith(color: creditAvailableColor),
-                                      textScaleFactor: 1.0,
                                     ),
                                     if (netPayment != 0) ...<Widget>[const SizedBox(width: 3.0)],
                                   ],

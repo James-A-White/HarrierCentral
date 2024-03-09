@@ -12,7 +12,7 @@ part of 'regions_model_ns.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 RegionsModel _$RegionsModelFromJson(Map<String, dynamic> json) {
   return _RegionsModel.fromJson(json);
@@ -112,11 +112,11 @@ class _$RegionsModelCopyWithImpl<$Res, $Val extends RegionsModel>
 }
 
 /// @nodoc
-abstract class _$$_RegionsModelCopyWith<$Res>
+abstract class _$$RegionsModelImplCopyWith<$Res>
     implements $RegionsModelCopyWith<$Res> {
-  factory _$$_RegionsModelCopyWith(
-          _$_RegionsModel value, $Res Function(_$_RegionsModel) then) =
-      __$$_RegionsModelCopyWithImpl<$Res>;
+  factory _$$RegionsModelImplCopyWith(
+          _$RegionsModelImpl value, $Res Function(_$RegionsModelImpl) then) =
+      __$$RegionsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -131,11 +131,11 @@ abstract class _$$_RegionsModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_RegionsModelCopyWithImpl<$Res>
-    extends _$RegionsModelCopyWithImpl<$Res, _$_RegionsModel>
-    implements _$$_RegionsModelCopyWith<$Res> {
-  __$$_RegionsModelCopyWithImpl(
-      _$_RegionsModel _value, $Res Function(_$_RegionsModel) _then)
+class __$$RegionsModelImplCopyWithImpl<$Res>
+    extends _$RegionsModelCopyWithImpl<$Res, _$RegionsModelImpl>
+    implements _$$RegionsModelImplCopyWith<$Res> {
+  __$$RegionsModelImplCopyWithImpl(
+      _$RegionsModelImpl _value, $Res Function(_$RegionsModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -150,7 +150,7 @@ class __$$_RegionsModelCopyWithImpl<$Res>
     Object? removed = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_$_RegionsModel(
+    return _then(_$RegionsModelImpl(
       regionId: null == regionId
           ? _value.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
@@ -189,8 +189,8 @@ class __$$_RegionsModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_RegionsModel implements _RegionsModel {
-  _$_RegionsModel(
+class _$RegionsModelImpl implements _RegionsModel {
+  _$RegionsModelImpl(
       {required this.regionId,
       required this.regionName,
       this.regionSearchTags,
@@ -200,8 +200,8 @@ class _$_RegionsModel implements _RegionsModel {
       this.removed,
       this.updatedAt});
 
-  factory _$_RegionsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_RegionsModelFromJson(json);
+  factory _$RegionsModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$RegionsModelImplFromJson(json);
 
   @override
   final String regionId;
@@ -226,10 +226,10 @@ class _$_RegionsModel implements _RegionsModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_RegionsModel &&
+            other is _$RegionsModelImpl &&
             (identical(other.regionId, regionId) ||
                 other.regionId == regionId) &&
             (identical(other.regionName, regionName) ||
@@ -263,12 +263,12 @@ class _$_RegionsModel implements _RegionsModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_RegionsModelCopyWith<_$_RegionsModel> get copyWith =>
-      __$$_RegionsModelCopyWithImpl<_$_RegionsModel>(this, _$identity);
+  _$$RegionsModelImplCopyWith<_$RegionsModelImpl> get copyWith =>
+      __$$RegionsModelImplCopyWithImpl<_$RegionsModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_RegionsModelToJson(
+    return _$$RegionsModelImplToJson(
       this,
     );
   }
@@ -283,10 +283,10 @@ abstract class _RegionsModel implements RegionsModel {
       required final String countryId,
       final String? flagFile,
       final int? removed,
-      final DateTime? updatedAt}) = _$_RegionsModel;
+      final DateTime? updatedAt}) = _$RegionsModelImpl;
 
   factory _RegionsModel.fromJson(Map<String, dynamic> json) =
-      _$_RegionsModel.fromJson;
+      _$RegionsModelImpl.fromJson;
 
   @override
   String get regionId;
@@ -306,6 +306,6 @@ abstract class _RegionsModel implements RegionsModel {
   DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
-  _$$_RegionsModelCopyWith<_$_RegionsModel> get copyWith =>
+  _$$RegionsModelImplCopyWith<_$RegionsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

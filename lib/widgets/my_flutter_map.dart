@@ -54,8 +54,8 @@ class MyFlutterMapState extends State<MyFlutterMap> {
       mapCenterPoint = widget.kennelLocation;
     }
 
-    if (_mapControllerAvailable && (mapController.center != mapCenterPoint)) {
-      mapController.move(mapCenterPoint, mapController.zoom);
+    if (_mapControllerAvailable && (mapController.camera.center != mapCenterPoint)) {
+      mapController.move(mapCenterPoint, mapController.camera.zoom);
     }
 
     if (_mapControllerAvailable && (_oldTrueNorthLock != widget.trueNorthLock)) {
@@ -70,17 +70,20 @@ class MyFlutterMapState extends State<MyFlutterMap> {
       mapController: mapController,
       options: widget.trueNorthLock
           ? MapOptions(
-              interactiveFlags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
-              center: mapCenterPoint,
-              zoom: widget.zoom,
+              interactionOptions: InteractionOptions(
+                flags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
+              ),
+              initialCenter: mapCenterPoint,
+              initialZoom: widget.zoom,
               minZoom: widget.minZoom,
               maxZoom: widget.maxZoom,
-              rotation: 0.0,
+              initialRotation: 0.0,
             )
           : MapOptions(
-              interactiveFlags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
-              center: mapCenterPoint,
-              zoom: widget.zoom,
+              interactionOptions:
+                  InteractionOptions(flags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate),
+              initialCenter: mapCenterPoint,
+              initialZoom: widget.zoom,
               minZoom: widget.minZoom,
               maxZoom: widget.maxZoom,
             ),

@@ -3,7 +3,7 @@ import 'package:harrier_central/imports.dart';
 class PaymentTerminalConfigPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const PaymentTerminalConfigPage({Key? key}) : super(key: key);
+  const PaymentTerminalConfigPage({super.key});
 
   @override
   PaymentTerminalConfigPageState createState() => PaymentTerminalConfigPageState();
@@ -25,9 +25,9 @@ class PaymentTerminalConfigPageState extends State<PaymentTerminalConfigPage> {
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        child: Stack(
+        child: const Stack(
           alignment: AlignmentDirectional.center,
-          children: const <Widget>[
+          children: <Widget>[
             Positioned(
                 top: 10,
                 left: 20,
@@ -42,7 +42,7 @@ class PaymentTerminalConfigPageState extends State<PaymentTerminalConfigPage> {
 }
 
 class PaymentTerminalConfigContent extends StatefulWidget {
-  const PaymentTerminalConfigContent({Key? key}) : super(key: key);
+  const PaymentTerminalConfigContent({super.key});
 
   @override
   PaymentTerminalConfigContentState createState() => PaymentTerminalConfigContentState();

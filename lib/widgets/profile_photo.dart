@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 
 class ProfilePhoto extends StatelessWidget {
   const ProfilePhoto({
-    Key? key,
+    super.key,
     this.profilePhotoUrl,
     this.photoHeight = 75.0,
     this.leftPadding = 0,
-  }) : super(key: key);
+  });
 
   final String? profilePhotoUrl;
   final double photoHeight;

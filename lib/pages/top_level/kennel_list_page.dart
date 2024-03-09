@@ -5,8 +5,8 @@ final GlobalKey<KennelsListPageState> kennelListPageKey = GlobalKey<KennelsListP
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   KennelsListPageState createState() => KennelsListPageState();

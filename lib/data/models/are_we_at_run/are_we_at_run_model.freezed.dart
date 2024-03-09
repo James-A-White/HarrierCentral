@@ -12,7 +12,7 @@ part of 'are_we_at_run_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 AreWeAtRunModel _$AreWeAtRunModelFromJson(Map<String, dynamic> json) {
   return _AreWeAtRunModel.fromJson(json);
@@ -203,11 +203,11 @@ class _$AreWeAtRunModelCopyWithImpl<$Res, $Val extends AreWeAtRunModel>
 }
 
 /// @nodoc
-abstract class _$$_AreWeAtRunModelCopyWith<$Res>
+abstract class _$$AreWeAtRunModelImplCopyWith<$Res>
     implements $AreWeAtRunModelCopyWith<$Res> {
-  factory _$$_AreWeAtRunModelCopyWith(
-          _$_AreWeAtRunModel value, $Res Function(_$_AreWeAtRunModel) then) =
-      __$$_AreWeAtRunModelCopyWithImpl<$Res>;
+  factory _$$AreWeAtRunModelImplCopyWith(_$AreWeAtRunModelImpl value,
+          $Res Function(_$AreWeAtRunModelImpl) then) =
+      __$$AreWeAtRunModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -235,11 +235,11 @@ abstract class _$$_AreWeAtRunModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_AreWeAtRunModelCopyWithImpl<$Res>
-    extends _$AreWeAtRunModelCopyWithImpl<$Res, _$_AreWeAtRunModel>
-    implements _$$_AreWeAtRunModelCopyWith<$Res> {
-  __$$_AreWeAtRunModelCopyWithImpl(
-      _$_AreWeAtRunModel _value, $Res Function(_$_AreWeAtRunModel) _then)
+class __$$AreWeAtRunModelImplCopyWithImpl<$Res>
+    extends _$AreWeAtRunModelCopyWithImpl<$Res, _$AreWeAtRunModelImpl>
+    implements _$$AreWeAtRunModelImplCopyWith<$Res> {
+  __$$AreWeAtRunModelImplCopyWithImpl(
+      _$AreWeAtRunModelImpl _value, $Res Function(_$AreWeAtRunModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -267,7 +267,7 @@ class __$$_AreWeAtRunModelCopyWithImpl<$Res>
     Object? membershipExpirationDate = null,
     Object? extrasDescription = freezed,
   }) {
-    return _then(_$_AreWeAtRunModel(
+    return _then(_$AreWeAtRunModelImpl(
       eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
@@ -358,8 +358,8 @@ class __$$_AreWeAtRunModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_AreWeAtRunModel implements _AreWeAtRunModel {
-  _$_AreWeAtRunModel(
+class _$AreWeAtRunModelImpl implements _AreWeAtRunModel {
+  _$AreWeAtRunModelImpl(
       {required this.eventId,
       required this.eventName,
       this.eventImage,
@@ -382,8 +382,8 @@ class _$_AreWeAtRunModel implements _AreWeAtRunModel {
       required this.membershipExpirationDate,
       this.extrasDescription});
 
-  factory _$_AreWeAtRunModel.fromJson(Map<String, dynamic> json) =>
-      _$$_AreWeAtRunModelFromJson(json);
+  factory _$AreWeAtRunModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AreWeAtRunModelImplFromJson(json);
 
   @override
   final String eventId;
@@ -441,10 +441,10 @@ class _$_AreWeAtRunModel implements _AreWeAtRunModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_AreWeAtRunModel &&
+            other is _$AreWeAtRunModelImpl &&
             (identical(other.eventId, eventId) || other.eventId == eventId) &&
             (identical(other.eventName, eventName) ||
                 other.eventName == eventName) &&
@@ -519,12 +519,13 @@ class _$_AreWeAtRunModel implements _AreWeAtRunModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_AreWeAtRunModelCopyWith<_$_AreWeAtRunModel> get copyWith =>
-      __$$_AreWeAtRunModelCopyWithImpl<_$_AreWeAtRunModel>(this, _$identity);
+  _$$AreWeAtRunModelImplCopyWith<_$AreWeAtRunModelImpl> get copyWith =>
+      __$$AreWeAtRunModelImplCopyWithImpl<_$AreWeAtRunModelImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_AreWeAtRunModelToJson(
+    return _$$AreWeAtRunModelImplToJson(
       this,
     );
   }
@@ -552,10 +553,10 @@ abstract class _AreWeAtRunModel implements AreWeAtRunModel {
       final int allowSelfPayment,
       final String currencySymbol,
       required final DateTime membershipExpirationDate,
-      final String? extrasDescription}) = _$_AreWeAtRunModel;
+      final String? extrasDescription}) = _$AreWeAtRunModelImpl;
 
   factory _AreWeAtRunModel.fromJson(Map<String, dynamic> json) =
-      _$_AreWeAtRunModel.fromJson;
+      _$AreWeAtRunModelImpl.fromJson;
 
   @override
   String get eventId;
@@ -601,6 +602,6 @@ abstract class _AreWeAtRunModel implements AreWeAtRunModel {
   String? get extrasDescription;
   @override
   @JsonKey(ignore: true)
-  _$$_AreWeAtRunModelCopyWith<_$_AreWeAtRunModel> get copyWith =>
+  _$$AreWeAtRunModelImplCopyWith<_$AreWeAtRunModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -14,9 +14,9 @@ enum RunLocationsViewMode { all, past, recent, myRuns }
 
 class RunAndKennelMapPage extends StatefulWidget {
   const RunAndKennelMapPage({
-    Key? key,
+    super.key,
     this.kennel,
-  }) : super(key: key);
+  });
 
   final KennelsModel? kennel;
 
@@ -276,9 +276,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
 
                   if ((_homeKennelLat != null) && (_homeKennelLon != null)) {
-                    _mapController.move(latlng.LatLng(_homeKennelLat!, _homeKennelLon!), _mapController.zoom);
+                    _mapController.move(latlng.LatLng(_homeKennelLat!, _homeKennelLon!), _mapController.camera.zoom);
                   } else if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-                    _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!), _mapController.zoom);
+                    _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!), _mapController.camera.zoom);
                   }
 
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -295,7 +295,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
 
                   if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-                    _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!), _mapController.zoom);
+                    _mapController.move(latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!), _mapController.camera.zoom);
                   }
 
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -380,8 +380,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       _runLocationMarkers = <Marker>[];
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
-          final double? lat = results[i]['lat'] == null ? null : results[i]['lat'];
-          final double? lon = results[i]['lon'] == null ? null : results[i]['lon'];
+          final double? lat = results[i]['lat'];
+          final double? lon = results[i]['lon'];
           if ((lat != null) && (lon != null)) {
             if ((lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
               EventModel em = EventModel.fromJson(results[i]);
@@ -483,8 +483,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       final String? homeKennelId = getStringPref(StringPrefsEnum.homeKennelId);
       if (_filteredKennels.isNotEmpty) {
         for (int i = 0; i < _filteredKennels.length; i++) {
-          final double? lat = _filteredKennels[i]['lat'] == null ? null : _filteredKennels[i]['lat'];
-          final double? lon = _filteredKennels[i]['lon'] == null ? null : _filteredKennels[i]['lon'];
+          final double? lat = _filteredKennels[i]['lat'];
+          final double? lon = _filteredKennels[i]['lon'];
 
           if ((lat != null) && (lon != null)) {
             if (_filteredKennels[i]['kennelId'] == homeKennelId) {
@@ -495,7 +495,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               //await setNumPref(NumPrefsEnum.homeKennelLon, _homeKennelLon);
 
               if ((_mapCenterOption == centerOnHomeKennel.value) && (_homeKennelLat != null) && (_homeKennelLon != null)) {
-                _mapController.move(latlng.LatLng(_homeKennelLat!, _homeKennelLon!), _mapController.zoom);
+                _mapController.move(latlng.LatLng(_homeKennelLat!, _homeKennelLon!), _mapController.camera.zoom);
               }
             }
 
@@ -684,16 +684,17 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    interactiveFlags: _trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
-                    center: ((_mapCenterOption == centerOnCurrentLocation.value) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null))
+                    interactionOptions:
+                        InteractionOptions(flags: (_trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate)),
+                    initialCenter: ((_mapCenterOption == centerOnCurrentLocation.value) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null))
                         ? latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!)
                         : ((_mapCenterOption == centerOnHomeKennel.value) && (_homeKennelLat != null) && (_homeKennelLat != null))
                             ? latlng.LatLng(_homeKennelLat!, _homeKennelLon!)
                             : ((widget.kennel != null) && (widget.kennel!.kennelLatitude != null) && (widget.kennel!.kennelLongitude != null))
                                 ? latlng.LatLng(widget.kennel!.kennelLatitude!, widget.kennel!.kennelLongitude!)
-                                : null,
+                                : latlng.LatLng(G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE, G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE),
 
-                    zoom: 10.0,
+                    initialZoom: 10.0,
                     minZoom: 1.0,
                     maxZoom: 18.0,
                     // plugins: <MarkerClusterPlugin>[

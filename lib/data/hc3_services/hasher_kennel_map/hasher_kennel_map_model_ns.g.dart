@@ -6,9 +6,9 @@ part of 'hasher_kennel_map_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_HasherKennelMapModel _$$_HasherKennelMapModelFromJson(
+_$HasherKennelMapModelImpl _$$HasherKennelMapModelImplFromJson(
         Map<String, dynamic> json) =>
-    _$_HasherKennelMapModel(
+    _$HasherKennelMapModelImpl(
       hkmId: json['hkmId'] as String,
       userId: json['userId'] as String,
       kennelId: json['kennelId'] as String,
@@ -49,8 +49,8 @@ _$_HasherKennelMapModel _$$_HasherKennelMapModelFromJson(
       removed: json['removed'] as int?,
     );
 
-Map<String, dynamic> _$$_HasherKennelMapModelToJson(
-        _$_HasherKennelMapModel instance) =>
+Map<String, dynamic> _$$HasherKennelMapModelImplToJson(
+        _$HasherKennelMapModelImpl instance) =>
     <String, dynamic>{
       'hkmId': instance.hkmId,
       'userId': instance.userId,

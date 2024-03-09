@@ -2,9 +2,9 @@ import 'package:harrier_central/imports.dart';
 
 class CheckInScannerPage extends StatefulWidget {
   const CheckInScannerPage({
-    Key? key,
+    super.key,
     required this.eventAggregate,
-  }) : super(key: key);
+  });
 
   final RunAdminAggregate eventAggregate;
 
@@ -363,7 +363,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
     final List<dynamic> paymentResult =
         await paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly, AppDomainType.event);
 
-    if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
+    if (paymentResult.isNotEmpty) {
       final int paymentType = paymentResult[0]['paymentType'];
       final String amountPaid = IveCoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'] ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 

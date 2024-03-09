@@ -6,9 +6,9 @@ part of 'run_query_extensions_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_RunQueryExtensionsModel _$$_RunQueryExtensionsModelFromJson(
+_$RunQueryExtensionsModelImpl _$$RunQueryExtensionsModelImplFromJson(
         Map<String, dynamic> json) =>
-    _$_RunQueryExtensionsModel(
+    _$RunQueryExtensionsModelImpl(
       daysUntilEvent: json['daysUntilEvent'] as int? ?? 0,
       appAccessFlags: json['appAccessFlags'] as int? ?? 0,
       digitsAfterDecimal: json['digitsAfterDecimal'] as int? ?? 2,
@@ -30,8 +30,8 @@ _$_RunQueryExtensionsModel _$$_RunQueryExtensionsModelFromJson(
       runClassification: json['runClassification'] as int? ?? 3,
     );
 
-Map<String, dynamic> _$$_RunQueryExtensionsModelToJson(
-        _$_RunQueryExtensionsModel instance) =>
+Map<String, dynamic> _$$RunQueryExtensionsModelImplToJson(
+        _$RunQueryExtensionsModelImpl instance) =>
     <String, dynamic>{
       'daysUntilEvent': instance.daysUntilEvent,
       'appAccessFlags': instance.appAccessFlags,

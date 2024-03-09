@@ -4,7 +4,7 @@ import 'package:photo_view/photo_view.dart';
 
 class ZoomableImagePage2 extends StatelessWidget {
   const ZoomableImagePage2({
-    Key? key,
+    super.key,
     this.file,
     required this.pageTitle,
     this.imageUrl,
@@ -14,7 +14,7 @@ class ZoomableImagePage2 extends StatelessWidget {
     this.assetImageText,
     this.margin,
     this.kennelId,
-  }) : super(key: key);
+  });
 
   final platform.File? file;
   final String pageTitle;

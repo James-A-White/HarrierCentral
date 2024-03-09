@@ -1,12 +1,8 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
-import 'dart:core';
-import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:harrier_central/imports.dart';
 
-import 'package:ive_flutter_core_mobile/util/core_mobile_utilities.dart';
 
 enum EnumConnectionStatus2 { connected, notConnected }
 

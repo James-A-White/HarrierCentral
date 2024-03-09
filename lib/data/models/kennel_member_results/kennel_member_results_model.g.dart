@@ -6,9 +6,9 @@ part of 'kennel_member_results_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_KennelMemberResultsModel _$$_KennelMemberResultsModelFromJson(
+_$KennelMemberResultsModelImpl _$$KennelMemberResultsModelImplFromJson(
         Map<String, dynamic> json) =>
-    _$_KennelMemberResultsModel(
+    _$KennelMemberResultsModelImpl(
       hasherId: json['hasherId'] as String,
       dispName: json['dispName'] as String,
       nameForSort: json['nameForSort'] as String,
@@ -39,8 +39,8 @@ _$_KennelMemberResultsModel _$$_KennelMemberResultsModelFromJson(
       memberFollowingStatus: json['memberFollowingStatus'] as int? ?? 0,
     );
 
-Map<String, dynamic> _$$_KennelMemberResultsModelToJson(
-        _$_KennelMemberResultsModel instance) =>
+Map<String, dynamic> _$$KennelMemberResultsModelImplToJson(
+        _$KennelMemberResultsModelImpl instance) =>
     <String, dynamic>{
       'hasherId': instance.hasherId,
       'dispName': instance.dispName,

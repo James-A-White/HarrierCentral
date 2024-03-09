@@ -2,9 +2,9 @@ import 'package:harrier_central/imports.dart';
 
 class EmailEditorPage extends StatefulWidget {
   const EmailEditorPage({
-    Key? key,
+    super.key,
     required this.eventId,
-  }) : super(key: key);
+  });
 
   final String eventId;
 
@@ -61,9 +61,9 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  Future<bool> _requestPop() {
+  void _requestPop(bool _) {
     setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
-    return Future<bool>.value(true);
+    return;
   }
 
   @override
@@ -78,8 +78,8 @@ class EmailEditorPageState extends State<EmailEditorPage> {
         ),
       ),
     );
-    return WillPopScope(
-      onWillPop: _requestPop,
+    return PopScope(
+      onPopInvoked: _requestPop,
       child: Scaffold(
         key: _scaffoldKey,
         resizeToAvoidBottomInset: false,
@@ -317,7 +317,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
       final Map<String, String> result = await G0<TableModel>().eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
       if (result['result'] != null) {
         if (result['result']!.toLowerCase().startsWith('success')) {
           await Utilities.showAlert('E-mails successfully sent', result['result']!, 'OK');

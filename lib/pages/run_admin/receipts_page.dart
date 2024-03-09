@@ -2,9 +2,9 @@ import 'package:harrier_central/imports.dart';
 
 class ReceiptsList extends StatefulWidget {
   const ReceiptsList({
-    Key? key,
+    super.key,
     required this.eventAggregate,
-  }) : super(key: key);
+  });
 
   final RunAdminAggregate eventAggregate;
 
@@ -235,7 +235,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                           background: receipt['removed'] == 0
                               ? Container(
                                   color: Colors.red,
-                                  child: Row(children: const <Widget>[
+                                  child: const Row(children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
@@ -250,7 +250,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                                   ]))
                               : Container(
                                   color: Colors.green,
-                                  child: Row(children: const <Widget>[
+                                  child: const Row(children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
@@ -266,9 +266,9 @@ class ReceiptsListState extends State<ReceiptsList> {
                           secondaryBackground: (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY) && (receipt['reimbursedBy'] != GUID_8)
                               ? Container(
                                   color: Colors.yellow,
-                                  child: Row(
+                                  child: const Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
-                                    children: const <Widget>[
+                                    children: <Widget>[
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Icon(FontAwesome.times_circle, color: Colors.black, size: 35.0),
@@ -285,9 +285,9 @@ class ReceiptsListState extends State<ReceiptsList> {
                                 )
                               : Container(
                                   color: Colors.green,
-                                  child: Row(
+                                  child: const Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
-                                    children: const <Widget>[
+                                    children: <Widget>[
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
@@ -360,12 +360,12 @@ class ReceiptsListState extends State<ReceiptsList> {
 
 class ReceiptListItem extends StatelessWidget {
   const ReceiptListItem({
-    Key? key,
+    super.key,
     required this.receipt,
     required this.itemPressed,
     required this.currencySymbol,
     required this.digitsAfterDecimal,
-  }) : super(key: key);
+  });
 
   final Map<String, dynamic> receipt;
   final Function itemPressed;

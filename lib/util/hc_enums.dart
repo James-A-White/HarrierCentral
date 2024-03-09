@@ -97,7 +97,7 @@ abstract class HcEnum<T> {
 //////////////////////////
 
 class EnumVirginVisitor<int> extends HcEnum<int> {
-  const EnumVirginVisitor(int val) : super(val);
+  const EnumVirginVisitor(super.val);
 }
 
 const EnumVirginVisitor<int> enumHasher = EnumVirginVisitor<int>(0);
@@ -108,7 +108,7 @@ const EnumVirginVisitor<int> enumKnownVisitor = EnumVirginVisitor<int>(3);
 //////////////////////////
 ///
 class EnumNotificationState<int> extends HcEnum<int> {
-  const EnumNotificationState(int val) : super(val);
+  const EnumNotificationState(super.val);
 }
 
 const EnumNotificationState<int> notificationsUnchanged = EnumNotificationState<int>(-1);
@@ -119,7 +119,7 @@ const EnumNotificationState<int> notificationsOff = EnumNotificationState<int>(2
 //////////////////////////
 ///
 class EnumEmailAlertState<int> extends HcEnum<int> {
-  const EnumEmailAlertState(int val) : super(val);
+  const EnumEmailAlertState(super.val);
 }
 
 const EnumEmailAlertState<int> emailAlertsUnchanged = EnumEmailAlertState<int>(-1);
@@ -130,7 +130,7 @@ const EnumEmailAlertState<int> emailAlertsOff = EnumEmailAlertState<int>(2);
 //////////////////////////
 
 class EnumRsvpState<int> extends HcEnum<int> {
-  const EnumRsvpState(int val) : super(val);
+  const EnumRsvpState(super.val);
 }
 
 const EnumRsvpState<int> rsvpUpdating = EnumRsvpState<int>(-2);
@@ -143,7 +143,7 @@ const EnumRsvpState<int> rsvpYes = EnumRsvpState<int>(3);
 //////////////////////////
 
 class EnumYesNo<int> extends HcEnum<int> {
-  const EnumYesNo(int val) : super(val);
+  const EnumYesNo(super.val);
 }
 
 const EnumYesNo<int> enumYesNo_Cancel = EnumYesNo<int>(-1);
@@ -153,7 +153,7 @@ const EnumYesNo<int> enumYesNo_Yes = EnumYesNo<int>(1);
 //////////////////////////
 
 class EnumCheckinOptions<int> extends HcEnum<int> {
-  const EnumCheckinOptions(int val) : super(val);
+  const EnumCheckinOptions(super.val);
 }
 
 const EnumCheckinOptions<int> enumCheckInOption_Cancel = EnumCheckinOptions<int>(-1);
@@ -167,7 +167,7 @@ const EnumCheckinOptions<int> enumCheckInOption_YesAndPayPlusExtrasByBankXfer = 
 //////////////////////////
 
 class EnumIsHare<int> extends HcEnum<int> {
-  const EnumIsHare(int val) : super(val);
+  const EnumIsHare(super.val);
 }
 
 const EnumIsHare<int> isHareNoChange = EnumIsHare<int>(-1);
@@ -177,7 +177,7 @@ const EnumIsHare<int> isHareYes = EnumIsHare<int>(1);
 /////////////////////////
 
 class EnumAttendenceState<int> extends HcEnum<int> {
-  const EnumAttendenceState(int val) : super(val);
+  const EnumAttendenceState(super.val);
 }
 
 const EnumAttendenceState<int> attendenceUpdating = EnumAttendenceState<int>(-2);
@@ -191,7 +191,7 @@ const EnumAttendenceState<int> attendenceGone = EnumAttendenceState<int>(40);
 //////////////////////////
 
 class EnumIsPaid<int> extends HcEnum<int> {
-  const EnumIsPaid(int val) : super(val);
+  const EnumIsPaid(super.val);
 }
 
 const EnumIsPaid<int> isPaidUpdating = EnumIsPaid<int>(-2);
@@ -201,7 +201,7 @@ const EnumIsPaid<int> isPaidYes = EnumIsPaid<int>(1);
 //////////////////////////
 
 class EnumPaymentType<int> extends HcEnum<int> {
-  const EnumPaymentType(int val) : super(val);
+  const EnumPaymentType(super.val);
 }
 
 const EnumPaymentType<int> paymentTypeUnknown = EnumPaymentType<int>(0);
@@ -218,7 +218,7 @@ const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(100
 //////////////////////////
 
 class EnumPayForExtras<int> extends HcEnum<int> {
-  const EnumPayForExtras(int val) : super(val);
+  const EnumPayForExtras(super.val);
 }
 
 const EnumPayForExtras<int> payForRunOnly = EnumPayForExtras<int>(0);
@@ -227,7 +227,7 @@ const EnumPayForExtras<int> payForRunAndExtras = EnumPayForExtras<int>(1);
 //////////////////////////
 
 class EnumProductType<int> extends HcEnum<int> {
-  const EnumProductType(int val) : super(val);
+  const EnumProductType(super.val);
 }
 
 const EnumProductType<int> productTypeEvent = EnumProductType<int>(1);
@@ -237,7 +237,7 @@ const EnumProductType<int> productTypeHaberdashery = EnumProductType<int>(3);
 //////////////////////////
 
 class EnumCheckInType<int> extends HcEnum<int> {
-  const EnumCheckInType(int val) : super(val);
+  const EnumCheckInType(super.val);
 }
 
 const EnumCheckInType<int> checkinTypeRunStart = EnumCheckInType<int>(0);
@@ -246,7 +246,7 @@ const EnumCheckInType<int> checkinTypeRunEnd = EnumCheckInType<int>(1);
 //////////////////////////
 
 class EnumHasherType<int> extends HcEnum<int> {
-  const EnumHasherType(int val) : super(val);
+  const EnumHasherType(super.val);
 }
 
 const EnumHasherType<int> hasherTypeMember = EnumHasherType<int>(0);
@@ -256,7 +256,7 @@ const EnumHasherType<int> hasherTypeVirgin = EnumHasherType<int>(2);
 //////////////////////////
 
 class EnumFollowType<int> extends HcEnum<int> {
-  const EnumFollowType(int val) : super(val);
+  const EnumFollowType(super.val);
 }
 
 const EnumFollowType<int> followTypeCancel = EnumFollowType<int>(-1);
@@ -268,7 +268,7 @@ const EnumFollowType<int> followTypeToggleHomeKennel = EnumFollowType<int>(3);
 //////////////////////////
 
 class EnumNotificationType<int> extends HcEnum<int> {
-  const EnumNotificationType(int val) : super(val);
+  const EnumNotificationType(super.val);
 }
 
 const EnumNotificationType<int> notificationTypeCancel = EnumNotificationType<int>(-1);
@@ -279,7 +279,7 @@ const EnumNotificationType<int> notificationTypeBlock = EnumNotificationType<int
 //////////////////////////
 
 class EnumEventFilterType<int> extends HcEnum<int> {
-  const EnumEventFilterType(int val) : super(val);
+  const EnumEventFilterType(super.val);
 }
 
 const EnumEventFilterType<int> eventFilterType_refreshOnly = EnumEventFilterType<int>(0);
@@ -292,7 +292,7 @@ const EnumEventFilterType<int> eventFilterType_setRunNumber = EnumEventFilterTyp
 //////////////////////////
 ///
 class EnumServerStatus<int> extends HcEnum<int> {
-  const EnumServerStatus(int val) : super(val);
+  const EnumServerStatus(super.val);
 }
 
 const EnumServerStatus<int> serverStatusDownForMaintenance = EnumServerStatus<int>(0);
@@ -302,7 +302,7 @@ const EnumServerStatus<int> serverStatusDegraded = EnumServerStatus<int>(2);
 //////////////////////////
 
 class EnumLoginMessageType<int> extends HcEnum<int> {
-  const EnumLoginMessageType(int val) : super(val);
+  const EnumLoginMessageType(super.val);
 }
 
 const EnumLoginMessageType<int> loginMessageTypeNone = EnumLoginMessageType<int>(0);
@@ -315,7 +315,7 @@ const EnumLoginMessageType<int> loginMessageTypeImageViewWithContinue = EnumLogi
 //////////////////////////
 
 class EnumLoginApproval<int> extends HcEnum<int> {
-  const EnumLoginApproval(int val) : super(val);
+  const EnumLoginApproval(super.val);
 }
 
 const EnumLoginApproval<int> loginApprovalUnknown = EnumLoginApproval<int>(0);
@@ -327,7 +327,7 @@ const EnumLoginApproval<int> loginApprovalNotAuthorized = EnumLoginApproval<int>
 //////////////////////////
 ///
 class EnumMapCenterOption<int> extends HcEnum<int> {
-  const EnumMapCenterOption(int val) : super(val);
+  const EnumMapCenterOption(super.val);
 }
 
 const EnumMapCenterOption<int> centerOnCurrentLocation = EnumMapCenterOption<int>(0);

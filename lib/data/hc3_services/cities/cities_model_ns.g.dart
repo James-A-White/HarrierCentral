@@ -6,8 +6,8 @@ part of 'cities_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_CitiesModel _$$_CitiesModelFromJson(Map<String, dynamic> json) =>
-    _$_CitiesModel(
+_$CitiesModelImpl _$$CitiesModelImplFromJson(Map<String, dynamic> json) =>
+    _$CitiesModelImpl(
       cityId: json['cityId'] as String,
       cityName: json['cityName'] as String,
       citySearchTags: json['citySearchTags'] as String?,
@@ -22,7 +22,7 @@ _$_CitiesModel _$$_CitiesModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$_CitiesModelToJson(_$_CitiesModel instance) =>
+Map<String, dynamic> _$$CitiesModelImplToJson(_$CitiesModelImpl instance) =>
     <String, dynamic>{
       'cityId': instance.cityId,
       'cityName': instance.cityName,

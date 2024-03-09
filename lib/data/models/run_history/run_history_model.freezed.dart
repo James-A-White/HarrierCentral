@@ -12,7 +12,7 @@ part of 'run_history_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 RunHistoryModel _$RunHistoryModelFromJson(Map<String, dynamic> json) {
   return _RunHistoryModel.fromJson(json);
@@ -161,11 +161,11 @@ class _$RunHistoryModelCopyWithImpl<$Res, $Val extends RunHistoryModel>
 }
 
 /// @nodoc
-abstract class _$$_RunHistoryModelCopyWith<$Res>
+abstract class _$$RunHistoryModelImplCopyWith<$Res>
     implements $RunHistoryModelCopyWith<$Res> {
-  factory _$$_RunHistoryModelCopyWith(
-          _$_RunHistoryModel value, $Res Function(_$_RunHistoryModel) then) =
-      __$$_RunHistoryModelCopyWithImpl<$Res>;
+  factory _$$RunHistoryModelImplCopyWith(_$RunHistoryModelImpl value,
+          $Res Function(_$RunHistoryModelImpl) then) =
+      __$$RunHistoryModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -187,11 +187,11 @@ abstract class _$$_RunHistoryModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_RunHistoryModelCopyWithImpl<$Res>
-    extends _$RunHistoryModelCopyWithImpl<$Res, _$_RunHistoryModel>
-    implements _$$_RunHistoryModelCopyWith<$Res> {
-  __$$_RunHistoryModelCopyWithImpl(
-      _$_RunHistoryModel _value, $Res Function(_$_RunHistoryModel) _then)
+class __$$RunHistoryModelImplCopyWithImpl<$Res>
+    extends _$RunHistoryModelCopyWithImpl<$Res, _$RunHistoryModelImpl>
+    implements _$$RunHistoryModelImplCopyWith<$Res> {
+  __$$RunHistoryModelImplCopyWithImpl(
+      _$RunHistoryModelImpl _value, $Res Function(_$RunHistoryModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -213,7 +213,7 @@ class __$$_RunHistoryModelCopyWithImpl<$Res>
     Object? following = null,
     Object? digitsAfterDecimal = null,
   }) {
-    return _then(_$_RunHistoryModel(
+    return _then(_$RunHistoryModelImpl(
       totalRunsThisKennel: null == totalRunsThisKennel
           ? _value.totalRunsThisKennel
           : totalRunsThisKennel // ignore: cast_nullable_to_non_nullable
@@ -280,8 +280,8 @@ class __$$_RunHistoryModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_RunHistoryModel implements _RunHistoryModel {
-  _$_RunHistoryModel(
+class _$RunHistoryModelImpl implements _RunHistoryModel {
+  _$RunHistoryModelImpl(
       {this.totalRunsThisKennel = 0,
       this.totalHaringThisKennel = 0,
       this.hcRunsThisKennel = 0,
@@ -298,8 +298,8 @@ class _$_RunHistoryModel implements _RunHistoryModel {
       this.following = 0,
       this.digitsAfterDecimal = 2});
 
-  factory _$_RunHistoryModel.fromJson(Map<String, dynamic> json) =>
-      _$$_RunHistoryModelFromJson(json);
+  factory _$RunHistoryModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$RunHistoryModelImplFromJson(json);
 
   @override
   @JsonKey()
@@ -349,10 +349,10 @@ class _$_RunHistoryModel implements _RunHistoryModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_RunHistoryModel &&
+            other is _$RunHistoryModelImpl &&
             (identical(other.totalRunsThisKennel, totalRunsThisKennel) ||
                 other.totalRunsThisKennel == totalRunsThisKennel) &&
             (identical(other.totalHaringThisKennel, totalHaringThisKennel) ||
@@ -410,12 +410,13 @@ class _$_RunHistoryModel implements _RunHistoryModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_RunHistoryModelCopyWith<_$_RunHistoryModel> get copyWith =>
-      __$$_RunHistoryModelCopyWithImpl<_$_RunHistoryModel>(this, _$identity);
+  _$$RunHistoryModelImplCopyWith<_$RunHistoryModelImpl> get copyWith =>
+      __$$RunHistoryModelImplCopyWithImpl<_$RunHistoryModelImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_RunHistoryModelToJson(
+    return _$$RunHistoryModelImplToJson(
       this,
     );
   }
@@ -437,10 +438,10 @@ abstract class _RunHistoryModel implements RunHistoryModel {
       final int historicalTotalRunCount,
       final int historicalCountIsEstimate,
       final int following,
-      final int digitsAfterDecimal}) = _$_RunHistoryModel;
+      final int digitsAfterDecimal}) = _$RunHistoryModelImpl;
 
   factory _RunHistoryModel.fromJson(Map<String, dynamic> json) =
-      _$_RunHistoryModel.fromJson;
+      _$RunHistoryModelImpl.fromJson;
 
   @override
   int get totalRunsThisKennel;
@@ -474,6 +475,6 @@ abstract class _RunHistoryModel implements RunHistoryModel {
   int get digitsAfterDecimal;
   @override
   @JsonKey(ignore: true)
-  _$$_RunHistoryModelCopyWith<_$_RunHistoryModel> get copyWith =>
+  _$$RunHistoryModelImplCopyWith<_$RunHistoryModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

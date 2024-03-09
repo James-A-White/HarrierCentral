@@ -20,10 +20,10 @@ class RunListItemController extends GetxController {
 
 class RunListItem extends StatelessWidget {
   RunListItem({
-    Key? key,
+    super.key,
     required this.futureRun,
     required this.onItemTapped,
-  }) : super(key: key);
+  });
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;

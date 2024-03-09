@@ -4,8 +4,8 @@ class ImprintPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const ImprintPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   ImprintPageState createState() => ImprintPageState();
@@ -55,8 +55,8 @@ class ImprintPageState extends State<ImprintPage> {
 
 class ImprintPageContent extends StatefulWidget {
   const ImprintPageContent({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   ImprintPageContentState createState() => ImprintPageContentState();

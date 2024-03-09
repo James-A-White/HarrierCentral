@@ -2,10 +2,10 @@ import 'package:harrier_central/imports.dart';
 
 class KennelRunHistoryCountListItem extends StatelessWidget {
   const KennelRunHistoryCountListItem({
-    Key? key,
+    super.key,
     required this.kennelInfo,
     required this.refreshCounters,
-  }) : super(key: key);
+  });
 
   final RunHistoryModel kennelInfo;
   final Function refreshCounters;

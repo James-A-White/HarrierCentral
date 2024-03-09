@@ -340,10 +340,10 @@ class DeviceInfo {
     } else if (Platform.isIOS) {
       iosInfo = await deviceInfo.iosInfo;
       deviceId = (iosInfo.identifierForVendor ?? '<no device ID>').toUpperCase();
-      deviceType = iosInfo.model ?? '<no device model>';
-      deviceName = iosInfo.name ?? '<no device name>';
-      systemName = iosInfo.systemName ?? '<no system name>';
-      systemVersion = iosInfo.systemVersion ?? '<no system version>';
+      deviceType = iosInfo.model;
+      deviceName = iosInfo.name;
+      systemName = iosInfo.systemName;
+      systemVersion = iosInfo.systemVersion;
       manufacturer = 'Apple';
       isPhysicalDevice = iosInfo.isPhysicalDevice;
     }

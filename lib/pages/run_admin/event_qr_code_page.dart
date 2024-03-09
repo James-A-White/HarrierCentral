@@ -4,7 +4,7 @@ import 'package:harrier_central/imports.dart';
 
 class EventQrCodePage extends StatefulWidget {
   const EventQrCodePage({
-    Key? key,
+    super.key,
     required this.kennelShortName,
     required this.qrContent,
     required this.title,
@@ -13,7 +13,7 @@ class EventQrCodePage extends StatefulWidget {
     required this.runLink,
     required this.showRunLink,
     this.eventStartDatetime,
-  }) : super(key: key);
+  });
 
   final String kennelShortName;
   final String qrContent;
@@ -223,7 +223,7 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
 
 class QrTab extends StatefulWidget {
   const QrTab({
-    Key? key,
+    super.key,
     required this.isRunStart,
     required this.qrContent,
     required this.title,
@@ -233,7 +233,7 @@ class QrTab extends StatefulWidget {
     required this.instructionTitle,
     required this.instructions,
     this.eventStartDatetime,
-  }) : super(key: key);
+  });
 
   final bool isRunStart;
   final String qrPrefix;

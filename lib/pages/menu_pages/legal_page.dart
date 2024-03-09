@@ -6,8 +6,8 @@ class LegalPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const LegalPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   LegalPageState createState() => LegalPageState();
@@ -57,8 +57,8 @@ class LegalPageState extends State<LegalPage> {
 
 class LegalPageContent extends StatefulWidget {
   const LegalPageContent({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   LegalPageContentState createState() => LegalPageContentState();

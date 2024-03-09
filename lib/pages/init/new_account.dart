@@ -4,8 +4,8 @@ class NewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const NewAccountPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   NewAccountPageState createState() => NewAccountPageState();
@@ -56,8 +56,8 @@ class NewAccountPageState extends State<NewAccountPage> {
 
 class NewAccountPageContent extends StatefulWidget {
   const NewAccountPageContent({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   NewAccountPageContentState createState() => NewAccountPageContentState();

@@ -2,10 +2,10 @@ import 'package:harrier_central/imports.dart';
 
 class RunDetailsPage extends StatefulWidget {
   const RunDetailsPage({
-    Key? key,
+    super.key,
     required this.futureRun,
     this.refreshPage,
-  }) : super(key: key);
+  });
 
   final RunDetailsAggregate futureRun;
   final Function? refreshPage;

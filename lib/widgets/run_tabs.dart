@@ -8,9 +8,9 @@ import 'package:map_launcher/map_launcher.dart' as maps;
 
 class RunTabs extends StatefulWidget {
   const RunTabs({
-    Key? key,
+    super.key,
     required this.futureRun,
-  }) : super(key: key);
+  });
 
   final RunDetailsAggregate futureRun;
 
@@ -83,7 +83,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<List<PackListAggregate>> _refreshPackListFromTable() async {
     List<PackListAggregate> pla = <PackListAggregate>[];
 
-    final String query = ''' 
+    final String query = '''
         SELECT  
           hem.*,
           h.*
@@ -133,7 +133,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<void> _refreshPackCountFromTable(bool callSetState) async {
     _packCount = <String, dynamic>{};
 
-    final String query = ''' 
+    final String query = '''
         SELECT  
           count(case when hem.rsvpState = 3 then 1 else null end) as rsvpYesCount,
           count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,

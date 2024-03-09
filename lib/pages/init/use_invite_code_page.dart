@@ -4,8 +4,8 @@ class UseInviteCodePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const UseInviteCodePage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   UseInviteCodePageState createState() => UseInviteCodePageState();
@@ -58,8 +58,8 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
 
 class UseInviteCodePageContent extends StatefulWidget {
   const UseInviteCodePageContent({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   UseInviteCodePageContentState createState() => UseInviteCodePageContentState();
@@ -358,7 +358,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           Navigator.pop(navigatorKey.currentContext!);
                           if (!mounted) return;
                           await Navigator.pushReplacement<dynamic, dynamic>(
-                              context,
+                              navigatorKey.currentContext!,
                               MaterialPageRoute<dynamic>(
                                 builder: (BuildContext context) => ChooseProfileImage(
                                   isForThisDevice: true,

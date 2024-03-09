@@ -3,12 +3,12 @@ import 'package:intl/intl.dart';
 
 class ChooseProfileImage extends StatefulWidget {
   const ChooseProfileImage({
-    Key? key,
+    super.key,
     required this.isForThisDevice,
     required this.fileNamePrefix,
     this.currentProfileImage,
     this.popToCaller = true,
-  }) : super(key: key);
+  });
 
   final bool isForThisDevice;
   final String fileNamePrefix;
@@ -504,7 +504,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Widget getProfilePhoto(String url) {
-    return ((url == null) || (url.isEmpty))
+    return (url.isEmpty)
         ? Image.asset(
             'images/icons/create_profile_photo.png',
           )
@@ -573,8 +573,8 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Future<void> _getImageFromFacebook() async {
-    if ((_facebookProfileUrl != null) && (_facebookProfileUrl!.isNotEmpty)) {
-      final Response response = await get(Uri.parse(_facebookProfileUrl!));
+    if ((_facebookProfileUrl != null) && (_facebookProfileUrl.isNotEmpty)) {
+      final Response response = await get(Uri.parse(_facebookProfileUrl));
       final Directory documentDirectory = await getApplicationDocumentsDirectory();
       final File profilePhotoFile = File('${documentDirectory.path}/temp.jpg');
       profilePhotoFile.writeAsBytesSync(response.bodyBytes);

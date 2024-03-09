@@ -6,9 +6,9 @@ part of 'hasher_event_map_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_HasherEventMapModel _$$_HasherEventMapModelFromJson(
+_$HasherEventMapModelImpl _$$HasherEventMapModelImplFromJson(
         Map<String, dynamic> json) =>
-    _$_HasherEventMapModel(
+    _$HasherEventMapModelImpl(
       hemId: json['hemId'] as String,
       userId: json['userId'] as String,
       eventId: json['eventId'] as String,
@@ -44,8 +44,8 @@ _$_HasherEventMapModel _$$_HasherEventMapModelFromJson(
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$_HasherEventMapModelToJson(
-        _$_HasherEventMapModel instance) =>
+Map<String, dynamic> _$$HasherEventMapModelImplToJson(
+        _$HasherEventMapModelImpl instance) =>
     <String, dynamic>{
       'hemId': instance.hemId,
       'userId': instance.userId,

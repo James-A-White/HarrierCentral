@@ -2,7 +2,7 @@ import 'package:harrier_central/imports.dart';
 
 class CheckinFiltersCell extends StatelessWidget {
   const CheckinFiltersCell({
-    Key? key,
+    super.key,
     required this.counter,
     required this.index,
     required this.label,
@@ -11,7 +11,7 @@ class CheckinFiltersCell extends StatelessWidget {
     this.color,
     this.icon,
     this.useTriState = true,
-  }) : super(key: key);
+  });
 
   final IconData? icon;
   final Color? color;

@@ -6,8 +6,8 @@ part of 'db_error_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_DbErrorModel _$$_DbErrorModelFromJson(Map<String, dynamic> json) =>
-    _$_DbErrorModel(
+_$DbErrorModelImpl _$$DbErrorModelImplFromJson(Map<String, dynamic> json) =>
+    _$DbErrorModelImpl(
       errorId: json['errorId'] as String?,
       errorType: json['errorType'] as num?,
       errorTitle: json['errorTitle'] as String?,
@@ -16,7 +16,7 @@ _$_DbErrorModel _$$_DbErrorModelFromJson(Map<String, dynamic> json) =>
       errorProc: json['errorProc'] as String?,
     );
 
-Map<String, dynamic> _$$_DbErrorModelToJson(_$_DbErrorModel instance) =>
+Map<String, dynamic> _$$DbErrorModelImplToJson(_$DbErrorModelImpl instance) =>
     <String, dynamic>{
       'errorId': instance.errorId,
       'errorType': instance.errorType,

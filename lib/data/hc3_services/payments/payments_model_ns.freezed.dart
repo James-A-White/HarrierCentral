@@ -12,7 +12,7 @@ part of 'payments_model_ns.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) {
   return _PaymentsModel.fromJson(json);
@@ -245,11 +245,11 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
 }
 
 /// @nodoc
-abstract class _$$_PaymentsModelCopyWith<$Res>
+abstract class _$$PaymentsModelImplCopyWith<$Res>
     implements $PaymentsModelCopyWith<$Res> {
-  factory _$$_PaymentsModelCopyWith(
-          _$_PaymentsModel value, $Res Function(_$_PaymentsModel) then) =
-      __$$_PaymentsModelCopyWithImpl<$Res>;
+  factory _$$PaymentsModelImplCopyWith(
+          _$PaymentsModelImpl value, $Res Function(_$PaymentsModelImpl) then) =
+      __$$PaymentsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -283,11 +283,11 @@ abstract class _$$_PaymentsModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_PaymentsModelCopyWithImpl<$Res>
-    extends _$PaymentsModelCopyWithImpl<$Res, _$_PaymentsModel>
-    implements _$$_PaymentsModelCopyWith<$Res> {
-  __$$_PaymentsModelCopyWithImpl(
-      _$_PaymentsModel _value, $Res Function(_$_PaymentsModel) _then)
+class __$$PaymentsModelImplCopyWithImpl<$Res>
+    extends _$PaymentsModelCopyWithImpl<$Res, _$PaymentsModelImpl>
+    implements _$$PaymentsModelImplCopyWith<$Res> {
+  __$$PaymentsModelImplCopyWithImpl(
+      _$PaymentsModelImpl _value, $Res Function(_$PaymentsModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -321,7 +321,7 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
     Object? removed = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_$_PaymentsModel(
+    return _then(_$PaymentsModelImpl(
       paymentId: null == paymentId
           ? _value.paymentId
           : paymentId // ignore: cast_nullable_to_non_nullable
@@ -436,8 +436,8 @@ class __$$_PaymentsModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_PaymentsModel implements _PaymentsModel {
-  _$_PaymentsModel(
+class _$PaymentsModelImpl implements _PaymentsModel {
+  _$PaymentsModelImpl(
       {required this.paymentId,
       required this.kennelId,
       required this.paidBy,
@@ -466,8 +466,8 @@ class _$_PaymentsModel implements _PaymentsModel {
       this.removed,
       this.updatedAt});
 
-  factory _$_PaymentsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_PaymentsModelFromJson(json);
+  factory _$PaymentsModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PaymentsModelImplFromJson(json);
 
   @override
   final String paymentId;
@@ -530,10 +530,10 @@ class _$_PaymentsModel implements _PaymentsModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_PaymentsModel &&
+            other is _$PaymentsModelImpl &&
             (identical(other.paymentId, paymentId) ||
                 other.paymentId == paymentId) &&
             (identical(other.kennelId, kennelId) ||
@@ -620,12 +620,12 @@ class _$_PaymentsModel implements _PaymentsModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_PaymentsModelCopyWith<_$_PaymentsModel> get copyWith =>
-      __$$_PaymentsModelCopyWithImpl<_$_PaymentsModel>(this, _$identity);
+  _$$PaymentsModelImplCopyWith<_$PaymentsModelImpl> get copyWith =>
+      __$$PaymentsModelImplCopyWithImpl<_$PaymentsModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentsModelToJson(
+    return _$$PaymentsModelImplToJson(
       this,
     );
   }
@@ -659,10 +659,10 @@ abstract class _PaymentsModel implements PaymentsModel {
       required final String discountDescription,
       required final String specialRunPriceReason,
       final int? removed,
-      final DateTime? updatedAt}) = _$_PaymentsModel;
+      final DateTime? updatedAt}) = _$PaymentsModelImpl;
 
   factory _PaymentsModel.fromJson(Map<String, dynamic> json) =
-      _$_PaymentsModel.fromJson;
+      _$PaymentsModelImpl.fromJson;
 
   @override
   String get paymentId;
@@ -720,6 +720,6 @@ abstract class _PaymentsModel implements PaymentsModel {
   DateTime? get updatedAt;
   @override
   @JsonKey(ignore: true)
-  _$$_PaymentsModelCopyWith<_$_PaymentsModel> get copyWith =>
+  _$$PaymentsModelImplCopyWith<_$PaymentsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

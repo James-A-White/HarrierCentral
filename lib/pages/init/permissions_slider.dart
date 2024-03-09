@@ -49,8 +49,8 @@ import 'package:harrier_central/imports.dart';
 
 class PermissionSliderPage extends StatefulWidget {
   const PermissionSliderPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   PermissionSliderPageState createState() => PermissionSliderPageState();

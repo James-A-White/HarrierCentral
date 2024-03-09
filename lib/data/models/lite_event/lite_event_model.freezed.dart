@@ -12,7 +12,7 @@ part of 'lite_event_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 LiteEventModel _$LiteEventModelFromJson(Map<String, dynamic> json) {
   return _LiteEventModel.fromJson(json);
@@ -133,11 +133,11 @@ class _$LiteEventModelCopyWithImpl<$Res, $Val extends LiteEventModel>
 }
 
 /// @nodoc
-abstract class _$$_LiteEventModelCopyWith<$Res>
+abstract class _$$LiteEventModelImplCopyWith<$Res>
     implements $LiteEventModelCopyWith<$Res> {
-  factory _$$_LiteEventModelCopyWith(
-          _$_LiteEventModel value, $Res Function(_$_LiteEventModel) then) =
-      __$$_LiteEventModelCopyWithImpl<$Res>;
+  factory _$$LiteEventModelImplCopyWith(_$LiteEventModelImpl value,
+          $Res Function(_$LiteEventModelImpl) then) =
+      __$$LiteEventModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -155,11 +155,11 @@ abstract class _$$_LiteEventModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_LiteEventModelCopyWithImpl<$Res>
-    extends _$LiteEventModelCopyWithImpl<$Res, _$_LiteEventModel>
-    implements _$$_LiteEventModelCopyWith<$Res> {
-  __$$_LiteEventModelCopyWithImpl(
-      _$_LiteEventModel _value, $Res Function(_$_LiteEventModel) _then)
+class __$$LiteEventModelImplCopyWithImpl<$Res>
+    extends _$LiteEventModelCopyWithImpl<$Res, _$LiteEventModelImpl>
+    implements _$$LiteEventModelImplCopyWith<$Res> {
+  __$$LiteEventModelImplCopyWithImpl(
+      _$LiteEventModelImpl _value, $Res Function(_$LiteEventModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -177,7 +177,7 @@ class __$$_LiteEventModelCopyWithImpl<$Res>
     Object? appAccessFlags = null,
     Object? canEditRunAttendance = null,
   }) {
-    return _then(_$_LiteEventModel(
+    return _then(_$LiteEventModelImpl(
       eventId: null == eventId
           ? _value.eventId
           : eventId // ignore: cast_nullable_to_non_nullable
@@ -228,8 +228,8 @@ class __$$_LiteEventModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_LiteEventModel implements _LiteEventModel {
-  _$_LiteEventModel(
+class _$LiteEventModelImpl implements _LiteEventModel {
+  _$LiteEventModelImpl(
       {required this.eventId,
       this.isVisible = 1,
       this.isCountedRun = 1,
@@ -242,8 +242,8 @@ class _$_LiteEventModel implements _LiteEventModel {
       this.appAccessFlags = 0,
       this.canEditRunAttendance = 0});
 
-  factory _$_LiteEventModel.fromJson(Map<String, dynamic> json) =>
-      _$$_LiteEventModelFromJson(json);
+  factory _$LiteEventModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$LiteEventModelImplFromJson(json);
 
   @override
   final String eventId;
@@ -278,10 +278,10 @@ class _$_LiteEventModel implements _LiteEventModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_LiteEventModel &&
+            other is _$LiteEventModelImpl &&
             (identical(other.eventId, eventId) || other.eventId == eventId) &&
             (identical(other.isVisible, isVisible) ||
                 other.isVisible == isVisible) &&
@@ -325,12 +325,13 @@ class _$_LiteEventModel implements _LiteEventModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_LiteEventModelCopyWith<_$_LiteEventModel> get copyWith =>
-      __$$_LiteEventModelCopyWithImpl<_$_LiteEventModel>(this, _$identity);
+  _$$LiteEventModelImplCopyWith<_$LiteEventModelImpl> get copyWith =>
+      __$$LiteEventModelImplCopyWithImpl<_$LiteEventModelImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_LiteEventModelToJson(
+    return _$$LiteEventModelImplToJson(
       this,
     );
   }
@@ -348,10 +349,10 @@ abstract class _LiteEventModel implements LiteEventModel {
       required final DateTime eventStartDatetime,
       final int? eventInboundIntegrationId,
       final int appAccessFlags,
-      final int canEditRunAttendance}) = _$_LiteEventModel;
+      final int canEditRunAttendance}) = _$LiteEventModelImpl;
 
   factory _LiteEventModel.fromJson(Map<String, dynamic> json) =
-      _$_LiteEventModel.fromJson;
+      _$LiteEventModelImpl.fromJson;
 
   @override
   String get eventId;
@@ -377,6 +378,6 @@ abstract class _LiteEventModel implements LiteEventModel {
   int get canEditRunAttendance;
   @override
   @JsonKey(ignore: true)
-  _$$_LiteEventModelCopyWith<_$_LiteEventModel> get copyWith =>
+  _$$LiteEventModelImplCopyWith<_$LiteEventModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

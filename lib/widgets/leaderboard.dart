@@ -1,11 +1,10 @@
 import 'package:harrier_central/imports.dart';
-import 'package:intl/intl.dart';
 
 class Leaderboard extends StatefulWidget {
   const Leaderboard({
-    Key? key,
+    super.key,
     this.kennelId,
-  }) : super(key: key);
+  });
 
   final String? kennelId;
 

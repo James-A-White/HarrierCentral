@@ -32,10 +32,10 @@ class ApproveLoginService {
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       deviceId = (iosInfo.identifierForVendor ?? '<no vendor id>').toUpperCase();
-      deviceType = iosInfo.model ?? '<no model>';
-      deviceName = iosInfo.name ?? '<no device name>';
-      systemName = iosInfo.systemName ?? '<no system name>';
-      systemVersion = iosInfo.systemVersion ?? '<no system version>';
+      deviceType = iosInfo.model;
+      deviceName = iosInfo.name;
+      systemName = iosInfo.systemName;
+      systemVersion = iosInfo.systemVersion;
       manufacturer = 'Apple';
     }
 

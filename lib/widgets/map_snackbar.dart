@@ -4,8 +4,8 @@ import 'package:harrier_central/imports.dart';
 class MapSnackbar extends StatelessWidget {
   const MapSnackbar(
     this.snackState, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final ValueNotifier<bool> snackState;
 

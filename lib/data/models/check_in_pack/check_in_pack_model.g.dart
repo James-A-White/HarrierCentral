@@ -6,8 +6,9 @@ part of 'check_in_pack_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_CheckInPackModel _$$_CheckInPackModelFromJson(Map<String, dynamic> json) =>
-    _$_CheckInPackModel(
+_$CheckInPackModelImpl _$$CheckInPackModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$CheckInPackModelImpl(
       hasherId: json['hasherId'] as String,
       hemId: json['hemId'] as String,
       isMember: json['isMember'] as int? ?? 0,
@@ -36,7 +37,8 @@ _$_CheckInPackModel _$$_CheckInPackModelFromJson(Map<String, dynamic> json) =>
       isFollowing: json['isFollowing'] as int? ?? 0,
     );
 
-Map<String, dynamic> _$$_CheckInPackModelToJson(_$_CheckInPackModel instance) =>
+Map<String, dynamic> _$$CheckInPackModelImplToJson(
+        _$CheckInPackModelImpl instance) =>
     <String, dynamic>{
       'hasherId': instance.hasherId,
       'hemId': instance.hemId,

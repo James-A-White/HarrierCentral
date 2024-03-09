@@ -1,7 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class MismanagementRolesPage extends StatefulWidget {
-  const MismanagementRolesPage({Key? key, required this.mismanagementRoles}) : super(key: key);
+  const MismanagementRolesPage({super.key, required this.mismanagementRoles});
 
   final int mismanagementRoles;
 

@@ -6,8 +6,8 @@ part of 'regions_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_RegionsModel _$$_RegionsModelFromJson(Map<String, dynamic> json) =>
-    _$_RegionsModel(
+_$RegionsModelImpl _$$RegionsModelImplFromJson(Map<String, dynamic> json) =>
+    _$RegionsModelImpl(
       regionId: json['regionId'] as String,
       regionName: json['regionName'] as String,
       regionSearchTags: json['regionSearchTags'] as String?,
@@ -20,7 +20,7 @@ _$_RegionsModel _$$_RegionsModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$_RegionsModelToJson(_$_RegionsModel instance) =>
+Map<String, dynamic> _$$RegionsModelImplToJson(_$RegionsModelImpl instance) =>
     <String, dynamic>{
       'regionId': instance.regionId,
       'regionName': instance.regionName,

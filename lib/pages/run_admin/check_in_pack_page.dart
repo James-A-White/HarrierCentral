@@ -4,9 +4,9 @@ import 'package:harrier_central/imports.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
-    Key? key,
+    super.key,
     required this.eventAggregate,
-  }) : super(key: key);
+  });
 
   final RunAdminAggregate eventAggregate;
 
@@ -118,7 +118,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     _allHashers = <CheckInPackModel>[];
 
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT 
             -- get all hashers
@@ -164,7 +164,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   Future<void> _refreshPackListFromTables(bool forceRefresh) async {
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT 
             -- get all of the members of a Kennel and display them
@@ -409,7 +409,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   Future<void> _refreshCounters(bool forceRefresh) async {
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT 
               -- COUNT(CASE WHEN rsvpState >= 2 THEN 1 ELSE NULL END) as rsvps,
@@ -977,21 +977,21 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             ),
             onTap: () async => await _findHasher(),
           ),
-          SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.message_video),
-              backgroundColor: Colors.deepOrange,
-              label: 'View video tutorial',
-              labelStyle: TextStyle(
-                fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
-              ),
-              onTap: () => Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => const VideoTutorialPage(
-                              title: 'How to use Check In Page',
-                              videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
-                            )),
-                  )),
+          // SpeedDialChild(
+          //     child: const Icon(MaterialCommunityIcons.message_video),
+          //     backgroundColor: Colors.deepOrange,
+          //     label: 'View video tutorial',
+          //     labelStyle: TextStyle(
+          //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+          //     ),
+          //     onTap: () => Navigator.push<dynamic>(
+          //           context,
+          //           MaterialPageRoute<dynamic>(
+          //               builder: (BuildContext context) => const VideoTutorialPage(
+          //                     title: 'How to use Check In Page',
+          //                     videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
+          //                   )),
+          //         )),
           if ((widget.eventAggregate.kennel.bankScheme != null) && (widget.eventAggregate.kennel.bankScheme != '')) ...<SpeedDialChild>[
             SpeedDialChild(
               child: const Icon(MaterialCommunityIcons.bank),
@@ -1176,7 +1176,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           widget.eventAggregate,
           results,
           paymentType,
-          context,
+          navigatorKey.currentContext!,
           packMember.nameForDisplay,
           packMember.isMember,
           otherAmount,
@@ -1452,14 +1452,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 //     }),
                 ),
 
-            if ((packMember.totalHaringThisKennel != null) && (packMember.totalHaringThisKennel != 0))
+            if (packMember.totalHaringThisKennel != 0)
               Positioned(
                 right: 4,
                 bottom: 17,
                 child: Text('Hared = ${packMember.totalHaringThisKennel + (packMember.historicalHaringCount)}',
                     style: _getHaringLabelStyle(packMember.totalHaringThisKennel + (packMember.historicalHaringCount), packMember.attendenceState)),
               ),
-            if ((packMember.totalRunsThisKennel != null) && (packMember.totalRunsThisKennel != 0))
+            if (packMember.totalRunsThisKennel != 0)
               Positioned(
                 right: 4,
                 bottom: 1,
@@ -1616,8 +1616,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             ? Container(
                                 color: Colors.grey,
                                 width: G0<DeviceInfo>().deviceWidth,
-                                child: Column(
-                                  children: const <Widget>[
+                                child: const Column(
+                                  children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(top: 5.0),
                                       child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
@@ -1688,9 +1688,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               ? Container(
                                   width: G0<DeviceInfo>().deviceWidth,
                                   color: Colors.grey,
-                                  child: Column(
+                                  child: const Column(
                                     mainAxisAlignment: MainAxisAlignment.end,
-                                    children: const <Widget>[
+                                    children: <Widget>[
                                       Padding(
                                         padding: EdgeInsets.only(top: 5.0),
                                         child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
@@ -1709,9 +1709,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               : Container(
                                   color: Colors.amber[800],
                                   width: G0<DeviceInfo>().deviceWidth,
-                                  child: Column(
+                                  child: const Column(
                                     mainAxisAlignment: MainAxisAlignment.end,
-                                    children: const <Widget>[
+                                    children: <Widget>[
                                       Padding(
                                         padding: EdgeInsets.only(top: 2.0),
                                         child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
@@ -1828,8 +1828,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
 class AddVisitorVirginPopup extends StatefulWidget {
   const AddVisitorVirginPopup({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   AddVisitorVirginPopupState createState() => AddVisitorVirginPopupState();
@@ -1905,10 +1905,10 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               style: TextButton.styleFrom(
                 backgroundColor: Colors.red,
               ),
-              child: Text(
+              child: const Text(
                 'Cancel',
                 textAlign: TextAlign.center,
-                textScaleFactor: G0<DeviceInfo>().textClamp15,
+                //textScaleFactor: G0<DeviceInfo>().textClamp15,
               ),
               onPressed: () {
                 Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
@@ -1920,10 +1920,10 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             height: 55.0,
             child: TextButton(
                 style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: Text(
+                child: const Text(
                   'Add\r\nVisitor',
                   textAlign: TextAlign.center,
-                  textScaleFactor: G0<DeviceInfo>().textClamp15,
+                  //textScaleFactor: G0<DeviceInfo>().textClamp15,
                 ),
                 onPressed: () {
                   Navigator.of(context).pop(<String, String>{
@@ -1939,10 +1939,10 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             height: 55.0,
             child: TextButton(
                 style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: Text(
+                child: const Text(
                   'Add\r\nVirgin',
                   textAlign: TextAlign.center,
-                  textScaleFactor: G0<DeviceInfo>().textClamp15,
+                  //textScaleFactor: G0<DeviceInfo>().textClamp15,
                 ),
                 onPressed: () {
                   Navigator.of(context).pop(<String, String>{

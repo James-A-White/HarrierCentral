@@ -6,8 +6,8 @@ part of 'hashers_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_HashersModel _$$_HashersModelFromJson(Map<String, dynamic> json) =>
-    _$_HashersModel(
+_$HashersModelImpl _$$HashersModelImplFromJson(Map<String, dynamic> json) =>
+    _$HashersModelImpl(
       hasherId: json['hasherId'] as String,
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
@@ -22,7 +22,7 @@ _$_HashersModel _$$_HashersModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$_HashersModelToJson(_$_HashersModel instance) =>
+Map<String, dynamic> _$$HashersModelImplToJson(_$HashersModelImpl instance) =>
     <String, dynamic>{
       'hasherId': instance.hasherId,
       'firstName': instance.firstName,

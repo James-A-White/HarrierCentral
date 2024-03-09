@@ -3,12 +3,12 @@ import 'package:harrier_central/imports.dart';
 
 class CustomizeProfile extends StatefulWidget {
   const CustomizeProfile({
-    Key? key,
+    super.key,
     required this.originalProfilePhoto,
     required this.originalDisplayName,
     this.customKennelPhoto,
     this.customKennelHashName,
-  }) : super(key: key);
+  });
 
   final String originalProfilePhoto;
   final String originalDisplayName;
