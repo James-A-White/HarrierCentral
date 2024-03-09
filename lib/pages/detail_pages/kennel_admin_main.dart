@@ -696,7 +696,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       widget.kennelAggregateItem.extensions.cityLat!,
                                                       widget.kennelAggregateItem.extensions.cityLon!,
                                                     ),
-                                                    builder: (BuildContext ctx) => GestureDetector(
+                                                    child: GestureDetector(
                                                       // onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat , widget.kennelAggregateItem.extensions.cityLon ),
 
                                                       onTap: () async {

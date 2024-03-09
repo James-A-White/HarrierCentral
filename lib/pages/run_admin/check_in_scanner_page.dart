@@ -268,9 +268,9 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
 
   Future<void> _onCodeRead(dynamic scanResult) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    final AudioCache audioPlayer = AudioCache(prefix: 'assets/sounds/');
-    // ignore: unawaited_futures
-    await audioPlayer.play('camera.mp3');
+    final AudioPlayer audioPlayer = AudioPlayer();
+    //NOTE: Unawaited future is OK
+    audioPlayer.play(AssetSource('sounds/camera.mp3'));
 
     final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user);
 

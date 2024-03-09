@@ -1,0 +1,3 @@
+is_global = true
+build_property.RootNamespace = HcAzureFunctions
+build_property.ProjectDir = /Users/jameswhite/Development/Projects/harrier_central_new/HarrierCentralMobile-Flutter/azureFunctions/

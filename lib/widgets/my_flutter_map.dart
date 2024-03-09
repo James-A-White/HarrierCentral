@@ -99,7 +99,7 @@ class MyFlutterMapState extends State<MyFlutterMap> {
                 height: 50.0,
                 width: 50.0,
                 point: latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!),
-                builder: (BuildContext ctx) => GestureDetector(
+                child: GestureDetector(
                   child: Container(
                     padding: const EdgeInsets.all(1.0),
                     height: 50.0,
@@ -121,7 +121,7 @@ class MyFlutterMapState extends State<MyFlutterMap> {
                 width: 120.0,
                 height: 120.0,
                 point: widget.eventLocation!,
-                builder: (BuildContext ctx) => GestureDetector(
+                child: GestureDetector(
                   onTap: () {
                     if (widget.markerClicked != null) {
                       widget.markerClicked!();

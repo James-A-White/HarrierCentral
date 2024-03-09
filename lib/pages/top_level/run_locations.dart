@@ -343,7 +343,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   Future<void> _loadEvents() async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    String query = ''' 
+    String query = '''
 
           SELECT 
             evt.*,
@@ -428,9 +428,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       final Marker marker = Marker(
           width: 45.0,
           height: 55.0,
-          anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
+          //anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
           point: ll,
-          builder: (BuildContext ctx) => _buildRunMarker(run.event.eventId, dt, run.event.eventName,
+          child: _buildRunMarker(run.event.eventId, dt, run.event.eventName,
               rsvpState: run.extensions.rsvpState,
               attendenceState: run.extensions.attendenceState,
               isHare: run.extensions.isHare,
@@ -450,7 +450,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   Future<void> _loadKennels() async {
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
-    String query = ''' 
+    String query = '''
 
           SELECT 
             k.${G0<TableModel>().kennelsTableHelper.colKennelId} as kennelId,
@@ -504,13 +504,13 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               final Marker marker = Marker(
                   width: KENNEL_PIN_SIZE,
                   height: KENNEL_PIN_SIZE,
-                  anchorPos: AnchorPos.exactly(Anchor(KENNEL_PIN_SIZE / 2.0, 0.0)),
+                  //anchorPos: AnchorPos.exactly(Anchor(KENNEL_PIN_SIZE / 2.0, 0.0)),
                   point: ll,
-                  builder: (BuildContext ctx) => _buildKennelMarker(
-                        _filteredKennels[i]['logo'],
-                        _filteredKennels[i]['shortName'],
-                        _filteredKennels[i]['kennelId'],
-                      ));
+                  child: _buildKennelMarker(
+                    _filteredKennels[i]['logo'],
+                    _filteredKennels[i]['shortName'],
+                    _filteredKennels[i]['kennelId'],
+                  ));
 
               _kennelMarkers.add(marker);
             }
@@ -715,7 +715,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                             height: 50.0,
                             width: 50.0,
                             point: latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!),
-                            builder: (BuildContext ctx) => Container(
+                            child: Container(
                               padding: const EdgeInsets.all(1.0),
                               height: 50.0,
                               width: 50.0,
@@ -736,9 +736,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       options: MarkerClusterLayerOptions(
                         maxClusterRadius: 60,
                         size: const Size(40, 40),
-                        fitBoundsOptions: const FitBoundsOptions(
-                          padding: EdgeInsets.all(50),
-                        ),
+                        // fitBoundsOptions: const FitBoundsOptions(
+                        //   padding: EdgeInsets.all(50),
+                        // ),
                         markers: _runLocationMarkers,
                         polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
                         builder: (BuildContext context, List<Marker> markers) {
@@ -757,9 +757,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       options: MarkerClusterLayerOptions(
                         maxClusterRadius: 20,
                         size: const Size(50, 50),
-                        fitBoundsOptions: const FitBoundsOptions(
-                          padding: EdgeInsets.all(50),
-                        ),
+                        // fitBoundsOptions: const FitBoundsOptions(
+                        //   padding: EdgeInsets.all(50),
+                        // ),
                         markers: _showKennels == true ? _kennelMarkers : <Marker>[],
                         polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
                         builder: (BuildContext context, List<Marker> markers) {

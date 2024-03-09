@@ -118,7 +118,7 @@ class SupportPageState extends State<SupportPage> {
                               child: Stack(
                                 alignment: AlignmentDirectional.center,
                                 children: <Widget>[
-                                  QrImage(
+                                  QrImageView(
                                       backgroundColor: Colors.white,
                                       padding: const EdgeInsets.all(10.0),
                                       data: '$QR_PREFIX_USER_SECRET_CODE${_userSecretCode.toUpperCase()}',

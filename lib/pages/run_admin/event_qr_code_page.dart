@@ -342,7 +342,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
           Expanded(
             child: Stack(
               children: <Widget>[
-                QrImage(
+                QrImageView(
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.all(15.0),
                     data: widget.qrPrefix + widget.qrContent,

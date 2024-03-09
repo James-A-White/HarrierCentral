@@ -292,7 +292,7 @@ class QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin
                     alignment: AlignmentDirectional.center,
                     //height: min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                     children: <Widget>[
-                      QrImage(
+                      QrImageView(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(10.0),
                           data: BASE_HCWEB_MOBILE_URL + userQrCode,
@@ -401,9 +401,9 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
   // }
 
   Future<void> _onCodeRead(String scanResult) async {
-    final AudioCache audioPlayer = AudioCache(prefix: 'assets/sounds/');
+    final AudioPlayer audioPlayer = AudioPlayer();
     // ignore: unawaited_futures
-    audioPlayer.play('camera.mp3');
+    audioPlayer.play(AssetSource('assets/sounds/camera.mp3'));
 
     setState(() {
       _onScreenMessage = 'Processing QR Scan';
