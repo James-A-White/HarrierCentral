@@ -37,7 +37,7 @@ mixin _$HasherEventMapModel {
   int? get totalRunsThisKennel => throw _privateConstructorUsedError;
   int? get eventCountOverride => throw _privateConstructorUsedError;
   int get virginVisitorType => throw _privateConstructorUsedError;
-  String get displayName => throw _privateConstructorUsedError;
+  String? get displayName => throw _privateConstructorUsedError;
   String? get email => throw _privateConstructorUsedError;
   String? get phoneNumber =>
       throw _privateConstructorUsedError; // these fields are cached from the event itself. This enables us to keep run count information without
@@ -53,8 +53,12 @@ mixin _$HasherEventMapModel {
   int? get removed => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this HasherEventMapModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of HasherEventMapModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $HasherEventMapModelCopyWith<HasherEventMapModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -83,7 +87,7 @@ abstract class $HasherEventMapModelCopyWith<$Res> {
       int? totalRunsThisKennel,
       int? eventCountOverride,
       int virginVisitorType,
-      String displayName,
+      String? displayName,
       String? email,
       String? phoneNumber,
       String? hemEventName,
@@ -108,6 +112,8 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of HasherEventMapModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -128,7 +134,7 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
     Object? totalRunsThisKennel = freezed,
     Object? eventCountOverride = freezed,
     Object? virginVisitorType = null,
-    Object? displayName = null,
+    Object? displayName = freezed,
     Object? email = freezed,
     Object? phoneNumber = freezed,
     Object? hemEventName = freezed,
@@ -211,10 +217,10 @@ class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
               as int,
-      displayName: null == displayName
+      displayName: freezed == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       email: freezed == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
@@ -293,7 +299,7 @@ abstract class _$$HasherEventMapModelImplCopyWith<$Res>
       int? totalRunsThisKennel,
       int? eventCountOverride,
       int virginVisitorType,
-      String displayName,
+      String? displayName,
       String? email,
       String? phoneNumber,
       String? hemEventName,
@@ -316,6 +322,8 @@ class __$$HasherEventMapModelImplCopyWithImpl<$Res>
       $Res Function(_$HasherEventMapModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of HasherEventMapModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -336,7 +344,7 @@ class __$$HasherEventMapModelImplCopyWithImpl<$Res>
     Object? totalRunsThisKennel = freezed,
     Object? eventCountOverride = freezed,
     Object? virginVisitorType = null,
-    Object? displayName = null,
+    Object? displayName = freezed,
     Object? email = freezed,
     Object? phoneNumber = freezed,
     Object? hemEventName = freezed,
@@ -419,10 +427,10 @@ class __$$HasherEventMapModelImplCopyWithImpl<$Res>
           ? _value.virginVisitorType
           : virginVisitorType // ignore: cast_nullable_to_non_nullable
               as int,
-      displayName: null == displayName
+      displayName: freezed == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       email: freezed == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
@@ -496,7 +504,7 @@ class _$HasherEventMapModelImpl implements _HasherEventMapModel {
       this.totalRunsThisKennel,
       this.eventCountOverride,
       required this.virginVisitorType,
-      required this.displayName,
+      this.displayName,
       this.email,
       this.phoneNumber,
       this.hemEventName,
@@ -548,7 +556,7 @@ class _$HasherEventMapModelImpl implements _HasherEventMapModel {
   @override
   final int virginVisitorType;
   @override
-  final String displayName;
+  final String? displayName;
   @override
   final String? email;
   @override
@@ -645,7 +653,7 @@ class _$HasherEventMapModelImpl implements _HasherEventMapModel {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -681,7 +689,9 @@ class _$HasherEventMapModelImpl implements _HasherEventMapModel {
         updatedAt
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of HasherEventMapModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$HasherEventMapModelImplCopyWith<_$HasherEventMapModelImpl> get copyWith =>
@@ -715,7 +725,7 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
       final int? totalRunsThisKennel,
       final int? eventCountOverride,
       required final int virginVisitorType,
-      required final String displayName,
+      final String? displayName,
       final String? email,
       final String? phoneNumber,
       final String? hemEventName,
@@ -767,13 +777,14 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   @override
   int get virginVisitorType;
   @override
-  String get displayName;
+  String? get displayName;
   @override
   String? get email;
   @override
-  String? get phoneNumber;
-  @override // these fields are cached from the event itself. This enables us to keep run count information without
+  String?
+      get phoneNumber; // these fields are cached from the event itself. This enables us to keep run count information without
 // having to have the actual run cached on the phone
+  @override
   String? get hemEventName;
   @override
   int? get hemEventNumber;
@@ -793,8 +804,11 @@ abstract class _HasherEventMapModel implements HasherEventMapModel {
   int? get removed;
   @override
   DateTime? get updatedAt;
+
+  /// Create a copy of HasherEventMapModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$HasherEventMapModelImplCopyWith<_$HasherEventMapModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

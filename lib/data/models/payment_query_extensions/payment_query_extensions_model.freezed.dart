@@ -38,8 +38,12 @@ mixin _$PaymentQueryExtensionsModel {
       throw _privateConstructorUsedError;
   bool get isHashCredit => throw _privateConstructorUsedError;
 
+  /// Serializes this PaymentQueryExtensionsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PaymentQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $PaymentQueryExtensionsModelCopyWith<PaymentQueryExtensionsModel>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -81,6 +85,8 @@ class _$PaymentQueryExtensionsModelCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of PaymentQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -202,6 +208,8 @@ class __$$PaymentQueryExtensionsModelImplCopyWithImpl<$Res>
       $Res Function(_$PaymentQueryExtensionsModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of PaymentQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -397,7 +405,7 @@ class _$PaymentQueryExtensionsModelImpl
                 other.isHashCredit == isHashCredit));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -417,7 +425,9 @@ class _$PaymentQueryExtensionsModelImpl
       discountAvailableDescription,
       isHashCredit);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PaymentQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PaymentQueryExtensionsModelImplCopyWith<_$PaymentQueryExtensionsModelImpl>
@@ -484,8 +494,11 @@ abstract class _PaymentQueryExtensionsModel
   String? get discountAvailableDescription;
   @override
   bool get isHashCredit;
+
+  /// Create a copy of PaymentQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PaymentQueryExtensionsModelImplCopyWith<_$PaymentQueryExtensionsModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

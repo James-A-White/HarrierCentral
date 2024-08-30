@@ -29,8 +29,12 @@ mixin _$RegionsModel {
   int? get removed => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this RegionsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of RegionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $RegionsModelCopyWith<RegionsModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -62,6 +66,8 @@ class _$RegionsModelCopyWithImpl<$Res, $Val extends RegionsModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of RegionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -138,6 +144,8 @@ class __$$RegionsModelImplCopyWithImpl<$Res>
       _$RegionsModelImpl _value, $Res Function(_$RegionsModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of RegionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -247,7 +255,7 @@ class _$RegionsModelImpl implements _RegionsModel {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -260,7 +268,9 @@ class _$RegionsModelImpl implements _RegionsModel {
       removed,
       updatedAt);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of RegionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$RegionsModelImplCopyWith<_$RegionsModelImpl> get copyWith =>
@@ -304,8 +314,11 @@ abstract class _RegionsModel implements RegionsModel {
   int? get removed;
   @override
   DateTime? get updatedAt;
+
+  /// Create a copy of RegionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$RegionsModelImplCopyWith<_$RegionsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

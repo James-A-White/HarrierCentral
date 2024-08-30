@@ -10,18 +10,18 @@ _$ApproveLoginModelImpl _$$ApproveLoginModelImplFromJson(
         Map<String, dynamic> json) =>
     _$ApproveLoginModelImpl(
       apiVersion: json['apiVersion'] as String?,
-      approvalCode: json['approvalCode'] as int?,
+      approvalCode: (json['approvalCode'] as num?)?.toInt(),
       loginMessage: json['loginMessage'] as String?,
       loginMessageTitle: json['loginMessageTitle'] as String?,
-      serverStatusCode: json['serverStatusCode'] as int?,
+      serverStatusCode: (json['serverStatusCode'] as num?)?.toInt(),
       messageEndDate: json['messageEndDate'] == null
           ? null
           : DateTime.parse(json['messageEndDate'] as String),
-      messageDisplayType: json['messageDisplayType'] as int?,
+      messageDisplayType: (json['messageDisplayType'] as num?)?.toInt(),
       iosDownloadLink: json['iosDownloadLink'] as String?,
       androidDownloadLink: json['androidDownloadLink'] as String?,
       imageRootUrl: json['imageRootUrl'] as String?,
-      isBetaTester: json['isBetaTester'] as int?,
+      isBetaTester: (json['isBetaTester'] as num?)?.toInt(),
       email: json['email'] as String?,
       homeKennelId: json['homeKennelId'] as String?,
       thirdPartyForceTokenRefresh: json['thirdPartyForceTokenRefresh'] == null

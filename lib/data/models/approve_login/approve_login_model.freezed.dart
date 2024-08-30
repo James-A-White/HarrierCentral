@@ -36,8 +36,12 @@ mixin _$ApproveLoginModel {
   DateTime? get thirdPartyForceTokenRefresh =>
       throw _privateConstructorUsedError;
 
+  /// Serializes this ApproveLoginModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ApproveLoginModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ApproveLoginModelCopyWith<ApproveLoginModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -75,6 +79,8 @@ class _$ApproveLoginModelCopyWithImpl<$Res, $Val extends ApproveLoginModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ApproveLoginModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -187,6 +193,8 @@ class __$$ApproveLoginModelImplCopyWithImpl<$Res>
       $Res Function(_$ApproveLoginModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ApproveLoginModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -358,7 +366,7 @@ class _$ApproveLoginModelImpl implements _ApproveLoginModel {
                     thirdPartyForceTokenRefresh));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -377,7 +385,9 @@ class _$ApproveLoginModelImpl implements _ApproveLoginModel {
       homeKennelId,
       thirdPartyForceTokenRefresh);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ApproveLoginModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ApproveLoginModelImplCopyWith<_$ApproveLoginModelImpl> get copyWith =>
@@ -440,8 +450,11 @@ abstract class _ApproveLoginModel implements ApproveLoginModel {
   String? get homeKennelId;
   @override
   DateTime? get thirdPartyForceTokenRefresh;
+
+  /// Create a copy of ApproveLoginModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ApproveLoginModelImplCopyWith<_$ApproveLoginModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

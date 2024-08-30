@@ -42,8 +42,12 @@ mixin _$KennelMemberResultsModel {
   double get kennelCredit => throw _privateConstructorUsedError;
   int get memberFollowingStatus => throw _privateConstructorUsedError;
 
+  /// Serializes this KennelMemberResultsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of KennelMemberResultsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $KennelMemberResultsModelCopyWith<KennelMemberResultsModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -88,6 +92,8 @@ class _$KennelMemberResultsModelCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of KennelMemberResultsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -239,6 +245,8 @@ class __$$KennelMemberResultsModelImplCopyWithImpl<$Res>
       $Res Function(_$KennelMemberResultsModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of KennelMemberResultsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -484,7 +492,7 @@ class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
                 other.memberFollowingStatus == memberFollowingStatus));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -510,7 +518,9 @@ class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
         memberFollowingStatus
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of KennelMemberResultsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$KennelMemberResultsModelImplCopyWith<_$KennelMemberResultsModelImpl>
@@ -591,8 +601,11 @@ abstract class _KennelMemberResultsModel implements KennelMemberResultsModel {
   double get kennelCredit;
   @override
   int get memberFollowingStatus;
+
+  /// Create a copy of KennelMemberResultsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$KennelMemberResultsModelImplCopyWith<_$KennelMemberResultsModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

@@ -51,8 +51,12 @@ mixin _$HasherKennelMapModel {
   DateTime? get updatedAt => throw _privateConstructorUsedError;
   int? get removed => throw _privateConstructorUsedError;
 
+  /// Serializes this HasherKennelMapModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of HasherKennelMapModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $HasherKennelMapModelCopyWith<HasherKennelMapModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -107,6 +111,8 @@ class _$HasherKennelMapModelCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of HasherKennelMapModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -315,6 +321,8 @@ class __$$HasherKennelMapModelImplCopyWithImpl<$Res>
       $Res Function(_$HasherKennelMapModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of HasherKennelMapModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -642,7 +650,7 @@ class _$HasherKennelMapModelImpl implements _HasherKennelMapModel {
             (identical(other.removed, removed) || other.removed == removed));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -678,7 +686,9 @@ class _$HasherKennelMapModelImpl implements _HasherKennelMapModel {
         removed
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of HasherKennelMapModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$HasherKennelMapModelImplCopyWith<_$HasherKennelMapModelImpl>
@@ -790,8 +800,11 @@ abstract class _HasherKennelMapModel implements HasherKennelMapModel {
   DateTime? get updatedAt;
   @override
   int? get removed;
+
+  /// Create a copy of HasherKennelMapModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$HasherKennelMapModelImplCopyWith<_$HasherKennelMapModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

@@ -36,8 +36,12 @@ mixin _$ReceiptsModel {
   int? get removed => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this ReceiptsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ReceiptsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ReceiptsModelCopyWith<ReceiptsModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -76,6 +80,8 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ReceiptsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -194,6 +200,8 @@ class __$$ReceiptsModelImplCopyWithImpl<$Res>
       _$ReceiptsModelImpl _value, $Res Function(_$ReceiptsModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ReceiptsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -373,7 +381,7 @@ class _$ReceiptsModelImpl implements _ReceiptsModel {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -393,7 +401,9 @@ class _$ReceiptsModelImpl implements _ReceiptsModel {
       removed,
       updatedAt);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ReceiptsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ReceiptsModelImplCopyWith<_$ReceiptsModelImpl> get copyWith =>
@@ -458,8 +468,11 @@ abstract class _ReceiptsModel implements ReceiptsModel {
   int? get removed;
   @override
   DateTime? get updatedAt;
+
+  /// Create a copy of ReceiptsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ReceiptsModelImplCopyWith<_$ReceiptsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

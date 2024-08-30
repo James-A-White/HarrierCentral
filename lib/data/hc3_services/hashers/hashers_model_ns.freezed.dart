@@ -31,8 +31,12 @@ mixin _$HashersModel {
   int? get removed => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this HashersModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of HashersModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $HashersModelCopyWith<HashersModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -66,6 +70,8 @@ class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of HashersModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -154,6 +160,8 @@ class __$$HashersModelImplCopyWithImpl<$Res>
       _$HashersModelImpl _value, $Res Function(_$HashersModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of HashersModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -284,7 +292,7 @@ class _$HashersModelImpl implements _HashersModel {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -299,7 +307,9 @@ class _$HashersModelImpl implements _HashersModel {
       removed,
       updatedAt);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of HashersModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$HashersModelImplCopyWith<_$HashersModelImpl> get copyWith =>
@@ -349,8 +359,11 @@ abstract class _HashersModel implements HashersModel {
   int? get removed;
   @override
   DateTime? get updatedAt;
+
+  /// Create a copy of HashersModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$HashersModelImplCopyWith<_$HashersModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

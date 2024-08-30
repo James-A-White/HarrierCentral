@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class ThirdPartyLogin extends StatefulWidget {
   const ThirdPartyLogin(this.isNewUser, {super.key});
@@ -196,28 +197,29 @@ class LoginPageState extends State<ThirdPartyLogin> {
       // get the user data
       final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
 
-      await setStringPref(StringPrefsEnum.facebookId, accessToken.userId);
-      await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.token);
+      await setStringPref(StringPrefsEnum.facebookId, userData['id']);
+      await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.tokenString);
       await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
       await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
       await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
 
       await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, ''); // facebook does not have an auth code
-      await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.token);
-      await setStringPref(StringPrefsEnum.thirdPartyUserId, accessToken.userId);
+      await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.tokenString);
+      await setStringPref(StringPrefsEnum.thirdPartyUserId, userData['id']);
       await setStringPref(StringPrefsEnum.thirdPartyLoginType, 'facebook');
       await setStringPref(StringPrefsEnum.thirdPartyEmail, (userData['email'] ?? '').toString());
       await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
-      await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, accessToken.expires);
+      // TODO: Fix this eventually (maybe?)
+      await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, DateTime(2030));
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
         'facebook',
-        accessToken.token,
+        accessToken.tokenString,
         userData['id'],
         userData['first_name'],
         userData['last_name'],
         photoUrl: userData['picture']['data']['url'],
-        accessTokenExpires: accessToken.expires,
+        accessTokenExpires: DateTime(2030),
         thirdPartyEmail: userData['email'],
       );
 

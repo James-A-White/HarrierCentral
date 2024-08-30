@@ -32,8 +32,12 @@ mixin _$LiteEventModel {
   int get appAccessFlags => throw _privateConstructorUsedError;
   int get canEditRunAttendance => throw _privateConstructorUsedError;
 
+  /// Serializes this LiteEventModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of LiteEventModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $LiteEventModelCopyWith<LiteEventModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -68,6 +72,8 @@ class _$LiteEventModelCopyWithImpl<$Res, $Val extends LiteEventModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of LiteEventModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -162,6 +168,8 @@ class __$$LiteEventModelImplCopyWithImpl<$Res>
       _$LiteEventModelImpl _value, $Res Function(_$LiteEventModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of LiteEventModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -306,7 +314,7 @@ class _$LiteEventModelImpl implements _LiteEventModel {
                 other.canEditRunAttendance == canEditRunAttendance));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -322,7 +330,9 @@ class _$LiteEventModelImpl implements _LiteEventModel {
       appAccessFlags,
       canEditRunAttendance);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of LiteEventModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$LiteEventModelImplCopyWith<_$LiteEventModelImpl> get copyWith =>
@@ -376,8 +386,11 @@ abstract class _LiteEventModel implements LiteEventModel {
   int get appAccessFlags;
   @override
   int get canEditRunAttendance;
+
+  /// Create a copy of LiteEventModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LiteEventModelImplCopyWith<_$LiteEventModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

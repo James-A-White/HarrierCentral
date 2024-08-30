@@ -16,7 +16,7 @@ _$CitiesModelImpl _$$CitiesModelImplFromJson(Map<String, dynamic> json) =>
       longitude: (json['longitude'] as num).toDouble(),
       cityAscii: json['cityAscii'] as String,
       flagFile: json['flagFile'] as String?,
-      removed: json['removed'] as int?,
+      removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),

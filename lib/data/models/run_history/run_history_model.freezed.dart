@@ -36,8 +36,12 @@ mixin _$RunHistoryModel {
   int get following => throw _privateConstructorUsedError;
   int get digitsAfterDecimal => throw _privateConstructorUsedError;
 
+  /// Serializes this RunHistoryModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of RunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $RunHistoryModelCopyWith<RunHistoryModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -76,6 +80,8 @@ class _$RunHistoryModelCopyWithImpl<$Res, $Val extends RunHistoryModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of RunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -194,6 +200,8 @@ class __$$RunHistoryModelImplCopyWithImpl<$Res>
       _$RunHistoryModelImpl _value, $Res Function(_$RunHistoryModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of RunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -387,7 +395,7 @@ class _$RunHistoryModelImpl implements _RunHistoryModel {
                 other.digitsAfterDecimal == digitsAfterDecimal));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -407,7 +415,9 @@ class _$RunHistoryModelImpl implements _RunHistoryModel {
       following,
       digitsAfterDecimal);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of RunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$RunHistoryModelImplCopyWith<_$RunHistoryModelImpl> get copyWith =>
@@ -473,8 +483,11 @@ abstract class _RunHistoryModel implements RunHistoryModel {
   int get following;
   @override
   int get digitsAfterDecimal;
+
+  /// Create a copy of RunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$RunHistoryModelImplCopyWith<_$RunHistoryModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

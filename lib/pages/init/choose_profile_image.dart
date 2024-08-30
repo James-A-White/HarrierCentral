@@ -581,13 +581,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
       final ImageCropper ic = ImageCropper();
       final CroppedFile? croppedFile = await ic.cropImage(
-          sourcePath: profilePhotoFile.path,
-          aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-          aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-          maxWidth: 300,
-          maxHeight: 300,
-          compressFormat: ImageCompressFormat.jpg,
-          compressQuality: 50);
+          sourcePath: profilePhotoFile.path, aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0), maxWidth: 300, maxHeight: 300, compressFormat: ImageCompressFormat.jpg, compressQuality: 50);
 
       if (croppedFile != null) {
         final File file = File.fromRawPath(await croppedFile.readAsBytes());
@@ -610,13 +604,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     } else {
       final ImageCropper ic = ImageCropper();
       final CroppedFile? croppedFile = await ic.cropImage(
-          sourcePath: image.path,
-          aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-          aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-          maxWidth: 300,
-          maxHeight: 300,
-          compressFormat: ImageCompressFormat.jpg,
-          compressQuality: 50);
+          sourcePath: image.path, aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0), maxWidth: 300, maxHeight: 300, compressFormat: ImageCompressFormat.jpg, compressQuality: 50);
 
       // final Uint8List bytes = await croppedFile.readAsBytes();
       // final File file = File.fromRawPath(bytes);

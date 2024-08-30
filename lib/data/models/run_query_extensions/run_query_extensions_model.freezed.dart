@@ -42,8 +42,12 @@ mixin _$RunQueryExtensionsModel {
   int get isMapAndDistanceValid => throw _privateConstructorUsedError;
   int get runClassification => throw _privateConstructorUsedError;
 
+  /// Serializes this RunQueryExtensionsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of RunQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $RunQueryExtensionsModelCopyWith<RunQueryExtensionsModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -87,6 +91,8 @@ class _$RunQueryExtensionsModelCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of RunQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -232,6 +238,8 @@ class __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>
       $Res Function(_$RunQueryExtensionsModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of RunQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -467,7 +475,7 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
                 other.runClassification == runClassification));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -492,7 +500,9 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
         runClassification
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of RunQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$RunQueryExtensionsModelImplCopyWith<_$RunQueryExtensionsModelImpl>
@@ -557,8 +567,8 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
   @override
   int get emailAlertPreference;
   @override
-  int get distanceUnitsPref;
-  @override //int userPrefs,
+  int get distanceUnitsPref; //int userPrefs,
+  @override
   String get searchRunsText;
   @override
   double? get latitude;
@@ -570,8 +580,11 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
   int get isMapAndDistanceValid;
   @override
   int get runClassification;
+
+  /// Create a copy of RunQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$RunQueryExtensionsModelImplCopyWith<_$RunQueryExtensionsModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

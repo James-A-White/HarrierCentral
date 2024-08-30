@@ -69,8 +69,12 @@ mixin _$EventModel {
   int? get removed => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this EventModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of EventModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $EventModelCopyWith<EventModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -142,6 +146,8 @@ class _$EventModelCopyWithImpl<$Res, $Val extends EventModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of EventModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -458,6 +464,8 @@ class __$$EventModelImplCopyWithImpl<$Res>
       _$EventModelImpl _value, $Res Function(_$EventModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of EventModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -951,7 +959,7 @@ class _$EventModelImpl implements _EventModel {
             (identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -1005,7 +1013,9 @@ class _$EventModelImpl implements _EventModel {
         updatedAt
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of EventModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$EventModelImplCopyWith<_$EventModelImpl> get copyWith =>
@@ -1169,8 +1179,11 @@ abstract class _EventModel implements EventModel {
   int? get removed;
   @override
   DateTime? get updatedAt;
+
+  /// Create a copy of EventModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$EventModelImplCopyWith<_$EventModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

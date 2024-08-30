@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:harrier_central/imports.dart';
+//import 'package:flutter_slidable/flutter_slidable.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
@@ -33,7 +34,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   final GlobalKey _packListBoxKey = GlobalKey();
 
   bool _isLoading = true;
-  final SlidableController _slidableController = SlidableController();
+  //final SlidableController _slidableController = SlidableController();
 
   List<CheckInPackModel> _packList = <CheckInPackModel>[];
   List<CheckInPackModel> _filteredList = <CheckInPackModel>[];
@@ -63,7 +64,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   String _searchTypeText = '';
   bool _showFilter = false;
 
-  bool _useTerminalForPayment = false;
+  //bool _useTerminalForPayment = false;
 
   static const String _searchKennel = 'Searching Kennel members and RSVPs';
   static const String _searchAllHashers = 'Searching all Hashers';
@@ -1196,7 +1197,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     String? specialRunPriceReason,
     bool? useSpecialPriceAsDefault = false,
   }) async {
-    bool paymentCancelled = false;
+    //bool paymentCancelled = false;
     bool terminalWasUsedForPayment = false;
 
     setState(() {
@@ -1219,93 +1220,98 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
     String paymentReference = '';
 
-    if (_useTerminalForPayment) {
-      // this is a bit of a hack to use this boolean to indicate if the
-      // payment terminal should be used. Maybe one day I'll clean this up.
-      _useTerminalForPayment = false;
-      terminalWasUsedForPayment = true;
+    // if (_useTerminalForPayment) {
+    //   // this is a bit of a hack to use this boolean to indicate if the
+    //   // payment terminal should be used. Maybe one day I'll clean this up.
+    //   _useTerminalForPayment = false;
+    //   terminalWasUsedForPayment = true;
 
-      double terminalAmount = amount;
-      if ((doPayForExtras == payForRunAndExtras) && (widget.eventAggregate.event.eventPriceForExtras != null)) {
-        terminalAmount += widget.eventAggregate.event.eventPriceForExtras!;
-      }
+    //   double terminalAmount = amount;
+    //   if ((doPayForExtras == payForRunAndExtras) && (widget.eventAggregate.event.eventPriceForExtras != null)) {
+    //     terminalAmount += widget.eventAggregate.event.eventPriceForExtras!;
+    //   }
 
-      String? affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
-      if (affiliateKey != null) {
-        await Sumup.init(affiliateKey);
+    //   String? affiliateKey = getStringPref(StringPrefsEnum.paymentTerminalAccountKey);
 
-        bool isLoggedIn = await Sumup.isLoggedIn ?? false;
-        if (!isLoggedIn) {
-          await Sumup.login();
-        }
+    //   if (affiliateKey != null) {
+    //     await Sumup.init(affiliateKey);
 
-        final String title = '${widget.eventAggregate.event.eventName} (${packMember.nameForDisplay})';
-        paymentReference = 'HC:$randomString';
+    //     bool isLoggedIn = await Sumup.isLoggedIn ?? false;
+    //     if (!isLoggedIn) {
+    //       await Sumup.login();
+    //     }
 
-        isLoggedIn = await Sumup.isLoggedIn ?? false;
-        if (isLoggedIn) {
-          final SumupPayment payment = SumupPayment(
-            title: title,
-            total: terminalAmount,
-            // // NULLSAFETODO1 - TEST
-            //             currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode,
-            currency: widget.eventAggregate.extensions.curCode,
-            foreignTransactionId: paymentReference,
-            saleItemsCount: 1,
-            skipSuccessScreen: true,
-            tip: .0,
-          );
+    //     final String title = '${widget.eventAggregate.event.eventName} (${packMember.nameForDisplay})';
+    //     paymentReference = 'HC:$randomString';
 
-          //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
+    //     isLoggedIn = await Sumup.isLoggedIn ?? false;
+    //     if (isLoggedIn) {
+    //       final SumupPayment payment = SumupPayment(
+    //         title: title,
+    //         total: terminalAmount,
+    //         // // NULLSAFETODO1 - TEST
+    //         //             currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode,
+    //         currency: widget.eventAggregate.extensions.curCode,
+    //         foreignTransactionId: paymentReference,
+    //         saleItemsCount: 1,
+    //         skipSuccessScreen: true,
+    //         tip: .0,
+    //       );
 
-          final SumupPaymentRequest request = SumupPaymentRequest(payment);
+    //       //"BGN" "BRL" "CHF" "CLP" "CZK" "DKK" "EUR" "GBP" "HRK" "HUF" "NOK" "PLN" "RON" "SEK" "USD"
 
-          request.info = <String, String>{
-            'hashName': 'packMember.nameForDisplay',
-            'foreignTransId': paymentReference,
-          };
+    //       final SumupPaymentRequest request = SumupPaymentRequest(payment);
 
-          final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
-          if (!(checkoutResult.success ?? false)) {
-            paymentCancelled = true;
-          } else {
-            if (checkoutResult.transactionCode != null) {
-              paymentReference = 'SU:${checkoutResult.transactionCode}';
-            }
-          }
-        }
-      }
-    } else {
-      paymentReference = 'HC:$randomString';
+    //       request.info = <String, String>{
+    //         'hashName': 'packMember.nameForDisplay',
+    //         'foreignTransId': paymentReference,
+    //       };
+
+    //       final SumupPluginCheckoutResponse checkoutResult = await Sumup.checkout(request);
+    //       if (!(checkoutResult.success ?? false)) {
+    //         paymentCancelled = true;
+    //       } else {
+    //         if (checkoutResult.transactionCode != null) {
+    //           paymentReference = 'SU:${checkoutResult.transactionCode}';
+    //         }
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   paymentReference = 'HC:$randomString';
+    // }
+
+    paymentReference = 'HC:$randomString';
+
+    // if (paymentCancelled) {
+    //   return null;
+    // }
+    // else
+    // {
+    final PaymentsService paySrv = PaymentsService();
+    final List<dynamic> result = await paySrv.payForEvent(
+      widget.eventAggregate.event.eventId,
+      ((hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
+      ((hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
+      paymentType,
+      amount,
+      attendenceAtHash.value,
+      doPayForExtras,
+      AppDomainType.event,
+      paymentReference: paymentReference,
+      specialRunPrice: specialRunPrice,
+      specialRunPriceReason: specialRunPriceReason,
+      useSpecialPriceAsDefault: useSpecialPriceAsDefault,
+    );
+
+    if (result.isNotEmpty) {
+      final Map<String, dynamic> m = result[0];
+      m.addAll(<String, dynamic>{'terminalWasUsedForPayment': terminalWasUsedForPayment});
     }
 
-    if (paymentCancelled) {
-      return null;
-    } else {
-      final PaymentsService paySrv = PaymentsService();
-      final List<dynamic> result = await paySrv.payForEvent(
-        widget.eventAggregate.event.eventId,
-        ((hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
-        ((hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
-        paymentType,
-        amount,
-        attendenceAtHash.value,
-        doPayForExtras,
-        AppDomainType.event,
-        paymentReference: paymentReference,
-        specialRunPrice: specialRunPrice,
-        specialRunPriceReason: specialRunPriceReason,
-        useSpecialPriceAsDefault: useSpecialPriceAsDefault,
-      );
-
-      if (result.isNotEmpty) {
-        final Map<String, dynamic> m = result[0];
-        m.addAll(<String, dynamic>{'terminalWasUsedForPayment': terminalWasUsedForPayment});
-      }
-
-      return result;
-    }
+    return result;
   }
+  //}
 
   static const double LIST_ITEM_LEFT_MARGIN = 88.0;
 
@@ -1568,192 +1574,194 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 amountOwed -= packMember.discountAmount;
                 amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
 
-                final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+                //final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
-                final Key key = Key(index.toString());
+                //final Key key = Key(index.toString());
 
-                return Slidable(
-                  key: key,
-                  controller: _slidableController,
-                  actionPane: const SlidableBehindActionPane(),
-                  actionExtentRatio: 0.35,
-                  dismissal: SlidableDismissal(
-                    onWillDismiss: (SlideActionType? actionType) {
-                      if (actionType != null) {
-                        if (actionType == SlideActionType.secondary) {
-                          _useTerminalForPayment = false;
-                        }
-                        if (packMember.isPaid != 1) {
-                          _payForEvent(
-                            context,
-                            _scaffoldKey.currentState!,
-                            actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
-                            packMember,
-                            -1,
-                          );
-                        } else {
-                          if (actionType == SlideActionType.secondary) {
-                            _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
-                          }
-                        }
+                return Container();
 
-                        Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
-                          _slidableController.activeState?.close();
-                        });
-                      }
+                // return Slidable(
+                //   key: key,
+                //   controller: _slidableController,
+                //   actionPane: const SlidableBehindActionPane(),
+                //   actionExtentRatio: 0.35,
+                //   dismissal: SlidableDismissal(
+                //     onWillDismiss: (SlideActionType? actionType) {
+                //       if (actionType != null) {
+                //         if (actionType == SlideActionType.secondary) {
+                //           // _useTerminalForPayment = false;
+                //         }
+                //         if (packMember.isPaid != 1) {
+                //           _payForEvent(
+                //             context,
+                //             _scaffoldKey.currentState!,
+                //             actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
+                //             packMember,
+                //             -1,
+                //           );
+                //         } else {
+                //           if (actionType == SlideActionType.secondary) {
+                //             _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
+                //           }
+                //         }
 
-                      return false;
-                    },
-                    dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
-                    child: const SlidableDrawerDismissal(),
-                    onDismissed: (SlideActionType? actionType) {
-                      setState(() {});
-                    },
-                  ),
-                  actions: <Widget>[
-                    IconSlideAction(
-                        iconWidget: packMember.isPaid == 1
-                            ? Container(
-                                color: Colors.grey,
-                                width: G0<DeviceInfo>().deviceWidth,
-                                child: const Column(
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 5.0),
-                                      child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 5.0),
-                                      child: Text(
-                                        'Already\r\npaid',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Container(
-                                color: Colors.blue,
-                                width: G0<DeviceInfo>().deviceWidth,
-                                child: Column(
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10.0),
-                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                        onTap: () {
-                          _useTerminalForPayment = false;
-                          _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
-                        }),
-                    if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
-                      IconSlideAction(
-                          iconWidget: Container(
-                            color: Colors.deepPurple,
-                            width: G0<DeviceInfo>().deviceWidth,
-                            child: Column(
-                              children: <Widget>[
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8.0),
-                                  child: Icon(MaterialCommunityIcons.contactless_payment_circle, size: 30.0, color: Colors.white),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10.0),
-                                  child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
-                                ),
-                              ],
-                            ),
-                          ),
-                          onTap: () {
-                            _useTerminalForPayment = true;
-                            _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
-                          }),
-                    ],
-                  ],
-                  secondaryActions: <Widget>[
-                    IconSlideAction(
-                      iconWidget: packMember.isPaid == 1
-                          ? packMember.attendenceState >= attendenceOnIn.value
-                              ? Container(
-                                  width: G0<DeviceInfo>().deviceWidth,
-                                  color: Colors.grey,
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 5.0),
-                                        child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 5.0),
-                                        child: Text(
-                                          'Already\r\nOn-In',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  color: Colors.amber[800],
-                                  width: G0<DeviceInfo>().deviceWidth,
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 2.0),
-                                        child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 5.0),
-                                        child: Text(
-                                          'Record as\r\nOn-In',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                          : Container(
-                              width: G0<DeviceInfo>().deviceWidth,
-                              color: Colors.green,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
-                                    child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 5.0),
-                                    child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                    ),
-                  ],
-                  child: Container(
-                    color: Colors.white,
-                    child: _listItem(context, packMember),
-                  ),
-                );
+                //         Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
+                //           _slidableController.activeState?.close();
+                //         });
+                //       }
+
+                //       return false;
+                //     },
+                //     dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
+                //     child: const SlidableDrawerDismissal(),
+                //     onDismissed: (SlideActionType? actionType) {
+                //       setState(() {});
+                //     },
+                //   ),
+                //   actions: <Widget>[
+                //     IconSlideAction(
+                //         iconWidget: packMember.isPaid == 1
+                //             ? Container(
+                //                 color: Colors.grey,
+                //                 width: G0<DeviceInfo>().deviceWidth,
+                //                 child: const Column(
+                //                   children: <Widget>[
+                //                     Padding(
+                //                       padding: EdgeInsets.only(top: 5.0),
+                //                       child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                //                     ),
+                //                     Padding(
+                //                       padding: EdgeInsets.only(top: 5.0),
+                //                       child: Text(
+                //                         'Already\r\npaid',
+                //                         textAlign: TextAlign.center,
+                //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                //                       ),
+                //                     ),
+                //                   ],
+                //                 ),
+                //               )
+                //             : Container(
+                //                 color: Colors.blue,
+                //                 width: G0<DeviceInfo>().deviceWidth,
+                //                 child: Column(
+                //                   children: <Widget>[
+                //                     Padding(
+                //                       padding: const EdgeInsets.only(top: 8.0),
+                //                       child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
+                //                     ),
+                //                     Padding(
+                //                       padding: const EdgeInsets.only(top: 10.0),
+                //                       child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
+                //                           textAlign: TextAlign.center,
+                //                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                //                     ),
+                //                   ],
+                //                 ),
+                //               ),
+                //         onTap: () {
+                //           //_useTerminalForPayment = false;
+                //           _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
+                //         }),
+                //     if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
+                //       IconSlideAction(
+                //           iconWidget: Container(
+                //             color: Colors.deepPurple,
+                //             width: G0<DeviceInfo>().deviceWidth,
+                //             child: Column(
+                //               children: <Widget>[
+                //                 const Padding(
+                //                   padding: EdgeInsets.only(top: 8.0),
+                //                   child: Icon(MaterialCommunityIcons.contactless_payment_circle, size: 30.0, color: Colors.white),
+                //                 ),
+                //                 Padding(
+                //                   padding: const EdgeInsets.only(top: 10.0),
+                //                   child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
+                //                       textAlign: TextAlign.center,
+                //                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                //                 ),
+                //               ],
+                //             ),
+                //           ),
+                //           onTap: () {
+                //             //_useTerminalForPayment = true;
+                //             _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
+                //           }),
+                //     ],
+                //   ],
+                //   secondaryActions: <Widget>[
+                //     IconSlideAction(
+                //       iconWidget: packMember.isPaid == 1
+                //           ? packMember.attendenceState >= attendenceOnIn.value
+                //               ? Container(
+                //                   width: G0<DeviceInfo>().deviceWidth,
+                //                   color: Colors.grey,
+                //                   child: const Column(
+                //                     mainAxisAlignment: MainAxisAlignment.end,
+                //                     children: <Widget>[
+                //                       Padding(
+                //                         padding: EdgeInsets.only(top: 5.0),
+                //                         child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                //                       ),
+                //                       Padding(
+                //                         padding: EdgeInsets.only(top: 5.0),
+                //                         child: Text(
+                //                           'Already\r\nOn-In',
+                //                           textAlign: TextAlign.center,
+                //                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                //                         ),
+                //                       ),
+                //                     ],
+                //                   ),
+                //                 )
+                //               : Container(
+                //                   color: Colors.amber[800],
+                //                   width: G0<DeviceInfo>().deviceWidth,
+                //                   child: const Column(
+                //                     mainAxisAlignment: MainAxisAlignment.end,
+                //                     children: <Widget>[
+                //                       Padding(
+                //                         padding: EdgeInsets.only(top: 2.0),
+                //                         child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
+                //                       ),
+                //                       Padding(
+                //                         padding: EdgeInsets.only(top: 5.0),
+                //                         child: Text(
+                //                           'Record as\r\nOn-In',
+                //                           textAlign: TextAlign.center,
+                //                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                //                         ),
+                //                       ),
+                //                     ],
+                //                   ),
+                //                 )
+                //           : Container(
+                //               width: G0<DeviceInfo>().deviceWidth,
+                //               color: Colors.green,
+                //               child: Column(
+                //                 mainAxisAlignment: MainAxisAlignment.center,
+                //                 mainAxisSize: MainAxisSize.max,
+                //                 children: <Widget>[
+                //                   Padding(
+                //                     padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
+                //                     child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
+                //                   ),
+                //                   Padding(
+                //                     padding: const EdgeInsets.only(bottom: 5.0),
+                //                     child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                //                         textAlign: TextAlign.center,
+                //                         style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                //                   ),
+                //                 ],
+                //               ),
+                //             ),
+                //     ),
+                //   ],
+                //   child: Container(
+                //     color: Colors.white,
+                //     child: _listItem(context, packMember),
+                //   ),
+                // );
               }
             },
           ),

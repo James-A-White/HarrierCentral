@@ -38,8 +38,12 @@ mixin _$UserRunHistoryModel {
   int? get totalRunsThisKennel => throw _privateConstructorUsedError;
   int? get totalHaringThisKennel => throw _privateConstructorUsedError;
 
+  /// Serializes this UserRunHistoryModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of UserRunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $UserRunHistoryModelCopyWith<UserRunHistoryModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -80,6 +84,8 @@ class _$UserRunHistoryModelCopyWithImpl<$Res, $Val extends UserRunHistoryModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of UserRunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -210,6 +216,8 @@ class __$$UserRunHistoryModelImplCopyWithImpl<$Res>
       $Res Function(_$UserRunHistoryModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of UserRunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -410,7 +418,7 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
                 other.totalHaringThisKennel == totalHaringThisKennel));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -432,7 +440,9 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
       totalRunsThisKennel,
       totalHaringThisKennel);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of UserRunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$UserRunHistoryModelImplCopyWith<_$UserRunHistoryModelImpl> get copyWith =>
@@ -504,8 +514,11 @@ abstract class _UserRunHistoryModel implements UserRunHistoryModel {
   int? get totalRunsThisKennel;
   @override
   int? get totalHaringThisKennel;
+
+  /// Create a copy of UserRunHistoryModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UserRunHistoryModelImplCopyWith<_$UserRunHistoryModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

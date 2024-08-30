@@ -22,8 +22,12 @@ SingleResultModel _$SingleResultModelFromJson(Map<String, dynamic> json) {
 mixin _$SingleResultModel {
   String? get result => throw _privateConstructorUsedError;
 
+  /// Serializes this SingleResultModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of SingleResultModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $SingleResultModelCopyWith<SingleResultModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -47,6 +51,8 @@ class _$SingleResultModelCopyWithImpl<$Res, $Val extends SingleResultModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of SingleResultModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -80,6 +86,8 @@ class __$$SingleResultModelImplCopyWithImpl<$Res>
       $Res Function(_$SingleResultModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SingleResultModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -118,11 +126,13 @@ class _$SingleResultModelImpl implements _SingleResultModel {
             (identical(other.result, result) || other.result == result));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, result);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SingleResultModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SingleResultModelImplCopyWith<_$SingleResultModelImpl> get copyWith =>
@@ -145,8 +155,11 @@ abstract class _SingleResultModel implements SingleResultModel {
 
   @override
   String? get result;
+
+  /// Create a copy of SingleResultModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SingleResultModelImplCopyWith<_$SingleResultModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

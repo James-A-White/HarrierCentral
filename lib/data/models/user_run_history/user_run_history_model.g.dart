@@ -11,21 +11,22 @@ _$UserRunHistoryModelImpl _$$UserRunHistoryModelImplFromJson(
     _$UserRunHistoryModelImpl(
       eventId: json['eventId'] as String,
       eventName: json['eventName'] as String,
-      eventNumber: json['eventNumber'] as int,
+      eventNumber: (json['eventNumber'] as num).toInt(),
       eventStartDatetime: DateTime.parse(json['eventStartDatetime'] as String),
-      canEditRunAttendence: json['canEditRunAttendence'] as int? ?? 0,
+      canEditRunAttendence:
+          (json['canEditRunAttendence'] as num?)?.toInt() ?? 0,
       hemId: json['hemId'] as String,
-      attendenceState: json['attendenceState'] as int? ?? 0,
-      isHare: json['isHare'] as int? ?? 0,
+      attendenceState: (json['attendenceState'] as num?)?.toInt() ?? 0,
+      isHare: (json['isHare'] as num?)?.toInt() ?? 0,
       creditAmount: (json['creditAmount'] as num?)?.toDouble(),
       debitAmount: (json['debitAmount'] as num?)?.toDouble(),
       creditAvailable: (json['creditAvailable'] as num?)?.toDouble(),
-      paymentType: json['paymentType'] as int?,
+      paymentType: (json['paymentType'] as num?)?.toInt(),
       extrasDescription: json['extrasDescription'] as String?,
       extrasPrice: (json['extrasPrice'] as num?)?.toDouble(),
-      doPayForExtras: json['doPayForExtras'] as int?,
-      totalRunsThisKennel: json['totalRunsThisKennel'] as int?,
-      totalHaringThisKennel: json['totalHaringThisKennel'] as int?,
+      doPayForExtras: (json['doPayForExtras'] as num?)?.toInt(),
+      totalRunsThisKennel: (json['totalRunsThisKennel'] as num?)?.toInt(),
+      totalHaringThisKennel: (json['totalHaringThisKennel'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$UserRunHistoryModelImplToJson(

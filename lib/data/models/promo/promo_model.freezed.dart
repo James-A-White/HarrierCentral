@@ -45,8 +45,12 @@ mixin _$PromoModel {
   int get promoImageIsDark => throw _privateConstructorUsedError;
   int get promoDisplayTimeInMs => throw _privateConstructorUsedError;
 
+  /// Serializes this PromoModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PromoModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $PromoModelCopyWith<PromoModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -94,6 +98,8 @@ class _$PromoModelCopyWithImpl<$Res, $Val extends PromoModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of PromoModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -266,6 +272,8 @@ class __$$PromoModelImplCopyWithImpl<$Res>
       _$PromoModelImpl _value, $Res Function(_$PromoModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of PromoModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -541,7 +549,7 @@ class _$PromoModelImpl implements _PromoModel {
                 other.promoDisplayTimeInMs == promoDisplayTimeInMs));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -571,7 +579,9 @@ class _$PromoModelImpl implements _PromoModel {
         promoDisplayTimeInMs
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PromoModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PromoModelImplCopyWith<_$PromoModelImpl> get copyWith =>
@@ -663,8 +673,11 @@ abstract class _PromoModel implements PromoModel {
   int get promoImageIsDark;
   @override
   int get promoDisplayTimeInMs;
+
+  /// Create a copy of PromoModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PromoModelImplCopyWith<_$PromoModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

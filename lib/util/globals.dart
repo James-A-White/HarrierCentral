@@ -118,20 +118,20 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHashersTable,
+          SyncUserDataService.flagNarrowEventsTable,
           false,
           informUser: informUser,
-          debugText: 'Globals: Hashers on launch',
+          debugText: 'Globals: Events on launch',
           batchText: 'Batch #',
           client: client,
           usePaging: true,
         );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagNarrowEventsTable,
+          SyncUserDataService.flagHashersTable,
           false,
           informUser: informUser,
-          debugText: 'Globals: Events on launch',
+          debugText: 'Globals: Hashers on launch',
           batchText: 'Batch #',
           client: client,
           usePaging: true,

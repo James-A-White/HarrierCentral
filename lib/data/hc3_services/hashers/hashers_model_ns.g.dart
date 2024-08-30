@@ -14,9 +14,10 @@ _$HashersModelImpl _$$HashersModelImplFromJson(Map<String, dynamic> json) =>
       dispName: json['dispName'] as String,
       hashName: json['hashName'] as String?,
       photo: json['photo'] as String?,
-      dispPref: json['dispPref'] as int,
-      includeInGlobalHashDirectory: json['includeInGlobalHashDirectory'] as int,
-      removed: json['removed'] as int?,
+      dispPref: (json['dispPref'] as num).toInt(),
+      includeInGlobalHashDirectory:
+          (json['includeInGlobalHashDirectory'] as num).toInt(),
+      removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),

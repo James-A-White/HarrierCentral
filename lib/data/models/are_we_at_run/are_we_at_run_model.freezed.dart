@@ -42,8 +42,12 @@ mixin _$AreWeAtRunModel {
   DateTime get membershipExpirationDate => throw _privateConstructorUsedError;
   String? get extrasDescription => throw _privateConstructorUsedError;
 
+  /// Serializes this AreWeAtRunModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AreWeAtRunModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $AreWeAtRunModelCopyWith<AreWeAtRunModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -88,6 +92,8 @@ class _$AreWeAtRunModelCopyWithImpl<$Res, $Val extends AreWeAtRunModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of AreWeAtRunModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -242,6 +248,8 @@ class __$$AreWeAtRunModelImplCopyWithImpl<$Res>
       _$AreWeAtRunModelImpl _value, $Res Function(_$AreWeAtRunModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of AreWeAtRunModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -489,7 +497,7 @@ class _$AreWeAtRunModelImpl implements _AreWeAtRunModel {
                 other.extrasDescription == extrasDescription));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -516,7 +524,9 @@ class _$AreWeAtRunModelImpl implements _AreWeAtRunModel {
         extrasDescription
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AreWeAtRunModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AreWeAtRunModelImplCopyWith<_$AreWeAtRunModelImpl> get copyWith =>
@@ -600,8 +610,11 @@ abstract class _AreWeAtRunModel implements AreWeAtRunModel {
   DateTime get membershipExpirationDate;
   @override
   String? get extrasDescription;
+
+  /// Create a copy of AreWeAtRunModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AreWeAtRunModelImplCopyWith<_$AreWeAtRunModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

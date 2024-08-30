@@ -13,17 +13,19 @@ _$KennelMemberResultsModelImpl _$$KennelMemberResultsModelImplFromJson(
       dispName: json['dispName'] as String,
       nameForSort: json['nameForSort'] as String,
       photo: json['photo'] as String?,
-      following: json['following'] as int? ?? 0,
+      following: (json['following'] as num?)?.toInt() ?? 0,
       kennelId: json['kennelId'] as String,
       dateOfLastRun: json['dateOfLastRun'] == null
           ? null
           : DateTime.parse(json['dateOfLastRun'] as String),
-      hcTotalRunCount: json['hcTotalRunCount'] as int? ?? 0,
-      hcHaringCount: json['hcHaringCount'] as int? ?? 0,
-      historicalTotalRunCount: json['historicalTotalRunCount'] as int? ?? 0,
-      historicalHaringCount: json['historicalHaringCount'] as int? ?? 0,
+      hcTotalRunCount: (json['hcTotalRunCount'] as num?)?.toInt() ?? 0,
+      hcHaringCount: (json['hcHaringCount'] as num?)?.toInt() ?? 0,
+      historicalTotalRunCount:
+          (json['historicalTotalRunCount'] as num?)?.toInt() ?? 0,
+      historicalHaringCount:
+          (json['historicalHaringCount'] as num?)?.toInt() ?? 0,
       kennelEmailAlertPreference:
-          json['kennelEmailAlertPreference'] as int? ?? 0,
+          (json['kennelEmailAlertPreference'] as num?)?.toInt() ?? 0,
       membershipExpirationDate: json['membershipExpirationDate'] == null
           ? null
           : DateTime.parse(json['membershipExpirationDate'] as String),
@@ -31,12 +33,13 @@ _$KennelMemberResultsModelImpl _$$KennelMemberResultsModelImplFromJson(
           ? null
           : DateTime.parse(json['memberSince'] as String),
       membershipDurationInMonths:
-          json['membershipDurationInMonths'] as int? ?? 6,
-      appAccessFlags: json['appAccessFlags'] as int? ?? 0,
-      mismanagementRoles: json['mismanagementRoles'] as int? ?? 0,
+          (json['membershipDurationInMonths'] as num?)?.toInt() ?? 6,
+      appAccessFlags: (json['appAccessFlags'] as num?)?.toInt() ?? 0,
+      mismanagementRoles: (json['mismanagementRoles'] as num?)?.toInt() ?? 0,
       kennelShortName: json['kennelShortName'] as String?,
       kennelCredit: (json['kennelCredit'] as num?)?.toDouble() ?? 0.0,
-      memberFollowingStatus: json['memberFollowingStatus'] as int? ?? 0,
+      memberFollowingStatus:
+          (json['memberFollowingStatus'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$KennelMemberResultsModelImplToJson(

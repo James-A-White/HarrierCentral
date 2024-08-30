@@ -12,23 +12,26 @@ _$HasherKennelMapModelImpl _$$HasherKennelMapModelImplFromJson(
       hkmId: json['hkmId'] as String,
       userId: json['userId'] as String,
       kennelId: json['kennelId'] as String,
-      following: json['following'] as int,
-      isMember: json['isMember'] as int,
-      isHomeKennel: json['isHomeKennel'] as int,
-      kennelNotificationPreference: json['kennelNotificationPreference'] as int,
-      kennelEmailAlertPreference: json['kennelEmailAlertPreference'] as int,
+      following: (json['following'] as num).toInt(),
+      isMember: (json['isMember'] as num).toInt(),
+      isHomeKennel: (json['isHomeKennel'] as num).toInt(),
+      kennelNotificationPreference:
+          (json['kennelNotificationPreference'] as num).toInt(),
+      kennelEmailAlertPreference:
+          (json['kennelEmailAlertPreference'] as num).toInt(),
       authorizedDeviceList: json['authorizedDeviceList'] as String?,
-      authorizedDeviceCount: json['authorizedDeviceCount'] as int?,
-      userRoleFlags: json['userRoleFlags'] as int,
-      appAccessFlags: json['appAccessFlags'] as int,
-      hcTotalRunCount: json['hcTotalRunCount'] as int,
-      hcHaringCount: json['hcHaringCount'] as int,
-      historicalTotalRunCount: json['historicalTotalRunCount'] as int,
-      historicalHaringCount: json['historicalHaringCount'] as int,
-      historicalCountIsEstimate: json['historicalCountIsEstimate'] as int,
+      authorizedDeviceCount: (json['authorizedDeviceCount'] as num?)?.toInt(),
+      userRoleFlags: (json['userRoleFlags'] as num).toInt(),
+      appAccessFlags: (json['appAccessFlags'] as num).toInt(),
+      hcTotalRunCount: (json['hcTotalRunCount'] as num).toInt(),
+      hcHaringCount: (json['hcHaringCount'] as num).toInt(),
+      historicalTotalRunCount: (json['historicalTotalRunCount'] as num).toInt(),
+      historicalHaringCount: (json['historicalHaringCount'] as num).toInt(),
+      historicalCountIsEstimate:
+          (json['historicalCountIsEstimate'] as num).toInt(),
       kennelCredit: (json['kennelCredit'] as num).toDouble(),
       discountAmount: (json['discountAmount'] as num).toDouble(),
-      discountPercent: json['discountPercent'] as int,
+      discountPercent: (json['discountPercent'] as num).toInt(),
       discountDescription: json['discountDescription'] as String,
       dateOfLastRun: json['dateOfLastRun'] == null
           ? null
@@ -39,14 +42,14 @@ _$HasherKennelMapModelImpl _$$HasherKennelMapModelImplFromJson(
       memberSince: json['memberSince'] == null
           ? null
           : DateTime.parse(json['memberSince'] as String),
-      isKennelFollowing: json['isKennelFollowing'] as int?,
-      mismanagementRoles: json['mismanagementRoles'] as int,
+      isKennelFollowing: (json['isKennelFollowing'] as num?)?.toInt(),
+      mismanagementRoles: (json['mismanagementRoles'] as num).toInt(),
       kennelUserPhoto: json['kennelUserPhoto'] as String?,
       kennelHashName: json['kennelHashName'] as String?,
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
-      removed: json['removed'] as int?,
+      removed: (json['removed'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$HasherKennelMapModelImplToJson(

@@ -102,7 +102,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         final HashersModel hasherItem = HashersModel.fromJson(results[i]);
         String displayName = hasherItem.dispName;
         if (packItem.virginVisitorType != 0) {
-          displayName = packItem.displayName;
+          displayName = packItem.displayName ?? 'Virgin / Visitor';
         }
 
         // NULLSAFEDONE

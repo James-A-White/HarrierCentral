@@ -12,7 +12,7 @@ _$PaymentQueryExtensionsModelImpl _$$PaymentQueryExtensionsModelImplFromJson(
       pkHemId: json['pkHemId'] as String,
       paidByName: json['paidByName'] as String,
       paidToName: json['paidToName'] as String,
-      isMember: json['isMember'] as int? ?? 0,
+      isMember: (json['isMember'] as num?)?.toInt() ?? 0,
       creditAvailable: (json['creditAvailable'] as num?)?.toDouble() ?? 0.0,
       eventPriceForMembers:
           (json['eventPriceForMembers'] as num?)?.toDouble() ?? 0.0,
@@ -23,8 +23,9 @@ _$PaymentQueryExtensionsModelImpl _$$PaymentQueryExtensionsModelImplFromJson(
       extrasDescription: json['extrasDescription'] as String?,
       discountAmountAvailable:
           (json['discountAmountAvailable'] as num?)?.toDouble() ?? 0.0,
-      discountPercentAvailable: json['discountPercentAvailable'] as int? ?? 0,
-      isFollowing: json['isFollowing'] as int? ?? 0,
+      discountPercentAvailable:
+          (json['discountPercentAvailable'] as num?)?.toInt() ?? 0,
+      isFollowing: (json['isFollowing'] as num?)?.toInt() ?? 0,
       discountAvailableDescription:
           json['discountAvailableDescription'] as String?,
       isHashCredit: json['isHashCredit'] as bool? ?? false,

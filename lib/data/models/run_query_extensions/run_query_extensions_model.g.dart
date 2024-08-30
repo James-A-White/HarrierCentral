@@ -9,25 +9,28 @@ part of 'run_query_extensions_model.dart';
 _$RunQueryExtensionsModelImpl _$$RunQueryExtensionsModelImplFromJson(
         Map<String, dynamic> json) =>
     _$RunQueryExtensionsModelImpl(
-      daysUntilEvent: json['daysUntilEvent'] as int? ?? 0,
-      appAccessFlags: json['appAccessFlags'] as int? ?? 0,
-      digitsAfterDecimal: json['digitsAfterDecimal'] as int? ?? 2,
+      daysUntilEvent: (json['daysUntilEvent'] as num?)?.toInt() ?? 0,
+      appAccessFlags: (json['appAccessFlags'] as num?)?.toInt() ?? 0,
+      digitsAfterDecimal: (json['digitsAfterDecimal'] as num?)?.toInt() ?? 2,
       currencySymbol: json['currencySymbol'] as String? ?? r'$^',
-      rsvpState: json['rsvpState'] as int? ?? 0,
-      attendenceState: json['attendenceState'] as int? ?? 0,
-      isPaid: json['isPaid'] as int? ?? 0,
-      isHare: json['isHare'] as int? ?? 0,
-      isMember: json['isMember'] as int? ?? 0,
-      following: json['following'] as int? ?? 0,
-      notificationPreference: json['notificationPreference'] as int? ?? 0,
-      emailAlertPreference: json['emailAlertPreference'] as int? ?? 0,
-      distanceUnitsPref: json['distanceUnitsPref'] as int? ?? 0,
+      rsvpState: (json['rsvpState'] as num?)?.toInt() ?? 0,
+      attendenceState: (json['attendenceState'] as num?)?.toInt() ?? 0,
+      isPaid: (json['isPaid'] as num?)?.toInt() ?? 0,
+      isHare: (json['isHare'] as num?)?.toInt() ?? 0,
+      isMember: (json['isMember'] as num?)?.toInt() ?? 0,
+      following: (json['following'] as num?)?.toInt() ?? 0,
+      notificationPreference:
+          (json['notificationPreference'] as num?)?.toInt() ?? 0,
+      emailAlertPreference:
+          (json['emailAlertPreference'] as num?)?.toInt() ?? 0,
+      distanceUnitsPref: (json['distanceUnitsPref'] as num?)?.toInt() ?? 0,
       searchRunsText: json['searchRunsText'] as String? ?? '',
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       distToEvent: (json['distToEvent'] as num?)?.toDouble(),
-      isMapAndDistanceValid: json['isMapAndDistanceValid'] as int? ?? 0,
-      runClassification: json['runClassification'] as int? ?? 3,
+      isMapAndDistanceValid:
+          (json['isMapAndDistanceValid'] as num?)?.toInt() ?? 0,
+      runClassification: (json['runClassification'] as num?)?.toInt() ?? 3,
     );
 
 Map<String, dynamic> _$$RunQueryExtensionsModelImplToJson(

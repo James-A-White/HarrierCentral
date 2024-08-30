@@ -35,8 +35,12 @@ mixin _$LeaderboardModel {
   int get kennelCountRollingYear => throw _privateConstructorUsedError;
   String? get searchText => throw _privateConstructorUsedError;
 
+  /// Serializes this LeaderboardModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of LeaderboardModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $LeaderboardModelCopyWith<LeaderboardModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -74,6 +78,8 @@ class _$LeaderboardModelCopyWithImpl<$Res, $Val extends LeaderboardModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of LeaderboardModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -186,6 +192,8 @@ class __$$LeaderboardModelImplCopyWithImpl<$Res>
       $Res Function(_$LeaderboardModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of LeaderboardModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -357,7 +365,7 @@ class _$LeaderboardModelImpl implements _LeaderboardModel {
                 other.searchText == searchText));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -376,7 +384,9 @@ class _$LeaderboardModelImpl implements _LeaderboardModel {
       kennelCountRollingYear,
       searchText);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of LeaderboardModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$LeaderboardModelImplCopyWith<_$LeaderboardModelImpl> get copyWith =>
@@ -439,8 +449,11 @@ abstract class _LeaderboardModel implements LeaderboardModel {
   int get kennelCountRollingYear;
   @override
   String? get searchText;
+
+  /// Create a copy of LeaderboardModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LeaderboardModelImplCopyWith<_$LeaderboardModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

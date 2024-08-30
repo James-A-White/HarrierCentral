@@ -31,8 +31,12 @@ mixin _$CitiesModel {
   int? get removed => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this CitiesModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of CitiesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $CitiesModelCopyWith<CitiesModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -66,6 +70,8 @@ class _$CitiesModelCopyWithImpl<$Res, $Val extends CitiesModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of CitiesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -154,6 +160,8 @@ class __$$CitiesModelImplCopyWithImpl<$Res>
       _$CitiesModelImpl _value, $Res Function(_$CitiesModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of CitiesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -282,12 +290,14 @@ class _$CitiesModelImpl implements _CitiesModel {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, cityId, cityName, citySearchTags,
       regionId, latitude, longitude, cityAscii, flagFile, removed, updatedAt);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of CitiesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$CitiesModelImplCopyWith<_$CitiesModelImpl> get copyWith =>
@@ -337,8 +347,11 @@ abstract class _CitiesModel implements CitiesModel {
   int? get removed;
   @override
   DateTime? get updatedAt;
+
+  /// Create a copy of CitiesModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CitiesModelImplCopyWith<_$CitiesModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

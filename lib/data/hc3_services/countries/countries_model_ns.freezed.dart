@@ -37,8 +37,12 @@ mixin _$CountriesModel {
   int? get removed => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this CountriesModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of CountriesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $CountriesModelCopyWith<CountriesModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -78,6 +82,8 @@ class _$CountriesModelCopyWithImpl<$Res, $Val extends CountriesModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of CountriesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -202,6 +208,8 @@ class __$$CountriesModelImplCopyWithImpl<$Res>
       _$CountriesModelImpl _value, $Res Function(_$CountriesModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of CountriesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -391,7 +399,7 @@ class _$CountriesModelImpl implements _CountriesModel {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -412,7 +420,9 @@ class _$CountriesModelImpl implements _CountriesModel {
       removed,
       updatedAt);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of CountriesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$CountriesModelImplCopyWith<_$CountriesModelImpl> get copyWith =>
@@ -481,8 +491,11 @@ abstract class _CountriesModel implements CountriesModel {
   int? get removed;
   @override
   DateTime? get updatedAt;
+
+  /// Create a copy of CountriesModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CountriesModelImplCopyWith<_$CountriesModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

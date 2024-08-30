@@ -12,7 +12,7 @@ _$ReceiptsModelImpl _$$ReceiptsModelImplFromJson(Map<String, dynamic> json) =>
       eventId: json['eventId'] as String,
       userId: json['userId'] as String,
       receiptAmount: (json['receiptAmount'] as num?)?.toDouble() ?? 0.0,
-      costCategory: json['costCategory'] as int? ?? 0,
+      costCategory: (json['costCategory'] as num?)?.toInt() ?? 0,
       dateUploaded: json['dateUploaded'] == null
           ? null
           : DateTime.parse(json['dateUploaded'] as String),
@@ -23,7 +23,7 @@ _$ReceiptsModelImpl _$$ReceiptsModelImplFromJson(Map<String, dynamic> json) =>
       reimbursedOn: json['reimbursedOn'] as String?,
       reimbursedAmount: (json['reimbursedAmount'] as num?)?.toDouble(),
       reimbursedNotes: json['reimbursedNotes'] as String?,
-      removed: json['removed'] as int?,
+      removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),

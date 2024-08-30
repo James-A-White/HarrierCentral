@@ -47,8 +47,12 @@ mixin _$CheckInPackModel {
   double get credit => throw _privateConstructorUsedError;
   int get isFollowing => throw _privateConstructorUsedError;
 
+  /// Serializes this CheckInPackModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of CheckInPackModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $CheckInPackModelCopyWith<CheckInPackModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -98,6 +102,8 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of CheckInPackModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -282,6 +288,8 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
       $Res Function(_$CheckInPackModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of CheckInPackModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -591,7 +599,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
                 other.isFollowing == isFollowing));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -623,7 +631,9 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
         isFollowing
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of CheckInPackModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$CheckInPackModelImplCopyWith<_$CheckInPackModelImpl> get copyWith =>
@@ -722,8 +732,11 @@ abstract class _CheckInPackModel implements CheckInPackModel {
   double get credit;
   @override
   int get isFollowing;
+
+  /// Create a copy of CheckInPackModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CheckInPackModelImplCopyWith<_$CheckInPackModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

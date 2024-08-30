@@ -23,7 +23,7 @@ class HasherEventMapModel with _$HasherEventMapModel implements BaseModel {
     int? totalRunsThisKennel,
     int? eventCountOverride,
     required int virginVisitorType,
-    required String displayName,
+    String? displayName,
     String? email,
     String? phoneNumber,
 

@@ -10,18 +10,19 @@ _$LeaderboardModelImpl _$$LeaderboardModelImplFromJson(
         Map<String, dynamic> json) =>
     _$LeaderboardModelImpl(
       displayName: json['displayName'] as String,
-      totalRunCount: json['totalRunCount'] as int,
-      totalHaringCount: json['totalHaringCount'] as int,
-      ytdTotalRunCount: json['ytdTotalRunCount'] as int,
-      ytdHaringCount: json['ytdHaringCount'] as int,
-      rollingYearTotalRunCount: json['rollingYearTotalRunCount'] as int,
-      rollingYearHaringCount: json['rollingYearHaringCount'] as int,
+      totalRunCount: (json['totalRunCount'] as num).toInt(),
+      totalHaringCount: (json['totalHaringCount'] as num).toInt(),
+      ytdTotalRunCount: (json['ytdTotalRunCount'] as num).toInt(),
+      ytdHaringCount: (json['ytdHaringCount'] as num).toInt(),
+      rollingYearTotalRunCount:
+          (json['rollingYearTotalRunCount'] as num).toInt(),
+      rollingYearHaringCount: (json['rollingYearHaringCount'] as num).toInt(),
       kennelId: json['kennelId'] as String,
       homeKennelId: json['homeKennelId'] as String?,
       hasherId: json['hasherId'] as String,
-      kennelCountTotal: json['kennelCountTotal'] as int,
-      kennelCountYtd: json['kennelCountYtd'] as int,
-      kennelCountRollingYear: json['kennelCountRollingYear'] as int,
+      kennelCountTotal: (json['kennelCountTotal'] as num).toInt(),
+      kennelCountYtd: (json['kennelCountYtd'] as num).toInt(),
+      kennelCountRollingYear: (json['kennelCountRollingYear'] as num).toInt(),
       searchText: json['searchText'] as String?,
     );
 

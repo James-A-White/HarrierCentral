@@ -27,8 +27,12 @@ mixin _$DbErrorModel {
   String? get debugMessage => throw _privateConstructorUsedError;
   String? get errorProc => throw _privateConstructorUsedError;
 
+  /// Serializes this DbErrorModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of DbErrorModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $DbErrorModelCopyWith<DbErrorModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -58,6 +62,8 @@ class _$DbErrorModelCopyWithImpl<$Res, $Val extends DbErrorModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of DbErrorModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -122,6 +128,8 @@ class __$$DbErrorModelImplCopyWithImpl<$Res>
       _$DbErrorModelImpl _value, $Res Function(_$DbErrorModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of DbErrorModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -211,12 +219,14 @@ class _$DbErrorModelImpl implements _DbErrorModel {
                 other.errorProc == errorProc));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, errorId, errorType, errorTitle,
       errorUserMessage, debugMessage, errorProc);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of DbErrorModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$DbErrorModelImplCopyWith<_$DbErrorModelImpl> get copyWith =>
@@ -254,8 +264,11 @@ abstract class _DbErrorModel implements DbErrorModel {
   String? get debugMessage;
   @override
   String? get errorProc;
+
+  /// Create a copy of DbErrorModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DbErrorModelImplCopyWith<_$DbErrorModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

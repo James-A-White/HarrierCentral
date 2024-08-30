@@ -16,24 +16,25 @@ _$PromoModelImpl _$$PromoModelImplFromJson(Map<String, dynamic> json) =>
       promoName: json['promoName'] as String,
       promoStartDate: DateTime.parse(json['promoStartDate'] as String),
       promoEndDate: DateTime.parse(json['promoEndDate'] as String),
-      promoDisplayButtons: json['promoDisplayButtons'] as int,
+      promoDisplayButtons: (json['promoDisplayButtons'] as num).toInt(),
       promoImage: json['promoImage'] as String,
       promoImageExtension: json['promoImageExtension'] as String,
       promoOverlayTiming: json['promoOverlayTiming'] as String,
       promoExternalUrl: json['promoExternalUrl'] as String?,
       promoExternalUrlButtonText: json['promoExternalUrlButtonText'] as String?,
-      promoPriority: json['promoPriority'] as int,
+      promoPriority: (json['promoPriority'] as num).toInt(),
       promoLat: (json['promoLat'] as num?)?.toDouble(),
       promoLon: (json['promoLon'] as num?)?.toDouble(),
       promoRadius: (json['promoRadius'] as num?)?.toDouble(),
       promoDisplayTimingDotsShape:
           json['promoDisplayTimingDotsShape'] as String,
       promoDisplayTimingDotsToDisplay:
-          json['promoDisplayTimingDotsToDisplay'] as int,
-      promoDisplayTimingDotsSize: json['promoDisplayTimingDotsSize'] as int,
-      promoGeographicScope: json['promoGeographicScope'] as int,
-      promoImageIsDark: json['promoImageIsDark'] as int,
-      promoDisplayTimeInMs: json['promoDisplayTimeInMs'] as int,
+          (json['promoDisplayTimingDotsToDisplay'] as num).toInt(),
+      promoDisplayTimingDotsSize:
+          (json['promoDisplayTimingDotsSize'] as num).toInt(),
+      promoGeographicScope: (json['promoGeographicScope'] as num).toInt(),
+      promoImageIsDark: (json['promoImageIsDark'] as num).toInt(),
+      promoDisplayTimeInMs: (json['promoDisplayTimeInMs'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$PromoModelImplToJson(_$PromoModelImpl instance) =>

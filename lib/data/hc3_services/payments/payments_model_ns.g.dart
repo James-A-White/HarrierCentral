@@ -18,8 +18,8 @@ _$PaymentsModelImpl _$$PaymentsModelImplFromJson(Map<String, dynamic> json) =>
       debitAmount: (json['debitAmount'] as num).toDouble(),
       creditAvailable: (json['creditAvailable'] as num).toDouble(),
       paidDate: DateTime.parse(json['paidDate'] as String),
-      paymentType: json['paymentType'] as int,
-      productType: json['productType'] as int,
+      paymentType: (json['paymentType'] as num).toInt(),
+      productType: (json['productType'] as num).toInt(),
       cancelledDate: json['cancelledDate'] == null
           ? null
           : DateTime.parse(json['cancelledDate'] as String),
@@ -30,14 +30,14 @@ _$PaymentsModelImpl _$$PaymentsModelImplFromJson(Map<String, dynamic> json) =>
       confirmedBy: json['confirmedBy'] as String?,
       paymentReference: json['paymentReference'] as String?,
       notes: json['notes'] as String?,
-      doPayForExtras: json['doPayForExtras'] as int,
+      doPayForExtras: (json['doPayForExtras'] as num).toInt(),
       surcharge: (json['surcharge'] as num).toDouble(),
       paymentProvider: json['paymentProvider'] as String?,
       discountAmount: (json['discountAmount'] as num).toDouble(),
-      discountPercent: json['discountPercent'] as int,
+      discountPercent: (json['discountPercent'] as num).toInt(),
       discountDescription: json['discountDescription'] as String,
       specialRunPriceReason: json['specialRunPriceReason'] as String,
-      removed: json['removed'] as int?,
+      removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),

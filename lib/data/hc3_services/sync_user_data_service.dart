@@ -24,7 +24,7 @@ class SyncUserDataService {
   static const int pageSize_regionsTable = 250;
   static const int pageSize_countriesTable = 250;
   static const int pageSize_kennelsTable = 250;
-  static const int pageSize_eventsTable = 250;
+  static const int pageSize_eventsTable = 50;
   static const int pageSize_hkmTable = 250;
   static const int pageSize_hemTable = 250;
 
@@ -125,7 +125,7 @@ class SyncUserDataService {
           userId = GUID_EMPTY;
         }
 
-        final String accessToken = IveCoreUtilities.generateToken(userId, 'syncUserData668');
+        final String accessToken = IveCoreUtilities.generateToken(userId, 'syncUserData705');
 
         final Map<String, String> params = <String, String>{
           'userId': userId,
@@ -158,7 +158,7 @@ class SyncUserDataService {
 
         //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-        final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data_668', body, client: client);
+        final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data_705', body, client: client);
 
         //print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 

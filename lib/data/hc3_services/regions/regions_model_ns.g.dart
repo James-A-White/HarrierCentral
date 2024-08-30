@@ -14,7 +14,7 @@ _$RegionsModelImpl _$$RegionsModelImplFromJson(Map<String, dynamic> json) =>
       regionAbbreviation: json['regionAbbreviation'] as String?,
       countryId: json['countryId'] as String,
       flagFile: json['flagFile'] as String?,
-      removed: json['removed'] as int?,
+      removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),

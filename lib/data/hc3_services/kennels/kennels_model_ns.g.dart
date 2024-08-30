@@ -18,31 +18,34 @@ _$KennelsModelImpl _$$KennelsModelImplFromJson(Map<String, dynamic> json) =>
       kennelShortName: json['kennelShortName'] as String,
       kennelDescription: json['kennelDescription'] as String?,
       kennelLogo: json['kennelLogo'] as String,
-      kennelPinColor: json['kennelPinColor'] as int,
-      disseminateAllowWebLinks: json['disseminateAllowWebLinks'] as int,
+      kennelPinColor: (json['kennelPinColor'] as num).toInt(),
+      disseminateAllowWebLinks:
+          (json['disseminateAllowWebLinks'] as num).toInt(),
       kennelCoverPhoto: json['kennelCoverPhoto'] as String?,
       kennelWebsiteUrl: json['kennelWebsiteUrl'] as String?,
       defaultEventCurrencyType: json['defaultEventCurrencyType'] as String?,
       integrationType: json['integrationType'] as String?,
-      kennelInboundIntegrationId: json['kennelInboundIntegrationId'] as int?,
+      kennelInboundIntegrationId:
+          (json['kennelInboundIntegrationId'] as num?)?.toInt(),
       kennelEventsUrl: json['kennelEventsUrl'] as String?,
-      kennelStatus: json['kennelStatus'] as int,
-      canEditRunAttendence: json['canEditRunAttendence'] as int,
-      allowNegativeCredit: json['allowNegativeCredit'] as int,
-      allowSelfPayment: json['allowSelfPayment'] as int,
+      kennelStatus: (json['kennelStatus'] as num).toInt(),
+      canEditRunAttendence: (json['canEditRunAttendence'] as num).toInt(),
+      allowNegativeCredit: (json['allowNegativeCredit'] as num).toInt(),
+      allowSelfPayment: (json['allowSelfPayment'] as num).toInt(),
       kennelLatitude: (json['kennelLatitude'] as num?)?.toDouble(),
       kennelLongitude: (json['kennelLongitude'] as num?)?.toDouble(),
       defaultPriceForMembers:
           (json['defaultPriceForMembers'] as num).toDouble(),
       defaultPriceForNonMembers:
           (json['defaultPriceForNonMembers'] as num).toDouble(),
-      membershipDurationInMonths: json['membershipDurationInMonths'] as int,
+      membershipDurationInMonths:
+          (json['membershipDurationInMonths'] as num).toInt(),
       defaultRunStartTime:
           DateTime.parse(json['defaultRunStartTime'] as String),
       currencyCode: json['currencyCode'] as String?,
       primaryCultureCode: json['primaryCultureCode'] as String?,
       currencySymbol: json['currencySymbol'] as String?,
-      digitsAfterDecimal: json['digitsAfterDecimal'] as int?,
+      digitsAfterDecimal: (json['digitsAfterDecimal'] as num?)?.toInt(),
       bankScheme: json['bankScheme'] as String?,
       bankAccountNumber: json['bankAccountNumber'] as String?,
       bankBic: json['bankBic'] as String?,
@@ -78,11 +81,11 @@ _$KennelsModelImpl _$$KennelsModelImplFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['runCountStartDate'] as String),
       kennelMismanagementTeam: json['kennelMismanagementTeam'] as String?,
-      distancePreference: json['distancePreference'] as int?,
+      distancePreference: (json['distancePreference'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
-      removed: json['removed'] as int?,
+      removed: (json['removed'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$KennelsModelImplToJson(_$KennelsModelImpl instance) =>

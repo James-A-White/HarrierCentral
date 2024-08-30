@@ -18,11 +18,11 @@ _$CountriesModelImpl _$$CountriesModelImplFromJson(Map<String, dynamic> json) =>
       flagFile: json['flagFile'] as String?,
       currencyCode: json['currencyCode'] as String,
       primaryCultureCode: json['primaryCultureCode'] as String,
-      showRegion: json['showRegion'] as int,
+      showRegion: (json['showRegion'] as num).toInt(),
       currencySymbol: json['currencySymbol'] as String?,
-      digitsAfterDecimal: json['digitsAfterDecimal'] as int?,
-      distancePreference: json['distancePreference'] as int?,
-      removed: json['removed'] as int?,
+      digitsAfterDecimal: (json['digitsAfterDecimal'] as num?)?.toInt(),
+      distancePreference: (json['distancePreference'] as num?)?.toInt(),
+      removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),

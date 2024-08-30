@@ -83,8 +83,12 @@ mixin _$KennelsModel {
   DateTime? get updatedAt => throw _privateConstructorUsedError;
   int? get removed => throw _privateConstructorUsedError;
 
+  /// Serializes this KennelsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of KennelsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $KennelsModelCopyWith<KennelsModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -164,6 +168,8 @@ class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of KennelsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -531,6 +537,8 @@ class __$$KennelsModelImplCopyWithImpl<$Res>
       _$KennelsModelImpl _value, $Res Function(_$KennelsModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of KennelsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1099,7 +1107,7 @@ class _$KennelsModelImpl implements _KennelsModel {
             (identical(other.removed, removed) || other.removed == removed));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -1161,7 +1169,9 @@ class _$KennelsModelImpl implements _KennelsModel {
         removed
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of KennelsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$KennelsModelImplCopyWith<_$KennelsModelImpl> get copyWith =>
@@ -1349,8 +1359,11 @@ abstract class _KennelsModel implements KennelsModel {
   DateTime? get updatedAt;
   @override
   int? get removed;
+
+  /// Create a copy of KennelsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$KennelsModelImplCopyWith<_$KennelsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
