@@ -207,50 +207,54 @@ class KennelsListPageState extends State<KennelsListPage> {
         double? dist;
 
         for (int i = 0; i < results.length; i++) {
-          final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+          try {
+            final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
 
-          final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
+            final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
 
-          HasherKennelMapModel? hkmItem;
+            HasherKennelMapModel? hkmItem;
 
-          if (results[i][G0<TableModel>().hasherKennelMapTableHelper.colHkmId] != null) {
-            hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);
-          }
+            if (results[i][G0<TableModel>().hasherKennelMapTableHelper.colHkmId] != null) {
+              hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);
+            }
 
-          if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null) && (extensionsItem.cityLat != null) && (extensionsItem.cityLon != null)) {
-            dist = Geolocator.distanceBetween(
-              G0<DeviceInfo>().deviceLat!,
-              G0<DeviceInfo>().deviceLon!,
-              extensionsItem.cityLat!,
-              extensionsItem.cityLon!,
+            if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null) && (extensionsItem.cityLat != null) && (extensionsItem.cityLon != null)) {
+              dist = Geolocator.distanceBetween(
+                G0<DeviceInfo>().deviceLat!,
+                G0<DeviceInfo>().deviceLon!,
+                extensionsItem.cityLat!,
+                extensionsItem.cityLon!,
+              );
+            }
+
+            extensionsItem.distToKennel = dist;
+            extensionsItem.followingRequested = -1;
+            extensionsItem.notificationsRequested = -1;
+            extensionsItem.emailAlertRequested = -1;
+
+            bool isHomeKennel = false;
+            if (kennelItem.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+              isHomeKennel = true;
+            }
+
+            final KennelListAggregate item = KennelListAggregate(
+              kennel: kennelItem,
+              extensions: extensionsItem,
+              hkm: hkmItem,
+              isHomeKennel: isHomeKennel,
             );
+
+            G0<TableModel>().globalKennelMainPageList!.add(item);
+          } catch (e) {
+            print(i.toString());
           }
-
-          extensionsItem.distToKennel = dist;
-          extensionsItem.followingRequested = -1;
-          extensionsItem.notificationsRequested = -1;
-          extensionsItem.emailAlertRequested = -1;
-
-          bool isHomeKennel = false;
-          if (kennelItem.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
-            isHomeKennel = true;
-          }
-
-          final KennelListAggregate item = KennelListAggregate(
-            kennel: kennelItem,
-            extensions: extensionsItem,
-            hkm: hkmItem,
-            isHomeKennel: isHomeKennel,
-          );
-
-          G0<TableModel>().globalKennelMainPageList!.add(item);
         }
 
         setState(() {
           _filterResults();
         });
       } catch (e) {
-        //print(e);
+        print(e);
       }
     } else {
       // if the global list is already loaded,

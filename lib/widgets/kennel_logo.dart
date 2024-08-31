@@ -31,7 +31,7 @@ class KennelLogo extends StatelessWidget {
             key: const Key('11126697697'),
             file: null,
             assetImage: kennelLogoUrl!.contains('bundle://')
-                ? ('${kennelLogoUrl!.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/'}${kennelLogoUrl!.replaceAll('bundle://', '')}.png').toLowerCase()
+                ? ('${kennelLogoUrl!.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/'}${kennelLogoUrl!.replaceAll('bundle://', '')}.png')
                 : null,
             assetImageText: kennelLogoUrl!.contains('bundle://') ? kennelShortName : null,
 
@@ -70,7 +70,7 @@ class KennelLogo extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: kennelLogoUrl!.contains('bundle://')
               ? Stack(alignment: Alignment.center, children: <Widget>[
-                  Image.asset(('${kennelLogoUrl!.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/'}${kennelLogoUrl!.replaceAll('bundle://', '')}.png').toLowerCase()),
+                  Image.asset(('${kennelLogoUrl!.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/'}${kennelLogoUrl!.replaceAll('bundle://', '')}.png')),
                   Padding(
                     padding: EdgeInsets.only(left: logoHeight / 6, right: logoHeight / 6),
                     child: AutoSizeText(

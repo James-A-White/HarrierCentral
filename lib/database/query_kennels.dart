@@ -217,11 +217,38 @@ class QueryKennels {
         break;
     }
 
-    final String queryBase = ''' 
+    final String queryBase = '''
       
         SELECT  
-          k.*, 
-          hkm.*,
+          k.*,           
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHkmId},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colIsMember},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colIsHomeKennel},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelNotificationPreference},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAuthorizedDeviceList},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAuthorizedDeviceCount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserRoleFlags},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMemberSince},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colIsKennelFollowing},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},
+
           h.${G0<TableModel>().hashersTableHelper.colPhoto} as originalProfilePhoto,
           h.${G0<TableModel>().hashersTableHelper.colDispName} as originalDisplayName,
           case when datetime(coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},"2000-01-01")) <= datetime('now') then 0 else 1 end as isKennelMember,
@@ -267,7 +294,7 @@ class QueryKennels {
   }
 
   static Future<List<Map<String, dynamic>>> queryKennelGallery(String kennelId) async {
-    final String query = ''' 
+    final String query = '''
       
         SELECT  
           k.${G0<TableModel>().kennelsTableHelper.colKennelId},
@@ -314,7 +341,7 @@ class QueryKennels {
           as searchText
           ''';
 
-    final String query = ''' 
+    final String query = '''
       
         SELECT  
           k.${G0<TableModel>().kennelsTableHelper.colKennelId},
