@@ -14,7 +14,7 @@ class PaymentsModel with _$PaymentsModel implements BaseModel {
     required String paidTo,
     required double creditAmount,
     required double debitAmount,
-    required double creditAvailable,
+    double? creditAvailable,
     required DateTime paidDate,
     required int paymentType,
     required int productType,

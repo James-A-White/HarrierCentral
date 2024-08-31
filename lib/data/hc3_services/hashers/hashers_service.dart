@@ -118,7 +118,7 @@ class HashersService extends BaseService {
       newUserForThisDevice = true;
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser800', paramString: targetUserId.toUpperCase());
 
     DateTime hashersUpdatedAfter;
     DateTime hasherEventMapUpdatedAfter;
@@ -185,7 +185,7 @@ class HashersService extends BaseService {
 
     bool dbErrorIsDuplicateEmail = false;
 
-    String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body, errorCallback: (DbErrorModel dbError) async {
+    String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user_800', body, errorCallback: (DbErrorModel dbError) async {
       bool okButtonPressed = false;
       if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
         dbErrorIsDuplicateEmail = true;
@@ -270,7 +270,7 @@ class HashersService extends BaseService {
       userId = GUID_EMPTY;
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser800', paramString: targetUserId.toUpperCase());
 
     final String body = jsonEncode(<String, String?>{
       'userId': userId,
@@ -294,7 +294,7 @@ class HashersService extends BaseService {
       'followKennelOnAddNewUser': null
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user_800', body);
 
     // I checked and the error condition is being properly handled by the caller
     return !responseBody.startsWith(ERROR_PREFIX);

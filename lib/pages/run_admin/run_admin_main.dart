@@ -59,12 +59,12 @@ class RunDetailQueryExtensions {
       digAfterDec: map['digAfterDec'],
       curSym: map['curSym'],
       curCode: map['curCode'],
-      memberPrice: map['memberPrice'],
-      nonMemberPrice: map['nonMemberPrice'],
-      kenlLat: map['kenlLat'],
-      kenlLon: map['kenlLon'],
-      latitude: map['latitude'] == null ? null : map['latitude'] + 0.0,
-      longitude: map['longitude'] == null ? null : map['longitude'] + 0.0,
+      memberPrice: map['memberPrice'].toDouble(),
+      nonMemberPrice: map['nonMemberPrice'].toDouble(),
+      kenlLat: map['kenlLat'].toDouble(),
+      kenlLon: map['kenlLon'].toDouble(),
+      latitude: map['latitude']?.toDouble(),
+      longitude: map['longitude']?.toDouble(),
       // isMapAndDistanceValid: map['isMapAndDistanceValid'] == 0,
       // paymentAmountStr: '',
     );
@@ -107,17 +107,43 @@ class RunAdminPageState extends State<RunAdminPage> {
     super.initState();
   }
 
-  void _getRunDetails(String eventId) {
-    G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId).then((bool result) {
-      CommonQueries.getEventAdminInfoFromLocalCache(widget.eventId, _userId).then<dynamic>((RunAdminAggregate rd) {
-        _eventAggregate = rd;
+  // void _getRunDetails(String eventId) {
+  //   G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId).then((bool result) {
+  //      CommonQueries.getEventAdminInfoFromLocalCache(widget.eventId, _userId).then<dynamic>((RunAdminAggregate rd) {
+  //       _eventAggregate = rd;
+  //       setState(() {
+  //         _isLoading = false;
+  //         //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+  //         //print('Event admin data synchronized $resultStr');
+  //       });
+  //     } as FutureOr Function(dynamic value)); // CHECK
+  //   });
+  // }
+
+  Future<void> _getRunDetails(String eventId) async {
+    try {
+      // Wait for the update from backend to complete
+      await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId);
+
+      // After the update, get the event admin info from the local cache
+      RunAdminAggregate? rd = await CommonQueries.getEventAdminInfoFromLocalCache(widget.eventId, _userId);
+
+      if (rd != null) {
+        // Update the state with the retrieved data
         setState(() {
+          _eventAggregate = rd;
           _isLoading = false;
           //final String resultStr = result ? 'successfully' : 'unsuccessfully';
           //print('Event admin data synchronized $resultStr');
         });
-      } as FutureOr Function(dynamic value)); // CHECK
-    });
+      }
+    } catch (e) {
+      // Handle any errors here if necessary
+      print('Error in _getRunDetails: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   final String _userId = getStringPref(StringPrefsEnum.userId) ?? '';

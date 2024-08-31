@@ -177,7 +177,7 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEmailAndNotificationPrefs');
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEmailAndNotificationPrefs800');
 
     final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -212,7 +212,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_set_email_notification_prefs', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_set_email_notification_prefs_800', body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -244,7 +244,7 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEventRsvp');
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEventRsvp800');
 
     final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -276,7 +276,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_set_event_rsvp', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_set_event_rsvp_800', body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -307,7 +307,7 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEventAttendence');
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'setEventAttendence800');
 
     final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -341,7 +341,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_set_event_attendence', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_set_event_attendence_800', body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -374,7 +374,7 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor800');
 
     final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -405,7 +405,7 @@ class HasherEventMapService {
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event_as_visitor', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event_as_visitor_800', body);
 
     List<dynamic> adHocData = <dynamic>[];
 

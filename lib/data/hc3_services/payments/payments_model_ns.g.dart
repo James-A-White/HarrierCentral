@@ -16,7 +16,7 @@ _$PaymentsModelImpl _$$PaymentsModelImplFromJson(Map<String, dynamic> json) =>
       paidTo: json['paidTo'] as String,
       creditAmount: (json['creditAmount'] as num).toDouble(),
       debitAmount: (json['debitAmount'] as num).toDouble(),
-      creditAvailable: (json['creditAvailable'] as num).toDouble(),
+      creditAvailable: (json['creditAvailable'] as num?)?.toDouble(),
       paidDate: DateTime.parse(json['paidDate'] as String),
       paymentType: (json['paymentType'] as num).toInt(),
       productType: (json['productType'] as num).toInt(),

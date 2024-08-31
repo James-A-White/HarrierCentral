@@ -109,7 +109,7 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 class ReceiptsService {
   Future<String> uploadReceipt(ReceiptsModel item) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt800');
 
     final int receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -121,7 +121,7 @@ class ReceiptsService {
 
     final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_receipt', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_receipt_800', body);
 
     // callers are properly handling Error conditions
     return responseBody;

@@ -78,7 +78,7 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
             $colPaidTo TEXT NOT NULL,
             $colCreditAmount NUM NOT NULL,
             $colDebitAmount NUM NOT NULL,
-            $colCreditAvailable NUM NOT NULL,
+            $colCreditAvailable NUM,
             $colPaidDate TEXT NOT NULL,
             $colPaymentType INT NOT NULL,
             $colProductType INT NOT NULL,
@@ -156,7 +156,7 @@ class PaymentsService {
 
     final String tokenParameterString = '${hasherEventMapId!.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'processPayment800', paramString: tokenParameterString);
 
     final int hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
           G0<Database>(),
@@ -216,7 +216,7 @@ class PaymentsService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_payment', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_payment_800', body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {

@@ -40,7 +40,7 @@ class CommonQueries {
   static Future<String> getClosestEventInTime(String kennelId) async {
     String result = EMPTY_RESULT;
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT e.eventId,
           e.eventName,
@@ -77,7 +77,7 @@ class CommonQueries {
       final String? userId = getStringPref(StringPrefsEnum.userId);
       const String dollarSign = r'$^';
 
-      final String sql = ''' 
+      final String sql = '''
           SELECT e.${G0<TableModel>().eventsTableHelper.colEventId},
           e.${G0<TableModel>().eventsTableHelper.colEventName},
           case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(e.${G0<TableModel>().eventsTableHelper.colFbLatitude},e.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as lat,
@@ -201,7 +201,7 @@ class CommonQueries {
     uqr = uqr.toUpperCase();
     String result = 'none';
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT h.hasherId
           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
@@ -331,47 +331,51 @@ class CommonQueries {
           AND h.hasherId = "$userId" 
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      try {
+        final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
 
-      //final Geolocator locator = Geolocator();
+        //final Geolocator locator = Geolocator();
 
-      if (results.isNotEmpty) {
-        final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
-        final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
-        final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-        String paymentLinkUrl = '';
+        if (results.isNotEmpty) {
+          final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
+          final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
+          final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+          String paymentLinkUrl = '';
 
-        double? dist;
+          double? dist;
 
-        if ((extensions.latitude != null) && (extensions.longitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-          dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat!,
-            G0<DeviceInfo>().deviceLon!,
-            extensions.latitude!,
-            extensions.longitude!,
-          );
-        } else if ((kennel.kennelLatitude != null) && (kennel.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-          dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat!,
-            G0<DeviceInfo>().deviceLon!,
-            kennel.kennelLatitude!,
-            kennel.kennelLongitude!,
-          );
+          if ((extensions.latitude != null) && (extensions.longitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+            dist = Geolocator.distanceBetween(
+              G0<DeviceInfo>().deviceLat!,
+              G0<DeviceInfo>().deviceLon!,
+              extensions.latitude!,
+              extensions.longitude!,
+            );
+          } else if ((kennel.kennelLatitude != null) && (kennel.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+            dist = Geolocator.distanceBetween(
+              G0<DeviceInfo>().deviceLat!,
+              G0<DeviceInfo>().deviceLon!,
+              kennel.kennelLatitude!,
+              kennel.kennelLongitude!,
+            );
+          }
+          extensions.distToEvent = dist;
+
+          if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+            paymentLinkUrl = eventItem.eventPaymentUrl!;
+          } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+            paymentLinkUrl = kennel.kennelPaymentUrl!;
+          }
+
+          extensions.paymentUrl = paymentLinkUrl;
+
+          runAdminAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
         }
-        extensions.distToEvent = dist;
-
-        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
-          paymentLinkUrl = eventItem.eventPaymentUrl!;
-        } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
-          paymentLinkUrl = kennel.kennelPaymentUrl!;
-        }
-
-        extensions.paymentUrl = paymentLinkUrl;
-
-        runAdminAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+      } catch (e) {
+        print(e);
       }
     } catch (e) {
-      //print(e);
+      print(e);
     }
 
     return runAdminAggregate;

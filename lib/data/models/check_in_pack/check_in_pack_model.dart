@@ -7,7 +7,7 @@ part 'check_in_pack_model.g.dart';
 class CheckInPackModel with _$CheckInPackModel implements BaseModel {
   factory CheckInPackModel({
     required String hasherId,
-    required String hemId,
+    String? hemId,
     @Default(0) int isMember,
     @Default(0) int isHare,
     @Default(0) int isPaid,
@@ -28,10 +28,13 @@ class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     @Default(0) int historicalCountIsEstimate,
     @Default(0) int totalRunsThisKennel,
     @Default(0) int totalHaringThisKennel,
-    required String hemUpdatedAt,
-    required String payUpdatedAt,
+    String? hemUpdatedAt,
+    String? payUpdatedAt,
     @Default(0.0) double credit,
     @Default(0) int isFollowing,
+    @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? rsvpStateIndicator,
+    @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? attendenceStateIndicator,
+    @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? paidStateIndicator,
   }) = _CheckInPackModel;
 
   factory CheckInPackModel.fromJson(Map<String, dynamic> json) => _$CheckInPackModelFromJson(json);

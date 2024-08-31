@@ -28,7 +28,7 @@ mixin _$PaymentsModel {
   String get paidTo => throw _privateConstructorUsedError;
   double get creditAmount => throw _privateConstructorUsedError;
   double get debitAmount => throw _privateConstructorUsedError;
-  double get creditAvailable => throw _privateConstructorUsedError;
+  double? get creditAvailable => throw _privateConstructorUsedError;
   DateTime get paidDate => throw _privateConstructorUsedError;
   int get paymentType => throw _privateConstructorUsedError;
   int get productType => throw _privateConstructorUsedError;
@@ -73,7 +73,7 @@ abstract class $PaymentsModelCopyWith<$Res> {
       String paidTo,
       double creditAmount,
       double debitAmount,
-      double creditAvailable,
+      double? creditAvailable,
       DateTime paidDate,
       int paymentType,
       int productType,
@@ -117,7 +117,7 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
     Object? paidTo = null,
     Object? creditAmount = null,
     Object? debitAmount = null,
-    Object? creditAvailable = null,
+    Object? creditAvailable = freezed,
     Object? paidDate = null,
     Object? paymentType = null,
     Object? productType = null,
@@ -170,10 +170,10 @@ class _$PaymentsModelCopyWithImpl<$Res, $Val extends PaymentsModel>
           ? _value.debitAmount
           : debitAmount // ignore: cast_nullable_to_non_nullable
               as double,
-      creditAvailable: null == creditAvailable
+      creditAvailable: freezed == creditAvailable
           ? _value.creditAvailable
           : creditAvailable // ignore: cast_nullable_to_non_nullable
-              as double,
+              as double?,
       paidDate: null == paidDate
           ? _value.paidDate
           : paidDate // ignore: cast_nullable_to_non_nullable
@@ -267,7 +267,7 @@ abstract class _$$PaymentsModelImplCopyWith<$Res>
       String paidTo,
       double creditAmount,
       double debitAmount,
-      double creditAvailable,
+      double? creditAvailable,
       DateTime paidDate,
       int paymentType,
       int productType,
@@ -309,7 +309,7 @@ class __$$PaymentsModelImplCopyWithImpl<$Res>
     Object? paidTo = null,
     Object? creditAmount = null,
     Object? debitAmount = null,
-    Object? creditAvailable = null,
+    Object? creditAvailable = freezed,
     Object? paidDate = null,
     Object? paymentType = null,
     Object? productType = null,
@@ -362,10 +362,10 @@ class __$$PaymentsModelImplCopyWithImpl<$Res>
           ? _value.debitAmount
           : debitAmount // ignore: cast_nullable_to_non_nullable
               as double,
-      creditAvailable: null == creditAvailable
+      creditAvailable: freezed == creditAvailable
           ? _value.creditAvailable
           : creditAvailable // ignore: cast_nullable_to_non_nullable
-              as double,
+              as double?,
       paidDate: null == paidDate
           ? _value.paidDate
           : paidDate // ignore: cast_nullable_to_non_nullable
@@ -454,7 +454,7 @@ class _$PaymentsModelImpl implements _PaymentsModel {
       required this.paidTo,
       required this.creditAmount,
       required this.debitAmount,
-      required this.creditAvailable,
+      this.creditAvailable,
       required this.paidDate,
       required this.paymentType,
       required this.productType,
@@ -494,7 +494,7 @@ class _$PaymentsModelImpl implements _PaymentsModel {
   @override
   final double debitAmount;
   @override
-  final double creditAvailable;
+  final double? creditAvailable;
   @override
   final DateTime paidDate;
   @override
@@ -651,7 +651,7 @@ abstract class _PaymentsModel implements PaymentsModel {
       required final String paidTo,
       required final double creditAmount,
       required final double debitAmount,
-      required final double creditAvailable,
+      final double? creditAvailable,
       required final DateTime paidDate,
       required final int paymentType,
       required final int productType,
@@ -691,7 +691,7 @@ abstract class _PaymentsModel implements PaymentsModel {
   @override
   double get debitAmount;
   @override
-  double get creditAvailable;
+  double? get creditAvailable;
   @override
   DateTime get paidDate;
   @override

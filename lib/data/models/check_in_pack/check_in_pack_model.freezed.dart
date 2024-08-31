@@ -21,7 +21,7 @@ CheckInPackModel _$CheckInPackModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$CheckInPackModel {
   String get hasherId => throw _privateConstructorUsedError;
-  String get hemId => throw _privateConstructorUsedError;
+  String? get hemId => throw _privateConstructorUsedError;
   int get isMember => throw _privateConstructorUsedError;
   int get isHare => throw _privateConstructorUsedError;
   int get isPaid => throw _privateConstructorUsedError;
@@ -42,10 +42,17 @@ mixin _$CheckInPackModel {
   int get historicalCountIsEstimate => throw _privateConstructorUsedError;
   int get totalRunsThisKennel => throw _privateConstructorUsedError;
   int get totalHaringThisKennel => throw _privateConstructorUsedError;
-  String get hemUpdatedAt => throw _privateConstructorUsedError;
-  String get payUpdatedAt => throw _privateConstructorUsedError;
+  String? get hemUpdatedAt => throw _privateConstructorUsedError;
+  String? get payUpdatedAt => throw _privateConstructorUsedError;
   double get credit => throw _privateConstructorUsedError;
   int get isFollowing => throw _privateConstructorUsedError;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  Future<int>? get rsvpStateIndicator => throw _privateConstructorUsedError;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  Future<int>? get attendenceStateIndicator =>
+      throw _privateConstructorUsedError;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  Future<int>? get paidStateIndicator => throw _privateConstructorUsedError;
 
   /// Serializes this CheckInPackModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -65,7 +72,7 @@ abstract class $CheckInPackModelCopyWith<$Res> {
   @useResult
   $Res call(
       {String hasherId,
-      String hemId,
+      String? hemId,
       int isMember,
       int isHare,
       int isPaid,
@@ -86,10 +93,16 @@ abstract class $CheckInPackModelCopyWith<$Res> {
       int historicalCountIsEstimate,
       int totalRunsThisKennel,
       int totalHaringThisKennel,
-      String hemUpdatedAt,
-      String payUpdatedAt,
+      String? hemUpdatedAt,
+      String? payUpdatedAt,
       double credit,
-      int isFollowing});
+      int isFollowing,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      Future<int>? rsvpStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      Future<int>? attendenceStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      Future<int>? paidStateIndicator});
 }
 
 /// @nodoc
@@ -108,7 +121,7 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
   @override
   $Res call({
     Object? hasherId = null,
-    Object? hemId = null,
+    Object? hemId = freezed,
     Object? isMember = null,
     Object? isHare = null,
     Object? isPaid = null,
@@ -129,20 +142,23 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
     Object? historicalCountIsEstimate = null,
     Object? totalRunsThisKennel = null,
     Object? totalHaringThisKennel = null,
-    Object? hemUpdatedAt = null,
-    Object? payUpdatedAt = null,
+    Object? hemUpdatedAt = freezed,
+    Object? payUpdatedAt = freezed,
     Object? credit = null,
     Object? isFollowing = null,
+    Object? rsvpStateIndicator = freezed,
+    Object? attendenceStateIndicator = freezed,
+    Object? paidStateIndicator = freezed,
   }) {
     return _then(_value.copyWith(
       hasherId: null == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
               as String,
-      hemId: null == hemId
+      hemId: freezed == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       isMember: null == isMember
           ? _value.isMember
           : isMember // ignore: cast_nullable_to_non_nullable
@@ -223,14 +239,14 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
           ? _value.totalHaringThisKennel
           : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
               as int,
-      hemUpdatedAt: null == hemUpdatedAt
+      hemUpdatedAt: freezed == hemUpdatedAt
           ? _value.hemUpdatedAt
           : hemUpdatedAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      payUpdatedAt: null == payUpdatedAt
+              as String?,
+      payUpdatedAt: freezed == payUpdatedAt
           ? _value.payUpdatedAt
           : payUpdatedAt // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       credit: null == credit
           ? _value.credit
           : credit // ignore: cast_nullable_to_non_nullable
@@ -239,6 +255,18 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
           ? _value.isFollowing
           : isFollowing // ignore: cast_nullable_to_non_nullable
               as int,
+      rsvpStateIndicator: freezed == rsvpStateIndicator
+          ? _value.rsvpStateIndicator
+          : rsvpStateIndicator // ignore: cast_nullable_to_non_nullable
+              as Future<int>?,
+      attendenceStateIndicator: freezed == attendenceStateIndicator
+          ? _value.attendenceStateIndicator
+          : attendenceStateIndicator // ignore: cast_nullable_to_non_nullable
+              as Future<int>?,
+      paidStateIndicator: freezed == paidStateIndicator
+          ? _value.paidStateIndicator
+          : paidStateIndicator // ignore: cast_nullable_to_non_nullable
+              as Future<int>?,
     ) as $Val);
   }
 }
@@ -253,7 +281,7 @@ abstract class _$$CheckInPackModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {String hasherId,
-      String hemId,
+      String? hemId,
       int isMember,
       int isHare,
       int isPaid,
@@ -274,10 +302,16 @@ abstract class _$$CheckInPackModelImplCopyWith<$Res>
       int historicalCountIsEstimate,
       int totalRunsThisKennel,
       int totalHaringThisKennel,
-      String hemUpdatedAt,
-      String payUpdatedAt,
+      String? hemUpdatedAt,
+      String? payUpdatedAt,
       double credit,
-      int isFollowing});
+      int isFollowing,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      Future<int>? rsvpStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      Future<int>? attendenceStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      Future<int>? paidStateIndicator});
 }
 
 /// @nodoc
@@ -294,7 +328,7 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? hasherId = null,
-    Object? hemId = null,
+    Object? hemId = freezed,
     Object? isMember = null,
     Object? isHare = null,
     Object? isPaid = null,
@@ -315,20 +349,23 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
     Object? historicalCountIsEstimate = null,
     Object? totalRunsThisKennel = null,
     Object? totalHaringThisKennel = null,
-    Object? hemUpdatedAt = null,
-    Object? payUpdatedAt = null,
+    Object? hemUpdatedAt = freezed,
+    Object? payUpdatedAt = freezed,
     Object? credit = null,
     Object? isFollowing = null,
+    Object? rsvpStateIndicator = freezed,
+    Object? attendenceStateIndicator = freezed,
+    Object? paidStateIndicator = freezed,
   }) {
     return _then(_$CheckInPackModelImpl(
       hasherId: null == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
               as String,
-      hemId: null == hemId
+      hemId: freezed == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       isMember: null == isMember
           ? _value.isMember
           : isMember // ignore: cast_nullable_to_non_nullable
@@ -409,14 +446,14 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
           ? _value.totalHaringThisKennel
           : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
               as int,
-      hemUpdatedAt: null == hemUpdatedAt
+      hemUpdatedAt: freezed == hemUpdatedAt
           ? _value.hemUpdatedAt
           : hemUpdatedAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      payUpdatedAt: null == payUpdatedAt
+              as String?,
+      payUpdatedAt: freezed == payUpdatedAt
           ? _value.payUpdatedAt
           : payUpdatedAt // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       credit: null == credit
           ? _value.credit
           : credit // ignore: cast_nullable_to_non_nullable
@@ -425,6 +462,18 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
           ? _value.isFollowing
           : isFollowing // ignore: cast_nullable_to_non_nullable
               as int,
+      rsvpStateIndicator: freezed == rsvpStateIndicator
+          ? _value.rsvpStateIndicator
+          : rsvpStateIndicator // ignore: cast_nullable_to_non_nullable
+              as Future<int>?,
+      attendenceStateIndicator: freezed == attendenceStateIndicator
+          ? _value.attendenceStateIndicator
+          : attendenceStateIndicator // ignore: cast_nullable_to_non_nullable
+              as Future<int>?,
+      paidStateIndicator: freezed == paidStateIndicator
+          ? _value.paidStateIndicator
+          : paidStateIndicator // ignore: cast_nullable_to_non_nullable
+              as Future<int>?,
     ));
   }
 }
@@ -434,7 +483,7 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
 class _$CheckInPackModelImpl implements _CheckInPackModel {
   _$CheckInPackModelImpl(
       {required this.hasherId,
-      required this.hemId,
+      this.hemId,
       this.isMember = 0,
       this.isHare = 0,
       this.isPaid = 0,
@@ -455,10 +504,16 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
       this.historicalCountIsEstimate = 0,
       this.totalRunsThisKennel = 0,
       this.totalHaringThisKennel = 0,
-      required this.hemUpdatedAt,
-      required this.payUpdatedAt,
+      this.hemUpdatedAt,
+      this.payUpdatedAt,
       this.credit = 0.0,
-      this.isFollowing = 0});
+      this.isFollowing = 0,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      this.rsvpStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      this.attendenceStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      this.paidStateIndicator});
 
   factory _$CheckInPackModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$CheckInPackModelImplFromJson(json);
@@ -466,7 +521,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
   @override
   final String hasherId;
   @override
-  final String hemId;
+  final String? hemId;
   @override
   @JsonKey()
   final int isMember;
@@ -528,19 +583,28 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
   @JsonKey()
   final int totalHaringThisKennel;
   @override
-  final String hemUpdatedAt;
+  final String? hemUpdatedAt;
   @override
-  final String payUpdatedAt;
+  final String? payUpdatedAt;
   @override
   @JsonKey()
   final double credit;
   @override
   @JsonKey()
   final int isFollowing;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final Future<int>? rsvpStateIndicator;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final Future<int>? attendenceStateIndicator;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final Future<int>? paidStateIndicator;
 
   @override
   String toString() {
-    return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing)';
+    return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing, rsvpStateIndicator: $rsvpStateIndicator, attendenceStateIndicator: $attendenceStateIndicator, paidStateIndicator: $paidStateIndicator)';
   }
 
   @override
@@ -596,7 +660,14 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
                 other.payUpdatedAt == payUpdatedAt) &&
             (identical(other.credit, credit) || other.credit == credit) &&
             (identical(other.isFollowing, isFollowing) ||
-                other.isFollowing == isFollowing));
+                other.isFollowing == isFollowing) &&
+            (identical(other.rsvpStateIndicator, rsvpStateIndicator) ||
+                other.rsvpStateIndicator == rsvpStateIndicator) &&
+            (identical(
+                    other.attendenceStateIndicator, attendenceStateIndicator) ||
+                other.attendenceStateIndicator == attendenceStateIndicator) &&
+            (identical(other.paidStateIndicator, paidStateIndicator) ||
+                other.paidStateIndicator == paidStateIndicator));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -628,7 +699,10 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
         hemUpdatedAt,
         payUpdatedAt,
         credit,
-        isFollowing
+        isFollowing,
+        rsvpStateIndicator,
+        attendenceStateIndicator,
+        paidStateIndicator
       ]);
 
   /// Create a copy of CheckInPackModel
@@ -651,7 +725,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
 abstract class _CheckInPackModel implements CheckInPackModel {
   factory _CheckInPackModel(
       {required final String hasherId,
-      required final String hemId,
+      final String? hemId,
       final int isMember,
       final int isHare,
       final int isPaid,
@@ -672,10 +746,16 @@ abstract class _CheckInPackModel implements CheckInPackModel {
       final int historicalCountIsEstimate,
       final int totalRunsThisKennel,
       final int totalHaringThisKennel,
-      required final String hemUpdatedAt,
-      required final String payUpdatedAt,
+      final String? hemUpdatedAt,
+      final String? payUpdatedAt,
       final double credit,
-      final int isFollowing}) = _$CheckInPackModelImpl;
+      final int isFollowing,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      final Future<int>? rsvpStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      final Future<int>? attendenceStateIndicator,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      final Future<int>? paidStateIndicator}) = _$CheckInPackModelImpl;
 
   factory _CheckInPackModel.fromJson(Map<String, dynamic> json) =
       _$CheckInPackModelImpl.fromJson;
@@ -683,7 +763,7 @@ abstract class _CheckInPackModel implements CheckInPackModel {
   @override
   String get hasherId;
   @override
-  String get hemId;
+  String? get hemId;
   @override
   int get isMember;
   @override
@@ -725,13 +805,22 @@ abstract class _CheckInPackModel implements CheckInPackModel {
   @override
   int get totalHaringThisKennel;
   @override
-  String get hemUpdatedAt;
+  String? get hemUpdatedAt;
   @override
-  String get payUpdatedAt;
+  String? get payUpdatedAt;
   @override
   double get credit;
   @override
   int get isFollowing;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  Future<int>? get rsvpStateIndicator;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  Future<int>? get attendenceStateIndicator;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  Future<int>? get paidStateIndicator;
 
   /// Create a copy of CheckInPackModel
   /// with the given fields replaced by the non-null parameter values.

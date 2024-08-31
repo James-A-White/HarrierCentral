@@ -125,7 +125,7 @@ class SyncUserDataService {
           userId = GUID_EMPTY;
         }
 
-        final String accessToken = IveCoreUtilities.generateToken(userId, 'syncUserData705');
+        final String accessToken = IveCoreUtilities.generateToken(userId, 'syncUserData800');
 
         final Map<String, String> params = <String, String>{
           'userId': userId,
@@ -158,7 +158,7 @@ class SyncUserDataService {
 
         //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-        final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data_705', body, client: client);
+        final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data_800', body, client: client);
 
         //print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 

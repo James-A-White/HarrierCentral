@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:harrier_central/imports.dart';
-//import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
@@ -27,14 +27,13 @@ enum FilterOptions {
   cancel,
 }
 
-class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProviderStateMixin {
+class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderStateMixin {
   //final PackScopedModel _packScopedModel = PackScopedModel();
   //final PayScopedModel _payScopedModel = PayScopedModel();
 
   final GlobalKey _packListBoxKey = GlobalKey();
 
   bool _isLoading = true;
-  //final SlidableController _slidableController = SlidableController();
 
   List<CheckInPackModel> _packList = <CheckInPackModel>[];
   List<CheckInPackModel> _filteredList = <CheckInPackModel>[];
@@ -77,6 +76,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   @override
   void initState() {
+    _slidableController = SlidableController(this);
     _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
     _buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
       ..addListener(() {
@@ -120,32 +120,45 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
     try {
       final String sql = '''
-
           SELECT 
-            -- get all hashers
-            h.hasherId,
-            null as hemId,
-            coalesce(case when (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) then 1 else 0 end,0) as isMember,
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as isFollowing,
-            0 as isHare,
-            0 as isPaid, 
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},coalesce(h.dispName,h.hashName,coalesce(h.firstName,"") || " " || coalesce(h.lastName,""))) as nameForDisplay,
-            lower(coalesce(" " || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || " ",(" " || coalesce(h.hashName,"") || " " || coalesce(h.dispName,"") || " " || coalesce(h.firstName,"") || " " || coalesce(h.lastName,"") || " ")) as nameForSort,
-            0 as paymentType,
-            0 as creditAmount,
-            h.photo,
-            0 as virginVisitorType,
-            0 as rsvpState,
-            0 as attendenceState,
-            null as hemUpdatedAt,
-            null as payUpdatedAt,
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
-            0 as credit
+              -- get all hashers
+              h.hasherId,
+              null as hemId,
+              coalesce(
+                  CASE 
+                      WHEN (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) THEN 1 
+                      ELSE 0 
+                  END, 0) as isMember,
+              coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing}, 0) as isFollowing,
+              0 as isHare,
+              0 as isPaid, 
+              coalesce(
+                  hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+                  coalesce(h.dispName, h.hashName, coalesce(h.firstName, '') || ' ' || coalesce(h.lastName, ''))
+              ) as nameForDisplay,
+              lower(
+                  coalesce(
+                      ' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ',
+                      ' ' || coalesce(h.hashName, '') || ' ' || coalesce(h.dispName, '') || ' ' || coalesce(h.firstName, '') || ' ' || coalesce(h.lastName, '')
+                  )
+              ) as nameForSort,
+              0 as paymentType,
+              0 as creditAmount,
+              h.photo,
+              0 as virginVisitorType,
+              0 as rsvpState,
+              0 as attendanceState,
+              null as hemUpdatedAt,
+              null as payUpdatedAt,
+              coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) as discountAmount,
+              coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) as discountPercent,
+              0 as credit
           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
-          WHERE h.${G0<TableModel>().hashersTableHelper.colDispName} not like 'Placeholder user for%'
-          ORDER BY nameForSort
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
+              ON hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
+          WHERE h.${G0<TableModel>().hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
+          ORDER BY nameForSort;
+
           ''';
 
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
@@ -166,147 +179,176 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   Future<void> _refreshPackListFromTables(bool forceRefresh) async {
     try {
       final String sql = '''
-
-          SELECT 
-            -- get all of the members of a Kennel and display them
-            h.${G0<TableModel>().hashersTableHelper.colHasherId} as hasherId,
-            hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
-            case when (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) then 1 else 0 end as isMember,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} as isFollowing,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
-            CASE WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL THEN 0 ELSE 1 END as isPaid, 
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},""))) as nameForDisplay,
-            lower(coalesce(" " || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || " ",(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},""))) as nameForSort,
-            coalesce(pay.${G0<TableModel>().paymentsTableHelper.colPaymentType},0) as paymentType,
-            coalesce(pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount},0) as creditAmount,
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},h.${G0<TableModel>().hashersTableHelper.colPhoto}) as photo,
-            0 as virginVisitorType,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-            hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} as hemUpdatedAt,
-            pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} as payUpdatedAt,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} as credit,
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
-            coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} as hcTotalRunCount,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} as hcHaringCount,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} as historicalTotalRunCount,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} as historicalHaringCount,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate} as historicalCountIsEstimate
-          FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
-          INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hkm.userId
-          LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
-          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
-          WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" 
-            AND coalesce(hem.virginVisitorType,0) = 0
+      SELECT 
+          h.${G0<TableModel>().hashersTableHelper.colHasherId} AS hasherId,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AS hemId,
+          CASE 
+              WHEN (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', 'localtime')) 
+              THEN 1 
+              ELSE 0 
+          END AS isMember,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} AS isFollowing,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
+          CASE 
+              WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL 
+              THEN 0 
+              ELSE 1 
+          END AS isPaid, 
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+              COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, 
+                  h.${G0<TableModel>().hashersTableHelper.colHashName}, 
+                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
+                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
+          LOWER(COALESCE(' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ', 
+              ' ' || COALESCE(h.${G0<TableModel>().hashersTableHelper.colHashName}, '') || ' ' || 
+              COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, '') || ' ' || 
+              COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
+              COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForSort,
+          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colPaymentType}, 0) AS paymentType,
+          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h.${G0<TableModel>().hashersTableHelper.colPhoto}) AS photo,
+          0 AS virginVisitorType,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
+          pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} AS credit,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} AS hcTotalRunCount,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} AS hcHaringCount,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} AS historicalTotalRunCount,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} AS historicalHaringCount,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate
+      FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
+      INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hkm.userId
+      LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${widget.eventAggregate.event.eventId}"
+      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" 
+        AND COALESCE(hem.virginVisitorType, 0) = 0
+        AND (
+          hkm.isKennelFollowing = 1
+          OR (
+            hkm.isKennelFollowing = 0
             AND (
-              hkm.isKennelFollowing = 1
-              OR 
-              (
-                hkm.isKennelFollowing = 0
-                AND 
-                (
-                  julianday(hkm.membershipExpirationDate) >= julianday('now','localtime') -- is a member
-                  OR
-                  julianday(hkm.dateOfLastRun) >= julianday('now','localtime','-2 months')
-                )
+              julianday(hkm.membershipExpirationDate) >= julianday('now', 'localtime')
+              OR julianday(hkm.dateOfLastRun) >= julianday('now', 'localtime', '-2 months')
+            )
+          )
+        )
+
+      UNION
+
+      SELECT 
+          NULL AS hasherId,
+          COALESCE(hem2.hemId, "00000000-0000-0000-0000-000000000000") AS hemId,
+          0 AS isMember,
+          0 AS isFollowing,
+          hem2.isHare AS isHare,
+          CASE 
+              WHEN pay2.hemId IS NULL 
+              THEN 0 
+              ELSE 1 
+          END AS isPaid, 
+          COALESCE(hem2.displayName, 
+              CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || 
+              CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END AS nameForDisplay,
+          LOWER(COALESCE(hem2.displayName, 
+              CASE WHEN hem2.virginVisitorType = 3 THEN ' ' || COALESCE(h2.dispName, h2.hashName, COALESCE(h2.firstName, '') || ' ' || COALESCE(h2.lastName, '')) || ' ' 
+              ELSE "<no name>" END) || 
+              CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END) AS nameForSort,
+          COALESCE(pay2.paymentType, 0) AS paymentType,
+          COALESCE(pay2.creditAmount, 0) AS creditAmount,
+          CASE 
+              WHEN hem2.virginVisitorType = 1 
+              THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" 
+              ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" 
+          END AS photo,
+          COALESCE(hem2.virginVisitorType, 1) AS virginVisitorType,
+          COALESCE(hem2.rsvpState, 0) AS rsvpState,
+          COALESCE(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem2.attendenceState, 0) AS attendenceState,
+          hem2.updatedAt AS hemUpdatedAt,
+          pay2.updatedAt AS payUpdatedAt,
+          0 AS credit,
+          0 AS ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
+          0 AS ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
+          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
+          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
+          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
+          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+      FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2
+      INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h2 ON h2.hasherId = hem2.userId
+      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
+      WHERE hem2.eventId = "${widget.eventAggregate.event.eventId}" 
+        AND hem2.virginVisitorType != 0
+
+      UNION
+
+      SELECT 
+          hem3.userId AS hasherId,
+          hem3.hemId AS hemId,
+          0 AS isMember,
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} AS isFollowing,
+          hem3.isHare AS isHare,
+          CASE 
+              WHEN pay3.hemId IS NULL 
+              THEN 0 
+              ELSE 1 
+          END AS isPaid, 
+          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+              COALESCE(h3.dispName, h3.hashName, COALESCE(h3.firstName, '') || ' ' || 
+              COALESCE(h3.lastName, ''))) AS nameForDisplay,
+          LOWER(COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+              COALESCE(h3.dispName, h3.hashName, '') || ' ' || 
+              COALESCE(h3.lastName, '') || ' ' || 
+              COALESCE(h3.firstName, ''))) AS nameForSort,
+          COALESCE(pay3.paymentType, 0) AS paymentType,
+          COALESCE(pay3.creditAmount, 0) AS creditAmount,
+          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h3.photo) AS photo,
+          hem3.virginVisitorType AS virginVisitorType,
+          COALESCE(hem3.rsvpState, 0) AS rsvpState,
+          COALESCE(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem3.attendenceState, 0) AS attendenceState,
+          hem3.updatedAt AS hemUpdatedAt,
+          pay3.updatedAt AS payUpdatedAt,
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} AS credit,
+          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+      FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
+      INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
+      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
+      LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', 'localtime')
+      LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
+      WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
+        AND hem3.virginVisitorType = 0 
+        AND (
+          (
+            hkm4.userId IS NULL
+          ) OR NOT (
+            hkm4.isKennelFollowing = 1
+            OR (
+              hkm4.isKennelFollowing = 0
+              AND (
+                julianday(COALESCE(hkm4.membershipExpirationDate, '2000-01-01T01:00:00.000Z')) >= julianday('now', 'localtime') 
+                OR julianday(COALESCE(hkm4.dateOfLastRun, '2000-01-01T01:00:00.000Z')) >= julianday('now', 'localtime', '-2 months')
               )
             )
-          UNION
-          SELECT 
-            -- now get all virgins & visitors
-            null as hasherId,
-            coalesce(hem2.hemId,"00000000-0000-0000-0000-000000000000") as hemId,
-            0 as isMember,
-            0 as isFollowing,
-            hem2.isHare as isHare,
-            CASE WHEN pay2.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
-            coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
-            lower(coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN " " || coalesce(h2.dispName,h2.hashName,coalesce(h2.firstName,"") || " " || coalesce(h2.lastName,"")) || " " ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END) as nameForSort,
-            coalesce(pay2.paymentType,0) as paymentType,
-            coalesce(pay2.creditAmount,0) as creditAmount,
-            CASE WHEN hem2.virginVisitorType = 1 THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" END as photo,
-            coalesce(hem2.virginVisitorType,1) as virginVisitorType,
-            coalesce(hem2.rsvpState,0) as rsvpState,
-            coalesce(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel,
-            coalesce(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
-            coalesce(hem2.attendenceState,0) as attendenceState,
-            hem2.updatedAt as hemUpdatedAt,
-            pay2.updatedAt as payUpdatedAt,
-            0 as credit,
-            0 as ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
-            0 as ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
-            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-            null as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
-            FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 
-            INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h2 on h2.hasherId = hem2.userId
-            LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
-            WHERE hem2.eventId = "${widget.eventAggregate.event.eventId}" and hem2.virginVisitorType != 0
-          UNION
-          SELECT 
-            -- now get all Hashers who are in HC and have RSVP'ed but are not members of the kennel
-            hem3.userId as hasherId,
-            hem3.hemId as hemId,
-            0 as isMember,
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} as isFollowing,
-            hem3.isHare as isHare,
-            CASE WHEN pay3.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
-            coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},coalesce(h3.dispName,h3.hashName,coalesce(h3.firstName,"") || " " || coalesce(h3.lastName,""))) as nameForDisplay,    
-            lower(coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},(coalesce(h3.dispName,h3.hashName,"") || " " || coalesce(h3.lastName,"") || " " || coalesce(h3.firstName,""))) as nameForSort,
-            coalesce(pay3.paymentType,0) as paymentType,
-            coalesce(pay3.creditAmount,0) as creditAmount,
-            coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},h3.photo) as photo,
-            hem3.virginVisitorType as virginVisitorType,
-            coalesce(hem3.rsvpState,0) as rsvpState,
-            coalesce(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) as totalRunsThisKennel,
-            coalesce(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) as totalHaringThisKennel,
-            coalesce(hem3.attendenceState,0) as attendenceState,
-            hem3.updatedAt as hemUpdatedAt,
-            pay3.updatedAt as payUpdatedAt,
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} as credit,
-            coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmount,
-            coalesce(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercent,
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-            hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
-            FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
-            INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h3 on h3.hasherId = hem3.userId
-            LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
-            LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now','localtime')
-            LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 on hkm4.userId = h3.hasherId and hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
-            WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
-              AND hem3.virginVisitorType = 0 
-              AND  
-              (
-                (
-                  hkm4.userId IS NULL
-                )  
-                OR NOT
-                (
-                  hkm4.isKennelFollowing = 1
-                  OR 
-                    (
-                      hkm4.isKennelFollowing = 0
-                AND 
-                (
-                  julianday(coalesce(hkm4.membershipExpirationDate,'2000-01-01T01:00:00.000Z')) >= julianday('now','localtime') -- is a member
-                  OR
-                  julianday(coalesce(hkm4.dateOfLastRun,'2000-01-01T01:00:00.000Z')) >= julianday('now','localtime','-2 months')
-                )
-              ) 
-            )          
-          )   
+          )
+        )
 
-          ORDER BY nameForSort
-            
-          
+      ORDER BY nameForSort
+
           ''';
 
       try {
@@ -398,6 +440,18 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         });
       });
     }
+    for (int i = 0; i < _filteredList.length; i++) {
+      _filteredList[i] = _filteredList[i].copyWith(
+        rsvpStateIndicator: Future<int>.value(_filteredList[i].rsvpState),
+        attendenceStateIndicator: Future<int>.value(_filteredList[i].attendenceState),
+        paidStateIndicator: Future<int>.value(isPaidNo.value
+            // _filteredList[i].paymentType == paymentTypeUnknown.value ? 0 :
+            // _filteredList[i].paymentType == paymentNotPaid.value ? 0 :
+            // _filteredList[i].paymentType == paymentTypeUnknown.value ? 0 :
+            ),
+      );
+    }
+    setState(() {});
   }
 
   bool _checkSpecialRun(int runCount) {
@@ -477,7 +531,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             attendenceAtHash.value,
           );
 
-      await _refreshPackListFromTables(false);
+      await _refreshPackListFromTables(true);
       await _refreshCounters(true);
     }
   }
@@ -537,23 +591,24 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
                   if (adHocData.isNotEmpty) {
                     final String hem = adHocData[0]['hasherEventMapId'].toString().toLowerCase();
-                    scrollIndex = _packList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
+                    scrollIndex = _filteredList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
                     if ((scrollIndex ?? -1) >= 0) {
-                      final CheckInPackModel hasher = _packList[scrollIndex!];
+                      //final CheckInPackModel hasher = _packList[scrollIndex!];
                       //if (hasher != null) {
-                      final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState!, hasher);
+                      if (scrollIndex != null) {
+                        final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState!, scrollIndex!);
 
-                      ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
-                        setState(() {
-                          if ((scrollIndex ?? -1) >= 0) {
-                            if (_scrollController.hasClients) {
-                              _scrollController.animateTo(scrollIndex! * LIST_ITEM_HEIGHT, duration: const Duration(seconds: 1), curve: Curves.ease);
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
+                          setState(() {
+                            if ((scrollIndex ?? -1) >= 0) {
+                              if (_scrollController.hasClients) {
+                                _scrollController.animateTo(scrollIndex! * LIST_ITEM_HEIGHT, duration: const Duration(seconds: 1), curve: Curves.ease);
+                              }
                             }
-                          }
+                          });
                         });
-                      });
-                      // }
+                      }
                     }
                   }
                 }
@@ -900,6 +955,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     });
   }
 
+  late final SlidableController _slidableController;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1033,17 +1090,17 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  SnackBar _buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, CheckInPackModel packMember) {
-    double amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+  SnackBar _buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, int index) {
+    double amountOwed = _filteredList[index].isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
 
-    amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
-    amountOwed -= packMember.discountAmount;
-    amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
+    amountOwed = _filteredList[index].isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+    amountOwed -= _filteredList[index].discountAmount;
+    amountOwed -= amountOwed * (_filteredList[index].discountPercent / 100.0);
 
     final SnackBar snackbar = PaymentSnackBar(
       context: context,
       eventAggregate: widget.eventAggregate,
-      packMember: packMember,
+      packMember: _filteredList[index],
       amountOwed: amountOwed,
       onRsvpCallback: (
         CheckInPackModel packMember, {
@@ -1054,8 +1111,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         if ((rsvpState != -1) && (attendenceState == -1)) {
           setState(() {
-            // NULLSAFETODO1
-            //packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
+            _filteredList[index] = packMember.copyWith(rsvpStateIndicator: Future<int>.value(rsvpUpdating.value));
           });
           await _updateRsvpState(packMember, rsvpState, isHare);
           setState(() {});
@@ -1081,16 +1137,17 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         final bool? useSpecialPriceAsDefault = userInput?.useSpecialPriceAsDefault;
 
         setState(() {
-          // NULLSAFETODO1
-          // packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
-          // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
-          // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+          _filteredList[index] = packMember.copyWith(
+            rsvpStateIndicator: Future<int>.value(rsvpUpdating.value),
+            attendenceStateIndicator: Future<int>.value(attendenceUpdating.value),
+            paidStateIndicator: Future<int>.value(isPaidUpdating.value),
+          );
         });
         await _payForEvent(
           context,
           scaffoldState,
           paymentType,
-          packMember,
+          index,
           totalDue,
           specialRunPrice: specialPriceAmount,
           specialRunPriceReason: specialPriceReason,
@@ -1106,7 +1163,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     BuildContext context,
     ScaffoldState scaffoldState,
     int paymentType,
-    CheckInPackModel packMember,
+    int index,
     double? otherAmount, {
     double? specialRunPrice,
     String? specialRunPriceReason,
@@ -1122,7 +1179,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             (paymentType == paymentHashCredit.value) ||
             (paymentType == paymentBankTransferOtherAmount.value)) &&
         ((widget.eventAggregate.event.eventPriceForExtras) != 0)) {
-      final double runOnlyPrice = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+      final double runOnlyPrice = _filteredList[index].isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
       final double runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras!;
 
       final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
@@ -1162,7 +1219,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
 
     final List<dynamic>? results = await _processPayment(
-      packMember,
+      index,
       paymentType,
       otherAmount: otherAmount,
       doPayForExtras: payForExtras,
@@ -1178,8 +1235,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           results,
           paymentType,
           navigatorKey.currentContext!,
-          packMember.nameForDisplay,
-          packMember.isMember,
+          _filteredList[index].nameForDisplay,
+          _filteredList[index].isMember,
           otherAmount,
         );
       }
@@ -1189,7 +1246,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<List<dynamic>?> _processPayment(
-    CheckInPackModel packMember,
+    int index,
     int paymentType, {
     double? otherAmount = -1,
     EnumPayForExtras<int> doPayForExtras = payForRunOnly,
@@ -1201,15 +1258,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     bool terminalWasUsedForPayment = false;
 
     setState(() {
-      // NULLSAFETODO1
-      // packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
-      // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
-      // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+      _filteredList[index] = _filteredList[index].copyWith(
+        rsvpStateIndicator: Future<int>.value(rsvpUpdating.value),
+        attendenceStateIndicator: Future<int>.value(attendenceUpdating.value),
+        paidStateIndicator: Future<int>.value(isPaidUpdating.value),
+      );
     });
 
-    final String hemId = packMember.hemId;
-    final String hasherId = packMember.hasherId;
-    double amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+    final String? hemId = _filteredList[index].hemId;
+    final String hasherId = _filteredList[index].hasherId;
+    double amount = _filteredList[index].isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
     if ((otherAmount != null) && (otherAmount != -1)) {
       amount = otherAmount;
     }
@@ -1292,7 +1350,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     final List<dynamic> result = await paySrv.payForEvent(
       widget.eventAggregate.event.eventId,
       ((hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
-      ((hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
+      (((hemId?.length ?? 0) != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
       paymentType,
       amount,
       attendenceAtHash.value,
@@ -1315,12 +1373,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   static const double LIST_ITEM_LEFT_MARGIN = 88.0;
 
-  Widget _listItem(BuildContext context, CheckInPackModel packMember) {
+  Widget _listItem(BuildContext context, int index) {
     return GestureDetector(
       onTap: () {
         _searchFocusNode.unfocus();
         if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
-          final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState!, packMember);
+          final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState!, index);
 
           ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -1328,29 +1386,30 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       },
       child: Container(
         color: ((widget.eventAggregate.event.isCountedRun == 1) &&
-                (packMember.attendenceState >= attendenceAtHash.value) &&
-                ((_checkSpecialRun((packMember.totalRunsThisKennel) + (packMember.historicalTotalRunCount))) ||
-                    (_checkSpecialHaring((packMember.totalHaringThisKennel) + (packMember.historicalHaringCount)))))
+                (_filteredList[index].attendenceState >= attendenceAtHash.value) &&
+                ((_checkSpecialRun((_filteredList[index].totalRunsThisKennel) + (_filteredList[index].historicalTotalRunCount))) ||
+                    (_checkSpecialHaring((_filteredList[index].totalHaringThisKennel) + (_filteredList[index].historicalHaringCount)))))
             ? Colors.amber.shade100
             : Colors.white,
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
-            Utilities.getProfilePic(packMember.photo, LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT, context, packMember.nameForDisplay),
+            Utilities.getProfilePic(_filteredList[index].photo, LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT, context, _filteredList[index].nameForDisplay),
 
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN + 2.0,
               top: 9.0,
-              child: Text(packMember.nameForDisplay,
-                  style: TextStyle(fontFamily: (packMember.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
+              child: Text(_filteredList[index].nameForDisplay,
+                  style: TextStyle(
+                      fontFamily: (_filteredList[index].isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
             ),
 
             //(packMember.hcTotalRunCount + (packMember.historicalTotalRunCount)
 
             if ((widget.eventAggregate.event.isCountedRun == 1) &&
-                (packMember.attendenceState >= attendenceAtHash.value) &&
-                ((_checkSpecialRun((packMember.totalRunsThisKennel) + (packMember.historicalTotalRunCount))) ||
-                    (_checkSpecialHaring((packMember.totalHaringThisKennel) + (packMember.historicalHaringCount))))) ...<Widget>[
+                (_filteredList[index].attendenceState >= attendenceAtHash.value) &&
+                ((_checkSpecialRun((_filteredList[index].totalRunsThisKennel) + (_filteredList[index].historicalTotalRunCount))) ||
+                    (_checkSpecialHaring((_filteredList[index].totalHaringThisKennel) + (_filteredList[index].historicalHaringCount))))) ...<Widget>[
               Positioned(right: 8.0, top: 9.0, width: 35.0, height: 35.0, child: Image.asset('images/icons/beer_mug.png')),
             ],
 
@@ -1372,105 +1431,106 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             ),
 
             Positioned(
-                left: LIST_ITEM_LEFT_MARGIN + 0.0,
-                bottom: 5.0,
-                // NULLSAFETODO1
-                child: Container()
-                // child: FutureBuilder<int>(
-                //     future: packMember.rsvpStateIndicator,
-                //     builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                //       return Stack(
-                //         alignment: AlignmentDirectional.center,
-                //         children: <Widget>[
-                //           Container(height: 30, width: 30, color: Colors.transparent),
-                //           CircleAvatar(
-                //             backgroundColor: ((snapshot.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
-                //             radius: 14.0,
-                //           ),
-                //           ((snapshot.data) == 0)
-                //               ? Container()
-                //               : snapshot.data == rsvpUpdating.value
-                //                   ? Icon(delayIcon, color: Colors.blue[800])
-                //                   : snapshot.data == rsvpNo.value
-                //                       ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
-                //                       : snapshot.data == rsvpMaybe.value
-                //                           ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
-                //                           : packMember.isHare == 0
-                //                               ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0)
-                //                               : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0)
-                //         ],
-                //       );
-                //     }),
-                ),
+              left: LIST_ITEM_LEFT_MARGIN + 0.0,
+              bottom: 5.0,
+              child: FutureBuilder<int>(
+                  future: _filteredList[index].rsvpStateIndicator,
+                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                    return Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[
+                        Container(height: 30, width: 30, color: Colors.transparent),
+                        CircleAvatar(
+                          backgroundColor: ((snapshot.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
+                          radius: 14.0,
+                        ),
+                        ((snapshot.data ?? 0) == 0)
+                            ? Container()
+                            : snapshot.data == rsvpUpdating.value
+                                ? Icon(delayIcon, color: Colors.blue[800])
+                                : snapshot.data == rsvpNo.value
+                                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
+                                    : snapshot.data == rsvpMaybe.value
+                                        ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
+                                        : _filteredList[index].isHare == 0
+                                            ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0)
+                                            : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0)
+                      ],
+                    );
+                  }),
+            ),
 
-            Positioned(left: LIST_ITEM_LEFT_MARGIN + 35.0, bottom: 5.0, child: Container()
-                // child: FutureBuilder<int>(
-                //     future: packMember.attendenceStateIndicator,
-                //     builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                //       return Stack(
-                //         alignment: AlignmentDirectional.center,
-                //         children: <Widget>[
-                //           Container(height: 30, width: 30, color: Colors.transparent),
-                //           CircleAvatar(
-                //             backgroundColor: ((snapshot.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
-                //             radius: 14.0,
-                //           ),
-                //           ((!snapshot.hasData) || ((snapshot.data) == 0))
-                //               ? Container()
-                //               : snapshot.data == attendenceUpdating.value
-                //                   ? Icon(delayIcon, color: Colors.blue[800])
-                //                   : snapshot.data == attendenceNo.value
-                //                       ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
-                //                       : snapshot.data == attendenceAtHash.value
-                //                           ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
-                //                           : snapshot.data >= attendenceOnIn.value
-                //                               ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green)
-                //                               : Container()
-                //         ],
-                //       );
-                //     }),
-                ),
+            Positioned(
+              left: LIST_ITEM_LEFT_MARGIN + 35.0,
+              bottom: 5.0,
+              child: FutureBuilder<int>(
+                  future: _filteredList[index].attendenceStateIndicator,
+                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                    return Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[
+                        Container(height: 30, width: 30, color: Colors.transparent),
+                        CircleAvatar(
+                          backgroundColor: ((snapshot.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
+                          radius: 14.0,
+                        ),
+                        ((!snapshot.hasData) || ((snapshot.data) == 0))
+                            ? Container()
+                            : snapshot.data == attendenceUpdating.value
+                                ? Icon(delayIcon, color: Colors.blue[800])
+                                : snapshot.data == attendenceNo.value
+                                    ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
+                                    : snapshot.data == attendenceAtHash.value
+                                        ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
+                                        : snapshot.data! >= attendenceOnIn.value
+                                            ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green)
+                                            : Container()
+                      ],
+                    );
+                  }),
+            ),
 
-            Positioned(left: LIST_ITEM_LEFT_MARGIN + 70.0, bottom: 5.0, child: Container()
-                // NULLSAFETODO1
-                // child: FutureBuilder<int>(
-                //     future: packMember.paidStateIndicator,
-                //     builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                //       return Stack(
-                //         alignment: AlignmentDirectional.center,
-                //         children: <Widget>[
-                //           Container(height: 30, width: 30, color: Colors.transparent),
-                //           CircleAvatar(
-                //             backgroundColor: ((snapshot.data == null) || (snapshot.data < 0)) ? Colors.grey[350] : Colors.white,
-                //             radius: 14.0,
-                //           ),
-                //           ((snapshot.data ?? -1) == -1)
-                //               ? Container()
-                //               : snapshot.data == isPaidUpdating.value
-                //                   ? Icon(delayIcon, color: Colors.blue[800])
-                //                   : snapshot.data == isPaidNo.value
-                //                       ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
-                //                       : packMember.isPaid == isPaidYes.value
-                //                           ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
-                //                           : Container()
-                //         ],
-                //       );
-                //     }),
-                ),
+            Positioned(
+              left: LIST_ITEM_LEFT_MARGIN + 70.0,
+              bottom: 5.0,
+              child: FutureBuilder<int>(
+                  future: _filteredList[index].paidStateIndicator,
+                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                    return Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[
+                        Container(height: 30, width: 30, color: Colors.transparent),
+                        CircleAvatar(
+                          backgroundColor: ((snapshot.data == null) || (snapshot.data! < 0)) ? Colors.grey[350] : Colors.white,
+                          radius: 14.0,
+                        ),
+                        ((snapshot.data ?? -1) == -1)
+                            ? Container()
+                            : snapshot.data == isPaidUpdating.value
+                                ? Icon(delayIcon, color: Colors.blue[800])
+                                : snapshot.data == isPaidNo.value
+                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                                    : _filteredList[index].isPaid == isPaidYes.value
+                                        ? Image.asset('images/icons/payment_type_${_filteredList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
+                                        : Container()
+                      ],
+                    );
+                  }),
+            ),
 
-            if (packMember.totalHaringThisKennel != 0)
+            if (_filteredList[index].totalHaringThisKennel != 0)
               Positioned(
                 right: 4,
                 bottom: 17,
-                child: Text('Hared = ${packMember.totalHaringThisKennel + (packMember.historicalHaringCount)}',
-                    style: _getHaringLabelStyle(packMember.totalHaringThisKennel + (packMember.historicalHaringCount), packMember.attendenceState)),
+                child: Text('Hared = ${_filteredList[index].totalHaringThisKennel + (_filteredList[index].historicalHaringCount)}',
+                    style: _getHaringLabelStyle(_filteredList[index].totalHaringThisKennel + (_filteredList[index].historicalHaringCount), _filteredList[index].attendenceState)),
               ),
-            if (packMember.totalRunsThisKennel != 0)
+            if (_filteredList[index].totalRunsThisKennel != 0)
               Positioned(
                 right: 4,
                 bottom: 1,
-                child: Text('Total Runs = ${packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount)}',
-                    style: _getRunLabelStyle(packMember.totalRunsThisKennel + (packMember.historicalTotalRunCount), packMember.attendenceState)),
+                child: Text('Total Runs = ${_filteredList[index].totalRunsThisKennel + (_filteredList[index].historicalTotalRunCount)}',
+                    style: _getRunLabelStyle(_filteredList[index].totalRunsThisKennel + (_filteredList[index].historicalTotalRunCount), _filteredList[index].attendenceState)),
               ),
           ],
         ),
@@ -1566,202 +1626,203 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               } else if (index == (_filteredList.length) + 1) {
                 return const SizedBox(height: 120);
               } else {
-                final CheckInPackModel packMember = _filteredList[index];
+                double amountOwed = _filteredList[index].isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
 
-                double amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
-
-                amountOwed = packMember.isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
-                amountOwed -= packMember.discountAmount;
-                amountOwed -= amountOwed * (packMember.discountPercent / 100.0);
+                amountOwed = _filteredList[index].isMember != 1 ? widget.eventAggregate.extensions.nonMemberPrice : widget.eventAggregate.extensions.memberPrice;
+                amountOwed -= _filteredList[index].discountAmount;
+                amountOwed -= amountOwed * (_filteredList[index].discountPercent / 100.0);
 
                 //final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
-                //final Key key = Key(index.toString());
+                final Key key = Key(index.toString());
 
-                return Container();
-
-                // return Slidable(
-                //   key: key,
-                //   controller: _slidableController,
-                //   actionPane: const SlidableBehindActionPane(),
-                //   actionExtentRatio: 0.35,
-                //   dismissal: SlidableDismissal(
-                //     onWillDismiss: (SlideActionType? actionType) {
-                //       if (actionType != null) {
-                //         if (actionType == SlideActionType.secondary) {
-                //           // _useTerminalForPayment = false;
-                //         }
-                //         if (packMember.isPaid != 1) {
-                //           _payForEvent(
-                //             context,
-                //             _scaffoldKey.currentState!,
-                //             actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
-                //             packMember,
-                //             -1,
-                //           );
-                //         } else {
-                //           if (actionType == SlideActionType.secondary) {
-                //             _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
-                //           }
-                //         }
-
-                //         Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
-                //           _slidableController.activeState?.close();
-                //         });
-                //       }
-
-                //       return false;
-                //     },
-                //     dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
-                //     child: const SlidableDrawerDismissal(),
-                //     onDismissed: (SlideActionType? actionType) {
-                //       setState(() {});
-                //     },
-                //   ),
-                //   actions: <Widget>[
-                //     IconSlideAction(
-                //         iconWidget: packMember.isPaid == 1
-                //             ? Container(
-                //                 color: Colors.grey,
-                //                 width: G0<DeviceInfo>().deviceWidth,
-                //                 child: const Column(
-                //                   children: <Widget>[
-                //                     Padding(
-                //                       padding: EdgeInsets.only(top: 5.0),
-                //                       child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
-                //                     ),
-                //                     Padding(
-                //                       padding: EdgeInsets.only(top: 5.0),
-                //                       child: Text(
-                //                         'Already\r\npaid',
-                //                         textAlign: TextAlign.center,
-                //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //               )
-                //             : Container(
-                //                 color: Colors.blue,
-                //                 width: G0<DeviceInfo>().deviceWidth,
-                //                 child: Column(
-                //                   children: <Widget>[
-                //                     Padding(
-                //                       padding: const EdgeInsets.only(top: 8.0),
-                //                       child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
-                //                     ),
-                //                     Padding(
-                //                       padding: const EdgeInsets.only(top: 10.0),
-                //                       child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
-                //                           textAlign: TextAlign.center,
-                //                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
-                //                     ),
-                //                   ],
-                //                 ),
-                //               ),
-                //         onTap: () {
-                //           //_useTerminalForPayment = false;
-                //           _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
-                //         }),
-                //     if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
-                //       IconSlideAction(
-                //           iconWidget: Container(
-                //             color: Colors.deepPurple,
-                //             width: G0<DeviceInfo>().deviceWidth,
-                //             child: Column(
-                //               children: <Widget>[
-                //                 const Padding(
-                //                   padding: EdgeInsets.only(top: 8.0),
-                //                   child: Icon(MaterialCommunityIcons.contactless_payment_circle, size: 30.0, color: Colors.white),
-                //                 ),
-                //                 Padding(
-                //                   padding: const EdgeInsets.only(top: 10.0),
-                //                   child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
-                //                       textAlign: TextAlign.center,
-                //                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-                //           onTap: () {
-                //             //_useTerminalForPayment = true;
-                //             _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
-                //           }),
-                //     ],
-                //   ],
-                //   secondaryActions: <Widget>[
-                //     IconSlideAction(
-                //       iconWidget: packMember.isPaid == 1
-                //           ? packMember.attendenceState >= attendenceOnIn.value
-                //               ? Container(
-                //                   width: G0<DeviceInfo>().deviceWidth,
-                //                   color: Colors.grey,
-                //                   child: const Column(
-                //                     mainAxisAlignment: MainAxisAlignment.end,
-                //                     children: <Widget>[
-                //                       Padding(
-                //                         padding: EdgeInsets.only(top: 5.0),
-                //                         child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
-                //                       ),
-                //                       Padding(
-                //                         padding: EdgeInsets.only(top: 5.0),
-                //                         child: Text(
-                //                           'Already\r\nOn-In',
-                //                           textAlign: TextAlign.center,
-                //                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                //                         ),
-                //                       ),
-                //                     ],
-                //                   ),
-                //                 )
-                //               : Container(
-                //                   color: Colors.amber[800],
-                //                   width: G0<DeviceInfo>().deviceWidth,
-                //                   child: const Column(
-                //                     mainAxisAlignment: MainAxisAlignment.end,
-                //                     children: <Widget>[
-                //                       Padding(
-                //                         padding: EdgeInsets.only(top: 2.0),
-                //                         child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
-                //                       ),
-                //                       Padding(
-                //                         padding: EdgeInsets.only(top: 5.0),
-                //                         child: Text(
-                //                           'Record as\r\nOn-In',
-                //                           textAlign: TextAlign.center,
-                //                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                //                         ),
-                //                       ),
-                //                     ],
-                //                   ),
-                //                 )
-                //           : Container(
-                //               width: G0<DeviceInfo>().deviceWidth,
-                //               color: Colors.green,
-                //               child: Column(
-                //                 mainAxisAlignment: MainAxisAlignment.center,
-                //                 mainAxisSize: MainAxisSize.max,
-                //                 children: <Widget>[
-                //                   Padding(
-                //                     padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
-                //                     child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
-                //                   ),
-                //                   Padding(
-                //                     padding: const EdgeInsets.only(bottom: 5.0),
-                //                     child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
-                //                         textAlign: TextAlign.center,
-                //                         style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                //                   ),
-                //                 ],
-                //               ),
-                //             ),
-                //     ),
-                //   ],
-                //   child: Container(
-                //     color: Colors.white,
-                //     child: _listItem(context, packMember),
-                //   ),
+                //return Slidable(
+                //   key:key,
+                //   child:
                 // );
+
+                return Slidable(
+                  key: key,
+                  controller: _slidableController,
+                  child: Container(
+                    color: Colors.white,
+                    child: _listItem(context, index),
+                  ),
+                  // actionPane: const SlidableBehindActionPane(),
+                  // actionExtentRatio: 0.35,
+                  // dismissal: SlidableDismissal(
+                  //   onWillDismiss: (SlideActionType? actionType) {
+                  //     if (actionType != null) {
+                  //       if (actionType == SlideActionType.secondary) {
+                  //         // _useTerminalForPayment = false;
+                  //       }
+                  //       if (packMember.isPaid != 1) {
+                  //         _payForEvent(
+                  //           context,
+                  //           _scaffoldKey.currentState!,
+                  //           actionType == SlideActionType.secondary ? paymentCash.value : paymentBankTransfer.value,
+                  //           packMember,
+                  //           -1,
+                  //         );
+                  //       } else {
+                  //         if (actionType == SlideActionType.secondary) {
+                  //           _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
+                  //         }
+                  //       }
+
+                  //       Future<void>.delayed(const Duration(milliseconds: 10)).then((void _) {
+                  //         _slidableController.activeState?.close();
+                  //       });
+                  //     }
+
+                  //     return false;
+                  //   },
+                  //   dismissThresholds: const <SlideActionType, double>{SlideActionType.secondary: 0.3},
+                  //   child: const SlidableDrawerDismissal(),
+                  //   onDismissed: (SlideActionType? actionType) {
+                  //     setState(() {});
+                  //   },
+                  // ),
+                  // actions: <Widget>[
+                  //   IconSlideAction(
+                  //       iconWidget: packMember.isPaid == 1
+                  //           ? Container(
+                  //               color: Colors.grey,
+                  //               width: G0<DeviceInfo>().deviceWidth,
+                  //               child: const Column(
+                  //                 children: <Widget>[
+                  //                   Padding(
+                  //                     padding: EdgeInsets.only(top: 5.0),
+                  //                     child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                  //                   ),
+                  //                   Padding(
+                  //                     padding: EdgeInsets.only(top: 5.0),
+                  //                     child: Text(
+                  //                       'Already\r\npaid',
+                  //                       textAlign: TextAlign.center,
+                  //                       style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                  //                     ),
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //             )
+                  //           : Container(
+                  //               color: Colors.blue,
+                  //               width: G0<DeviceInfo>().deviceWidth,
+                  //               child: Column(
+                  //                 children: <Widget>[
+                  //                   Padding(
+                  //                     padding: const EdgeInsets.only(top: 8.0),
+                  //                     child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
+                  //                   ),
+                  //                   Padding(
+                  //                     padding: const EdgeInsets.only(top: 10.0),
+                  //                     child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
+                  //                         textAlign: TextAlign.center,
+                  //                         style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //             ),
+                  //       onTap: () {
+                  //         //_useTerminalForPayment = false;
+                  //         _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
+                  //       }),
+                  //   if ((packMember.isPaid != 1) && (getStringPref(StringPrefsEnum.paymentTerminalAccountKey) != null) && (Utilities.isOpeeOrTuna())) ...<Widget>[
+                  //     IconSlideAction(
+                  //         iconWidget: Container(
+                  //           color: Colors.deepPurple,
+                  //           width: G0<DeviceInfo>().deviceWidth,
+                  //           child: Column(
+                  //             children: <Widget>[
+                  //               const Padding(
+                  //                 padding: EdgeInsets.only(top: 8.0),
+                  //                 child: Icon(MaterialCommunityIcons.contactless_payment_circle, size: 30.0, color: Colors.white),
+                  //               ),
+                  //               Padding(
+                  //                 padding: const EdgeInsets.only(top: 10.0),
+                  //                 child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Contactless',
+                  //                     textAlign: TextAlign.center,
+                  //                     style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //         onTap: () {
+                  //           //_useTerminalForPayment = true;
+                  //           _slidableController.activeState?.dismiss(actionType: SlideActionType.primary);
+                  //         }),
+                  //   ],
+                  // ],
+                  // secondaryActions: <Widget>[
+                  //   IconSlideAction(
+                  //     iconWidget: packMember.isPaid == 1
+                  //         ? packMember.attendenceState >= attendenceOnIn.value
+                  //             ? Container(
+                  //                 width: G0<DeviceInfo>().deviceWidth,
+                  //                 color: Colors.grey,
+                  //                 child: const Column(
+                  //                   mainAxisAlignment: MainAxisAlignment.end,
+                  //                   children: <Widget>[
+                  //                     Padding(
+                  //                       padding: EdgeInsets.only(top: 5.0),
+                  //                       child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                  //                     ),
+                  //                     Padding(
+                  //                       padding: EdgeInsets.only(top: 5.0),
+                  //                       child: Text(
+                  //                         'Already\r\nOn-In',
+                  //                         textAlign: TextAlign.center,
+                  //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                  //                       ),
+                  //                     ),
+                  //                   ],
+                  //                 ),
+                  //               )
+                  //             : Container(
+                  //                 color: Colors.amber[800],
+                  //                 width: G0<DeviceInfo>().deviceWidth,
+                  //                 child: const Column(
+                  //                   mainAxisAlignment: MainAxisAlignment.end,
+                  //                   children: <Widget>[
+                  //                     Padding(
+                  //                       padding: EdgeInsets.only(top: 2.0),
+                  //                       child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
+                  //                     ),
+                  //                     Padding(
+                  //                       padding: EdgeInsets.only(top: 5.0),
+                  //                       child: Text(
+                  //                         'Record as\r\nOn-In',
+                  //                         textAlign: TextAlign.center,
+                  //                         style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                  //                       ),
+                  //                     ),
+                  //                   ],
+                  //                 ),
+                  //               )
+                  //         : Container(
+                  //             width: G0<DeviceInfo>().deviceWidth,
+                  //             color: Colors.green,
+                  //             child: Column(
+                  //               mainAxisAlignment: MainAxisAlignment.center,
+                  //               mainAxisSize: MainAxisSize.max,
+                  //               children: <Widget>[
+                  //                 Padding(
+                  //                   padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
+                  //                   child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
+                  //                 ),
+                  //                 Padding(
+                  //                   padding: const EdgeInsets.only(bottom: 5.0),
+                  //                   child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                  //                       textAlign: TextAlign.center,
+                  //                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                  //                 ),
+                  //               ],
+                  //             ),
+                  //           ),
+                  //   ),
+                  // ],
+                );
               }
             },
           ),

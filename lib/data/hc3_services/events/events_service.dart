@@ -218,7 +218,7 @@ class EventsService extends BaseService {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent');
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent800');
 
     final int eventsLastUpdated = await getLastUpdatedTime(
       G0<Database>(),
@@ -329,7 +329,7 @@ class EventsService extends BaseService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_event', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_event_800', body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);

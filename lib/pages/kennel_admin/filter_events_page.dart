@@ -144,7 +144,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     //       (SELECT COUNT(*) FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
 
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT COUNT(*) as publishedRunCount  
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt 
@@ -158,7 +158,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     }
 
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT
             evt.${G0<TableModel>().eventsTableHelper.colEventId},
@@ -206,7 +206,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         //     _selectedEvents.add(event);
         //   }
         // }
-            }
+      }
 
       _isLoading = false;
     } catch (e) {
@@ -810,7 +810,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 // },
 
                 eventLoader: (DateTime dt) {
-                  return _calendarEvents[_toDateOnly(dt)] as List<dynamic>;
+                  return _calendarEvents[_toDateOnly(dt)] as List<dynamic>? ?? [];
                 },
                 onDaySelected: _onDaySelected,
 

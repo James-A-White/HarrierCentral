@@ -127,7 +127,7 @@ class SyncEventAdminService {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncEventAdminData392');
+      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncEventAdminData800');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
@@ -142,7 +142,7 @@ class SyncEventAdminService {
         'usePaging': usePaging ? '1' : '0',
       });
 
-      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_event_admin_data_392', body);
+      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_event_admin_data_800', body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(

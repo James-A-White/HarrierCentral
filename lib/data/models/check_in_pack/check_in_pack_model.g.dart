@@ -10,7 +10,7 @@ _$CheckInPackModelImpl _$$CheckInPackModelImplFromJson(
         Map<String, dynamic> json) =>
     _$CheckInPackModelImpl(
       hasherId: json['hasherId'] as String,
-      hemId: json['hemId'] as String,
+      hemId: json['hemId'] as String?,
       isMember: (json['isMember'] as num?)?.toInt() ?? 0,
       isHare: (json['isHare'] as num?)?.toInt() ?? 0,
       isPaid: (json['isPaid'] as num?)?.toInt() ?? 0,
@@ -35,8 +35,8 @@ _$CheckInPackModelImpl _$$CheckInPackModelImplFromJson(
       totalRunsThisKennel: (json['totalRunsThisKennel'] as num?)?.toInt() ?? 0,
       totalHaringThisKennel:
           (json['totalHaringThisKennel'] as num?)?.toInt() ?? 0,
-      hemUpdatedAt: json['hemUpdatedAt'] as String,
-      payUpdatedAt: json['payUpdatedAt'] as String,
+      hemUpdatedAt: json['hemUpdatedAt'] as String?,
+      payUpdatedAt: json['payUpdatedAt'] as String?,
       credit: (json['credit'] as num?)?.toDouble() ?? 0.0,
       isFollowing: (json['isFollowing'] as num?)?.toInt() ?? 0,
     );
