@@ -442,14 +442,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
     }
     for (int i = 0; i < _filteredList.length; i++) {
       _filteredList[i] = _filteredList[i].copyWith(
-        rsvpStateIndicator: Future<int>.value(_filteredList[i].rsvpState),
-        attendenceStateIndicator: Future<int>.value(_filteredList[i].attendenceState),
-        paidStateIndicator: Future<int>.value(isPaidNo.value
-            // _filteredList[i].paymentType == paymentTypeUnknown.value ? 0 :
-            // _filteredList[i].paymentType == paymentNotPaid.value ? 0 :
-            // _filteredList[i].paymentType == paymentTypeUnknown.value ? 0 :
-            ),
-      );
+          rsvpStateIndicator: Future<int>.value(_filteredList[i].rsvpState),
+          attendenceStateIndicator: Future<int>.value(_filteredList[i].attendenceState),
+          paidStateIndicator: Future<int>.value(_filteredList[i].attendenceState < attendenceAtHash.value
+              ? isPaidEmpty.value
+              : (_filteredList[i].paymentType == paymentNotPaid.value || _filteredList[i].paymentType == paymentTypeUnknown.value)
+                  ? isPaidNo.value
+                  : isPaidYes.value));
     }
     setState(() {});
   }
@@ -1102,12 +1101,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
       eventAggregate: widget.eventAggregate,
       packMember: _filteredList[index],
       amountOwed: amountOwed,
-      onRsvpCallback: (
-        CheckInPackModel packMember, {
-        int rsvpState = -1,
-        int attendenceState = -1,
-        int isHare = -1,
-      }) async {
+      onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) async {
         ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         if ((rsvpState != -1) && (attendenceState == -1)) {
           setState(() {
@@ -1117,9 +1111,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
           setState(() {});
         } else if (attendenceState != -1) {
           setState(() {
-            // NULLSAFETODO1
-            // packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
-            // packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+            _filteredList[index] = packMember.copyWith(
+              attendenceStateIndicator: Future<int>.value(attendenceUpdating.value),
+              paidStateIndicator: Future<int>.value(isPaidUpdating.value),
+            );
           });
           await _updateAttendenceState(packMember, rsvpState, attendenceState, isHare);
           setState(() {});
@@ -1178,9 +1173,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
             (paymentType == paymentCashOtherAmount.value) ||
             (paymentType == paymentHashCredit.value) ||
             (paymentType == paymentBankTransferOtherAmount.value)) &&
-        ((widget.eventAggregate.event.eventPriceForExtras) != 0)) {
+        ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
       final double runOnlyPrice = _filteredList[index].isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-      final double runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras!;
+      final double runPlusExtrasPrice = runOnlyPrice + (widget.eventAggregate.event.eventPriceForExtras!);
 
       final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
       final String runPlusExtrasPriceStr = IveCoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
@@ -1504,7 +1499,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                           backgroundColor: ((snapshot.data == null) || (snapshot.data! < 0)) ? Colors.grey[350] : Colors.white,
                           radius: 14.0,
                         ),
-                        ((snapshot.data ?? -1) == -1)
+                        ((snapshot.data ?? isPaidEmpty.value) == isPaidEmpty.value)
                             ? Container()
                             : snapshot.data == isPaidUpdating.value
                                 ? Icon(delayIcon, color: Colors.blue[800])

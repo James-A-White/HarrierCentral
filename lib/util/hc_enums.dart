@@ -194,6 +194,7 @@ class EnumIsPaid<int> extends HcEnum<int> {
   const EnumIsPaid(super.val);
 }
 
+const EnumIsPaid<int> isPaidEmpty = EnumIsPaid<int>(-3);
 const EnumIsPaid<int> isPaidUpdating = EnumIsPaid<int>(-2);
 const EnumIsPaid<int> isPaidNo = EnumIsPaid<int>(0);
 const EnumIsPaid<int> isPaidYes = EnumIsPaid<int>(1);
