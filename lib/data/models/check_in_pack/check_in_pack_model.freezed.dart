@@ -53,9 +53,6 @@ mixin _$CheckInPackModel {
       throw _privateConstructorUsedError;
   @JsonKey(includeFromJson: false, includeToJson: false)
   Future<int>? get paidStateIndicator => throw _privateConstructorUsedError;
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  SlidableController? get slidableController =>
-      throw _privateConstructorUsedError;
 
   /// Serializes this CheckInPackModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -105,9 +102,7 @@ abstract class $CheckInPackModelCopyWith<$Res> {
       @JsonKey(includeFromJson: false, includeToJson: false)
       Future<int>? attendenceStateIndicator,
       @JsonKey(includeFromJson: false, includeToJson: false)
-      Future<int>? paidStateIndicator,
-      @JsonKey(includeFromJson: false, includeToJson: false)
-      SlidableController? slidableController});
+      Future<int>? paidStateIndicator});
 }
 
 /// @nodoc
@@ -154,7 +149,6 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
     Object? rsvpStateIndicator = freezed,
     Object? attendenceStateIndicator = freezed,
     Object? paidStateIndicator = freezed,
-    Object? slidableController = freezed,
   }) {
     return _then(_value.copyWith(
       hasherId: null == hasherId
@@ -273,10 +267,6 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
           ? _value.paidStateIndicator
           : paidStateIndicator // ignore: cast_nullable_to_non_nullable
               as Future<int>?,
-      slidableController: freezed == slidableController
-          ? _value.slidableController
-          : slidableController // ignore: cast_nullable_to_non_nullable
-              as SlidableController?,
     ) as $Val);
   }
 }
@@ -321,9 +311,7 @@ abstract class _$$CheckInPackModelImplCopyWith<$Res>
       @JsonKey(includeFromJson: false, includeToJson: false)
       Future<int>? attendenceStateIndicator,
       @JsonKey(includeFromJson: false, includeToJson: false)
-      Future<int>? paidStateIndicator,
-      @JsonKey(includeFromJson: false, includeToJson: false)
-      SlidableController? slidableController});
+      Future<int>? paidStateIndicator});
 }
 
 /// @nodoc
@@ -368,7 +356,6 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
     Object? rsvpStateIndicator = freezed,
     Object? attendenceStateIndicator = freezed,
     Object? paidStateIndicator = freezed,
-    Object? slidableController = freezed,
   }) {
     return _then(_$CheckInPackModelImpl(
       hasherId: null == hasherId
@@ -487,10 +474,6 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
           ? _value.paidStateIndicator
           : paidStateIndicator // ignore: cast_nullable_to_non_nullable
               as Future<int>?,
-      slidableController: freezed == slidableController
-          ? _value.slidableController
-          : slidableController // ignore: cast_nullable_to_non_nullable
-              as SlidableController?,
     ));
   }
 }
@@ -530,9 +513,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
       @JsonKey(includeFromJson: false, includeToJson: false)
       this.attendenceStateIndicator,
       @JsonKey(includeFromJson: false, includeToJson: false)
-      this.paidStateIndicator,
-      @JsonKey(includeFromJson: false, includeToJson: false)
-      this.slidableController});
+      this.paidStateIndicator});
 
   factory _$CheckInPackModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$CheckInPackModelImplFromJson(json);
@@ -620,13 +601,10 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   final Future<int>? paidStateIndicator;
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  final SlidableController? slidableController;
 
   @override
   String toString() {
-    return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing, rsvpStateIndicator: $rsvpStateIndicator, attendenceStateIndicator: $attendenceStateIndicator, paidStateIndicator: $paidStateIndicator, slidableController: $slidableController)';
+    return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing, rsvpStateIndicator: $rsvpStateIndicator, attendenceStateIndicator: $attendenceStateIndicator, paidStateIndicator: $paidStateIndicator)';
   }
 
   @override
@@ -689,9 +667,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
                     other.attendenceStateIndicator, attendenceStateIndicator) ||
                 other.attendenceStateIndicator == attendenceStateIndicator) &&
             (identical(other.paidStateIndicator, paidStateIndicator) ||
-                other.paidStateIndicator == paidStateIndicator) &&
-            (identical(other.slidableController, slidableController) ||
-                other.slidableController == slidableController));
+                other.paidStateIndicator == paidStateIndicator));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -726,8 +702,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
         isFollowing,
         rsvpStateIndicator,
         attendenceStateIndicator,
-        paidStateIndicator,
-        slidableController
+        paidStateIndicator
       ]);
 
   /// Create a copy of CheckInPackModel
@@ -780,9 +755,7 @@ abstract class _CheckInPackModel implements CheckInPackModel {
       @JsonKey(includeFromJson: false, includeToJson: false)
       final Future<int>? attendenceStateIndicator,
       @JsonKey(includeFromJson: false, includeToJson: false)
-      final Future<int>? paidStateIndicator,
-      @JsonKey(includeFromJson: false, includeToJson: false)
-      final SlidableController? slidableController}) = _$CheckInPackModelImpl;
+      final Future<int>? paidStateIndicator}) = _$CheckInPackModelImpl;
 
   factory _CheckInPackModel.fromJson(Map<String, dynamic> json) =
       _$CheckInPackModelImpl.fromJson;
@@ -848,9 +821,6 @@ abstract class _CheckInPackModel implements CheckInPackModel {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   Future<int>? get paidStateIndicator;
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  SlidableController? get slidableController;
 
   /// Create a copy of CheckInPackModel
   /// with the given fields replaced by the non-null parameter values.

@@ -362,9 +362,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
               if (item.nameForDisplay.toLowerCase().startsWith('placeholder user')) {
                 continue;
               }
-              final item2 = item.copyWith(slidableController: SlidableController(this));
-
-              _packList.add(item2);
+              _packList.add(item);
             }
 
             setState(() {
@@ -1630,45 +1628,113 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
 
                 int xxx = 0;
 
-                SlidableController slidableController = _filteredList[index].slidableController!;
-
                 CheckInPackModel packMember = _filteredList[index];
 
                 return Slidable(
                   key: Key(index.toString()),
-                  controller: slidableController,
+                  // controller: slidableController,
 
                   // The start action pane is the one at the left or the top side.
                   startActionPane: ActionPane(
-                    // A motion is a widget used to control how the pane animates.
-                    motion: const ScrollMotion(),
-
+                    motion: const BehindMotion(),
                     // A pane can dismiss the Slidable.
-                    dismissible: DismissiblePane(onDismissed: () {}),
-
-                    // All actions are defined in the children parameter.
+                    dismissible: DismissiblePane(
+                      closeOnCancel: true,
+                      dismissThreshold: 0.65,
+                      dismissalDuration: const Duration(milliseconds: 800),
+                      resizeDuration: const Duration(milliseconds: 800),
+                      confirmDismiss: () async {
+                        if (packMember.isPaid != 1) {
+                          _payForEvent(
+                            context,
+                            _scaffoldKey.currentState!,
+                            paymentBankTransfer.value,
+                            index,
+                            -1,
+                          );
+                        }
+                        return false;
+                      },
+                      onDismissed: () {},
+                    ),
+                    dragDismissible: true,
                     children: [
-                      // A SlidableAction can have an icon and/or a label.
-                      SlidableAction(
+                      CustomSlidableAction(
+                        // An action can be bigger than the others.
+                        flex: 2,
                         onPressed: emptyFunction,
-                        backgroundColor: Color(0xFFFE4A49),
+                        backgroundColor: (packMember.isPaid == 1 ? Colors.grey : Colors.blue),
+
                         foregroundColor: Colors.white,
-                        icon: Icons.delete,
-                        label: 'Delete',
-                      ),
-                      SlidableAction(
-                        onPressed: emptyFunction,
-                        backgroundColor: Color(0xFF21B7CA),
-                        foregroundColor: Colors.white,
-                        icon: Icons.share,
-                        label: 'Share',
+                        child: packMember.isPaid == 1
+                            ? Container(
+                                color: Colors.grey,
+                                width: G0<DeviceInfo>().deviceWidth,
+                                child: const Column(
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 5.0),
+                                      child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 5.0),
+                                      child: Text(
+                                        'Already\r\npaid',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Container(
+                                color: Colors.blue,
+                                width: G0<DeviceInfo>().deviceWidth,
+                                child: Column(
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Image.asset('images/icons/payment_type_4.png', height: 27.0, width: 27.0, color: Colors.white),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10.0),
+                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                                    ),
+                                  ],
+                                ),
+                              ),
                       ),
                     ],
                   ),
 
                   // The end action pane is the one at the right or the bottom side.
                   endActionPane: ActionPane(
-                    motion: const ScrollMotion(),
+                    motion: const BehindMotion(),
+                    // A pane can dismiss the Slidable.
+                    dismissible: DismissiblePane(
+                      closeOnCancel: true,
+                      dismissThreshold: 0.65,
+                      dismissalDuration: const Duration(milliseconds: 800),
+                      resizeDuration: const Duration(milliseconds: 800),
+                      confirmDismiss: () async {
+                        if (packMember.isPaid != 1) {
+                          _payForEvent(
+                            context,
+                            _scaffoldKey.currentState!,
+                            paymentCash.value,
+                            index,
+                            -1,
+                          );
+                        } else {
+                          _updateAttendenceState(packMember, -1, attendenceOnIn.value, -1);
+                        }
+                        return false;
+                      },
+                      onDismissed: () {},
+                    ),
+                    dragDismissible: true,
                     children: [
                       CustomSlidableAction(
                         // An action can be bigger than the others.
