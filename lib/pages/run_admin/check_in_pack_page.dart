@@ -76,7 +76,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
 
   @override
   void initState() {
-    _slidableController = SlidableController(this);
     _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
     _buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
       ..addListener(() {
@@ -363,7 +362,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
               if (item.nameForDisplay.toLowerCase().startsWith('placeholder user')) {
                 continue;
               }
-              _packList.add(item);
+              final item2 = item.copyWith(slidableController: SlidableController(this));
+
+              _packList.add(item2);
             }
 
             setState(() {
@@ -953,8 +954,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
       }
     });
   }
-
-  late final SlidableController _slidableController;
 
   @override
   Widget build(BuildContext context) {
@@ -1627,18 +1626,130 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                 amountOwed -= _filteredList[index].discountAmount;
                 amountOwed -= amountOwed * (_filteredList[index].discountPercent / 100.0);
 
-                //final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+                final String amountOwedStr = IveCoreUtilities.getFormattedMoney(amountOwed, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
-                final Key key = Key(index.toString());
+                int xxx = 0;
 
-                //return Slidable(
-                //   key:key,
-                //   child:
-                // );
+                SlidableController slidableController = _filteredList[index].slidableController!;
+
+                CheckInPackModel packMember = _filteredList[index];
 
                 return Slidable(
-                  key: key,
-                  controller: _slidableController,
+                  key: Key(index.toString()),
+                  controller: slidableController,
+
+                  // The start action pane is the one at the left or the top side.
+                  startActionPane: ActionPane(
+                    // A motion is a widget used to control how the pane animates.
+                    motion: const ScrollMotion(),
+
+                    // A pane can dismiss the Slidable.
+                    dismissible: DismissiblePane(onDismissed: () {}),
+
+                    // All actions are defined in the children parameter.
+                    children: [
+                      // A SlidableAction can have an icon and/or a label.
+                      SlidableAction(
+                        onPressed: emptyFunction,
+                        backgroundColor: Color(0xFFFE4A49),
+                        foregroundColor: Colors.white,
+                        icon: Icons.delete,
+                        label: 'Delete',
+                      ),
+                      SlidableAction(
+                        onPressed: emptyFunction,
+                        backgroundColor: Color(0xFF21B7CA),
+                        foregroundColor: Colors.white,
+                        icon: Icons.share,
+                        label: 'Share',
+                      ),
+                    ],
+                  ),
+
+                  // The end action pane is the one at the right or the bottom side.
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    children: [
+                      CustomSlidableAction(
+                        // An action can be bigger than the others.
+                        flex: 2,
+                        onPressed: emptyFunction,
+                        backgroundColor: (packMember.isPaid == 1
+                                ? packMember.attendenceState >= attendenceOnIn.value
+                                    ? Colors.grey
+                                    : Colors.amber[800]
+                                : Colors.green) ??
+                            Colors.white,
+
+                        foregroundColor: Colors.white,
+                        child: packMember.isPaid == 1
+                            ? packMember.attendenceState >= attendenceOnIn.value
+                                ? Container(
+                                    width: G0<DeviceInfo>().deviceWidth,
+                                    color: Colors.grey,
+                                    child: const Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: EdgeInsets.only(top: 5.0),
+                                          child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(top: 5.0),
+                                          child: Text(
+                                            'Already\r\nOn-In',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Container(
+                                    color: Colors.amber[800],
+                                    width: G0<DeviceInfo>().deviceWidth,
+                                    child: const Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: EdgeInsets.only(top: 2.0),
+                                          child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(top: 5.0),
+                                          child: Text(
+                                            'Record as\r\nOn-In',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                            : Container(
+                                width: G0<DeviceInfo>().deviceWidth,
+                                color: Colors.green,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 5.0, top: 8.0),
+                                      child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 5.0),
+                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+
                   child: Container(
                     color: Colors.white,
                     child: _listItem(context, index),
@@ -1825,6 +1936,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
       ),
     );
   }
+
+  void emptyFunction(BuildContext context) {}
 
   String _capitalizeFirstLetter(String s) => s.isNotEmpty ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
 

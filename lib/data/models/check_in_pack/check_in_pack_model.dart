@@ -1,3 +1,4 @@
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:harrier_central/imports.dart';
 
 part 'check_in_pack_model.freezed.dart';
@@ -35,6 +36,7 @@ class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? rsvpStateIndicator,
     @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? attendenceStateIndicator,
     @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? paidStateIndicator,
+    @JsonKey(includeFromJson: false, includeToJson: false) SlidableController? slidableController,
   }) = _CheckInPackModel;
 
   factory CheckInPackModel.fromJson(Map<String, dynamic> json) => _$CheckInPackModelFromJson(json);
