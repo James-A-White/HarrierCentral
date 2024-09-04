@@ -69,35 +69,50 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   Future<void> _refreshListsFromTable() async {
     final String sql = '''
-
-          SELECT
-          -- Payment table
-          pay.*,
-          -- Extensions
-          hem.hemId as pkHemId,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>')) as paidByName,
-          COALESCE(paidTo.dispName,'<hasher not found>') as paidToName,
-          CASE WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},0) as discountAmountAvailable,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},0) as discountPercentAvailable,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},'') as discountAvailableDescription,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as isFollowing,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) as creditAvailable,
-          coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
-          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
-          COALESCE(confBy.dispName,'') as confByName,
-          COALESCE(e.${G0<TableModel>().eventsTableHelper.colExtrasDescription},'<unknown>') as extrasDescription,
-          COALESCE(e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras},0) as extrasPrice
-          FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-          INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e on e.eventId = hem.eventId
-          INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
-          LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hem.userId
-          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
-          LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} paidTo on paidTo.hasherId = pay.paidTo
-          LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} confBy on confBy.hasherId = pay.confirmedBy
-          WHERE hem.attendenceState >= 20
-          ''';
+SELECT
+    -- Payment table
+    pay.*,
+    -- Extensions
+    hem.hemId AS pkHemId,
+    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},
+             COALESCE(
+                CASE
+                    WHEN hem.displayName IS NULL THEN NULL
+                    ELSE hem.displayName || CASE
+                        WHEN hem.virginVisitorType = 1 THEN ' (Virgin)'
+                        ELSE ' (Visitor)'
+                    END
+                END, 
+                h.dispName,
+                '<hasher not found>'
+             )
+    ) AS paidByName,
+    COALESCE(paidTo.dispName, '<hasher not found>') AS paidToName,
+    CASE
+        WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now', 'localtime'))) THEN 1
+        ELSE 0
+    END AS isMember,
+    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmountAvailable,
+    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercentAvailable,
+    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription}, '') AS discountAvailableDescription,
+    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing}, 0) AS isFollowing,
+    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit}, 0) AS creditAvailable,
+    COALESCE(e.eventPriceForMembers, k.defaultPriceForMembers, 0) AS eventPriceForMembers,
+    COALESCE(e.eventPriceForNonMembers, k.defaultPriceForNonMembers, 0) AS eventPriceForNonMembers,
+    COALESCE(confBy.dispName, '') AS confByName,
+    COALESCE(e.${G0<TableModel>().eventsTableHelper.colExtrasDescription}, '<unknown>') AS extrasDescription,
+    COALESCE(e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras}, 0) AS extrasPrice
+    FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+    INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e ON e.eventId = hem.eventId
+    INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k ON k.kennelId = e.kennelId
+    LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+    LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hem.userId
+    LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.CancelledBy IS NULL
+    LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} paidTo ON paidTo.hasherId = pay.paidTo
+    LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} confBy ON confBy.hasherId = pay.confirmedBy
+    WHERE hem.attendenceState >= 20
+    AND pay.${G0<TableModel>().paymentsTableHelper.colId} IS NOT NULL
+    ''';
 
     final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
 
@@ -327,7 +342,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: _paymentTotals[paymentCash.value]['totalCollected'],
+                              creditAmount: _paymentTotals[paymentCash.value]['totalCollected']?.toDouble() ?? 0.0,
                               counter: _paymentTotals[paymentCash.value]['count'],
                               color: (_filterValue & 2) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCash,
@@ -338,7 +353,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: _paymentTotals[paymentBankTransfer.value]['totalCollected'],
+                              creditAmount: _paymentTotals[paymentBankTransfer.value]['totalCollected']?.toDouble() ?? 0.0,
                               counter: _paymentTotals[paymentBankTransfer.value]['count'],
                               color: (_filterValue & 16) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransfer,
@@ -349,7 +364,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: _paymentTotals[paymentFreeRun.value]['totalCollected'],
+                              creditAmount: _paymentTotals[paymentFreeRun.value]['totalCollected']?.toDouble() ?? 0.0,
                               counter: _paymentTotals[paymentFreeRun.value]['count'],
                               color: (_filterValue & 8) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentFreeRun,
@@ -360,7 +375,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: -((_paymentTotals[paymentHashCredit.value]['totalDebited']) ?? 0),
+                              creditAmount: -((_paymentTotals[paymentHashCredit.value]['totalDebited']?.toDouble()) ?? 0.0),
                               counter: _paymentTotals[paymentHashCredit.value]['count'],
                               color: (_filterValue & 64) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentHashCredit,
@@ -371,7 +386,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: _paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
+                              creditAmount: _paymentTotals[paymentCashOtherAmount.value]['totalCollected']?.toDouble() ?? 0.0,
                               counter: _paymentTotals[paymentCashOtherAmount.value]['count'],
                               color: (_filterValue & 4) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCashOtherAmount,
@@ -382,7 +397,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: _paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
+                              creditAmount: _paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected']?.toDouble() ?? 0.0,
                               counter: _paymentTotals[paymentBankTransferOtherAmount.value]['count'],
                               color: (_filterValue & 32) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransferOtherAmount,
@@ -393,7 +408,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: -((_paymentTotals[paymentHashCreditOtherAmount.value]['totalDebited']) ?? 0),
+                              creditAmount: -((_paymentTotals[paymentHashCreditOtherAmount.value]['totalDebited']?.toDouble()) ?? 0.0),
                               counter: _paymentTotals[paymentHashCreditOtherAmount.value]['count'],
                               color: (_filterValue & 128) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentHashCreditOtherAmount,

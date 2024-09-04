@@ -20,7 +20,9 @@ class PaymentReportListItem extends StatelessWidget {
         paymentReportItem.extensions.isHashCredit ? -(paymentReportItem.payment.debitAmount) : paymentReportItem.payment.creditAmount, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
-      onTap: onTap(),
+      onTap: () {
+        onTap();
+      },
       child: Row(
         //mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -114,7 +116,9 @@ class PaymentTotalsCell extends StatelessWidget {
           ),
           IconButton(
             padding: const EdgeInsets.all(0),
-            onPressed: onTap(),
+            onPressed: () {
+              onTap();
+            },
             icon: Image.asset('images/icons/payment_type_${paymentRecordType.value}.png', height: 35.0, width: 35.0, color: color),
           ),
           Padding(

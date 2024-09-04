@@ -866,7 +866,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         'title': 'Visitors',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          const Positioned(bottom: 2, child: Icon(MaterialCommunityIcons.alpha_v_circle, size: 30, color: Colors.purple))
+          const Positioned(bottom: 0, child: Icon(MaterialCommunityIcons.alpha_v_circle, size: 31, color: Colors.purple))
         ],
         'returnValue': FilterOptions.visitors
       },
@@ -874,15 +874,17 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         'title': 'Virgins',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          Positioned(bottom: 2, child: Icon(MaterialCommunityIcons.alpha_v_circle, size: 30, color: Colors.pink[300]))
+          Positioned(bottom: 0, child: Icon(MaterialCommunityIcons.alpha_v_circle, size: 31, color: Colors.pink[300]))
         ],
         'returnValue': FilterOptions.virgins
       },
       <String, dynamic>{
         'title': 'Clear all filters',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          const Positioned(bottom: 2, child: Icon(Ionicons.md_remove_circle, size: 30, color: Colors.teal))
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red),
+
+          // Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          // const Positioned(bottom: 0, child: Icon(Ionicons.md_remove_circle, size: 30, color: Colors.teal))
         ],
         'returnValue': FilterOptions.clearAllFilters
       },
