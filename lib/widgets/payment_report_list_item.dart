@@ -17,7 +17,7 @@ class PaymentReportListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String amountPaid = IveCoreUtilities.getFormattedMoney(
-        paymentReportItem.extensions.isHashCredit ? -(paymentReportItem.payment.debitAmount) : paymentReportItem.payment.creditAmount, digitsAfterDecimal, currencySymbol);
+        paymentReportItem.extensions.isHashCredit ? -(paymentReportItem.payment?.debitAmount ?? 0) : paymentReportItem.payment?.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
       onTap: () {
@@ -39,6 +39,11 @@ class PaymentReportListItem extends StatelessWidget {
                     //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
                     style: TextStyle(
                         fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
+                        color: ((((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransfer.value) ||
+                                    ((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransferOtherAmount.value)) &&
+                                (paymentReportItem.payment?.confirmedBy == null))
+                            ? Colors.red
+                            : Colors.black,
                         fontStyle: FontStyle.normal,
                         fontSize: 22.0,
                         height: 1.0),
@@ -49,8 +54,9 @@ class PaymentReportListItem extends StatelessWidget {
                 Text(
                   amountPaid,
                   style: TextStyle(
-                      color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) || (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) &&
-                              (paymentReportItem.payment.confirmedBy == null))
+                      color: ((((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransfer.value) ||
+                                  ((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransferOtherAmount.value)) &&
+                              (paymentReportItem.payment?.confirmedBy == null))
                           ? Colors.red
                           : Colors.black,
                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -64,8 +70,8 @@ class PaymentReportListItem extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 5.0),
                   child: paymentReportItem.isLoading
                       ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
-                      : Image.asset('images/icons/payment_type_${paymentReportItem.payment.paymentType}.png',
-                          height: 30.0, width: 30.0, color: (paymentReportItem.payment.paymentType) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
+                      : Image.asset('images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
+                          height: 30.0, width: 30.0, color: (paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
                 ),
                 const SizedBox(width: 10),
               ],
