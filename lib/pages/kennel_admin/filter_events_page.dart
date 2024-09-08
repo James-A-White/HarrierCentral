@@ -420,8 +420,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: ts_titleMediumCondensedBlack,
-                    unselectedLabelStyle: ts_titleMediumCondensedBlack,
+                    labelStyle: ts_tabSelected,
+                    unselectedLabelStyle: ts_tabUnselected,
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,

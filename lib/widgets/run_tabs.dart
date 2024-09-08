@@ -571,8 +571,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           onTap: (void _) {
                                             setState(() {});
                                           },
-                                          labelStyle: ts_condensedMediumBlack,
-                                          unselectedLabelStyle: ts_condensedMediumBlack,
+                                          labelStyle: ts_tabSelected,
+                                          unselectedLabelStyle: ts_tabUnselected,
                                           isScrollable: false,
                                           unselectedLabelColor: Colors.white,
                                           labelColor: Colors.white,
@@ -1058,6 +1058,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             PreferredSize(
               preferredSize: const Size.fromHeight(120.0),
@@ -1068,30 +1069,28 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   color: Theme.of(context).primaryColorLight,
                   borderRadius: const BorderRadius.all(Radius.circular(0.0)),
                 ),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-                    child: TextScaleFactorClamper(
-                      textScaleFactor: G0<DeviceInfo>().textClamp15,
-                      child: TabBar(
-                        labelStyle: ts_condensedBoldBlack,
-                        unselectedLabelStyle: ts_condensedMediumBlack,
-                        isScrollable: true,
-                        labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
-                        unselectedLabelColor: Colors.black,
-                        labelColor: Colors.white,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicator: BubbleTabIndicator(
-                          indicatorHeight: 30.0,
-                          indicatorColor: Colors.red.shade900,
-                          tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                          indicatorRadius: 20.0,
-                          // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
-                          // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
-                        ),
-                        tabs: _tabs,
-                        controller: _tabController,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                  child: TextScaleFactorClamper(
+                    textScaleFactor: G0<DeviceInfo>().textClamp15,
+                    child: TabBar(
+                      labelStyle: ts_tabSelected,
+                      unselectedLabelStyle: ts_tabUnselected,
+                      isScrollable: false,
+                      labelPadding: const EdgeInsets.only(top: 5, left: 0, right: 0),
+                      unselectedLabelColor: Colors.black,
+                      labelColor: Colors.white,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BubbleTabIndicator(
+                        indicatorHeight: 30.0,
+                        indicatorColor: Colors.red.shade900,
+                        tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                        indicatorRadius: 10.0,
+                        // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+                        // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
                       ),
+                      tabs: _tabs,
+                      controller: _tabController,
                     ),
                   ),
                 ),

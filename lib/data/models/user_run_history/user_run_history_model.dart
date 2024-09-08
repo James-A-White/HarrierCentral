@@ -11,7 +11,7 @@ class UserRunHistoryModel with _$UserRunHistoryModel implements BaseModel {
     required int eventNumber,
     required DateTime eventStartDatetime,
     @Default(0) int canEditRunAttendence,
-    required String hemId,
+    String? hemId,
     @Default(0) int attendenceState,
     @Default(0) int isHare,
     double? creditAmount,

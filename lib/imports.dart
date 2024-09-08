@@ -72,7 +72,6 @@ export 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart
 export 'package:harrier_central/data/models/approve_login/approve_login_model.dart';
 export 'package:harrier_central/data/models/are_we_at_run/are_we_at_run_model.dart';
 export 'package:harrier_central/data/models/check_in_pack/check_in_pack_model.dart';
-export 'package:harrier_central/data/models/leaderboard/leaderboard_model.dart';
 export 'package:harrier_central/data/models/lite_event/lite_event_model.dart';
 export 'package:harrier_central/data/models/payment_query_extensions/payment_query_extensions_model.dart';
 export 'package:harrier_central/data/models/db_error/db_error_model.dart';

@@ -25,7 +25,7 @@ mixin _$UserRunHistoryModel {
   int get eventNumber => throw _privateConstructorUsedError;
   DateTime get eventStartDatetime => throw _privateConstructorUsedError;
   int get canEditRunAttendence => throw _privateConstructorUsedError;
-  String get hemId => throw _privateConstructorUsedError;
+  String? get hemId => throw _privateConstructorUsedError;
   int get attendenceState => throw _privateConstructorUsedError;
   int get isHare => throw _privateConstructorUsedError;
   double? get creditAmount => throw _privateConstructorUsedError;
@@ -60,7 +60,7 @@ abstract class $UserRunHistoryModelCopyWith<$Res> {
       int eventNumber,
       DateTime eventStartDatetime,
       int canEditRunAttendence,
-      String hemId,
+      String? hemId,
       int attendenceState,
       int isHare,
       double? creditAmount,
@@ -94,7 +94,7 @@ class _$UserRunHistoryModelCopyWithImpl<$Res, $Val extends UserRunHistoryModel>
     Object? eventNumber = null,
     Object? eventStartDatetime = null,
     Object? canEditRunAttendence = null,
-    Object? hemId = null,
+    Object? hemId = freezed,
     Object? attendenceState = null,
     Object? isHare = null,
     Object? creditAmount = freezed,
@@ -128,10 +128,10 @@ class _$UserRunHistoryModelCopyWithImpl<$Res, $Val extends UserRunHistoryModel>
           ? _value.canEditRunAttendence
           : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
               as int,
-      hemId: null == hemId
+      hemId: freezed == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       attendenceState: null == attendenceState
           ? _value.attendenceState
           : attendenceState // ignore: cast_nullable_to_non_nullable
@@ -194,7 +194,7 @@ abstract class _$$UserRunHistoryModelImplCopyWith<$Res>
       int eventNumber,
       DateTime eventStartDatetime,
       int canEditRunAttendence,
-      String hemId,
+      String? hemId,
       int attendenceState,
       int isHare,
       double? creditAmount,
@@ -226,7 +226,7 @@ class __$$UserRunHistoryModelImplCopyWithImpl<$Res>
     Object? eventNumber = null,
     Object? eventStartDatetime = null,
     Object? canEditRunAttendence = null,
-    Object? hemId = null,
+    Object? hemId = freezed,
     Object? attendenceState = null,
     Object? isHare = null,
     Object? creditAmount = freezed,
@@ -260,10 +260,10 @@ class __$$UserRunHistoryModelImplCopyWithImpl<$Res>
           ? _value.canEditRunAttendence
           : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
               as int,
-      hemId: null == hemId
+      hemId: freezed == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       attendenceState: null == attendenceState
           ? _value.attendenceState
           : attendenceState // ignore: cast_nullable_to_non_nullable
@@ -321,7 +321,7 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
       required this.eventNumber,
       required this.eventStartDatetime,
       this.canEditRunAttendence = 0,
-      required this.hemId,
+      this.hemId,
       this.attendenceState = 0,
       this.isHare = 0,
       this.creditAmount,
@@ -349,7 +349,7 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
   @JsonKey()
   final int canEditRunAttendence;
   @override
-  final String hemId;
+  final String? hemId;
   @override
   @JsonKey()
   final int attendenceState;
@@ -464,7 +464,7 @@ abstract class _UserRunHistoryModel implements UserRunHistoryModel {
       required final int eventNumber,
       required final DateTime eventStartDatetime,
       final int canEditRunAttendence,
-      required final String hemId,
+      final String? hemId,
       final int attendenceState,
       final int isHare,
       final double? creditAmount,
@@ -491,7 +491,7 @@ abstract class _UserRunHistoryModel implements UserRunHistoryModel {
   @override
   int get canEditRunAttendence;
   @override
-  String get hemId;
+  String? get hemId;
   @override
   int get attendenceState;
   @override

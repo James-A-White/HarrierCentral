@@ -138,6 +138,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
+              iconTheme: const IconThemeData(
+                color: Colors.white,
+                size: 28.0,
+              ),
               title: Text('My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}', style: ts_appBarTitle),
             ),
             floatingActionButton: SpeedDial(

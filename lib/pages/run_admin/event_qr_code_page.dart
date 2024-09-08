@@ -86,8 +86,8 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: ts_condensedMediumBlack,
-                    unselectedLabelStyle: ts_condensedMediumBlack,
+                    labelStyle: ts_tabSelected,
+                    unselectedLabelStyle: ts_tabUnselected,
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,

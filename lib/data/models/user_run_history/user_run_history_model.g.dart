@@ -15,7 +15,7 @@ _$UserRunHistoryModelImpl _$$UserRunHistoryModelImplFromJson(
       eventStartDatetime: DateTime.parse(json['eventStartDatetime'] as String),
       canEditRunAttendence:
           (json['canEditRunAttendence'] as num?)?.toInt() ?? 0,
-      hemId: json['hemId'] as String,
+      hemId: json['hemId'] as String?,
       attendenceState: (json['attendenceState'] as num?)?.toInt() ?? 0,
       isHare: (json['isHare'] as num?)?.toInt() ?? 0,
       creditAmount: (json['creditAmount'] as num?)?.toDouble(),

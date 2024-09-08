@@ -152,7 +152,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                           color: Colors.black,
                         ),
                         hintText: 'Search...',
-                        hintStyle: ts_footnoteBlack,
+                        hintStyle: ts_searchLabel,
                       ),
                     ),
                   ),

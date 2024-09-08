@@ -110,7 +110,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                           color: Colors.black,
                         ),
                         hintText: 'Search...',
-                        hintStyle: ts_titleMediumBlack,
+                        hintStyle: ts_searchLabel,
                       ),
                     ),
                   ),

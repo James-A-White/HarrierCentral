@@ -72,34 +72,6 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       await setIntPref(IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
       await setStringPref(StringPrefsEnum.email, loginResult.email);
       await setStringPref(StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
-
-      if (((loginResult.thirdPartyForceTokenRefresh?.year ?? 2000) != 2000) && (loginResult.thirdPartyForceTokenRefresh.toString() != getStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh))) {
-        if (DateTime.now().difference(loginResult.thirdPartyForceTokenRefresh!).inDays > 2) {
-          final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
-          final Duration timeSinceFbCancellaction = DateTime.now().difference(fbLoginCancelled);
-
-          if (timeSinceFbCancellaction.inDays > 1) {
-            await Utilities.showAlert(
-                'Facebook Login Required',
-                'Our system indicates that you are an admin of a Facebook Group that uses Facebook integration.\r\n\r\nIt appears as though the Facebook Authorization Token we have in our system for your group has expired.\r\n\r\nTo refresh the token, Harrier Central will now ask you to log in to Facebook. Once you log in, your token will be refreshed and Facebook integration will continue to work for your Kennel.\r\n\r\nIf you have questions, please contact us at connect@harriercentral.com.',
-                'OK');
-
-            // await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime(2020));
-            // await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
-            //facebookAccessToken = await _checkFacebookLogin();
-            // if (facebookAccessToken != null) {
-            //   await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, loginResult.thirdPartyForceTokenRefresh.toString());
-
-            //   final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, facebookAccessToken);
-            //   if (!responseBody.startsWith(ERROR_PREFIX)) {
-            //     loginResult = ApproveLoginModel.fromJson(json.decode(responseBody));
-            //   }
-            // } else {
-            //   await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
-            // }
-          }
-        }
-      }
     }
 
     if ((loginResult == null) && (((userId ?? '').isEmpty) || (userId == GUID_EMPTY))) {

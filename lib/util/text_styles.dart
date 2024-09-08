@@ -78,6 +78,22 @@ TextStyle ts_condensedLargeBlack = const TextStyle(
   height: 1.0,
 );
 
+TextStyle ts_condensedBlack = const TextStyle(
+  fontFamily: 'AvenirNextCondensedMedium',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 20.0,
+  height: 1.0,
+);
+
+TextStyle ts_condensedBoldBlack = const TextStyle(
+  fontFamily: 'AvenirNextCondensedBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 20.0,
+  height: 1.0,
+);
+
 TextStyle ts_condensedMediumBlack = const TextStyle(
   fontFamily: 'AvenirNextCondensedMedium',
   fontStyle: FontStyle.normal,
@@ -86,7 +102,7 @@ TextStyle ts_condensedMediumBlack = const TextStyle(
   height: 1.0,
 );
 
-TextStyle ts_condensedBoldBlack = const TextStyle(
+TextStyle ts_condensedMediumBoldBlack = const TextStyle(
   fontFamily: 'AvenirNextCondensedBold',
   fontStyle: FontStyle.normal,
   color: Colors.black,
@@ -170,6 +186,14 @@ TextStyle ts_smallBlack = const TextStyle(
 // 1 file
 TextStyle ts_smallTextBlackBold = const TextStyle(
   fontFamily: 'AvenirNextBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 14.0,
+  height: 1.0,
+);
+
+TextStyle ts_smallTextBlackDemiBold = const TextStyle(
+  fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.normal,
   color: Colors.black,
   fontSize: 14.0,
@@ -418,6 +442,14 @@ TextStyle ts_heading = const TextStyle(
   height: 1.2,
 );
 
+TextStyle ts_headingBlack = const TextStyle(
+  fontFamily: 'AvenirNextRegular',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 20.0,
+  height: 1.0,
+);
+
 // 5 files
 TextStyle ts_headingVeryLarge = const TextStyle(
   fontFamily: 'AvenirNextRegular',
@@ -535,14 +567,6 @@ TextStyle ts_listValueStyle = const TextStyle(
   height: detailLineSpaceForBold,
 );
 
-TextStyle ts_headingBlack = const TextStyle(
-  fontFamily: 'AvenirNextRegular',
-  fontStyle: FontStyle.normal,
-  color: Colors.black,
-  fontSize: 20.0,
-  height: 1.0,
-);
-
 TextStyle ts_tileText = const TextStyle(
   color: Colors.black,
   fontFamily: 'AvenirNextCondensedDemiBold',
@@ -556,5 +580,29 @@ TextStyle ts_appBarTitle = const TextStyle(
   fontStyle: FontStyle.normal,
   color: Colors.white,
   fontSize: 24.0,
+  height: 1.0,
+);
+
+TextStyle ts_searchLabel = const TextStyle(
+  fontFamily: 'AvenirNextDemiBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.black54,
+  fontSize: 20.0,
+  height: 1.0,
+);
+
+TextStyle ts_tabSelected = const TextStyle(
+  fontFamily: 'AvenirNextCondensedBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 18.0,
+  height: 1.0,
+);
+
+TextStyle ts_tabUnselected = const TextStyle(
+  fontFamily: 'AvenirNextCondensedMedium',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 18.0,
   height: 1.0,
 );

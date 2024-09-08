@@ -168,7 +168,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                   color: Colors.black,
                 ),
                 hintText: 'Search...',
-                hintStyle: ts_titleMediumBlack,
+                hintStyle: ts_searchLabel,
               ),
             ),
           ),
