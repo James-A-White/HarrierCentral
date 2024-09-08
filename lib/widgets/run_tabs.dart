@@ -262,8 +262,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  TextStyle rsvpTitlesView =
-      TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1);
+  TextStyle rsvpTitlesView = ts_tileText.copyWith(
+    fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+  );
 
   EnumRsvpState<int> _rsvpRequested = rsvpUnknown;
 
@@ -278,7 +279,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           child: Center(
               child: Text(
             'RSVPs require a connection to the Internet',
-            style: headingStyle,
+            style: ts_headingLarge,
             textAlign: TextAlign.center,
           )),
         ),
@@ -546,7 +547,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       const Expanded(flex: 40, child: SizedBox()),
                                       Text(
                                         'Be the first to RSVP\r\nfor this run!',
-                                        style: largeTitleStyle,
+                                        style: ts_headingVeryLarge,
                                         textAlign: TextAlign.center,
                                       ),
                                       if (_thisUserIndex == -1) ..._getRsvpButtons(),
@@ -570,8 +571,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           onTap: (void _) {
                                             setState(() {});
                                           },
-                                          labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                          unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                          labelStyle: ts_condensedMediumBlack,
+                                          unselectedLabelStyle: ts_condensedMediumBlack,
                                           isScrollable: false,
                                           unselectedLabelColor: Colors.white,
                                           labelColor: Colors.white,
@@ -629,14 +630,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                               Expanded(
                                                                   child: Container(
                                                                 padding: const EdgeInsets.only(top: 7.0),
-                                                                child: Text(e.hem.hemKennelHashName ?? e.displayName,
-                                                                    style: const TextStyle(
-                                                                      fontFamily: 'AvenirNextCondensedMedium',
-                                                                      fontStyle: FontStyle.normal,
-                                                                      fontSize: 25.0,
-                                                                      height: 1.0,
-                                                                      color: Colors.white,
-                                                                    )),
+                                                                child: Text(
+                                                                  e.hem.hemKennelHashName ?? e.displayName,
+                                                                  style: ts_condensedLarge,
+                                                                ),
                                                               )),
                                                             ],
                                                           ),
@@ -834,7 +831,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         child: Center(
             child: Text(
           'Maps require a connection to the Internet',
-          style: headingStyle,
+          style: ts_headingLarge,
           textAlign: TextAlign.center,
         )),
       ),
@@ -923,7 +920,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   child: Text(
                     'No location provided',
                     textAlign: TextAlign.center,
-                    style: largeTitleStyle,
+                    style: ts_headingVeryLarge,
                   ),
                 ),
               ]
@@ -963,7 +960,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             const SizedBox(width: 15.0),
             Text(
               text,
-              style: textStyleButton,
+              style: ts_button,
             ),
           ],
         ),
@@ -1077,8 +1074,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     child: TextScaleFactorClamper(
                       textScaleFactor: G0<DeviceInfo>().textClamp15,
                       child: TabBar(
-                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                        labelStyle: ts_condensedBoldBlack,
+                        unselectedLabelStyle: ts_condensedMediumBlack,
                         isScrollable: true,
                         labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                         unselectedLabelColor: Colors.black,
@@ -1115,7 +1112,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     child: Center(
                         child: Text(
                       '"Get a life" leaderboards require a connection to the Internet',
-                      style: headingStyle,
+                      style: ts_headingLarge,
                       textAlign: TextAlign.center,
                     )),
                   ),

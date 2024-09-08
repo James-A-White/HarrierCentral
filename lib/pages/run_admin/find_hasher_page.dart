@@ -88,12 +88,11 @@ class FindHasherPageState extends State<FindHasherPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Find Hasher',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('Find Hasher', style: ts_appBarTitle),
       ),
       body: Column(
         children: <Widget>[
@@ -145,15 +144,15 @@ class FindHasherPageState extends State<FindHasherPage> {
               focusNode: searchFocusNode,
               controller: searchController,
               keyboardType: TextInputType.text,
-              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-              decoration: const InputDecoration(
+              style: ts_titleMediumBlack,
+              decoration: InputDecoration(
                 border: InputBorder.none,
-                icon: Icon(
+                icon: const Icon(
                   FontAwesome.search,
                   color: Colors.black,
                 ),
                 hintText: 'Hash or mortal name',
-                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                hintStyle: ts_titleMediumBlack,
               ),
             ),
           ),
@@ -162,7 +161,7 @@ class FindHasherPageState extends State<FindHasherPage> {
             child: TextButton(
               //color: Colors.red,
               style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-              child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
+              child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
 
               onPressed: () {
                 // searchController.text = '';
@@ -211,7 +210,7 @@ class HasherListView extends StatelessWidget {
                   Text(
                     'Do you want to add ${newHasher.dispName} to your run?',
                     textAlign: TextAlign.justify,
-                    style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                    style: ts_regularMediumBlack,
                   )
                 ],
               ),
@@ -308,9 +307,9 @@ class HasherListView extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                Text('No Image', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey)),
+                                Text('No Image', style: ts_mediumRed.copyWith(fontSize: 13, color: Colors.grey)),
                                 const Icon(Icons.error, color: Colors.grey),
-                                Text('Available', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey))
+                                Text('Available', style: ts_mediumRed.copyWith(fontSize: 13, color: Colors.grey))
                               ],
                             ));
                       },
@@ -337,7 +336,7 @@ class HasherListView extends StatelessWidget {
             Positioned(
               left: 77.0,
               top: 19.0,
-              child: Text(hasherList[index].dispName, style: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
+              child: Text(hasherList[index].dispName, style: ts_condensedLargeBlack),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
@@ -399,10 +398,10 @@ class HasherListView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text('Can\'t find a Hasher?', style: smallContentStyleDb),
+                    Text('Can\'t find a Hasher?', style: ts_contentStyle),
                     AutoSizeText(
                       'Click here to add \'${capitalizeFirstLetter(searchController.text)}\'',
-                      style: smallContentStyle,
+                      style: ts_contentStyle,
                       maxLines: 1,
                     ),
                   ],
@@ -484,7 +483,7 @@ class HasherListView extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 15.0),
-                            child: Text(leftToRightTitle, style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                            child: Text(leftToRightTitle, style: ts_titleMedium),
                           ),
                         ],
                       ),
@@ -501,7 +500,7 @@ class HasherListView extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(right: 15.0),
-                            child: Text(rightToLeftTitle, style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                            child: Text(rightToLeftTitle, style: ts_titleMedium),
                           )
                         ])),
                     onDismissed: (DismissDirection direction) {

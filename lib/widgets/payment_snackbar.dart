@@ -39,7 +39,7 @@ class PaymentSnackBar extends SnackBar {
             packMember.nameForDisplay,
             maxLines: 1,
             minFontSize: 12.0,
-            style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 35.0, height: 1.0),
+            style: ts_titleCondensedVeryLarge,
           ),
           !eventAggregate.extensions.appAccess.canManageRuns
               ? Container()
@@ -69,15 +69,10 @@ class PaymentSnackBar extends SnackBar {
                               ScaffoldMessenger.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          const Text(
+                          Text(
                             'Not coming',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextCondensedDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 15.0,
-                              height: 0.7,
-                            ),
+                            style: ts_titleSmallCondensedBlack.copyWith(height: 0.7),
                           ),
                         ],
                       ),
@@ -109,16 +104,7 @@ class PaymentSnackBar extends SnackBar {
                               ScaffoldMessenger.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          const Text(
-                            'Maybe',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextCondensedDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 15.0,
-                              height: 0.7,
-                            ),
-                          ),
+                          Text('Maybe', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
                         ],
                       ),
                     ),
@@ -148,16 +134,7 @@ class PaymentSnackBar extends SnackBar {
                               );
                             },
                           ),
-                          const Text(
-                            'Coming',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextCondensedDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 15.0,
-                              height: 0.7,
-                            ),
-                          ),
+                          Text('Coming', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
                         ],
                       ),
                     ),
@@ -186,16 +163,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          const Text(
-                            'Will hare',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextCondensedDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 15.0,
-                              height: 0.7,
-                            ),
-                          ),
+                          Text('Will hare', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
                         ],
                       ),
                     ),
@@ -238,16 +206,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          const Text(
-                            'Not at Hash',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextCondensedDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 15.0,
-                              height: 0.7,
-                            ),
-                          ),
+                          Text('Not at Hash', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
                         ],
                       ),
                     ),
@@ -276,16 +235,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          const Text(
-                            'At Hash',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextCondensedDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 15.0,
-                              height: 0.7,
-                            ),
-                          ),
+                          Text('At Hash', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
                         ],
                       ),
                     ),
@@ -314,16 +264,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          const Text(
-                            'On In',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextCondensedDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 15.0,
-                              height: 0.7,
-                            ),
-                          ),
+                          Text('On In', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
                         ],
                       ),
                     ),
@@ -361,12 +302,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid cash' : 'Paid\r\n${formatMoney(amountOwed)} cash',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.9,
-                                ),
+                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -386,15 +322,10 @@ class PaymentSnackBar extends SnackBar {
                                   await onPaidCallback(packMember, paymentFreeRun.value);
                                 },
                               ),
-                              const Text(
+                              Text(
                                 'Free run',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.7,
-                                ),
+                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.7),
                               ),
                             ],
                           ),
@@ -421,12 +352,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 'Paid other${((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value)) ? '\r\n(${formatMoney(packMember.creditAmount)}${packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)'}' : ''}',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.9,
-                                ),
+                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -456,12 +382,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid\r\nbank transfer' : 'Paid ${formatMoney(amountOwed)}\r\nbank transfer',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.9,
-                                ),
+                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -483,15 +404,10 @@ class PaymentSnackBar extends SnackBar {
                                   await onPaidCallback(packMember, paymentNotPaid.value);
                                 },
                               ),
-                              const Text(
+                              Text(
                                 'Not paid',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.9,
-                                ),
+                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -519,12 +435,7 @@ class PaymentSnackBar extends SnackBar {
                                           ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})'
                                           : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})',
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontFamily: 'AvenirNextCondensedDemiBold',
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 15.0,
-                                        height: 0.9,
-                                      ),
+                                      style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
                                     ),
                                   ],
                                 ),

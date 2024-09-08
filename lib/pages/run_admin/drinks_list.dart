@@ -99,12 +99,11 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
     appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: const Text(
-        'Drink chug-a-lug',
-        style: TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text('Drink chug-a-lug', style: ts_appBarTitle),
     );
 
     _refreshSqlTablesFromBackend(true);
@@ -113,7 +112,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
   }
 
   Future<void> _refreshDrinksFromTable(bool forceRefresh) async {
-    final String query = ''' 
+    final String query = '''
         SELECT 
           h.${G0<TableModel>().hashersTableHelper.colHasherId},
           coalesce(
@@ -179,7 +178,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                   ? Center(
                       child: Padding(
                       padding: const EdgeInsets.all(30.0),
-                      child: Text('No awards yet for this Hash', textAlign: TextAlign.center, style: largeTitleStyle.copyWith(color: themeBackgroundColor)),
+                      child: Text('No awards yet for this Hash', textAlign: TextAlign.center, style: ts_headingVeryLarge.copyWith(color: themeBackgroundColor)),
                     ))
                   : ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -211,14 +210,14 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                 FittedBox(
                                   child: Text(
                                     _awards[index].dispName,
-                                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                    style: ts_titleLargeCondensedBlack,
                                   ),
                                 ),
                                 if (_awards[index].specialRunCount == 1) ...<Widget>[
-                                  const FittedBox(
+                                  FittedBox(
                                     child: Text(
                                       '1 run',
-                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                      style: ts_titleLargeCondensedBlack,
                                     ),
                                   ),
                                 ],
@@ -226,15 +225,15 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                   FittedBox(
                                     child: Text(
                                       '${_awards[index].totalRunsThisKennel.toString()} runs',
-                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                      style: ts_titleLargeCondensedBlack,
                                     ),
                                   ),
                                 ],
                                 if (_awards[index].specialHaringCount == 1) ...<Widget>[
-                                  const FittedBox(
+                                  FittedBox(
                                     child: Text(
                                       'First time haring',
-                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                      style: ts_titleLargeCondensedBlack,
                                     ),
                                   ),
                                 ],
@@ -242,7 +241,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                   FittedBox(
                                     child: Text(
                                       '${_awards[index].totalHaringThisKennel.toString()} hared runs',
-                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0),
+                                      style: ts_titleLargeCondensedBlack,
                                     ),
                                   ),
                                 ],

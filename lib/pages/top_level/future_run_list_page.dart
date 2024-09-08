@@ -144,15 +144,15 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       focusNode: _searchFocusNode,
                       controller: _searchController,
                       keyboardType: TextInputType.text,
-                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                      decoration: const InputDecoration(
+                      style: ts_footnoteBlack,
+                      decoration: InputDecoration(
                         border: InputBorder.none,
-                        icon: Icon(
+                        icon: const Icon(
                           FontAwesome.search,
                           color: Colors.black,
                         ),
                         hintText: 'Search...',
-                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        hintStyle: ts_footnoteBlack,
                       ),
                     ),
                   ),
@@ -160,7 +160,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                     width: 40,
                     child: TextButton(
                       style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-                      child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
+                      child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                       onPressed: () {
                         _searchController.text = '';
                         _searchRunsText = '';
@@ -286,7 +286,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   child: Center(
                       child: Text(
                     'No Runs available.',
-                    style: largeTitleStyle,
+                    style: ts_headingVeryLarge,
                     textAlign: TextAlign.center,
                   )),
                 ),
@@ -295,14 +295,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   child: Center(
                       child: Text(
                     'You might not be following any Kennels with upcoming runs. Check the Kennels page, select several Kennels and then return to this page and hit the "Reload runs" button below.',
-                    style: smallTitleStyle,
+                    style: ts_title,
                     textAlign: TextAlign.center,
                   )),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 0.0),
                   child: TextButton(
-                    child: Text('Reload runs', style: buttonLabelStyleMedium),
+                    child: Text('Reload runs', style: ts_button),
                     onPressed: () async {
                       await _refreshFromBackend(clearLocalTables: false);
                     },
@@ -369,7 +369,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                                     : 'All other upcoming runs',
                                         textAlign: TextAlign.center,
                                         //textScaleFactor: G0<DeviceInfo>().textClamp15,
-                                        style: titleStyle,
+                                        style: ts_titleLarge,
                                       ),
                                       if ((_filteredRuns![index] == 1) && _showRsvpInstructions) ...<Widget>[
                                         GestureDetector(
@@ -452,7 +452,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                     padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
                                     child: Text(
                                       '${_getDistancePreferenceString('[No runs found within ')}]',
-                                      style: headingStyle,
+                                      style: ts_headingLarge,
                                     ),
                                   ),
                                 ],
@@ -498,8 +498,6 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     final String switchUnits = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) & hasherPref_distanceMeasuredIn == 2 ? ' miles' : ' kilometers';
 
-    const TextStyle ts = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0);
-
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': '10$units',
@@ -509,7 +507,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
           ),
-          const Text('10', style: ts)
+          Text('10', style: ts_footnoteBlack)
         ],
         'returnValue': hasherPref_10
       },
@@ -521,7 +519,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
           ),
-          const Text('25', style: ts)
+          Text('25', style: ts_footnoteBlack)
         ],
         'returnValue': hasherPref_25
       },
@@ -533,7 +531,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
           ),
-          const Text('50', style: ts)
+          Text('50', style: ts_footnoteBlack)
         ],
         'returnValue': hasherPref_50
       },
@@ -545,7 +543,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
           ),
-          const Text('75', style: ts)
+          Text('75', style: ts_footnoteBlack)
         ],
         'returnValue': hasherPref_75
       },
@@ -557,7 +555,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
           ),
-          const Text('100', style: ts)
+          Text('100', style: ts_footnoteBlack)
         ],
         'returnValue': hasherPref_100
       },
@@ -569,7 +567,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
           ),
-          const Text('150', style: ts)
+          Text('150', style: ts_footnoteBlack)
         ],
         'returnValue': hasherPref_150
       },
@@ -581,7 +579,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
           ),
-          const Text('250', style: ts)
+          Text('250', style: ts_footnoteBlack)
         ],
         'returnValue': hasherPref_250
       },
@@ -593,7 +591,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       //       width: 45,
       //       decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
       //     ),
-      //     const Text('500', style: ts)
+      //     Text('500', style: ts_footnoteBlack)
       //   ],
       //   'returnValue': hasherPref_500
       // },
@@ -613,7 +611,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             width: 45,
             decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.rectangle),
           ),
-          Text('Off', style: ts.copyWith(color: Colors.white))
+          Text('Off', style: ts_footnoteBlack.copyWith(color: Colors.white))
         ],
         'returnValue': hasherPref_0
       },

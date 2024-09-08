@@ -78,7 +78,7 @@ class UserEventListItem extends StatelessWidget {
                       item.eventName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                      style: ts_titleMediumCondensedBlack.copyWith(color: Colors.black87),
                       textAlign: TextAlign.left,
                     ),
                     Text(
@@ -87,7 +87,7 @@ class UserEventListItem extends StatelessWidget {
                           : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d 'at' h:mm a").format(item.eventStartDatetime)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                      style: ts_titleMediumCondensedBlack.copyWith(color: Colors.black87),
                       textAlign: TextAlign.left,
                     ),
                     item.attendenceState < attendenceAtHash.value
@@ -98,7 +98,7 @@ class UserEventListItem extends StatelessWidget {
                                 'My ${kennelInfo.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (kennelInfo.historicalTotalRunCount)}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: Colors.green[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                style: ts_titleMediumCondensedBlack.copyWith(color: Colors.green.shade800),
                                 textAlign: TextAlign.left,
                               ),
                               item.isHare == isHareNo.value
@@ -107,7 +107,7 @@ class UserEventListItem extends StatelessWidget {
                                       ' and #${(item.totalHaringThisKennel ?? 0) + (kennelInfo.historicalHaringCount)} time haring',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                      style: ts_titleMediumCondensedBlack.copyWith(color: Colors.purple.shade800),
                                       textAlign: TextAlign.left,
                                     ),
                             ],
@@ -124,7 +124,7 @@ class UserEventListItem extends StatelessWidget {
                       const SizedBox(height: 5.0),
                       Center(
                         child: Text((item.extrasDescription ?? 'Extra charge: ') + extrasPrice,
-                            style: netPayment == 0 ? mediumTextBlack.copyWith(color: paymentColor) : mediumTextBlackBold.copyWith(color: paymentColor)),
+                            style: netPayment == 0 ? ts_mediumBlack.copyWith(color: paymentColor) : ts_mediumBlackBold.copyWith(color: paymentColor)),
                       ),
                     ],
 
@@ -137,8 +137,8 @@ class UserEventListItem extends StatelessWidget {
                             flex: 33,
                             child: Column(
                               children: [
-                                Text('Run fee', style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor)),
-                                Text(amountDue, style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor)),
+                                Text('Run fee', style: netPayment == 0 ? ts_smallBlack.copyWith(color: paymentColor) : ts_smallTextBlackBold.copyWith(color: paymentColor)),
+                                Text(amountDue, style: netPayment == 0 ? ts_smallBlack.copyWith(color: paymentColor) : ts_smallTextBlackBold.copyWith(color: paymentColor)),
                               ],
                             ),
                           ),
@@ -148,11 +148,11 @@ class UserEventListItem extends StatelessWidget {
                               children: <Widget>[
                                 Text(
                                   creditWasUsed ? 'From credit' : 'Paid',
-                                  style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor),
+                                  style: netPayment == 0 ? ts_smallBlack.copyWith(color: paymentColor) : ts_smallTextBlackBold.copyWith(color: paymentColor),
                                 ),
                                 Text(
                                   creditWasUsed ? amountDue : creditAmount,
-                                  style: netPayment == 0 ? smallTextBlack.copyWith(color: paymentColor) : smallTextBlackBold.copyWith(color: paymentColor),
+                                  style: netPayment == 0 ? ts_smallBlack.copyWith(color: paymentColor) : ts_smallTextBlackBold.copyWith(color: paymentColor),
                                 ),
                               ],
                             ),
@@ -163,7 +163,7 @@ class UserEventListItem extends StatelessWidget {
                               children: [
                                 Text(
                                   'Credit left',
-                                  style: netPayment == 0 ? smallTextBlack.copyWith(color: creditAvailableColor) : smallTextBlackBold.copyWith(color: creditAvailableColor),
+                                  style: netPayment == 0 ? ts_smallBlack.copyWith(color: creditAvailableColor) : ts_smallTextBlackBold.copyWith(color: creditAvailableColor),
                                 ),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -188,7 +188,7 @@ class UserEventListItem extends StatelessWidget {
                                     ],
                                     Text(
                                       creditAvailable,
-                                      style: netPayment == 0 ? smallTextBlack.copyWith(color: creditAvailableColor) : smallTextBlackBold.copyWith(color: creditAvailableColor),
+                                      style: netPayment == 0 ? ts_smallBlack.copyWith(color: creditAvailableColor) : ts_smallTextBlackBold.copyWith(color: creditAvailableColor),
                                     ),
                                     if (netPayment != 0) ...<Widget>[const SizedBox(width: 3.0)],
                                   ],

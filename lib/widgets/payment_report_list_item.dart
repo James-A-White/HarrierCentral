@@ -108,7 +108,6 @@ class PaymentTotalsCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final String total = creditAmount == 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount, digitsAfterDecimal, currencySymbol);
 
-    const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return SizedBox(
       width: 40,
       child: Column(
@@ -117,7 +116,7 @@ class PaymentTotalsCell extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 0.0),
             child: Text(
               counter.toString(),
-              style: textStyle,
+              style: ts_titleLargeCondensedBlack,
             ),
           ),
           IconButton(
@@ -133,7 +132,7 @@ class PaymentTotalsCell extends StatelessWidget {
               height: 20,
               child: AutoSizeText(
                 total,
-                style: textStyle,
+                style: ts_titleLargeCondensedBlack,
                 maxLines: 1,
                 minFontSize: 2.0,
               ),

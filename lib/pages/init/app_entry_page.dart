@@ -292,7 +292,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                 Text(
                   alertText,
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: ts_mediumBlack,
                 )
               ],
             ),

@@ -33,10 +33,6 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     });
   }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
-
-  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0);
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -49,8 +45,15 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Privacy Policy'),
+              title: Text(
+                'Privacy Policy',
+                style: ts_appBarTitle,
+              ),
               backgroundColor: themeAppBarBackground,
+              iconTheme: const IconThemeData(
+                color: Colors.white,
+                size: 28.0,
+              ),
             ),
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
@@ -59,7 +62,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     ElevatedButton(
-                      child: Text('Open Privacy Policy', style: headingStyle),
+                      child: Text('Open Privacy Policy', style: ts_headingLarge),
                       onPressed: () => Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(builder: (BuildContext context) => PDFScreen(pathPDF)),
@@ -68,7 +71,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                     Container(
                       margin: const EdgeInsets.all(30),
                       child: Text('The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
-                          textAlign: TextAlign.center, style: bodyStyle),
+                          textAlign: TextAlign.center, style: ts_medium),
                     ),
                   ],
                 ),
@@ -102,8 +105,12 @@ class PDFScreen extends StatelessWidget {
     //return Container();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacy Policy'),
+        title: Text('Privacy Policy', style: ts_appBarTitle),
         backgroundColor: themeAppBarBackground,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
+        ),
       ),
       body: PdfView(path: pathPDF),
     );

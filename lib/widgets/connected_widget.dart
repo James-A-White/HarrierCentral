@@ -59,7 +59,7 @@ class ConnectedWidget extends StatelessWidget {
       },
       child: Text(
         'Attempt to Connect',
-        style: textStyleButton,
+        style: ts_button,
       ),
     );
   }

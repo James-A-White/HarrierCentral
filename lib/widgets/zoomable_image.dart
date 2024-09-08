@@ -31,12 +31,11 @@ class ZoomableImagePage2 extends StatelessWidget {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: appBarBackgroundColor,
-      title: Text(
-        pageTitle,
-        style: const TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text(pageTitle, style: ts_appBarTitle),
     );
 
     return Scaffold(
@@ -95,7 +94,12 @@ class ZoomableImagePage2 extends StatelessWidget {
                                           : // TODO(James): find a more elegant way of doing this
                                           '${assetImageText ?? ''}'
                                               '',
-                                      style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
+                                      style: const TextStyle(
+                                        fontFamily: 'AvenirNextCondensedBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 400.0,
+                                        color: Colors.black,
+                                      ),
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
                                       minFontSize: 1.0,
@@ -110,7 +114,7 @@ class ZoomableImagePage2 extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: ElevatedButton(
-                  child: Text('View Kennel', style: buttonLabelStyleMedium),
+                  child: Text('View Kennel', style: ts_button),
                   onPressed: () async {
                     final KennelListAggregate? kennel = await QueryKennels.getSingleKennel(kennelId!);
 

@@ -69,7 +69,7 @@ class PaymentIcons extends StatelessWidget {
                     topMargin: 40.0,
                     bottomMargin: 10.0,
                   ),
-                  Text('Payment', style: headingStyle),
+                  Text('Payment', style: ts_headingLarge),
                   const SizedBox(
                     height: 20,
                   ),

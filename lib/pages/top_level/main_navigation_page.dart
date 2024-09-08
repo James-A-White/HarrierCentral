@@ -370,15 +370,22 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                 : AppBar(
                     elevation: 3.0,
                     backgroundColor: themeAppBarBackground,
+                    iconTheme: const IconThemeData(
+                      color: Colors.white,
+                      size: 28.0,
+                    ),
                     title: Text(
                       _appBarText,
+                      style: ts_appBarTitle,
                       textScaler: TextScaler.linear(G0<DeviceInfo>().textClamp00),
                       //textScaleFactor: G0<DeviceInfo>().textClamp00,
                     ),
                     centerTitle: true,
                     actions: <IconButton>[
                       IconButton(
-                          icon: const Icon(Icons.qr_code_scanner_sharp),
+                          icon: const Icon(
+                            Icons.qr_code_scanner_sharp,
+                          ),
                           onPressed: () {
                             Navigator.push<dynamic>(
                               context,
@@ -388,7 +395,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             );
                           }),
                       IconButton(
-                          icon: Icon(_isFlipped ? Icons.undo : Icons.info_outline),
+                          icon: Icon(
+                            _isFlipped ? Icons.undo : Icons.info_outline,
+                          ),
                           onPressed: () {
                             setState(() {
                               _isFlipped = !_isFlipped;
@@ -566,7 +575,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
             padding: const EdgeInsets.all(20.0),
             child: Text(
               'Filling your Harrier Central mug',
-              style: headingStyle,
+              style: ts_headingLarge,
               textAlign: TextAlign.center,
             ),
           ),
@@ -582,7 +591,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
             padding: const EdgeInsets.all(20.0),
             child: Text(
               _initializationMessage,
-              style: headingStyle,
+              style: ts_headingLarge,
               textAlign: TextAlign.center,
             ),
           ),
@@ -648,7 +657,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                 color: Colors.white60,
                 child: Text(
                   _initializationMessage.isEmpty ? 'Loading data...' : _initializationMessage,
-                  style: titleStyle.copyWith(color: const Color.fromARGB(255, 0, 2, 65)),
+                  style: ts_titleLarge,
                   textAlign: TextAlign.center,
                 ),
               ),

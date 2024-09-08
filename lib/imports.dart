@@ -155,6 +155,7 @@ export 'package:harrier_central/util/offline_mode_ribbon.dart';
 export 'package:harrier_central/util/routes.dart';
 export 'package:harrier_central/util/secure_prefs.dart';
 export 'package:harrier_central/util/styles.dart';
+export 'package:harrier_central/util/text_styles.dart';
 export 'package:harrier_central/util/utilities_null_safe.dart';
 export 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 export 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';

@@ -102,15 +102,15 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       focusNode: _searchFocusNode,
                       controller: _searchController,
                       keyboardType: TextInputType.text,
-                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                      decoration: const InputDecoration(
+                      style: ts_titleMediumBlack,
+                      decoration: InputDecoration(
                         border: InputBorder.none,
-                        icon: Icon(
+                        icon: const Icon(
                           FontAwesome.search,
                           color: Colors.black,
                         ),
                         hintText: 'Search...',
-                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        hintStyle: ts_titleMediumBlack,
                       ),
                     ),
                   ),
@@ -118,7 +118,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     width: 40,
                     child: TextButton(
                       style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-                      child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
+                      child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                       onPressed: () {
                         _searchController.text = '';
                         _searchRunsAndKennelsText = '';
@@ -284,7 +284,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
                       'Map will center on home kennel\r\n\r\n',
-                      style: smallTitleStyle,
+                      style: ts_title,
                       textAlign: TextAlign.center,
                     ),
                     backgroundColor: Colors.blue[700],
@@ -301,7 +301,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
                       'Map will center on current location\r\n\r\n',
-                      style: smallTitleStyle,
+                      style: ts_title,
                       textAlign: TextAlign.center,
                     ),
                     backgroundColor: Colors.blue[700],
@@ -672,7 +672,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               child: Center(
                   child: Text(
                 'Map functions require a connection to the Internet',
-                style: headingStyle,
+                style: ts_headingLarge,
                 textAlign: TextAlign.center,
               )),
             ),
@@ -831,7 +831,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         border: Border.all(width: 2.0),
                         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       ),
-                      child: Text(_textDescription, textAlign: TextAlign.center, style: headingStyle20Black),
+                      child: Text(_textDescription, textAlign: TextAlign.center, style: ts_headingBlack),
                     )),
               ],
             ),
@@ -858,12 +858,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   appBar: AppBar(
                     centerTitle: true,
                     backgroundColor: themeAppBarBackground,
-                    title: const Text(
-                      'Explore Runs',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
+                    iconTheme: const IconThemeData(
+                      color: Colors.white,
+                      size: 28.0,
                     ),
+                    title: Text('Explore Runs', style: ts_appBarTitle),
                   ),
                   body: _runLocationsBody()),
         ),

@@ -25,12 +25,11 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Scan at start & end of Hash',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('Scan at start & end of Hash', style: ts_appBarTitle),
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
@@ -44,11 +43,11 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                   children: <Widget>[
                     Container(
                       padding: const EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0, bottom: 20.0),
-                      child: const AutoSizeText(
+                      child: AutoSizeText(
                         'Use this scanner to scan Hasher barcodes at the start of the run so you know who is at the Hash and at the end of the run so you can ensure that no one is lost on trail.',
                         textAlign: TextAlign.justify,
                         maxLines: 4,
-                        style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
+                        style: ts_titleMedium.copyWith(height: 0.8),
                       ),
                     ),
                     if ((_state != EQrScannerState.scanning) || _isScanningAtRunStart) ...<Widget>[
@@ -75,12 +74,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                             ),
                             child: Text(
                               ((_state == EQrScannerState.scanning) && _isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at start of run',
-                              style: const TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  //color: Colors.white,
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 22.0,
-                                  height: 1.0),
+                              style: ts_title,
                             ),
                             //disabledTextColor: Colors.grey[200],
 
@@ -160,12 +154,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                             child: Text(
                               //'Scan at end of run',
                               ((_state == EQrScannerState.scanning) && !_isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
-                              style: const TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  //color: Colors.white,
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 22.0,
-                                  height: 1.0),
+                              style: ts_title,
                             )),
                       ),
                     ],
@@ -180,7 +169,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                           //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
                           textAlign: TextAlign.center,
                           maxLines: 3,
-                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
+                          style: ts_headingLarge.copyWith(height: 0.9),
                         ),
                       ),
                     ),

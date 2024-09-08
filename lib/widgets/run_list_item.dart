@@ -79,7 +79,7 @@ class RunListItem extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 5.0, left: 5.0),
                     child: AutoSizeText(
                       futureRun.event.eventName,
-                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.black, height: 1.0),
+                      style: ts_tileText,
                       textAlign: TextAlign.left,
                       maxLines: 1,
                       minFontSize: 18,
@@ -171,13 +171,7 @@ class RunListItem extends StatelessWidget {
                                   children: <Widget>[
                                     Text(
                                       futureRun.kennel.kennelName,
-                                      style: const TextStyle(
-                                        color: Color.fromARGB(255, 7, 12, 165),
-                                        fontFamily: 'AvenirNextDemiBold',
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 15.0,
-                                        height: 1,
-                                      ),
+                                      style: ts_titleMediumDarkBlue,
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -196,19 +190,13 @@ class RunListItem extends StatelessWidget {
                                                   : futureRun.extensions.daysUntilEvent <= 365
                                                       ? 'in ${futureRun.extensions.daysUntilEvent ~/ 30.0}${(futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
                                                       : 'in ${futureRun.extensions.daysUntilEvent ~/ 365.0}${(futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontFamily: 'AvenirNextDemiBold',
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 15.0,
-                                        height: 1,
-                                      ),
+                                      style: ts_titleMediumBlack,
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
                                       DateFormat("E, MMM d 'at' h:mm a").format(futureRun.event.eventStartDatetime),
-                                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                      style: ts_regularMediumBlack,
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -220,17 +208,16 @@ class RunListItem extends StatelessWidget {
                                         (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
                                       Text(
                                         '${Utilities.getDistance(futureRun.extensions.distToEvent!, isMetric: ((futureRun.extensions.distanceUnitsPref) & 0x01) == 0)} from here',
-                                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                        style: ts_regularMediumBlack,
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ] else
-                                      const Text('No location provided',
-                                          style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1)),
+                                      Text('No location provided', style: ts_regularMediumBlack),
                                     if (futureRun.event.eventGeographicScope > 1) ...<Widget>[
                                       Text(
                                         Utilities.getEventScopeText(futureRun.event.eventGeographicScope),
-                                        style: TextStyle(color: Colors.blue.shade700, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                        style: ts_titleMediumDarkBlue,
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -445,7 +432,7 @@ class RunListItem extends StatelessWidget {
         ? const SizedBox()
         : Text(
             'Hares: ${rliController.hares}',
-            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+            style: ts_regularMediumBlack,
             textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
           );

@@ -23,12 +23,11 @@ class AddKennelPageState extends State<AddKennelPage> {
           appBar: AppBar(
             centerTitle: true,
             backgroundColor: themeAppBarBackground,
-            title: const Text(
-              'Add a Kennel',
-              style: TextStyle(
-                color: Colors.white,
-              ),
+            iconTheme: const IconThemeData(
+              color: Colors.white,
+              size: 28.0,
             ),
+            title: Text('Add a Kennel', style: ts_appBarTitle),
           ),
           body: Container(
             decoration: Backgrounds.defaultHcBackground(),
@@ -57,11 +56,11 @@ class FaqPageContent extends StatefulWidget {
 }
 
 class FaqPageContentState extends State<FaqPageContent> {
-  TextStyle sectionStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.orange, fontSize: 24.0, height: 1.2);
+  TextStyle sectionStyle = ts_titleLarge.copyWith(color: Colors.orange, height: 1.2);
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.2);
+  TextStyle headingStyle = ts_heading.copyWith(height: 1.2);
 
-  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.2);
+  TextStyle bodyStyle = ts_medium.copyWith(height: 1.2);
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +101,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                         onPressed: () async {
                           await launchUrl(Uri.parse('https://harriercentral.com/index.php/add-kennel-with-facebook-integration/'), mode: LaunchMode.externalApplication);
                         },
-                        child: Text('Add with Facebook', style: textStyleButton),
+                        child: Text('Add with Facebook', style: ts_button),
                       ),
                     ),
                   ),
@@ -125,7 +124,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                         onPressed: () async {
                           await launchUrl(Uri.parse('https://harriercentral.com/index.php/add-kennel-standalone/'), mode: LaunchMode.externalApplication);
                         },
-                        child: Text('Add without integration', style: textStyleButton),
+                        child: Text('Add without integration', style: ts_button),
                       ),
                     ),
                   ),

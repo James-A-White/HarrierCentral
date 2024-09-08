@@ -26,12 +26,11 @@ class ImprintPageState extends State<ImprintPage> {
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
-              title: const Text(
-                'Imprint',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+              iconTheme: const IconThemeData(
+                color: Colors.white,
+                size: 28.0,
               ),
+              title: Text('Imprint', style: ts_appBarTitle),
             ),
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
@@ -63,10 +62,6 @@ class ImprintPageContent extends StatefulWidget {
 }
 
 class ImprintPageContentState extends State<ImprintPageContent> {
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.2);
-
-  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.2);
-
   String appName = '';
   String packageName = '';
   String version = '';
@@ -99,62 +94,62 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Software version:', style: headingStyle),
+                      Text('Software version:', style: ts_headingLarge),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}', style: bodyStyle),
+                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}', style: ts_regular),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('\r\nImprint:', style: headingStyle),
+                      Text('\r\nImprint:', style: ts_headingLarge),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31', style: bodyStyle),
+                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31', style: ts_regular),
                     ],
                   ),
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Text('\r\nContact:', style: headingStyle),
+                        Text('\r\nContact:', style: ts_headingLarge),
                       ],
                     ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('connect@harriercentral.com', style: bodyStyle),
+                      Text('connect@harriercentral.com', style: ts_regular),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('\r\nCopyright:', style: headingStyle),
+                      Text('\r\nCopyright:', style: ts_headingLarge),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('© ${DateTime.now().year}, InnoVet Europe\r\nAll rights reserved', style: bodyStyle),
+                      Text('© ${DateTime.now().year}, InnoVet Europe\r\nAll rights reserved', style: ts_regular),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('\r\nTechnical data:', style: headingStyle),
+                      Text('\r\nTechnical data:', style: ts_headingLarge),
                     ],
                   ),
                   Text(
                       'The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.',
-                      style: bodyStyle),
+                      style: ts_regular),
                   const SizedBox(width: 40, height: 40),
                 ],
               ),

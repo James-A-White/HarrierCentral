@@ -126,12 +126,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Edit run details',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('Edit run details', style: ts_appBarTitle),
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackgroundLight(),
@@ -187,8 +186,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
                     physics: const NeverScrollableScrollPhysics(),
-                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    labelStyle: ts_condensedMediumBlack,
+                    unselectedLabelStyle: ts_condensedMediumBlack,
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
@@ -318,7 +317,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
               ? 'Run details being synced from external source'
               : 'Run details being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
           textAlign: TextAlign.center,
-          style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+          style: ts_titleCondensedBlack,
         ),
         backgroundColor: Colors.blue.shade700,
       );
@@ -484,7 +483,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                   : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                               : 'Run data from Harrier Central',
                           textAlign: TextAlign.center,
-                          style: headingStyle20Black),
+                          style: ts_headingBlack),
                     ),
                     Container(
                       color: _focusNodeEventName.hasFocus ? Colors.yellow.shade50 : Colors.white,
@@ -506,7 +505,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           }
                         },
                         textCapitalization: TextCapitalization.sentences,
-                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Event name',
                           fillColor: Colors.red,
@@ -515,7 +514,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             borderSide: const BorderSide(),
                           ),
                           hintText: 'Event Name',
-                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          hintStyle: ts_titleMediumBlack,
                         ),
                       ),
                     ),
@@ -538,7 +537,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         },
                         keyboardType: TextInputType.multiline,
                         textCapitalization: TextCapitalization.sentences,
-                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Event Description',
                           fillColor: Colors.red,
@@ -547,7 +546,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             borderSide: const BorderSide(),
                           ),
                           hintText: 'Event Description',
-                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          hintStyle: ts_titleMediumBlack,
                         ),
                       ),
                     ),
@@ -571,7 +570,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           }
                         },
                         textCapitalization: TextCapitalization.sentences,
-                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Location one-line description',
                           fillColor: Colors.red,
@@ -580,7 +579,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             borderSide: const BorderSide(),
                           ),
                           hintText: 'Location description',
-                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          hintStyle: ts_titleMediumBlack,
                         ),
                       ),
                     ),
@@ -596,7 +595,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             borderSide: const BorderSide(),
                           ),
                           //hintText: 'Event Number (or \'<auto>\')',
-                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          hintStyle: ts_titleMediumBlack,
                         ),
                         focusNode: _focusNodeDatetime,
                         controller: _eventDatetimeController,
@@ -641,7 +640,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                   : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                               : 'Run data from Harrier Central',
                           textAlign: TextAlign.center,
-                          style: headingStyle20Black),
+                          style: ts_headingBlack),
                     ),
                     const SizedBox(height: 20.0),
                     _isUpdating
@@ -651,7 +650,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             child: HcCircularProgressIndicator(key: Key('112096562')),
                           )
                         : ElevatedButton(
-                            child: Text(widget.isNewRun ? 'Next' : 'Save changes to Harrier Central', style: buttonLabelStyleMedium),
+                            child: Text(widget.isNewRun ? 'Next' : 'Save changes to Harrier Central', style: ts_button),
                             onPressed: () async {
                               if (_detailsFormKey.currentState?.validate() ?? false) {
                                 await _updateRunDetails(true);
@@ -663,10 +662,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 } else {
                                   final SnackBar snackBar = SnackBar(
                                     duration: const Duration(seconds: 3),
-                                    content: const Text(
+                                    content: Text(
                                       'Run details have been saved',
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                      style: ts_titleCondensedBlack,
                                     ),
                                     backgroundColor: Colors.blue.shade700,
                                   );
@@ -685,7 +684,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ElevatedButton(
                         child: Text(
                             'Copy data from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                            style: buttonLabelStyleMedium),
+                            style: ts_button),
                         onPressed: () {
                           setState(() {
                             _useExternalSourceDetails();
@@ -727,7 +726,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                       ),
-                      child: Text('Use this image', style: buttonLabelStyleMedium),
+                      child: Text('Use this image', style: ts_button),
                       onPressed: () async {
                         if ((_eventAggregate.event.eventId.isNotEmpty) && (_eventAggregate.event.eventId != GUID_EMPTY)) {
                           final String fileName = _upload(snapshot.data!, _eventAggregate.event.eventId);
@@ -754,10 +753,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
                             final SnackBar snackBar = SnackBar(
                               duration: const Duration(seconds: 3),
-                              content: const Text(
+                              content: Text(
                                 'Event image has been updated',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                style: ts_titleCondensedBlack,
                               ),
                               backgroundColor: Colors.blue.shade700,
                             );
@@ -775,7 +774,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                     ),
-                    child: Text('Select again from gallery', style: buttonLabelStyleMedium),
+                    child: Text('Select again from gallery', style: ts_button),
                     onPressed: () {
                       _getImageFromGallery(ImageSource.gallery);
                     },
@@ -788,7 +787,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                       ),
-                      child: Text('Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: buttonLabelStyleMedium),
+                      child: Text('Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: ts_button),
                       onPressed: () async {
                         setState(() {
                           _isUpdating = true;
@@ -807,7 +806,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             content: Text(
                               'Image is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                              style: ts_titleCondensedBlack,
                             ),
                             backgroundColor: Colors.blue.shade700,
                           );
@@ -824,7 +823,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                     ),
-                    child: Text('Use original image', style: buttonLabelStyleMedium),
+                    child: Text('Use original image', style: ts_button),
                     onPressed: () {
                       setState(() {
                         _imageFromGallery = Future<File?>.value(null);
@@ -872,7 +871,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                         style: ElevatedButton.styleFrom(
                                           minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                                         ),
-                                        child: Text('Select from gallery', style: buttonLabelStyleMedium),
+                                        child: Text('Select from gallery', style: ts_button),
                                         onPressed: () {
                                           _getImageFromGallery(ImageSource.gallery);
                                         },
@@ -888,7 +887,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                           ),
                                           child: Text(
                                               'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                              style: buttonLabelStyleMedium),
+                                              style: ts_button),
                                           onPressed: () async {
                                             setState(() {
                                               _isUpdating = true;
@@ -907,7 +906,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                                 content: Text(
                                                   'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                                                   textAlign: TextAlign.center,
-                                                  style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                                  style: ts_titleCondensedBlack,
                                                 ),
                                                 backgroundColor: Colors.blue.shade700,
                                               );
@@ -929,7 +928,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         Text(
                           'No image provided',
                           textAlign: TextAlign.center,
-                          style: largeTitleStyle.copyWith(color: Colors.black),
+                          style: ts_headingVeryLarge.copyWith(color: Colors.black),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
@@ -937,7 +936,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
                             ),
-                            child: Text('Select from gallery', style: buttonLabelStyleMedium),
+                            child: Text('Select from gallery', style: ts_button),
                             onPressed: () {
                               _getImageFromGallery(ImageSource.gallery);
                             },
@@ -948,7 +947,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         ElevatedButton(
                           child: Text(
                             'Skip',
-                            style: buttonLabelStyleMedium,
+                            style: ts_button,
                           ),
                           onPressed: () {
                             setState(() {
@@ -1064,7 +1063,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     child: Text(
                       'No location selected',
                       textAlign: TextAlign.center,
-                      style: largeTitleStyle,
+                      style: ts_headingVeryLarge,
                     ),
                   ),
                 ),
@@ -1092,7 +1091,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           ? 'Location from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                           : 'Location from Harrier Central',
                       textAlign: TextAlign.center,
-                      style: headingStyle20Black),
+                      style: ts_headingBlack),
                 ),
               ),
 
@@ -1186,7 +1185,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ElevatedButton(
                               child: Text(
                                 'Skip',
-                                style: buttonLabelStyleMedium,
+                                style: ts_button,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -1199,7 +1198,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           ElevatedButton(
                             child: Text(
                               ((_mapCenter.latitude == CLEAR_LATLONG) && (_mapCenter.longitude == CLEAR_LATLONG)) ? 'Set no location' : 'Set Location',
-                              style: buttonLabelStyleMedium,
+                              style: ts_button,
                             ),
                             onPressed: () async {
                               if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
@@ -1236,10 +1235,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 } else {
                                   final SnackBar snackBar = SnackBar(
                                     duration: const Duration(seconds: 3),
-                                    content: const Text(
+                                    content: Text(
                                       'Updated location saved in Harrier Central',
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                      style: ts_titleCondensedBlack,
                                     ),
                                     backgroundColor: Colors.blue.shade700,
                                   );
@@ -1263,7 +1262,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               child: ElevatedButton(
                                 child: AutoSizeText(
                                   'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                  style: buttonLabelStyleMedium,
+                                  style: ts_button,
                                   minFontSize: 3.0,
                                   maxLines: 1,
                                   //overflow: TextOverflow.ellipsis,
@@ -1297,7 +1296,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                       content: Text(
                                         'Location is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                        style: ts_titleCondensedBlack,
                                       ),
                                       backgroundColor: Colors.blue.shade700,
                                     );
@@ -1346,13 +1345,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         border: Border.all(width: 2.0),
                         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       ),
-                      child: Text('Run data from Harrier Central', textAlign: TextAlign.center, style: headingStyle20Black),
+                      child: Text('Run data from Harrier Central', textAlign: TextAlign.center, style: ts_headingBlack),
                     ),
                     Container(
                       margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Enter hares here. These names will be presented in addition to anyone who has RSVPed as a Hare using the app',
-                        style: mediumTextBlack,
+                        style: ts_mediumBlack,
                       ),
                     ),
                     Container(
@@ -1379,7 +1378,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         // },
                         //keyboardType: const TextInputType.(),
                         textCapitalization: TextCapitalization.sentences,
-                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Hares',
                           fillColor: Colors.red,
@@ -1388,7 +1387,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             borderSide: const BorderSide(),
                           ),
                           hintText: '<enter Hares here>',
-                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          hintStyle: ts_titleMediumBlack,
                         ),
                       ),
                     ),
@@ -1396,7 +1395,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Harrier Central automatically numbers runs. But if there is a reason to override this, you can manually enter a run number here.',
-                        style: mediumTextBlack,
+                        style: ts_mediumBlack,
                       ),
                     ),
                     Container(
@@ -1423,7 +1422,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         // },
                         keyboardType: const TextInputType.numberWithOptions(),
                         textCapitalization: TextCapitalization.sentences,
-                        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                        style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Event Number',
                           fillColor: Colors.red,
@@ -1432,7 +1431,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             borderSide: const BorderSide(),
                           ),
                           hintText: '<use auto numbering>',
-                          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          hintStyle: ts_titleMediumBlack,
                         ),
                       ),
                     ),
@@ -1440,7 +1439,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Enter in the hash cash amount here if it is different than the normal hash cash value.',
-                        style: mediumTextBlack,
+                        style: ts_mediumBlack,
                       ),
                     ),
                     Container(
@@ -1467,7 +1466,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 controller: _eventPriceForMembersController,
                                 keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
                                 textCapitalization: TextCapitalization.sentences,
-                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Member price',
                                   fillColor: Colors.red,
@@ -1476,7 +1475,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     borderSide: const BorderSide(),
                                   ),
                                   hintText: '<use default>',
-                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  hintStyle: ts_titleMediumBlack,
                                 ),
                               ),
                             ),
@@ -1501,7 +1500,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 controller: _eventPriceForNonMembersController,
                                 keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
                                 textCapitalization: TextCapitalization.sentences,
-                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Non-member price',
                                   fillColor: Colors.red,
@@ -1510,7 +1509,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     borderSide: const BorderSide(),
                                   ),
                                   hintText: '<use default>',
-                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  hintStyle: ts_titleMediumBlack,
                                 ),
                               ),
                             ),
@@ -1522,7 +1521,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'If you have extra charges associated with your run, such as for dinner, you can put in the price and description here.',
-                        style: mediumTextBlack,
+                        style: ts_mediumBlack,
                       ),
                     ),
                     Container(
@@ -1549,7 +1548,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 controller: _eventPriceForExtrasController,
                                 keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
                                 textCapitalization: TextCapitalization.sentences,
-                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Price for extras',
                                   fillColor: Colors.red,
@@ -1558,7 +1557,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     borderSide: const BorderSide(),
                                   ),
                                   hintText: '<none>',
-                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  hintStyle: ts_titleMediumBlack,
                                 ),
                               ),
                             ),
@@ -1582,7 +1581,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 controller: _extrasDescriptionController,
                                 keyboardType: TextInputType.text,
                                 textCapitalization: TextCapitalization.sentences,
-                                style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                                style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Description',
                                   fillColor: Colors.red,
@@ -1591,7 +1590,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     borderSide: const BorderSide(),
                                   ),
                                   hintText: '<none>',
-                                  hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  hintStyle: ts_titleMediumBlack,
                                 ),
                               ),
                             ),
@@ -1655,7 +1654,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Let Hashers around the corner or around the world know about your run if it is interesting to them! By telling us the geographic scope of your run it will help us do a better job promoting it for you!',
-                        style: mediumTextBlack,
+                        style: ts_mediumBlack,
                       ),
                     ),
                     Container(
@@ -1783,7 +1782,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               : SizedBox(
                                   width: 300.0,
                                   child: ElevatedButton(
-                                    child: Text(widget.isNewRun ? 'Finish' : 'Save Other Information', style: buttonLabelStyleMedium),
+                                    child: Text(widget.isNewRun ? 'Finish' : 'Save Other Information', style: ts_button),
                                     onPressed: () async {
                                       setState(() {
                                         _isUpdating = true;
@@ -1796,10 +1795,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                       } else {
                                         final SnackBar snackBar = SnackBar(
                                           duration: const Duration(seconds: 3),
-                                          content: const Text(
+                                          content: Text(
                                             'Other info has been saved',
                                             textAlign: TextAlign.center,
-                                            style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                            style: ts_titleCondensedBlack,
                                           ),
                                           backgroundColor: Colors.blue.shade700,
                                         );

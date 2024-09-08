@@ -26,14 +26,13 @@ class CheckinFiltersCell extends StatelessWidget {
   Widget build(BuildContext context) {
     //final String total = (creditAmount ?? 0) <= 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-    const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return SizedBox(
       width: 50,
       child: Column(
         children: <Widget>[
           Text(
             counter < 0 ? '' : (counter).toString(),
-            style: textStyle,
+            style: ts_titleLargeCondensedBlack,
           ),
           IconButton(
             padding: const EdgeInsets.all(0),
@@ -63,7 +62,7 @@ class CheckinFiltersCell extends StatelessWidget {
             height: 20,
             child: AutoSizeText(
               label,
-              style: textStyle,
+              style: ts_titleLargeCondensedBlack,
               maxLines: 1,
               minFontSize: 2.0,
             ),

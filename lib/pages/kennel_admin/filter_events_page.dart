@@ -302,12 +302,11 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
-          title: Text(
-            'Events for ${widget.kennel.kennel.kennelShortName}',
-            style: const TextStyle(
-              color: Colors.white,
-            ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 28.0,
           ),
+          title: Text('Events for ${widget.kennel.kennel.kennelShortName}', style: ts_appBarTitle),
         ),
         body: _isLoading ? const HcCircularProgressIndicator(key: Key('9844430132')) : _buildListView());
   }
@@ -326,14 +325,6 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     //print('Receipts data synchronized $resultStr');
     await _refreshEventFromTables(true);
   }
-
-  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
-
-  static const TextStyle numberStyle = TextStyle(
-    fontFamily: 'AvenirNextCondensedDemiBold',
-    fontStyle: FontStyle.normal,
-    fontSize: 22.0,
-  );
 
   Widget _buildListView() {
     int publishedRunCount = 0;
@@ -392,7 +383,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                             overflow: TextOverflow.ellipsis,
                             minFontSize: 18.0,
                             maxLines: 1,
-                            style: numberStyle,
+                            style: ts_titleCondensedBlack,
                             textAlign: TextAlign.left,
                           ),
                           AutoSizeText(
@@ -402,7 +393,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                             overflow: TextOverflow.ellipsis,
                             minFontSize: 18.0,
                             maxLines: 1,
-                            style: numberStyle,
+                            style: ts_titleCondensedBlack,
                             textAlign: TextAlign.left,
                           ),
                         ],
@@ -429,8 +420,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    labelStyle: ts_titleMediumCondensedBlack,
+                    unselectedLabelStyle: ts_titleMediumCondensedBlack,
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
@@ -462,7 +453,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     return Column(
       children: <Widget>[
         ElevatedButton(
-          child: Text('Edit run', style: buttonLabelStyleMedium),
+          child: Text('Edit run', style: ts_button),
           onPressed: () async {
             final LiteEventModel? rawEvent = _calendarEvents[_toDateOnly(_selectedDay.value)]?[0];
             if (rawEvent != null) {
@@ -494,7 +485,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       alignment: MainAxisAlignment.center,
       children: <Widget>[
         ElevatedButton(
-          child: Text('Add run', style: buttonLabelStyleMedium),
+          child: Text('Add run', style: ts_button),
           onPressed: () async {
             RunAdminAggregate? rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId)!, _selectedDay.value);
             //RunAdminAggregate rda = null;
@@ -524,7 +515,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           },
         ),
         ElevatedButton(
-          child: Text('Add run placeholder', style: buttonLabelStyleMedium),
+          child: Text('Add run placeholder', style: ts_button),
           onPressed: () {
             setState(() {
               _showEventPopup(_selectedDay.value);
@@ -602,34 +593,34 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           },
           background: Container(
               color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.red,
-              child: const Row(children: <Widget>[
-                Padding(
+              child: Row(children: <Widget>[
+                const Padding(
                   padding: EdgeInsets.only(left: 10.0),
                   child: Icon(Ionicons.ios_eye_off, color: Colors.white, size: 35.0),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(left: 15.0),
+                  padding: const EdgeInsets.only(left: 15.0),
                   child: Text(
                       // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                       'Hide event',
-                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                      style: ts_titleMedium),
                 )
               ])),
           secondaryBackground: Container(
             color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.green,
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                Padding(
+                const Padding(
                   padding: EdgeInsets.only(right: 15.0),
                   child: Icon(Ionicons.ios_eye, color: Colors.white, size: 35.0),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(right: 15.0),
+                  padding: const EdgeInsets.only(right: 15.0),
                   child: Text(
                       //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                       'Show event',
-                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                      style: ts_titleMedium),
                 )
               ],
             ),

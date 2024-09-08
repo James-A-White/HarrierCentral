@@ -25,15 +25,15 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
         focusNode: myFocusNodeFirstName,
         controller: eventNameAmountTextController,
         //keyboardType: const TextInputType.
-        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-        decoration: const InputDecoration(
+        style: ts_titleMediumBlack,
+        decoration: InputDecoration(
           // border: InputBorder.none,
           // icon: Icon(
           //   FontAwesome.money,
           //   color: Colors.white,
           // ),
           hintText: 'Event name',
-          hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+          hintStyle: ts_titleMediumBlack,
         ),
       ),
       actions: <Widget>[

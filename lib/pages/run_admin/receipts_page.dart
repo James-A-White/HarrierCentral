@@ -52,12 +52,11 @@ class ReceiptsListState extends State<ReceiptsList> {
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
-          title: Text(
-            '${widget.eventAggregate.event.eventName} receipts',
-            style: const TextStyle(
-              color: Colors.white,
-            ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 28.0,
           ),
+          title: Text('${widget.eventAggregate.event.eventName} receipts', style: ts_appBarTitle),
         ),
         floatingActionButton: SpeedDial(
           // both default to 16
@@ -235,69 +234,69 @@ class ReceiptsListState extends State<ReceiptsList> {
                           background: receipt['removed'] == 0
                               ? Container(
                                   color: Colors.red,
-                                  child: const Row(children: <Widget>[
-                                    Padding(
+                                  child: Row(children: <Widget>[
+                                    const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(left: 15.0),
+                                      padding: const EdgeInsets.only(left: 15.0),
                                       child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Ignore receipt',
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          style: ts_titleMedium),
                                     )
                                   ]))
                               : Container(
                                   color: Colors.green,
-                                  child: const Row(children: <Widget>[
-                                    Padding(
+                                  child: Row(children: <Widget>[
+                                    const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(left: 15.0),
+                                      padding: const EdgeInsets.only(left: 15.0),
                                       child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Restore receipt',
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          style: ts_titleMedium),
                                     )
                                   ])),
                           secondaryBackground: (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY) && (receipt['reimbursedBy'] != GUID_8)
                               ? Container(
                                   color: Colors.yellow,
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: <Widget>[
-                                      Padding(
+                                      const Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Icon(FontAwesome.times_circle, color: Colors.black, size: 35.0),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.only(right: 15.0),
+                                        padding: const EdgeInsets.only(right: 15.0),
                                         child: Text(
                                             //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                             'Cancel Reimbursement',
-                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0, height: 1.0)),
+                                            style: ts_titleMedium),
                                       )
                                     ],
                                   ),
                                 )
                               : Container(
                                   color: Colors.green,
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: <Widget>[
-                                      Padding(
+                                      const Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.only(right: 15.0),
+                                        padding: const EdgeInsets.only(right: 15.0),
                                         child: Text(
                                             //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                             'Receipt reimbursed',
-                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                            style: ts_titleMedium),
                                       )
                                     ],
                                   ),

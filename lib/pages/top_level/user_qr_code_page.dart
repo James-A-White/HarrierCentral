@@ -27,6 +27,10 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
     _appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
+      ),
       actions: <IconButton>[
         IconButton(
             icon: const Icon(Icons.info_outline),
@@ -34,12 +38,7 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
               _displayInstructions(context);
             }),
       ],
-      title: const Text(
-        'Run check in page',
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
+      title: Text('Run check in page', style: ts_appBarTitle),
     );
     super.initState();
   }
@@ -75,8 +74,8 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                       child: Padding(
                         padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                         child: TabBar(
-                          labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                          unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                          labelStyle: ts_condensedMediumBlack,
+                          unselectedLabelStyle: ts_condensedMediumBlack,
                           isScrollable: false,
                           unselectedLabelColor: Colors.black,
                           labelColor: Colors.white,
@@ -138,7 +137,7 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                       : 'You can use your QR scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out on trail.',
                   //'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: ts_regularMediumBlack,
                 )
               ],
             ),
@@ -258,13 +257,7 @@ class QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin
               child: Text(
                 'This code can be scanned by mismanagement to check you in at the beginning and end of runs.',
                 textAlign: TextAlign.justify,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'AvenirNextDemiBold',
-                  fontStyle: FontStyle.normal,
-                  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                  height: 1.0,
-                ),
+                style: ts_titleMedium.copyWith(fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
               ),
             ),
 
@@ -273,7 +266,7 @@ class QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin
               //'QR Code for xxx',
               textAlign: TextAlign.center,
               maxLines: 1,
-              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+              style: ts_titleMedium.copyWith(fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
             ),
 
             // Positioned(
@@ -622,7 +615,7 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
             //'Use this scanner to scan the QR codes at theor end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
             textAlign: TextAlign.justify,
             maxLines: 4,
-            style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceMaxScaleFactor, height: 1.0),
+            style: ts_titleMedium.copyWith(fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
           ),
         ),
 
@@ -679,7 +672,7 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
               ElevatedButton(
                   child: Text(
                     _isScanning ? 'Stop Scanning' : 'Start Scanning',
-                    style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0),
+                    style: ts_title,
                   ),
                   onPressed: () async {
                     if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
@@ -702,7 +695,7 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
               //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
               textAlign: TextAlign.center,
               maxLines: 3,
-              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 1.15),
+              style: ts_headingLarge,
             ),
           ),
         ),

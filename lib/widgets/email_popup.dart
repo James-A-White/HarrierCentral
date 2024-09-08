@@ -31,15 +31,15 @@ class EmailPopupState extends State<EmailPopup> {
         focusNode: myFocusNodeFirstName,
         controller: emailTextController,
         keyboardType: TextInputType.emailAddress,
-        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-        decoration: const InputDecoration(
+        style: ts_titleMediumBlack,
+        decoration: InputDecoration(
           border: InputBorder.none,
-          icon: Icon(
+          icon: const Icon(
             FontAwesome.envelope,
             color: Colors.white,
           ),
           hintText: 'E-mail address',
-          hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+          hintStyle: ts_titleMediumBlack,
         ),
       ),
       actions: <Widget>[

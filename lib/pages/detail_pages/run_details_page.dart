@@ -57,12 +57,11 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           ],
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
-          title: const Text(
-            'Run Details',
-            style: TextStyle(
-              color: Colors.white,
-            ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 28.0,
           ),
+          title: Text('Run Details', style: ts_appBarTitle),
         ),
         body: RunTabs(futureRun: _futureRun));
   }

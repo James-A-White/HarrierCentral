@@ -142,7 +142,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Text(
                   label,
-                  style: mediumTextRed.copyWith(fontSize: 20),
+                  style: ts_regularRed,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -167,12 +167,11 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Choose Profile Image',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('Choose Profile Image', style: ts_appBarTitle),
       ),
       body: Container(
         //height: MediaQuery.of(context).size.height-200,
@@ -192,7 +191,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                       child: Text(
                         'Choose an image source',
                         textAlign: TextAlign.center,
-                        style: smallHeadingStyle.copyWith(fontSize: 24.0),
+                        style: ts_headingLarge,
                       ),
                     ),
 
@@ -296,7 +295,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                       child: TextButton(
                         style: TextButton.styleFrom(backgroundColor: _imageTypeSelection == SelectedImageTypeEnum.none ? Colors.grey : Colors.red.shade900),
                         //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
-                        child: Text('Next', style: textStyleButton),
+                        child: Text('Next', style: ts_button),
                         onPressed: () {
                           if (_imageTypeSelection != SelectedImageTypeEnum.none) {
                             _processAndContinue();
@@ -317,12 +316,12 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        const Padding(
-          padding: EdgeInsets.only(top: 20.0),
+        Padding(
+          padding: const EdgeInsets.only(top: 20.0),
           child: Text(
             'Uploading\r\nProfile Image',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 32.0, fontFamily: 'WorkSansSemiBold'),
+            style: ts_titleVeryLarge,
           ),
         ),
         const Padding(

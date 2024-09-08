@@ -46,7 +46,7 @@ class SupportPageState extends State<SupportPage> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Text(
           'Applying Invite Code',
-          style: headingStyle,
+          style: ts_headingLarge,
           textAlign: TextAlign.center,
         ),
         Container(height: 30),
@@ -69,12 +69,11 @@ class SupportPageState extends State<SupportPage> {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: const Text(
-        'Support',
-        style: TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text('Support', style: ts_appBarTitle),
     );
     return Stack(
       children: <Widget>[
@@ -100,13 +99,13 @@ class SupportPageState extends State<SupportPage> {
                                 //'QR Code for xxx',
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
-                                style: headingStyle),
+                                style: ts_headingLarge),
                             const SizedBox(height: 15.0),
                             AutoSizeText(_userName,
                                 //'QR Code for xxx',
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
-                                style: largeText),
+                                style: ts_titleVeryLarge),
                             const SizedBox(height: 15.0),
                             SizedBox(
                               height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4)
@@ -144,13 +143,13 @@ class SupportPageState extends State<SupportPage> {
                             ),
                             Text(
                               'Support Code:',
-                              style: headingStyle,
+                              style: ts_headingLarge,
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 15.0),
                             Text(
                               _supportCode,
-                              style: largeText,
+                              style: ts_titleVeryLarge,
                               textAlign: TextAlign.center,
                             ),
                             const FancyDivider(
@@ -161,7 +160,7 @@ class SupportPageState extends State<SupportPage> {
                             ),
                             Text(
                               'Invite Code:',
-                              style: headingStyle,
+                              style: ts_headingLarge,
                               textAlign: TextAlign.center,
                             ),
                             Container(
@@ -194,6 +193,7 @@ class SupportPageState extends State<SupportPage> {
                                         // },
                                         keyboardType: TextInputType.text,
                                         style: const TextStyle(
+                                          color: Colors.yellow,
                                           fontFamily: 'Poppins',
                                         ),
                                       ),
@@ -244,7 +244,7 @@ class SupportPageState extends State<SupportPage> {
                                             },
                                             child: Text(
                                               'Reset App',
-                                              style: textStyleButton,
+                                              style: ts_button,
                                             ),
                                           ),
                                         ),
@@ -296,7 +296,7 @@ class SupportPageState extends State<SupportPage> {
                                             },
                                             child: Text(
                                               'Reload Database',
-                                              style: textStyleButton,
+                                              style: ts_button,
                                             ),
                                           ),
                                         ),
@@ -333,13 +333,13 @@ class SupportPageState extends State<SupportPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('About your QR Secret Code'),
-          content: const SingleChildScrollView(
+          content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text(
                   'Harrier Central does not use either usernames or passwords. Instead we identify you using a \'secret QR code\'. This QR code can be used to allow Harrier Central running on another device to access your account. If you want to install Harrier Central on another device, when you first install the app, select \'existing user\' and use the scanner to scan this code. The app on the new device will then be configured to access your account',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: ts_mediumBlack,
                 )
               ],
             ),

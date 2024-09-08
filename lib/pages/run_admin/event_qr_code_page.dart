@@ -47,12 +47,11 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'QR codes for this Hash',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('QR codes for this Hash', style: ts_appBarTitle),
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
@@ -87,8 +86,8 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    labelStyle: ts_condensedMediumBlack,
+                    unselectedLabelStyle: ts_condensedMediumBlack,
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
@@ -266,7 +265,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
                 Text(
                   widget.instructions,
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: ts_regularMediumBlack,
                 )
               ],
             ),
@@ -320,7 +319,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
             maxLines: 1,
             minFontSize: 22.0,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 24.0, height: 0.8),
+            style: ts_titleLarge.copyWith(height: 0.8),
           ),
           SizedBox(
             width: spacer / 3,
@@ -333,7 +332,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
             minFontSize: 22.0,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 24.0, height: 1.0),
+            style: ts_large,
           ),
           SizedBox(
             width: spacer / 3,

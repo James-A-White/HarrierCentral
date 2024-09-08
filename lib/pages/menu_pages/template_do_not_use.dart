@@ -18,12 +18,11 @@ class DoNotUseState extends State<DoNotUse> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
-        title: const Text(
-          'My Profile',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('My Profile', style: ts_appBarTitle),
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),

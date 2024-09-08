@@ -79,7 +79,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   Future<void> _refreshUserDataFromTable(bool forceRefresh) async {
-    String query = ''' 
+    String query = '''
         SELECT 
           h.*
           FROM hashers h
@@ -113,7 +113,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
-          query = ''' 
+          query = '''
 
           SELECT 
             h.*,
@@ -204,12 +204,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: Text(
-        widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile' : 'Hasher Profile',
-        style: const TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text(widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile' : 'Hasher Profile', style: ts_appBarTitle),
     );
 
     _firstNameController.addListener(() {
@@ -300,7 +299,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Text(
           'Loading / Updating User Profile',
-          style: headingStyle,
+          style: ts_headingLarge,
           textAlign: TextAlign.center,
         ),
         Container(height: 30),
@@ -606,7 +605,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                   children: <Widget>[
                                     Text(
                                       widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile Information' : 'Hasher Profile Information',
-                                      style: headingStyle,
+                                      style: ts_headingLarge,
                                       textAlign: TextAlign.center,
                                     ),
                                     Container(
@@ -641,7 +640,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   ),
                                                   Text(
                                                     'Name Preference',
-                                                    style: headingStyle20Black,
+                                                    style: ts_headingBlack,
                                                   ),
                                                   const SizedBox(
                                                     height: 10,
@@ -736,7 +735,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     });
                                                   }
                                                 },
-                                                child: Text('Update Profile Image', style: textStyleButton),
+                                                child: Text('Update Profile Image', style: ts_button),
                                               ),
                                             ),
                                             const SizedBox(height: 15),
@@ -763,7 +762,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             ),
                                                             Text(
                                                               'Distance Preference',
-                                                              style: headingStyle20Black,
+                                                              style: ts_headingBlack,
                                                             ),
                                                             const SizedBox(
                                                               height: 10,
@@ -851,7 +850,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Text(
                                                                 'Or...\r\n...Automatically Show\r\nAll Runs Within...',
                                                                 textAlign: TextAlign.center,
-                                                                style: headingStyle20Black,
+                                                                style: ts_headingBlack,
                                                               ),
                                                               const SizedBox(
                                                                 height: 10,
@@ -969,7 +968,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           padding: const EdgeInsets.all(8.0),
                                                           child: Text(
                                                             'Distance to Runs',
-                                                            style: headingStyle,
+                                                            style: ts_headingLarge,
                                                             textAlign: TextAlign.center,
                                                           ),
                                                         ),
@@ -977,7 +976,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           padding: const EdgeInsets.all(8.0),
                                                           child: Text(
                                                             'Harrier Central can help you find runs that are nearby. In order to do this, the app needs to have access to the phone\'s current location, but currently location is disabled for this app.\r\n\r\nTo start using the distance features of Harrier Central please press the "Use Location" button below and follow the prompts.',
-                                                            style: bodyStyle,
+                                                            style: ts_body,
                                                             textAlign: TextAlign.center,
                                                           ),
                                                         ),
@@ -990,7 +989,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             onPressed: () async {
                                                               await _enableLocationServices();
                                                             },
-                                                            child: Text('Use Location', style: textStyleButton),
+                                                            child: Text('Use Location', style: ts_button),
                                                           ),
                                                         ),
                                                       ],
@@ -1058,12 +1057,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                               Text(
                                                 'Previous run count:',
-                                                style: headingStyle,
+                                                style: ts_headingLarge,
                                                 textAlign: TextAlign.center,
                                               ),
                                               Text(
                                                 'Number of runs with ${widget.kennelShortName} that are not listed in Harrier Central',
-                                                style: headingStyle20italic,
+                                                style: ts_headingItalic,
                                                 textAlign: TextAlign.center,
                                               ),
                                               Container(
@@ -1131,7 +1130,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         },
                                                         child: Text(
                                                           'Get invite code',
-                                                          style: textStyleButton,
+                                                          style: ts_button,
                                                         ),
                                                       ),
                                                     ),
@@ -1154,7 +1153,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'Clear Map Preference',
-                                              style: headingStyle,
+                                              style: ts_headingLarge,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1162,7 +1161,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'You have set your map preference to $_externalMapProvider. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
-                                              style: bodyStyle,
+                                              style: ts_body,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1191,7 +1190,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   },
                                                   child: Text(
                                                     'Clear map preference',
-                                                    style: textStyleButton,
+                                                    style: ts_button,
                                                   ),
                                                 ),
                                               ],
@@ -1214,7 +1213,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'Reload Data',
-                                              style: headingStyle,
+                                              style: ts_headingLarge,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1222,7 +1221,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
-                                              style: bodyStyle,
+                                              style: ts_body,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1269,7 +1268,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     },
                                                     child: Text(
                                                       'Reload Data',
-                                                      style: textStyleButton,
+                                                      style: ts_button,
                                                     ),
                                                   ),
                                                 ),
@@ -1306,7 +1305,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       },
                                                       child: Text(
                                                         'Log out',
-                                                        style: textStyleButton,
+                                                        style: ts_button,
                                                       ),
                                                     ),
                                                   ),
@@ -1331,7 +1330,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'Third Party Login',
-                                              style: headingStyle,
+                                              style: ts_headingLarge,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1339,7 +1338,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
-                                              style: bodyStyle,
+                                              style: ts_body,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1362,7 +1361,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     },
                                                     child: Text(
                                                       'Login with 3rd Party',
-                                                      style: textStyleButton,
+                                                      style: ts_button,
                                                     ),
                                                   ),
                                                 ),
@@ -1386,7 +1385,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'Delete Account',
-                                              style: headingStyle,
+                                              style: ts_headingLarge,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1394,7 +1393,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.\r\n\r\nPerhaps instead you would like to keep your app and run counts but wish to anonymize your personal information? If so, scroll upwards and change your name and email address to anything you desire, understanding that your Kennel will not be able to email you through the app if you provide a fake email address. Click on Save Changes when you are done.',
-                                              style: bodyStyle,
+                                              style: ts_body,
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -1452,7 +1451,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     },
                                                     child: Text(
                                                       'Delete Account',
-                                                      style: textStyleButton,
+                                                      style: ts_button,
                                                     ),
                                                   ),
                                                 ),
@@ -1492,7 +1491,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                         _updateProfile();
                       }
                     },
-                    child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: textStyleButton),
+                    child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: ts_button),
                   ),
                 ))),
         OfflineModeRibbon(

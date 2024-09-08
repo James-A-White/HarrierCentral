@@ -114,7 +114,7 @@ class KennelListItemState extends State<KennelListItem> {
                     child: AutoSizeText(
                       widget.kennelItem.kennel.kennelName,
                       //'An extremely long kennel name for testing purposes',
-                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                      style: ts_titleCondensedBlack,
                       textAlign: TextAlign.left,
                       maxLines: 1,
                       minFontSize: 18,
@@ -208,25 +208,25 @@ class KennelListItemState extends State<KennelListItem> {
                           if (widget.kennelItem.extensions.location != null) ...<Widget>[
                             Text(
                               widget.kennelItem.extensions.location!,
-                              style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                              style: ts_regularMediumBlack,
                             ),
                           ],
                           if ((G0<AppModel>().hasLocationPermissions) && (widget.kennelItem.extensions.distToKennel != null)) ...<Widget>[
                             Text(
                               '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
-                              style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                              style: ts_regularMediumBlack,
                             )
                           ],
                           if ((widget.kennelItem.hkm != null) && (widget.kennelItem.hkm!.hcTotalRunCount != 0)) ...<Widget>[
                             Text(
                               'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
-                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
+                              style: ts_titleMedium.copyWith(color: Colors.blue.shade800),
                             ),
                           ],
                           if (widget.kennelItem.hkm?.dateOfLastRun != null) ...<Widget>[
                             Text(
                               'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
-                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: Colors.blue.shade800),
+                              style: ts_titleMedium.copyWith(color: Colors.blue.shade800),
                             ),
                           ],
                           if ((widget.kennelItem.hkm != null) && (widget.kennelItem.hkm!.kennelCredit != 0)) ...<Widget>[

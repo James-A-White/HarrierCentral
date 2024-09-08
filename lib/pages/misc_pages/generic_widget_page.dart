@@ -16,12 +16,11 @@ class GenericWidgetPage extends StatelessWidget {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: Text(
-        appBarTitle,
-        style: const TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text(appBarTitle, style: ts_appBarTitle),
     );
 
     return Scaffold(

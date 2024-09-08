@@ -134,6 +134,7 @@ class KennelMemberListItem extends StatelessWidget {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
+                                    color: Colors.black,
                                     fontFamily: (kennelMember.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now()) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed',
                                     fontStyle: FontStyle.normal,
                                     fontSize: 22.0,
@@ -167,7 +168,7 @@ class KennelMemberListItem extends StatelessWidget {
                     if (kennelMember.dateOfLastRun != null) ...<Widget>[
                       Text(
                         'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun!)}',
-                        style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                        style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -175,7 +176,7 @@ class KennelMemberListItem extends StatelessWidget {
                         ? Container()
                         : Text(
                             'Runs: ${kennelMember.hcTotalRunCount + kennelMember.historicalTotalRunCount}, Haring: ${kennelMember.hcHaringCount + kennelMember.historicalHaringCount}',
-                            style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                            style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
                             textAlign: TextAlign.center,
                           ),
                     // NULLSAFETODO1
@@ -191,12 +192,12 @@ class KennelMemberListItem extends StatelessWidget {
                             ? Container()
                             : Text(
                                 '(following this Kennel)',
-                                style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                                style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
                                 textAlign: TextAlign.center,
                               )
                         : Text(
                             kennelMember.membershipExpirationDate!.year >= 2100 ? 'Permanent Member' : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate!)}',
-                            style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                            style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
                             textAlign: TextAlign.center,
                           ),
                     if ((kennelMember.kennelCredit) != 0) ...<Widget>[

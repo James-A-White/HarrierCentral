@@ -138,12 +138,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
-              title: Text(
-                'My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}',
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-              ),
+              title: Text('My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}', style: ts_appBarTitle),
             ),
             floatingActionButton: SpeedDial(
               // both default to 16
@@ -343,8 +338,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //   //model.notifyListeners();
   // }
 
-  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0);
-
   static TextStyle numberStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
 
   static TextStyle boldTitleStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
@@ -539,79 +532,79 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           background: item.canEditRunAttendence == 0
                               ? Container(
                                   color: Colors.grey,
-                                  child: const Row(children: <Widget>[
-                                    Padding(
+                                  child: Row(children: <Widget>[
+                                    const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(left: 15.0),
-                                      child: Text(
+                                        padding: const EdgeInsets.only(left: 15.0),
+                                        child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Run locked',
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                    )
+                                          style: ts_titleMedium,
+                                        ))
                                   ]))
                               : Container(
                                   color: Colors.red,
-                                  child: const Row(children: <Widget>[
-                                    Padding(
+                                  child: Row(children: <Widget>[
+                                    const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(left: 15.0),
-                                      child: Text(
+                                        padding: const EdgeInsets.only(left: 15.0),
+                                        child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'I was not\r\nat the Hash',
                                           maxLines: 2,
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                    )
+                                          style: ts_titleMedium,
+                                        ))
                                   ])),
                           secondaryBackground: item.canEditRunAttendence == 0
                               ? Container(
                                   color: Colors.grey,
-                                  child: const Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                                    Padding(
+                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+                                    const Padding(
                                       padding: EdgeInsets.only(right: 15.0),
                                       child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(right: 15.0),
-                                      child: Text(
+                                        padding: const EdgeInsets.only(right: 15.0),
+                                        child: Text(
                                           //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                           'Run locked',
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                    )
+                                          style: ts_titleMedium,
+                                        ))
                                   ]))
                               : (item.attendenceState < attendenceAtHash.value) || ((item.attendenceState >= attendenceAtHash.value) && (item.isHare == isHareYes.value))
                                   ? Container(
                                       color: Colors.green,
-                                      child: const Row(
+                                      child: Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: <Widget>[
-                                          Padding(
+                                          const Padding(
                                             padding: EdgeInsets.only(right: 15.0),
                                             child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
-                                            child: Text(
+                                              padding: const EdgeInsets.only(right: 15.0),
+                                              child: Text(
                                                 //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was at\r\nthe Hash',
                                                 maxLines: 2,
                                                 textAlign: TextAlign.right,
-                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                          )
+                                                style: ts_titleMedium,
+                                              ))
                                         ],
                                       ),
                                     )
                                   : Container(
                                       color: Colors.purple,
-                                      child: const Row(
+                                      child: Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: <Widget>[
-                                          Padding(
+                                          const Padding(
                                             padding: EdgeInsets.only(right: 15.0),
                                             child: Padding(
                                               padding: EdgeInsets.only(left: 2.5, right: 2.5),
@@ -619,12 +612,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
-                                            child: Text(
+                                              padding: const EdgeInsets.only(right: 15.0),
+                                              child: Text(
                                                 //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was a Hare',
-                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                          )
+                                                style: ts_titleMedium,
+                                              ))
                                         ],
                                       ),
                                     ),

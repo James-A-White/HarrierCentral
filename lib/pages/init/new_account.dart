@@ -26,12 +26,11 @@ class NewAccountPageState extends State<NewAccountPage> {
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
-              title: const Text(
-                'Setup Harrier Central',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+              iconTheme: const IconThemeData(
+                color: Colors.white,
+                size: 28.0,
               ),
+              title: Text('Setup Harrier Central', style: ts_appBarTitle),
             ),
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
@@ -67,14 +66,14 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      double newFontSize = (smallTitleStyle.fontSize ?? 20.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
-      final TextStyle localTitleStyle = smallTitleStyle.copyWith(fontSize: newFontSize, color: Colors.black);
+      double newFontSize = (ts_title.fontSize ?? 20.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
+      final TextStyle localTitleStyle = ts_title.copyWith(fontSize: newFontSize, color: Colors.black);
 
-      newFontSize = (bodyStyleSc.fontSize ?? 12) * G0<DeviceInfo>().deviceWidthScaleFactor;
-      final TextStyle localBodyStyle = bodyStyleSc.copyWith(fontSize: newFontSize, color: Colors.black);
+      newFontSize = (ts_bodySmall.fontSize ?? 12) * G0<DeviceInfo>().deviceWidthScaleFactor;
+      final TextStyle localBodyStyle = ts_bodySmall.copyWith(fontSize: newFontSize, color: Colors.black);
 
-      newFontSize = (headingStyle.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
-      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
+      newFontSize = (ts_headingLarge.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
+      final TextStyle localHeadingStyle = ts_headingLarge.copyWith(fontSize: newFontSize, height: 1.2);
 
       return Container(
         padding: const EdgeInsets.all(15),

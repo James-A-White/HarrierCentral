@@ -12,12 +12,6 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const TextStyle numberStyle = TextStyle(
-      fontFamily: 'AvenirNextCondensedDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 32.0,
-    );
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -66,18 +60,19 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                       '  =  ${kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${kennelInfo.totalRunsThisKennel}',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      style: numberStyle.copyWith(height: 0.6),
+                      style: ts_titleCondensedVeryLargeBlack,
                       textAlign: TextAlign.left,
                     ),
                     kennelInfo.totalHaringThisKennel <= 0
                         ? const SizedBox(height: 20)
                         : Container(
+                            height: 20.0,
                             padding: const EdgeInsets.only(left: 45.0),
                             child: Text(
                               '(${kennelInfo.totalHaringThisKennel.toString()} times hared)',
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
-                              style: numberStyle.copyWith(fontSize: 18.0),
+                              style: ts_titleMediumCondensedBlack.copyWith(fontSize: 18.0),
                               textAlign: TextAlign.left,
                             ),
                           ),

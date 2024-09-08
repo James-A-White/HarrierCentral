@@ -69,8 +69,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
   static const String _searchAllHashers = 'Searching all Hashers';
   bool _highlightSearchType = false;
 
-  final TextStyle _localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
-  final TextStyle _localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
+  final TextStyle _localFootnoteSmallRed = ts_footnoteSmallRed.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
+  final TextStyle _localFootnoteSmall = ts_footnoteSmall.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
 
   List<int> _filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -627,14 +627,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
     return AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
+      ),
       title: TextScaleFactorClamper(
         textScaleFactor: G0<DeviceInfo>().textClamp15,
-        child: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        child: Text(title, style: ts_appBarTitle),
       ),
     );
   }
@@ -707,15 +706,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                               focusNode: _searchFocusNode,
                               controller: _searchController,
                               keyboardType: TextInputType.text,
-                              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                              decoration: const InputDecoration(
+                              style: ts_titleMediumBlack,
+                              decoration: InputDecoration(
                                 border: InputBorder.none,
-                                icon: Icon(
+                                icon: const Icon(
                                   FontAwesome.search,
                                   color: Colors.black,
                                 ),
                                 hintText: 'Enter Hash or mortal name',
-                                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                hintStyle: ts_titleMediumBlack,
                               ),
                             ),
                           ),
@@ -730,7 +729,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                 width: 40,
                 child: TextButton(
                   style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-                  child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
+                  child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                   onPressed: () {
                     _searchController.text = '';
                     _searchText = '';
@@ -1534,24 +1533,24 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
 
   TextStyle _getRunLabelStyle(int numRuns, int attendenceState) {
     if (widget.eventAggregate.event.isCountedRun == 0) {
-      return mediumText.copyWith(color: Colors.grey);
+      return ts_mediumDarkGrey.copyWith(color: Colors.grey);
     } else if (attendenceState >= attendenceAtHash.value) {
       if (_checkSpecialRun(numRuns)) {
-        return mediumTextRed;
+        return ts_mediumRed;
       }
     }
-    return mediumText.copyWith(color: Colors.blue.shade800);
+    return ts_mediumDarkGrey.copyWith(color: Colors.blue.shade800);
   }
 
   TextStyle _getHaringLabelStyle(int numHaring, int attendenceState) {
     if (widget.eventAggregate.event.isCountedRun == 0) {
-      return mediumText.copyWith(color: Colors.grey);
+      return ts_mediumDarkGrey.copyWith(color: Colors.grey);
     } else if (attendenceState >= attendenceAtHash.value) {
       if (_checkSpecialHaring(numHaring)) {
-        return mediumTextRed;
+        return ts_mediumRed;
       }
     }
-    return mediumText.copyWith(color: Colors.blue.shade800);
+    return ts_mediumDarkGrey.copyWith(color: Colors.blue.shade800);
   }
 
   Future<void> _updateRsvpState(CheckInPackModel packMember, int rsvpState, int isHare) async {
@@ -1670,18 +1669,18 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                             ? Container(
                                 color: Colors.grey,
                                 width: G0<DeviceInfo>().deviceWidth,
-                                child: const Column(
+                                child: Column(
                                   children: <Widget>[
-                                    Padding(
+                                    const Padding(
                                       padding: EdgeInsets.only(top: 5.0),
                                       child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(top: 5.0),
+                                      padding: const EdgeInsets.only(top: 5.0),
                                       child: Text(
                                         'Already\r\npaid',
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                        style: ts_title,
                                       ),
                                     ),
                                   ],
@@ -1699,8 +1698,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                                     Padding(
                                       padding: const EdgeInsets.only(top: 10.0),
                                       child: Text('${(widget.eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0)),
+                                          textAlign: TextAlign.center, style: ts_titleMedium),
                                     ),
                                   ],
                                 ),
@@ -1753,19 +1751,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                                 ? Container(
                                     width: G0<DeviceInfo>().deviceWidth,
                                     color: Colors.grey,
-                                    child: const Column(
+                                    child: Column(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: <Widget>[
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(top: 5.0),
                                           child: Icon(FontAwesome.check_circle, size: 30.0, color: Colors.white),
                                         ),
                                         Padding(
-                                          padding: EdgeInsets.only(top: 5.0),
+                                          padding: const EdgeInsets.only(top: 5.0),
                                           child: Text(
                                             'Already\r\nOn-In',
                                             textAlign: TextAlign.center,
-                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                            style: ts_title,
                                           ),
                                         ),
                                       ],
@@ -1774,19 +1772,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                                 : Container(
                                     color: Colors.amber[800],
                                     width: G0<DeviceInfo>().deviceWidth,
-                                    child: const Column(
+                                    child: Column(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: <Widget>[
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(top: 2.0),
                                           child: Icon(Ionicons.ios_beer, size: 30.0, color: Colors.white),
                                         ),
                                         Padding(
-                                          padding: EdgeInsets.only(top: 5.0),
+                                          padding: const EdgeInsets.only(top: 5.0),
                                           child: Text(
                                             'Record as\r\nOn-In',
                                             textAlign: TextAlign.center,
-                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                            style: ts_title,
                                           ),
                                         ),
                                       ],
@@ -1805,9 +1803,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 5.0),
-                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                                      child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash', textAlign: TextAlign.center, style: ts_title),
                                     ),
                                   ],
                                 ),
@@ -1878,10 +1874,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text('Can\'t find a Hasher?', style: smallContentStyleDb),
+                    Text('Can\'t find a Hasher?', style: ts_contentStyle),
                     AutoSizeText(
                       'Click here to add \'${_capitalizeFirstLetter(_searchController.text)}\'',
-                      style: smallContentStyle,
+                      style: ts_contentStyle,
                       maxLines: 1,
                     ),
                   ],
@@ -1923,15 +1919,15 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             focusNode: myFocusNodeFirstName,
             controller: nameTextController,
             keyboardType: TextInputType.text,
-            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-            decoration: const InputDecoration(
+            style: ts_titleMediumBlack,
+            decoration: InputDecoration(
               //border: InputBorder.none,
-              icon: Icon(
+              icon: const Icon(
                 FontAwesome.money,
                 color: Colors.white,
               ),
               hintText: 'Just Julie',
-              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+              hintStyle: ts_titleMediumBlack,
             ),
           ),
           TextField(
@@ -1939,15 +1935,15 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             //focusNode: myFocusNodeFirstName,
             controller: emailTextController,
             keyboardType: TextInputType.emailAddress,
-            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-            decoration: const InputDecoration(
+            style: ts_titleMediumBlack,
+            decoration: InputDecoration(
               //border: InputBorder.none,
-              icon: Icon(
+              icon: const Icon(
                 FontAwesome.money,
                 color: Colors.white,
               ),
               hintText: '(email - optional)',
-              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+              hintStyle: ts_titleMediumBlack,
             ),
           ),
           TextField(
@@ -1955,15 +1951,15 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             //focusNode: myFocusNodeFirstName,
             controller: phoneTextController,
             keyboardType: TextInputType.phone,
-            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-            decoration: const InputDecoration(
+            style: ts_titleMediumBlack,
+            decoration: InputDecoration(
               //border: InputBorder.none,
-              icon: Icon(
+              icon: const Icon(
                 FontAwesome.money,
                 color: Colors.white,
               ),
               hintText: '(phone # - optional)',
-              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+              hintStyle: ts_titleMediumBlack,
             ),
           ),
         ]),

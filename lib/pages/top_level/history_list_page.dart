@@ -28,7 +28,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    final String query = '''  
+    final String query = '''
           SELECT 
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} + hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},0) as totalRunsThisKennel,
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} + ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},0) as totalHaringThisKennel,
@@ -108,8 +108,6 @@ class HistoryListPageState extends State<HistoryListPage> {
     });
   }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
-
   Widget _buildListView() {
     final String? photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
     return Stack(
@@ -186,19 +184,19 @@ class HistoryListPageState extends State<HistoryListPage> {
                     _runCountsList.isEmpty
                         ? Container()
                         : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                            const Text(
+                            Text(
                               'My total run counts',
-                              style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              style: ts_titleMediumBold.copyWith(height: 1.2, color: Colors.black87),
                               textAlign: TextAlign.center,
                             ),
                             Text(
                               'Total runs: $_totalRuns',
-                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              style: ts_titleMedium.copyWith(height: 1.2, color: Colors.black87),
                               textAlign: TextAlign.left,
                             ),
                             Text(
                               'Total times hared: $_totalHaring',
-                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              style: ts_titleMedium.copyWith(height: 1.2, color: Colors.black87),
                               textAlign: TextAlign.left,
                             ),
                           ])

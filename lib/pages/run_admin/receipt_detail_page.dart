@@ -55,7 +55,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Text(
           'Uploading receipt details',
-          style: headingStyle,
+          style: ts_heading,
           textAlign: TextAlign.center,
         ),
         Container(height: 30),
@@ -72,10 +72,6 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       ]),
     );
   }
-
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
-
-  TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -227,12 +223,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: const Text(
-        'Run Receipt',
-        style: TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text('Run Receipt', style: ts_appBarTitle),
     );
     return Scaffold(
         key: _scaffoldKey,
@@ -261,7 +256,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                     children: <Widget>[
                                       Text(
                                         'Receipt details',
-                                        style: headingStyle,
+                                        style: ts_heading,
                                         textAlign: TextAlign.center,
                                       ),
                                       //),
@@ -298,7 +293,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                     });
                                                   });
                                                 },
-                                                child: Text('Scan Receipt', style: textStyleButton),
+                                                child: Text('Scan Receipt', style: ts_button),
                                               )
                                             ],
                                           ),
@@ -376,7 +371,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                             width: 200,
                             child: ElevatedButton(
                               onPressed: _uploadReceipt,
-                              child: Text('Save receipt', style: textStyleButton),
+                              child: Text('Save receipt', style: ts_button),
                             ),
                           ),
                         ],

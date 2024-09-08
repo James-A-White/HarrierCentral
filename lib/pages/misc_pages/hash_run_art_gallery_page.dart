@@ -15,12 +15,11 @@ class HashRunArtGalleryPage extends StatelessWidget {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: const Text(
-        'Run Artwork',
-        style: TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text('Run Artwork', style: ts_appBarTitle),
     );
 
     return Scaffold(
@@ -87,7 +86,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
                     const SizedBox(height: 10.0),
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(item[G0<TableModel>().eventsTableHelper.colEventName] ?? '', style: titleStyle.copyWith(color: Colors.black), textAlign: TextAlign.center),
+                      child: Text(item[G0<TableModel>().eventsTableHelper.colEventName] ?? '', style: ts_titleLarge.copyWith(color: Colors.black), textAlign: TextAlign.center),
                     ),
                     item[G0<TableModel>().eventsTableHelper.colEventStartDatetime] != null
                         ? Padding(
@@ -98,7 +97,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
                                     item[G0<TableModel>().eventsTableHelper.colEventStartDatetime],
                                   ),
                                 ),
-                                style: smallTitleStyle.copyWith(color: Colors.grey.shade500),
+                                style: ts_title.copyWith(color: Colors.grey.shade500),
                                 textAlign: TextAlign.center),
                           )
                         : Container(),

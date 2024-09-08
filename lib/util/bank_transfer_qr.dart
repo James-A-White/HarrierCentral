@@ -39,7 +39,7 @@ class BankTransferQr {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: Text(
                   'Show Payment QR code for\r\n$packMemberNameForDisplay',
-                  style: buttonLabelStyleMedium,
+                  style: ts_button,
                   textAlign: TextAlign.center,
                 ),
                 onPressed: () {

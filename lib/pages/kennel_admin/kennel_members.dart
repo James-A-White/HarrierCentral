@@ -54,6 +54,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     _appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
+      ),
       title: Text(
         '${widget.kennelListAggregate.kennel.kennelShortName} Members',
         style: const TextStyle(
@@ -100,7 +104,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
       print('HKM count = $message');
     }
 
-    final String query = ''' 
+    final String query = '''
         SELECT 
           h.${G0<TableModel>().hashersTableHelper.colHasherId},
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>")) as dispName,
@@ -198,7 +202,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   Future<void> _refreshCounters(bool forceRefresh) async {
     try {
-      final String sql = ''' 
+      final String sql = '''
 
           SELECT 
               COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} > 0 THEN 1 ELSE NULL END) as isFollowing,
@@ -406,7 +410,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                               color: themeBackgroundColor,
                               child: Text(
                                 memberType,
-                                style: titleStyle,
+                                style: ts_titleLarge,
                                 textAlign: TextAlign.center,
                               ),
                             );
@@ -430,18 +434,18 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                               },
                               background: Container(
                                   color: Colors.red,
-                                  child: const Row(children: <Widget>[
-                                    Padding(
+                                  child: Row(children: <Widget>[
+                                    const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
                                       child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(left: 15.0),
+                                      padding: const EdgeInsets.only(left: 15.0),
                                       child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Cancel\r\nmembership',
                                           maxLines: 2,
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          style: ts_titleMedium),
                                     )
                                   ])),
                               secondaryBackground: Container(
@@ -458,7 +462,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                       child: Text(
                                           //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                           'Add ${item.membershipDurationInMonths} months\r\nto membership',
-                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          style: ts_titleMedium),
                                     )
                                   ],
                                 ),
@@ -632,15 +636,15 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                       focusNode: _searchFocusNode,
                       controller: _searchController,
                       keyboardType: TextInputType.text,
-                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                      decoration: const InputDecoration(
+                      style: ts_titleMediumBlack,
+                      decoration: InputDecoration(
                         border: InputBorder.none,
-                        icon: Icon(
+                        icon: const Icon(
                           FontAwesome.search,
                           color: Colors.black,
                         ),
                         hintText: 'Enter Hash or mortal name',
-                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        hintStyle: ts_titleMediumBlack,
                       ),
                     ),
                   ],
@@ -650,7 +654,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                 width: 40,
                 child: TextButton(
                   style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-                  child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
+                  child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                   onPressed: () {
                     _searchController.text = '';
                     _searchText = '';

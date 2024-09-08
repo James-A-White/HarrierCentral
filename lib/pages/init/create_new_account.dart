@@ -26,12 +26,11 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
-              title: const Text(
-                'Create New Account',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+              iconTheme: const IconThemeData(
+                color: Colors.white,
+                size: 28.0,
               ),
+              title: Text('Create New Account', style: ts_appBarTitle),
             ),
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
@@ -87,9 +86,9 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final double newFontSize = (headingStyle.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
+      final double newFontSize = (ts_headingLarge.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
 
-      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
+      final TextStyle localHeadingStyle = ts_headingLarge.copyWith(fontSize: newFontSize, height: 1.2);
 
       return SingleChildScrollView(
         child: Container(
@@ -185,7 +184,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
               const SizedBox(height: 35, width: 10),
               if (!isLoading) ...<Widget>[
                 TextButton(
-                  child: Text('Get Started!', style: textStyleButton),
+                  child: Text('Get Started!', style: ts_button),
                   onPressed: () async {
                     if (_myDetailsUiStateKey.currentState!.validateForm()) {
                       // If the form is valid, display a snackbar. In the real world,

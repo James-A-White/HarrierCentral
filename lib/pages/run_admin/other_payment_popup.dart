@@ -347,8 +347,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
           ],
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0),
-            child: Text('Total due: ${IveCoreUtilities.getFormattedMoney(_totalDue, widget.decimalDigits, widget.currencySymbol)}',
-                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontSize: 24.0, color: Colors.grey.shade700)),
+            child: Text('Total due: ${IveCoreUtilities.getFormattedMoney(_totalDue, widget.decimalDigits, widget.currencySymbol)}', style: ts_titleLarge.copyWith(color: Colors.grey.shade700)),
           ),
         ]),
       ),

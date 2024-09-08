@@ -51,7 +51,14 @@ class LoginPageState extends State<ThirdPartyLogin> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: themeAppBarBackground,
-        title: const Text('3rd Party Login'),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
+        ),
+        title: Text(
+          '3rd Party Login',
+          style: ts_appBarTitle,
+        ),
         // actions: <Widget>[
         //   IconButton(
         //     icon: const Icon(
@@ -261,11 +268,11 @@ class LoginPageState extends State<ThirdPartyLogin> {
           //const SizedBox(height: 28.0),
           Padding(
             padding: const EdgeInsets.only(top: 25.0, bottom: 15.0),
-            child: Text('Logged in as:', textAlign: TextAlign.center, style: smallTitleStyle),
+            child: Text('Logged in as:', textAlign: TextAlign.center, style: ts_title),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 15.0),
-            child: Text(profileData.name ?? ('${profileData.firstName} ${profileData.lastName}'), textAlign: TextAlign.center, style: largeTitleStyle),
+            child: Text(profileData.name ?? ('${profileData.firstName} ${profileData.lastName}'), textAlign: TextAlign.center, style: ts_headingVeryLarge),
           ),
           if ((profileData.photoUrl?.length ?? 0) > 5) ...<Widget>[
             Padding(
@@ -336,7 +343,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       // },
                       //keyboardType: TextInputType.,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Colors.red.shade900),
+                      style: ts_titleDarkRedLarge,
                     ),
                     const SizedBox(height: 20, width: 10),
                     TextFormField(
@@ -362,7 +369,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       // },
                       //keyboardType: TextInputType.,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 20.0, color: Colors.red.shade900),
+                      style: ts_titleDarkRed,
                     ),
                     const SizedBox(height: 20, width: 10),
                     // Row(
@@ -414,7 +421,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
           Padding(
             padding: const EdgeInsets.only(top: 25.0),
             child: TextButton(
-              child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info', style: textStyleButton),
+              child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info', style: ts_button),
               onPressed: () async {
                 if (!widget.isNewUser || ((_formKey.currentState != null) && (_formKey.currentState!.validate()))) {
                   setState(() {

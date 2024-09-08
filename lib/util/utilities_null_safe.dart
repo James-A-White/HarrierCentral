@@ -147,12 +147,7 @@ class Utilities {
                                   description: address,
                                 );
                               },
-                              title: Text(map.mapName,
-                                  style: const TextStyle(
-                                    fontFamily: 'AvenirNextDemiBold',
-                                    color: Colors.black,
-                                    fontSize: 26.0,
-                                  )),
+                              title: Text(map.mapName, style: ts_titleLargeBlack),
                               leading: SvgPicture.asset(
                                 map.icon,
                                 height: 60.0,
@@ -173,13 +168,9 @@ class Utilities {
                       //   });
                       // }),
                       MapSnackbar(saveUserMapPreference),
-                      const Text(
+                      Text(
                         'Always use this option',
-                        style: TextStyle(
-                          fontFamily: 'AvenirNextDemiBold',
-                          color: Colors.black,
-                          fontSize: 22.0,
-                        ),
+                        style: ts_titleBlack,
                       ),
                       const SizedBox(width: 20.0)
                     ],
@@ -567,7 +558,7 @@ class Utilities {
               Text(
                 body,
                 textAlign: textAlign,
-                style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                style: ts_regularMediumBlack,
               )
             ],
           ),
@@ -610,7 +601,7 @@ class Utilities {
               Text(
                 body,
                 textAlign: TextAlign.justify,
-                style: titleStyle,
+                style: ts_titleLarge,
               )
             ],
           ),

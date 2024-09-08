@@ -53,12 +53,6 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   //   );
   // }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
-
-  TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
-
-  TextStyle insertTokenButtonTextStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _requestPop(bool _) {
@@ -71,12 +65,11 @@ class EmailEditorPageState extends State<EmailEditorPage> {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: const Text(
-        'Email Editor',
-        style: TextStyle(
-          color: Colors.white,
-        ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 28.0,
       ),
+      title: Text('Email Editor', style: ts_appBarTitle),
     );
     return PopScope(
       onPopInvoked: _requestPop,
@@ -102,14 +95,14 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                   onPressed: () {
                     sendEmail(context, '');
                   },
-                  child: Text('Quick Send Email', style: textStyleButton),
+                  child: Text('Quick Send Email', style: ts_button),
                 ),
                 const SizedBox(height: 10),
                 const FancyDivider(key: Key('155030392'), innerColor: Colors.white, useTextOr: true),
                 const SizedBox(height: 20),
                 Text(
                   'Compose custom email',
-                  style: headingStyle,
+                  style: ts_heading,
                   textAlign: TextAlign.center,
                 ),
                 Container(
@@ -157,7 +150,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
                             'Insert\r\nyour name',
-                            style: insertTokenButtonTextStyle,
+                            style: ts_titleCondensedBlack,
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -174,7 +167,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
                             'Insert recipient name',
-                            style: insertTokenButtonTextStyle,
+                            style: ts_titleCondensedBlack,
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -197,7 +190,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
                             'Insert\r\nrun details',
-                            style: insertTokenButtonTextStyle,
+                            style: ts_titleCondensedBlack,
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -214,7 +207,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
                             'Insert run\r\ndescription',
-                            style: insertTokenButtonTextStyle,
+                            style: ts_titleCondensedBlack,
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -228,7 +221,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
                     sendEmail(context, bodyController.text);
                   },
-                  child: Text('Send Email', style: textStyleButton),
+                  child: Text('Send Email', style: ts_button),
                 ),
                 //),
                 // Positioned(

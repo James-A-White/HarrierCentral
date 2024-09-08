@@ -160,15 +160,15 @@ class KennelsListPageState extends State<KennelsListPage> {
               focusNode: _searchFocusNode,
               controller: _searchController,
               keyboardType: TextInputType.text,
-              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-              decoration: const InputDecoration(
+              style: ts_titleMediumBlack,
+              decoration: InputDecoration(
                 border: InputBorder.none,
-                icon: Icon(
+                icon: const Icon(
                   FontAwesome.search,
                   color: Colors.black,
                 ),
                 hintText: 'Search...',
-                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                hintStyle: ts_titleMediumBlack,
               ),
             ),
           ),
@@ -176,7 +176,7 @@ class KennelsListPageState extends State<KennelsListPage> {
             width: 40,
             child: TextButton(
               style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-              child: Text('X', style: headingStyle20Black.copyWith(color: Colors.grey.shade700)),
+              child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
               onPressed: () {
                 _searchController.text = '';
                 _searchKennelsText = '';
@@ -366,7 +366,7 @@ class KennelsListPageState extends State<KennelsListPage> {
               decoration: Backgrounds.defaultHcBackground(),
               padding: const EdgeInsets.only(top: 0.0),
               child: ((G0<TableModel>().globalKennelMainPageList == null) || (G0<TableModel>().globalKennelMainPageList!.isEmpty))
-                  ? Center(child: Text('Loading Kennels.', style: headingStyle))
+                  ? Center(child: Text('Loading Kennels.', style: ts_headingLarge))
                   : NestedScrollView(
                       controller: _scrollController,
                       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {

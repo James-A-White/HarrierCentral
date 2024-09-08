@@ -24,12 +24,11 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Set mismanagement roles',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('Set mismanagement roles', style: ts_appBarTitle),
       ),
       body: Column(children: <Widget>[
         Expanded(
@@ -162,7 +161,7 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
                   // if mismanagementFlags = 1 that means this person has no role, so set all to zero, otherwise set the mmRoleIsOnMm flag
                   Navigator.of(context).pop(((mmRoles.mismanagementFlags ?? 0) & mmRoleAllFlags) <= 1 ? 0 : (mmRoles.mismanagementFlags ?? 0) | mmRoleIsOnMm);
                 },
-                child: Text('Save changes', style: textStyleButton),
+                child: Text('Save changes', style: ts_button),
               ),
             ),
           ),
@@ -192,7 +191,7 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
           ),
           Text(
             title,
-            style: headingStyle20Black,
+            style: ts_headingBlack,
             textAlign: TextAlign.center,
           ),
         ],

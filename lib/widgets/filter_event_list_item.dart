@@ -64,13 +64,7 @@ class FilterEventListItem extends StatelessWidget {
                                         : 'External Source',
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
-                                style: const TextStyle(
-                                  fontFamily: 'AvenirNextBold',
-                                  height: 1.0,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10.0,
-                                ),
+                                style: ts_tinyBlackBold,
                               ),
                             ),
                           ]

@@ -107,15 +107,15 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                     }
                   },
                   textCapitalization: TextCapitalization.words,
-                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                  decoration: const InputDecoration(
+                  style: ts_titleMediumBlack,
+                  decoration: InputDecoration(
                     border: InputBorder.none,
-                    icon: Icon(
+                    icon: const Icon(
                       FontAwesome.user,
                       color: Colors.black,
                     ),
                     hintText: 'First Name',
-                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: ts_titleMediumBlack,
                   ),
                 ),
               ),
@@ -141,15 +141,15 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                   },
                   keyboardType: TextInputType.text,
                   textCapitalization: TextCapitalization.words,
-                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                  decoration: const InputDecoration(
+                  style: ts_titleMediumBlack,
+                  decoration: InputDecoration(
                     border: InputBorder.none,
-                    icon: Icon(
+                    icon: const Icon(
                       FontAwesome.user,
                       color: Colors.black,
                     ),
                     hintText: 'Last Name',
-                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: ts_titleMediumBlack,
                   ),
                 ),
               ),
@@ -168,15 +168,15 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                   controller: signupEmailController,
                   keyboardType: TextInputType.emailAddress,
                   validator: Utilities.validateEmail,
-                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                  decoration: const InputDecoration(
+                  style: ts_titleMediumBlack,
+                  decoration: InputDecoration(
                     border: InputBorder.none,
-                    icon: Icon(
+                    icon: const Icon(
                       FontAwesome.envelope,
                       color: Colors.black,
                     ),
                     hintText: 'Email Address',
-                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: ts_titleMediumBlack,
                   ),
                 ),
               ),
@@ -193,15 +193,15 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                   },
                   focusNode: myFocusNodeHashName,
                   controller: signupHashNameController,
-                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                  decoration: const InputDecoration(
+                  style: ts_titleMediumBlack,
+                  decoration: InputDecoration(
                     border: InputBorder.none,
-                    icon: Icon(
+                    icon: const Icon(
                       MaterialCommunityIcons.rabbit,
                       color: Colors.black,
                     ),
                     hintText: 'Hash Name (optional)',
-                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: ts_titleMediumBlack,
                   ),
                 ),
               ),

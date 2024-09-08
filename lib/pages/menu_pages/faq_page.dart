@@ -25,12 +25,11 @@ class FaqPageState extends State<FaqPage> {
           appBar: AppBar(
             centerTitle: true,
             backgroundColor: themeAppBarBackground,
-            title: const Text(
-              'FAQs',
-              style: TextStyle(
-                color: Colors.white,
-              ),
+            iconTheme: const IconThemeData(
+              color: Colors.white,
+              size: 28.0,
             ),
+            title: Text('FAQs', style: ts_appBarTitle),
           ),
           body: Container(
             decoration: Backgrounds.defaultHcBackground(),
@@ -61,11 +60,11 @@ class FaqPageContent extends StatefulWidget {
 }
 
 class FaqPageContentState extends State<FaqPageContent> {
-  TextStyle sectionStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.orange, fontSize: 24.0, height: 1.2);
+  TextStyle sectionStyle = ts_titleLarge.copyWith(color: Colors.orange, height: 1.2);
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.2);
+  TextStyle headingStyle = ts_heading.copyWith(height: 1.2);
 
-  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.2);
+  TextStyle bodyStyle = ts_medium.copyWith(height: 1.2);
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +163,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                         'Visit:\r\n\r\nhttps://www.harriercentral.com/index.php/pricing/\r\n\r\nfor the full list of features, including searching for run information and keeping track of your run counts at Kennels around the world',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
-                    linkStyle: bodyStylePink,
+                    linkStyle: ts_bodyPink,
                     onOpen: (LinkableElement link) async {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
@@ -185,7 +184,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                         'To create a Kennel account, go to:\r\n\r\nhttps://www.harriercentral.com/index.php/kennel-signup-main/\r\n\r\nIf your Kennel posts events in a FB Group (either public or private) and you are an admin of that group, then you can opt to register to use Facebook integration so you do not have to enter the information more than once. We currently use a 5-minute polling mechanism, so any changes you make to your run event in Facebook will be automatically incorporated into the app within 5 minutes. Otherwise, it is an easy process to manually enter runs into the app.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
-                    linkStyle: bodyStylePink,
+                    linkStyle: ts_bodyPink,
                     onOpen: (LinkableElement link) async {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
@@ -211,7 +210,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                     text: 'The best way to get your questions answered is to contact us at:\r\n\r\nconnect@harriercentral.com.\r\n\r\nYou can also use the button below to open our web contact form.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
-                    linkStyle: bodyStylePink,
+                    linkStyle: ts_bodyPink,
                     onOpen: (LinkableElement link) async {
                       if (Utilities.isValidUrl(link.url)) {
                         await launchUrl(Uri.parse(link.url));
@@ -231,7 +230,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                         onPressed: () async {
                           await launchUrl(Uri.parse('https://harriercentral.com/index.php/contact/'));
                         },
-                        child: Text('Contact us', style: textStyleButton),
+                        child: Text('Contact us', style: ts_button),
                       ),
                     ),
                   ),

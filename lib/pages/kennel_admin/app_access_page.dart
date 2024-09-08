@@ -27,12 +27,11 @@ class AppAccessPageState extends State<AppAccessPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Set HC App access',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('Set HC App access', style: ts_appBarTitle),
       ),
       body: appAccess == AppAccess(0)
           ? Container()
@@ -75,7 +74,7 @@ class AppAccessPageState extends State<AppAccessPage> {
                         final int access = ((appAccess.appAccessFlags ?? 0) & authAllFlags) <= 1 ? ((appAccess.appAccessFlags ?? 0) & authIsSuperAdmin) : (appAccess.appAccessFlags ?? 0) | authIsAdmin;
                         Navigator.of(context).pop(access);
                       },
-                      child: Text('Save changes', style: textStyleButton),
+                      child: Text('Save changes', style: ts_button),
                     ),
                   ],
                 ),
@@ -107,7 +106,7 @@ class AppAccessPageState extends State<AppAccessPage> {
           ),
           Text(
             title,
-            style: headingStyle20Black,
+            style: ts_headingBlack,
             textAlign: TextAlign.center,
           ),
         ],

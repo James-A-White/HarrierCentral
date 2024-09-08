@@ -250,12 +250,11 @@ SELECT
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
-          title: Text(
-            widget.eventAggregate.event.eventName,
-            style: const TextStyle(
-              color: Colors.white,
-            ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 28.0,
           ),
+          title: Text(widget.eventAggregate.event.eventName, style: ts_appBarTitle),
         ),
         floatingActionButton: Container(
           margin: const EdgeInsets.only(bottom: 25.0),
@@ -487,10 +486,9 @@ SELECT
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
                                                     ),
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(left: 15.0),
-                                                      child: Text('Confirm Bank Transfer',
-                                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 15.0),
+                                                      child: Text('Confirm Bank Transfer', style: ts_titleMedium),
                                                     )
                                                   ]))
                                               : Container(
@@ -504,7 +502,7 @@ SELECT
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Text(
                                                           '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Bank Transfer',
-                                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                          style: ts_titleMedium),
                                                     )
                                                   ])),
                                           secondaryBackground: needsConfirm
@@ -515,10 +513,9 @@ SELECT
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
                                                     ),
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(right: 15.0),
-                                                      child: Text('Confirm bank transfer',
-                                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(right: 15.0),
+                                                      child: Text('Confirm bank transfer', style: ts_titleMedium),
                                                     )
                                                   ]))
                                               : Container(
@@ -532,7 +529,7 @@ SELECT
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Text(
                                                           '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Cash',
-                                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                          style: ts_titleMedium),
                                                     )
                                                   ])),
                                           onDismissed: (DismissDirection direction) {
@@ -569,7 +566,7 @@ SELECT
                       children: <Widget>[
                         Text(
                           'Total transactions: $_transactionCount',
-                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0),
+                          style: ts_titleBlack,
                         ),
                         Text(
                           'Total collected: ${IveCoreUtilities.getFormattedMoney(
@@ -577,7 +574,7 @@ SELECT
                             widget.eventAggregate.extensions.digAfterDec,
                             widget.eventAggregate.extensions.curSym,
                           )}',
-                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0),
+                          style: ts_titleBlack,
                         ),
                       ],
                     ),
@@ -785,10 +782,7 @@ SELECT
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 16.0);
-
-        const TextStyle bodyStyle = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0);
-        final TextStyle bodyStyleRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, color: Colors.red[600]);
+        final TextStyle bodyStyleRed = ts_titleMediumBlack.copyWith(color: Colors.red.shade700);
 
         if (item.payment == null) {
           return AlertDialog(
@@ -846,11 +840,11 @@ SELECT
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Row(children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       flex: flexLeft,
                       child: Text(
                         'Pay Ref:',
-                        style: headingStyle,
+                        style: ts_regularMediumBlack,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -861,15 +855,15 @@ SELECT
                         flex: flexRight,
                         child: Text(
                           item.payment!.paymentReference ?? '',
-                          style: bodyStyle,
+                          style: ts_titleMediumBlack,
                         )),
                   ]),
                   Row(children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       flex: flexLeft,
                       child: Text(
                         'Paid by:',
-                        style: headingStyle,
+                        style: ts_regularMediumBlack,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -880,15 +874,15 @@ SELECT
                         flex: flexRight,
                         child: Text(
                           item.extensions.paidByName,
-                          style: bodyStyle,
+                          style: ts_titleMediumBlack,
                         )),
                   ]),
                   Row(children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       flex: flexLeft,
                       child: Text(
                         'Paid to:',
-                        style: headingStyle,
+                        style: ts_regularMediumBlack,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -899,15 +893,15 @@ SELECT
                         flex: flexRight,
                         child: Text(
                           item.extensions.paidToName,
-                          style: bodyStyle,
+                          style: ts_titleMediumBlack,
                         )),
                   ]),
                   Row(children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       flex: flexLeft,
                       child: Text(
                         'Amount:',
-                        style: headingStyle,
+                        style: ts_regularMediumBlack,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -918,17 +912,17 @@ SELECT
                         flex: flexRight,
                         child: Text(
                           amountStr,
-                          style: bodyStyle,
+                          style: ts_titleMediumBlack,
                         )),
                   ]),
                   if (item.payment!.specialRunPriceReason.isNotEmpty) ...<Widget>[
                     Row(
                       children: <Widget>[
-                        const Expanded(
+                        Expanded(
                           flex: flexLeft,
                           child: Text(
                             'Reason:',
-                            style: headingStyle,
+                            style: ts_regularMediumBlack,
                             textAlign: TextAlign.right,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -939,7 +933,7 @@ SELECT
                             flex: flexRight,
                             child: Text(
                               item.payment!.specialRunPriceReason,
-                              style: bodyStyle,
+                              style: ts_titleMediumBlack,
                             )),
                       ],
                     ),
@@ -951,7 +945,7 @@ SELECT
                           flex: flexLeft,
                           child: Text(
                             (topUpAmount < 0) ? 'From credit:' : 'Top up:',
-                            style: headingStyle,
+                            style: ts_regularMediumBlack,
                             textAlign: TextAlign.right,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -962,18 +956,18 @@ SELECT
                             flex: flexRight,
                             child: Text(
                               topUpStr,
-                              style: bodyStyle,
+                              style: ts_titleMediumBlack,
                             )),
                       ],
                     ),
                   ],
                   if (item.payment!.discountAmount != 0) ...<Widget>[
                     Row(children: <Widget>[
-                      const Expanded(
+                      Expanded(
                         flex: flexLeft,
                         child: Text(
                           'Discount:',
-                          style: headingStyle,
+                          style: ts_regularMediumBlack,
                           textAlign: TextAlign.right,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -984,17 +978,17 @@ SELECT
                           flex: flexRight,
                           child: Text(
                             discountAmountStr,
-                            style: bodyStyle,
+                            style: ts_titleMediumBlack,
                           )),
                     ]),
                   ],
                   if (item.payment!.discountAmount != 0) ...<Widget>[
                     Row(children: <Widget>[
-                      const Expanded(
+                      Expanded(
                         flex: flexLeft,
                         child: Text(
                           'Discount:',
-                          style: headingStyle,
+                          style: ts_regularMediumBlack,
                           textAlign: TextAlign.right,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1005,17 +999,17 @@ SELECT
                           flex: flexRight,
                           child: Text(
                             discountPercentStr,
-                            style: bodyStyle,
+                            style: ts_titleMediumBlack,
                           )),
                     ]),
                   ],
                   if (item.payment!.discountDescription.isNotEmpty && ((item.payment!.discountAmount != 0) || (item.payment!.discountPercent != 0))) ...<Widget>[
                     Row(children: <Widget>[
-                      const Expanded(
+                      Expanded(
                         flex: flexLeft,
                         child: Text(
                           'Description:',
-                          style: headingStyle,
+                          style: ts_regularMediumBlack,
                           textAlign: TextAlign.right,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1026,18 +1020,18 @@ SELECT
                           flex: flexRight,
                           child: Text(
                             item.payment!.discountDescription,
-                            style: bodyStyle,
+                            style: ts_titleMediumBlack,
                           )),
                     ]),
                   ],
                   item.extensions.extrasPrice == 0
                       ? Container()
                       : Row(children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: flexLeft,
                             child: Text(
                               'Extras:',
-                              style: headingStyle,
+                              style: ts_regularMediumBlack,
                               textAlign: TextAlign.right,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1048,17 +1042,17 @@ SELECT
                               flex: flexRight,
                               child: Text(
                                 item.extensions.extrasDescription ?? '',
-                                style: bodyStyle,
+                                style: ts_titleMediumBlack,
                               )),
                         ]),
                   item.extensions.extrasPrice == 0
                       ? Container()
                       : Row(children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: flexLeft,
                             child: Text(
                               'Ex. Paid:',
-                              style: headingStyle,
+                              style: ts_regularMediumBlack,
                               textAlign: TextAlign.right,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1069,15 +1063,15 @@ SELECT
                               flex: flexRight,
                               child: Text(
                                 item.payment!.doPayForExtras == 0 ? 'No' : extrasPriceStr,
-                                style: bodyStyle,
+                                style: ts_titleMediumBlack,
                               )),
                         ]),
                   Row(children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       flex: flexLeft,
                       child: Text(
                         'Date:',
-                        style: headingStyle,
+                        style: ts_regularMediumBlack,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1088,15 +1082,15 @@ SELECT
                         flex: flexRight,
                         child: Text(
                           DateFormat('MMM dd, yyyy').format(item.payment!.paidDate),
-                          style: bodyStyle,
+                          style: ts_titleMediumBlack,
                         )),
                   ]),
                   Row(children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       flex: flexLeft,
                       child: Text(
                         'Time:',
-                        style: headingStyle,
+                        style: ts_regularMediumBlack,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1107,15 +1101,15 @@ SELECT
                         flex: flexRight,
                         child: Text(
                           DateFormat('kk:mm').format(item.payment!.paidDate),
-                          style: bodyStyle,
+                          style: ts_titleMediumBlack,
                         )),
                   ]),
                   Row(children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       flex: flexLeft,
                       child: Text(
                         'Type:',
-                        style: headingStyle,
+                        style: ts_regularMediumBlack,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1126,17 +1120,17 @@ SELECT
                         flex: flexRight,
                         child: Text(
                           paymentTypeStr,
-                          style: bodyStyle,
+                          style: ts_titleMediumBlack,
                         )),
                   ]),
                   item.payment!.surcharge == 0
                       ? Container()
                       : Row(children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: flexLeft,
                             child: Text(
                               'Surcharge:',
-                              style: headingStyle,
+                              style: ts_regularMediumBlack,
                               textAlign: TextAlign.right,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1151,17 +1145,17 @@ SELECT
                                   widget.eventAggregate.extensions.digAfterDec,
                                   widget.eventAggregate.extensions.curSym,
                                 ),
-                                style: bodyStyle,
+                                style: ts_titleMediumBlack,
                               )),
                         ]),
                   (item.payment!.paymentProvider ?? '') == ''
                       ? Container()
                       : Row(children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: flexLeft,
                             child: Text(
                               'Provider:',
-                              style: headingStyle,
+                              style: ts_regularMediumBlack,
                               textAlign: TextAlign.right,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1172,17 +1166,17 @@ SELECT
                               flex: flexRight,
                               child: Text(
                                 item.payment!.paymentProvider!,
-                                style: bodyStyle,
+                                style: ts_titleMediumBlack,
                               )),
                         ]),
                   ((item.payment!.paymentType != paymentBankTransfer.value) && (item.payment!.paymentType != paymentBankTransferOtherAmount.value))
                       ? Container()
                       : Row(children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: flexLeft,
                             child: Text(
                               'Confirmed:',
-                              style: headingStyle,
+                              style: ts_regularMediumBlack,
                               textAlign: TextAlign.right,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1193,17 +1187,17 @@ SELECT
                               flex: flexRight,
                               child: Text(
                                 item.payment!.confirmedDate == null ? '<not confirmed>' : item.extensions.confByName ?? '',
-                                style: (item.payment!.confirmedDate == null) ? bodyStyleRed : bodyStyle,
+                                style: (item.payment!.confirmedDate == null) ? bodyStyleRed : ts_titleMediumBlack,
                               )),
                         ]),
                   ((item.payment!.paymentType != paymentBankTransfer.value) && (item.payment!.paymentType != paymentBankTransferOtherAmount.value))
                       ? Container()
                       : Row(children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: flexLeft,
                             child: Text(
                               'Conf on:',
-                              style: headingStyle,
+                              style: ts_regularMediumBlack,
                               textAlign: TextAlign.right,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1214,7 +1208,7 @@ SELECT
                               flex: flexRight,
                               child: Text(
                                 (item.payment!.confirmedDate == null) ? '<not confirmed>' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment!.paidDate),
-                                style: (item.payment!.confirmedDate == null) ? bodyStyleRed : bodyStyle,
+                                style: (item.payment!.confirmedDate == null) ? bodyStyleRed : ts_titleMediumBlack,
                               )),
                         ]),
                   Padding(
@@ -1230,7 +1224,7 @@ SELECT
                                 BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, item.extensions.isMember != 0,
                                     packMemberNameForDisplay: item.extensions.paidByName, remitString: remittanceInfo, remitAmount: item.payment!.creditAmount);
                               },
-                              child: Text('Show Payment QR', style: textStyleButton),
+                              child: Text('Show Payment QR', style: ts_button),
                             ),
                     ),
                   ),
@@ -1243,7 +1237,7 @@ SELECT
                               onPressed: () {
                                 Navigator.of(context, rootNavigator: true).pop('confirm');
                               },
-                              child: Text('Confirm Bank Transfer', style: textStyleButton),
+                              child: Text('Confirm Bank Transfer', style: ts_button),
                             ),
                     ),
                   )

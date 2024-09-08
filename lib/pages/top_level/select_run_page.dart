@@ -33,12 +33,11 @@ class SelectRunPageState extends State<SelectRunPage> {
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
-          title: const Text(
-            'Select run',
-            style: TextStyle(
-              color: Colors.white,
-            ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 28.0,
           ),
+          title: Text('Select run', style: ts_appBarTitle),
         ),
         body: _buildListView());
   }
@@ -56,7 +55,7 @@ class SelectRunPageState extends State<SelectRunPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
             child: Text(
               'Would you like to check in to any of the below runs?',
-              style: headingStyleBlack.copyWith(height: 1.2),
+              style: ts_titleLargeBlack.copyWith(height: 1.2),
               textAlign: TextAlign.center,
             ),
           ),
@@ -82,7 +81,7 @@ class SelectRunPageState extends State<SelectRunPage> {
                   style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.red.shade900),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Text('Don\'t check in', style: buttonLabelStyleMedium),
+                    child: Text('Don\'t check in', style: ts_button),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop(false);
@@ -107,7 +106,7 @@ class SelectRunPageState extends State<SelectRunPage> {
                       : null,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Text('Check in', style: buttonLabelStyleMedium),
+                    child: Text('Check in', style: ts_button),
                   ),
                 ),
               ],

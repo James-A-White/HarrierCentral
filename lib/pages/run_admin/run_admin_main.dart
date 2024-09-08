@@ -157,12 +157,11 @@ class RunAdminPageState extends State<RunAdminPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Run Admin',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 28.0,
         ),
+        title: Text('Run Admin', style: ts_appBarTitle),
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
@@ -179,7 +178,7 @@ class RunAdminPageState extends State<RunAdminPage> {
             child: Center(
                 child: Text(
               'Run admin functions require a connection to the Internet',
-              style: headingStyle,
+              style: ts_headingLarge,
               textAlign: TextAlign.center,
             )),
           ),
@@ -190,7 +189,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(top: 20, bottom: 20),
-                        child: AutoSizeText(_eventAggregate.event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
+                        child: AutoSizeText(_eventAggregate.event.eventName, style: ts_titleLarge, textAlign: TextAlign.center, maxLines: 2),
                       ),
                       const FancyDivider(
                         key: Key('66103920'),
@@ -263,7 +262,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                     padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
                     child: Text(
                       'Manual check in',
-                      style: buttonLabelStyleSmallCompressedLines,
+                      style: ts_buttonLabelSmallCompressedLines,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -302,7 +301,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                     padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
                     child: Text(
                       'Scan to check in',
-                      style: buttonLabelStyleSmallCompressedLines,
+                      style: ts_buttonLabelSmallCompressedLines,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -351,7 +350,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                     padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                     child: Text(
                       'Hash\r\ncash',
-                      style: buttonLabelStyleSmallCompressedLines,
+                      style: ts_buttonLabelSmallCompressedLines,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -396,7 +395,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                     padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                     child: Text(
                       'Manage receipts',
-                      style: buttonLabelStyleSmallCompressedLines,
+                      style: ts_buttonLabelSmallCompressedLines,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -451,7 +450,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                       padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                       child: Text(
                         'Print QR codes',
-                        style: buttonLabelStyleSmallCompressedLines,
+                        style: ts_buttonLabelSmallCompressedLines,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -494,7 +493,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                       padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                       child: Text(
                         'Email Run Details',
-                        style: buttonLabelStyleSmallCompressedLines,
+                        style: ts_buttonLabelSmallCompressedLines,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -546,7 +545,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                       padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                       child: Text(
                         'Edit run details',
-                        style: buttonLabelStyleSmallCompressedLines,
+                        style: ts_buttonLabelSmallCompressedLines,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -585,7 +584,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                       child: Text(
                         'Award\r\nlist',
                         textAlign: TextAlign.center,
-                        style: buttonLabelStyleSmall,
+                        style: ts_buttonLabelMedium,
                       ),
                     ),
                   ]),

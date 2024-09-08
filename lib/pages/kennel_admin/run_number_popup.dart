@@ -32,15 +32,15 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         focusNode: myFocusNodeFirstName,
         controller: _runNumberAmountTextController,
         keyboardType: TextInputType.number,
-        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-        decoration: const InputDecoration(
+        style: ts_titleMediumBlack,
+        decoration: InputDecoration(
           border: InputBorder.none,
-          icon: Icon(
+          icon: const Icon(
             FontAwesome.money,
             color: Colors.white,
           ),
           hintText: 'Enter run number',
-          hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+          hintStyle: ts_titleMediumBlack,
         ),
       ),
       actions: <Widget>[

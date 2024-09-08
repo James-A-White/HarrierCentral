@@ -26,12 +26,11 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
               appBar: AppBar(
                 centerTitle: true,
                 backgroundColor: themeAppBarBackground,
-                title: const Text(
-                  'Use Invite Code',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
+                iconTheme: const IconThemeData(
+                  color: Colors.white,
+                  size: 28.0,
                 ),
+                title: Text('Use Invite Code', style: ts_appBarTitle),
               ),
               body: SingleChildScrollView(
                 child: Container(
@@ -143,9 +142,9 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final double newFontSize = (headingStyle.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
+      final double newFontSize = (ts_headingLarge.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
 
-      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
+      final TextStyle localHeadingStyle = ts_headingLarge.copyWith(fontSize: newFontSize, height: 1.2);
 
       return SingleChildScrollView(
         padding: const EdgeInsets.all(15),
@@ -209,7 +208,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             },
                             keyboardType: TextInputType.text,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Colors.red.shade900),
+                            style: ts_titleDarkRedLarge,
                           ),
                         ),
                         const SizedBox(width: 15.0),
@@ -316,7 +315,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             }
                           }
                         },
-                        child: Text('Email me a new invite code', style: smallTitleStyle.copyWith(color: Colors.red))),
+                        child: Text('Email me a new invite code', style: ts_title.copyWith(color: Colors.red))),
                   ],
                 ),
               ),
@@ -329,7 +328,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     textAlign: TextAlign.center,
                   )
                 : TextButton(
-                    child: Text('Get Started!', style: textStyleButton),
+                    child: Text('Get Started!', style: ts_button),
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         // If the form is valid, display a snackbar. In the real world,

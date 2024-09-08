@@ -26,12 +26,11 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
-          title: const Text(
-            'Choose Avatar',
-            style: TextStyle(
-              color: Colors.white,
-            ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 28.0,
           ),
+          title: Text('Choose Avatar', style: ts_appBarTitle),
         ),
         body: Material(
           color: Theme.of(context).scaffoldBackgroundColor,

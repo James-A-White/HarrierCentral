@@ -25,7 +25,7 @@ class DrawerMenuState extends State<DrawerMenu> {
   static const int opacity = 160;
   static const Color textColor = Color.fromARGB(opacity, 255, 255, 255);
 
-  final TextStyle _style = const TextStyle(fontFamily: 'AvenirNext', fontStyle: FontStyle.normal, color: textColor, fontSize: 24.0, height: 1.0);
+  final TextStyle _style = ts_large;
 
   final String _userId = getStringPref(StringPrefsEnum.userId)!;
 

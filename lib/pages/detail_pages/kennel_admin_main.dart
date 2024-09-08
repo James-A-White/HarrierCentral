@@ -123,12 +123,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           appBar: AppBar(
             centerTitle: true,
             backgroundColor: themeAppBarBackground,
-            title: Text(
-              widget.kennelAggregateItem.kennel.kennelShortName,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
+            iconTheme: const IconThemeData(
+              color: Colors.white,
+              size: 28.0,
             ),
+            title: Text(widget.kennelAggregateItem.kennel.kennelShortName, style: ts_appBarTitle),
           ),
           body: _isLoading
               ? const Center(
@@ -148,7 +147,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   Container(
                                       margin: const EdgeInsets.only(bottom: 20.0),
                                       width: MediaQuery.of(context).size.width - 40,
-                                      child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                      child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: ts_titleLarge)),
                                   KennelLogo(
                                     //kennelId: widget.kennelAggregateItem.kennel.kennelId,
                                     kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
@@ -193,7 +192,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     Container(
                                         margin: const EdgeInsets.only(bottom: 20.0),
                                         width: MediaQuery.of(context).size.width - 40,
-                                        child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                        child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: ts_titleLarge)),
                                     KennelLogo(
                                       //kennelId: widget.kennelAggregateItem.kennel.kennelId,
                                       kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
@@ -213,7 +212,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               children: <Widget>[
                                 Text(
                                   'Kennel Admin Functions',
-                                  style: headingStyle,
+                                  style: ts_headingLarge,
                                   textAlign: TextAlign.center,
                                 ),
                                 if (widget.kennelAggregateItem.hkm!.appAccess.canManageRuns)
@@ -239,7 +238,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 child: Text(
                                                   'Add & Edit\r\nruns',
                                                   textAlign: TextAlign.center,
-                                                  style: buttonLabelStyleSmall,
+                                                  style: ts_buttonLabelMedium,
                                                 ),
                                               ),
                                             ]),
@@ -285,7 +284,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 child: Text(
                                                   'Past\r\nevents',
                                                   textAlign: TextAlign.center,
-                                                  style: buttonLabelStyleSmall,
+                                                  style: ts_buttonLabelMedium,
                                                 ),
                                               ),
                                             ]),
@@ -336,7 +335,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   child: Text(
                                                     'Manage Members',
                                                     textAlign: TextAlign.center,
-                                                    style: buttonLabelStyleSmall,
+                                                    style: ts_buttonLabelMedium,
                                                   ),
                                                 ),
                                               ]),
@@ -390,7 +389,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   child: Text(
                                                     'Email invite codes',
                                                     textAlign: TextAlign.center,
-                                                    style: buttonLabelStyleSmall,
+                                                    style: ts_buttonLabelMedium,
                                                   ),
                                                 ),
                                               ]),
@@ -493,7 +492,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   child: Text(
                                                     'Print QR codes',
                                                     textAlign: TextAlign.center,
-                                                    style: buttonLabelStyleSmall,
+                                                    style: ts_buttonLabelMedium,
                                                   ),
                                                 ),
                                               ]),
@@ -535,7 +534,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   child: Text(
                                                     'View run locations',
                                                     textAlign: TextAlign.center,
-                                                    style: buttonLabelStyleSmall,
+                                                    style: ts_buttonLabelMedium,
                                                   ),
                                                 ),
                                               ]),
@@ -577,7 +576,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 child: Text(
                                                   'Email run stats',
                                                   textAlign: TextAlign.center,
-                                                  style: buttonLabelStyleSmall,
+                                                  style: ts_buttonLabelMedium,
                                                 ),
                                               ),
                                             ]),
@@ -622,8 +621,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   children: <Widget>[
                                     Linkify(
                                       text: widget.kennelAggregateItem.kennel.kennelDescription.toString().replaceAll('\r\n', '\n'),
-                                      style: bodyStyle,
-                                      linkStyle: bodyStyleYellow,
+                                      style: ts_body,
+                                      linkStyle: ts_bodyYellow,
                                       onOpen: (LinkableElement link) async {
                                         if (Utilities.isValidUrl(link.url)) {
                                           await launchUrl(
@@ -654,7 +653,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   child: Center(
                                     child: Text(
                                       'Kennel maps require a connection to the Internet',
-                                      style: headingStyle,
+                                      style: ts_headingLarge,
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
@@ -777,7 +776,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     flex: _flexLeft,
                                     child: Text(
                                       'Location:',
-                                      style: listLabelStyle,
+                                      style: ts_listLabelStyle,
                                       textAlign: TextAlign.right,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -787,7 +786,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       flex: _flexRight,
                                       child: Text(
                                         '  ${widget.kennelAggregateItem.extensions.location ?? ''}',
-                                        style: listValueStyle,
+                                        style: ts_listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -801,7 +800,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     flex: _flexLeft,
                                     child: Text(
                                       'Last run:',
-                                      style: listLabelStyle,
+                                      style: ts_listLabelStyle,
                                       textAlign: TextAlign.right,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -813,7 +812,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         widget.kennelAggregateItem.extensions.lastRunDate != null
                                             ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.lastRunDate!.substring(0, 19)))}'
                                             : '  <no run found>',
-                                        style: listValueStyle,
+                                        style: ts_listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -827,7 +826,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     flex: _flexLeft,
                                     child: Text(
                                       'Next run:',
-                                      style: listLabelStyle,
+                                      style: ts_listLabelStyle,
                                       textAlign: TextAlign.right,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -839,7 +838,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         widget.kennelAggregateItem.extensions.nextRunDate != null
                                             ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.nextRunDate!.substring(0, 19)))}'
                                             : '  <no run found>',
-                                        style: listValueStyle,
+                                        style: ts_listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -853,7 +852,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     flex: _flexLeft,
                                     child: Text(
                                       'Hash cash:',
-                                      style: listLabelStyle,
+                                      style: ts_listLabelStyle,
                                       textAlign: TextAlign.right,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -865,7 +864,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         widget.kennelAggregateItem.kennel.defaultPriceForMembers <= 0
                                             ? ''
                                             : '  ${IveCoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal ?? 2, widget.kennelAggregateItem.extensions.currencySymbol ?? r'$^')}    (members)',
-                                        style: listValueStyle,
+                                        style: ts_listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -879,7 +878,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     flex: _flexLeft,
                                     child: Text(
                                       '',
-                                      style: listLabelStyle,
+                                      style: ts_listLabelStyle,
                                       textAlign: TextAlign.right,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -891,7 +890,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         widget.kennelAggregateItem.kennel.defaultPriceForNonMembers <= 0
                                             ? ''
                                             : '  ${IveCoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForNonMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal ?? 2, widget.kennelAggregateItem.extensions.currencySymbol ?? r'$^')}    (non-members)',
-                                        style: listValueStyle,
+                                        style: ts_listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -922,7 +921,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             padding: const EdgeInsets.only(bottom: 15.0),
                                             child: Text(
                                               _allRuns.length == 1 ? 'Next run' : 'Next ${_allRuns.length} runs',
-                                              style: headingStyle,
+                                              style: ts_headingLarge,
                                               textAlign: TextAlign.right,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -963,7 +962,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(left: 20, right: 0),
-                                                  child: Text('Open website', style: textStyleButton),
+                                                  child: Text('Open website', style: ts_button),
                                                 ),
                                               ]),
                                               onPressed: () {
@@ -1001,7 +1000,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           SizedBox(width: 45.0, child: Image.asset('images/icons/painter_palette.png', height: 35)),
                                           Padding(
                                             padding: const EdgeInsets.only(left: 20, right: 0),
-                                            child: Text('Run art gallery', style: textStyleButton),
+                                            child: Text('Run art gallery', style: ts_button),
                                           ),
                                         ]),
                                         onPressed: () async {
@@ -1032,7 +1031,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           SizedBox(width: 45.0, child: Image.asset('images/icons/leaderboard_icon.png', height: 35)),
                                           Padding(
                                             padding: const EdgeInsets.only(left: 20, right: 0),
-                                            child: Text('Leaderboards', style: textStyleButton),
+                                            child: Text('Leaderboards', style: ts_button),
                                           ),
                                         ]),
                                         onPressed: () async {
@@ -1075,7 +1074,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             SizedBox(width: 45.0, child: Image.asset('images/icons/woman_man_profile_icon.png', height: 40)),
                                             Padding(
                                               padding: const EdgeInsets.only(left: 20, right: 0),
-                                              child: Text('Customize profile', style: textStyleButton),
+                                              child: Text('Customize profile', style: ts_button),
                                             ),
                                           ]),
                                           onPressed: () async {
@@ -1178,7 +1177,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   flex: 50,
                   child: Text(
                     '${items[0]}:',
-                    style: listLabelStyle,
+                    style: ts_listLabelStyle,
                     textAlign: TextAlign.right,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1188,7 +1187,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     flex: 50,
                     child: Text(
                       ' ${items[1]}',
-                      style: listValueStyle,
+                      style: ts_listValueStyle,
                       textAlign: TextAlign.left,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
