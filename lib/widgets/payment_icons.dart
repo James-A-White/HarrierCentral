@@ -169,7 +169,7 @@ class PaymentIcons extends StatelessWidget {
       },
     ];
 
-    final MultipleChoicePopup popup = MultipleChoicePopup(
+    final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
       key: const Key('6610393912'),
       title: 'Payment options',
       buttons: buttons,

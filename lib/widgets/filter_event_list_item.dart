@@ -175,7 +175,7 @@ class FilterEventListItem extends StatelessWidget {
                     },
                   ];
 
-                  final MultipleChoicePopup popup = MultipleChoicePopup(
+                  final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
                     key: const Key('771334949'),
                     title: 'Set event details',
                     buttons: buttons,

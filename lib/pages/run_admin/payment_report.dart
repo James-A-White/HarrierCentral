@@ -623,7 +623,7 @@ SELECT
         },
       ];
 
-      final MultipleChoicePopup popup = MultipleChoicePopup(
+      final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
         key: const Key('125550929'),
         title: 'Payment options',
         buttons: buttons,

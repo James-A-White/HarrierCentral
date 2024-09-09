@@ -255,7 +255,7 @@ class UserEventListItem extends StatelessWidget {
         },
       ];
 
-      final MultipleChoicePopup popup = MultipleChoicePopup(
+      final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
         key: const Key('01019395'),
         title: 'Run Options',
         buttons: buttons,

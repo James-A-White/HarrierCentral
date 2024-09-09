@@ -889,7 +889,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
       },
     ];
 
-    final MultipleChoicePopup popup = MultipleChoicePopup(
+    final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
       key: const Key('6919321235'),
       title: 'Common filter options',
       buttons: buttons,
@@ -1195,7 +1195,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         },
       ];
 
-      final MultipleChoicePopup popup = MultipleChoicePopup(
+      final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
         key: const Key('4555116132'),
         title: 'Payment options',
         buttons: buttons,

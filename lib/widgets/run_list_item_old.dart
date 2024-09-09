@@ -460,7 +460,7 @@
 //         },
 //       ];
 
-//       final MultipleChoicePopup popup = MultipleChoicePopup(
+//       final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
 //         key: const Key('01019395'),
 //         title: 'Run Options',
 //         buttons: buttons,
@@ -591,7 +591,7 @@
 //               },
 //       ];
 
-//       final MultipleChoicePopup popup = MultipleChoicePopup(
+//       final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
 //         key: const Key('233030391'),
 //         title: 'Run Options',
 //         buttons: buttons,
@@ -679,7 +679,7 @@
 //       // },
 //     ];
 
-//     final MultipleChoicePopup popup = MultipleChoicePopup(
+//     final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
 //       key: const Key('661039301'),
 //       title: 'Notification options for this run',
 //       buttons: buttons,
@@ -810,7 +810,7 @@
 //       },
 //     ];
 
-//     final MultipleChoicePopup popup = MultipleChoicePopup(
+//     final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
 //       key: const Key('321039395'),
 //       title: 'Email options for this run',
 //       buttons: buttons,

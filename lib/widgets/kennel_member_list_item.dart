@@ -337,7 +337,7 @@ class KennelMemberListItem extends StatelessWidget {
                       );
                     }
 
-                    final MultipleChoicePopup popup = MultipleChoicePopup(
+                    final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
                       key: const Key('69691039'),
                       title: 'Membership options',
                       buttons: buttons,

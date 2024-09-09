@@ -104,8 +104,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   List<LeaderboardModel>? _leaderboardList;
   List<LeaderboardModel>? _leaderboardAggregateList;
 
-  List<LeaderboardModel>? _filteredLeaderboardList;
-  List<LeaderboardModel>? _filteredLeaderboardAggregateList;
+  List<LeaderboardModel> _filteredLeaderboardList = [];
+  List<LeaderboardModel> _filteredLeaderboardAggregateList = [];
 
   bool _showKennels = false;
   bool _showHomeKennel = false;
@@ -136,7 +136,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         _kennels![kennel["kennelId"]] = kennel;
       }
 
-      if (_filteredLeaderboardList == null) {
+      if (_filteredLeaderboardList.isEmpty) {
         _getLeaderboard().then(
           (value) {
             setState(() {
@@ -267,7 +267,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
       child: Column(
         children: <Widget>[
           Expanded(
-            child: _filteredLeaderboardList == null
+            child: _filteredLeaderboardList.isEmpty
                 ? const SizedBox(
                     width: 70.0,
                     height: 70.0,
@@ -527,7 +527,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                               ),
                               SliverToBoxAdapter(
                                   child: SizedBox(
-                                      child: _filteredLeaderboardList!.isEmpty
+                                      child: _filteredLeaderboardList.isEmpty
                                           ? Container(
                                               height: 400.0,
                                               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -545,11 +545,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                               SliverList(
                                 delegate: SliverChildBuilderDelegate(
                                   (context, index) {
-                                    if (index == (_showKennels ? _filteredLeaderboardList!.length : _filteredLeaderboardAggregateList!.length)) {
+                                    if (index == (_showKennels ? _filteredLeaderboardList.length : _filteredLeaderboardAggregateList.length)) {
                                       return const SizedBox(height: 50);
                                     }
 
-                                    LeaderboardModel e = !_showKennels ? _filteredLeaderboardAggregateList![index] : _filteredLeaderboardList![index];
+                                    LeaderboardModel e = !_showKennels ? _filteredLeaderboardAggregateList[index] : _filteredLeaderboardList[index];
                                     return Column(
                                       children: [
                                         const SizedBox(height: 3.0),
@@ -646,7 +646,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                       ],
                                     );
                                   },
-                                  childCount: _showKennels ? _filteredLeaderboardList!.length + 1 : _filteredLeaderboardAggregateList!.length + 1,
+                                  childCount: _showKennels ? _filteredLeaderboardList.length + 1 : _filteredLeaderboardAggregateList.length + 1,
                                 ),
                               ),
                             ],
@@ -725,8 +725,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
     );
   }
 
-  void _sortLeaderboard(int columnIndex, bool alternateSortOrder) {
-    if (_filteredLeaderboardList != null && _filteredLeaderboardList!.isNotEmpty) {
+  void _sortLeaderboardOld(int columnIndex, bool alternateSortOrder) {
+    if (_filteredLeaderboardList.isNotEmpty) {
       if (alternateSortOrder && (columnIndex == _leaderboardSortColumnIndex)) {
         _sortOrderAsc = !_sortOrderAsc;
       }
@@ -735,25 +735,136 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
 
       switch (_leaderboardSortColumnIndex) {
         case 0:
-          _filteredLeaderboardList!.sort((a, b) {
+          _filteredLeaderboardList.sort((a, b) {
             int cmp = a.totalRunCount.compareTo(b.totalRunCount);
             if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
             return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
           });
           break;
         case 1:
-          _filteredLeaderboardList!.sort((a, b) {
+          _filteredLeaderboardList.sort((a, b) {
             int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
             if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
             return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
           });
           break;
         case 2:
-          _filteredLeaderboardList!.sort((a, b) {
+          _filteredLeaderboardList.sort((a, b) {
             int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
             if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
             return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
           });
+          break;
+      }
+    }
+  }
+
+  void _sortLeaderboard(int columnIndex, bool alternateSortOrder) {
+    if ((_filteredLeaderboardList.isNotEmpty) || (_filteredLeaderboardAggregateList.isNotEmpty)) {
+      if (alternateSortOrder && (columnIndex == _leaderboardSortColumnIndex)) {
+        _sortOrderAsc = !_sortOrderAsc;
+      }
+
+      _leaderboardSortColumnIndex = columnIndex;
+
+      switch (_leaderboardSortColumnIndex) {
+        // sort runs
+        case 0:
+          switch (_timespanTabController.index) {
+            case TABINDEX_TOTAL:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.totalRunCount.compareTo(b.totalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.totalRunCount.compareTo(b.totalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+            case TABINDEX_365_DAYS:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+
+            case TABINDEX_CURRENT_YEAR:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+          }
+          break;
+        // sort haring
+        case 1:
+          switch (_timespanTabController.index) {
+            case TABINDEX_TOTAL:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+            case TABINDEX_365_DAYS:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+            case TABINDEX_CURRENT_YEAR:
+              _filteredLeaderboardList.sort((a, b) {
+                int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              _filteredLeaderboardAggregateList.sort((a, b) {
+                int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
+                if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+              });
+              break;
+          }
+          break;
+        // sort by name
+        case 2:
+          _filteredLeaderboardList.sort((a, b) {
+            int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+            if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+            return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
+          });
+
+          _filteredLeaderboardAggregateList.sort((a, b) {
+            int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+            if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
+            return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
+          });
+
           break;
       }
     }
@@ -791,11 +902,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
       addParams.add(firstTokenString);
     }
 
-    _filteredLeaderboardList ??= <LeaderboardModel>[];
-    _filteredLeaderboardList!.clear();
-
-    _filteredLeaderboardAggregateList ??= <LeaderboardModel>[];
-    _filteredLeaderboardAggregateList!.clear();
+    _filteredLeaderboardList.clear();
+    _filteredLeaderboardAggregateList.clear();
 
     if (filter.isNotEmpty) {
       _filteredLeaderboardList = _leaderboardList!.where((LeaderboardModel a) {
@@ -830,8 +938,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         return false;
       }).toList();
     } else {
-      _filteredLeaderboardList!.addAll(_leaderboardList!);
-      _filteredLeaderboardAggregateList!.addAll(_leaderboardAggregateList!);
+      _filteredLeaderboardList.addAll(_leaderboardList!);
+      _filteredLeaderboardAggregateList.addAll(_leaderboardAggregateList!);
     }
   }
 }

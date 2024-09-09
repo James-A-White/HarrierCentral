@@ -372,10 +372,14 @@ class CommonQueries {
           runAdminAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
         }
       } catch (e) {
-        print(e);
+        if (kDebugMode) {
+          print(e);
+        }
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
 
     return runAdminAggregate;

@@ -625,7 +625,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       },
     ];
 
-    final MultipleChoicePopup popup = MultipleChoicePopup(
+    final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
       key: const Key('5030202'),
       title: 'Display all runs within...',
       buttons: buttons,
