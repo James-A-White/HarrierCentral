@@ -90,9 +90,9 @@ class SelectRunPageState extends State<SelectRunPage> {
                 const SizedBox(width: 30.0),
                 TextButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                      (Set<MaterialState> states) {
-                        if (states.contains(MaterialState.disabled)) {
+                    backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                      (Set<WidgetState> states) {
+                        if (states.contains(WidgetState.disabled)) {
                           return Colors.grey.shade700;
                         }
                         return Colors.green.shade800; // Use the component's default.

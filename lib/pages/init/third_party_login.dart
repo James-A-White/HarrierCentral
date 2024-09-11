@@ -505,7 +505,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                   } else {
                     // not a new user, pop back to the User profile page.
                     await Utilities.showAlert('Login Successful', 'Your login was successful and your access has been upated.', 'OK').then((_) {
-                      Navigator.of(context).pop();
+                      Navigator.of(navigatorKey.currentContext!).pop();
                     });
                   }
                 }

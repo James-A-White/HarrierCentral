@@ -716,7 +716,7 @@ class RunDetails extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: ElevatedButton(
-                // style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                // style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
                 child: Text(
                   'Copy HC Web link',
                   style: ts_button,
@@ -738,7 +738,7 @@ class RunDetails extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(
-                style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
                 child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
                 onPressed: () async {
                   final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
@@ -761,7 +761,7 @@ class RunDetails extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
               child: ElevatedButton(
-                style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
                 child: Image.asset('images/icons/visit_run_on_web.png', height: 60.0, width: 325.0),
                 onPressed: () async {
                   if (Utilities.isValidUrl(eventUrlWithKennelBackup!)) {

@@ -594,10 +594,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                       //final CheckInPackModel hasher = _packList[scrollIndex!];
                       //if (hasher != null) {
                       if (scrollIndex != null) {
-                        final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState!, scrollIndex!);
+                        final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(navigatorKey.currentContext!, _scaffoldKey.currentState!, scrollIndex!);
 
-                        ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
+                        ScaffoldMessenger.of(navigatorKey.currentContext!).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+                        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
                           setState(() {
                             if ((scrollIndex ?? -1) >= 0) {
                               if (_scrollController.hasClients) {

@@ -144,7 +144,7 @@ class ApproveLoginService {
 
         if (resp.statusCode == 999) {
           // finally, if the response times out again, continue with offline mode
-          resp = await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
+          resp = await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(navigatorKey.currentContext!));
         }
       }
     }

@@ -221,16 +221,16 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       // Skip button
       renderSkipBtn: renderSkipBtn(),
       skipButtonStyle: ButtonStyle(
-        foregroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.pressed)) {
+        foregroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.pressed)) {
               return const Color(0xff000000);
             }
             return const Color(0xffffffff);
           },
         ),
-        backgroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
+        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
             return const Color(0x00000000);
           },
         ),
@@ -239,16 +239,16 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       // Next button
       renderNextBtn: renderNextBtn(),
       nextButtonStyle: ButtonStyle(
-        foregroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.pressed)) {
+        foregroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.pressed)) {
               return const Color(0xff000000);
             }
             return const Color(0xffffffff);
           },
         ),
-        backgroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
+        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
             return const Color(0x00000000);
           },
         ),
@@ -258,16 +258,16 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       renderDoneBtn: renderDoneBtn(),
       onDonePress: onDonePress,
       doneButtonStyle: ButtonStyle(
-        foregroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.pressed)) {
+        foregroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.pressed)) {
               return const Color(0xff000000);
             }
             return const Color(0xffffffff);
           },
         ),
-        backgroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
+        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
             return const Color(0x00000000);
           },
         ),

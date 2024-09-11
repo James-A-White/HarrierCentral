@@ -74,8 +74,8 @@ void main() {
               //   textStyle: const TextStyle(color: Colors.white),
               // )
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                backgroundColor: WidgetStateProperty.all<Color>(Colors.red.shade900),
+                foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
               ),
             ),
             iconTheme: const IconThemeData(color: Colors.white, size: 30.0),

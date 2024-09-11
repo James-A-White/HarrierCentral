@@ -297,7 +297,7 @@ class Utilities {
       // this function because we want the app to start quickly.
 
       // ignore: unawaited_futures
-      Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest).then((Position position) {
+      Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.lowest)).then((Position position) {
         G0<DeviceInfo>().deviceLat = position.latitude;
         G0<DeviceInfo>().deviceLon = position.longitude;
         setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);

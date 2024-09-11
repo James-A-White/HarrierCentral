@@ -164,9 +164,9 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                                 unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
                               ),
                               child: Checkbox(
-                                fillColor: MaterialStateProperty.resolveWith<Color>(
-                                  (Set<MaterialState> states) {
-                                    if (states.contains(MaterialState.disabled)) {
+                                fillColor: WidgetStateProperty.resolveWith<Color>(
+                                  (Set<WidgetState> states) {
+                                    if (states.contains(WidgetState.disabled)) {
                                       return Colors.grey.shade300;
                                     }
                                     return Colors.red.shade900;
@@ -204,9 +204,9 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                                 unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
                               ),
                               child: Checkbox(
-                                fillColor: MaterialStateProperty.resolveWith<Color>(
-                                  (Set<MaterialState> states) {
-                                    if (states.contains(MaterialState.disabled)) {
+                                fillColor: WidgetStateProperty.resolveWith<Color>(
+                                  (Set<WidgetState> states) {
+                                    if (states.contains(WidgetState.disabled)) {
                                       return Colors.grey.shade300;
                                     }
                                     return Colors.red.shade900;
@@ -242,7 +242,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Checkbox(
-                        fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
+                        fillColor: WidgetStateProperty.all<Color>(Colors.red.shade900),
                         onChanged: (bool? val) {
                           if (val != null) {
                             setState(() {
@@ -322,7 +322,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
                         Checkbox(
-                          fillColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
+                          fillColor: WidgetStateProperty.all<Color>(Colors.red.shade900),
                           onChanged: (bool? val) {
                             if (val != null) {
                               _recalculateTotal();

@@ -139,7 +139,9 @@ class RunAdminPageState extends State<RunAdminPage> {
       }
     } catch (e) {
       // Handle any errors here if necessary
-      print('Error in _getRunDetails: $e');
+      if (kDebugMode) {
+        print('Error in _getRunDetails: $e');
+      }
       setState(() {
         _isLoading = false;
       });

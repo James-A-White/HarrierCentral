@@ -110,17 +110,17 @@
 //           child: TextButton(
 //             child: const Text('Buy'),
 //             style: ButtonStyle(
-//               backgroundColor: MaterialStateProperty.resolveWith<Color>(
-//                 (Set<MaterialState> states) {
-//                   if (states.contains(MaterialState.disabled)) {
+//               backgroundColor: WidgetStateProperty.resolveWith<Color>(
+//                 (Set<WidgetState> states) {
+//                   if (states.contains(WidgetState.disabled)) {
 //                     return Colors.grey.shade700;
 //                   }
 //                   return Colors.blue; // Use the component's default.
 //                 },
 //               ),
-//               textStyle: MaterialStateProperty.resolveWith<TextStyle>(
-//                 (Set<MaterialState> states) {
-//                   if (states.contains(MaterialState.disabled)) {
+//               textStyle: WidgetStateProperty.resolveWith<TextStyle>(
+//                 (Set<WidgetState> states) {
+//                   if (states.contains(WidgetState.disabled)) {
 //                     return TextStyle(color: Colors.grey.shade200);
 //                   }
 //                   return const TextStyle(color: Colors.white); // Use the component's default.

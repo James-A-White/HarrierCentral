@@ -246,7 +246,9 @@ class KennelsListPageState extends State<KennelsListPage> {
 
             G0<TableModel>().globalKennelMainPageList!.add(item);
           } catch (e) {
-            print(i.toString());
+            if (kDebugMode) {
+              print(i.toString());
+            }
           }
         }
 
@@ -254,7 +256,9 @@ class KennelsListPageState extends State<KennelsListPage> {
           _filterResults();
         });
       } catch (e) {
-        print(e);
+        if (kDebugMode) {
+          print(e);
+        }
       }
     } else {
       // if the global list is already loaded,

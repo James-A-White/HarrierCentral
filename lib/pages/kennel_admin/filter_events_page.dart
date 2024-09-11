@@ -481,7 +481,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   }
 
   Widget _buildAddButtons() {
-    return ButtonBar(
+    return OverflowBar(
       alignment: MainAxisAlignment.center,
       children: <Widget>[
         ElevatedButton(

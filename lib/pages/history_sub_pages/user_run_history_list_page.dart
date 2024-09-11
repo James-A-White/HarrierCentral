@@ -178,7 +178,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         .hasherEventMapService
                         .sendRunCountReportByEmail(kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId, kennelName: (_kennelInfo ?? widget.kennelInfo).kennelName)
                         .then((Map<String, String> result) {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
                       if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
                         Utilities.showAlert('E-mail successfully sent',
                             'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
@@ -194,7 +194,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
                     G0<TableModel>().hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
                       if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
                         Utilities.showAlert('E-mail successfully sent',
                             'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');

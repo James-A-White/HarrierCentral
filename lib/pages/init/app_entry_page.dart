@@ -146,7 +146,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
                     await Utilities.showAlert('Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
                       Navigator.pushReplacement<dynamic, dynamic>(
-                          context,
+                          navigatorKey.currentContext!,
                           MaterialPageRoute<dynamic>(
                               builder: (BuildContext context) => const MainNavigationPage(
                                     promos: <PromoModel>[],

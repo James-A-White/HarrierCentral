@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -723,40 +725,6 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         ],
       ),
     );
-  }
-
-  void _sortLeaderboardOld(int columnIndex, bool alternateSortOrder) {
-    if (_filteredLeaderboardList.isNotEmpty) {
-      if (alternateSortOrder && (columnIndex == _leaderboardSortColumnIndex)) {
-        _sortOrderAsc = !_sortOrderAsc;
-      }
-
-      _leaderboardSortColumnIndex = columnIndex;
-
-      switch (_leaderboardSortColumnIndex) {
-        case 0:
-          _filteredLeaderboardList.sort((a, b) {
-            int cmp = a.totalRunCount.compareTo(b.totalRunCount);
-            if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-            return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-          });
-          break;
-        case 1:
-          _filteredLeaderboardList.sort((a, b) {
-            int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
-            if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-            return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-          });
-          break;
-        case 2:
-          _filteredLeaderboardList.sort((a, b) {
-            int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-            if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-            return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
-          });
-          break;
-      }
-    }
   }
 
   void _sortLeaderboard(int columnIndex, bool alternateSortOrder) {

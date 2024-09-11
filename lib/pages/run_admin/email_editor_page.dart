@@ -55,11 +55,6 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void _requestPop(bool _) {
-    setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
-    return;
-  }
-
   @override
   Widget build(BuildContext context) {
     final AppBar appBar = AppBar(
@@ -72,7 +67,12 @@ class EmailEditorPageState extends State<EmailEditorPage> {
       title: Text('Email Editor', style: ts_appBarTitle),
     );
     return PopScope(
-      onPopInvoked: _requestPop,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
+          result = true;
+        }
+      },
       child: Scaffold(
         key: _scaffoldKey,
         resizeToAvoidBottomInset: false,
