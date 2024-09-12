@@ -298,7 +298,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                   children: <Widget>[
                                     _searchBar(),
                                     Container(
-                                      padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 7.0),
+                                      padding: const EdgeInsets.only(
+                                        left: 20.0,
+                                        right: 20.0,
+                                        top: 7.0,
+                                      ),
                                       color: Colors.grey.shade400,
                                       child: TabBar(
                                         onTap: (void _) {
@@ -315,9 +319,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                           indicatorHeight: 25.0,
                                           indicatorColor: Colors.red.shade900,
                                           tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                          indicatorRadius: 20.0,
-                                          // bubblePadding:
-                                          //     const EdgeInsets.only(top: 5.0),
+                                          indicatorRadius: 10.0,
+                                          padding: const EdgeInsets.only(top: 5.0),
                                         ),
                                         tabs: <Tab>[
                                           const Tab(text: '365 days'),

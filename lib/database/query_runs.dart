@@ -170,7 +170,7 @@ class QueryRuns {
 
         ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-        filteredRuns = allRuns.where((dynamic a) {
+        filteredRuns.addAll(allRuns.where((dynamic a) {
           for (String orItem in orItems) {
             if (orItem.trim().isEmpty) {
               continue;
@@ -181,11 +181,14 @@ class QueryRuns {
             }
           }
           return negate;
-        }).toList();
+        }).toList());
       }
     } else {
       filteredRuns.addAll(allRuns);
     }
+
+    // filteredRuns.clear();
+    // filteredRuns.addAll(allRuns);
 
     return filteredRuns;
   }
@@ -331,7 +334,7 @@ class QueryRuns {
     String queryBase = '';
 
     if (queryContext == EnumRunQueryContext.kennelAdmin) {
-      queryBase = ''' 
+      queryBase = '''
         SELECT  
           evt.*,
           k.*,
@@ -366,7 +369,7 @@ class QueryRuns {
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           ''';
     } else {
-      queryBase = ''' 
+      queryBase = '''
       
         SELECT  
           evt.*,

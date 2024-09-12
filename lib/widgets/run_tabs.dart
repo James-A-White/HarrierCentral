@@ -264,6 +264,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   TextStyle rsvpTitlesView = ts_tileText.copyWith(
     fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+    color: Colors.white,
   );
 
   EnumRsvpState<int> _rsvpRequested = rsvpUnknown;
