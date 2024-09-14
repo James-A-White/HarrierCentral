@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: '>=3.3.1 <4.0.0'
-  flutter: ^3.24.1
+  flutter: ^3.24.3
 
 dependencies:   
   audioplayers: ^6.1.0 # had problem with low sound volume on iOS on version 1.0.0
@@ -20,18 +20,19 @@ dependencies:
   dart_ipify: ^1.1.1
   date_time_picker: 2.0.0  # NOTE: There's a bug in 2.1.0 with AM/PM selection so stick with 2.0.0
   device_info_plus: ^10.1.2
-  # fancy_bottom_navigation: ^0.3.3  
-  fancy_bottom_navigation:
-    git:
-      url: https://github.com/tunitowen/fancy_bottom_navigation.git
-      ref: bd294908b5ffd9875dbdab62467472fc68a15c59
+  # fancy_bottom_navigation_plus: ^1.0.3
+  fancy_bottom_navigation_2: ^0.3.5
+  # fancy_bottom_navigation:
+  #   git:
+  #     url: https://github.com/tunitowen/fancy_bottom_navigation.git
+  #     ref: bd294908b5ffd9875dbdab62467472fc68a15c59
   # firebase_core: ^1.11.0
   # firebase_messaging: ^11.2.5  
   # flutter_facebook_login: ^3.0.0 
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
-  flutter_facebook_auth: ^7.0.1
+  flutter_facebook_auth: 7.0.1
   flutter_image: ^4.1.0  
   flutter_image_compress: ^2.1.0 
   flutter_linkify: ^6.0.0  
@@ -59,16 +60,16 @@ dependencies:
   image_cropper: ^8.0.2
   image_picker: ^1.0.7
   internet_connection_checker: ^2.0.0
-  intl: ^0.18.0
+  intl: ^0.19.0
   intro_slider: ^4.2.0
   ive_flutter_core:
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core.git
-      ref: c7d1203ee6131ab34e1df16246eded56d941f7ec # Version 1.2.5
+      ref: 7c796012a022c6d4656da3bd239a6bce21fe29b0 # Version 1.2.6b
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
-      ref: 897bd93f851f337621138ecc688d7ad1b952dd65 # Version 1.2.5
+      ref: 0cfa988533a92931b524a20c8f33321d6fdff4e0 # Version 1.2.6
   json_annotation: ^4.9.0
   keyboard_actions: ^4.0.0 
   # keyboard_avoider: ^0.1.2
@@ -114,7 +115,7 @@ dependencies:
 
 dependency_overrides:
   intl: 0.17.0
-  http: 0.13.4
+  # http: 0.13.4
 
 dev_dependencies: 
   # flutter_test:

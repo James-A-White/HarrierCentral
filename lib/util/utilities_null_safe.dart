@@ -470,8 +470,8 @@ class Utilities {
                       child: SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3.0,
+                        child: HcCircularProgressIndicator(
+                          key: Key('1396562'),
                         ),
                       ),
                     )),

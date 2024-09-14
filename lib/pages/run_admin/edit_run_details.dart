@@ -234,6 +234,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
   void initState() {
     super.initState();
 
+    _initTabs();
     _tabController = TabController(vsync: this, length: _tabs.length);
     _tabController.addListener(() {
       FocusScope.of(context).unfocus();
@@ -245,7 +246,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
       _eventAggregate.extensions.latitude ?? _eventAggregate.extensions.kenlLat,
       _eventAggregate.extensions.longitude ?? _eventAggregate.extensions.kenlLon,
     );
-    _initTabs();
 
     _setTextFields();
 
@@ -586,6 +586,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     Container(
                       color: _focusNodeDatetime.hasFocus ? Colors.yellow.shade50 : Colors.white,
                       margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      // child: OmniDateTimePicker(
+                      //   onDateTimeChanged: (value) {},
+                      // ),
                       child: DateTimePicker(
                         decoration: InputDecoration(
                           labelText: 'Date / Time',
@@ -594,7 +597,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: const BorderSide(),
                           ),
-                          //hintText: 'Event Number (or \'<auto>\')',
                           hintStyle: ts_titleMediumBlack,
                         ),
                         focusNode: _focusNodeDatetime,
@@ -603,26 +605,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         use24HourFormat: false,
                         locale: const Locale('en', 'US'),
                         dateMask: 'E, d MMM, yyyy, h:mm a',
-                        //initialValue: DateTime.now().toString(),
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
-                        //icon: const Icon(Icons.event),
                         dateLabelText: 'Date',
                         timeLabelText: 'Hour',
-                        // selectableDayPredicate: (DateTime date) {
-                        //   // Disable weekend days to select from the calendar
-                        //   if (date.weekday == 6 || date.weekday == 7) {
-                        //     return false;
-                        //   }
-
-                        //   return true;
-                        // },
-                        // onChanged: (val) => //print(val),
                         validator: (String? val) {
-                          //print(val);
                           return null;
                         },
-                        //onSaved: (String val) => //print(val),
                       ),
                     ),
                     Container(

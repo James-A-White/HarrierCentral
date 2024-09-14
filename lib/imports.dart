@@ -26,7 +26,7 @@ export 'package:auto_size_text/auto_size_text.dart';
 export 'package:cached_network_image/cached_network_image.dart';
 export 'package:chewie/chewie.dart';
 export 'package:device_info_plus/device_info_plus.dart';
-export 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
+// export 'package:fancy_bottom_navigation_plus/fancy_bottom_navigation_plus.dart';
 export 'package:flutter/material.dart';
 export 'package:flutter/rendering.dart';
 export 'package:flutter/services.dart';

@@ -274,10 +274,10 @@ packages:
     dependency: "direct main"
     description:
       name: chewie
-      sha256: "2243e41e79e865d426d9dd9c1a9624aa33c4ad11de2d0cd680f826e2cd30e879"
+      sha256: "335df378c025588aef400c704bd71f0daea479d4cd57c471c88c056c1144e7cd"
       url: "https://pub.dev"
     source: hosted
-    version: "1.8.3"
+    version: "1.8.5"
   cli_util:
     dependency: transitive
     description:
@@ -378,10 +378,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: "99e066ce75c89d6b29903d788a7bb9369cf754f7b24bf70bf4b6d6d6b26853b9"
+      sha256: "7856d364b589d1f08986e140938578ed36ed948581fbc3bc9aef1805039ac5ab"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.6"
+    version: "2.3.7"
   date_time_picker:
     dependency: "direct main"
     description:
@@ -418,19 +418,18 @@ packages:
     dependency: transitive
     description:
       name: facebook_auth_desktop
-      sha256: "223e04414e078271682dadd2a694da1f4d329634137414b30217b2f478457fdb"
+      sha256: "219d559a33891e937c1913430505eae01fb946cb35729167bbdc747e3ebbd9ff"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
-  fancy_bottom_navigation:
+    version: "2.1.1"
+  fancy_bottom_navigation_2:
     dependency: "direct main"
     description:
-      path: "."
-      ref: bd294908b5ffd9875dbdab62467472fc68a15c59
-      resolved-ref: bd294908b5ffd9875dbdab62467472fc68a15c59
-      url: "https://github.com/tunitowen/fancy_bottom_navigation.git"
-    source: git
-    version: "0.3.3"
+      name: fancy_bottom_navigation_2
+      sha256: "28d82e6a5ffddb5275fbc2a5fc39a4712a1cdb6d91d80315e85c4ef9a206f4e0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.5"
   ffi:
     dependency: transitive
     description:
@@ -512,18 +511,18 @@ packages:
     dependency: transitive
     description:
       name: flutter_facebook_auth_platform_interface
-      sha256: a416f89de881ba98188942060aecf17b434b06677d4557731f19e859343df54c
+      sha256: e04b8dbfa77702bea45a79993163ad5d20b2c0084109bec591fdc2b9ee505779
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "6.1.2"
   flutter_facebook_auth_web:
     dependency: transitive
     description:
       name: flutter_facebook_auth_web
-      sha256: "947d93fc5a7cc5db1ce0274505254bb3b619cdd98176954f125f742964696804"
+      sha256: f682400d61cf8d52dd8b6458b5ee106ed57e95309a117dc32875d3da129ce47c
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.0"
+    version: "6.1.2"
   flutter_image:
     dependency: "direct main"
     description:
@@ -906,10 +905,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: "2ed163531e071c2c6b7c659635112f24cb64ecbebf6af46b550d536c0b1aa112"
+      sha256: b9c29a161230ee03d3ccf545097fccd9b87a5264228c5d348202e0f0c28f9010
       url: "https://pub.dev"
     source: hosted
-    version: "0.13.4"
+    version: "1.2.2"
   http_multi_server:
     dependency: transitive
     description:
@@ -1058,20 +1057,20 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: c7d1203ee6131ab34e1df16246eded56d941f7ec
-      resolved-ref: c7d1203ee6131ab34e1df16246eded56d941f7ec
+      ref: "7c796012a022c6d4656da3bd239a6bce21fe29b0"
+      resolved-ref: "7c796012a022c6d4656da3bd239a6bce21fe29b0"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
-    version: "1.2.5"
+    version: "1.2.6"
   ive_flutter_core_mobile:
     dependency: "direct main"
     description:
       path: "."
-      ref: "897bd93f851f337621138ecc688d7ad1b952dd65"
-      resolved-ref: "897bd93f851f337621138ecc688d7ad1b952dd65"
+      ref: "0cfa988533a92931b524a20c8f33321d6fdff4e0"
+      resolved-ref: "0cfa988533a92931b524a20c8f33321d6fdff4e0"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git"
     source: git
-    version: "1.2.5"
+    version: "1.2.6"
   js:
     dependency: transitive
     description:
@@ -1380,10 +1379,10 @@ packages:
     dependency: transitive
     description:
       name: permission_handler_platform_interface
-      sha256: fe0ffe274d665be8e34f9c59705441a7d248edebbe5d9e3ec2665f88b79358ea
+      sha256: e9c8eadee926c4532d0305dff94b85bf961f16759c3af791486613152af4b4f9
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.2"
+    version: "4.2.3"
   permission_handler_windows:
     dependency: transitive
     description:
@@ -1516,10 +1515,10 @@ packages:
     dependency: transitive
     description:
       name: rxdart
-      sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
+      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
       url: "https://pub.dev"
     source: hosted
-    version: "0.28.0"
+    version: "0.27.7"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1857,10 +1856,10 @@ packages:
     dependency: transitive
     description:
       name: uuid
-      sha256: "83d37c7ad7aaf9aa8e275490669535c8080377cfa7a7004c24dfac53afffaa90"
+      sha256: f33d6bb662f0e4f79dcd7ada2e6170f3b3a2530c28fc41f49a411ddedd576a77
       url: "https://pub.dev"
     source: hosted
-    version: "4.4.2"
+    version: "4.5.0"
   vector_graphics:
     dependency: transitive
     description:
@@ -1905,10 +1904,10 @@ packages:
     dependency: transitive
     description:
       name: video_player_android
-      sha256: "101028b643a3b43ced72107aacdbc4d30d55365487751de001a36cf0d86038d1"
+      sha256: "38d8fe136c427abdce68b5e8c3c08ea29d7a794b453c7a51b12ecfad4aad9437"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.2"
+    version: "2.7.3"
   video_player_avfoundation:
     dependency: transitive
     description:
@@ -1993,10 +1992,10 @@ packages:
     dependency: transitive
     description:
       name: win32_registry
-      sha256: "723b7f851e5724c55409bb3d5a32b203b3afe8587eaf5dafb93a5fed8ecda0d6"
+      sha256: "21ec76dfc731550fd3e2ce7a33a9ea90b828fdf19a5c3bcf556fa992cfa99852"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.1.5"
   wkt_parser:
     dependency: transitive
     description:
@@ -2031,4 +2030,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.5.0 <4.0.0"
-  flutter: ">=3.24.1"
+  flutter: ">=3.24.3"

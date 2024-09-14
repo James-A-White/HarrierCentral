@@ -50,15 +50,8 @@ class SupportPageState extends State<SupportPage> {
           textAlign: TextAlign.center,
         ),
         Container(height: 30),
-        SpinKitCircle(
-          size: 75.0,
-          itemBuilder: (_, int index) {
-            return DecoratedBox(
-              decoration: BoxDecoration(
-                color: index.isEven ? Colors.grey[50] : Colors.red.shade900,
-              ),
-            );
-          },
+        const HcCircularProgressIndicator(
+          key: Key('68462'),
         ),
       ]),
     );

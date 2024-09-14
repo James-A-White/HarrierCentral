@@ -1,6 +1,7 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
+import 'package:fancy_bottom_navigation_2/fancy_bottom_navigation.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({
@@ -308,7 +309,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
-  int currentPage = 0;
+  int _currentPage = 0;
 
   GlobalKey bottomNavigationKey = GlobalKey();
 
@@ -342,11 +343,11 @@ class MainNavigationPageState extends State<MainNavigationPage> {
   Widget? _getFab() {
     Widget? fab;
 
-    if ((_runAndKennelMapPageKey.currentState != null) && !_isFlipped && (currentPage == 2)) {
+    if ((_runAndKennelMapPageKey.currentState != null) && !_isFlipped && (_currentPage == 2)) {
       fab = _runAndKennelMapPageKey.currentState!.getMapFab();
     }
 
-    if ((_kennelLocationsPageKey.currentState != null) && !_isFlipped && (currentPage == 1)) {
+    if ((_kennelLocationsPageKey.currentState != null) && !_isFlipped && (_currentPage == 1)) {
       fab = _kennelLocationsPageKey.currentState!.getKennelFab();
     }
 
@@ -355,6 +356,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      print(_currentPage);
+    }
     return Stack(
       children: <Widget>[
         Positioned(
@@ -444,7 +448,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                               );
                             },
                           ),
-                          itemCount: _tutorials[currentPage].length,
+                          itemCount: _tutorials[_currentPage].length,
                           control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
                           itemBuilder: (BuildContext context, int index) {
                             // this configuration of LayoutBuilder is used to center images that do not
@@ -465,7 +469,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                         ConstrainedBox(
                                           constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
                                           child: Image.asset(
-                                            _tutorials[currentPage][index],
+                                            _tutorials[_currentPage][index],
                                             fit: BoxFit.fitWidth,
                                           ),
                                         ),
@@ -525,11 +529,11 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                           onTabChangedListener: (int position) {
                             setState(() {
                               _appBarText = _tabTitles[position];
-                              currentPage = position;
+                              _currentPage = position;
 
                               // this extra setState is here to ensure that the FAB
                               // displays properly when the map page is showing
-                              if ((!_isFlipped) && (currentPage == 2)) {
+                              if ((!_isFlipped) && (_currentPage == 2)) {
                                 Future<void>.delayed(const Duration(milliseconds: 250)).then((void _) {
                                   setState(() {});
                                 });
@@ -857,7 +861,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     // ignore: avoid_unnecessary_containers
     return Container(
       child: Center(
-        child: _getPage(currentPage),
+        child: _getPage(_currentPage),
       ),
     );
   }

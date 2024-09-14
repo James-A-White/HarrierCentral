@@ -96,7 +96,7 @@ class RunAdminPageState extends State<RunAdminPage> {
   bool _isLoading = true;
   int _isBetaTester = 0;
 
-  late RunAdminAggregate _eventAggregate;
+  late RunAdminAggregate? _eventAggregate;
 
   @override
   void initState() {
@@ -186,48 +186,50 @@ class RunAdminPageState extends State<RunAdminPage> {
           ),
           child: _isLoading
               ? const HcCircularProgressIndicator(key: Key('16093026'))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20, bottom: 20),
-                        child: AutoSizeText(_eventAggregate.event.eventName, style: ts_titleLarge, textAlign: TextAlign.center, maxLines: 2),
+              : _eventAggregate == null
+                  ? Container()
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20, bottom: 20),
+                            child: AutoSizeText(_eventAggregate!.event.eventName, style: ts_titleLarge, textAlign: TextAlign.center, maxLines: 2),
+                          ),
+                          const FancyDivider(
+                            key: Key('66103920'),
+                            innerColor: Colors.white,
+                            topMargin: 20.0,
+                            bottomMargin: 5.0,
+                          ),
+                          TextScaleFactorClamper(
+                            textScaleFactor: G0<DeviceInfo>().textClamp15,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.max,
+                              children: _kiddies(),
+                            ),
+                          ),
+                          const FancyDivider(
+                            key: Key('669190022'),
+                            innerColor: Colors.white,
+                            topMargin: 35.0,
+                            bottomMargin: 5.0,
+                          ),
+                          RunDetails(
+                            _eventAggregate!.event,
+                            _eventAggregate!.kennel,
+                            _eventAggregate!.extensions.digAfterDec,
+                            _eventAggregate!.extensions.curSym,
+                            _eventAggregate!.extensions.distancePreference ?? 0,
+                            _eventAggregate!.extensions.distToEvent,
+                            _eventAggregate!.extensions.paymentUrl ?? '',
+                            false,
+                            _eventAggregate!.extensions.isMapAndDistanceValid ?? false,
+                            eventUrlWithKennelBackup: _eventAggregate!.event.eventUrl ?? _eventAggregate!.kennel.kennelEventsUrl,
+                          ),
+                        ],
                       ),
-                      const FancyDivider(
-                        key: Key('66103920'),
-                        innerColor: Colors.white,
-                        topMargin: 20.0,
-                        bottomMargin: 5.0,
-                      ),
-                      TextScaleFactorClamper(
-                        textScaleFactor: G0<DeviceInfo>().textClamp15,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.max,
-                          children: _kiddies(),
-                        ),
-                      ),
-                      const FancyDivider(
-                        key: Key('669190022'),
-                        innerColor: Colors.white,
-                        topMargin: 35.0,
-                        bottomMargin: 5.0,
-                      ),
-                      RunDetails(
-                        _eventAggregate.event,
-                        _eventAggregate.kennel,
-                        _eventAggregate.extensions.digAfterDec,
-                        _eventAggregate.extensions.curSym,
-                        _eventAggregate.extensions.distancePreference ?? 0,
-                        _eventAggregate.extensions.distToEvent,
-                        _eventAggregate.extensions.paymentUrl ?? '',
-                        false,
-                        _eventAggregate.extensions.isMapAndDistanceValid ?? false,
-                        eventUrlWithKennelBackup: _eventAggregate.event.eventUrl ?? _eventAggregate.kennel.kennelEventsUrl,
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
         ),
       ),
     );
@@ -238,190 +240,7 @@ class RunAdminPageState extends State<RunAdminPage> {
   List<Widget> _kiddies() {
     final List<Widget> kiddies = <Widget>[];
 
-    kiddies.add(
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: SizedBox(
-              width: 110,
-              height: 110,
-              child: ElevatedButton(
-                // shape: RoundedRectangleBorder(
-                //     borderRadius: BorderRadius.circular(10.0)),
-                // padding:
-                //     const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 3, top: 5),
-                    child: Image.asset('images/icons/check_in_pack_icon.png', height: 55.0, width: 55.0),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
-                    child: Text(
-                      'Manual check in',
-                      style: ts_buttonLabelSmallCompressedLines,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ]),
-
-                onPressed: () {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInPackPage(eventAggregate: _eventAggregate),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: SizedBox(
-              width: 110,
-              height: 110,
-              child: ElevatedButton(
-                // shape: RoundedRectangleBorder(
-                //     borderRadius: BorderRadius.circular(10.0)),
-                // padding:
-                //     const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 0, top: 5),
-                    child: Image.asset('images/icons/qr_scanner_phone_icon.png', height: 55.0, width: 55.0),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
-                    child: Text(
-                      'Scan to check in',
-                      style: ts_buttonLabelSmallCompressedLines,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ]),
-                onPressed: () {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInScannerPage(eventAggregate: _eventAggregate),
-                    ),
-                  );
-                },
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-
-    if (_eventAggregate.extensions.appAccess.canManageHashCash) {
-      kiddies.add(Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: Container(
-              width: 110,
-              height: 110,
-              foregroundDecoration: _isBetaTester == 1
-                  ? null
-                  : BoxDecoration(
-                      color: Colors.grey.shade100,
-                      backgroundBlendMode: BlendMode.saturation,
-                    ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                  backgroundColor: _isBetaTester == 1 ? null : Colors.grey,
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 3, top: 5),
-                    child: Image.asset('images/icons/hash_cash_icon.png', height: 55.0, width: 55.0),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                    child: Text(
-                      'Hash\r\ncash',
-                      style: ts_buttonLabelSmallCompressedLines,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ]),
-                onPressed: () {
-                  if (_isBetaTester == 1) {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => PaymentReportPage(
-                          eventAggregate: _eventAggregate,
-                        ),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 15, bottom: 15),
-            child: Container(
-              width: 110,
-              height: 110,
-              foregroundDecoration: _isBetaTester == 1
-                  ? null
-                  : const BoxDecoration(
-                      color: Colors.grey,
-                      backgroundBlendMode: BlendMode.saturation,
-                    ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                  backgroundColor: _isBetaTester == 1 ? null : Colors.grey,
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 0, top: 5),
-                    child: Image.asset('images/icons/receipt_icon.png', height: 55.0, width: 55.0),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                    child: Text(
-                      'Manage receipts',
-                      style: ts_buttonLabelSmallCompressedLines,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ]),
-                onPressed: () {
-                  if (_isBetaTester == 1) {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => ReceiptsList(
-                          eventAggregate: _eventAggregate,
-                        ),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-          ),
-        ],
-      ));
-    }
-
-    if (_eventAggregate.extensions.appAccess.canManageRuns) {
+    if (_eventAggregate != null) {
       kiddies.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -431,27 +250,62 @@ class RunAdminPageState extends State<RunAdminPage> {
               child: SizedBox(
                 width: 110,
                 height: 110,
-                // foregroundDecoration: BoxDecoration(
-                //   color: Colors.grey,
-                //   backgroundBlendMode: BlendMode.saturation,
-                // ),
                 child: ElevatedButton(
                   // shape: RoundedRectangleBorder(
                   //     borderRadius: BorderRadius.circular(10.0)),
-                  // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                  // padding:
+                  //     const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                    //primary: Colors.grey,
                   ),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.only(left: 3, top: 5),
-                      child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
+                      child: Image.asset('images/icons/check_in_pack_icon.png', height: 55.0, width: 55.0),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                      padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
                       child: Text(
-                        'Print QR codes',
+                        'Manual check in',
+                        style: ts_buttonLabelSmallCompressedLines,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ]),
+
+                  onPressed: () {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => CheckInPackPage(eventAggregate: _eventAggregate!),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 15, bottom: 15),
+              child: SizedBox(
+                width: 110,
+                height: 110,
+                child: ElevatedButton(
+                  // shape: RoundedRectangleBorder(
+                  //     borderRadius: BorderRadius.circular(10.0)),
+                  // padding:
+                  //     const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 0, top: 5),
+                      child: Image.asset('images/icons/qr_scanner_phone_icon.png', height: 55.0, width: 55.0),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
+                      child: Text(
+                        'Scan to check in',
                         style: ts_buttonLabelSmallCompressedLines,
                         textAlign: TextAlign.center,
                       ),
@@ -459,150 +313,298 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ]),
                   onPressed: () {
                     Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => CheckInScannerPage(eventAggregate: _eventAggregate!),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+
+      if (_eventAggregate!.extensions.appAccess.canManageHashCash) {
+        kiddies.add(Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 15, bottom: 15),
+              child: Container(
+                width: 110,
+                height: 110,
+                foregroundDecoration: _isBetaTester == 1
+                    ? null
+                    : BoxDecoration(
+                        color: Colors.grey.shade100,
+                        backgroundBlendMode: BlendMode.saturation,
+                      ),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                    backgroundColor: _isBetaTester == 1 ? null : Colors.grey,
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 3, top: 5),
+                      child: Image.asset('images/icons/hash_cash_icon.png', height: 55.0, width: 55.0),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                      child: Text(
+                        'Hash\r\ncash',
+                        style: ts_buttonLabelSmallCompressedLines,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ]),
+                  onPressed: () {
+                    if (_isBetaTester == 1) {
+                      Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => EventQrCodePage(
-                                kennelShortName: _eventAggregate.kennel.kennelShortName,
-                                qrContent: _eventAggregate.event.publicEventId,
-                                title: _eventAggregate.event.eventName,
-                                runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
-                                runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
-                                runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
-                                showRunLink: true,
-                                eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
+                          builder: (BuildContext context) => PaymentReportPage(
+                            eventAggregate: _eventAggregate!,
+                          ),
+                        ),
+                      );
+                    }
                   },
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 15, bottom: 15),
-              child: SizedBox(
+              child: Container(
                 width: 110,
                 height: 110,
+                foregroundDecoration: _isBetaTester == 1
+                    ? null
+                    : const BoxDecoration(
+                        color: Colors.grey,
+                        backgroundBlendMode: BlendMode.saturation,
+                      ),
                 child: ElevatedButton(
-                  // shape: RoundedRectangleBorder(
-                  //     borderRadius: BorderRadius.circular(10.0)),
-                  // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                    backgroundColor: _isBetaTester == 1 ? null : Colors.grey,
                   ),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.only(left: 3, top: 5),
-                      child: Image.asset('images/icons/email_icon.png', height: 55.0, width: 55.0),
+                      padding: const EdgeInsets.only(left: 0, top: 5),
+                      child: Image.asset('images/icons/receipt_icon.png', height: 55.0, width: 55.0),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                       child: Text(
-                        'Email Run Details',
+                        'Manage receipts',
                         style: ts_buttonLabelSmallCompressedLines,
                         textAlign: TextAlign.center,
                       ),
                     ),
                   ]),
                   onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => EmailEditorPage(
-                          eventId: widget.eventId,
+                    if (_isBetaTester == 1) {
+                      Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => ReceiptsList(
+                            eventAggregate: _eventAggregate!,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        ));
+      }
+
+      if (_eventAggregate!.extensions.appAccess.canManageRuns) {
+        kiddies.add(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 15, bottom: 15),
+                child: SizedBox(
+                  width: 110,
+                  height: 110,
+                  // foregroundDecoration: BoxDecoration(
+                  //   color: Colors.grey,
+                  //   backgroundBlendMode: BlendMode.saturation,
+                  // ),
+                  child: ElevatedButton(
+                    // shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(10.0)),
+                    // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                      //primary: Colors.grey,
+                    ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 3, top: 5),
+                        child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                        child: Text(
+                          'Print QR codes',
+                          style: ts_buttonLabelSmallCompressedLines,
+                          textAlign: TextAlign.center,
                         ),
                       ),
-                    );
-                  },
+                    ]),
+                    onPressed: () {
+                      Navigator.push<dynamic>(
+                          context,
+                          MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) => EventQrCodePage(
+                                  kennelShortName: _eventAggregate!.kennel.kennelShortName,
+                                  qrContent: _eventAggregate!.event.publicEventId,
+                                  title: _eventAggregate!.event.eventName,
+                                  runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                                  runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                                  runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
+                                  showRunLink: true,
+                                  eventStartDatetime: _eventAggregate!.event.eventStartDatetime)));
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
+              Padding(
+                padding: const EdgeInsets.only(top: 15, bottom: 15),
+                child: SizedBox(
+                  width: 110,
+                  height: 110,
+                  child: ElevatedButton(
+                    // shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(10.0)),
+                    // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                    ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 3, top: 5),
+                        child: Image.asset('images/icons/email_icon.png', height: 55.0, width: 55.0),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                        child: Text(
+                          'Email Run Details',
+                          style: ts_buttonLabelSmallCompressedLines,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ]),
+                    onPressed: () {
+                      Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => EmailEditorPage(
+                            eventId: widget.eventId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
 
-      kiddies.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 15, bottom: 15),
-              child: SizedBox(
-                width: 110,
-                height: 110,
-                // foregroundDecoration: BoxDecoration(
-                //   color: Colors.grey,
-                //   backgroundBlendMode: BlendMode.saturation,
-                // ),
-                child: ElevatedButton(
-                  // shape: RoundedRectangleBorder(
-                  //     borderRadius: BorderRadius.circular(10.0)),
-                  // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                    //primary: Colors.grey,
-                  ),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 3, top: 5),
-                      child: Image.asset('images/icons/edit_run_icon.png', height: 55.0, width: 55.0),
+        kiddies.add(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 15, bottom: 15),
+                child: SizedBox(
+                  width: 110,
+                  height: 110,
+                  // foregroundDecoration: BoxDecoration(
+                  //   color: Colors.grey,
+                  //   backgroundBlendMode: BlendMode.saturation,
+                  // ),
+                  child: ElevatedButton(
+                    // shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(10.0)),
+                    // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                      //primary: Colors.grey,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                      child: Text(
-                        'Edit run details',
-                        style: ts_buttonLabelSmallCompressedLines,
-                        textAlign: TextAlign.center,
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 3, top: 5),
+                        child: Image.asset('images/icons/edit_run_icon.png', height: 55.0, width: 55.0),
                       ),
-                    ),
-                  ]),
-                  onPressed: () async {
-                    // NULLSAFETODO1
-                    // await Navigator.push<dynamic>(
-                    //     context,
-                    //     MaterialPageRoute<dynamic>(
-                    //         builder: (BuildContext context) => EditRunDetailsPage(false, _eventAggregate, (String eventId) async {
-                    //               _eventAggregate = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, _userId);
-                    //               _isLoading = false;
-                    //               return _eventAggregate;
-                    //             })));
-                    // _getRunDetails(widget.eventId);
-                  },
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                        child: Text(
+                          'Edit run details',
+                          style: ts_buttonLabelSmallCompressedLines,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ]),
+                    onPressed: () async {
+                      await Navigator.push<dynamic>(
+                          context,
+                          MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) => EditRunDetailsPage(false, _eventAggregate!, (String eventId) async {
+                                    _eventAggregate = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, _userId);
+                                    _isLoading = false;
+                                    return _eventAggregate!;
+                                  })));
+                      _getRunDetails(widget.eventId);
+                    },
+                  ),
                 ),
               ),
-            ),
-            if (_eventAggregate.extensions.appAccess.canManageAwards)
-              Container(
-                margin: const EdgeInsets.only(top: 20, bottom: 15),
-                width: 110,
-                height: 110,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                  ),
-                  child: Column(children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 3, top: 1),
-                      child: Image.asset('images/icons/run_awards.png', height: 55.0, width: 55.0),
+              if (_eventAggregate!.extensions.appAccess.canManageAwards)
+                Container(
+                  margin: const EdgeInsets.only(top: 20, bottom: 15),
+                  width: 110,
+                  height: 110,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
-                      child: Text(
-                        'Award\r\nlist',
-                        textAlign: TextAlign.center,
-                        style: ts_buttonLabelMedium,
+                    child: Column(children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 3, top: 1),
+                        child: Image.asset('images/icons/run_awards.png', height: 55.0, width: 55.0),
                       ),
-                    ),
-                  ]),
-                  onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(builder: (BuildContext context) => DrinksList(eventAggregate: _eventAggregate)),
-                    );
-                  },
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
+                        child: Text(
+                          'Award\r\nlist',
+                          textAlign: TextAlign.center,
+                          style: ts_buttonLabelMedium,
+                        ),
+                      ),
+                    ]),
+                    onPressed: () {
+                      Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => DrinksList(eventAggregate: _eventAggregate!)),
+                      );
+                    },
+                  ),
                 ),
-              ),
-          ],
-        ),
-      );
+            ],
+          ),
+        );
+      }
     }
-
     return kiddies;
   }
 }

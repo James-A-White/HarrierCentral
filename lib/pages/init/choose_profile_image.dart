@@ -339,16 +339,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           height: 20,
           width: 20,
         ),
-        Center(
-          child: SpinKitCircle(
-            size: 75.0,
-            itemBuilder: (_, int index) {
-              return DecoratedBox(
-                decoration: BoxDecoration(
-                  color: index.isEven ? Colors.white : Colors.red.shade900,
-                ),
-              );
-            },
+        const Center(
+          child: HcCircularProgressIndicator(
+            key: Key('1387562'),
           ),
         )
       ],
