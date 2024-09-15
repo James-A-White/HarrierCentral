@@ -37,6 +37,8 @@ mixin _$UserRunHistoryModel {
   int? get doPayForExtras => throw _privateConstructorUsedError;
   int? get totalRunsThisKennel => throw _privateConstructorUsedError;
   int? get totalHaringThisKennel => throw _privateConstructorUsedError;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  bool get isUpdating => throw _privateConstructorUsedError;
 
   /// Serializes this UserRunHistoryModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -71,7 +73,8 @@ abstract class $UserRunHistoryModelCopyWith<$Res> {
       double? extrasPrice,
       int? doPayForExtras,
       int? totalRunsThisKennel,
-      int? totalHaringThisKennel});
+      int? totalHaringThisKennel,
+      @JsonKey(includeFromJson: false, includeToJson: false) bool isUpdating});
 }
 
 /// @nodoc
@@ -106,6 +109,7 @@ class _$UserRunHistoryModelCopyWithImpl<$Res, $Val extends UserRunHistoryModel>
     Object? doPayForExtras = freezed,
     Object? totalRunsThisKennel = freezed,
     Object? totalHaringThisKennel = freezed,
+    Object? isUpdating = null,
   }) {
     return _then(_value.copyWith(
       eventId: null == eventId
@@ -176,6 +180,10 @@ class _$UserRunHistoryModelCopyWithImpl<$Res, $Val extends UserRunHistoryModel>
           ? _value.totalHaringThisKennel
           : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
               as int?,
+      isUpdating: null == isUpdating
+          ? _value.isUpdating
+          : isUpdating // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -205,7 +213,8 @@ abstract class _$$UserRunHistoryModelImplCopyWith<$Res>
       double? extrasPrice,
       int? doPayForExtras,
       int? totalRunsThisKennel,
-      int? totalHaringThisKennel});
+      int? totalHaringThisKennel,
+      @JsonKey(includeFromJson: false, includeToJson: false) bool isUpdating});
 }
 
 /// @nodoc
@@ -238,6 +247,7 @@ class __$$UserRunHistoryModelImplCopyWithImpl<$Res>
     Object? doPayForExtras = freezed,
     Object? totalRunsThisKennel = freezed,
     Object? totalHaringThisKennel = freezed,
+    Object? isUpdating = null,
   }) {
     return _then(_$UserRunHistoryModelImpl(
       eventId: null == eventId
@@ -308,6 +318,10 @@ class __$$UserRunHistoryModelImplCopyWithImpl<$Res>
           ? _value.totalHaringThisKennel
           : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
               as int?,
+      isUpdating: null == isUpdating
+          ? _value.isUpdating
+          : isUpdating // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -332,7 +346,9 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
       this.extrasPrice,
       this.doPayForExtras,
       this.totalRunsThisKennel,
-      this.totalHaringThisKennel});
+      this.totalHaringThisKennel,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      this.isUpdating = false});
 
   factory _$UserRunHistoryModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserRunHistoryModelImplFromJson(json);
@@ -374,10 +390,13 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
   final int? totalRunsThisKennel;
   @override
   final int? totalHaringThisKennel;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final bool isUpdating;
 
   @override
   String toString() {
-    return 'UserRunHistoryModel(eventId: $eventId, eventName: $eventName, eventNumber: $eventNumber, eventStartDatetime: $eventStartDatetime, canEditRunAttendence: $canEditRunAttendence, hemId: $hemId, attendenceState: $attendenceState, isHare: $isHare, creditAmount: $creditAmount, debitAmount: $debitAmount, creditAvailable: $creditAvailable, paymentType: $paymentType, extrasDescription: $extrasDescription, extrasPrice: $extrasPrice, doPayForExtras: $doPayForExtras, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel)';
+    return 'UserRunHistoryModel(eventId: $eventId, eventName: $eventName, eventNumber: $eventNumber, eventStartDatetime: $eventStartDatetime, canEditRunAttendence: $canEditRunAttendence, hemId: $hemId, attendenceState: $attendenceState, isHare: $isHare, creditAmount: $creditAmount, debitAmount: $debitAmount, creditAvailable: $creditAvailable, paymentType: $paymentType, extrasDescription: $extrasDescription, extrasPrice: $extrasPrice, doPayForExtras: $doPayForExtras, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, isUpdating: $isUpdating)';
   }
 
   @override
@@ -415,7 +434,9 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
             (identical(other.totalRunsThisKennel, totalRunsThisKennel) ||
                 other.totalRunsThisKennel == totalRunsThisKennel) &&
             (identical(other.totalHaringThisKennel, totalHaringThisKennel) ||
-                other.totalHaringThisKennel == totalHaringThisKennel));
+                other.totalHaringThisKennel == totalHaringThisKennel) &&
+            (identical(other.isUpdating, isUpdating) ||
+                other.isUpdating == isUpdating));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -438,7 +459,8 @@ class _$UserRunHistoryModelImpl implements _UserRunHistoryModel {
       extrasPrice,
       doPayForExtras,
       totalRunsThisKennel,
-      totalHaringThisKennel);
+      totalHaringThisKennel,
+      isUpdating);
 
   /// Create a copy of UserRunHistoryModel
   /// with the given fields replaced by the non-null parameter values.
@@ -475,7 +497,9 @@ abstract class _UserRunHistoryModel implements UserRunHistoryModel {
       final double? extrasPrice,
       final int? doPayForExtras,
       final int? totalRunsThisKennel,
-      final int? totalHaringThisKennel}) = _$UserRunHistoryModelImpl;
+      final int? totalHaringThisKennel,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      final bool isUpdating}) = _$UserRunHistoryModelImpl;
 
   factory _UserRunHistoryModel.fromJson(Map<String, dynamic> json) =
       _$UserRunHistoryModelImpl.fromJson;
@@ -514,6 +538,9 @@ abstract class _UserRunHistoryModel implements UserRunHistoryModel {
   int? get totalRunsThisKennel;
   @override
   int? get totalHaringThisKennel;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  bool get isUpdating;
 
   /// Create a copy of UserRunHistoryModel
   /// with the given fields replaced by the non-null parameter values.

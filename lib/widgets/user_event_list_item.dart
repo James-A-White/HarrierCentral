@@ -48,18 +48,16 @@ class UserEventListItem extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            // NULLSAFETODO1
-            // item.isUpdating
-            //     ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
-            //     :
-            item.attendenceState < attendenceAtHash.value
-                ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
-                : item.isHare == isHareNo.value
-                    ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
-                    : const Padding(
-                        padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                        child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 30.0),
-                      ),
+            item.isUpdating
+                ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
+                : item.attendenceState < attendenceAtHash.value
+                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
+                    : item.isHare == isHareNo.value
+                        ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
+                        : const Padding(
+                            padding: EdgeInsets.only(left: 2.5, right: 2.5),
+                            child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 30.0),
+                          ),
             const Padding(
               padding: EdgeInsets.only(left: 7.0, right: 3.0),
               child: VerticalDivider(

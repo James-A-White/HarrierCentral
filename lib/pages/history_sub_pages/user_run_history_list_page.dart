@@ -26,11 +26,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   @override
   void initState() {
-    refreshRunHistoryFromTable(true);
+    _refreshRunHistoryFromTable(true);
     super.initState();
   }
 
-  Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
+  Future<void> _refreshRunHistoryFromTable(bool forceRefresh) async {
     // This query looks at two places for historical runs. First it looks at all
     // of the current runs for a kennel that are cached on the phone and joins to HEM.
     // But for runs that are old and no longer cached on the phone, it looks at the
@@ -103,8 +103,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(results[i]);
         // hlrItem.totalHaringThisKennel = -1;
         // hlrItem.totalRunsThisKennel = -1;
-        // NULLSAFETODO1
-        //hlrItem.isUpdating = false;
         _runCountsList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
@@ -243,7 +241,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('User data synchronized $resultStr');
-    await refreshRunHistoryFromTable(true);
+    await _refreshRunHistoryFromTable(true);
     _kennelInfo = await widget.refreshKennelInfo();
     setState(() {
       _isLoading = false;
@@ -496,7 +494,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        final UserRunHistoryModel item = _runCountsList[index];
+                        UserRunHistoryModel item = _runCountsList[index];
 
                         return Dismissible(
                           key: Key(item.eventId),
@@ -510,12 +508,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 // not at the Hash to being at the Hash,
                                 // so assume that the person was not a hare
                                 if (item.attendenceState < attendenceAtHash.value) {
-                                  // NULLSAFETODO1
-                                  //item.isUpdating = true;
+                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: true);
+                                  item = _runCountsList[index];
                                   await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareNo);
                                 } else {
-                                  // NULLSAFETODO1
-                                  //item.isUpdating = true;
+                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: true);
+                                  item = _runCountsList[index];
                                   await _setAttendenceState(item, rsvpYes, attendenceAtHash, item.isHare == 1 ? isHareNo : isHareYes);
                                 }
                               } else {
@@ -656,8 +654,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               kennelInfo: _kennelInfo ?? widget.kennelInfo,
                               setAttendenceStateCallback: (EnumAttendenceState<int> attendenceState, EnumIsHare<int> isHare) async {
                                 setState(() {
-                                  // NULLSAFETODO1
-                                  //item.isUpdating = true;
+                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: true);
+                                  item = _runCountsList[index];
                                 });
 
                                 if (attendenceState == attendenceNo) {
@@ -671,8 +669,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 }
 
                                 setState(() {
-                                  // NULLSAFETODO1
-                                  //item.isUpdating = false;
+                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: false);
                                 });
                               },
                             ),
@@ -712,6 +709,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           hemId: item.hemId,
         );
 
-    await refreshRunHistoryFromTable(true);
+    await _refreshRunHistoryFromTable(true);
+    setState(() {
+      _isLoading = false;
+    });
   }
 }

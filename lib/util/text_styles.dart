@@ -324,6 +324,14 @@ TextStyle ts_titleBlack = const TextStyle(
   height: 1.0,
 );
 
+TextStyle ts_titleCondensed = const TextStyle(
+  fontFamily: 'AvenirNextCondensedDemiBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.white,
+  fontSize: 20.0,
+  height: 1.0,
+);
+
 TextStyle ts_titleCondensedBlack = const TextStyle(
   fontFamily: 'AvenirNextCondensedDemiBold',
   fontStyle: FontStyle.normal,

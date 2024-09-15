@@ -23,6 +23,7 @@ class UserRunHistoryModel with _$UserRunHistoryModel implements BaseModel {
     int? doPayForExtras,
     int? totalRunsThisKennel,
     int? totalHaringThisKennel,
+    @JsonKey(includeFromJson: false, includeToJson: false) @Default(false) bool isUpdating,
   }) = _UserRunHistoryModel;
 
   factory UserRunHistoryModel.fromJson(Map<String, dynamic> json) => _$UserRunHistoryModelFromJson(json);

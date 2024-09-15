@@ -1787,7 +1787,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                           content: Text(
                                             'Other info has been saved',
                                             textAlign: TextAlign.center,
-                                            style: ts_titleCondensedBlack,
+                                            style: ts_titleCondensed,
                                           ),
                                           backgroundColor: Colors.blue.shade700,
                                         );
