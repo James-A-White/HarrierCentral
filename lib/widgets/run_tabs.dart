@@ -105,8 +105,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           displayName = packItem.displayName ?? 'Virgin / Visitor';
         }
 
-        // NULLSAFEDONE
-        //if (_thePackList != null) {
         pla.add(PackListAggregate(hem: packItem, hasher: hasherItem, displayName: displayName));
         //}
       }

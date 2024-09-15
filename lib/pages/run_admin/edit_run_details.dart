@@ -389,16 +389,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
           _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
           setState(() {
             _isUpdating = false;
-            // final SnackBar snackBar = SnackBar(
-            //   duration: const Duration(seconds: 3),
-            //   content: const Text(
-            //     'Other info has been saved',
-            //     textAlign: TextAlign.center,
-            //     style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-            //   ),
-            //   backgroundColor: Colors.blue.shade700,
-            // );
-            // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            final SnackBar snackBar = SnackBar(
+              duration: const Duration(seconds: 3),
+              content: Text(
+                'Other info has been saved',
+                textAlign: TextAlign.center,
+                style: ts_titleCondensed,
+              ),
+              backgroundColor: Colors.blue.shade700,
+            );
+
+            if (!mounted) return;
+            ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
           });
         }
       }
@@ -654,7 +656,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     content: Text(
                                       'Run details have been saved',
                                       textAlign: TextAlign.center,
-                                      style: ts_titleCondensedBlack,
+                                      style: ts_titleCondensed,
                                     ),
                                     backgroundColor: Colors.blue.shade700,
                                   );
@@ -745,7 +747,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               content: Text(
                                 'Event image has been updated',
                                 textAlign: TextAlign.center,
-                                style: ts_titleCondensedBlack,
+                                style: ts_titleCondensed,
                               ),
                               backgroundColor: Colors.blue.shade700,
                             );
@@ -1227,7 +1229,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     content: Text(
                                       'Updated location saved in Harrier Central',
                                       textAlign: TextAlign.center,
-                                      style: ts_titleCondensedBlack,
+                                      style: ts_titleCondensed,
                                     ),
                                     backgroundColor: Colors.blue.shade700,
                                   );

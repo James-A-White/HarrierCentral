@@ -475,7 +475,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             }
           },
         ),
-        //const SizedBox(height: 18.0),
+        const SizedBox(height: 10.0),
       ],
     );
   }
@@ -483,9 +483,15 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   Widget _buildAddButtons() {
     return OverflowBar(
       alignment: MainAxisAlignment.center,
+      spacing: 20.0,
+      overflowAlignment: OverflowBarAlignment.center,
       children: <Widget>[
         ElevatedButton(
-          child: Text('Add run', style: ts_button),
+          style: ButtonStyle(
+            padding: WidgetStateProperty.all<EdgeInsets>(
+              const EdgeInsets.symmetric(horizontal: 15.0),
+            ),
+          ),
           onPressed: () async {
             RunAdminAggregate? rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId)!, _selectedDay.value);
             //RunAdminAggregate rda = null;
@@ -513,14 +519,20 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             await _refreshEventFromTables(true);
             _refreshList();
           },
+          child: Text('Add run', style: ts_button),
         ),
         ElevatedButton(
-          child: Text('Add run placeholder', style: ts_button),
+          style: ButtonStyle(
+            padding: WidgetStateProperty.all<EdgeInsets>(
+              const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
+            ),
+          ),
           onPressed: () {
             setState(() {
               _showEventPopup(_selectedDay.value);
             });
           },
+          child: Text('Add run placeholder', style: ts_button),
         ),
       ],
     );

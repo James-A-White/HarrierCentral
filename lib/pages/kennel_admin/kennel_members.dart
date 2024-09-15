@@ -279,8 +279,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                   MaterialPageRoute<Map<String, dynamic>>(
                     settings: const RouteSettings(),
                     builder: (BuildContext context) {
-                      //return const SizedBox();
-                      // NULLSAFEDONE
                       return FindHasherPage(
                         FindHasherPageType.addMember,
                         kennelId: widget.kennelListAggregate.kennel.kennelId,
@@ -312,7 +310,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
               label: 'Add new Hasher\r\nto Harrier Central',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                // NULLSAFEDONE
                 Navigator.push<HashersModel>(
                   context,
                   MaterialPageRoute<HashersModel>(
@@ -509,7 +506,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                         modifyMembership(snapshot.data![index], -9999);
                                         break;
                                       case EnumMemberPopupActions.editKennelAdmin:
-                                        // NULLSAFEDONE
                                         Navigator.push<int>(
                                           context,
                                           MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data![index].appAccessFlags)),

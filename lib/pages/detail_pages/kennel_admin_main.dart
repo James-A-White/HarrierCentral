@@ -2,6 +2,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
+import 'package:map_launcher/map_launcher.dart' as maps;
 
 class KennelAdminMainPage extends StatefulWidget {
   const KennelAdminMainPage({
@@ -58,7 +59,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  //KennelMembersList? _kennelMembersList;
+  KennelMembersList? _kennelMembersList;
 
   final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
 
@@ -340,28 +341,27 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ),
                                               ]),
                                               onPressed: () {
-                                                // NULLSAFETODO1
-                                                // if (Connection2.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                //   _kennelMembersList = KennelMembersList(kennelListAggregate: widget.kennelAggregateItem);
-                                                //   Navigator.push<dynamic>(
-                                                //     context,
-                                                //     MaterialPageRoute<dynamic>(
-                                                //       builder: (BuildContext context) => _kennelMembersList,
-                                                //     ),
-                                                //   ).then((void _) async {
-                                                //     final KennelListAggregate kennelAggregate = await QueryKennels.getSingleKennel(widget.kennelAggregateItem.kennel.kennelId);
+                                                if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
+                                                  _kennelMembersList = KennelMembersList(kennelListAggregate: widget.kennelAggregateItem);
+                                                  Navigator.push<dynamic>(
+                                                    context,
+                                                    MaterialPageRoute<dynamic>(
+                                                      builder: (BuildContext context) => _kennelMembersList ?? Container(),
+                                                    ),
+                                                  ).then((void _) async {
+                                                    final KennelListAggregate? kennelAggregate = await QueryKennels.getSingleKennel(widget.kennelAggregateItem.kennel.kennelId);
 
-                                                //     setState(() {
-                                                //       if ((kennelAggregate.kennel.kennelMismanagementTeam == null) || (kennelAggregate.kennel.kennelMismanagementTeam.trim().isEmpty)) {
-                                                //         _mismanagement = null;
-                                                //       } else {
-                                                //         _mismanagement = kennelAggregate.kennel.kennelMismanagementTeam.contains('\r')
-                                                //             ? kennelAggregate.kennel.kennelMismanagementTeam.split('\r')
-                                                //             : kennelAggregate.kennel.kennelMismanagementTeam.split('\n');
-                                                //       }
-                                                //     });
-                                                //   });
-                                                // }
+                                                    setState(() {
+                                                      if ((kennelAggregate?.kennel.kennelMismanagementTeam == null) || (kennelAggregate!.kennel.kennelMismanagementTeam!.trim().isEmpty)) {
+                                                        _mismanagement = null;
+                                                      } else {
+                                                        _mismanagement = kennelAggregate.kennel.kennelMismanagementTeam!.contains('\r')
+                                                            ? kennelAggregate.kennel.kennelMismanagementTeam!.split('\r')
+                                                            : kennelAggregate.kennel.kennelMismanagementTeam!.split('\n');
+                                                      }
+                                                    });
+                                                  });
+                                                }
                                               },
                                             ),
                                           ),
@@ -394,25 +394,23 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ),
                                               ]),
                                               onPressed: () async {
-                                                // NULLSAFETODO1
-                                                // if (Connection2.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                //   final bool isPreviewBool = await _promptForSending(context);
+                                                if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
+                                                  final bool? isPreviewBool = await _promptForSending(context);
 
-                                                //   if (isPreviewBool != null) {
-                                                //     IveCoreUtilities.showInSnackBar(navigatorKey.currentContext!!, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                                  if (isPreviewBool != null) {
+                                                    IveCoreUtilities.showInSnackBar(navigatorKey.currentContext!, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
 
-                                                //     final EmailReportsService svc = EmailReportsService();
-                                                //     final Map<String, String> result = await svc.sendKennelInvitesByEmail(
-                                                //         kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                                //         kennelName: widget.kennelAggregateItem.kennel.kennelName,
-                                                //         isPreview: isPreviewBool ? 'Yes' : 'No');
+                                                    final EmailReportsService svc = EmailReportsService();
+                                                    final Map<String, String> result = await svc.sendKennelInvitesByEmail(
+                                                        kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                        kennelName: widget.kennelAggregateItem.kennel.kennelName,
+                                                        isPreview: isPreviewBool ? 'Yes' : 'No');
 
-                                                //     ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
+                                                    ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
 
-                                                //     await Utilities.showAlert(
-                                                //         navigatorKey.currentContext!, result['result'].toLowerCase().startsWith('fail') ? 'Failed' : 'Success', result['result'], 'OK');
-                                                //   }
-                                                // }
+                                                    await Utilities.showAlert((result['result'] ?? '').toLowerCase().startsWith('fail') ? 'Failed' : 'Success', (result['result'] ?? ''), 'OK');
+                                                  }
+                                                }
                                               },
                                             ),
                                           ),
@@ -581,29 +579,27 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ),
                                             ]),
                                             onPressed: () {
-                                              // NULLSAFETODO1
-                                              // if (Connection2.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                              //   final EmailReportsService svc = EmailReportsService();
-                                              //   svc
-                                              //       .sendKennelRunStatsReportByEmail(
-                                              //           kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                              //           kennelName: widget.kennelAggregateItem.kennel.kennelName,
-                                              //           digitsAfterDecimal: widget.kennelAggregateItem.extensions.digitsAfterDecimal,
-                                              //           currencySymbol: widget.kennelAggregateItem.extensions.currencySymbol)
-                                              //       .then((Map<String, String> result) {
-                                              //     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                              if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
+                                                final EmailReportsService svc = EmailReportsService();
+                                                svc
+                                                    .sendKennelRunStatsReportByEmail(
+                                                        kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                        kennelName: widget.kennelAggregateItem.kennel.kennelName,
+                                                        digitsAfterDecimal: widget.kennelAggregateItem.extensions.digitsAfterDecimal ?? 2,
+                                                        currencySymbol: widget.kennelAggregateItem.extensions.currencySymbol ?? r'$')
+                                                    .then((Map<String, String> result) {
+                                                  ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
 
-                                              //     if (result['result'].toLowerCase().startsWith('success')) {
-                                              //       Utilities.showAlert(
-                                              //           context,
-                                              //           'E-mail successfully sent',
-                                              //           'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                                              //           'OK');
-                                              //     }
-                                              //   });
+                                                  if ((result['result'] ?? '').toLowerCase().startsWith('success')) {
+                                                    Utilities.showAlert(
+                                                        'E-mail successfully sent',
+                                                        'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                                                        'OK');
+                                                  }
+                                                });
 
-                                              //   IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
-                                              // }
+                                                IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                              }
                                             },
                                           ),
                                         ),
@@ -695,50 +691,50 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       widget.kennelAggregateItem.extensions.cityLon!,
                                                     ),
                                                     child: GestureDetector(
-                                                      // onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat , widget.kennelAggregateItem.extensions.cityLon ),
-
                                                       onTap: () async {
-                                                        // NULLSAFETODO1
-                                                        // final String? mapName = getStringPref(StringPrefsEnum.mapPreference);
-                                                        // if (mapName == null) {
-                                                        //   await Utilities.openMapsSheet(
-                                                        //     context,
-                                                        //     widget.kennelAggregateItem.kennel.kennelName,
-                                                        //     maps.Coords(widget.kennelAggregateItem.extensions.cityLat.toDouble(), widget.kennelAggregateItem.extensions.cityLon.toDouble()),
-                                                        //     '',
-                                                        //     _saveUserMapPreference,
-                                                        //   );
-                                                        // } else {
-                                                        //   final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
-                                                        //   final maps.AvailableMap activeMap = availableMaps.where((maps.AvailableMap map) => map.mapName == mapName).first;
+                                                        if ((widget.kennelAggregateItem.extensions.cityLat != null) && (widget.kennelAggregateItem.extensions.cityLon != null)) {
+                                                          final String? mapName = getStringPref(StringPrefsEnum.mapPreference);
 
-                                                        //   // BUG in plugin - doesn't work when sending a title with Google maps
-                                                        //   activeMap.showMarker(
-                                                        //     coords: maps.Coords(widget.kennelAggregateItem.extensions.cityLat.toDouble(), widget.kennelAggregateItem.extensions.cityLon.toDouble()),
-                                                        //     title: activeMap.mapName.contains('Google') ? '' : widget.kennelAggregateItem.kennel.kennelName,
-                                                        //     description: widget.kennelAggregateItem.kennel.kennelName,
-                                                        //   );
-                                                        // }
+                                                          if (mapName == null) {
+                                                            await Utilities.openMapsSheet(
+                                                              context,
+                                                              widget.kennelAggregateItem.kennel.kennelName,
+                                                              maps.Coords(widget.kennelAggregateItem.extensions.cityLat!.toDouble(), widget.kennelAggregateItem.extensions.cityLon!.toDouble()),
+                                                              '',
+                                                              _saveUserMapPreference,
+                                                            );
+                                                          } else {
+                                                            final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
+                                                            final maps.AvailableMap activeMap = availableMaps.where((maps.AvailableMap map) => map.mapName == mapName).first;
+
+                                                            // BUG in plugin - doesn't work when sending a title with Google maps
+                                                            activeMap.showMarker(
+                                                              coords: maps.Coords(widget.kennelAggregateItem.extensions.cityLat!.toDouble(), widget.kennelAggregateItem.extensions.cityLon!.toDouble()),
+                                                              title: activeMap.mapName.contains('Google') ? '' : widget.kennelAggregateItem.kennel.kennelName,
+                                                              description: widget.kennelAggregateItem.kennel.kennelName,
+                                                            );
+                                                          }
+                                                        }
                                                       },
-
                                                       child: Container(
                                                         margin: const EdgeInsets.only(bottom: 110.0),
-                                                        child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
-                                                          Image.asset('images/icons/grey_square_pin.png'),
-                                                          Positioned(
-                                                            top: 14,
-                                                            child: KennelLogo(
-                                                              //kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                                              kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                                              kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                                              logoHeight: 60.0,
-                                                              leftPadding: 0.0,
-                                                              zoomGesture: KennelLogoZoomGesture.none,
+                                                        child: Stack(
+                                                          alignment: AlignmentDirectional.topCenter,
+                                                          children: <Widget>[
+                                                            Image.asset('images/icons/grey_square_pin.png'),
+                                                            Positioned(
+                                                              top: 14,
+                                                              child: KennelLogo(
+                                                                //kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                                kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                                                kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                                                logoHeight: 60.0,
+                                                                leftPadding: 0.0,
+                                                                zoomGesture: KennelLogoZoomGesture.none,
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ]
-                                                            //child: FlutterLogo(colors: Colors.purple),
-                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
@@ -1078,23 +1074,25 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ),
                                           ]),
                                           onPressed: () async {
-                                            // NULLSAFETODO1
-                                            // if (!mounted) return;
-                                            // await Navigator.push<void>(
-                                            //   context,
-                                            //   MaterialPageRoute<void>(
-                                            //     builder: (BuildContext context) => GenericWidgetPage(
-                                            //       key: const Key('52233311'),
-                                            //       widget: CustomizeProfile(
-                                            //         originalProfilePhoto: widget.kennelAggregateItem.extensions.originalProfilePhoto,
-                                            //         originalDisplayName: widget.kennelAggregateItem.extensions.originalDisplayName,
-                                            //         customKennelPhoto: widget.kennelAggregateItem.hkm.kennelUserPhoto,
-                                            //         customKennelHashName: widget.kennelAggregateItem.hkm.kennelHashName,
-                                            //       ),
-                                            //       appBarTitle: 'Customize profile',
-                                            //     ),
-                                            //   ),
-                                            // );
+                                            if (!mounted) return;
+
+                                            if ((widget.kennelAggregateItem.extensions.originalProfilePhoto != null) && (widget.kennelAggregateItem.extensions.originalDisplayName != null)) {
+                                              await Navigator.push<void>(
+                                                context,
+                                                MaterialPageRoute<void>(
+                                                  builder: (BuildContext context) => GenericWidgetPage(
+                                                    key: const Key('52233311'),
+                                                    widget: CustomizeProfile(
+                                                      originalProfilePhoto: widget.kennelAggregateItem.extensions.originalProfilePhoto!,
+                                                      originalDisplayName: widget.kennelAggregateItem.extensions.originalDisplayName!,
+                                                      customKennelPhoto: widget.kennelAggregateItem.hkm?.kennelUserPhoto,
+                                                      customKennelHashName: widget.kennelAggregateItem.hkm?.kennelHashName,
+                                                    ),
+                                                    appBarTitle: 'Customize profile',
+                                                  ),
+                                                ),
+                                              );
+                                            }
                                           },
                                         ),
                                       ),
@@ -1123,45 +1121,45 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     ]);
   }
 
-  // static Future<bool?> _promptForSending(BuildContext context) async {
-  //   return showDialog<bool>(
-  //     context: context,
-  //     barrierDismissible: false, // user must tap button!
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Send invite codes'),
-  //         content: const SingleChildScrollView(
-  //           child: ListBody(
-  //             children: <Widget>[
-  //               Text(
-  //                   'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.'),
-  //             ],
-  //           ),
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: const Text('Cancel'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(null);
-  //             },
-  //           ),
-  //           TextButton(
-  //             child: const Text('Preview'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(true);
-  //             },
-  //           ),
-  //           TextButton(
-  //             child: const Text('Send'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(false);
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  static Future<bool?> _promptForSending(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Send invite codes'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(null);
+              },
+            ),
+            TextButton(
+              child: const Text('Preview'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            TextButton(
+              child: const Text('Send'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Widget _mmRow(String s) {
     if (s.isEmpty) {
