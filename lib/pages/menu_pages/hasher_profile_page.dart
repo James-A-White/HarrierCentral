@@ -54,6 +54,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   bool _autoValidate = false;
 
+  int? _historicalTotalRunCount;
+  int? _historicalHaringCount;
+  bool? _historicalCountIsEstimate;
+  bool? _historicalCountIsEstimateWidget;
+
   String? _email = getStringPref(StringPrefsEnum.email);
   int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
 
@@ -69,7 +74,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   String _photoPrefix = '';
   String _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
   late HashersModel _hasher;
-  HasherKennelMapModel? _hkmData;
+  //HasherKennelMapModel? _hkmData;
 
   bool isEmptyGuid(String? guid) {
     if ((guid == null) || (guid.isEmpty) || (guid == GUID_EMPTY)) {
@@ -136,8 +141,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
       if (results.isNotEmpty) {
         _hasher = HashersModel.fromJson(results[0]);
+
         if (widget.dataContext == EnumDataContext.kennel) {
-          _hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+          // _hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+          _historicalTotalRunCount = results[0]['historicalTotalRunCount'];
+          _historicalHaringCount = results[0]['historicalHaringCount'];
+          _historicalCountIsEstimate = ((results[0]['historicalCountIsEstimate'] ?? 0) == 1);
+          _historicalCountIsEstimateWidget = _historicalCountIsEstimate;
         }
 
         _firstNameController.text = _hasher.firstName ?? '';
@@ -146,9 +156,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         _hashNameController.text = _hasher.hashName ?? '';
         _nameDisplayPreference = _hasher.dispPref;
         _newPhoto = _hasher.photo ?? _newPhoto; // if we have returned from the photo chooser, don't overwrite
-        _previousRunCountController.text = (_hkmData?.historicalTotalRunCount ?? 0).toString();
-        _previousHaringCountController.text = (_hkmData?.historicalHaringCount ?? 0).toString();
-        _historicalCountIsEstimate = (_hkmData?.historicalCountIsEstimate ?? 0) == 1;
+        _previousRunCountController.text = (_historicalTotalRunCount ?? 0).toString();
+        _previousHaringCountController.text = (_historicalHaringCount ?? 0).toString();
+        _historicalCountIsEstimateWidget = (_historicalCountIsEstimate ?? false);
 
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
@@ -159,7 +169,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
 
       _isLoading = false;
-      checkDirty();
+      _checkDirty();
       setState(() {});
     } catch (e) {
       //print(e);
@@ -172,7 +182,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   final TextEditingController _hashNameController = TextEditingController();
   final TextEditingController _previousRunCountController = TextEditingController();
   final TextEditingController _previousHaringCountController = TextEditingController();
-  bool _historicalCountIsEstimate = false;
 
   String? _externalMapProvider;
 
@@ -212,22 +221,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
 
     _firstNameController.addListener(() {
-      checkDirty();
+      _checkDirty();
     });
     _lastNameController.addListener(() {
-      checkDirty();
+      _checkDirty();
     });
     _emailController.addListener(() {
-      checkDirty();
+      _checkDirty();
     });
     _hashNameController.addListener(() {
-      checkDirty();
+      _checkDirty();
     });
     _previousRunCountController.addListener(() {
-      checkDirty();
+      _checkDirty();
     });
     _previousHaringCountController.addListener(() {
-      checkDirty();
+      _checkDirty();
     });
 
     _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
@@ -246,7 +255,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     return 'miles';
   }
 
-  void checkDirty() {
+  void _checkDirty() {
     if (_isLoading) {
       return;
     }
@@ -257,9 +266,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (_lastNameController.text != (_hasher.lastName ?? '')) {
       isDirty = true;
     }
-    if ((_email != null) && ((_emailController.text) != (_email ?? ''))) {
-      isDirty = true;
+
+    if (_addAsKennelFollower) {
+      if ((_email != null) && ((_emailController.text) != (_email ?? ''))) {
+        isDirty = true;
+      }
     }
+
     if (_hashNameController.text != (_hasher.hashName ?? '')) {
       isDirty = true;
     }
@@ -269,21 +282,18 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (_newPhoto != (_hasher.photo ?? '')) {
       isDirty = true;
     }
-    if (_previousRunCountController.text != (_hkmData?.historicalTotalRunCount ?? 0).toString()) {
+    if (_previousRunCountController.text != (_historicalTotalRunCount ?? 0).toString()) {
       isDirty = true;
     }
-    if (_previousHaringCountController.text != (_hkmData?.historicalHaringCount ?? 0).toString()) {
+    if (_previousHaringCountController.text != (_historicalHaringCount ?? 0).toString()) {
       isDirty = true;
     }
-    if (_historicalCountIsEstimate != ((_hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
+
+    if (_historicalCountIsEstimateWidget != (_historicalCountIsEstimate ?? false)) {
       isDirty = true;
     }
 
     if (_hasherPreferences != (_distancePreference + _autoRunPreference)) {
-      isDirty = true;
-    }
-
-    if (_historicalCountIsEstimate != ((_hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
     }
 
@@ -336,7 +346,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         kennelId: ((widget.kennelId.isEmpty)) ? GUID_EMPTY : widget.kennelId,
         historicalTotalRunCount: _previousRunCountController.text,
         historicalHaringCount: _previousHaringCountController.text,
-        historicalCountIsEstimate: _historicalCountIsEstimate,
+        historicalCountIsEstimate: _historicalCountIsEstimateWidget,
         preferences: _distancePreference + _autoRunPreference,
         followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0,
         nameDisplayPreference: _nameDisplayPreference,
@@ -384,8 +394,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         await _refreshUserDataFromTable(true);
         setState(() {
           _isLoading = false;
-          checkDirty();
+          _checkDirty();
         });
+
+        _historicalCountIsEstimateWidget = _historicalCountIsEstimate;
 
         if (widget.pageType != EnumMyProfilePageType.myProfile) {
           if (!mounted) return;
@@ -512,11 +524,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               width: 25,
               color: Colors.yellow[100],
               child: Checkbox(
-                value: _historicalCountIsEstimate,
+                value: _historicalCountIsEstimateWidget ?? false,
                 onChanged: (bool? value) {
                   setState(() {
-                    _historicalCountIsEstimate = value ?? false;
-                    checkDirty();
+                    _historicalCountIsEstimateWidget = value ?? false;
+                    _checkDirty();
                   });
                 },
               ),
@@ -544,21 +556,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   void _handleRadioValueChange0(int? value) {
     setState(() {
       _nameDisplayPreference = value ?? 0;
-      checkDirty();
+      _checkDirty();
     });
   }
 
   void _handleRadioValueChange1(int? value) {
     setState(() {
       _distancePreference = value ?? 0;
-      checkDirty();
+      _checkDirty();
     });
   }
 
   void _handleRadioValueChange2(int? value) {
     setState(() {
       _autoRunPreference = value ?? 0;
-      checkDirty();
+      _checkDirty();
     });
   }
 
@@ -723,7 +735,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     ).then<void>((result) {
                                                       if ((result != null) && (result.isNotEmpty)) {
                                                         _newPhoto = result;
-                                                        checkDirty();
+                                                        _checkDirty();
                                                       }
                                                     });
                                                   }

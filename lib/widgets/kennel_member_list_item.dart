@@ -45,17 +45,19 @@ class KennelMemberListItem extends StatelessWidget {
                 ),
               ),
             )
-            .then<dynamic>((HashersModel result) async {
-              bool refreshThisUserData = false;
+            .then<dynamic>((HashersModel? result) async {
+              if (result != null) {
+                bool refreshThisUserData = false;
 
-              // kennelMember.dispName = result.dispName;
-              // kennelMember.photo = result.photo;
+                // kennelMember.dispName = result.dispName;
+                // kennelMember.photo = result.photo;
 
-              if (result.hasherId == getStringPref(StringPrefsEnum.userId)) {
-                refreshThisUserData = true;
+                if (result.hasherId == getStringPref(StringPrefsEnum.userId)) {
+                  refreshThisUserData = true;
+                }
+
+                await refreshRunCountsCallback(refreshThisUserData, result.dispName, result.photo);
               }
-
-              await refreshRunCountsCallback(refreshThisUserData, result.dispName, result.photo);
             } as FutureOr Function(HashersModel? value));
       },
       child: IntrinsicWidth(
