@@ -257,14 +257,17 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(alertTitle),
+          title: Text(
+            alertTitle,
+            style: ts_alertDialogTitle,
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text(
                   alertText,
                   textAlign: TextAlign.justify,
-                  style: ts_mediumBlack,
+                  style: ts_alertDialogBody,
                 )
               ],
             ),

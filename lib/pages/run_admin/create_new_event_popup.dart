@@ -19,13 +19,16 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
+      title: Text(
+        widget.title,
+        style: ts_alertDialogTitle,
+      ),
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
         controller: eventNameAmountTextController,
         //keyboardType: const TextInputType.
-        style: ts_titleMediumBlack,
+        style: ts_alertDialogBody,
         decoration: InputDecoration(
           // border: InputBorder.none,
           // icon: Icon(
@@ -33,7 +36,7 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
           //   color: Colors.white,
           // ),
           hintText: 'Event name',
-          hintStyle: ts_titleMediumBlack,
+          hintStyle: ts_hint,
         ),
       ),
       actions: <Widget>[
@@ -44,23 +47,52 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
         //     child:
 
         TextButton(
-          style: TextButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Cancel'),
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              Colors.red.shade700,
+            ),
+            shape: button_shape,
+            padding: WidgetStateProperty.all<EdgeInsets>(
+              const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
+            ),
+          ),
+          child: Text(
+            'Cancel',
+            style: ts_button,
+          ),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{'type': 'cancel', 'eventName': ''});
           },
         ),
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Other event'),
+            style: ButtonStyle(
+              backgroundColor: const WidgetStatePropertyAll(Colors.blue),
+              shape: button_shape,
+              padding: WidgetStateProperty.all<EdgeInsets>(
+                const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
+              ),
+            ),
+            child: Text(
+              'Other event',
+              style: ts_button,
+            ),
             onPressed: () {
               Navigator.of(context).pop(<String, String>{'type': eventFilterType_doNotCountEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
             }),
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Counted run'),
+            style: ButtonStyle(
+              backgroundColor: const WidgetStatePropertyAll(Colors.blue),
+              shape: button_shape,
+              padding: WidgetStateProperty.all<EdgeInsets>(
+                const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
+              ),
+            ),
+            child: Text(
+              'Counted run',
+              style: ts_button,
+            ),
             onPressed: () {
               Navigator.of(context).pop(<String, String>{'type': eventFilterType_countEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
             }),

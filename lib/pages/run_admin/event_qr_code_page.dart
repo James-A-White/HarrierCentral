@@ -184,7 +184,9 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
   //     barrierDismissible: false, // user must tap button!
   //     builder: (BuildContext context) {
   //       return AlertDialog(
-  //         title: const Text('About your QR Scanner'),
+  //         title: const Text('About your QR Scanner',
+  //   style: ts_alertDialogTitle,
+  // ),
   //         content: SingleChildScrollView(
   //           child: ListBody(
   //             children: const <Widget>[
@@ -258,14 +260,17 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(widget.instructionTitle),
+          title: Text(
+            widget.instructionTitle,
+            style: ts_alertDialogTitle,
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text(
                   widget.instructions,
                   textAlign: TextAlign.justify,
-                  style: ts_regularMediumBlack,
+                  style: ts_alertDialogBody,
                 )
               ],
             ),

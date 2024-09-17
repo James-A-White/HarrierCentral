@@ -26,13 +26,16 @@ class RunNumberPopupState extends State<RunNumberPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Set run number'),
+      title: Text(
+        'Set run number',
+        style: ts_alertDialogTitle,
+      ),
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
         controller: _runNumberAmountTextController,
         keyboardType: TextInputType.number,
-        style: ts_titleMediumBlack,
+        style: ts_alertDialogBody,
         decoration: InputDecoration(
           border: InputBorder.none,
           icon: const Icon(
@@ -40,7 +43,7 @@ class RunNumberPopupState extends State<RunNumberPopup> {
             color: Colors.white,
           ),
           hintText: 'Enter run number',
-          hintStyle: ts_titleMediumBlack,
+          hintStyle: ts_hint,
         ),
       ),
       actions: <Widget>[

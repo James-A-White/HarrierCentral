@@ -15,7 +15,9 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return AlertDialog(
-//       title: const Text('Add Visitor or Virgin'),
+//       title: const Text('Add Visitor or Virgin',
+          //   style: ts_alertDialogTitle,
+          // ),
 //       content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
 //         TextField(
 //           autofocus: true,

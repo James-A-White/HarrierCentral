@@ -152,7 +152,7 @@ class FindHasherPageState extends State<FindHasherPage> {
                   color: Colors.black,
                 ),
                 hintText: 'Hash or mortal name',
-                hintStyle: ts_titleMediumBlack,
+                hintStyle: ts_hint,
               ),
             ),
           ),
@@ -203,14 +203,17 @@ class HasherListView extends StatelessWidget {
         builder: (BuildContext context) {
           return AlertDialog(
             contentPadding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
-            title: Text('Add ${newHasher.dispName}?'),
+            title: Text(
+              'Add ${newHasher.dispName}?',
+              style: ts_alertDialogTitle,
+            ),
             content: SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   Text(
                     'Do you want to add ${newHasher.dispName} to your run?',
                     textAlign: TextAlign.justify,
-                    style: ts_regularMediumBlack,
+                    style: ts_alertDialogBody,
                   )
                 ],
               ),

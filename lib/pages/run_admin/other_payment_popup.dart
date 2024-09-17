@@ -87,7 +87,10 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Other payment options'),
+      title: Text(
+        'Other payment options',
+        style: ts_alertDialogTitle,
+      ),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
           Stack(

@@ -786,7 +786,10 @@ SELECT
 
         if (item.payment == null) {
           return AlertDialog(
-            title: const Text('Payment Detail'),
+            title: Text(
+              'Payment Detail',
+              style: ts_alertDialogTitle,
+            ),
             content: Container(), // TODO: Put something here to indicate no payment record exists
           );
         } else {
@@ -834,7 +837,10 @@ SELECT
           final String discountPercentStr = '${(item.payment!.discountPercent).toStringAsFixed(0)}%';
 
           return AlertDialog(
-            title: const Text('Payment Detail'),
+            title: Text(
+              'Payment Detail',
+              style: ts_alertDialogTitle,
+            ),
             content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -844,7 +850,7 @@ SELECT
                       flex: flexLeft,
                       child: Text(
                         'Pay Ref:',
-                        style: ts_regularMediumBlack,
+                        style: ts_alertDialogBody,
                         textAlign: TextAlign.right,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

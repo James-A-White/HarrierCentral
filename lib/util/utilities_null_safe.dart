@@ -202,7 +202,9 @@ class Utilities {
   //     barrierDismissible: false, // user must tap button!
   //     builder: (BuildContext context) {
   //       return AlertDialog(
-  //         title: const Text('Will you Hare this run?'),
+  //         title: const Text('Will you Hare this run?',
+  //   style: ts_alertDialogTitle,
+  // ),
   //         content: SingleChildScrollView(
   //           child: ListBody(
   //             children: <Widget>[
@@ -232,11 +234,17 @@ class Utilities {
   static Future<bool?> promptForHare(String? hareList) async {
     return await Get.dialog<bool?>(
       AlertDialog(
-        title: const Text('Will you Hare this run?'),
+        title: Text(
+          'Will you Hare this run?',
+          style: ts_alertDialogTitle,
+        ),
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text('Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}'),
+              Text(
+                'Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}',
+                style: ts_alertDialogBody,
+              ),
             ],
           ),
         ),
@@ -551,14 +559,17 @@ class Utilities {
   }) async {
     return Get.dialog<bool?>(
       AlertDialog(
-        title: Text(title),
+        title: Text(
+          title,
+          style: ts_alertDialogTitle,
+        ),
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
               Text(
                 body,
                 textAlign: textAlign,
-                style: ts_regularMediumBlack,
+                style: ts_alertDialogBody,
               )
             ],
           ),
@@ -594,14 +605,17 @@ class Utilities {
   }) async {
     return Get.dialog<bool?>(
       AlertDialog(
-        title: Text(title),
+        title: Text(
+          title,
+          style: ts_alertDialogTitle,
+        ),
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
               Text(
                 body,
                 textAlign: TextAlign.justify,
-                style: ts_titleLarge,
+                style: ts_alertDialogBody,
               )
             ],
           ),
@@ -609,14 +623,20 @@ class Utilities {
         actions: <Widget>[
           showCancelButton == true
               ? TextButton(
-                  child: Text(cancelButtonText),
+                  child: Text(
+                    cancelButtonText,
+                    style: ts_button,
+                  ),
                   onPressed: () {
                     Get.back<bool?>(result: false, canPop: true);
                   },
                 )
               : Container(),
           TextButton(
-            child: Text(buttonText),
+            child: Text(
+              buttonText,
+              style: ts_button,
+            ),
             onPressed: () {
               Get.back<bool?>(result: true, canPop: true);
             },

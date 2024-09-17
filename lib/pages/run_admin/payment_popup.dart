@@ -53,7 +53,10 @@ class PaymentPopupState extends State<PaymentPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Select payment method'),
+      title: Text(
+        'Select payment method',
+        style: ts_alertDialogTitle,
+      ),
       content: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
@@ -66,9 +69,9 @@ class PaymentPopupState extends State<PaymentPopup> {
                     groupValue: _selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
-                  const Text(
+                  Text(
                     'Not paid',
-                    style: TextStyle(fontSize: 16.0),
+                    style: ts_alertDialogBodyMedium,
                   ),
                 ]),
                 Row(children: <Widget>[
@@ -77,9 +80,9 @@ class PaymentPopupState extends State<PaymentPopup> {
                     groupValue: _selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
-                  const Text(
+                  Text(
                     'Free run',
-                    style: TextStyle(fontSize: 16.0),
+                    style: ts_alertDialogBodyMedium,
                   ),
                 ]),
                 Row(children: <Widget>[
@@ -90,7 +93,7 @@ class PaymentPopupState extends State<PaymentPopup> {
                   ),
                   Text(
                     'Cash (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                    style: const TextStyle(fontSize: 16.0),
+                    style: ts_alertDialogBodyMedium,
                   ),
                 ]),
                 Row(children: <Widget>[
@@ -101,10 +104,10 @@ class PaymentPopupState extends State<PaymentPopup> {
                   ),
                   Text(
                     'Bank transfer (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                    style: const TextStyle(fontSize: 16.0),
+                    style: ts_alertDialogBodyMedium,
                   ),
                 ]),
-                if (widget.creditAllowed == 0) ...<Widget>[otherAmountRow()],
+                if (widget.creditAllowed == 0) ...<Widget>[_otherAmountRow()],
                 if (widget.creditAllowed != 0) ...<Widget>[
                   Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                     Radio<int>(
@@ -116,19 +119,16 @@ class PaymentPopupState extends State<PaymentPopup> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
-                          'Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                          style: const TextStyle(fontSize: 16.0),
-                        ),
+                        Text('Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})', style: ts_alertDialogBodyMedium),
                         Text(
                           '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
-                          style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
+                          style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                         ),
                       ],
                     ),
                   ])
                 ],
-                otherAmountRow()
+                _otherAmountRow()
                 // Row(
                 //     //crossAxisAlignment: CrossAxisAlignment.start,
                 //     children: <Widget>[
@@ -212,7 +212,7 @@ class PaymentPopupState extends State<PaymentPopup> {
     );
   }
 
-  Widget otherAmountRow() {
+  Widget _otherAmountRow() {
     return GestureDetector(
       onTap: () {
         if (_selectedValue == PaymentPopup.otherAmountRowId) {
@@ -229,15 +229,15 @@ class PaymentPopupState extends State<PaymentPopup> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Text(
+            Text(
               'Other Amount',
-              style: TextStyle(fontSize: 16.0),
+              style: ts_alertDialogBodyMedium,
             ),
             _otherPaymentResult == null
                 ? const SizedBox(height: 1, width: 1)
                 : Text(
                     '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult!.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult!.transType == 5) ? ' cash' : ' bank transfer'}',
-                    style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
+                    style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                   ),
           ],
         ),

@@ -325,14 +325,17 @@ class SupportPageState extends State<SupportPage> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('About your QR Secret Code'),
+          title: Text(
+            'About your QR Secret Code',
+            style: ts_alertDialogTitle,
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text(
                   'Harrier Central does not use either usernames or passwords. Instead we identify you using a \'secret QR code\'. This QR code can be used to allow Harrier Central running on another device to access your account. If you want to install Harrier Central on another device, when you first install the app, select \'existing user\' and use the scanner to scan this code. The app on the new device will then be configured to access your account',
                   textAlign: TextAlign.justify,
-                  style: ts_mediumBlack,
+                  style: ts_alertDialogBody,
                 )
               ],
             ),

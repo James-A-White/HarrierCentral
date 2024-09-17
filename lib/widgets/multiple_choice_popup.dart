@@ -26,7 +26,10 @@ class MultipleChoicePopupStateHc extends State<MultipleChoicePopupHc> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
+      title: Text(
+        widget.title,
+        style: ts_alertDialogTitle,
+      ),
       contentPadding: const EdgeInsets.fromLTRB(14, 20, 14, 10),
       content: Column(mainAxisSize: MainAxisSize.min, children: getButtons()),
     );

@@ -125,7 +125,10 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Your QR Code'),
+          title: Text(
+            'Your QR Code',
+            style: ts_alertDialogTitle,
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -137,7 +140,7 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                       : 'You can use your QR scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out on trail.',
                   //'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
-                  style: ts_regularMediumBlack,
+                  style: ts_alertDialogBody,
                 )
               ],
             ),

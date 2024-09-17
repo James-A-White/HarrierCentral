@@ -25,13 +25,16 @@ class EmailPopupState extends State<EmailPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Enter email address'),
+      title: Text(
+        'Enter email address',
+        style: ts_alertDialogTitle,
+      ),
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
         controller: emailTextController,
         keyboardType: TextInputType.emailAddress,
-        style: ts_titleMediumBlack,
+        style: ts_alertDialogBody,
         decoration: InputDecoration(
           border: InputBorder.none,
           icon: const Icon(
@@ -39,7 +42,7 @@ class EmailPopupState extends State<EmailPopup> {
             color: Colors.white,
           ),
           hintText: 'E-mail address',
-          hintStyle: ts_titleMediumBlack,
+          hintStyle: ts_hint,
         ),
       ),
       actions: <Widget>[

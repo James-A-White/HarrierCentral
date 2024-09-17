@@ -640,7 +640,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                           color: Colors.black,
                         ),
                         hintText: 'Enter Hash or mortal name',
-                        hintStyle: ts_titleMediumBlack,
+                        hintStyle: ts_hint,
                       ),
                     ),
                   ],

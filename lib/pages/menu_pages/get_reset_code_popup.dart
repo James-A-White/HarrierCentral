@@ -16,7 +16,10 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Get Invite Code'),
+      title: Text(
+        'Get Invite Code',
+        style: ts_alertDialogTitle,
+      ),
       content: TextField(
         onChanged: (String x) {
           setState(() {});
@@ -25,7 +28,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
         focusNode: myFocusNodeFirstName,
         controller: getResetCodeTextController,
         keyboardType: TextInputType.text,
-        style: ts_titleMediumBlack,
+        style: ts_alertDialogBody,
         decoration: InputDecoration(
           border: InputBorder.none,
           icon: const Icon(
@@ -33,7 +36,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             color: Colors.white,
           ),
           hintText: 'Support Code',
-          hintStyle: ts_titleMediumBlack,
+          hintStyle: ts_hint,
         ),
       ),
       actions: <Widget>[

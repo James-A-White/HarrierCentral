@@ -1127,30 +1127,44 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Send invite codes'),
-          content: const SingleChildScrollView(
+          title: Text(
+            'Send invite codes',
+            style: ts_alertDialogTitle,
+          ),
+          content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text(
-                    'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.'),
+                  'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.',
+                  style: ts_alertDialogBody,
+                ),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: ts_buttonLabelMedium,
+              ),
               onPressed: () {
                 Navigator.of(context).pop(null);
               },
             ),
             TextButton(
-              child: const Text('Preview'),
+              child: Text(
+                'Preview',
+                style: ts_buttonLabelMedium,
+              ),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
             ),
             TextButton(
-              child: const Text('Send'),
+              child: Text(
+                'Send',
+                style: ts_buttonLabelMedium,
+              ),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },

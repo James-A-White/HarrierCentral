@@ -714,7 +714,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                                   color: Colors.black,
                                 ),
                                 hintText: 'Enter Hash or mortal name',
-                                hintStyle: ts_titleMediumBlack,
+                                hintStyle: ts_hint,
                               ),
                             ),
                           ),
@@ -1912,14 +1912,17 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
     return TextScaleFactorClamper(
       textScaleFactor: G0<DeviceInfo>().textClamp25,
       child: AlertDialog(
-        title: const Text('Add Visitor or Virgin'),
+        title: Text(
+          'Add Visitor or Virgin',
+          style: ts_alertDialogTitle,
+        ),
         content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
           TextField(
             autofocus: true,
             focusNode: myFocusNodeFirstName,
             controller: nameTextController,
             keyboardType: TextInputType.text,
-            style: ts_titleMediumBlack,
+            style: ts_alertDialogBody,
             decoration: InputDecoration(
               //border: InputBorder.none,
               icon: const Icon(
@@ -1927,7 +1930,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
                 color: Colors.white,
               ),
               hintText: 'Just Julie',
-              hintStyle: ts_titleMediumBlack,
+              hintStyle: ts_hint,
             ),
           ),
           TextField(
@@ -1943,7 +1946,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
                 color: Colors.white,
               ),
               hintText: '(email - optional)',
-              hintStyle: ts_titleMediumBlack,
+              hintStyle: ts_hint,
             ),
           ),
           TextField(
@@ -1959,7 +1962,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
                 color: Colors.white,
               ),
               hintText: '(phone # - optional)',
-              hintStyle: ts_titleMediumBlack,
+              hintStyle: ts_hint,
             ),
           ),
         ]),

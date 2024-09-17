@@ -1,5 +1,11 @@
 import 'package:harrier_central/imports.dart';
 
+WidgetStatePropertyAll<OutlinedBorder?> button_shape = WidgetStatePropertyAll(
+  RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(10), // Set the radius here
+  ),
+);
+
 // Presets
 // Small = 14
 // Medium = 16
@@ -432,6 +438,42 @@ TextStyle ts_titleMediumDarkBlue = TextStyle(
 TextStyle ts_titleMediumBlack = const TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   color: Colors.black,
+  fontSize: 16.0,
+  height: 1.0,
+);
+
+/// Alert Dialogs
+/// font: AvenirNextRegular
+/// color: Yellow
+/// height: 1.2
+
+TextStyle ts_alertDialogTitle = const TextStyle(
+  fontFamily: 'AvenirNextDemiBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 24.0,
+  height: 1.0,
+);
+
+TextStyle ts_alertDialogBody = const TextStyle(
+  fontFamily: 'AvenirNextMedium',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 18.0,
+  height: 0.9,
+);
+
+TextStyle ts_alertDialogBodyMedium = const TextStyle(
+  fontFamily: 'AvenirNextMedium',
+  fontStyle: FontStyle.normal,
+  color: Colors.black,
+  fontSize: 16.0,
+  height: 0.9,
+);
+
+TextStyle ts_hint = TextStyle(
+  fontFamily: 'AvenirNextDemiBold',
+  color: Colors.grey.shade500,
   fontSize: 16.0,
   height: 1.0,
 );
