@@ -195,7 +195,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
-                      indicatorColor: Colors.red.shade900,
+                      indicatorColor: hc_red,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),
@@ -319,7 +319,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
           textAlign: TextAlign.center,
           style: ts_titleCondensedBlack,
         ),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: hc_blue,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     });
@@ -396,7 +396,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                 textAlign: TextAlign.center,
                 style: ts_titleCondensed,
               ),
-              backgroundColor: Colors.blue.shade700,
+              backgroundColor: hc_blue,
             );
 
             if (!mounted) return;
@@ -454,7 +454,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
         iconTheme: IconTheme.of(context).copyWith(
-          color: Colors.red.shade700,
+          color: hc_red,
           size: 35,
         ),
       ),
@@ -510,7 +510,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Event name',
-                          fillColor: Colors.red,
+                          fillColor: hc_red,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: const BorderSide(),
@@ -542,7 +542,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Event Description',
-                          fillColor: Colors.red,
+                          fillColor: hc_red,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: const BorderSide(),
@@ -575,7 +575,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Location one-line description',
-                          fillColor: Colors.red,
+                          fillColor: hc_red,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: const BorderSide(),
@@ -594,7 +594,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       child: DateTimePicker(
                         decoration: InputDecoration(
                           labelText: 'Date / Time',
-                          fillColor: Colors.red,
+                          fillColor: hc_red,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: const BorderSide(),
@@ -658,7 +658,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                       textAlign: TextAlign.center,
                                       style: ts_titleCondensed,
                                     ),
-                                    backgroundColor: Colors.blue.shade700,
+                                    backgroundColor: hc_blue,
                                   );
 
                                   if (!mounted) return;
@@ -749,7 +749,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 textAlign: TextAlign.center,
                                 style: ts_titleCondensed,
                               ),
-                              backgroundColor: Colors.blue.shade700,
+                              backgroundColor: hc_blue,
                             );
 
                             if (!mounted) return;
@@ -799,7 +799,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               textAlign: TextAlign.center,
                               style: ts_titleCondensedBlack,
                             ),
-                            backgroundColor: Colors.blue.shade700,
+                            backgroundColor: hc_blue,
                           );
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
@@ -899,7 +899,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                                   textAlign: TextAlign.center,
                                                   style: ts_titleCondensedBlack,
                                                 ),
-                                                backgroundColor: Colors.blue.shade700,
+                                                backgroundColor: hc_blue,
                                               );
                                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                             });
@@ -1231,7 +1231,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                       textAlign: TextAlign.center,
                                       style: ts_titleCondensed,
                                     ),
-                                    backgroundColor: Colors.blue.shade700,
+                                    backgroundColor: hc_blue,
                                   );
 
                                   if (!mounted) return;
@@ -1289,7 +1289,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                         textAlign: TextAlign.center,
                                         style: ts_titleCondensedBlack,
                                       ),
-                                      backgroundColor: Colors.blue.shade700,
+                                      backgroundColor: hc_blue,
                                     );
                                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                   });
@@ -1312,7 +1312,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
         iconTheme: IconTheme.of(context).copyWith(
-          color: Colors.red.shade700,
+          color: hc_red,
           size: 35,
         ),
       ),
@@ -1372,7 +1372,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Hares',
-                          fillColor: Colors.red,
+                          fillColor: hc_red,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: const BorderSide(),
@@ -1416,7 +1416,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         style: ts_titleMediumBlack,
                         decoration: InputDecoration(
                           labelText: 'Event Number',
-                          fillColor: Colors.red,
+                          fillColor: hc_red,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: const BorderSide(),
@@ -1460,7 +1460,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Member price',
-                                  fillColor: Colors.red,
+                                  fillColor: hc_red,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                     borderSide: const BorderSide(),
@@ -1494,7 +1494,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Non-member price',
-                                  fillColor: Colors.red,
+                                  fillColor: hc_red,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                     borderSide: const BorderSide(),
@@ -1542,7 +1542,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Price for extras',
-                                  fillColor: Colors.red,
+                                  fillColor: hc_red,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                     borderSide: const BorderSide(),
@@ -1575,7 +1575,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Description',
-                                  fillColor: Colors.red,
+                                  fillColor: hc_red,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                     borderSide: const BorderSide(),
@@ -1601,7 +1601,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       child: Column(
                         children: <Widget>[
                           CheckboxFormField(
-                            title: const Text('Show run in Harrier Central'),
+                            title: Text('Show run in Harrier Central', style: ts_regularBlack),
                             validator: (bool? result) {
                               _isVisible = result ?? false;
                               return null;
@@ -1609,7 +1609,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             initialValue: _eventAggregate.event.isVisible == 1,
                           ),
                           CheckboxFormField(
-                            title: const Text('Count this run'),
+                            title: Text('Count this run', style: ts_regularBlack),
                             initialValue: _eventAggregate.event.isCountedRun == 1,
                             validator: (bool? result) {
                               _isCountedRun = result ?? false;
@@ -1617,7 +1617,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             },
                           ),
                           CheckboxFormField(
-                            title: const Text('Users can edit run history'),
+                            title: Text('Users can edit run history', style: ts_regularBlack),
                             initialValue: _eventAggregate.event.canEditRunAttendence == null ? false : _eventAggregate.event.canEditRunAttendence == 1,
                             tristate: true,
                             validator: (bool? result) {
@@ -1631,7 +1631,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             },
                           ),
                           CheckboxFormField(
-                            title: const Text('Promote this run'),
+                            title: Text('Promote this run', style: ts_regularBlack),
                             initialValue: _eventAggregate.event.isPromotedEvent == 1,
                             validator: (bool? result) {
                               _isPromotedEvent = result ?? false;
@@ -1660,7 +1660,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       child: Column(
                         children: <Widget>[
                           ListTile(
-                            title: const Text('Local (normal run)'),
+                            title: Text('Local (normal run)', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 1,
                               groupValue: _eventGeographicScope,
@@ -1672,7 +1672,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: const Text('Local (special event)'),
+                            title: Text('Local (special event)', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 2,
                               groupValue: _eventGeographicScope,
@@ -1684,7 +1684,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: const Text('Regional / State'),
+                            title: Text('Regional / State', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 3,
                               groupValue: _eventGeographicScope,
@@ -1696,7 +1696,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: const Text('Nash Hash (national)'),
+                            title: Text('Nash Hash (national)', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 4,
                               groupValue: _eventGeographicScope,
@@ -1708,7 +1708,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: const Text('Interhash / Continent'),
+                            title: Text('Interhash / Continent', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 5,
                               groupValue: _eventGeographicScope,
@@ -1720,7 +1720,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: const Text('World Interhash / Global'),
+                            title: Text('World Interhash / Global', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 6,
                               groupValue: _eventGeographicScope,
@@ -1732,7 +1732,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: const Text('Other'),
+                            title: Text('Other', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 7,
                               groupValue: _eventGeographicScope,
@@ -1744,7 +1744,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: const Text('Not specified'),
+                            title: Text('Not specified', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 0,
                               groupValue: _eventGeographicScope,
@@ -1791,7 +1791,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                             textAlign: TextAlign.center,
                                             style: ts_titleCondensed,
                                           ),
-                                          backgroundColor: Colors.blue.shade700,
+                                          backgroundColor: hc_blue,
                                         );
 
                                         if (!mounted) return;

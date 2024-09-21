@@ -68,10 +68,13 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                   Text(
                       'You have ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.kennelCredit, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} of Hash Credit remaining.'),
                   TextButton(
-                    style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
                     child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text('Pay ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit')),
+                        child: Text(
+                          'Pay ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit',
+                          style: ts_button,
+                        )),
                     onPressed: () {
                       Navigator.of(context).pop(enumCheckInOption_YesAndPayByCredit);
                     },
@@ -79,10 +82,13 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                 ],
                 if ((widget.areWeAtRunData.allowSelfPayment & selfPaymentShowBankButtonOnAutoCheckinDialog) != 0) ...<Widget>[
                   TextButton(
-                    style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
                     child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text('Paid ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} by Bank Transfer')),
+                        child: Text(
+                          'Paid ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} by Bank Transfer',
+                          style: ts_button,
+                        )),
                     onPressed: () {
                       Navigator.of(context).pop(enumCheckInOption_YesAndPayByBankXfer);
                     },
@@ -104,7 +110,7 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                     'You can also pay an additional ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.extrasCost, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} for ${widget.areWeAtRunData.extrasDescription}'),
                 if ((widget.areWeAtRunData.extrasCost > 0) && ((eventPrice + widget.areWeAtRunData.extrasCost) <= widget.areWeAtRunData.kennelCredit)) ...<Widget>[
                   TextButton(
-                    style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Text(
@@ -117,7 +123,7 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                 ],
                 if ((widget.areWeAtRunData.allowSelfPayment & selfPaymentShowBankButtonOnAutoCheckinDialog) != 0) ...<Widget>[
                   TextButton(
-                    style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Text(
@@ -145,14 +151,14 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.red),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
                 child: Text(widget.cancelButtonTitle),
                 onPressed: () {
                   Navigator.of(context).pop(enumCheckInOption_Cancel);
                 },
               ),
               TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: Text(widget.okButtonTitle),
@@ -177,8 +183,8 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       //   //     width: 60.0,
       //   //     child:
 
-      //   TextButton(
-      //     color: Colors.red,
+      //               TextButton(
+      //     color:hc_red,
       //     child: const Text('Cancel'),
       //     textColor: Colors.white,
       //     onPressed: () {
@@ -210,7 +216,7 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   //           },
   //           child: Container(
   //             //padding: EdgeInsets.only(top: 6.0 * G0<DeviceInfo>().deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * G0<DeviceInfo>().deviceHeightScaleFactor),
-  //             color: Colors.blue[900],
+  //             color: hc_blue,
   //             child: Row(children: <Widget>[
   //               const SizedBox(width: 8.0,),
   //               Stack(alignment: AlignmentDirectional.center, children: btnDef['icon']),
@@ -236,8 +242,8 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   //     buttons.add(const SizedBox(height: 10.0));
   //   }
   //   buttons.add(
-  //     TextButton(
-  //       color: Colors.red,
+  //                 TextButton(
+  //       color:hc_red,
   //       child: Text(widget.areWeAtRunData.cancelButtonTitle),
   //       textColor: Colors.white,
   //       onPressed: () {

@@ -23,7 +23,7 @@ class SupportPageState extends State<SupportPage> {
   final TextEditingController _resetCodeTextController = TextEditingController();
   final InputDecoration _resetCodeDecoration = InputDecoration(
     labelText: 'Invite Code',
-    fillColor: Colors.red,
+    fillColor: hc_red,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(25.0),
       borderSide: const BorderSide(),
@@ -123,7 +123,11 @@ class SupportPageState extends State<SupportPage> {
                             ),
                             const SizedBox(height: 10.0),
                             TextButton(
-                              child: const Text('Learn more about this feature'),
+                              style: text_button_style,
+                              child: Text(
+                                'Learn more about this feature',
+                                style: ts_button,
+                              ),
                               onPressed: () {
                                 _displayInstructions(context);
                               },
@@ -342,7 +346,11 @@ class SupportPageState extends State<SupportPage> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK, Got it!'),
+              style: text_button_style,
+              child: Text(
+                'OK, Got it!',
+                style: ts_button,
+              ),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

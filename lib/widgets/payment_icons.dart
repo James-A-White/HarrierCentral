@@ -51,9 +51,9 @@ class PaymentIcons extends StatelessWidget {
                     height: 1.0,
                     color: Colors.grey[300],
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4.0, bottom: 0.0),
-                    child: Text('Pay for your run with...'),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0, bottom: 0.0),
+                    child: Text('Pay for your run with...', style: ts_regularBlack),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -85,9 +85,12 @@ class PaymentIcons extends StatelessWidget {
                           borderRadius: BorderRadius.circular(5.0),
                         ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 80.0),
-                        child: Text('Pay for your run with...'),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 80.0),
+                        child: Text(
+                          'Pay for your run with...',
+                          style: ts_regularBlack,
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 28.0, left: 30, right: 30),

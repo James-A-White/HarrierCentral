@@ -101,7 +101,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     _inviteCodeTextController = TextEditingController();
     _inviteCodeDecoration = InputDecoration(
       labelText: 'Invite Code',
-      fillColor: Colors.red,
+      fillColor: hc_red,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10.0),
         borderSide: const BorderSide(),
@@ -213,7 +213,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         ),
                         const SizedBox(width: 15.0),
                         TextButton(
-                            style: TextButton.styleFrom(padding: const EdgeInsets.all(8.0), minimumSize: Size.zero, alignment: Alignment.center),
+                            style: text_button_style.copyWith(
+                                padding: const WidgetStatePropertyAll(EdgeInsets.all(8.0)), minimumSize: const WidgetStatePropertyAll(Size.zero), alignment: Alignment.center),
                             onPressed: () async {
                               setState(() {
                                 _showQrScanner = !_showQrScanner;
@@ -287,9 +288,9 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     // ),
                     const SizedBox(height: 8, width: 10),
                     TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.red.shade800,
+                        style: text_button_style.copyWith(
+                          backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+                          foregroundColor: WidgetStatePropertyAll(hc_red),
                         ),
                         onPressed: () async {
                           final EmailPopup emailPopup = EmailPopup(
@@ -315,7 +316,10 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             }
                           }
                         },
-                        child: Text('Email me a new invite code', style: ts_title.copyWith(color: Colors.red))),
+                        child: Text(
+                          'Email me a new invite code',
+                          style: ts_title.copyWith(color: hc_red),
+                        )),
                   ],
                 ),
               ),
@@ -328,6 +332,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     textAlign: TextAlign.center,
                   )
                 : TextButton(
+                    style: text_button_style,
                     child: Text('Get Started!', style: ts_button),
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {

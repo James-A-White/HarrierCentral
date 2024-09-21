@@ -48,7 +48,7 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
                       Navigator.of(context).pop(index + 1);
                     },
                     child: Container(
-                      color: (widget.selectedAvatarIcon ?? 0) == index + 1 ? Colors.red.shade900 : Theme.of(context).scaffoldBackgroundColor,
+                      color: (widget.selectedAvatarIcon ?? 0) == index + 1 ? hc_red : Theme.of(context).scaffoldBackgroundColor,
                       child: Padding(
                         padding: EdgeInsets.all(imagePadding),
                         child: Image.asset(

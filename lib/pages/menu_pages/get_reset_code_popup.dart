@@ -46,8 +46,8 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
         //     width: 60.0,
         //     child:
 
-        // TextButton(
-        //   color: Colors.red,
+        //             TextButton(
+        //   color:hc_red,
         //   child: const Text('Cancel'),
         //   textColor: Colors.white,
         //   onPressed: () {
@@ -62,7 +62,10 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
         //child:
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
+            style: TextButton.styleFrom(
+              shape: button_shape,
+              backgroundColor: hc_blue,
+            ),
             child: const Text(
               'Reset',
             ),
@@ -71,8 +74,14 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             }),
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Done'),
+            style: TextButton.styleFrom(
+              shape: button_shape,
+              backgroundColor: hc_blue,
+            ),
+            child: Text(
+              'Done',
+              style: ts_button,
+            ),
             onPressed: () {
               Navigator.of(context).pop();
             }),
@@ -82,8 +91,14 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
         //child:
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Get code'),
+            style: TextButton.styleFrom(
+              shape: button_shape,
+              backgroundColor: hc_blue,
+            ),
+            child: Text(
+              'Get code',
+              style: ts_button,
+            ),
             onPressed: () {
               final GetResetCodeService svc = GetResetCodeService();
               svc.getResetCode(QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text).then((SingleResultModel? result) {
@@ -101,8 +116,11 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
         ((!getResetCodeTextController.text.startsWith(QR_PREFIX_USER_RESET_CODE)) || (getResetCodeTextController.text.length != 9))
             ? Container()
             : TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: const Text('Reset device'),
+                style: TextButton.styleFrom(
+                  shape: button_shape,
+                  backgroundColor: hc_blue,
+                ),
+                child: Text('Reset device', style: ts_button),
                 onPressed: () async {
                   if (getResetCodeTextController.text.toUpperCase() == '${QR_PREFIX_USER_RESET_CODE}CLEAR') {
                     await clearPrefs();

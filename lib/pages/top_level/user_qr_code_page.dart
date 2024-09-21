@@ -83,7 +83,7 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                           indicatorSize: TabBarIndicatorSize.tab,
                           indicator: BubbleTabIndicator(
                             indicatorHeight: 35.0,
-                            indicatorColor: Colors.red.shade900,
+                            indicatorColor: hc_red,
                             tabBarIndicatorSize: TabBarIndicatorSize.tab,
                             indicatorRadius: 20.0,
                           ),
@@ -147,7 +147,11 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK, Got it!'),
+              style: text_button_style,
+              child: Text(
+                'OK, Got it!',
+                style: ts_button,
+              ),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -173,7 +177,7 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
   //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
   //         children: <Widget>[
   //           Expanded(
-  //             child: TextButton(
+  //             child:             TextButton(
   //               splashColor: Colors.transparent,
   //               highlightColor: Colors.transparent,
   //               onPressed: _onSwitchToQrScanner,
@@ -187,7 +191,7 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
   //             ),
   //           ),
   //           Expanded(
-  //             child: TextButton(
+  //             child:             TextButton(
   //               splashColor: Colors.transparent,
   //               highlightColor: Colors.transparent,
   //               onPressed: _onSwitchToQrCode,

@@ -433,9 +433,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                       Expanded(
                                         child: Align(
                                           alignment: Alignment.bottomCenter,
-                                          child: const DotSwiperPaginationBuilder(
+                                          child: DotSwiperPaginationBuilder(
                                             color: Colors.grey,
-                                            activeColor: Colors.blue,
+                                            activeColor: hc_blue,
                                             size: 10.0,
                                             activeSize: 20.0,
                                           ).build(context, config),
@@ -449,7 +449,10 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             },
                           ),
                           itemCount: _tutorials[_currentPage].length,
-                          control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
+                          control: SwiperControl(
+                            color: hc_red,
+                            disableColor: hc_blue,
+                          ),
                           itemBuilder: (BuildContext context, int index) {
                             // this configuration of LayoutBuilder is used to center images that do not
                             // overflow the height of the available render area, but align images

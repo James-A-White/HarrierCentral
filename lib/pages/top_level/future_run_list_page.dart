@@ -74,7 +74,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   @override
   void initState() {
     // const SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
-    //   statusBarColor: Colors.red,
+    //   statusBarColor:hc_red,
     //   statusBarIconBrightness: Brightness.dark,
     //   statusBarBrightness: Brightness.dark,
     // );
@@ -159,7 +159,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   SizedBox(
                     width: 40,
                     child: TextButton(
-                      style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
+                      style: TextButton.styleFrom(
+                        shape: button_shape,
+                        textStyle: TextStyle(color: Colors.grey.shade700),
+                        backgroundColor: Colors.white,
+                      ),
                       child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                       onPressed: () {
                         _searchController.text = '';
@@ -302,6 +306,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 0.0),
                   child: TextButton(
+                    style: text_button_style,
                     child: Text('Reload runs', style: ts_button),
                     onPressed: () async {
                       await _refreshFromBackend(clearLocalTables: false);
@@ -609,7 +614,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.rectangle),
+            decoration: BoxDecoration(color: hc_red, shape: BoxShape.rectangle),
           ),
           Text('Off', style: ts_footnoteBlack.copyWith(color: Colors.white))
         ],

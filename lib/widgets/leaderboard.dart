@@ -317,7 +317,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                         indicatorSize: TabBarIndicatorSize.tab,
                                         indicator: BubbleTabIndicator(
                                           indicatorHeight: 25.0,
-                                          indicatorColor: Colors.red.shade900,
+                                          indicatorColor: hc_red,
                                           tabBarIndicatorSize: TabBarIndicatorSize.label,
                                           indicatorRadius: 10.0,
                                           padding: const EdgeInsets.only(top: 5.0),
@@ -342,7 +342,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                           Checkbox(
                                             value: _showKennels,
                                             checkColor: Colors.white,
-                                            activeColor: Colors.red.shade900,
+                                            activeColor: hc_red,
                                             onChanged: (value) {
                                               setState(() {
                                                 _showKennels = !_showKennels;
@@ -362,7 +362,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                           Checkbox(
                                             value: _showHomeKennel,
                                             checkColor: Colors.white,
-                                            activeColor: Colors.red.shade900,
+                                            activeColor: hc_red,
                                             onChanged: (value) {
                                               setState(() {
                                                 _showHomeKennel = !_showHomeKennel;
@@ -710,7 +710,7 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                   SizedBox(
                     width: 40,
                     child: TextButton(
-                      style: TextButton.styleFrom(backgroundColor: Colors.white),
+                      style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.white),
                       child: const Text('X', style: TextStyle(color: Colors.grey)),
                       onPressed: () {
                         _searchController.text = '';

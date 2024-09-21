@@ -161,7 +161,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               //onClose: () => //print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
               heroTag: 'speed-dial-hero-tag',
-              backgroundColor: Theme.of(context).buttonTheme.colorScheme?.primary ?? Colors.red.shade900,
+              backgroundColor: Theme.of(context).buttonTheme.colorScheme?.primary ?? hc_red,
               foregroundColor: Colors.white,
               elevation: 8.0,
               shape: const CircleBorder(),
@@ -187,7 +187,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                 ),
                 SpeedDialChild(
                   child: const Icon(MaterialCommunityIcons.email_plus, color: Colors.white),
-                  backgroundColor: Colors.blue[900],
+                  backgroundColor: hc_blue,
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
@@ -297,7 +297,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //           ),
   //           SpeedDialChild(
   //             child: const Icon(MaterialCommunityIcons.email_plus),
-  //             backgroundColor: Colors.blue[900],
+  //             backgroundColor: hc_blue,
   //             label: 'Email all kennels run history',
   //             labelStyle: const TextStyle(fontSize: 18.0),
   //             onTap: ()  {
@@ -372,7 +372,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
       child: _runCountsList.isEmpty
-          ? const Center(child: Text('No runs logged yet.'))
+          ? Center(child: Text('No runs logged yet.', style: ts_regular))
           : RefreshIndicator(
               onRefresh: _handleRefresh,
               displacement: 130.0,
@@ -548,7 +548,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                         ))
                                   ]))
                               : Container(
-                                  color: Colors.red,
+                                  color: hc_red,
                                   child: Row(children: <Widget>[
                                     const Padding(
                                       padding: EdgeInsets.only(left: 10.0),

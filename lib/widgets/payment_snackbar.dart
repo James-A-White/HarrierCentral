@@ -22,7 +22,7 @@ class PaymentSnackBar extends SnackBar {
   Duration get duration => const Duration(seconds: 30);
 
   @override
-  Color get backgroundColor => Colors.red.shade900;
+  Color get backgroundColor => hc_red;
 
   String formatMoney(num money) {
     return IveCoreUtilities.getFormattedMoney(money, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym);

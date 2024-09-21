@@ -440,7 +440,7 @@ class RunListItem extends StatelessWidget {
 
   Widget _getNotificationWidget() {
     return rliController.notificationPreference.value == -1
-        ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+        ? Icon(delayIcon, color: hc_blue, size: 24.0)
         : Image(
             width: 24.0,
             height: 24.0,
@@ -455,7 +455,7 @@ class RunListItem extends StatelessWidget {
 
   Widget _getEmailWidget() {
     return rliController.emailAlertPreference.value == -1
-        ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+        ? Icon(delayIcon, color: hc_blue, size: 24.0)
         : Image(
             width: 24.0,
             height: 24.0,
@@ -494,7 +494,7 @@ class RunListItem extends StatelessWidget {
     }
 
     if (iconFile == 'wait') {
-      return Icon(delayIcon, color: Colors.blue[800], size: 24.0);
+      return Icon(delayIcon, color: hc_blue, size: 24.0);
     }
 
     if (iconFile.isEmpty) {
@@ -650,7 +650,7 @@ class RunListItem extends StatelessWidget {
       },
       // <String, dynamic>{
       //   'title': 'Set notifications to auto',
-      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: Colors.red[800]))],
+      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: hc_red))],
       //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
       // },
     ];

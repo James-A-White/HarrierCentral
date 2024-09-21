@@ -122,7 +122,7 @@ class PaymentPopupState extends State<PaymentPopup> {
                         Text('Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})', style: ts_alertDialogBodyMedium),
                         Text(
                           '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
-                          style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
+                          style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : hc_red),
                         ),
                       ],
                     ),
@@ -178,8 +178,8 @@ class PaymentPopupState extends State<PaymentPopup> {
           child: SizedBox(
             width: 100.0,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Cancel'),
+              style: ElevatedButton.styleFrom(backgroundColor: hc_red),
+              child: Text('Cancel', style: ts_button),
               onPressed: () {
                 final PaymentPopupResult popupResult = PaymentPopupResult(transactionType: -1, transactionValue: 0);
                 Navigator.of(context).pop(popupResult);
@@ -190,7 +190,10 @@ class PaymentPopupState extends State<PaymentPopup> {
         SizedBox(
           width: 100.0,
           child: ElevatedButton(
-            child: const Text('Process'),
+            child: Text(
+              'Process',
+              style: ts_button,
+            ),
             onPressed: () {
               if (_selectedValue != PaymentPopup.otherAmountRowId) {
                 _otherPaymentResult = null;
@@ -237,7 +240,7 @@ class PaymentPopupState extends State<PaymentPopup> {
                 ? const SizedBox(height: 1, width: 1)
                 : Text(
                     '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult!.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult!.transType == 5) ? ' cash' : ' bank transfer'}',
-                    style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
+                    style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : hc_red),
                   ),
           ],
         ),

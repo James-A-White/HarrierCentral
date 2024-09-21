@@ -51,6 +51,6 @@ class XPageContent extends StatefulWidget {
 class XPageContentState extends State<XPageContent> {
   @override
   Widget build(BuildContext context) {
-    return Container(color: Colors.red, width: 100, height: 100);
+    return Container(color: hc_red, width: 100, height: 100);
   }
 }

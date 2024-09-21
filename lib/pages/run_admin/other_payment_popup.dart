@@ -102,7 +102,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                   borderRadius: BorderRadius.circular(10.0),
                   color: Colors.white,
                   border: Border.all(
-                    color: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade300,
+                    color: _specialPriceEnabled ? hc_red : Colors.grey.shade300,
                     width: 2, //                   <--- border width here
                   ),
                 ),
@@ -163,8 +163,8 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                           children: <Widget>[
                             Theme(
                               data: ThemeData(
-                                //primarySwatch: Colors.blue,
-                                unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
+                                //primarySwatch: hc_blue,
+                                unselectedWidgetColor: _specialPriceEnabled ? hc_red : Colors.grey.shade100, // Your color
                               ),
                               child: Checkbox(
                                 fillColor: WidgetStateProperty.resolveWith<Color>(
@@ -172,7 +172,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                                     if (states.contains(WidgetState.disabled)) {
                                       return Colors.grey.shade300;
                                     }
-                                    return Colors.red.shade900;
+                                    return hc_red;
                                   },
                                 ),
                                 onChanged: _specialPriceEnabled
@@ -203,8 +203,8 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                           children: <Widget>[
                             Theme(
                               data: ThemeData(
-                                //primarySwatch: Colors.blue,
-                                unselectedWidgetColor: _specialPriceEnabled ? Colors.red.shade900 : Colors.grey.shade100, // Your color
+                                //primarySwatch: hc_blue,
+                                unselectedWidgetColor: _specialPriceEnabled ? hc_red : Colors.grey.shade100, // Your color
                               ),
                               child: Checkbox(
                                 fillColor: WidgetStateProperty.resolveWith<Color>(
@@ -212,7 +212,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                                     if (states.contains(WidgetState.disabled)) {
                                       return Colors.grey.shade300;
                                     }
-                                    return Colors.red.shade900;
+                                    return hc_red;
                                   },
                                 ),
                                 onChanged: _specialPriceEnabled
@@ -245,7 +245,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Checkbox(
-                        fillColor: WidgetStateProperty.all<Color>(Colors.red.shade900),
+                        fillColor: WidgetStateProperty.all<Color>(hc_red),
                         onChanged: (bool? val) {
                           if (val != null) {
                             setState(() {
@@ -259,7 +259,10 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                         },
                         value: _specialPriceEnabled,
                       ),
-                      const Text('Special run price'),
+                      Text(
+                        'Special run price',
+                        style: ts_button,
+                      ),
                       const SizedBox(width: 10.0),
                     ],
                   ),
@@ -281,7 +284,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
                     border: Border.all(
-                      color: _topUpCreditEnabled ? Colors.red.shade900 : Colors.grey.shade300,
+                      color: _topUpCreditEnabled ? hc_red : Colors.grey.shade300,
                       width: 2, //                   <--- border width here
                     ),
                   ),
@@ -325,7 +328,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
                         Checkbox(
-                          fillColor: WidgetStateProperty.all<Color>(Colors.red.shade900),
+                          fillColor: WidgetStateProperty.all<Color>(hc_red),
                           onChanged: (bool? val) {
                             if (val != null) {
                               _recalculateTotal();
@@ -339,7 +342,7 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
                           },
                           value: _topUpCreditEnabled,
                         ),
-                        const Text('Top up credit'),
+                        Text('Top up credit', style: ts_button),
                         const SizedBox(width: 10.0),
                       ],
                     ),
@@ -364,8 +367,8 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
         SizedBox(
           height: 55.0,
           child: TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Cancel'),
+            style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
+            child: Text('Cancel', style: ts_button),
             onPressed: () {
               Navigator.of(context).pop(OtherPaymentPopupResult(
                 'cancel',
@@ -389,8 +392,8 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
           SizedBox(
             height: 55.0,
             child: TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: const Text('Cash'),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
+                child: Text('Cash', style: ts_button),
                 onPressed: () {
                   final OtherPaymentPopupResult result = OtherPaymentPopupResult(
                     'process',
@@ -408,9 +411,10 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
           SizedBox(
             height: 55.0,
             child: TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: const Text(
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
+                child: Text(
                   'Bank\r\ntransfer',
+                  style: ts_button,
                   textAlign: TextAlign.center,
                 ),
                 onPressed: () {
@@ -433,8 +437,8 @@ class OtherPaymentPopupState extends State<OtherPaymentPopup> {
           SizedBox(
             height: 55.0,
             child: TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: const Text('Hash Credit'),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
+                child: Text('Hash Credit', style: ts_button),
                 onPressed: () {
                   final OtherPaymentPopupResult result = OtherPaymentPopupResult(
                     'process',

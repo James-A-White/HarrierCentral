@@ -184,6 +184,7 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
               const SizedBox(height: 35, width: 10),
               if (!isLoading) ...<Widget>[
                 TextButton(
+                  style: text_button_style,
                   child: Text('Get Started!', style: ts_button),
                   onPressed: () async {
                     if (_myDetailsUiStateKey.currentState!.validateForm()) {

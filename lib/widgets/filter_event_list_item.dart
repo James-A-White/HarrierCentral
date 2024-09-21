@@ -34,7 +34,7 @@ class FilterEventListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             event.canEditRunAttendance == -2 || event.canEditRunAttendance == -3
-                ? Icon(delayIcon, size: iconSize, color: Colors.blue)
+                ? Icon(delayIcon, size: iconSize, color: hc_blue)
                 : Container(
                     foregroundDecoration: event.isVisible == 1
                         ? const BoxDecoration()

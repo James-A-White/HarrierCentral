@@ -44,10 +44,10 @@ void main() {
         home: const AppEntryPage(),
         routes: routes,
         theme: ThemeData(
-            appBarTheme: const AppBarTheme(
+            appBarTheme: AppBarTheme(
               systemOverlayStyle: SystemUiOverlayStyle(
                 // Status bar color
-                statusBarColor: Colors.red,
+                statusBarColor: hc_red,
 
                 // Status bar brightness (optional)
                 statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
@@ -61,7 +61,7 @@ void main() {
             highlightColor: Colors.yellow,
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade900,
+                  backgroundColor: hc_red,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                   textStyle: const TextStyle(color: Colors.white),
                   shadowColor: Colors.transparent,
@@ -69,12 +69,12 @@ void main() {
             ),
             textButtonTheme: TextButtonThemeData(
               //     style: TextButton.styleFrom(
-              //   backgroundColor: Colors.red.shade900,
+              //   backgroundColor: hc_red,
               //   primary
               //   textStyle: const TextStyle(color: Colors.white),
               // )
               style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all<Color>(Colors.red.shade900),
+                backgroundColor: WidgetStateProperty.all<Color>(hc_red),
                 foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
               ),
             ),

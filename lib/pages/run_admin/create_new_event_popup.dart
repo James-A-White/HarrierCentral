@@ -47,15 +47,27 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
         //     child:
 
         TextButton(
-          style: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(
-              Colors.red.shade700,
+            style: text_button_style.copyWith(backgroundColor: WidgetStatePropertyAll(hc_blue)),
+            child: Text(
+              'Add counted run',
+              style: ts_button,
             ),
-            shape: button_shape,
-            padding: WidgetStateProperty.all<EdgeInsets>(
-              const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
+            onPressed: () {
+              Navigator.of(context).pop(<String, String>{'type': eventFilterType_countEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
+            }),
+
+        TextButton(
+            style: text_button_style.copyWith(backgroundColor: WidgetStatePropertyAll(hc_blue)),
+            child: Text(
+              'Add other event',
+              style: ts_button,
             ),
-          ),
+            onPressed: () {
+              Navigator.of(context).pop(<String, String>{'type': eventFilterType_doNotCountEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
+            }),
+
+        TextButton(
+          style: text_button_style,
           child: Text(
             'Cancel',
             style: ts_button,
@@ -64,38 +76,6 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
             Navigator.of(context).pop(<String, String>{'type': 'cancel', 'eventName': ''});
           },
         ),
-
-        TextButton(
-            style: ButtonStyle(
-              backgroundColor: const WidgetStatePropertyAll(Colors.blue),
-              shape: button_shape,
-              padding: WidgetStateProperty.all<EdgeInsets>(
-                const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
-              ),
-            ),
-            child: Text(
-              'Other event',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': eventFilterType_doNotCountEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
-            }),
-
-        TextButton(
-            style: ButtonStyle(
-              backgroundColor: const WidgetStatePropertyAll(Colors.blue),
-              shape: button_shape,
-              padding: WidgetStateProperty.all<EdgeInsets>(
-                const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
-              ),
-            ),
-            child: Text(
-              'Counted run',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': eventFilterType_countEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
-            }),
       ],
     );
   }

@@ -95,7 +95,7 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
                     labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
-                      indicatorColor: Colors.red.shade900,
+                      indicatorColor: hc_red,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),
@@ -199,7 +199,7 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
   //           ),
   //         ),
   //         actions: <Widget>[
-  //           TextButton(
+  //                       TextButton(
   //             child: const Text('OK, Got it!'),
   //             onPressed: () {
   //               Navigator.of(context).pop(true);
@@ -277,7 +277,11 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK, Got it!'),
+              style: text_button_style,
+              child: Text(
+                'OK, Got it!',
+                style: ts_button,
+              ),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -363,7 +367,11 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
             height: spacer / 3,
           ),
           TextButton(
-            child: const Text('Learn more about this feature'),
+            style: text_button_style,
+            child: Text(
+              'Learn more about this feature',
+              style: ts_button,
+            ),
             onPressed: () {
               _displayInstructions(context);
             },

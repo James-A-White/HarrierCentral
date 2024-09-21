@@ -54,8 +54,11 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         //     child:
 
         TextButton(
-          style: TextButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Cancel'),
+          style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
+          child: Text(
+            'Cancel',
+            style: ts_button,
+          ),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{'runNumber': 'cancel'});
           },
@@ -67,8 +70,8 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         //child:
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Auto number'),
+            style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
+            child: Text('Auto number', style: ts_button),
             onPressed: () {
               Navigator.of(context).pop(<String, String>{'runNumber': 'auto'});
             }),
@@ -78,8 +81,11 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         //child:
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('OK'),
+            style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
+            child: Text(
+              'OK',
+              style: ts_regular,
+            ),
             onPressed: () {
               Navigator.of(context).pop(<String, String>{'runNumber': _runNumberAmountTextController.text});
             }),

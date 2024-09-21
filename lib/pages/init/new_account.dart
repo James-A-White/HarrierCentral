@@ -102,7 +102,7 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                     borderRadius: BorderRadius.circular(20.0),
                     color: Colors.white,
                     border: Border.all(
-                      color: Colors.red.shade900,
+                      color: hc_red,
                       width: 2, //                   <--- border width here
                     ),
                   ),
@@ -143,7 +143,7 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                     borderRadius: BorderRadius.circular(20.0),
                     color: Colors.white,
                     border: Border.all(
-                      color: Colors.red.shade900,
+                      color: hc_red,
                       width: 2, //                   <--- border width here
                     ),
                   ),
@@ -184,7 +184,7 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                     borderRadius: BorderRadius.circular(20.0),
                     color: Colors.white,
                     border: Border.all(
-                      color: Colors.red.shade900,
+                      color: hc_red,
                       width: 2, //                   <--- border width here
                     ),
                   ),
@@ -218,7 +218,7 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
               //         borderRadius: BorderRadius.circular(20.0),
               //         color: Colors.white,
               //         border: Border.all(
-              //           color: Colors.red.shade900,
+              //           color: hc_red,
               //           width: 2, //                   <--- border width here
               //         ),
               //       ),

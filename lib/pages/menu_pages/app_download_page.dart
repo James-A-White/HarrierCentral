@@ -76,7 +76,7 @@
 //                     indicatorSize: TabBarIndicatorSize.tab,
 //                     indicator: BubbleTabIndicator(
 //                       indicatorHeight: 35.0,
-//                       indicatorColor: Colors.red.shade900,
+//                       indicatorColor: hc_red,
 //                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
 //                       indicatorRadius: 20.0,
 //                     ),
@@ -138,7 +138,7 @@
 //   //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //   //         children: <Widget>[
 //   //           Expanded(
-//   //             child: TextButton(
+//   //             child:             TextButton(
 //   //               splashColor: Colors.transparent,
 //   //               highlightColor: Colors.transparent,
 //   //               onPressed: _onSwitchToQrScanner,
@@ -152,7 +152,7 @@
 //   //             ),
 //   //           ),
 //   //           Expanded(
-//   //             child: TextButton(
+//   //             child:             TextButton(
 //   //               splashColor: Colors.transparent,
 //   //               highlightColor: Colors.transparent,
 //   //               onPressed: _onSwitchToQrCode,
@@ -192,7 +192,7 @@
 //   //           ),
 //   //         ),
 //   //         actions: <Widget>[
-//   //           TextButton(
+//   //                       TextButton(
 //   //             child: const Text('OK, Got it!'),
 //   //             onPressed: () {
 //   //               Navigator.of(context).pop(true);
@@ -255,7 +255,7 @@
 //             ),
 //           ),
 //           actions: <Widget>[
-//             TextButton(
+//                         TextButton(
 //               child: const Text('OK, Got it!'),
 //               onPressed: () {
 //                 Navigator.of(context).pop(true);
@@ -331,7 +331,7 @@
 //             ),
 //             Padding(
 //               padding: const EdgeInsets.only(left: 0.0, right: 0.0),
-//               child: TextButton(
+//               child:             TextButton(
 //                 child: const Text('Learn more about this feature'),
 //                 onPressed: () {
 //                   _displayInstructions(context);
@@ -378,7 +378,7 @@
 //             ),
 //           ),
 //           actions: <Widget>[
-//             TextButton(
+//                         TextButton(
 //               child: const Text('OK, Got it!'),
 //               onPressed: () {
 //                 Navigator.of(context).pop(true);
@@ -454,7 +454,7 @@
 //             ),
 //             Padding(
 //               padding: const EdgeInsets.only(left: 0.0, right: 0.0),
-//               child: TextButton(
+//               child:             TextButton(
 //                 child: const Text('Learn more about this feature'),
 //                 onPressed: () {
 //                   _displayInstructions(context);

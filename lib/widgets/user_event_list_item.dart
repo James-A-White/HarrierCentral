@@ -24,7 +24,7 @@ class UserEventListItem extends StatelessWidget {
     Color creditAvailableColor = (item.creditAvailable ?? 0) > 0
         ? Colors.green.shade800
         : (item.creditAvailable ?? 0) < 0
-            ? Colors.red.shade900
+            ? hc_red
             : Colors.black38;
 
     bool creditWasUsed = false;
@@ -49,9 +49,9 @@ class UserEventListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             item.isUpdating
-                ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
+                ? Icon(delayIcon, color: hc_blue, size: 35.0)
                 : item.attendenceState < attendenceAtHash.value
-                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
+                    ? Icon(FontAwesome.times_circle, color: hc_red, size: 35.0)
                     : item.isHare == isHareNo.value
                         ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
                         : const Padding(
@@ -179,7 +179,7 @@ class UserEventListItem extends StatelessWidget {
                                                   )
                                                 : Icon(
                                                     Fontisto.caret_down,
-                                                    color: Colors.red.shade900,
+                                                    color: hc_red,
                                                     size: 12.0,
                                                   )),
                                       ),
@@ -239,7 +239,7 @@ class UserEventListItem extends StatelessWidget {
           'title': 'I was not at this Hash',
           'icon': <Widget>[
             Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.times_circle, color: Colors.red, size: 28.0),
+            Icon(FontAwesome.times_circle, color: hc_red, size: 28.0),
           ],
           'returnValue': 0
         },

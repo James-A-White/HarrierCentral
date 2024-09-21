@@ -42,7 +42,7 @@ class PaymentReportListItem extends StatelessWidget {
                         color: ((((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransfer.value) ||
                                     ((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransferOtherAmount.value)) &&
                                 (paymentReportItem.payment?.confirmedBy == null))
-                            ? Colors.red
+                            ? hc_red
                             : Colors.black,
                         fontStyle: FontStyle.normal,
                         fontSize: 22.0,
@@ -57,7 +57,7 @@ class PaymentReportListItem extends StatelessWidget {
                       color: ((((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransfer.value) ||
                                   ((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransferOtherAmount.value)) &&
                               (paymentReportItem.payment?.confirmedBy == null))
-                          ? Colors.red
+                          ? hc_red
                           : Colors.black,
                       fontFamily: 'AvenirNextCondensedDemiBold',
                       fontStyle: FontStyle.normal,
@@ -69,9 +69,9 @@ class PaymentReportListItem extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 5.0),
                   child: paymentReportItem.isLoading
-                      ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
+                      ? Icon(delayIcon, color: hc_blue, size: 37.0)
                       : Image.asset('images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
-                          height: 30.0, width: 30.0, color: (paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
+                          height: 30.0, width: 30.0, color: (paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) <= paymentNotPaid.value ? hc_red : Colors.green[700]),
                 ),
                 const SizedBox(width: 10),
               ],

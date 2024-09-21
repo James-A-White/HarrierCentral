@@ -101,7 +101,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         borderRadius: BorderRadius.circular(10.0),
         color: disabled == true ? Colors.grey[500] : Colors.yellow[100],
         border: Border.all(
-          color: Colors.red.shade900,
+          color: hc_red,
           width: 2, //                   <--- border width here
         ),
       ),
@@ -115,7 +115,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Radio<int>(
-                  activeColor: Colors.red.shade900,
+                  activeColor: hc_red,
                   value: selectedImageType.index,
                   groupValue: _selectedRadioValue,
                   onChanged: (_) {
@@ -293,7 +293,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                     Positioned(
                       bottom: 20.0,
                       child: TextButton(
-                        style: TextButton.styleFrom(backgroundColor: _imageTypeSelection == SelectedImageTypeEnum.none ? Colors.grey : Colors.red.shade900),
+                        style: TextButton.styleFrom(shape: button_shape, backgroundColor: _imageTypeSelection == SelectedImageTypeEnum.none ? Colors.grey : hc_red),
                         //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
                         child: Text('Next', style: ts_button),
                         onPressed: () {

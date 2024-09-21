@@ -47,16 +47,22 @@ class EmailPopupState extends State<EmailPopup> {
       ),
       actions: <Widget>[
         TextButton(
-          style: TextButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Cancel'),
+          style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
+          child: Text(
+            'Cancel',
+            style: ts_button,
+          ),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{'type': 'cancel', 'email': ''});
           },
         ),
 
         TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('OK'),
+            style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
+            child: Text(
+              'OK',
+              style: ts_button,
+            ),
             onPressed: () {
               Navigator.of(context).pop(<String, String>{'type': paymentCashOtherAmount.value.toString(), 'email': emailTextController.text});
             }),

@@ -159,10 +159,8 @@ class FindHasherPageState extends State<FindHasherPage> {
           SizedBox(
             width: 40,
             child: TextButton(
-              //color: Colors.red,
-              style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
+              style: TextButton.styleFrom(shape: button_shape, textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
               child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
-
               onPressed: () {
                 // searchController.text = '';
                 // model.filterPackList('');
@@ -222,7 +220,7 @@ class HasherListView extends StatelessWidget {
               // Padding(
               //   padding: const EdgeInsets.only(right: 15.0),
               //   child: ElevatedButton(
-              //     style: ElevatedButton.styleFrom(primary: Colors.red),
+              //     style: ElevatedButton.styleFrom(primary:hc_red),
               //     child: Text(
               //       'Cancel',
               //       textAlign: TextAlign.center,
@@ -235,16 +233,22 @@ class HasherListView extends StatelessWidget {
               // ),
 
               TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Cancel'),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
+                child: Text(
+                  'Cancel',
+                  style: ts_button,
+                ),
                 onPressed: () {
                   Navigator.of(context).pop(-1);
                 },
               ),
 
               TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                child: const Text('Add'),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
+                child: Text(
+                  'Add',
+                  style: ts_button,
+                ),
                 onPressed: () {
                   Navigator.of(context).pop(enumHasher.value);
                 },
@@ -267,8 +271,8 @@ class HasherListView extends StatelessWidget {
 
   Widget _listItem(BuildContext context, int index) {
     return InkWell(
-      //splashColor: Colors.red,
-      highlightColor: Colors.red,
+      //splashColor:hc_red,
+      highlightColor: hc_red,
       onTap: () async {
         if (pageType == FindHasherPageType.addHasherToRun) {
           int? doAddHasher = await _promptForHasherType(context, hasherList[index]);
@@ -393,7 +397,7 @@ class HasherListView extends StatelessWidget {
         margin: const EdgeInsets.only(left: 10),
         child: Row(
           children: <Widget>[
-            Icon(SimpleLineIcons.question, size: 35.0, color: Colors.red.shade900),
+            Icon(SimpleLineIcons.question, size: 35.0, color: hc_red),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 14.0, right: 10.0),

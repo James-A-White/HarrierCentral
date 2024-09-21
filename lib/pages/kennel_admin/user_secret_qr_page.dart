@@ -127,7 +127,8 @@
 //   //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //   //         children: <Widget>[
 //   //           Expanded(
-//   //             child: TextButton(
+//   //             child:             TextButton(
+//              
 //   //               splashColor: Colors.transparent,
 //   //               highlightColor: Colors.transparent,
 //   //               onPressed: _onSwitchToQrCode,
@@ -141,7 +142,8 @@
 //   //             ),
 //   //           ),
 //   //           Expanded(
-//   //             child: TextButton(
+//   //             child:             TextButton(
+//              
 //   //               splashColor: Colors.transparent,
 //   //               highlightColor: Colors.transparent,
 //   //               onPressed: _onSwitchToQrScanner,
@@ -185,7 +187,8 @@
 //   //           ),
 //   //         ),
 //   //         actions: <Widget>[
-//   //           TextButton(
+//   //                       TextButton(
+              
 //   //             child: const Text('OK, Got it!'),
 //   //             onPressed: () {
 //   //               Navigator.of(context).pop(true);
@@ -307,7 +310,8 @@
 //               errorCorrectionLevel: 3),
 //           Padding(
 //             padding: const EdgeInsets.only(left: 32.0, right: 32.0),
-//             child: TextButton(
+//             child:             TextButton(
+              
 //               textColor: Theme.of(context).buttonColor,
 //               child: const Text('Learn more about this feature'),
 //               onPressed: () {

@@ -276,7 +276,7 @@ SELECT
             //onClose: () => //print('DIAL CLOSED'),
             tooltip: 'Speed Dial',
             heroTag: 'speed-dial-hero-tag',
-            backgroundColor: Colors.red.shade900,
+            backgroundColor: hc_red,
             foregroundColor: Colors.white,
             elevation: 8.0,
             shape: const CircleBorder(),
@@ -336,7 +336,7 @@ SELECT
                             PaymentTotalsCell(
                               creditAmount: 0,
                               counter: _paymentTotals[0]['count'] + _paymentTotals[paymentNotPaid.value]['count'],
-                              color: (_filterValue & 1) != 0 ? Colors.red : Colors.black26,
+                              color: (_filterValue & 1) != 0 ? hc_red : Colors.black26,
                               paymentRecordType: paymentNotPaid,
                               currencySymbol: widget.eventAggregate.extensions.curSym,
                               digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
@@ -430,7 +430,11 @@ SELECT
                     child: Padding(
                       padding: const EdgeInsets.only(top: 10.0),
                       child: _filteredList.isEmpty
-                          ? const Center(child: Text('No transactions available.'))
+                          ? Center(
+                              child: Text(
+                              'No transactions available.',
+                              style: ts_title,
+                            ))
                           : RefreshIndicator(
                               onRefresh: _refreshSqlTablesFromBackend,
                               displacement: 40.0,
@@ -492,7 +496,7 @@ SELECT
                                                     )
                                                   ]))
                                               : Container(
-                                                  color: Colors.blue,
+                                                  color: hc_blue,
                                                   child: Row(children: <Widget>[
                                                     Padding(
                                                       padding: const EdgeInsets.only(left: 15.0),
@@ -782,7 +786,7 @@ SELECT
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        final TextStyle bodyStyleRed = ts_titleMediumBlack.copyWith(color: Colors.red.shade700);
+        final TextStyle bodyStyleRed = ts_titleMediumBlack.copyWith(color: hc_red);
 
         if (item.payment == null) {
           return AlertDialog(
@@ -1258,13 +1262,21 @@ SELECT
             // ),
             actions: <Widget>[
               TextButton(
-                child: const Text('Cancel transaction'),
+                style: text_button_style,
+                child: Text(
+                  'Cancel transaction',
+                  style: ts_button,
+                ),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('cancel');
                 },
               ),
               TextButton(
-                child: const Text('Close'),
+                style: text_button_style,
+                child: Text(
+                  'Close',
+                  style: ts_button,
+                ),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('close');
                 },

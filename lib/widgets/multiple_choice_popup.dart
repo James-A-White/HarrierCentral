@@ -90,7 +90,7 @@ class MultipleChoicePopupStateHc extends State<MultipleChoicePopupHc> {
             },
             child: Container(
               //padding: EdgeInsets.only(top: 6.0 * deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceHeightScaleFactor),
-              color: Colors.blue[900],
+              color: hc_blue,
               child: Row(children: <Widget>[
                 const SizedBox(
                   width: 8.0,
@@ -119,7 +119,7 @@ class MultipleChoicePopupStateHc extends State<MultipleChoicePopupHc> {
     }
     buttons.add(
       ElevatedButton(
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, textStyle: const TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(backgroundColor: hc_red, textStyle: const TextStyle(color: Colors.white)),
         child: Text(widget.cancelButtonTitle, style: ts_button),
         onPressed: () {
           Navigator.of(context).pop(widget.cancelButtonReturnValue);

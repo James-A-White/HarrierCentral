@@ -146,10 +146,10 @@ class KennelMemberListItem extends StatelessWidget {
                             ),
                             const SizedBox(width: 10.0),
                             if (AppAccess(kennelMember.appAccessFlags).isAdmin) ...<Widget>[
-                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(FontAwesome.gear, color: Colors.blue[800], size: 24.0))
+                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(FontAwesome.gear, color: hc_blue, size: 24.0))
                             ],
                             if (Mismanagement(kennelMember.mismanagementRoles).isOnMismanagement) ...<Widget>[
-                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(MaterialCommunityIcons.account_tie, color: Colors.blue[800], size: 24.0))
+                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(MaterialCommunityIcons.account_tie, color: hc_blue, size: 24.0))
                             ],
                           ]),
                         ),
@@ -158,7 +158,7 @@ class KennelMemberListItem extends StatelessWidget {
                     // kennelMember.homeKennelBeingUpdated ?? false
                     //     ? const Text(
                     //         '<Updating home kennel>',
-                    //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
+                    //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: hc_blue),
                     //         textAlign: TextAlign.center,
                     //       )
                     //     : Text(
@@ -185,7 +185,7 @@ class KennelMemberListItem extends StatelessWidget {
                     // kennelMember.memberInfoBeingUpdated ?? false
                     //     ? Text(
                     //         '<Updating membership>',
-                    //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0, color: Colors.blue),
+                    //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0, color: hc_blue),
                     //         textAlign: TextAlign.center,
                     //       )
                     //     :
@@ -208,11 +208,7 @@ class KennelMemberListItem extends StatelessWidget {
                             // NULLSAFETODO1- read currency info from country if null!!!!!
                             IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal ?? 2, kennelListAggregate.kennel.currencySymbol ?? r'$^'),
                         style: TextStyle(
-                            fontFamily: 'AvenirNextDemiBold',
-                            fontStyle: FontStyle.normal,
-                            fontSize: 16.0,
-                            height: 1.0,
-                            color: kennelMember.kennelCredit >= 0 ? Colors.green.shade900 : Colors.red.shade900),
+                            fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: kennelMember.kennelCredit >= 0 ? Colors.green.shade900 : hc_red),
                       ),
                     ]
                   ],
@@ -225,7 +221,7 @@ class KennelMemberListItem extends StatelessWidget {
                     toggleEmailPreferenceCallback();
                   },
                   child: kennelMember.kennelEmailAlertPreference == -1
-                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
                       : Image(
                           width: 24.0,
                           height: 24.0,

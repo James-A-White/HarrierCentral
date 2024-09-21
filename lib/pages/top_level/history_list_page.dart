@@ -117,7 +117,11 @@ class HistoryListPageState extends State<HistoryListPage> {
           decoration: Backgrounds.defaultHcBackgroundLight(),
           padding: const EdgeInsets.only(top: 0.0),
           child: _runCountsList.isEmpty
-              ? const Center(child: Text('No runs logged yet.'))
+              ? Center(
+                  child: Text(
+                  'No runs logged yet.',
+                  style: ts_title,
+                ))
               : RefreshIndicator(
                   onRefresh: _handleRefresh,
                   displacement: 40.0,

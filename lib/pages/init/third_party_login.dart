@@ -328,7 +328,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       decoration: InputDecoration(
                         labelText: 'Hash Name',
                         //hintText: profileData != null ? 'Just ' + profileData['first_name'] : '',
-                        fillColor: Colors.red,
+                        fillColor: hc_red,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                           borderSide: const BorderSide(),
@@ -354,7 +354,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       decoration: InputDecoration(
                         labelText: 'Email',
                         //hintText: profileData != null ? 'Just ' + profileData['first_name'] : '',
-                        fillColor: Colors.red,
+                        fillColor: hc_red,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                           borderSide: const BorderSide(),
@@ -421,6 +421,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
           Padding(
             padding: const EdgeInsets.only(top: 25.0),
             child: TextButton(
+              style: text_button_style,
               child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info', style: ts_button),
               onPressed: () async {
                 if (!widget.isNewUser || ((_formKey.currentState != null) && (_formKey.currentState!.validate()))) {

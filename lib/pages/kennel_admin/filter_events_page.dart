@@ -276,7 +276,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         //     ),
         //     SpeedDialChild(
         //       child: const Icon(MaterialCommunityIcons.email_plus),
-        //       backgroundColor: Colors.blue[900],
+        //       backgroundColor: hc_blue,
         //       label: 'Email all kennels run history',
         //       labelStyle: const TextStyle(fontSize: 18.0),
         //       onTap: () => {
@@ -429,7 +429,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
-                      indicatorColor: Colors.red.shade900,
+                      indicatorColor: hc_red,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),
@@ -532,7 +532,10 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               _showEventPopup(_selectedDay.value);
             });
           },
-          child: Text('Add run placeholder', style: ts_button),
+          child: Text(
+            'Add run placeholder',
+            style: ts_button,
+          ),
         ),
       ],
     );
@@ -604,7 +607,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             return Future<bool>.value(false);
           },
           background: Container(
-              color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.red,
+              color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : hc_red,
               child: Row(children: <Widget>[
                 const Padding(
                   padding: EdgeInsets.only(left: 10.0),
@@ -843,14 +846,14 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                   //                               ? Colors.white
                   //                               : Colors.grey.shade200
                   //                       : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                  //                           ? Colors.red.shade100
+                  //                           ? hc_red.shade100
                   //                           : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
                   //                               ? Colors.grey.shade300
                   //                               : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
                   //                                   ? Colors.green.shade100
                   //                                   : Colors.yellow.shade200,
                   //                   border: Border.all(
-                  //                     color: Colors.red,
+                  //                     color:hc_red,
                   //                     width: 3.0,
                   //                   ),
                   //                 ),
@@ -859,7 +862,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                   //                 //color: Colors.deepOrange[300],
                   //                 width: 100,
                   //                 height: 50,
-                  //                 child: Icon(delayIcon, color: Colors.blue),
+                  //                 child: Icon(delayIcon, color: hc_blue),
                   //               )
                   //             : FadeTransition(
                   //                 opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
@@ -872,14 +875,14 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                   //                                 ? Colors.white
                   //                                 : Colors.grey.shade200
                   //                         : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                  //                             ? Colors.red.shade100
+                  //                             ? hc_red.shade100
                   //                             : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
                   //                                 ? Colors.grey.shade300
                   //                                 : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
                   //                                     ? Colors.green.shade100
                   //                                     : Colors.yellow.shade200,
                   //                     border: Border.all(
-                  //                       color: Colors.red,
+                  //                       color:hc_red,
                   //                       width: 3.0,
                   //                     ),
                   //                   ),
@@ -957,7 +960,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                       width: 1.0,
                                     )
                                   : Border.all(
-                                      color: Colors.red,
+                                      color: hc_red,
                                       width: 3.0,
                                     ),
                             ),
@@ -978,7 +981,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                 if ((snapshot.hasData) && _toDateOnly(snapshot.data!) == _toDateOnly(date)) ...<Widget>[
                                   Positioned(
                                     right: 1.0,
-                                    child: Icon(delayIcon, color: Colors.blue),
+                                    child: Icon(delayIcon, color: hc_blue),
                                   )
                                 ],
                               ],
@@ -1001,8 +1004,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                 color: events[i].isVisible == 0
                                     ? Colors.grey
                                     : events[i].isCountedRun == 0
-                                        ? Colors.red
-                                        : Colors.blue.shade700,
+                                        ? hc_red
+                                        : hc_blue,
                               ),
                             ),
                           );

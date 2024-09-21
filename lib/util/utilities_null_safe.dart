@@ -213,13 +213,13 @@ class Utilities {
   //           ),
   //         ),
   //         actions: <Widget>[
-  //           TextButton(
+  //                       TextButton(
   //             child: const Text('No Thanks!'),
   //             onPressed: () {
   //               Navigator.of(context).pop(false);
   //             },
   //           ),
-  //           TextButton(
+  //                       TextButton(
   //             child: const Text('Yes, I\'ll Hare!'),
   //             onPressed: () {
   //               Navigator.of(context).pop(true);
@@ -250,13 +250,21 @@ class Utilities {
         ),
         actions: <Widget>[
           TextButton(
-            child: const Text('No Thanks!'),
+            style: text_button_style,
+            child: Text(
+              'No Thanks!',
+              style: ts_button,
+            ),
             onPressed: () {
               Get.back<bool?>(result: false, canPop: true);
             },
           ),
           TextButton(
-            child: const Text('Yes, I\'ll Hare!'),
+            style: text_button_style,
+            child: Text(
+              'Yes, I\'ll Hare!',
+              style: ts_button,
+            ),
             onPressed: () {
               Get.back<bool?>(result: true, canPop: true);
             },
@@ -486,7 +494,7 @@ class Utilities {
                 errorWidget: (BuildContext context, String url, dynamic error) => Icon(
                       Icons.error,
                       size: height,
-                      color: Colors.red,
+                      color: hc_red,
                     ),
                 //fadeOutDuration:  Duration(seconds: 1),
                 fadeInDuration: const Duration(milliseconds: 0),
@@ -555,7 +563,7 @@ class Utilities {
     String buttonText, {
     bool showCancelButton = false,
     String cancelButtonText = 'Cancel',
-    TextAlign textAlign = TextAlign.justify,
+    TextAlign textAlign = TextAlign.left,
   }) async {
     return Get.dialog<bool?>(
       AlertDialog(
@@ -577,6 +585,7 @@ class Utilities {
         actions: <Widget>[
           if (showCancelButton)
             TextButton(
+              style: text_button_style,
               child: Text(cancelButtonText),
               onPressed: () {
                 Get.back(result: false, canPop: true);
@@ -585,7 +594,11 @@ class Utilities {
           else
             Container(),
           TextButton(
-            child: Text(buttonText),
+            style: text_button_style,
+            child: Text(
+              buttonText,
+              style: ts_button,
+            ),
             onPressed: () {
               Get.back(result: true, canPop: true);
             },
@@ -623,6 +636,7 @@ class Utilities {
         actions: <Widget>[
           showCancelButton == true
               ? TextButton(
+                  style: text_button_style,
                   child: Text(
                     cancelButtonText,
                     style: ts_button,
@@ -633,6 +647,7 @@ class Utilities {
                 )
               : Container(),
           TextButton(
+            style: text_button_style,
             child: Text(
               buttonText,
               style: ts_button,

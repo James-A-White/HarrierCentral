@@ -326,7 +326,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                             : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpYes.value
                                                 ? Colors.green
                                                 : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpYes)
-                                                    ? Colors.blue
+                                                    ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
                                         iconSize: 35.0,
@@ -390,7 +390,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                             : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpMaybe.value
                                                 ? Colors.orange
                                                 : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpMaybe)
-                                                    ? Colors.blue
+                                                    ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
                                         iconSize: 35.0,
@@ -449,9 +449,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         color: _thisUserIndex == -1
                                             ? Colors.grey
                                             : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpNo.value
-                                                ? Colors.red
+                                                ? hc_red
                                                 : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpNo)
-                                                    ? Colors.blue
+                                                    ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
                                         iconSize: 35.0,
@@ -510,7 +510,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                             : snapshot.data![_thisUserIndex].hem.isHare == isHareYes.value
                                                 ? Colors.deepPurple
                                                 : snapshot.data![_thisUserIndex].hem.isHare == -1
-                                                    ? Colors.blue
+                                                    ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
                                         iconSize: 30.0,
@@ -579,7 +579,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           indicatorSize: TabBarIndicatorSize.label,
                                           indicator: BubbleTabIndicator(
                                             indicatorHeight: 40.0,
-                                            indicatorColor: Colors.red.shade900,
+                                            indicatorColor: hc_red,
                                             tabBarIndicatorSize: TabBarIndicatorSize.label,
                                             indicatorRadius: 20.0,
                                           ),
@@ -734,12 +734,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           radius: 11.0,
         ),
         (e.hem.rsvpState <= 0)
-            ? const CircleAvatar(
-                backgroundColor: Colors.blue,
+            ? CircleAvatar(
+                backgroundColor: hc_blue,
                 radius: 10.0,
               )
             : (e.hem.rsvpState == 1)
-                ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
+                ? Icon(FontAwesome.times_circle, color: hc_red, size: 21.0)
                 : (e.hem.rsvpState == 2)
                     ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
                     : (e.hem.isHare == 0)
@@ -978,7 +978,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         const SizedBox(height: 30.0),
         _getRsvpButton(FontAwesome.check_circle, Colors.green, 'I\'ll be there!', rsvpYes),
         _getRsvpButton(FontAwesome.check_circle, Colors.orange, 'I might come!', rsvpMaybe),
-        _getRsvpButton(FontAwesome.check_circle, Colors.red, 'I will not come', rsvpNo),
+        _getRsvpButton(FontAwesome.check_circle, hc_red, 'I will not come', rsvpNo),
       ];
     }
   }
@@ -1010,14 +1010,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           //onClose: () => //print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
-          backgroundColor: Colors.red.shade900,
+          backgroundColor: hc_red,
           foregroundColor: Colors.white,
           elevation: 8.0,
           shape: const CircleBorder(),
           children: <SpeedDialChild>[
             SpeedDialChild(
               child: const Icon(Feather.x),
-              backgroundColor: Colors.red[800],
+              backgroundColor: hc_red,
               label: 'I\'m not coming',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () async {
@@ -1082,7 +1082,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicator: BubbleTabIndicator(
                         indicatorHeight: 30.0,
-                        indicatorColor: Colors.red.shade900,
+                        indicatorColor: hc_red,
                         tabBarIndicatorSize: TabBarIndicatorSize.tab,
                         indicatorRadius: 10.0,
                         // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),

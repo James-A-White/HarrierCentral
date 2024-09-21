@@ -64,14 +64,14 @@ class KennelsListPageState extends State<KennelsListPage> {
         //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Colors.red.shade900,
+        backgroundColor: hc_red,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),
         children: <SpeedDialChild>[
           SpeedDialChild(
             child: const Icon(Entypo.heart, color: Colors.white),
-            backgroundColor: Colors.red,
+            backgroundColor: hc_red,
             label: 'Sort by following status',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () async {
@@ -175,7 +175,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           SizedBox(
             width: 40,
             child: TextButton(
-              style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
+              style: TextButton.styleFrom(shape: button_shape, textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
               child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
               onPressed: () {
                 _searchController.text = '';

@@ -107,7 +107,7 @@
 //         ),
 //         Padding(
 //           padding: const EdgeInsets.all(8),
-//           child: TextButton(
+//           child:             TextButton(
 //             child: const Text('Buy'),
 //             style: ButtonStyle(
 //               backgroundColor: WidgetStateProperty.resolveWith<Color>(
@@ -127,7 +127,7 @@
 //                 },
 //               ),
 //             ),
-//             // color: Colors.blue,
+//             // color: hc_blue,
 //             // textColor: Colors.white,
 //             onPressed: () async {
 //               //final Map<String, QPermission> permissions = await Qonversion.purchase(product.qonversionId);

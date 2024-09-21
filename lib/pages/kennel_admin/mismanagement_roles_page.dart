@@ -155,7 +155,7 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
               margin: const EdgeInsets.only(bottom: 10.0),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade900,
+                  backgroundColor: hc_red,
                 ),
                 onPressed: () {
                   // if mismanagementFlags = 1 that means this person has no role, so set all to zero, otherwise set the mmRoleIsOnMm flag

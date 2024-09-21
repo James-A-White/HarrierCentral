@@ -31,12 +31,12 @@ class BankTransferQr {
         //   paidFor += ' + credit';
         // }
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            backgroundColor: Colors.blue,
+            backgroundColor: hc_blue,
             duration: const Duration(seconds: 10),
             content: SizedBox(
               height: 80,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                style: ElevatedButton.styleFrom(backgroundColor: hc_red),
                 child: Text(
                   'Show Payment QR code for\r\n$packMemberNameForDisplay',
                   style: ts_button,

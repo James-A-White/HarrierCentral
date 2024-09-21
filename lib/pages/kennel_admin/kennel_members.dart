@@ -251,7 +251,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Colors.red.shade900,
+        backgroundColor: hc_red,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),
@@ -270,7 +270,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
               }),
           SpeedDialChild(
               child: const Icon(MaterialCommunityIcons.account_search),
-              backgroundColor: Colors.blue,
+              backgroundColor: hc_blue,
               label: 'Find Hasher and add',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
@@ -372,7 +372,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           child: Padding(
             padding: const EdgeInsets.only(top: 0.0),
             child: ((snapshot.data == null) || (snapshot.data!.isEmpty))
-                ? const Center(child: Text('No members found.'))
+                ? Center(
+                    child: Text(
+                    'No members found.',
+                    style: ts_regular,
+                  ))
                 : RefreshIndicator(
                     onRefresh: _handleRefresh,
                     displacement: 40.0,
@@ -430,7 +434,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                 return Future<bool>.value(false);
                               },
                               background: Container(
-                                  color: Colors.red,
+                                  color: hc_red,
                                   child: Row(children: <Widget>[
                                     const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
@@ -649,7 +653,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
               SizedBox(
                 width: 40,
                 child: TextButton(
-                  style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
+                  style: text_button_style.copyWith(
+                    textStyle: WidgetStatePropertyAll(TextStyle(color: Colors.grey.shade700)),
+                    backgroundColor: const WidgetStatePropertyAll(Colors.white),
+                  ),
                   child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                   onPressed: () {
                     _searchController.text = '';

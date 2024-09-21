@@ -952,7 +952,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 SizedBox(
                                                   width: 45.0,
                                                   child: Stack(alignment: AlignmentDirectional.center, children: <Widget>[
-                                                    Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)),
+                                                    Container(height: 30, width: 30, decoration: BoxDecoration(color: hc_blue, shape: BoxShape.circle)),
                                                     const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))
                                                   ]),
                                                 ),
@@ -1143,6 +1143,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           ),
           actions: <Widget>[
             TextButton(
+              style: text_button_style,
               child: Text(
                 'Cancel',
                 style: ts_buttonLabelMedium,
@@ -1152,6 +1153,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               },
             ),
             TextButton(
+              style: text_button_style,
               child: Text(
                 'Preview',
                 style: ts_buttonLabelMedium,
@@ -1161,6 +1163,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               },
             ),
             TextButton(
+              style: text_button_style,
               child: Text(
                 'Send',
                 style: ts_buttonLabelMedium,

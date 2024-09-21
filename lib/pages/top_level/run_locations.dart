@@ -117,7 +117,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   SizedBox(
                     width: 40,
                     child: TextButton(
-                      style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
+                      style: TextButton.styleFrom(shape: button_shape, textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
                       child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                       onPressed: () {
                         _searchController.text = '';
@@ -208,7 +208,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           //onClose: () => //print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
-          backgroundColor: Colors.red.shade900,
+          backgroundColor: hc_red,
           foregroundColor: Colors.white,
           elevation: 8.0,
           shape: const CircleBorder(),
@@ -228,7 +228,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             ),
             SpeedDialChild(
               child: const Icon(Entypo.time_slot),
-              backgroundColor: Colors.blue[900],
+              backgroundColor: hc_blue,
               label: 'Show recent+future runs',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
@@ -241,7 +241,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             ),
             SpeedDialChild(
               child: const Icon(Entypo.ccw),
-              backgroundColor: Colors.blue[900],
+              backgroundColor: hc_blue,
               label: 'Show all past runs',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
@@ -287,7 +287,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       style: ts_title,
                       textAlign: TextAlign.center,
                     ),
-                    backgroundColor: Colors.blue[700],
+                    backgroundColor: hc_blue,
                     elevation: 200.0,
                   ));
                 } else {
@@ -304,7 +304,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       style: ts_title,
                       textAlign: TextAlign.center,
                     ),
-                    backgroundColor: Colors.blue[700],
+                    backgroundColor: hc_blue,
                     elevation: 200.0,
                   ));
                 }
@@ -745,7 +745,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         builder: (BuildContext context, List<Marker> markers) {
                           heroCounter++;
                           return FloatingActionButton(
-                            backgroundColor: Colors.blue[800],
+                            backgroundColor: hc_blue,
                             onPressed: null,
                             heroTag: 'btn_$heroCounter',
                             child: Text(markers.length.toString()),

@@ -89,7 +89,7 @@ class KennelListItemState extends State<KennelListItem> {
                   : Container(
                       alignment: Alignment.topLeft,
                       padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
-                      child: widget.kennelItem.extensions.followingRequested != -1 ? Icon(delayIcon, size: 35, color: Colors.blue) : Icon(FontAwesome.home, size: 35, color: Colors.red[900]),
+                      child: widget.kennelItem.extensions.followingRequested != -1 ? Icon(delayIcon, size: 35, color: hc_blue) : Icon(FontAwesome.home, size: 35, color: hc_red),
                     ),
               Expanded(
                 child: InkWell(
@@ -130,7 +130,7 @@ class KennelListItemState extends State<KennelListItem> {
                     _showEmailPopup(context);
                   },
                   child: widget.kennelItem.extensions.emailAlertRequested != -1
-                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
                       : Image(
                           width: 24.0,
                           height: 24.0,
@@ -148,7 +148,7 @@ class KennelListItemState extends State<KennelListItem> {
                     _showNotificationPopup(context);
                   },
                   child: widget.kennelItem.extensions.notificationsRequested != -1
-                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
                       : Image(
                           width: 24.0,
                           height: 24.0,
@@ -220,13 +220,13 @@ class KennelListItemState extends State<KennelListItem> {
                           if ((widget.kennelItem.hkm != null) && (widget.kennelItem.hkm!.hcTotalRunCount != 0)) ...<Widget>[
                             Text(
                               'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
-                              style: ts_titleMedium.copyWith(color: Colors.blue.shade800),
+                              style: ts_titleMedium.copyWith(color: hc_blue),
                             ),
                           ],
                           if (widget.kennelItem.hkm?.dateOfLastRun != null) ...<Widget>[
                             Text(
                               'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
-                              style: ts_titleMedium.copyWith(color: Colors.blue.shade800),
+                              style: ts_titleMedium.copyWith(color: hc_blue),
                             ),
                           ],
                           if ((widget.kennelItem.hkm != null) && (widget.kennelItem.hkm!.kennelCredit != 0)) ...<Widget>[
@@ -239,7 +239,7 @@ class KennelListItemState extends State<KennelListItem> {
                                   fontStyle: FontStyle.normal,
                                   fontSize: 16.0,
                                   height: 1.0,
-                                  color: widget.kennelItem.hkm!.kennelCredit >= 0 ? Colors.green.shade900 : Colors.red.shade900),
+                                  color: widget.kennelItem.hkm!.kennelCredit >= 0 ? Colors.green.shade900 : hc_red),
                             ),
                           ],
                         ],
@@ -303,10 +303,7 @@ class KennelListItemState extends State<KennelListItem> {
               }
             : <String, dynamic>{
                 'title': 'Clear home kennel',
-                'icon': <Widget>[
-                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
-                  const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                ],
+                'icon': <Widget>[Container(height: 30, width: 30, decoration: BoxDecoration(color: hc_red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
                 'returnValue': followTypeToggleHomeKennel
               },
       ];
@@ -384,7 +381,7 @@ class KennelListItemState extends State<KennelListItem> {
       },
       // <String, dynamic>{
       //   'title': 'Set notifications to auto',
-      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: Colors.red[800]))],
+      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: hc_red))],
       //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
       // },
     ];
@@ -522,7 +519,7 @@ class KennelListItemState extends State<KennelListItem> {
       },
       // <String, dynamic>{
       //   'title': 'Set notifications to auto',
-      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: Colors.red[800]))],
+      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: hc_red))],
       //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
       // },
     ];

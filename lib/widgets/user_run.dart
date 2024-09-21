@@ -69,8 +69,8 @@
 //         ),
 //       ]),
 //       actions: <Widget>[
-//         TextButton(
-//           color: Colors.red,
+//                     TextButton(
+//           color:hc_red,
 //           child: const Text('Cancel'),
 //           textColor: Colors.white,
 //           onPressed: () {
@@ -78,8 +78,8 @@
 //           },
 //         ),
 
-//         TextButton(
-//             color: Colors.blue,
+//                     TextButton(
+//             color: hc_blue,
 //             child: const Text('Add Visitor'),
 //             textColor: Colors.white,
 //             onPressed: () {
@@ -91,8 +91,9 @@
 //               });
 //             }),
 
-//         TextButton(
-//             color: Colors.blue,
+//                     TextButton(
+          
+//             color: hc_blue,
 //             child: const Text('Add Virgin'),
 //             textColor: Colors.white,
 //             onPressed: () {

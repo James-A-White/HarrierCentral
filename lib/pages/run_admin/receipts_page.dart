@@ -76,14 +76,14 @@ class ReceiptsListState extends State<ReceiptsList> {
           //onClose: () => //print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
-          backgroundColor: Colors.red.shade900,
+          backgroundColor: hc_red,
           foregroundColor: Colors.white,
           elevation: 8.0,
           shape: const CircleBorder(),
           children: <SpeedDialChild>[
             SpeedDialChild(
                 child: const Icon(MaterialCommunityIcons.playlist_plus),
-                backgroundColor: Colors.blue,
+                backgroundColor: hc_blue,
                 label: 'Add Receipt',
                 labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () => Navigator.push<void>(
@@ -208,7 +208,11 @@ class ReceiptsListState extends State<ReceiptsList> {
           child: Padding(
             padding: const EdgeInsets.only(top: 10.0),
             child: receiptsList.isEmpty
-                ? const Center(child: Text('No receipts available.'))
+                ? Center(
+                    child: Text(
+                    'No receipts available.',
+                    style: ts_title,
+                  ))
                 : RefreshIndicator(
                     onRefresh: _handleRefresh,
                     displacement: 40.0,
@@ -233,7 +237,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                           },
                           background: receipt['removed'] == 0
                               ? Container(
-                                  color: Colors.red,
+                                  color: hc_red,
                                   child: Row(children: <Widget>[
                                     const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
@@ -390,7 +394,7 @@ class ReceiptListItem extends StatelessWidget {
                 child: ((receipt['reimbursedBy'] == null) || (receipt['reimbursedBy'] == GUID_EMPTY))
                     ? const Icon(FontAwesome.circle_thin, size: 35.0, color: Colors.grey)
                     : receipt['reimbursedBy'] == GUID_8 || receipt['reimbursedBy'] == GUID_9
-                        ? Icon(delayIcon, size: 35.0, color: Colors.blue)
+                        ? Icon(delayIcon, size: 35.0, color: hc_blue)
                         : Icon(FontAwesome.check_circle, size: 35.0, color: receipt['removed'] == 0 ? Colors.green : Colors.grey),
               ),
             ),
@@ -400,8 +404,7 @@ class ReceiptListItem extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Text(
                   IveCoreUtilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol),
-                  style:
-                      TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0, color: receipt['removed'] == 0 ? Colors.blue[700] : Colors.grey),
+                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0, color: receipt['removed'] == 0 ? hc_blue : Colors.grey),
                   textAlign: TextAlign.right,
                 ),
               ),

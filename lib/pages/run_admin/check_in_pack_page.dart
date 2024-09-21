@@ -728,7 +728,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
               SizedBox(
                 width: 40,
                 child: TextButton(
-                  style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
+                  style: TextButton.styleFrom(shape: button_shape, textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
                   child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
                   onPressed: () {
                     _searchController.text = '';
@@ -857,7 +857,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         'title': 'Hashers who have not paid',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          Image.asset('images/icons/dollar_sign_icon.png', height: 25, width: 25, color: Colors.red),
+          Image.asset('images/icons/dollar_sign_icon.png', height: 25, width: 25, color: hc_red),
         ],
         'returnValue': FilterOptions.hashersNotPaid
       },
@@ -880,7 +880,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
       <String, dynamic>{
         'title': 'Clear all filters',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red),
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Icon(FontAwesome.times_circle, color: hc_red),
 
           // Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           // const Positioned(bottom: 0, child: Icon(Ionicons.md_remove_circle, size: 30, color: Colors.teal))
@@ -977,7 +977,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Colors.red.shade900,
+        backgroundColor: hc_red,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),
@@ -995,7 +995,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
           ),
           // SpeedDialChild(
           //     child: const Icon(Icons.person_add),
-          //     backgroundColor: Colors.blue,
+          //     backgroundColor: hc_blue,
           //     label: 'Add Hasher to Harrier Central',
           //     labelStyle: const TextStyle(fontSize: 18.0),
           //     onTap: () {
@@ -1016,7 +1016,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
           //     }),
           SpeedDialChild(
             child: const Icon(FontAwesome.heart),
-            backgroundColor: Colors.blue,
+            backgroundColor: hc_blue,
             label: 'Add Virgin / Visitor',
             labelStyle: TextStyle(
               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
@@ -1025,7 +1025,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
           ),
           SpeedDialChild(
             child: const Icon(MaterialCommunityIcons.account_search),
-            backgroundColor: Colors.blue,
+            backgroundColor: hc_blue,
             label: 'Find Hasher and add',
             labelStyle: TextStyle(
               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
@@ -1440,9 +1440,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                         ((snapshot.data ?? 0) == 0)
                             ? Container()
                             : snapshot.data == rsvpUpdating.value
-                                ? Icon(delayIcon, color: Colors.blue[800])
+                                ? Icon(delayIcon, color: hc_blue)
                                 : snapshot.data == rsvpNo.value
-                                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
+                                    ? Icon(FontAwesome.times_circle, color: hc_red, size: 27.0)
                                     : snapshot.data == rsvpMaybe.value
                                         ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
                                         : _filteredList[index].isHare == 0
@@ -1470,9 +1470,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                         ((!snapshot.hasData) || ((snapshot.data) == 0))
                             ? Container()
                             : snapshot.data == attendenceUpdating.value
-                                ? Icon(delayIcon, color: Colors.blue[800])
+                                ? Icon(delayIcon, color: hc_blue)
                                 : snapshot.data == attendenceNo.value
-                                    ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
+                                    ? Image.asset(
+                                        'images/icons/not_at_hash_icon.png',
+                                        height: 24.0,
+                                        width: 24.0,
+                                        color: hc_red,
+                                      )
                                     : snapshot.data == attendenceAtHash.value
                                         ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
                                         : snapshot.data! >= attendenceOnIn.value
@@ -1500,9 +1505,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                         ((snapshot.data ?? isPaidEmpty.value) == isPaidEmpty.value)
                             ? Container()
                             : snapshot.data == isPaidUpdating.value
-                                ? Icon(delayIcon, color: Colors.blue[800])
+                                ? Icon(delayIcon, color: hc_blue)
                                 : snapshot.data == isPaidNo.value
-                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: hc_red)
                                     : _filteredList[index].isPaid == isPaidYes.value
                                         ? Image.asset('images/icons/payment_type_${_filteredList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
                                         : Container()
@@ -1539,7 +1544,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         return ts_mediumRed;
       }
     }
-    return ts_mediumDarkGrey.copyWith(color: Colors.blue.shade800);
+    return ts_mediumDarkGrey.copyWith(color: hc_blue);
   }
 
   TextStyle _getHaringLabelStyle(int numHaring, int attendenceState) {
@@ -1550,7 +1555,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         return ts_mediumRed;
       }
     }
-    return ts_mediumDarkGrey.copyWith(color: Colors.blue.shade800);
+    return ts_mediumDarkGrey.copyWith(color: hc_blue);
   }
 
   Future<void> _updateRsvpState(CheckInPackModel packMember, int rsvpState, int isHare) async {
@@ -1662,7 +1667,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                         // An action can be bigger than the others.
                         flex: 2,
                         onPressed: emptyFunction,
-                        backgroundColor: (packMember.isPaid == 1 ? Colors.grey : Colors.blue),
+                        backgroundColor: (packMember.isPaid == 1 ? Colors.grey : hc_blue),
 
                         foregroundColor: Colors.white,
                         child: packMember.isPaid == 1
@@ -1687,7 +1692,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
                                 ),
                               )
                             : Container(
-                                color: Colors.blue,
+                                color: hc_blue,
                                 width: G0<DeviceInfo>().deviceWidth,
                                 child: Column(
                                   children: <Widget>[
@@ -1866,7 +1871,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         margin: const EdgeInsets.only(left: 10),
         child: Row(
           children: <Widget>[
-            Icon(SimpleLineIcons.question, size: 35.0, color: Colors.red.shade900),
+            Icon(SimpleLineIcons.question, size: 35.0, color: hc_red),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 14.0, right: 10.0),
@@ -1971,7 +1976,8 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             height: 55,
             child: TextButton(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.red,
+                shape: button_shape,
+                backgroundColor: hc_red,
               ),
               child: const Text(
                 'Cancel',
@@ -1987,7 +1993,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           SizedBox(
             height: 55.0,
             child: TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
                 child: const Text(
                   'Add\r\nVisitor',
                   textAlign: TextAlign.center,
@@ -2006,7 +2012,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           SizedBox(
             height: 55.0,
             child: TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
+                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
                 child: const Text(
                   'Add\r\nVirgin',
                   textAlign: TextAlign.center,

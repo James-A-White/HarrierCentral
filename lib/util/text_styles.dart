@@ -1,8 +1,23 @@
 import 'package:harrier_central/imports.dart';
 
-WidgetStatePropertyAll<OutlinedBorder?> button_shape = WidgetStatePropertyAll(
+Color hc_blue = Colors.blue.shade800;
+Color hc_red = Colors.red.shade900;
+
+OutlinedBorder button_shape = RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(10), // Set the radius here
+);
+
+WidgetStatePropertyAll<OutlinedBorder?> button_shape_property = WidgetStatePropertyAll(
   RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(10), // Set the radius here
+  ),
+);
+
+ButtonStyle text_button_style = ButtonStyle(
+  backgroundColor: WidgetStatePropertyAll(hc_red),
+  shape: button_shape_property,
+  padding: WidgetStateProperty.all<EdgeInsets>(
+    const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
   ),
 );
 
@@ -55,7 +70,7 @@ TextStyle ts_regularBlack = const TextStyle(
 TextStyle ts_regularRed = TextStyle(
   fontFamily: 'AvenirNext',
   fontStyle: FontStyle.normal,
-  color: Colors.red[900],
+  color: hc_red,
   fontSize: 20.0,
   height: 1.0,
 );
@@ -129,7 +144,7 @@ TextStyle ts_mediumDarkGrey = TextStyle(
 TextStyle ts_mediumRed = TextStyle(
   fontFamily: 'AvenirNext',
   fontStyle: FontStyle.normal,
-  color: Colors.red[900],
+  color: hc_red,
   fontSize: 16.0,
   height: 1.0,
 );
@@ -175,7 +190,7 @@ TextStyle ts_smallGrey = TextStyle(
 TextStyle ts_smallRed = TextStyle(
   fontFamily: 'AvenirNext',
   fontStyle: FontStyle.normal,
-  color: Colors.red[900],
+  color: hc_red,
   fontSize: 14.0,
   height: 1.0,
 );
@@ -373,7 +388,7 @@ TextStyle ts_titleCondensedVeryLargeBlack = const TextStyle(
 TextStyle ts_titleDarkRedLarge = TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.normal,
-  color: Colors.red.shade900,
+  color: hc_red,
   fontSize: 24.0,
   height: 1.0,
 );
@@ -381,7 +396,7 @@ TextStyle ts_titleDarkRedLarge = TextStyle(
 TextStyle ts_titleDarkRed = TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.normal,
-  color: Colors.red.shade900,
+  color: hc_red,
   fontSize: 20.0,
   height: 1.0,
 );
@@ -430,7 +445,7 @@ TextStyle ts_titleSmallCondensedBlack = const TextStyle(
 
 TextStyle ts_titleMediumDarkBlue = TextStyle(
   fontFamily: 'AvenirNextDemiBold',
-  color: Colors.blue.shade800,
+  color: hc_blue,
   fontSize: 16.0,
   height: 1.0,
 );
@@ -542,7 +557,7 @@ TextStyle ts_footnoteSmall = TextStyle(
 TextStyle ts_footnoteSmallRed = TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.italic,
-  color: Colors.red[900],
+  color: hc_red,
   fontSize: 14.0,
   height: 1.0,
 );
@@ -574,7 +589,7 @@ TextStyle ts_footnoteMedium = TextStyle(
 TextStyle ts_footnoteMediumRed = TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.italic,
-  color: Colors.red[900],
+  color: hc_red,
   fontSize: 16.0,
   height: 1.0,
 );
@@ -590,7 +605,7 @@ TextStyle ts_footnoteMediumBlack = const TextStyle(
 TextStyle ts_footnoteMediumDarkBlue = TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.italic,
-  color: Colors.blue.shade800,
+  color: hc_blue,
   fontSize: 16.0,
   height: 1.0,
 );

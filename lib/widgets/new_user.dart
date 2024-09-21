@@ -171,7 +171,7 @@
 //     resetCodeTextController = TextEditingController();
 //     resetCodeDecoration = InputDecoration(
 //       labelText: 'Invite Code',
-//       fillColor: Colors.red,
+//       fillColor:hc_red,
 //       border: OutlineInputBorder(
 //         borderRadius: BorderRadius.circular(25.0),
 //         borderSide: const BorderSide(),
@@ -189,7 +189,7 @@
 
 //   Widget _buildInvite(BuildContext context) {
 //     return Container(
-//       //color: Colors.red,
+//       //color:hc_red,
 //       // padding: const EdgeInsets.only(top: 23.0),
 //       // child: Column(
 //       //   children: <Widget>[
@@ -299,7 +299,7 @@
 
 //   Widget _buildTransfer(BuildContext context) {
 //     return SingleChildScrollView(
-//       //color: Colors.red,
+//       //color:hc_red,
 //       // padding: const EdgeInsets.only(top: 23.0),
 //       // child: Column(
 //       //   children: <Widget>[

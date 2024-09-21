@@ -274,7 +274,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK, Got it!'),
+              style: text_button_style,
+              child: Text('OK, Got it!', style: ts_button),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
