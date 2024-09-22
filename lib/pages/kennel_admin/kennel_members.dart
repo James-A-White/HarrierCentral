@@ -157,8 +157,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           kList.add(lastMemberType);
         }
 
-        // NULLSAFETODO1
-        //hlrItem.isLoading = false;
         kList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
@@ -425,9 +423,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   // the hasher either attended the run as a pack
                                   // member or as a hare
                                   if (direction == DismissDirection.endToStart) {
-                                    modifyMembership(item, item.membershipDurationInMonths);
+                                    _modifyMembership(snapshot, index, item.membershipDurationInMonths);
                                   } else {
-                                    modifyMembership(item, -9999);
+                                    _modifyMembership(snapshot, index, -9999);
                                   }
                                 });
 
@@ -495,19 +493,19 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   modifyMembershipCallback: (EnumMemberPopupActions retVal) {
                                     switch (retVal) {
                                       case EnumMemberPopupActions.addOneMonth:
-                                        modifyMembership(snapshot.data![index], 1);
+                                        _modifyMembership(snapshot, index, 1);
                                         break;
                                       case EnumMemberPopupActions.addSixMonths:
-                                        modifyMembership(snapshot.data![index], 6);
+                                        _modifyMembership(snapshot, index, 6);
                                         break;
                                       case EnumMemberPopupActions.addOneYear:
-                                        modifyMembership(snapshot.data![index], 12);
+                                        _modifyMembership(snapshot, index, 12);
                                         break;
                                       case EnumMemberPopupActions.permanentMembership:
-                                        modifyMembership(snapshot.data![index], 9999);
+                                        _modifyMembership(snapshot, index, 9999);
                                         break;
                                       case EnumMemberPopupActions.cancelMembership:
-                                        modifyMembership(snapshot.data![index], -9999);
+                                        _modifyMembership(snapshot, index, -9999);
                                         break;
                                       case EnumMemberPopupActions.editKennelAdmin:
                                         Navigator.push<int>(
@@ -515,7 +513,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                           MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data![index].appAccessFlags)),
                                         ).then((int? result) {
                                           if (result != null) {
-                                            _setUserProperties(snapshot.data![index], appAccessFlags: result);
+                                            _setUserProperties(
+                                              snapshot,
+                                              index,
+                                              appAccessFlags: result,
+                                            );
                                           }
                                         });
                                         break;
@@ -525,7 +527,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                           MaterialPageRoute<int>(builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data![index].mismanagementRoles)),
                                         ).then((int? result) {
                                           if (result != null) {
-                                            _setUserProperties(snapshot.data![index], mismanagementRoles: result);
+                                            _setUserProperties(
+                                              snapshot,
+                                              index,
+                                              mismanagementRoles: result,
+                                            );
                                           }
                                         });
                                         break;
@@ -827,37 +833,55 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     setState(() {});
   }
 
-  void modifyMembership(KennelMemberResultsModel item, int monthsToAddToMembership) {
+  void _modifyMembership(
+    AsyncSnapshot<List<dynamic>> snapshot,
+    int index,
+    int monthsToAddToMembership,
+  ) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
-    // NULLSAFETODO1
-    //item.memberInfoBeingUpdated = true;
-    setState(() {});
-    srv.updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void _) {
+
+    setState(() {
+      snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: true);
+    });
+    srv
+        .updateHasherKennelStatus(
+      widget.kennelListAggregate.kennel.kennelId,
+      AppDomainType.kennel,
+      monthsToAddToMembership: monthsToAddToMembership,
+      targetUserId: snapshot.data![index].hasherId,
+    )
+        .then((void _) {
       _refreshKennelMembersFromTable(true).then((void _) {
-        // NULLSAFETODO1
-        //item.memberInfoBeingUpdated = false;
-        _refreshCounters(true);
-        setState(() {});
+        setState(() {
+          snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: false);
+          _refreshCounters(true);
+        });
       });
     });
   }
 
-  void _setUserProperties(KennelMemberResultsModel item, {int appAccessFlags = -1, int mismanagementRoles = -1}) {
+  void _setUserProperties(
+    AsyncSnapshot<List<dynamic>> snapshot,
+    int index, {
+    int appAccessFlags = -1,
+    int mismanagementRoles = -1,
+  }) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
-    // NULLSAFETODO1
-    //item.memberInfoBeingUpdated = true;
-    setState(() {});
+    setState(() {
+      snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: true);
+    });
 
     srv
-        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, targetUserId: item.hasherId, appAccessFlags: appAccessFlags, mismanagementRoles: mismanagementRoles)
+        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
+            targetUserId: snapshot.data![index].hasherId, appAccessFlags: appAccessFlags, mismanagementRoles: mismanagementRoles)
         .then((void _) {
       _refreshKennelMembersFromTable(true).then((void _) {
-        // NULLSAFETODO1
-        //item.memberInfoBeingUpdated = false;
-        _refreshCounters(true);
-        setState(() {});
+        setState(() {
+          snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: false);
+          _refreshCounters(true);
+        });
       });
     });
   }

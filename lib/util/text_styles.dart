@@ -443,6 +443,14 @@ TextStyle ts_titleSmallCondensedBlack = const TextStyle(
   height: 1.0,
 );
 
+TextStyle ts_titleSmallCondensedBold = const TextStyle(
+  fontFamily: 'AvenirNextCondensedBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.white,
+  fontSize: 14.0,
+  height: 1.0,
+);
+
 TextStyle ts_titleMediumDarkBlue = TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   color: hc_blue,

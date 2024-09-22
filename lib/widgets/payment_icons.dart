@@ -307,11 +307,8 @@ class PaymentIcons extends StatelessWidget {
                     cancelButtonText: 'No',
                   );
                   if (result2 ?? false) {
-                    //rsvpState = -1;
-                    stateSetter(-1, -1); // call setState on the parent
+                    stateSetter(-1, -1); // call setState on the parent to indicate we are updating
                     final List<dynamic> adHocItems = await payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider);
-                    // rsvpState = adHocItems[0]['rsvpState'];
-                    // isPaid = 1;
                     stateSetter(adHocItems[0]['rsvpState'], 1);
                   } else {
                     await Utilities.showAlert('Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
@@ -334,9 +331,9 @@ class PaymentIcons extends StatelessWidget {
   }
 
   bool showPaymentIcons() {
-    // if (event.eventStartDatetime == null) {
-    //   return false;
-    // }
+    if (isPaid == 1) {
+      return false;
+    }
     if ((DateTime.now().isBefore(event.eventStartDatetime.subtract(Duration(days: daysToDisplayPaymentIcons)))) ||
         (DateTime.now().isAfter(event.eventStartDatetime.add(Duration(days: daysToDisplayPaymentIcons))))) {
       return false;

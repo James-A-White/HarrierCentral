@@ -26,6 +26,7 @@ class KennelMemberResultsModel with _$KennelMemberResultsModel implements BaseMo
     String? kennelShortName,
     @Default(0.0) double kennelCredit,
     @Default(0) int memberFollowingStatus,
+    @Default(false) @JsonKey(includeFromJson: false, includeToJson: false) bool memberInfoBeingUpdated,
   }) = _KennelMemberResultsModel;
 
   factory KennelMemberResultsModel.fromJson(Map<String, dynamic> json) => _$KennelMemberResultsModelFromJson(json);

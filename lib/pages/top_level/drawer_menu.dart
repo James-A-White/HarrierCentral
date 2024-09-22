@@ -145,7 +145,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                       ),
                     );
                     if (futureRunsListPageKey.currentState != null) {
-                      await futureRunsListPageKey.currentState!.refreshFromTable(true);
+                      await futureRunsListPageKey.currentState!.forceRefreshFromTableExternal();
                     }
                   },
                 ),

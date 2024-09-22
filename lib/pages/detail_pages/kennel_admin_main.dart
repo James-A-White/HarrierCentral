@@ -1146,7 +1146,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               style: text_button_style,
               child: Text(
                 'Cancel',
-                style: ts_buttonLabelMedium,
+                style: ts_button,
               ),
               onPressed: () {
                 Navigator.of(context).pop(null);
@@ -1156,7 +1156,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               style: text_button_style,
               child: Text(
                 'Preview',
-                style: ts_buttonLabelMedium,
+                style: ts_button,
               ),
               onPressed: () {
                 Navigator.of(context).pop(true);
@@ -1166,7 +1166,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               style: text_button_style,
               child: Text(
                 'Send',
-                style: ts_buttonLabelMedium,
+                style: ts_button,
               ),
               onPressed: () {
                 Navigator.of(context).pop(false);

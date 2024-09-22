@@ -41,6 +41,8 @@ mixin _$KennelMemberResultsModel {
   String? get kennelShortName => throw _privateConstructorUsedError;
   double get kennelCredit => throw _privateConstructorUsedError;
   int get memberFollowingStatus => throw _privateConstructorUsedError;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  bool get memberInfoBeingUpdated => throw _privateConstructorUsedError;
 
   /// Serializes this KennelMemberResultsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -78,7 +80,9 @@ abstract class $KennelMemberResultsModelCopyWith<$Res> {
       int mismanagementRoles,
       String? kennelShortName,
       double kennelCredit,
-      int memberFollowingStatus});
+      int memberFollowingStatus,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      bool memberInfoBeingUpdated});
 }
 
 /// @nodoc
@@ -117,6 +121,7 @@ class _$KennelMemberResultsModelCopyWithImpl<$Res,
     Object? kennelShortName = freezed,
     Object? kennelCredit = null,
     Object? memberFollowingStatus = null,
+    Object? memberInfoBeingUpdated = null,
   }) {
     return _then(_value.copyWith(
       hasherId: null == hasherId
@@ -199,6 +204,10 @@ class _$KennelMemberResultsModelCopyWithImpl<$Res,
           ? _value.memberFollowingStatus
           : memberFollowingStatus // ignore: cast_nullable_to_non_nullable
               as int,
+      memberInfoBeingUpdated: null == memberInfoBeingUpdated
+          ? _value.memberInfoBeingUpdated
+          : memberInfoBeingUpdated // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -232,7 +241,9 @@ abstract class _$$KennelMemberResultsModelImplCopyWith<$Res>
       int mismanagementRoles,
       String? kennelShortName,
       double kennelCredit,
-      int memberFollowingStatus});
+      int memberFollowingStatus,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      bool memberInfoBeingUpdated});
 }
 
 /// @nodoc
@@ -270,6 +281,7 @@ class __$$KennelMemberResultsModelImplCopyWithImpl<$Res>
     Object? kennelShortName = freezed,
     Object? kennelCredit = null,
     Object? memberFollowingStatus = null,
+    Object? memberInfoBeingUpdated = null,
   }) {
     return _then(_$KennelMemberResultsModelImpl(
       hasherId: null == hasherId
@@ -352,6 +364,10 @@ class __$$KennelMemberResultsModelImplCopyWithImpl<$Res>
           ? _value.memberFollowingStatus
           : memberFollowingStatus // ignore: cast_nullable_to_non_nullable
               as int,
+      memberInfoBeingUpdated: null == memberInfoBeingUpdated
+          ? _value.memberInfoBeingUpdated
+          : memberInfoBeingUpdated // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -379,7 +395,9 @@ class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
       this.mismanagementRoles = 0,
       this.kennelShortName,
       this.kennelCredit = 0.0,
-      this.memberFollowingStatus = 0});
+      this.memberFollowingStatus = 0,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      this.memberInfoBeingUpdated = false});
 
   factory _$KennelMemberResultsModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$KennelMemberResultsModelImplFromJson(json);
@@ -435,10 +453,13 @@ class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
   @override
   @JsonKey()
   final int memberFollowingStatus;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final bool memberInfoBeingUpdated;
 
   @override
   String toString() {
-    return 'KennelMemberResultsModel(hasherId: $hasherId, dispName: $dispName, nameForSort: $nameForSort, photo: $photo, following: $following, kennelId: $kennelId, dateOfLastRun: $dateOfLastRun, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, kennelEmailAlertPreference: $kennelEmailAlertPreference, membershipExpirationDate: $membershipExpirationDate, memberSince: $memberSince, membershipDurationInMonths: $membershipDurationInMonths, appAccessFlags: $appAccessFlags, mismanagementRoles: $mismanagementRoles, kennelShortName: $kennelShortName, kennelCredit: $kennelCredit, memberFollowingStatus: $memberFollowingStatus)';
+    return 'KennelMemberResultsModel(hasherId: $hasherId, dispName: $dispName, nameForSort: $nameForSort, photo: $photo, following: $following, kennelId: $kennelId, dateOfLastRun: $dateOfLastRun, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, kennelEmailAlertPreference: $kennelEmailAlertPreference, membershipExpirationDate: $membershipExpirationDate, memberSince: $memberSince, membershipDurationInMonths: $membershipDurationInMonths, appAccessFlags: $appAccessFlags, mismanagementRoles: $mismanagementRoles, kennelShortName: $kennelShortName, kennelCredit: $kennelCredit, memberFollowingStatus: $memberFollowingStatus, memberInfoBeingUpdated: $memberInfoBeingUpdated)';
   }
 
   @override
@@ -471,8 +492,7 @@ class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
                     kennelEmailAlertPreference) ||
                 other.kennelEmailAlertPreference ==
                     kennelEmailAlertPreference) &&
-            (identical(
-                    other.membershipExpirationDate, membershipExpirationDate) ||
+            (identical(other.membershipExpirationDate, membershipExpirationDate) ||
                 other.membershipExpirationDate == membershipExpirationDate) &&
             (identical(other.memberSince, memberSince) ||
                 other.memberSince == memberSince) &&
@@ -489,7 +509,9 @@ class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
             (identical(other.kennelCredit, kennelCredit) ||
                 other.kennelCredit == kennelCredit) &&
             (identical(other.memberFollowingStatus, memberFollowingStatus) ||
-                other.memberFollowingStatus == memberFollowingStatus));
+                other.memberFollowingStatus == memberFollowingStatus) &&
+            (identical(other.memberInfoBeingUpdated, memberInfoBeingUpdated) ||
+                other.memberInfoBeingUpdated == memberInfoBeingUpdated));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -515,7 +537,8 @@ class _$KennelMemberResultsModelImpl implements _KennelMemberResultsModel {
         mismanagementRoles,
         kennelShortName,
         kennelCredit,
-        memberFollowingStatus
+        memberFollowingStatus,
+        memberInfoBeingUpdated
       ]);
 
   /// Create a copy of KennelMemberResultsModel
@@ -556,7 +579,9 @@ abstract class _KennelMemberResultsModel implements KennelMemberResultsModel {
       final int mismanagementRoles,
       final String? kennelShortName,
       final double kennelCredit,
-      final int memberFollowingStatus}) = _$KennelMemberResultsModelImpl;
+      final int memberFollowingStatus,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      final bool memberInfoBeingUpdated}) = _$KennelMemberResultsModelImpl;
 
   factory _KennelMemberResultsModel.fromJson(Map<String, dynamic> json) =
       _$KennelMemberResultsModelImpl.fromJson;
@@ -601,6 +626,9 @@ abstract class _KennelMemberResultsModel implements KennelMemberResultsModel {
   double get kennelCredit;
   @override
   int get memberFollowingStatus;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  bool get memberInfoBeingUpdated;
 
   /// Create a copy of KennelMemberResultsModel
   /// with the given fields replaced by the non-null parameter values.

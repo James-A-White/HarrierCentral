@@ -1300,7 +1300,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
     //       final SumupPayment payment = SumupPayment(
     //         title: title,
     //         total: terminalAmount,
-    //         // // NULLSAFETODO1 - TEST
     //         //             currency: widget.eventAggregate.extensions.curCode ?? widget.eventAggregate.kennel.currencyCode,
     //         currency: widget.eventAggregate.extensions.curCode,
     //         foreignTransactionId: paymentReference,
@@ -1852,7 +1851,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with TickerProviderSta
         ).then((HashersModel? result) {
           if (result != null) {
             _refreshPackListFromTables(true);
-            // NULLSAFETODO - TEST
+            // NULLSAFETEST
             // if (result.dispName == '') {
             //   result = result.copyWith(dispName: null);
             // }

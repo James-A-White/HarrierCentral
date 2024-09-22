@@ -361,36 +361,39 @@ class HasherListView extends StatelessWidget {
 
   Widget _getAddHasherBlock(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // NULLSAFETODO1
-        // Navigator.push<HashersModel>(
-        //   context,
-        //   MaterialPageRoute<HashersModel>(
-        //     builder: (BuildContext context) => HasherProfilePage(
-        //       dataContext: pageType == FindHasherPageType.addHasherToRun ? EnumDataContext.event : EnumDataContext.kennel,
-        //       pageType: EnumMyProfilePageType.newHasherProfile,
-        //       eventId: pageType == FindHasherPageType.addHasherToRun ? eventId : GUID_EMPTY,
-        //       kennelId: kennelId,
-        //       uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-        //       hashNameFromSearch: capitalizeFirstLetter(searchController.text),
-        //     ),
-        //   ),
-        // ).then((HashersModel newHasher) {
-        //   if (newHasher != null) {
-        //     if (pageType == FindHasherPageType.addHasherToRun) {
-        //       _promptForHasherType(context, newHasher).then((int doAddHasher) {
-        //         if (doAddHasher != -1) {
-        //           final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher, 'virginVisitorType': doAddHasher};
-        //           Navigator.of(context).pop(result);
-        //         }
-        //       });
-        //     } else if (pageType == FindHasherPageType.addMember) {
-        //       final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher};
-        //       Navigator.of(context).pop(result);
-        //     }
-        //   }
-        //   return null;
-        // });
+      onTap: () async {
+        if (kennelId != null) {
+          HashersModel? newHasher = await Navigator.push<HashersModel>(
+            context,
+            MaterialPageRoute<HashersModel>(
+              builder: (BuildContext context) => HasherProfilePage(
+                dataContext: pageType == FindHasherPageType.addHasherToRun ? EnumDataContext.event : EnumDataContext.kennel,
+                pageType: EnumMyProfilePageType.newHasherProfile,
+                eventId: (pageType == FindHasherPageType.addHasherToRun ? eventId : GUID_EMPTY) ?? GUID_EMPTY,
+                kennelId: kennelId!,
+                uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+                hashNameFromSearch: capitalizeFirstLetter(searchController.text),
+              ),
+            ),
+          );
+
+          if (newHasher != null) {
+            if (pageType == FindHasherPageType.addHasherToRun) {
+              int? doAddHasher = await _promptForHasherType(
+                navigatorKey.currentContext!,
+                newHasher,
+              );
+
+              if (doAddHasher != -1) {
+                final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher, 'virginVisitorType': doAddHasher};
+                Navigator.of(navigatorKey.currentContext!).pop(result);
+              }
+            } else if (pageType == FindHasherPageType.addMember) {
+              final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher};
+              Navigator.of(navigatorKey.currentContext!).pop(result);
+            }
+          }
+        }
       },
       child: Container(
         height: 80,

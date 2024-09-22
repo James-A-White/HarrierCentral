@@ -89,7 +89,7 @@ class RunDetailsAggregate {
 
   final EventModel event;
   final KennelsModel kennel;
-  final RunQueryExtensionsModel extensions;
+  RunQueryExtensionsModel extensions;
   final String? paymentUrl;
 }
 

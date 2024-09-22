@@ -586,7 +586,10 @@ class Utilities {
           if (showCancelButton)
             TextButton(
               style: text_button_style,
-              child: Text(cancelButtonText),
+              child: Text(
+                cancelButtonText,
+                style: ts_button,
+              ),
               onPressed: () {
                 Get.back(result: false, canPop: true);
               },

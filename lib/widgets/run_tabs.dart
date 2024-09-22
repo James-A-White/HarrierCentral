@@ -249,13 +249,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       isMember: widget.futureRun.extensions.isMember,
       isPaid: widget.futureRun.extensions.isPaid,
       rsvpState: widget.futureRun.extensions.rsvpState,
-      // NULLSAFETODO1
       processPayment: (int r, int p) {
-        // widget.futureRun.extensions.rsvpState = r;
-        // if (p != -1) {
-        //   widget.futureRun.extensions.isPaid = p;
-        // }
-        // setState(() {});
+        widget.futureRun.extensions = widget.futureRun.extensions.copyWith(
+          rsvpState: r,
+          isPaid: p != -1 ? p : widget.futureRun.extensions.isPaid,
+        );
+        setState(() {});
       },
     );
   }

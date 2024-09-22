@@ -72,7 +72,7 @@ class PaymentSnackBar extends SnackBar {
                           Text(
                             'Not coming',
                             textAlign: TextAlign.center,
-                            style: ts_titleSmallCondensedBlack.copyWith(height: 0.7),
+                            style: ts_titleSmallCondensedBold.copyWith(height: 0.7),
                           ),
                         ],
                       ),
@@ -104,7 +104,7 @@ class PaymentSnackBar extends SnackBar {
                               ScaffoldMessenger.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          Text('Maybe', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
+                          Text('Maybe', textAlign: TextAlign.center, style: ts_titleSmallCondensedBold),
                         ],
                       ),
                     ),
@@ -134,7 +134,7 @@ class PaymentSnackBar extends SnackBar {
                               );
                             },
                           ),
-                          Text('Coming', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
+                          Text('Coming', textAlign: TextAlign.center, style: ts_titleSmallCondensedBold),
                         ],
                       ),
                     ),
@@ -163,7 +163,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          Text('Will hare', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
+                          Text('Will hare', textAlign: TextAlign.center, style: ts_titleSmallCondensedBold),
                         ],
                       ),
                     ),
@@ -206,7 +206,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          Text('Not at Hash', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
+                          Text('Not at Hash', textAlign: TextAlign.center, style: ts_titleSmallCondensedBold),
                         ],
                       ),
                     ),
@@ -235,7 +235,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          Text('At Hash', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
+                          Text('At Hash', textAlign: TextAlign.center, style: ts_titleSmallCondensedBold),
                         ],
                       ),
                     ),
@@ -264,7 +264,7 @@ class PaymentSnackBar extends SnackBar {
                               //     reason: SnackBarClosedReason.hide);
                             },
                           ),
-                          Text('On In', textAlign: TextAlign.center, style: ts_titleSmallCondensed),
+                          Text('On In', textAlign: TextAlign.center, style: ts_titleSmallCondensedBold),
                         ],
                       ),
                     ),
@@ -302,7 +302,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid cash' : 'Paid\r\n${formatMoney(amountOwed)} cash',
                                 textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
+                                style: ts_titleSmallCondensedBold.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -325,7 +325,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 'Free run',
                                 textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.7),
+                                style: ts_titleSmallCondensedBold.copyWith(height: 0.7),
                               ),
                             ],
                           ),
@@ -352,7 +352,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 'Paid other${((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value)) ? '\r\n(${formatMoney(packMember.creditAmount)}${packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)'}' : ''}',
                                 textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
+                                style: ts_titleSmallCondensedBold.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -382,7 +382,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid\r\nbank transfer' : 'Paid ${formatMoney(amountOwed)}\r\nbank transfer',
                                 textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
+                                style: ts_titleSmallCondensedBold.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -407,7 +407,7 @@ class PaymentSnackBar extends SnackBar {
                               Text(
                                 'Not paid',
                                 textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
+                                style: ts_titleSmallCondensedBold.copyWith(height: 0.9),
                               ),
                             ],
                           ),
@@ -435,7 +435,7 @@ class PaymentSnackBar extends SnackBar {
                                           ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})'
                                           : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})',
                                       textAlign: TextAlign.center,
-                                      style: ts_titleSmallCondensedBlack.copyWith(height: 0.9),
+                                      style: ts_titleSmallCondensedBold.copyWith(height: 0.9),
                                     ),
                                   ],
                                 ),

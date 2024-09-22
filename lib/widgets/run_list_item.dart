@@ -9,6 +9,7 @@ class RunListItemController extends GetxController {
   Rx<int> isHareState = 0.obs;
   Rx<int> emailAlertPreference = 0.obs;
   Rx<int> notificationPreference = 0.obs;
+  Rx<int> isPaid = 0.obs;
   Rx<String> hares = ''.obs;
 
   void setRsvpState(int state) => rsvpState.value = state;
@@ -16,6 +17,7 @@ class RunListItemController extends GetxController {
   void setEmailState(int state) => emailAlertPreference.value = state;
   void setNotificationState(int state) => notificationPreference.value = state;
   void setHares(String state) => hares.value = state;
+  void setIsPaid(int state) => isPaid.value = state;
 }
 
 class RunListItem extends StatelessWidget {
@@ -49,6 +51,10 @@ class RunListItem extends StatelessWidget {
 
     if (futureRun.event.hares != rliController.hares.value) {
       rliController.setHares(futureRun.event.hares ?? '');
+    }
+
+    if (futureRun.extensions.isPaid != rliController.isPaid.value) {
+      rliController.setIsPaid(futureRun.extensions.isPaid);
     }
 
     return GestureDetector(
@@ -264,31 +270,38 @@ class RunListItem extends StatelessWidget {
                 ),
               ],
             ),
-            PaymentIcons(
-              futureRun.event,
-              futureRun.kennel,
-              futureRun.extensions.digitsAfterDecimal,
-              futureRun.extensions.currencySymbol,
-              futureRun.extensions.distanceUnitsPref,
-              futureRun.extensions.distToEvent,
-              futureRun.paymentUrl,
-              futureRun.extensions.rsvpState,
-              futureRun.extensions.isMember,
-              futureRun.extensions.isPaid,
-              true,
-              (int r, int p) {
-                // NULLSAFETODO1
-                // futureRun.extensions.rsvpState = r;
-                // if (p != -1) {
-                //   futureRun.extensions.isPaid = p;
-                // }
-                // setState(() {});
-              },
-            )
+            Obx(() => _getPaymentIconnsWidget())
           ],
         ),
       ),
     );
+  }
+
+  Widget _getPaymentIconnsWidget() {
+    return (rliController.isPaid.value == 1)
+        ? const SizedBox()
+        : PaymentIcons(
+            futureRun.event,
+            futureRun.kennel,
+            futureRun.extensions.digitsAfterDecimal,
+            futureRun.extensions.currencySymbol,
+            futureRun.extensions.distanceUnitsPref,
+            futureRun.extensions.distToEvent,
+            futureRun.paymentUrl,
+            futureRun.extensions.rsvpState,
+            futureRun.extensions.isMember,
+            futureRun.extensions.isPaid,
+            true,
+            (int r, int p) {
+              futureRun.extensions = futureRun.extensions.copyWith(rsvpState: r, isPaid: p != -1 ? p : futureRun.extensions.isPaid);
+
+              rliController.setRsvpState(futureRun.extensions.rsvpState);
+
+              if (p != -1) {
+                rliController.setIsPaid(p);
+              }
+            },
+          );
   }
 
   Future<void> _showAllOptionsPopup() async {

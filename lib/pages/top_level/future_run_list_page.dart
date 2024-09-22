@@ -29,7 +29,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   Future<void> forceRefreshFromTableExternal() async {
-    await refreshFromTable(true);
+    await _refreshFromTable(true);
   }
 
   Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
@@ -61,12 +61,12 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     }
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
+          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable,
           false,
           debugText: 'future_run_list_page: HEM, Events, Kennels',
         );
 
-    await refreshFromTable(true);
+    await _refreshFromTable(true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events user data synchronized $resultStr');
   }
@@ -91,7 +91,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     });
 
     _refreshFromBackend().then((void _) {
-      refreshFromTable(true).then((void _) {
+      _refreshFromTable(true).then((void _) {
         setState(() {});
       });
     });
@@ -183,7 +183,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  Future<void> refreshFromTable(bool forceRefresh) async {
+  Future<void> _refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (_allRuns == null) || (_allRuns!.isEmpty)) {
       _allRuns = await QueryRuns.getRunDetailsAggregates(true);
       _filterRuns();
@@ -334,7 +334,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 ];
               },
               body: RefreshIndicator(
-                onRefresh: () => _refreshFromBackend(clearLocalTables: false),
+                onRefresh: () => _refreshFromBackend(
+                  clearLocalTables: false,
+                ),
                 displacement: 40.0,
                 child: _filteredRuns == null
                     ? const SizedBox()
@@ -476,8 +478,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                         // WARNING!!!!  We need to return the filtered run based
                                         // on it's ID and not the index
 
-                                        //await _refreshFromBackend(clearLocalTables: false);
-                                        await refreshFromTable(true);
+                                        // await _refreshFromBackend(clearLocalTables: true);
+                                        await _refreshFromTable(true);
                                         //filterRuns();
                                         return _filteredRuns![index];
                                       },
@@ -659,7 +661,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           );
 
           await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
-          await refreshFromTable(true);
+          await _refreshFromTable(true);
         }
       } else if ((retVal is! EnumFollowType) && (retVal >= hasherPref_0) && (retVal <= hasherPref_500)) {
         if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
@@ -676,7 +678,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
           await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
 
-          await refreshFromTable(true);
+          await _refreshFromTable(true);
         }
       }
     });

@@ -181,32 +181,30 @@ class KennelMemberListItem extends StatelessWidget {
                             style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
                             textAlign: TextAlign.center,
                           ),
-                    // NULLSAFETODO1
-                    // kennelMember.memberInfoBeingUpdated ?? false
-                    //     ? Text(
-                    //         '<Updating membership>',
-                    //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0, color: hc_blue),
-                    //         textAlign: TextAlign.center,
-                    //       )
-                    //     :
-                    kennelMember.membershipExpirationDate == null
-                        ? kennelMember.following != 1
-                            ? Container()
+                    kennelMember.memberInfoBeingUpdated
+                        ? Text(
+                            '<Updating membership>',
+                            style: TextStyle(fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0, color: hc_blue),
+                            textAlign: TextAlign.center,
+                          )
+                        : kennelMember.membershipExpirationDate == null
+                            ? kennelMember.following != 1
+                                ? Container()
+                                : Text(
+                                    '(following this Kennel)',
+                                    style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
+                                    textAlign: TextAlign.center,
+                                  )
                             : Text(
-                                '(following this Kennel)',
+                                kennelMember.membershipExpirationDate!.year >= 2100 ? 'Permanent Member' : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate!)}',
                                 style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
                                 textAlign: TextAlign.center,
-                              )
-                        : Text(
-                            kennelMember.membershipExpirationDate!.year >= 2100 ? 'Permanent Member' : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate!)}',
-                            style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
-                            textAlign: TextAlign.center,
-                          ),
+                              ),
                     if ((kennelMember.kennelCredit) != 0) ...<Widget>[
                       Text(
                         (kennelMember.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
-                            // NULLSAFETODO1- read currency info from country if null!!!!!
-                            IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal ?? 2, kennelListAggregate.kennel.currencySymbol ?? r'$^'),
+                            IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal ?? 2,
+                                kennelListAggregate.kennel.currencySymbol ?? kennelListAggregate.extensions.currencySymbol ?? r'$^'),
                         style: TextStyle(
                             fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: kennelMember.kennelCredit >= 0 ? Colors.green.shade900 : hc_red),
                       ),

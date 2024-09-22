@@ -60,7 +60,7 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
         List<dynamic> responseJson = jsonDecode(responseBody);
 
         loginResult = ApproveLoginModel.fromJson(responseJson[0][0]);
-        // NULLSAFETODO1 - Test promos to break this line
+        // NULLSAFETEST - Test promos to break this line
         promoResult = List<PromoModel>.from(responseJson[1]);
       }
     }
