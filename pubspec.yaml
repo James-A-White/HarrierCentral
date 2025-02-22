@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: '>=3.3.1 <4.0.0'
-  flutter: ^3.24.3
+  flutter: ^3.29.0
 
 dependencies:   
   audioplayers: ^6.1.0 # had problem with low sound volume on iOS on version 1.0.0
@@ -59,7 +59,7 @@ dependencies:
   http: ^1.2.1
   image_cropper: ^8.0.2
   image_picker: ^1.0.7
-  internet_connection_checker: ^2.0.0
+  internet_connection_checker: ^3.0.1
   intl: ^0.19.0
   intro_slider: ^4.2.0
   ive_flutter_core:
