@@ -34,11 +34,20 @@ class FindHasherPageState extends State<FindHasherPage> {
     //}
 
     final HashersService svc = HashersService();
-    svc.selectAllFromLocalDb(G0<Database>(), G0<TableModel>().hashersTableHelper, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)).then((List<BaseModel> list) {
+    svc
+        .selectAllFromLocalDb(
+            G0<Database>(),
+            G0<TableModel>().hashersTableHelper,
+            G0<TableModel>()
+                .hashersTableHelper
+                .getTableName(AppDomainType.user))
+        .then((List<BaseModel> list) {
       _hasherList = list.cast<HashersModel>();
       setState(() {
         if (_hasherList.isNotEmpty) {
-          _hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
+          _hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '')
+              .toLowerCase()
+              .compareTo((b.dispName ?? '').toLowerCase()));
           _filteredList = _hasherList;
         } else {
           _filteredList = <HashersModel>[];
@@ -55,8 +64,13 @@ class FindHasherPageState extends State<FindHasherPage> {
         if (filterText.isEmpty) {
           _filteredList = _hasherList;
         } else {
-          _filteredList =
-              _hasherList.where((dynamic user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase())).toList();
+          _filteredList = _hasherList
+              .where((dynamic user) => ((user.firstName ?? '') +
+                      '  ${(user.lastName ?? '')}' +
+                      '  ${(user.dispName ?? '')}')
+                  .toLowerCase()
+                  .contains(filterText.toLowerCase()))
+              .toList();
         }
       } else {
         _filteredList.clear();
@@ -99,7 +113,8 @@ class FindHasherPageState extends State<FindHasherPage> {
           _searchBar(),
           Expanded(
             child: (_isLoading == true)
-                ? const Center(child: HcCircularProgressIndicator(key: Key('559501910')))
+                ? const Center(
+                    child: HcCircularProgressIndicator(key: Key('559501910')))
                 : HasherListView(
                     hasherList: _filteredList,
                     pageType: widget.pageType,
@@ -159,8 +174,12 @@ class FindHasherPageState extends State<FindHasherPage> {
           SizedBox(
             width: 40,
             child: TextButton(
-              style: TextButton.styleFrom(shape: button_shape, textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-              child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
+              style: TextButton.styleFrom(
+                  shape: button_shape,
+                  textStyle: TextStyle(color: Colors.grey.shade700),
+                  backgroundColor: Colors.white),
+              child: Text('X',
+                  style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
               onPressed: () {
                 // searchController.text = '';
                 // model.filterPackList('');
@@ -194,7 +213,8 @@ class HasherListView extends StatelessWidget {
   final String? kennelId;
   final String? eventId;
 
-  Future<int?> _promptForHasherType(BuildContext context, HashersModel newHasher) async {
+  Future<int?> _promptForHasherType(
+      BuildContext context, HashersModel newHasher) async {
     return showDialog<int>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -233,7 +253,8 @@ class HasherListView extends StatelessWidget {
               // ),
 
               TextButton(
-                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
+                style: TextButton.styleFrom(
+                    shape: button_shape, backgroundColor: hc_red),
                 child: Text(
                   'Cancel',
                   style: ts_button,
@@ -244,7 +265,8 @@ class HasherListView extends StatelessWidget {
               ),
 
               TextButton(
-                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
+                style: TextButton.styleFrom(
+                    shape: button_shape, backgroundColor: hc_blue),
                 child: Text(
                   'Add',
                   style: ts_button,
@@ -275,13 +297,19 @@ class HasherListView extends StatelessWidget {
       highlightColor: hc_red,
       onTap: () async {
         if (pageType == FindHasherPageType.addHasherToRun) {
-          int? doAddHasher = await _promptForHasherType(context, hasherList[index]);
+          int? doAddHasher =
+              await _promptForHasherType(context, hasherList[index]);
           if (doAddHasher != -1) {
-            final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
+            final Map<String, dynamic> result = <String, dynamic>{
+              'hasher': hasherList[index],
+              'virginVisitorType': doAddHasher
+            };
             Navigator.of(navigatorKey.currentContext!).pop(result);
           }
         } else if (pageType == FindHasherPageType.addMember) {
-          final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index]};
+          final Map<String, dynamic> result = <String, dynamic>{
+            'hasher': hasherList[index]
+          };
           Navigator.of(context).pop(result);
         }
         return;
@@ -294,19 +322,21 @@ class HasherListView extends StatelessWidget {
               hasherList[index].photo!.startsWith('http')
                   ? CachedNetworkImage(
                       imageUrl: hasherList[index].photo!,
-                      placeholder: (BuildContext context, String url) => const SizedBox(
-                          height: 70.0,
-                          width: 70.0,
-                          child: Center(
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: HcCircularProgressIndicator(
-                                key: Key('1393262'),
-                              ),
-                            ),
-                          )),
-                      errorWidget: (BuildContext context, String url, dynamic error) {
+                      placeholder: (BuildContext context, String url) =>
+                          const SizedBox(
+                              height: 70.0,
+                              width: 70.0,
+                              child: Center(
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: HcCircularProgressIndicator(
+                                    key: Key('1393262'),
+                                  ),
+                                ),
+                              )),
+                      errorWidget:
+                          (BuildContext context, String url, dynamic error) {
                         return Container(
                             height: 70.0,
                             width: 70.0,
@@ -314,9 +344,13 @@ class HasherListView extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                Text('No Image', style: ts_mediumRed.copyWith(fontSize: 13, color: Colors.grey)),
+                                Text('No Image',
+                                    style: ts_mediumRed.copyWith(
+                                        fontSize: 13, color: Colors.grey)),
                                 const Icon(Icons.error, color: Colors.grey),
-                                Text('Available', style: ts_mediumRed.copyWith(fontSize: 13, color: Colors.grey))
+                                Text('Available',
+                                    style: ts_mediumRed.copyWith(
+                                        fontSize: 13, color: Colors.grey))
                               ],
                             ));
                       },
@@ -330,7 +364,9 @@ class HasherListView extends StatelessWidget {
                           width: 70.0,
                           height: 70.0,
                           fit: BoxFit.fill,
-                          image: AssetImage(('images/avatars/${hasherList[index].photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                          image: AssetImage(
+                              ('images/avatars/${hasherList[index].photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                                  .toLowerCase()),
                         )
                       : const Image(
                           width: 70.0,
@@ -343,14 +379,18 @@ class HasherListView extends StatelessWidget {
             Positioned(
               left: 77.0,
               top: 19.0,
-              child: Text(hasherList[index].dispName, style: ts_condensedLargeBlack),
+              child: Text(hasherList[index].dispName,
+                  style: ts_condensedLargeBlack),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
             Positioned(
               left: 75,
               top: 0,
-              child: Container(width: MediaQuery.of(context).size.width - 80, height: 65, color: Colors.transparent),
+              child: Container(
+                  width: MediaQuery.of(context).size.width - 80,
+                  height: 65,
+                  color: Colors.transparent),
             )
             // Payment icons
           ],
@@ -367,12 +407,19 @@ class HasherListView extends StatelessWidget {
             context,
             MaterialPageRoute<HashersModel>(
               builder: (BuildContext context) => HasherProfilePage(
-                dataContext: pageType == FindHasherPageType.addHasherToRun ? EnumDataContext.event : EnumDataContext.kennel,
+                dataContext: pageType == FindHasherPageType.addHasherToRun
+                    ? EnumDataContext.event
+                    : EnumDataContext.kennel,
                 pageType: EnumMyProfilePageType.newHasherProfile,
-                eventId: (pageType == FindHasherPageType.addHasherToRun ? eventId : GUID_EMPTY) ?? GUID_EMPTY,
+                eventId: (pageType == FindHasherPageType.addHasherToRun
+                        ? eventId
+                        : GUID_EMPTY) ??
+                    GUID_EMPTY,
                 kennelId: kennelId!,
-                uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-                hashNameFromSearch: capitalizeFirstLetter(searchController.text),
+                uiElementsToDisplay:
+                    HasherProfilePage.flagUiElement_followKennel,
+                hashNameFromSearch:
+                    capitalizeFirstLetter(searchController.text),
               ),
             ),
           );
@@ -385,11 +432,16 @@ class HasherListView extends StatelessWidget {
               );
 
               if (doAddHasher != -1) {
-                final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher, 'virginVisitorType': doAddHasher};
+                final Map<String, dynamic> result = <String, dynamic>{
+                  'hasher': newHasher,
+                  'virginVisitorType': doAddHasher
+                };
                 Navigator.of(navigatorKey.currentContext!).pop(result);
               }
             } else if (pageType == FindHasherPageType.addMember) {
-              final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher};
+              final Map<String, dynamic> result = <String, dynamic>{
+                'hasher': newHasher
+              };
               Navigator.of(navigatorKey.currentContext!).pop(result);
             }
           }
@@ -424,7 +476,8 @@ class HasherListView extends StatelessWidget {
     );
   }
 
-  String capitalizeFirstLetter(String s) => (s.isNotEmpty) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
+  String capitalizeFirstLetter(String s) =>
+      (s.isNotEmpty) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
 
   @override
   Widget build(BuildContext context) {
@@ -455,9 +508,11 @@ class HasherListView extends StatelessWidget {
               color: Colors.black45,
             ),
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: hasherList.length + (searchController.text.isNotEmpty ? 1 : 0),
+        itemCount:
+            hasherList.length + (searchController.text.isNotEmpty ? 1 : 0),
         itemBuilder: (BuildContext context, int index) {
-          if ((index == hasherList.length) && (searchController.text.isNotEmpty)) {
+          if ((index == hasherList.length) &&
+              (searchController.text.isNotEmpty)) {
             return _getAddHasherBlock(context);
           } else {
             return (hasherList.isEmpty)
@@ -467,7 +522,9 @@ class HasherListView extends StatelessWidget {
                     height: 70.0,
                     child: const Padding(
                       padding: EdgeInsets.all(5.0),
-                      child: Center(child: HcCircularProgressIndicator(key: Key('3330495910'))),
+                      child: Center(
+                          child: HcCircularProgressIndicator(
+                              key: Key('3330495910'))),
                     ),
                   )
                 : Dismissible(
@@ -475,7 +532,10 @@ class HasherListView extends StatelessWidget {
                     confirmDismiss: (DismissDirection direction) {
                       final Map<String, dynamic> result = <String, dynamic>{
                         'hasher': hasherList[index],
-                        'virginVisitorType': direction == DismissDirection.startToEnd ? enumHasher.value : enumKnownVisitor.value
+                        'virginVisitorType':
+                            direction == DismissDirection.startToEnd
+                                ? enumHasher.value
+                                : enumKnownVisitor.value
                       };
                       Navigator.of(context).pop(result);
                       return Future<bool>.value(false);
@@ -493,26 +553,30 @@ class HasherListView extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 15.0),
-                            child: Text(leftToRightTitle, style: ts_titleMedium),
+                            child:
+                                Text(leftToRightTitle, style: ts_titleMedium),
                           ),
                         ],
                       ),
                     ),
                     secondaryBackground: Container(
                         color: Colors.purple,
-                        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Icon(
-                              rightToLeftIcon,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Text(rightToLeftTitle, style: ts_titleMedium),
-                          )
-                        ])),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15.0),
+                                child: Icon(
+                                  rightToLeftIcon,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15.0),
+                                child: Text(rightToLeftTitle,
+                                    style: ts_titleMedium),
+                              )
+                            ])),
                     onDismissed: (DismissDirection direction) {
                       //print(direction.toString() + ' NOTE: We should never reach this point');
                     },
