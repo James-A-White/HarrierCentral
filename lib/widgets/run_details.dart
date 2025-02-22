@@ -863,8 +863,13 @@ class RunDetails extends StatelessWidget {
   }
 
   Widget _addressContextMenu(EditableTextState editableTextState) {
-    final List<ContextMenuButtonItem> buttonItems =
-        editableTextState.contextMenuButtonItems;
+    // final List<ContextMenuButtonItem> buttonItems =
+    //     editableTextState.contextMenuButtonItems;
+
+    final List<ContextMenuButtonItem> buttonItems = [];
+
+    buttonItems.add(editableTextState.contextMenuButtonItems[0]);
+
     buttonItems.add(
       ContextMenuButtonItem(
         label: 'Copy Full Address',
