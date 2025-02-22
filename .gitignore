@@ -9,7 +9,6 @@ build/
 .flutter-plugins
 
 lib/util/remote_config.dart
-ios/
 android/
 android/.gradle/5.6.2/executionHistory/executionHistory.bin
 android/.gradle/5.6.2/executionHistory/executionHistory.lock
