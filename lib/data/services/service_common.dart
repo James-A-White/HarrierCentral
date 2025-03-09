@@ -1,8 +1,51 @@
 import 'package:harrier_central/imports.dart';
 
+//int httpCounter = 1000;
+
 class ServiceCommon {
   // the variable below is there to suppress a warning about defining classes with only static members
   int? unusedVariableToSuppressWarning;
+
+  static Future<String> sendHttpPostV2(
+    String requestBody, {
+    Function? errorCallback,
+    Client? client,
+  }) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+      return ERROR_NO_CONNECTION;
+    }
+
+    //print('>>> http post $httpCounter $procName');
+    //httpCounter++;
+
+    Response response;
+
+    if (client == null) {
+      response = await post(Uri.parse(BASE_AF_API_URL),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: requestBody)
+          .catchError(
+        (dynamic error) {
+          return Future<Response>.value(Response('', 500)); // CHECK
+        },
+      );
+    } else {
+      response = await client
+          .post(Uri.parse(BASE_AF_API_URL),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: requestBody)
+          .catchError(
+        (dynamic error) {
+          return Future<Response>.value(Response('', 500)); // CHECK
+        },
+      );
+    }
+
+    String returnValue =
+        await checkHttpPostResponse(response, errorCallback: errorCallback);
+
+    return returnValue;
+  }
 
   static Future<String> sendHttpPost(
     String procName,
@@ -14,7 +57,8 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
-    print('>>> http post >>> $procName');
+    //print('>>> http post $httpCounter $procName');
+    //httpCounter++;
 
     Response response;
 

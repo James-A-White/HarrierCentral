@@ -124,9 +124,12 @@ class HashersService extends BaseService {
       newUserForThisDevice = true;
     }
 
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
     final String accessToken = IveCoreUtilities.generateToken(
-        userId.toUpperCase(), 'addEditUser800',
-        paramString: targetUserId.toUpperCase());
+        userId.toUpperCase(), 'hcapp_addEditUser',
+        paramString: deviceSecret.toUpperCase() + targetUserId.toUpperCase());
 
     DateTime hashersUpdatedAfter;
     DateTime hasherEventMapUpdatedAfter;
@@ -178,7 +181,8 @@ class HashersService extends BaseService {
     }
 
     final String body = jsonEncode(<String, String?>{
-      'userId': userId,
+      'queryType': 'addEditUser',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
@@ -213,9 +217,8 @@ class HashersService extends BaseService {
 
     bool dbErrorIsDuplicateEmail = false;
 
-    String responseBody =
-        await ServiceCommon.sendHttpPost('hc3_add_edit_user_800', body,
-            errorCallback: (DbErrorModel dbError) async {
+    String responseBody = await ServiceCommon.sendHttpPostV2(body,
+        errorCallback: (DbErrorModel dbError) async {
       bool okButtonPressed = false;
       if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
         dbErrorIsDuplicateEmail = true;
@@ -313,12 +316,16 @@ class HashersService extends BaseService {
       userId = GUID_EMPTY;
     }
 
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
     final String accessToken = IveCoreUtilities.generateToken(
-        userId.toUpperCase(), 'addEditUser800',
-        paramString: targetUserId.toUpperCase());
+        userId.toUpperCase(), 'hcapp_addEditUser',
+        paramString: deviceSecret.toUpperCase() + targetUserId.toUpperCase());
 
     final String body = jsonEncode(<String, String?>{
-      'userId': userId,
+      'queryType': 'addEditUser',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': 'ignore',
@@ -339,8 +346,7 @@ class HashersService extends BaseService {
       'followKennelOnAddNewUser': null
     });
 
-    final String responseBody =
-        await ServiceCommon.sendHttpPost('hc3_add_edit_user_800', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     // I checked and the error condition is being properly handled by the caller
     return !responseBody.startsWith(ERROR_PREFIX);

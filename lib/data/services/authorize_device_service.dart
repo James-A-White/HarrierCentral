@@ -1,84 +1,120 @@
 import 'package:harrier_central/imports.dart';
 
 class AuthorizeDeviceService {
-  Future<Map<String, String>> authorizeDevice(BuildContext context, String scanText, {num includeInGlobalHashDirectory = -1}) async {
-    String deviceId = 'unknown';
+  Future<Map<String, String>> authorizeDevice(
+      BuildContext context, String scanText,
+      {num includeInGlobalHashDirectory = -1}) async {
+    String deviceDataJson = '{"error":"device data error"}';
 
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
 
     if (Platform.isAndroid) {
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId = (androidInfo.id).toUpperCase();
+      deviceDataJson = jsonEncode(androidInfo.data);
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      deviceId = iosInfo.identifierForVendor ?? '<no vendor ID>'.toUpperCase();
+      deviceDataJson = jsonEncode(iosInfo.data);
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(GUID_EMPTY, 'authorizeDevice');
+    final String accessToken =
+        IveCoreUtilities.generateToken(GUID_EMPTY, 'hcapp_authorizeDevice');
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no HC version>';
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion) ??
+            '<no HC version>';
     if (hcVersion.isEmpty) {
       final PackageInfo p = await PackageInfo.fromPlatform();
-      final String hcVersion = 'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
+      final String hcVersion =
+          'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
 
       await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
     }
 
+    var deviceIdUuid = Uuid();
+    String deviceId = deviceIdUuid.v4(); // Generate a random GUID
+
     final String body = jsonEncode(<String, String>{
-      'userId': GUID_EMPTY,
-      'accessToken': accessToken,
-      'hcVersion': getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no HC version>',
-      'scanText': scanText,
+      'queryType': 'authorizeDevice',
       'deviceId': deviceId,
-      'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
-      'isLoggingOutOfFacebook': (getIntPref(IntPrefsEnum.isLoggingOutOfFacebook) ?? 0).toString(),
+      'accessToken': accessToken,
+      'hcVersion': getStringPref(StringPrefsEnum.harrierCentralVersion) ??
+          '<no HC version>',
+      'scanText': scanText,
+      'deviceData': deviceDataJson,
     });
 
     Map<String, String> resultMap = <String, String>{};
 
     try {
-      final String responseBody = await ServiceCommon.sendHttpPost('hc3_authorize_device', body);
+      final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         final List<dynamic> result = json.decode(responseBody);
 
-        if ((result.isEmpty) || (result[0].isEmpty)) {
-          resultMap = <String, String>{'result': 'failed', 'message': 'Could not download profile. Check your QR code'};
+        if ((result.isEmpty) || (result[0].isEmpty) || (result[0][0].isEmpty)) {
+          resultMap = <String, String>{
+            'result': 'failed',
+            'message': 'Could not download profile. Check your QR code'
+          };
         } else {
+          Map<String, dynamic> items = result[0][0];
           // Do not clear prefs, because then we clear the prefs that were set by authorize login upon app launch
           //await clearAllPrefs();
-          await setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
-          await setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
-          await setStringPref(StringPrefsEnum.email, result[0]['email']);
-          //await setStringPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
-          await setStringPref(StringPrefsEnum.firstName, result[0]['firstName']);
-          await setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
-          await setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
-          await setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
-          await setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
-          await setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
-          await setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
-          await setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
-          await setStringPref(StringPrefsEnum.homeKennelId, result[0]['homeKennelId']);
-          await setIntPref(IntPrefsEnum.isBetaTester, result[0]['isBetaTester']);
-          final int preferences = result[0]['preferences'] ?? 0;
+          await setStringPref(StringPrefsEnum.deviceId, deviceId);
+          await setStringPref(
+              StringPrefsEnum.deviceSecret, items['deviceSecret']);
+          await setStringPref(StringPrefsEnum.profilePhotoUrl, items['photo']);
+          await setStringPref(
+              StringPrefsEnum.displayName, items['displayName']);
+          await setStringPref(StringPrefsEnum.email, items['email']);
+          //await setStringPref(StringPrefsEnum.facebookId, items['facebookId']);
+          await setStringPref(StringPrefsEnum.firstName, items['firstName']);
+          await setStringPref(StringPrefsEnum.hashName, items['hashName']);
+          await setStringPref(StringPrefsEnum.lastName, items['lastName']);
+          await setStringPref(StringPrefsEnum.qrCode, items['qrCode']);
+          await setStringPref(
+              StringPrefsEnum.supportCode, items['supportCode']);
+          await setStringPref(StringPrefsEnum.resetCode, items['resetCode']);
+          await setStringPref(
+              StringPrefsEnum.qrSecretCode, items['qrSecretCode']);
+          await setStringPref(StringPrefsEnum.userId, items['hasherId']);
+          await setStringPref(
+              StringPrefsEnum.homeKennelId, items['homeKennelId']);
+          await setIntPref(IntPrefsEnum.isBetaTester, items['isBetaTester']);
+          final int preferences = items['preferences'] ?? 0;
           await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
 
-          await setStringPref(StringPrefsEnum.thirdPartyAccessToken, result[0]['thirdPartyAccessToken']);
-          await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, result[0]['thirdPartyAuthorizationCode']);
-          await setStringPref(StringPrefsEnum.thirdPartyEmail, result[0]['thirdPartyEmail']);
-          await setStringPref(StringPrefsEnum.thirdPartyLoginEmail, result[0]['thirdPartyEmail']);
-          await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh, result[0]['thirdPartyForceTokenRefresh']);
-          await setStringPref(StringPrefsEnum.thirdPartyLoginType, result[0]['thirdPartyLoginType']);
-          await setStringPref(StringPrefsEnum.thirdPartyUserId, result[0]['thirdPartyUserId']);
+          await setStringPref(StringPrefsEnum.thirdPartyAccessToken,
+              items['thirdPartyAccessToken']);
+          await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
+              items['thirdPartyAuthorizationCode']);
+          await setStringPref(
+              StringPrefsEnum.thirdPartyEmail, items['thirdPartyEmail']);
+          await setStringPref(
+              StringPrefsEnum.thirdPartyLoginEmail, items['thirdPartyEmail']);
+          await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh,
+              items['thirdPartyForceTokenRefresh']);
+          await setStringPref(StringPrefsEnum.thirdPartyLoginType,
+              items['thirdPartyLoginType']);
+          await setStringPref(
+              StringPrefsEnum.thirdPartyUserId, items['thirdPartyUserId']);
 
-          resultMap = <String, String>{'result': 'success', 'message': 'Successfully loaded profile'};
+          resultMap = <String, String>{
+            'result': 'success',
+            'message': 'Successfully loaded profile'
+          };
         }
       } else {
-        return <String, String>{'result': 'failed', 'message': 'Error calling authorize device'};
+        return <String, String>{
+          'result': 'failed',
+          'message': 'Error calling authorize device'
+        };
       }
     } catch (e) {
-      resultMap = <String, String>{'result': 'failed', 'message': 'Error reading server data. Check your QR code'};
+      resultMap = <String, String>{
+        'result': 'failed',
+        'message': 'Error reading server data. Check your QR code'
+      };
     }
 
     return resultMap;

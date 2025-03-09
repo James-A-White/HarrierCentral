@@ -59,17 +59,30 @@ const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/#/';
 const String BASE_URL = 'harrier.azurewebsites.net';
 const String BASE_API_URL = 'https://$BASE_URL/api/';
 
-const String BASE_KENNEL_LOGOS_URL = 'https://harriercentral.blob.core.windows.net/harrier/';
-const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
-const String BASE_EVENT_IMAGE_URL = 'https://harriercentral.blob.core.windows.net/event-images/';
-const String BASE_RECEIPTS_URL = 'https://harriercentral.blob.core.windows.net/receipts/';
+const String BASE_AF_URL = 'harriercentralpublicapi.azurewebsites.net';
+const String BASE_AF_API_URL = 'https://$BASE_AF_URL/api/AppApi';
 
-const String EMAIL_RUN_DETAILS_TO_PACK_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
-const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
-const String EMAIL_RUN_REPORT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
-const String EMAIL_KENNEL_RUN_STATS_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
-const String EMAIL_KENNEL_INVITE_CODES_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
-const String EMAIL_INVITE_CODE_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
+const String BASE_KENNEL_LOGOS_URL =
+    'https://harriercentral.blob.core.windows.net/harrier/';
+const String BASE_PROFILE_PHOTOS_URL =
+    'https://harriercentral.blob.core.windows.net/profile-photos/';
+const String BASE_EVENT_IMAGE_URL =
+    'https://harriercentral.blob.core.windows.net/event-images/';
+const String BASE_RECEIPTS_URL =
+    'https://harriercentral.blob.core.windows.net/receipts/';
+
+const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
+const String EMAIL_PAYMENT_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
+const String EMAIL_RUN_REPORT_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
+const String EMAIL_KENNEL_RUN_STATS_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
+const String EMAIL_KENNEL_INVITE_CODES_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
+const String EMAIL_INVITE_CODE_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 
@@ -96,7 +109,8 @@ const int DB_VERSION = 430;
 const double CLEAR_LATLONG = -2.0;
 
 const int IGNORE_REPLICATION_TIMESTAMP = 628387200000000; // 1990-01-01 00:00:00
-const int FORCE_ALL_REPLICATION_TIMESTAMP = 949276800000000; // 2000-01-31 00:00:00
+const int FORCE_ALL_REPLICATION_TIMESTAMP =
+    949276800000000; // 2000-01-31 00:00:00
 const num TIME_MULTIPLIER = 1000000.00;
 
 const String QR_PREFIX_SPECIFIC_RUN_START = 'SRS:';
@@ -126,7 +140,8 @@ const int hasherPref_250 = 7 * 4;
 const int hasherPref_500 = 8 * 4;
 
 const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
-const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
+const int mmAuthCanGrantPermissions =
+    0x20000000; // TODO(James): Needs implementation
 
 // ======================================
 // APP AUTHORIZATIONS
@@ -173,7 +188,8 @@ class AppAccess {
   }
 
   bool get canManageKennel {
-    return (appAccessFlags ?? 0) & (authCanManageKennel | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageKennel | authIsSuperAdmin) !=
+        0;
   }
 
   bool get canManageRuns {
@@ -181,15 +197,18 @@ class AppAccess {
   }
 
   bool get canManageHashCash {
-    return (appAccessFlags ?? 0) & (authCanManageHashCash | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageHashCash | authIsSuperAdmin) !=
+        0;
   }
 
   bool get canManageMembers {
-    return (appAccessFlags ?? 0) & (authCanManageMembers | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageMembers | authIsSuperAdmin) !=
+        0;
   }
 
   bool get canManageAwards {
-    return (appAccessFlags ?? 0) & (authCanManageAwards | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManageAwards | authIsSuperAdmin) !=
+        0;
   }
 }
 
