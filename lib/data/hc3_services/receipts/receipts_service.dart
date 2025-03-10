@@ -43,7 +43,8 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   final String colReimbursedNotes = 'reimbursedNotes';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -70,9 +71,12 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(
+      Database db, int version, dynamic appDomainType) async {
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   @override
@@ -85,13 +89,15 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
     return ReceiptsModel.fromJson(map);
   }
 
-  String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
+  String toQueryBody(String deviceId, String accessToken, ReceiptsModel item,
+      String receiptsUploadedAfter) {
     final String map = jsonEncode(<String, Object?>{
-      'userId': userId,
+      'queryType': 'addEditReceipt',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       colReceiptId: item.receiptId,
       colEventId: item.eventId,
-      colReceiptShortDescription: item.receiptShortDescription,
+      colReceiptShortDescription: item.receiptShortDesc,
       colReceiptAmount: item.receiptAmount,
       colNotes: item.notes,
       colReimbursedBy: item.reimbursedBy,
@@ -109,19 +115,36 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 class ReceiptsService {
   Future<String> uploadReceipt(ReceiptsModel item) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt800');
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final int receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().receiptsTableHelper,
-          G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
-          G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
+    final String accessToken = IveCoreUtilities.generateToken(
+      userId,
+      'hcapp_addEditReceipt',
+      paramString: deviceSecret.toUpperCase(),
+    );
+
+    final int receiptsLastUpdated =
+        await G0<TableModel>().baseService.getLastUpdatedTime(
+              G0<Database>(),
+              G0<TableModel>().receiptsTableHelper,
+              G0<TableModel>()
+                  .receiptsTableHelper
+                  .getTableName(AppDomainType.event),
+              G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
+            );
+    final DateTime receiptsUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(receiptsLastUpdated + 1);
+
+    final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(
+          deviceId,
+          accessToken,
+          item,
+          receiptsUpdatedAfter.toString(),
         );
-    final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(receiptsLastUpdated + 1);
 
-    final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
-
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_receipt_800', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     // callers are properly handling Error conditions
     return responseBody;

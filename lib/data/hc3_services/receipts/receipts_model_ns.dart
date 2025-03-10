@@ -13,7 +13,7 @@ class ReceiptsModel with _$ReceiptsModel implements BaseModel {
     @Default(0) int costCategory,
     DateTime? dateUploaded,
     String? imageUrl,
-    String? receiptShortDescription,
+    String? receiptShortDesc,
     String? notes,
     String? reimbursedBy,
     String? reimbursedOn,
@@ -23,5 +23,6 @@ class ReceiptsModel with _$ReceiptsModel implements BaseModel {
     DateTime? updatedAt,
   }) = _ReceiptsModel;
 
-  factory ReceiptsModel.fromJson(Map<String, dynamic> json) => _$ReceiptsModelFromJson(json);
+  factory ReceiptsModel.fromJson(Map<String, dynamic> json) =>
+      _$ReceiptsModelFromJson(json);
 }

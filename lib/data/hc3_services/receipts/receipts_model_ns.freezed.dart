@@ -27,7 +27,7 @@ mixin _$ReceiptsModel {
   int get costCategory => throw _privateConstructorUsedError;
   DateTime? get dateUploaded => throw _privateConstructorUsedError;
   String? get imageUrl => throw _privateConstructorUsedError;
-  String? get receiptShortDescription => throw _privateConstructorUsedError;
+  String? get receiptShortDesc => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
   String? get reimbursedBy => throw _privateConstructorUsedError;
   String? get reimbursedOn => throw _privateConstructorUsedError;
@@ -60,7 +60,7 @@ abstract class $ReceiptsModelCopyWith<$Res> {
       int costCategory,
       DateTime? dateUploaded,
       String? imageUrl,
-      String? receiptShortDescription,
+      String? receiptShortDesc,
       String? notes,
       String? reimbursedBy,
       String? reimbursedOn,
@@ -92,7 +92,7 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
     Object? costCategory = null,
     Object? dateUploaded = freezed,
     Object? imageUrl = freezed,
-    Object? receiptShortDescription = freezed,
+    Object? receiptShortDesc = freezed,
     Object? notes = freezed,
     Object? reimbursedBy = freezed,
     Object? reimbursedOn = freezed,
@@ -130,9 +130,9 @@ class _$ReceiptsModelCopyWithImpl<$Res, $Val extends ReceiptsModel>
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
               as String?,
-      receiptShortDescription: freezed == receiptShortDescription
-          ? _value.receiptShortDescription
-          : receiptShortDescription // ignore: cast_nullable_to_non_nullable
+      receiptShortDesc: freezed == receiptShortDesc
+          ? _value.receiptShortDesc
+          : receiptShortDesc // ignore: cast_nullable_to_non_nullable
               as String?,
       notes: freezed == notes
           ? _value.notes
@@ -182,7 +182,7 @@ abstract class _$$ReceiptsModelImplCopyWith<$Res>
       int costCategory,
       DateTime? dateUploaded,
       String? imageUrl,
-      String? receiptShortDescription,
+      String? receiptShortDesc,
       String? notes,
       String? reimbursedBy,
       String? reimbursedOn,
@@ -212,7 +212,7 @@ class __$$ReceiptsModelImplCopyWithImpl<$Res>
     Object? costCategory = null,
     Object? dateUploaded = freezed,
     Object? imageUrl = freezed,
-    Object? receiptShortDescription = freezed,
+    Object? receiptShortDesc = freezed,
     Object? notes = freezed,
     Object? reimbursedBy = freezed,
     Object? reimbursedOn = freezed,
@@ -250,9 +250,9 @@ class __$$ReceiptsModelImplCopyWithImpl<$Res>
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
               as String?,
-      receiptShortDescription: freezed == receiptShortDescription
-          ? _value.receiptShortDescription
-          : receiptShortDescription // ignore: cast_nullable_to_non_nullable
+      receiptShortDesc: freezed == receiptShortDesc
+          ? _value.receiptShortDesc
+          : receiptShortDesc // ignore: cast_nullable_to_non_nullable
               as String?,
       notes: freezed == notes
           ? _value.notes
@@ -297,7 +297,7 @@ class _$ReceiptsModelImpl implements _ReceiptsModel {
       this.costCategory = 0,
       this.dateUploaded,
       this.imageUrl,
-      this.receiptShortDescription,
+      this.receiptShortDesc,
       this.notes,
       this.reimbursedBy,
       this.reimbursedOn,
@@ -326,7 +326,7 @@ class _$ReceiptsModelImpl implements _ReceiptsModel {
   @override
   final String? imageUrl;
   @override
-  final String? receiptShortDescription;
+  final String? receiptShortDesc;
   @override
   final String? notes;
   @override
@@ -344,7 +344,7 @@ class _$ReceiptsModelImpl implements _ReceiptsModel {
 
   @override
   String toString() {
-    return 'ReceiptsModel(receiptId: $receiptId, eventId: $eventId, userId: $userId, receiptAmount: $receiptAmount, costCategory: $costCategory, dateUploaded: $dateUploaded, imageUrl: $imageUrl, receiptShortDescription: $receiptShortDescription, notes: $notes, reimbursedBy: $reimbursedBy, reimbursedOn: $reimbursedOn, reimbursedAmount: $reimbursedAmount, reimbursedNotes: $reimbursedNotes, removed: $removed, updatedAt: $updatedAt)';
+    return 'ReceiptsModel(receiptId: $receiptId, eventId: $eventId, userId: $userId, receiptAmount: $receiptAmount, costCategory: $costCategory, dateUploaded: $dateUploaded, imageUrl: $imageUrl, receiptShortDesc: $receiptShortDesc, notes: $notes, reimbursedBy: $reimbursedBy, reimbursedOn: $reimbursedOn, reimbursedAmount: $reimbursedAmount, reimbursedNotes: $reimbursedNotes, removed: $removed, updatedAt: $updatedAt)';
   }
 
   @override
@@ -364,9 +364,8 @@ class _$ReceiptsModelImpl implements _ReceiptsModel {
                 other.dateUploaded == dateUploaded) &&
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
-            (identical(
-                    other.receiptShortDescription, receiptShortDescription) ||
-                other.receiptShortDescription == receiptShortDescription) &&
+            (identical(other.receiptShortDesc, receiptShortDesc) ||
+                other.receiptShortDesc == receiptShortDesc) &&
             (identical(other.notes, notes) || other.notes == notes) &&
             (identical(other.reimbursedBy, reimbursedBy) ||
                 other.reimbursedBy == reimbursedBy) &&
@@ -392,7 +391,7 @@ class _$ReceiptsModelImpl implements _ReceiptsModel {
       costCategory,
       dateUploaded,
       imageUrl,
-      receiptShortDescription,
+      receiptShortDesc,
       notes,
       reimbursedBy,
       reimbursedOn,
@@ -426,7 +425,7 @@ abstract class _ReceiptsModel implements ReceiptsModel {
       final int costCategory,
       final DateTime? dateUploaded,
       final String? imageUrl,
-      final String? receiptShortDescription,
+      final String? receiptShortDesc,
       final String? notes,
       final String? reimbursedBy,
       final String? reimbursedOn,
@@ -453,7 +452,7 @@ abstract class _ReceiptsModel implements ReceiptsModel {
   @override
   String? get imageUrl;
   @override
-  String? get receiptShortDescription;
+  String? get receiptShortDesc;
   @override
   String? get notes;
   @override

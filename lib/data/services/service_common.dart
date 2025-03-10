@@ -110,7 +110,7 @@ class ServiceCommon {
     } else if (response.body.contains('"errorId"')) {
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
       final DbErrorModel errorResult =
-          DbErrorModel.fromJson(json.decode(response.body));
+          DbErrorModel.fromJson(json.decode(response.body)[0][0]);
 
       if (errorCallback != null) {
         final bool errorCallbackResult = await errorCallback(errorResult);

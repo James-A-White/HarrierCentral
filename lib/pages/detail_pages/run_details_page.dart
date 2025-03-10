@@ -24,6 +24,8 @@ class RunDetailsPageState extends State<RunDetailsPage> {
     super.initState();
   }
 
+  bool _isUpdating = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,13 +45,22 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                         ),
                       ).then((void _) {
                         if (widget.refreshPage != null) {
-                          widget.refreshPage!().then((RunDetailsAggregate? rda) {
-                            setState(() {
-                              if (rda != null) {
-                                _futureRun = rda;
-                              }
-                            });
+                          setState(() {
+                            _isUpdating = true;
                           });
+
+                          final result = widget.refreshPage!();
+
+                          if (result is Future<dynamic>) {
+                            result.then((dynamic rda) {
+                              setState(() {
+                                if (rda != null) {
+                                  _futureRun = rda;
+                                }
+                                _isUpdating = false;
+                              });
+                            });
+                          }
                         }
                       }); //_select(choices[0]);
                     },
@@ -63,6 +74,13 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           ),
           title: Text('Run Details', style: ts_appBarTitle),
         ),
-        body: RunTabs(futureRun: _futureRun));
+        body: Container(
+            decoration: Backgrounds.defaultHcBackground(),
+            height: MediaQuery.of(context).size.height,
+            child: _isUpdating
+                ? Center(
+                    child: HcCircularProgressIndicator(key: UniqueKey()),
+                  )
+                : RunTabs(futureRun: _futureRun)));
   }
 }

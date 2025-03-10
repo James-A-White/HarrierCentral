@@ -1,6 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
-final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
+final GlobalKey<FutureRunListPageState> futureRunsListPageKey =
+    GlobalKey<FutureRunListPageState>();
 
 class FutureRunsListPage extends StatefulWidget {
   FutureRunsListPage() : super(key: futureRunsListPageKey);
@@ -19,12 +20,15 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   String _searchRunsText = '';
-  final ScrollController _scrollController = ScrollController(initialScrollOffset: 100.0);
+  final ScrollController _scrollController =
+      ScrollController(initialScrollOffset: 100.0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _allRuns == null ? const HcCircularProgressIndicator(key: Key('16669020')) : _buildListView(),
+      body: _allRuns == null
+          ? const HcCircularProgressIndicator(key: Key('16669020'))
+          : _buildListView(),
     );
   }
 
@@ -38,21 +42,24 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         _allRuns = null;
       });
 
-      String query = 'DELETE FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
+      String query =
+          'DELETE FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
       try {
         await G0<Database>().rawQuery(query);
       } catch (e) {
         //print(e);
       }
 
-      query = 'DELETE FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)}';
+      query =
+          'DELETE FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await G0<Database>().rawQuery(query);
       } catch (e) {
         //print(e);
       }
 
-      query = 'DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}';
+      query =
+          'DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await G0<Database>().rawQuery(query);
       } catch (e) {
@@ -61,7 +68,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     }
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable,
+          SyncUserDataService.flagHasherEventMapTable |
+              SyncUserDataService.flagNarrowEventsTable |
+              SyncUserDataService.flagKennelsTable |
+              SyncUserDataService.flagPaymentsTable,
           false,
           debugText: 'future_run_list_page: HEM, Events, Kennels',
         );
@@ -164,7 +174,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                         textStyle: TextStyle(color: Colors.grey.shade700),
                         backgroundColor: Colors.white,
                       ),
-                      child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
+                      child: Text('X',
+                          style: ts_headingBlack.copyWith(
+                              color: Colors.grey.shade700)),
                       onPressed: () {
                         _searchController.text = '';
                         _searchRunsText = '';
@@ -205,21 +217,29 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   ///
   void _filterRuns() {
     _showRsvpInstructions = true;
-    _filteredRuns = QueryRuns.doRunsFilter(_searchRunsText, _allRuns ?? <dynamic>[]);
+    _filteredRuns =
+        QueryRuns.doRunsFilter(_searchRunsText, _allRuns ?? <dynamic>[]);
 
     _filteredRuns!.sort((dynamic a, dynamic b) {
       // start by sorting by run classification, closest runs should be listed first, then runs
       // from Kennels the user is following, then the rest
-      int result = a.extensions.runClassification.compareTo(b.extensions.runClassification);
+      int result = a.extensions.runClassification
+          .compareTo(b.extensions.runClassification);
 
       if (result == 0) {
-        result = _toDateOnly(a.event.eventStartDatetime).compareTo(_toDateOnly(b.event.eventStartDatetime));
+        result = _toDateOnly(a.event.eventStartDatetime)
+            .compareTo(_toDateOnly(b.event.eventStartDatetime));
         // if the runs are on the same day then try to sort by distance
         // if there are no distances because location services are off, then sort by Kennel name
         if (result == 0) {
-          if ((a.extensions.distToEvent != null) && (b.extensions.distToEvent != null)) {
-            final num distA = a.extensions.latitude == null ? 99999999 : a.extensions.distToEvent;
-            final num distB = b.extensions.latitude == null ? 99999999 : b.extensions.distToEvent;
+          if ((a.extensions.distToEvent != null) &&
+              (b.extensions.distToEvent != null)) {
+            final num distA = a.extensions.latitude == null
+                ? 99999999
+                : a.extensions.distToEvent;
+            final num distB = b.extensions.latitude == null
+                ? 99999999
+                : b.extensions.distToEvent;
             result = distA.compareTo(distB);
           } else {
             result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
@@ -240,11 +260,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
       int currentClassification = 1;
       if (i > 0) {
-        currentClassification = _filteredRuns![i - 1].extensions.runClassification ?? 1;
+        currentClassification =
+            _filteredRuns![i - 1].extensions.runClassification ?? 1;
       }
 
       if (currentClassification != lastInsertedClassification) {
-        for (int j = lastInsertedClassification - currentClassification - 1; j >= 0; j--) {
+        for (int j = lastInsertedClassification - currentClassification - 1;
+            j >= 0;
+            j--) {
           _filteredRuns!.insert(i, currentClassification + j + 1);
         }
 
@@ -286,7 +309,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(left: 25, right: 25, bottom: 30),
+                  padding:
+                      const EdgeInsets.only(left: 25, right: 25, bottom: 30),
                   child: Center(
                       child: Text(
                     'No Runs available.',
@@ -295,7 +319,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   )),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 30),
+                  padding: const EdgeInsets.only(
+                      left: 25.0, right: 25.0, bottom: 30),
                   child: Center(
                       child: Text(
                     'You might not be following any Kennels with upcoming runs. Check the Kennels page, select several Kennels and then return to this page and hit the "Reload runs" button below.',
@@ -318,7 +343,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           : NestedScrollView(
               controller: _scrollController,
               floatHeaderSlivers: true,
-              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+              headerSliverBuilder:
+                  (BuildContext context, bool innerBoxIsScrolled) {
                 return <Widget>[
                   // SliverList(
                   //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
@@ -341,7 +367,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 child: _filteredRuns == null
                     ? const SizedBox()
                     : ListView.builder(
-                        padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
+                        padding: const EdgeInsets.only(
+                            left: 10, right: 10, top: 0, bottom: 50),
                         physics: const AlwaysScrollableScrollPhysics(),
                         //padding: const EdgeInsets.only( bottom: 40.0),
                         itemCount: _filteredRuns?.length ?? 0,
@@ -358,10 +385,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
-                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected)) ...<Widget>[
+                                      if ((_filteredRuns![index] == 2) &&
+                                          (G0<AppModel>().connectionStatus ==
+                                              EnumConnectionStatus2
+                                                  .connected)) ...<Widget>[
                                         const SizedBox(width: 36.0),
                                       ],
-                                      if ((_filteredRuns![index] == 1) && _showRsvpInstructions) ...<Widget>[
+                                      if ((_filteredRuns![index] == 1) &&
+                                          _showRsvpInstructions) ...<Widget>[
                                         const SizedBox(width: 36.0),
                                       ],
                                       Text(
@@ -370,7 +401,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                                 ? 'Learn about RSVPs →'
                                                 : 'My upcoming runs'
                                             : _filteredRuns![index] == 2
-                                                ? _getDistancePreferenceString('Runs within ')
+                                                ? _getDistancePreferenceString(
+                                                    'Runs within ')
                                                 : _filteredRuns![index] == 3
                                                     ? 'Runs from Kennels I follow'
                                                     : 'All other upcoming runs',
@@ -378,7 +410,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                         //textScaleFactor: G0<DeviceInfo>().textClamp15,
                                         style: ts_titleLarge,
                                       ),
-                                      if ((_filteredRuns![index] == 1) && _showRsvpInstructions) ...<Widget>[
+                                      if ((_filteredRuns![index] == 1) &&
+                                          _showRsvpInstructions) ...<Widget>[
                                         GestureDetector(
                                           onTap: () async {
                                             await Utilities.showAlert(
@@ -388,47 +421,74 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                             );
                                           },
                                           child: const Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                            child: Icon(FontAwesome.graduation_cap, size: 28.0),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: Icon(
+                                                FontAwesome.graduation_cap,
+                                                size: 28.0),
                                           ),
                                         )
                                       ],
-                                      if ((_filteredRuns![index] == 2) && (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected)) ...<Widget>[
+                                      if ((_filteredRuns![index] == 2) &&
+                                          (G0<AppModel>().connectionStatus ==
+                                              EnumConnectionStatus2
+                                                  .connected)) ...<Widget>[
                                         GestureDetector(
                                           onTap: () async {
                                             bool success = false;
 
-                                            if (!await Permission.location.isGranted) {
-                                              final bool? allow = await Utilities.showAlert(
-                                                  'Location Services Required',
-                                                  'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
-                                                  'Yes',
-                                                  showCancelButton: true,
-                                                  cancelButtonText: 'No');
+                                            if (!await Permission
+                                                .location.isGranted) {
+                                              final bool? allow =
+                                                  await Utilities.showAlert(
+                                                      'Location Services Required',
+                                                      'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
+                                                      'Yes',
+                                                      showCancelButton: true,
+                                                      cancelButtonText: 'No');
 
                                               if (allow ?? false) {
-                                                final PermissionStatus ps = await Permission.location.request();
+                                                final PermissionStatus ps =
+                                                    await Permission.location
+                                                        .request();
 
                                                 if (ps.isPermanentlyDenied) {
-                                                  final bool? openSettings = await Utilities.showAlert(
-                                                      'Phone Settings',
-                                                      'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
-                                                      'Open Settings',
-                                                      showCancelButton: true,
-                                                      cancelButtonText: 'Cancel');
+                                                  final bool? openSettings =
+                                                      await Utilities.showAlert(
+                                                          'Phone Settings',
+                                                          'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+                                                          'Open Settings',
+                                                          showCancelButton:
+                                                              true,
+                                                          cancelButtonText:
+                                                              'Cancel');
                                                   if (openSettings ?? false) {
                                                     await openAppSettings();
 
-                                                    success = await Utilities.showAlert('Success?', 'Were you able to change the settings to enable location services?', 'Yes',
-                                                            showCancelButton: true, cancelButtonText: 'No') ??
+                                                    success = await Utilities
+                                                            .showAlert(
+                                                                'Success?',
+                                                                'Were you able to change the settings to enable location services?',
+                                                                'Yes',
+                                                                showCancelButton:
+                                                                    true,
+                                                                cancelButtonText:
+                                                                    'No') ??
                                                         false;
                                                   }
                                                 }
 
                                                 if ((ps.isGranted) || success) {
-                                                  if (await Permission.location.serviceStatus.isEnabled) {
-                                                    G0<AppModel>().hasLocationPermissions = true;
-                                                    await Utilities.subscribeToGeoLocationStream().then((void _) async {
+                                                  if (await Permission
+                                                      .location
+                                                      .serviceStatus
+                                                      .isEnabled) {
+                                                    G0<AppModel>()
+                                                            .hasLocationPermissions =
+                                                        true;
+                                                    await Utilities
+                                                            .subscribeToGeoLocationStream()
+                                                        .then((void _) async {
                                                       await Utilities.showAlert(
                                                         'Location Services Enabled',
                                                         'Location Services have been enabled.',
@@ -445,8 +505,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                             }
                                           },
                                           child: const Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                            child: Icon(FontAwesome.gear, size: 28.0),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: Icon(FontAwesome.gear,
+                                                size: 28.0),
                                           ),
                                         )
                                       ]
@@ -454,9 +516,12 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                   ),
                                 ),
                                 // add some text if no runs are found within the distance filter
-                                if ((_filteredRuns![index] == 2) && (_filteredRuns![index + 1] == 3)) ...<Widget>[
+                                if ((_filteredRuns![index] == 2) &&
+                                    (_filteredRuns![index + 1] ==
+                                        3)) ...<Widget>[
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                    padding: const EdgeInsets.only(
+                                        top: 22.0, bottom: 10.0),
                                     child: Text(
                                       '${_getDistancePreferenceString('[No runs found within ')}]',
                                       style: ts_headingLarge,
@@ -472,21 +537,22 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                 Navigator.push<dynamic>(
                                   this.context,
                                   MaterialPageRoute<dynamic>(
-                                    builder: (BuildContext context) => RunDetailsPage(
+                                    builder: (BuildContext context) =>
+                                        RunDetailsPage(
                                       futureRun: _filteredRuns![index],
                                       refreshPage: () async {
                                         // WARNING!!!!  We need to return the filtered run based
                                         // on it's ID and not the index
-
-                                        // await _refreshFromBackend(clearLocalTables: true);
+                                        // await _refreshFromBackend(
+                                        //     clearLocalTables: true);
                                         await _refreshFromTable(true);
-                                        //filterRuns();
                                         return _filteredRuns![index];
                                       },
                                     ),
                                   ),
                                 ).then((void _) {
-                                  _refreshFromBackend(clearLocalTables: false).then((void _) {
+                                  _refreshFromBackend(clearLocalTables: false)
+                                      .then((void _) {
                                     setState(() {});
                                   });
                                 });
@@ -501,9 +567,18 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   void _showConfigureDistancePopup() {
-    final String units = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
+    final String units = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
+                hasherPref_distanceMeasuredIn ==
+            2
+        ? ' km'
+        : ' miles';
 
-    final String switchUnits = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) & hasherPref_distanceMeasuredIn == 2 ? ' miles' : ' kilometers';
+    final String switchUnits =
+        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
+                    hasherPref_distanceMeasuredIn ==
+                2
+            ? ' miles'
+            : ' kilometers';
 
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
@@ -512,7 +587,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(
+                color: Colors.yellow, shape: BoxShape.rectangle),
           ),
           Text('10', style: ts_footnoteBlack)
         ],
@@ -524,7 +600,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(
+                color: Colors.yellow, shape: BoxShape.rectangle),
           ),
           Text('25', style: ts_footnoteBlack)
         ],
@@ -536,7 +613,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(
+                color: Colors.yellow, shape: BoxShape.rectangle),
           ),
           Text('50', style: ts_footnoteBlack)
         ],
@@ -548,7 +626,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(
+                color: Colors.yellow, shape: BoxShape.rectangle),
           ),
           Text('75', style: ts_footnoteBlack)
         ],
@@ -560,7 +639,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(
+                color: Colors.yellow, shape: BoxShape.rectangle),
           ),
           Text('100', style: ts_footnoteBlack)
         ],
@@ -572,7 +652,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(
+                color: Colors.yellow, shape: BoxShape.rectangle),
           ),
           Text('150', style: ts_footnoteBlack)
         ],
@@ -584,7 +665,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           Container(
             height: 30,
             width: 45,
-            decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+            decoration: const BoxDecoration(
+                color: Colors.yellow, shape: BoxShape.rectangle),
           ),
           Text('250', style: ts_footnoteBlack)
         ],
@@ -625,8 +707,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       <String, dynamic>{
         'title': 'Switch to $switchUnits',
         'icon': <Widget>[
-          Container(height: 30, width: 45, decoration: BoxDecoration(color: Colors.green.shade800, shape: BoxShape.rectangle)),
-          const Icon(MaterialCommunityIcons.map_marker_distance, color: Colors.white)
+          Container(
+              height: 30,
+              width: 45,
+              decoration: BoxDecoration(
+                  color: Colors.green.shade800, shape: BoxShape.rectangle)),
+          const Icon(MaterialCommunityIcons.map_marker_distance,
+              color: Colors.white)
         ],
         'returnValue': 9999
       },
@@ -647,28 +734,40 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           return popup;
         }).then((dynamic retVal) async {
       if (retVal == 9999) {
-        if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
+        if (G0<AppModel>().connectionStatus ==
+            EnumConnectionStatus2.connected) {
           final HashersService srv = HashersService();
 
-          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-          final int distanceMeasuredIn = ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3) ? 2 : 3;
+          final int hasherPreferences =
+              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+          final int distanceMeasuredIn =
+              ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
+                  ? 2
+                  : 3;
 
-          final int distance = hasherPreferences & hasherPref_distanceForAutoDisplay;
+          final int distance =
+              hasherPreferences & hasherPref_distanceForAutoDisplay;
 
           await srv.addEditUser(
             targetUserId: getStringPref(StringPrefsEnum.userId)!,
             preferences: distanceMeasuredIn + distance,
           );
 
-          await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
+          await setIntPref(
+              IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
           await _refreshFromTable(true);
         }
-      } else if ((retVal is! EnumFollowType) && (retVal >= hasherPref_0) && (retVal <= hasherPref_500)) {
-        if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
+      } else if ((retVal is! EnumFollowType) &&
+          (retVal >= hasherPref_0) &&
+          (retVal <= hasherPref_500)) {
+        if (G0<AppModel>().connectionStatus ==
+            EnumConnectionStatus2.connected) {
           final HashersService srv = HashersService();
 
-          final int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-          final int distanceMeasuredIn = hasherPreferences & hasherPref_distanceMeasuredIn;
+          final int hasherPreferences =
+              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+          final int distanceMeasuredIn =
+              hasherPreferences & hasherPref_distanceMeasuredIn;
           //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
 
           await srv.addEditUser(
@@ -676,7 +775,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             preferences: distanceMeasuredIn + (retVal as int),
           );
 
-          await setIntPref(IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
+          await setIntPref(
+              IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
 
           await _refreshFromTable(true);
         }
@@ -685,9 +785,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   String _getDistancePreferenceString(String precursorText) {
-    int distancePref = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) & hasherPref_distanceForAutoDisplay;
+    int distancePref = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) &
+        hasherPref_distanceForAutoDisplay;
 
-    final String units = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) & hasherPref_distanceMeasuredIn == 2 ? ' km' : ' miles';
+    final String units = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) &
+                hasherPref_distanceMeasuredIn ==
+            2
+        ? ' km'
+        : ' miles';
 
     if (!G0<AppModel>().hasLocationPermissions) {
       distancePref = hasherPref_0;

@@ -17,7 +17,7 @@ _$ReceiptsModelImpl _$$ReceiptsModelImplFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['dateUploaded'] as String),
       imageUrl: json['imageUrl'] as String?,
-      receiptShortDescription: json['receiptShortDescription'] as String?,
+      receiptShortDesc: json['receiptShortDesc'] as String?,
       notes: json['notes'] as String?,
       reimbursedBy: json['reimbursedBy'] as String?,
       reimbursedOn: json['reimbursedOn'] as String?,
@@ -38,7 +38,7 @@ Map<String, dynamic> _$$ReceiptsModelImplToJson(_$ReceiptsModelImpl instance) =>
       'costCategory': instance.costCategory,
       'dateUploaded': instance.dateUploaded?.toIso8601String(),
       'imageUrl': instance.imageUrl,
-      'receiptShortDescription': instance.receiptShortDescription,
+      'receiptShortDesc': instance.receiptShortDesc,
       'notes': instance.notes,
       'reimbursedBy': instance.reimbursedBy,
       'reimbursedOn': instance.reimbursedOn,

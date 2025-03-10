@@ -97,10 +97,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     _runCountsList = <UserRunHistoryModel>[];
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(results[i]);
+        final UserRunHistoryModel hlrItem =
+            UserRunHistoryModel.fromMap(results[i]);
         // hlrItem.totalHaringThisKennel = -1;
         // hlrItem.totalRunsThisKennel = -1;
         _runCountsList.add(hlrItem);
@@ -125,7 +127,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -140,7 +144,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                 color: Colors.white,
                 size: 28.0,
               ),
-              title: Text('My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}', style: ts_appBarTitle),
+              title: Text(
+                  'My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}',
+                  style: ts_appBarTitle),
             ),
             floatingActionButton: SpeedDial(
               // both default to 16
@@ -161,53 +167,84 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               //onClose: () => //print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
               heroTag: 'speed-dial-hero-tag',
-              backgroundColor: Theme.of(context).buttonTheme.colorScheme?.primary ?? hc_red,
+              backgroundColor:
+                  Theme.of(context).buttonTheme.colorScheme?.primary ?? hc_red,
               foregroundColor: Colors.white,
               elevation: 8.0,
               shape: const CircleBorder(),
               children: <SpeedDialChild>[
                 SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.email, color: Colors.white),
+                  child: const Icon(MaterialCommunityIcons.email,
+                      color: Colors.white),
                   backgroundColor: Colors.teal[800],
                   label: 'Email run counts\r\n(this kennel)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
                     G0<TableModel>()
                         .hasherEventMapService
-                        .sendRunCountReportByEmail(kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId, kennelName: (_kennelInfo ?? widget.kennelInfo).kennelName)
+                        .sendRunCountReportByEmail(
+                            kennelId:
+                                (_kennelInfo ?? widget.kennelInfo).kennelId,
+                            kennelName:
+                                (_kennelInfo ?? widget.kennelInfo).kennelName)
                         .then((Map<String, String> result) {
-                      ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
-                      if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
-                        Utilities.showAlert('E-mail successfully sent',
-                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                      ScaffoldMessenger.of(navigatorKey.currentContext!)
+                          .hideCurrentSnackBar();
+                      if ((result['result'] != null) &&
+                          (result['result']!
+                              .toLowerCase()
+                              .startsWith('success'))) {
+                        Utilities.showAlert(
+                            'E-mail successfully sent',
+                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                            'OK');
                       }
                     });
-                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey,
+                        'Run count report being processed...',
+                        durationInSeconds: 10);
                   },
                 ),
                 SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.email_plus, color: Colors.white),
+                  child: const Icon(MaterialCommunityIcons.email_plus,
+                      color: Colors.white),
                   backgroundColor: hc_blue,
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    G0<TableModel>().hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
-                      ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
-                      if ((result['result'] != null) && (result['result']!.toLowerCase().startsWith('success'))) {
-                        Utilities.showAlert('E-mail successfully sent',
-                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                    G0<TableModel>()
+                        .hasherEventMapService
+                        .sendRunCountReportByEmail(
+                            kennelId: GUID_EMPTY,
+                            kennelName: 'All of your Hash Kennels')
+                        .then((Map<String, String> result) {
+                      ScaffoldMessenger.of(navigatorKey.currentContext!)
+                          .hideCurrentSnackBar();
+                      if ((result['result'] != null) &&
+                          (result['result']!
+                              .toLowerCase()
+                              .startsWith('success'))) {
+                        Utilities.showAlert(
+                            'E-mail successfully sent',
+                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                            'OK');
                       }
                     });
-                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey,
+                        'Run count report being processed...',
+                        durationInSeconds: 10);
                   },
                 ),
               ],
             ),
-            body: _isLoading ? _buildCircularProgressIndicator() : _buildListView(),
+            body: _isLoading
+                ? _buildCircularProgressIndicator()
+                : _buildListView(),
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -340,9 +377,19 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //   //model.notifyListeners();
   // }
 
-  static TextStyle numberStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
+  static TextStyle numberStyle = TextStyle(
+      color: Colors.black87,
+      fontFamily: 'AvenirNextDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      height: 1.0);
 
-  static TextStyle boldTitleStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
+  static TextStyle boldTitleStyle = TextStyle(
+      color: Colors.black87,
+      fontFamily: 'AvenirNextBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      height: 1.0);
 
   int myRunCount = 0;
   int myHaringCount = 0;
@@ -394,7 +441,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       ],
                     ),
                     //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
+                    padding: const EdgeInsets.only(
+                        left: 5, top: 5, right: 0, bottom: 5),
 
                     child: Row(children: <Widget>[
                       Container(
@@ -402,9 +450,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         height: 90,
                         child: KennelLogo(
                           kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId,
-                          kennelLogoUrl: (_kennelInfo ?? widget.kennelInfo).kennelLogo,
-                          kennelShortName: (_kennelInfo ?? widget.kennelInfo).kennelShortName,
-                          logoHeight: 60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                          kennelLogoUrl:
+                              (_kennelInfo ?? widget.kennelInfo).kennelLogo,
+                          kennelShortName: (_kennelInfo ?? widget.kennelInfo)
+                              .kennelShortName,
+                          logoHeight:
+                              60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                           leftPadding: 5.0,
                         ),
                       ),
@@ -453,7 +504,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               style: numberStyle,
                               textAlign: TextAlign.center,
                             ),
-                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount) == 0
+                            ((_kennelInfo ?? widget.kennelInfo)
+                                        .historicalTotalRunCount) ==
+                                    0
                                 ? Container()
                                 : AutoSizeText(
                                     'Historical run count: ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount}',
@@ -465,7 +518,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     style: numberStyle,
                                     textAlign: TextAlign.center,
                                   ),
-                            ((_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount) == 0
+                            ((_kennelInfo ?? widget.kennelInfo)
+                                        .historicalTotalRunCount) ==
+                                    0
                                 ? Container()
                                 : AutoSizeText(
                                     'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount}',
@@ -487,7 +542,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: _runCountsList.length,
                       padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) => const Divider(
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(
                         height: 1.0,
                         color: Colors.black45,
                       ),
@@ -507,20 +563,29 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 // here, we're going from an attendence state of
                                 // not at the Hash to being at the Hash,
                                 // so assume that the person was not a hare
-                                if (item.attendenceState < attendenceAtHash.value) {
-                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: true);
+                                if (item.attendenceState <
+                                    attendenceAtHash.value) {
+                                  _runCountsList[index] = _runCountsList[index]
+                                      .copyWith(isUpdating: true);
                                   item = _runCountsList[index];
-                                  await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareNo);
+                                  await _setAttendenceState(item, rsvpYes,
+                                      attendenceAtHash, isHareNo);
                                 } else {
-                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: true);
+                                  _runCountsList[index] = _runCountsList[index]
+                                      .copyWith(isUpdating: true);
                                   item = _runCountsList[index];
-                                  await _setAttendenceState(item, rsvpYes, attendenceAtHash, item.isHare == 1 ? isHareNo : isHareYes);
+                                  await _setAttendenceState(
+                                      item,
+                                      rsvpYes,
+                                      attendenceAtHash,
+                                      item.isHare == 1 ? isHareNo : isHareYes);
                                 }
                               } else {
                                 // swipe from left to right to
                                 // indicate that the hasher did
                                 // not participate in this event
-                                await _setAttendenceState(item, rsvpNo, attendenceNo, isHareNo);
+                                await _setAttendenceState(
+                                    item, rsvpNo, attendenceNo, isHareNo);
                               }
 
                               _kennelInfo = await widget.refreshKennelInfo();
@@ -537,10 +602,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   child: Row(children: <Widget>[
                                     const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.lock,
+                                          color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                        padding: const EdgeInsets.only(left: 15.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 15.0),
                                         child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Run locked',
@@ -552,10 +619,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   child: Row(children: <Widget>[
                                     const Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.times_circle,
+                                          color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
-                                        padding: const EdgeInsets.only(left: 15.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 15.0),
                                         child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'I was not\r\nat the Hash',
@@ -566,31 +635,45 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           secondaryBackground: item.canEditRunAttendence == 0
                               ? Container(
                                   color: Colors.grey,
-                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                                    const Padding(
-                                      padding: EdgeInsets.only(right: 15.0),
-                                      child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
-                                    ),
-                                    Padding(
-                                        padding: const EdgeInsets.only(right: 15.0),
-                                        child: Text(
-                                          //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                          'Run locked',
-                                          style: ts_titleMedium,
-                                        ))
-                                  ]))
-                              : (item.attendenceState < attendenceAtHash.value) || ((item.attendenceState >= attendenceAtHash.value) && (item.isHare == isHareYes.value))
+                                  child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: <Widget>[
+                                        const Padding(
+                                          padding: EdgeInsets.only(right: 15.0),
+                                          child: Icon(FontAwesome.lock,
+                                              color: Colors.white, size: 35.0),
+                                        ),
+                                        Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 15.0),
+                                            child: Text(
+                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                              'Run locked',
+                                              style: ts_titleMedium,
+                                            ))
+                                      ]))
+                              : (item.attendenceState <
+                                          attendenceAtHash.value) ||
+                                      ((item.attendenceState >=
+                                              attendenceAtHash.value) &&
+                                          (item.isHare == isHareYes.value))
                                   ? Container(
                                       color: Colors.green,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: <Widget>[
                                           const Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
-                                            child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
+                                            padding:
+                                                EdgeInsets.only(right: 15.0),
+                                            child: Icon(
+                                                FontAwesome.check_circle,
+                                                color: Colors.white,
+                                                size: 35.0),
                                           ),
                                           Padding(
-                                              padding: const EdgeInsets.only(right: 15.0),
+                                              padding: const EdgeInsets.only(
+                                                  right: 15.0),
                                               child: Text(
                                                 //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was at\r\nthe Hash',
@@ -604,17 +687,25 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   : Container(
                                       color: Colors.purple,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: <Widget>[
                                           const Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
+                                            padding:
+                                                EdgeInsets.only(right: 15.0),
                                             child: Padding(
-                                              padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                                              child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.white, size: 30.0),
+                                              padding: EdgeInsets.only(
+                                                  left: 2.5, right: 2.5),
+                                              child: ImageIcon(
+                                                  AssetImage(
+                                                      'images/icons/hare_icon.png'),
+                                                  color: Colors.white,
+                                                  size: 30.0),
                                             ),
                                           ),
                                           Padding(
-                                              padding: const EdgeInsets.only(right: 15.0),
+                                              padding: const EdgeInsets.only(
+                                                  right: 15.0),
                                               child: Text(
                                                 //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was a Hare',
@@ -628,7 +719,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           },
                           child: GestureDetector(
                             onTapUp: (TapUpDetails details) async {
-                              final List<dynamic> run = await QueryRuns.getRunDetailsAggregates(
+                              final List<dynamic> run =
+                                  await QueryRuns.getRunDetailsAggregates(
                                 true,
                                 eventId: item.eventId,
                                 queryType: EnumRunQueryType.singleRun,
@@ -642,7 +734,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     builder: (BuildContext context) {
                                       return RunDetailsPage(
                                         futureRun: run[0],
-                                        refreshPage: () async {},
+                                        //refreshPage: () async {},
                                       );
                                     },
                                   ),
@@ -652,24 +744,31 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             child: UserEventListItem(
                               item: item,
                               kennelInfo: _kennelInfo ?? widget.kennelInfo,
-                              setAttendenceStateCallback: (EnumAttendenceState<int> attendenceState, EnumIsHare<int> isHare) async {
+                              setAttendenceStateCallback:
+                                  (EnumAttendenceState<int> attendenceState,
+                                      EnumIsHare<int> isHare) async {
                                 setState(() {
-                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: true);
+                                  _runCountsList[index] = _runCountsList[index]
+                                      .copyWith(isUpdating: true);
                                   item = _runCountsList[index];
                                 });
 
                                 if (attendenceState == attendenceNo) {
-                                  await _setAttendenceState(item, rsvpNo, attendenceNo, isHareNo);
+                                  await _setAttendenceState(
+                                      item, rsvpNo, attendenceNo, isHareNo);
                                 } else {
                                   if (isHare == isHareYes) {
-                                    await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareYes);
+                                    await _setAttendenceState(item, rsvpYes,
+                                        attendenceAtHash, isHareYes);
                                   } else {
-                                    await _setAttendenceState(item, rsvpYes, attendenceAtHash, isHareNo);
+                                    await _setAttendenceState(item, rsvpYes,
+                                        attendenceAtHash, isHareNo);
                                   }
                                 }
 
                                 setState(() {
-                                  _runCountsList[index] = _runCountsList[index].copyWith(isUpdating: false);
+                                  _runCountsList[index] = _runCountsList[index]
+                                      .copyWith(isUpdating: false);
                                 });
                               },
                             ),

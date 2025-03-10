@@ -39,8 +39,12 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       _imageFromCamera = null;
 
       if ((widget.receiptItem!['imageUrl'] ?? '') != '') {
-        _receiptImageFromWeb = CachedNetworkImage(imageUrl: widget.receiptItem!['imageUrl'], fadeInDuration: const Duration(milliseconds: 0));
-        DefaultCacheManager().getSingleFile(widget.receiptItem!['imageUrl']).then((File file) {
+        _receiptImageFromWeb = CachedNetworkImage(
+            imageUrl: widget.receiptItem!['imageUrl'],
+            fadeInDuration: const Duration(milliseconds: 0));
+        DefaultCacheManager()
+            .getSingleFile(widget.receiptItem!['imageUrl'])
+            .then((File file) {
           _imageFromCache = file;
         });
       }
@@ -52,28 +56,34 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-        Text(
-          'Uploading receipt details',
-          style: ts_heading,
-          textAlign: TextAlign.center,
-        ),
-        Container(height: 30),
-        const HcCircularProgressIndicator(
-          key: Key('12662'),
-        ),
-      ]),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Uploading receipt details',
+              style: ts_heading,
+              textAlign: TextAlign.center,
+            ),
+            Container(height: 30),
+            const HcCircularProgressIndicator(
+              key: Key('12662'),
+            ),
+          ]),
     );
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _upload(File imageFile, String fileName) {
-    final Uri uri = Uri.parse('$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D');
+    final Uri uri = Uri.parse(
+        '$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D');
 
     final Request request = Request('PUT', uri);
 
-    final Map<String, String> headers = <String, String>{'content-type': 'image/jpeg', 'x-ms-blob-type': 'BlockBlob'};
+    final Map<String, String> headers = <String, String>{
+      'content-type': 'image/jpeg',
+      'x-ms-blob-type': 'BlockBlob'
+    };
 
     request.headers.addAll(headers);
 
@@ -104,16 +114,19 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         String receiptImageUrl = '';
 
         if (_imageFromCamera != null) {
-          receiptImageUrl = _upload(_imageFromCamera!, '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+          receiptImageUrl = _upload(_imageFromCamera!,
+              '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg');
         }
 
         final String userId = getStringPref(StringPrefsEnum.userId)!;
 
         final ReceiptsModel item = ReceiptsModel(
             userId: userId,
-            receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem!['receiptId'],
+            receiptId: widget.receiptItem == null
+                ? GUID_EMPTY
+                : widget.receiptItem!['receiptId'],
             eventId: widget.eventId,
-            receiptShortDescription: _shortDescription,
+            receiptShortDesc: _shortDescription,
             receiptAmount: double.parse(_receiptAmount ?? '0.0'),
             notes: '',
             reimbursedBy: GUID_EMPTY,
@@ -132,7 +145,9 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         if (!responseBody.startsWith(ERROR_PREFIX)) {
           await G0<TableModel>().baseService.bulkUpdateDatabase(
                 G0<TableModel>().receiptsTableHelper,
-                G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+                G0<TableModel>()
+                    .receiptsTableHelper
+                    .getTableName(AppDomainType.event),
                 responseBody,
                 G0<Database>(),
               );
@@ -140,7 +155,10 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           if (!mounted) return;
           Navigator.of(context).pop();
         } else {
-          await Utilities.showAlert('Error uploading receipt', 'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+          await Utilities.showAlert(
+              'Error uploading receipt',
+              'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!',
+              'OK');
         }
       } else {
 //    If all data are not valid then start auto validation.
@@ -160,7 +178,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           decoration: const InputDecoration(labelText: 'Short description'),
           keyboardType: TextInputType.text,
           validator: (String? arg) {
-            if ((arg != null) || (arg!.length < 4)) {
+            if ((arg == null) || (arg.length < 4)) {
               return 'Description must be more than 3 charaters';
             } else {
               return null;
@@ -182,7 +200,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           //   //   return null;
           // },
           onSaved: (String? val) {
-            val = (val ?? '').replaceAll(',', '.'); // TODO(James): Investigate how to better handle cases where numeric keyboards have commas instead of decimals
+            val = (val ?? '').replaceAll(',',
+                '.'); // TODO(James): Investigate how to better handle cases where numeric keyboards have commas instead of decimals
             _receiptAmount = val;
           },
         ),
@@ -196,12 +215,16 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
   Future<File?> onImageButtonPressed() async {
     //final PickedFile image = await ImagePicker().getImage(source: ImageSource.camera);
 
-    final XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
+    final XFile? image =
+        await ImagePicker().pickImage(source: ImageSource.camera);
 
     if (image != null) {
       final ImageCropper ic = ImageCropper();
 
-      final CroppedFile? croppedFile = await ic.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
+      final CroppedFile? croppedFile = await ic.cropImage(
+          sourcePath: image.path,
+          compressFormat: ImageCompressFormat.jpg,
+          compressQuality: 70);
 
       if (croppedFile != null) {
         return File(croppedFile.path);
@@ -226,7 +249,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         key: _scaffoldKey,
         appBar: appBar,
         body: _isLoading
-            ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+            ? Container(
+                height: MediaQuery.of(context).size.height -
+                    appBar.preferredSize.height,
+                decoration: Backgrounds.defaultHcBackground(),
+                child: _buildCircularProgressIndicator())
             : Column(
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
@@ -242,7 +269,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                   ),
                               child: IntrinsicHeight(
                                 child: Padding(
-                                  padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
+                                  padding: const EdgeInsets.only(
+                                      top: 30, left: 20, right: 20),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -264,29 +292,43 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                           child: Column(
                                             children: <Widget>[
                                               Container(
-                                                padding: const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(bottom: 45),
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 45),
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
-                                                  borderRadius: BorderRadius.circular(5.0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
                                                 ),
                                                 child: Form(
                                                   key: _receiptFormKey,
-                                                  autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+                                                  autovalidateMode:
+                                                      _autoValidate
+                                                          ? AutovalidateMode
+                                                              .always
+                                                          : AutovalidateMode
+                                                              .disabled,
                                                   child: formUi(),
                                                 ),
                                               ),
-                                              const FancyDivider(key: Key('121678443'), innerColor: Colors.white),
+                                              const FancyDivider(
+                                                  key: Key('121678443'),
+                                                  innerColor: Colors.white),
                                               const SizedBox(height: 20),
                                               ElevatedButton(
                                                 onPressed: () {
-                                                  onImageButtonPressed().then((File? imageFile) {
+                                                  onImageButtonPressed()
+                                                      .then((File? imageFile) {
                                                     setState(() {
-                                                      _imageFromCamera = imageFile;
+                                                      _imageFromCamera =
+                                                          imageFile;
                                                     });
                                                   });
                                                 },
-                                                child: Text('Scan Receipt', style: ts_button),
+                                                child: Text('Scan Receipt',
+                                                    style: ts_button),
                                               )
                                             ],
                                           ),
@@ -303,12 +345,16 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                           Navigator.push<void>(
                                             context,
                                             MaterialPageRoute<void>(
-                                              builder: (BuildContext context) => ZoomableImagePage2(
+                                              builder: (BuildContext context) =>
+                                                  ZoomableImagePage2(
                                                 key: const Key('66610301'),
-                                                file: _imageFromCamera ?? _imageFromCache,
+                                                file: _imageFromCamera ??
+                                                    _imageFromCache,
                                                 pageTitle: 'Zoomable Receipt',
-                                                appBarBackgroundColor: themeAppBarBackground,
-                                                background: Backgrounds.defaultHcBackground(),
+                                                appBarBackgroundColor:
+                                                    themeAppBarBackground,
+                                                background: Backgrounds
+                                                    .defaultHcBackground(),
                                               ),
                                             ),
                                           );
@@ -317,15 +363,27 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                             ? Container(
                                                 //height: 220,
                                                 color: Colors.white,
-                                                padding: const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                                child: Image.file(_imageFromCamera!, width: MediaQuery.of(context).size.width))
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(
+                                                    top: 20, bottom: 30),
+                                                child: Image.file(
+                                                    _imageFromCamera!,
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                            .size
+                                                            .width))
                                             : _receiptImageFromWeb != null
                                                 ? Container(
                                                     //height: 220,
                                                     color: Colors.white,
-                                                    padding: const EdgeInsets.all(10.0),
-                                                    margin: const EdgeInsets.only(top: 20, bottom: 30),
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            10.0),
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                            top: 20,
+                                                            bottom: 30),
                                                     child: _receiptImageFromWeb)
                                                 : Container(),
                                       ),

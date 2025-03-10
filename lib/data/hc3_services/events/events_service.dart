@@ -75,7 +75,8 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colUseFbImage = 'useFbImage';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -135,9 +136,12 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(
+      Database db, int version, dynamic appDomainType) async {
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -148,14 +152,18 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = (EventModel.fromJson(inputMap)).toJson();
+    final Map<String, dynamic> outputMap =
+        (EventModel.fromJson(inputMap)).toJson();
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
-    if ((outputMap['eventImage'] != null) && (outputMap['eventImage'].isNotEmpty) && (!outputMap['eventImage'].startsWith('http'))) {
-      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+    if ((outputMap['eventImage'] != null) &&
+        (outputMap['eventImage'].isNotEmpty) &&
+        (!outputMap['eventImage'].startsWith('http'))) {
+      final String s =
+          getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if (s.isNotEmpty) {
         outputMap['eventImage'] = s + outputMap['eventImage'];
       }
@@ -172,8 +180,11 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
     // when events have been uploaded directly to the DB using the HcWeb application.
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
-    if ((item.eventImage != null) && (item.eventImage!.isNotEmpty) && (!item.eventImage!.startsWith('http'))) {
-      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+    if ((item.eventImage != null) &&
+        (item.eventImage!.isNotEmpty) &&
+        (!item.eventImage!.startsWith('http'))) {
+      final String s =
+          getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if (s.isNotEmpty) {
         item = item.copyWith(eventImage: s + item.eventImage!);
       }
@@ -217,8 +228,14 @@ class EventsService extends BaseService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent800');
+    final String accessToken = IveCoreUtilities.generateToken(
+      userId,
+      'hcapp_addEditEvent',
+      paramString: deviceSecret.toUpperCase(),
+    );
 
     final int eventsLastUpdated = await getLastUpdatedTime(
       G0<Database>(),
@@ -228,27 +245,40 @@ class EventsService extends BaseService {
     );
     // final DateTime eventUpdatedAfter = eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
 
-    final DateTime eventUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
+    final DateTime eventUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
 
-    final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString()};
+    final Map<String, String> bodyMap = <String, String>{
+      'queryType': 'addEditEvent',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'narrowEventsUpdatedAfter': eventUpdatedAfter.toString(),
+    };
+
     if (isVisible != null) {
       bodyMap.addAll(<String, String>{'isVisible': isVisible ? '1' : '0'});
     }
 
     if (isCountedRun != null) {
-      bodyMap.addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
+      bodyMap
+          .addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
     }
 
     if (isPromotedEvent != null) {
-      bodyMap.addAll(<String, String>{'isPromotedEvent': isPromotedEvent ? '1' : '0'});
+      bodyMap.addAll(
+          <String, String>{'isPromotedEvent': isPromotedEvent ? '1' : '0'});
     }
 
     if (eventGeographicScope != null) {
-      bodyMap.addAll(<String, String>{'eventGeographicScope': eventGeographicScope.toString()});
+      bodyMap.addAll(<String, String>{
+        'eventGeographicScope': eventGeographicScope.toString()
+      });
     }
 
     if (usersCanEditRunAttendence != null) {
-      bodyMap.addAll(<String, String>{'usersCanEditRunAttendence': usersCanEditRunAttendence.toString()});
+      bodyMap.addAll(<String, String>{
+        'usersCanEditRunAttendence': usersCanEditRunAttendence.toString()
+      });
     }
 
     if (eventImageUrl != null) {
@@ -256,7 +286,9 @@ class EventsService extends BaseService {
     }
 
     if (absoluteEventNumber != null) {
-      bodyMap.addAll(<String, String>{'absoluteEventNumber': absoluteEventNumber.toString()});
+      bodyMap.addAll(<String, String>{
+        'absoluteEventNumber': absoluteEventNumber.toString()
+      });
     }
 
     if (eventId != null) {
@@ -272,7 +304,8 @@ class EventsService extends BaseService {
     }
 
     if (eventStartDatetime != null) {
-      bodyMap.addAll(<String, String>{'startDatetime': eventStartDatetime.toString()});
+      bodyMap.addAll(
+          <String, String>{'startDatetime': eventStartDatetime.toString()});
     }
 
     if (lat != null) {
@@ -288,7 +321,8 @@ class EventsService extends BaseService {
     }
 
     if (useFbRunDetails != null) {
-      bodyMap.addAll(<String, String>{'useFbRunDetails': useFbRunDetails.toString()});
+      bodyMap.addAll(
+          <String, String>{'useFbRunDetails': useFbRunDetails.toString()});
     }
 
     if (useFbImage != null) {
@@ -296,7 +330,8 @@ class EventsService extends BaseService {
     }
 
     if (useFbLocation != null) {
-      bodyMap.addAll(<String, String>{'useFbLocation': useFbLocation.toString()});
+      bodyMap
+          .addAll(<String, String>{'useFbLocation': useFbLocation.toString()});
     }
 
     if (eventDescription != null) {
@@ -308,19 +343,26 @@ class EventsService extends BaseService {
     }
 
     if (locationOneLineDesc != null) {
-      bodyMap.addAll(<String, String>{'locationOneLineDesc': locationOneLineDesc});
+      bodyMap
+          .addAll(<String, String>{'locationOneLineDesc': locationOneLineDesc});
     }
 
     if (eventPriceForMembers != null) {
-      bodyMap.addAll(<String, String>{'eventPriceForMembers': eventPriceForMembers.toString()});
+      bodyMap.addAll(<String, String>{
+        'eventPriceForMembers': eventPriceForMembers.toString()
+      });
     }
 
     if (eventPriceForNonMembers != null) {
-      bodyMap.addAll(<String, String>{'eventPriceForNonMembers': eventPriceForNonMembers.toString()});
+      bodyMap.addAll(<String, String>{
+        'eventPriceForNonMembers': eventPriceForNonMembers.toString()
+      });
     }
 
     if (eventPriceForExtras != null) {
-      bodyMap.addAll(<String, String>{'eventPriceForExtras': eventPriceForExtras.toString()});
+      bodyMap.addAll(<String, String>{
+        'eventPriceForExtras': eventPriceForExtras.toString()
+      });
     }
 
     if (extrasDescription != null) {
@@ -329,10 +371,12 @@ class EventsService extends BaseService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_event_800', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
+      await G0<TableModel>()
+          .syncUserDataService
+          .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
 
       final dynamic responseJson = jsonDecode(responseBody);
 
@@ -351,13 +395,23 @@ class EventsService extends BaseService {
     String emailBody = '',
   }) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
+    final String accessToken = IveCoreUtilities.generateToken(
+        userId, 'rptApi_emailRunDetails',
+        paramString: eventId);
 
-    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});
+    final String body = jsonEncode(<String, String>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'eventId': eventId,
+      'emailBody': emailBody
+    });
 
     //print(body);
 
-    final Response response = await post(Uri.parse(EMAIL_RUN_DETAILS_TO_PACK_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body
+    final Response response = await post(
+            Uri.parse(EMAIL_RUN_DETAILS_TO_PACK_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -374,10 +428,13 @@ class EventsService extends BaseService {
     //final Geolocator locator = Geolocator();
     RunDetailsAggregate? item;
 
-    final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
+    final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
+        EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin,
+        eventId: eventId);
     if (results.isNotEmpty) {
       double? dist;
-      if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+      if ((G0<DeviceInfo>().deviceLat != null) &&
+          (G0<DeviceInfo>().deviceLon != null)) {
         dist = Geolocator.distanceBetween(
           G0<DeviceInfo>().deviceLat!,
           G0<DeviceInfo>().deviceLon!,
@@ -385,19 +442,31 @@ class EventsService extends BaseService {
           results[0]['evtLon'],
         );
       }
-      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
-      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-      final RunQueryExtensionsModel extensionsItem = RunQueryExtensionsModel.fromJsonWithDateSearchText(results[0], eventItem.eventStartDatetime, dist);
+      final EventModel eventItem =
+          G0<TableModel>().eventsTableHelper.fromMap(results[0]);
+      final KennelsModel kennelItem =
+          G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+      final RunQueryExtensionsModel extensionsItem =
+          RunQueryExtensionsModel.fromJsonWithDateSearchText(
+              results[0], eventItem.eventStartDatetime, dist);
 
       String paymentLinkUrl = '';
 
-      if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+      if (((eventItem.eventPaymentUrl ?? '') != '') &&
+          ((eventItem.eventPaymentUrlExpires == null) ||
+              (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
         paymentLinkUrl = eventItem.eventPaymentUrl!;
-      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+      } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
+          ((kennelItem.kennelPaymentUrlExpires == null) ||
+              (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
         paymentLinkUrl = kennelItem.kennelPaymentUrl!;
       }
 
-      item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+      item = RunDetailsAggregate(
+          event: eventItem,
+          kennel: kennelItem,
+          extensions: extensionsItem,
+          paymentUrl: paymentLinkUrl);
     }
     return item;
   }
