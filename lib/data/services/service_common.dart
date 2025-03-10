@@ -1,6 +1,6 @@
 import 'package:harrier_central/imports.dart';
 
-//int httpCounter = 1000;
+int httpCounter = 1000;
 
 class ServiceCommon {
   // the variable below is there to suppress a warning about defining classes with only static members
@@ -57,8 +57,8 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
-    //print('>>> http post $httpCounter $procName');
-    //httpCounter++;
+    print('>>> http post $httpCounter $procName');
+    httpCounter++;
 
     Response response;
 
