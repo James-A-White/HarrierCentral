@@ -102,10 +102,19 @@ class ReceiptsListState extends State<ReceiptsList> {
                     })),
           ],
         ),
+        // body: Container(
+        //   decoration: Backgrounds.defaultHcBackground(),
+        //   height: MediaQuery.of(context).size.height,
+        //   child: Container(
+        //     margin: const EdgeInsets.all(30.0),
+        //     color: themeLightBackground,
+        //     child: _buildListView(),
+        //   ),
+        // ),
         body: Container(
-            decoration: Backgrounds.defaultHcBackground(),
-            height: MediaQuery.of(context).size.height,
-            child: _buildListView()));
+          color: themeLightBackground,
+          child: _buildListView(),
+        ));
   }
 
   Future<void> _handleRefresh() async {
@@ -165,6 +174,7 @@ class ReceiptsListState extends State<ReceiptsList> {
         'OK',
       );
     }
+    setState(() {});
   }
 
   Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
@@ -225,7 +235,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                 ? Center(
                     child: Text(
                     'No receipts available.',
-                    style: ts_title,
+                    style: ts_titleBlack,
                   ))
                 : RefreshIndicator(
                     onRefresh: _handleRefresh,
@@ -236,11 +246,14 @@ class ReceiptsListState extends State<ReceiptsList> {
                         height: 1.0,
                         color: Colors.black45,
                       ),
-                      physics: const AlwaysScrollableScrollPhysics(),
+                      // physics: const AlwaysScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      physics: ClampingScrollPhysics(),
                       itemCount: receiptsList.length,
                       itemBuilder: (BuildContext context, int index) {
                         final Map<String, dynamic> receipt =
                             receiptsList[index];
+
                         return Dismissible(
                           key: Key(receipt['receiptId']),
                           confirmDismiss: (DismissDirection direction) {
@@ -311,7 +324,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                                         child: Text(
                                             //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                             'Cancel Reimbursement',
-                                            style: ts_titleMedium),
+                                            style: ts_titleMediumBlack),
                                       )
                                     ],
                                   ),
@@ -377,26 +390,17 @@ class ReceiptsListState extends State<ReceiptsList> {
                   ),
           ),
         ),
-
-        // Container(
-        //   width: 150.0,
-        //   child: ElevatedButton(
-        //     child: const Text(
-        //       'Add Member',
-        //       style: TextStyle(color: Colors.white),
-        //     ),
-        //     onPressed: () {
-        //       Navigator.push<dynamic>(
-        //         context,
-        //         MaterialPageRoute<dynamic>(
-        //           builder: (BuildContext context) => AddMemberPage(
-        //                 kennelId: widget.kennel['kennelId'],
-        //               ),
-        //         ),
-        //       );
-        //     },
-        //   ),
-        // ),
+        Container(
+            padding: EdgeInsets.only(
+              left: 10,
+              right: 70,
+              bottom: 20,
+            ),
+            child: Text(
+              'Swipe the receipt items in the list above to the left to set their reimbursement status',
+              maxLines: 3,
+              style: ts_titleBlack,
+            ))
       ],
     );
   }
@@ -468,7 +472,7 @@ class ReceiptListItem extends StatelessWidget {
               width: 10,
             ),
             Expanded(
-              flex: 6,
+              flex: 7,
               child: Text(
                 '${receipt['receiptShortDesc']}',
                 style: TextStyle(

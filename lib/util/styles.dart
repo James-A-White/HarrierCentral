@@ -7,6 +7,7 @@ Color themeAppBarBackground40 = const Color.fromARGB(102, 13, 115, 124);
 Color themeNavBarBackground = const Color.fromARGB(255, 190, 190, 190);
 Color themeBackgroundColor = const Color.fromARGB(255, 61, 27, 142);
 Color themeLearnMoreLink = Colors.yellow;
+Color themeLightBackground = Colors.yellow.shade100;
 
 IconData delayIcon = MaterialCommunityIcons.progress_clock;
 const String delayIconAsset = 'images/icons/progress_clock.png';
@@ -36,7 +37,8 @@ class Backgrounds {
   static BoxDecoration defaultHcBackgroundLight() {
     return const BoxDecoration(
         image: DecorationImage(
-      image: ExactAssetImage('images/backgrounds/hash_foot_background_light.png'),
+      image:
+          ExactAssetImage('images/backgrounds/hash_foot_background_light.png'),
       fit: BoxFit.cover,
     ));
   }
