@@ -119,7 +119,7 @@ class ReceiptsService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
       userId,
       'hcapp_addEditReceipt',
       paramString: deviceSecret.toUpperCase(),

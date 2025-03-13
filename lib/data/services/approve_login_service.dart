@@ -2,7 +2,8 @@ import 'package:dart_ipify/dart_ipify.dart';
 import 'package:harrier_central/imports.dart';
 
 class ApproveLoginService {
-  Future<String> approveLogin(BuildContext context, String? facebookAccessToken) async {
+  Future<String> approveLogin(
+      BuildContext context, String? facebookAccessToken) async {
     String? uid = getStringPref(StringPrefsEnum.userId);
     if ((uid ?? '').isEmpty) {
       uid = GUID_EMPTY;
@@ -10,7 +11,8 @@ class ApproveLoginService {
 
     String userId = uid!;
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no version>';
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no version>';
 
     String deviceId = 'unknown';
     String deviceType = 'unknown';
@@ -27,11 +29,13 @@ class ApproveLoginService {
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
-      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
+      systemVersion =
+          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
       manufacturer = androidInfo.brand;
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      deviceId = (iosInfo.identifierForVendor ?? '<no vendor id>').toUpperCase();
+      deviceId =
+          (iosInfo.identifierForVendor ?? '<no vendor id>').toUpperCase();
       deviceType = iosInfo.model;
       deviceName = iosInfo.name;
       systemName = iosInfo.systemName;
@@ -73,7 +77,12 @@ class ApproveLoginService {
 }''';
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'approveLoginV2', paramString: deviceId);
+    final String accessToken = Utilities.generateToken(
+      userId,
+      'approveLoginV2',
+      paramString: deviceId,
+      timeWindow: 30,
+    );
 
     final String body = jsonEncode(<String, String?>{
       'userId': userId,
@@ -96,7 +105,9 @@ class ApproveLoginService {
 
     Future<Response> futureResponse;
 
-    futureResponse = post(Uri.parse('${BASE_API_URL}hc3_approve_login_v2'), headers: <String, String>{'content-type': 'application/json'}, body: body
+    futureResponse = post(Uri.parse('${BASE_API_URL}hc3_approve_login_v2'),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -109,7 +120,8 @@ class ApproveLoginService {
     //final Future<void> delay = Future<void>.delayed(const Duration(seconds: 25));
 
     // wait 7 seconds then issue the first warning
-    Response resp = await futureResponse.timeout(const Duration(seconds: LOGIN_IS_DELAYED_WARNING_1), onTimeout: () {
+    Response resp = await futureResponse.timeout(
+        const Duration(seconds: LOGIN_IS_DELAYED_WARNING_1), onTimeout: () {
       return Response('<timeout error>', 999);
     });
 
@@ -126,7 +138,8 @@ class ApproveLoginService {
       }
 
       // wait 15 more seconds then issue another warning
-      resp = await futureResponse.timeout(const Duration(seconds: LOGIN_IS_DELAYED_WARNING_2), onTimeout: () {
+      resp = await futureResponse.timeout(
+          const Duration(seconds: LOGIN_IS_DELAYED_WARNING_2), onTimeout: () {
         return Response('<timeout error>', 999);
       });
 
@@ -144,7 +157,9 @@ class ApproveLoginService {
 
         if (resp.statusCode == 999) {
           // finally, if the response times out again, continue with offline mode
-          resp = await futureResponse.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(navigatorKey.currentContext!));
+          resp = await futureResponse.timeout(
+              const Duration(seconds: LOGIN_TIMEOUT),
+              onTimeout: () => _onTimeout(navigatorKey.currentContext!));
         }
       }
     }

@@ -142,10 +142,10 @@ class HasherEventMapService {
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
     final String accessToken1 =
-        IveCoreUtilities.generateToken(userId.toUpperCase(), 'getRuns');
+        Utilities.generateToken(userId.toUpperCase(), 'getRuns');
 
     final String accessToken2 =
-        IveCoreUtilities.generateToken(userId, 'getMyKennelRunTotals');
+        Utilities.generateToken(userId, 'getMyKennelRunTotals');
 
     if ((emailAddress ?? '').isNotEmpty) {
       final String body = jsonEncode(<String, String>{
@@ -189,7 +189,7 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
         userId.toUpperCase(), 'setEmailAndNotificationPrefs800');
 
     final int hasherEventMapLastUpdated =
@@ -274,7 +274,7 @@ class HasherEventMapService {
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
       userId.toUpperCase(),
       'hcapp_setEventRsvp',
       paramString: deviceSecret.toUpperCase(),
@@ -354,8 +354,14 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(
-        userId.toUpperCase(), 'setEventAttendence800');
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final String accessToken = Utilities.generateToken(
+      userId.toUpperCase(),
+      'hcapp_setEventAttendence',
+      paramString: deviceSecret,
+    );
 
     final int hasherEventMapLastUpdated =
         await G0<TableModel>().baseService.getLastUpdatedTime(
@@ -382,7 +388,8 @@ class HasherEventMapService {
         DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
     final Map<String, Object?> bodyMap = <String, Object?>{
-      'userId': userId,
+      'queryType': 'setEventAttendence',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'eventId': eventId,
       'hasherId': hasherId,
@@ -397,8 +404,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody =
-        await ServiceCommon.sendHttpPost('hc3_set_event_attendence_800', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -435,8 +441,8 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(
-        userId.toUpperCase(), 'joinEventAsVisitor800');
+    final String accessToken =
+        Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor800');
 
     final int hasherEventMapLastUpdated =
         await G0<TableModel>().baseService.getLastUpdatedTime(

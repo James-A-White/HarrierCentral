@@ -10,11 +10,16 @@ class GetResetCodeService {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'getResetCode');
+    final String accessToken = Utilities.generateToken(userId, 'getResetCode');
 
-    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'supportCode': supportCode});
+    final String body = jsonEncode(<String, String>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'supportCode': supportCode
+    });
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_get_reset_code', body);
+    final String responseBody =
+        await ServiceCommon.sendHttpPost('hc3_get_reset_code', body);
 
     SingleResultModel? result;
 

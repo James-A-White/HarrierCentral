@@ -16,8 +16,12 @@ class AuthorizeDeviceService {
       deviceDataJson = jsonEncode(iosInfo.data);
     }
 
-    final String accessToken =
-        IveCoreUtilities.generateToken(GUID_EMPTY, 'hcapp_authorizeDevice');
+    final String accessToken = Utilities.generateToken(
+      GUID_EMPTY,
+      'hcapp_authorizeDevice',
+      timeWindow:
+          30, // since the device secret and time window have not yet been created, default to 30 for the time window and don't pass a device secret
+    );
 
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersion) ??
@@ -62,7 +66,13 @@ class AuthorizeDeviceService {
           //await clearAllPrefs();
           await setStringPref(StringPrefsEnum.deviceId, deviceId);
           await setStringPref(
-              StringPrefsEnum.deviceSecret, items['deviceSecret']);
+              StringPrefsEnum.deviceSecret,
+              items[
+                  'iconDataBase64']); // a bit of security through obscurity here
+          await setIntPref(
+              IntPrefsEnum.timeWindow,
+              items[
+                  'colorPaletteIndex']); // a bit of security through obscurity here
           await setStringPref(StringPrefsEnum.profilePhotoUrl, items['photo']);
           await setStringPref(
               StringPrefsEnum.displayName, items['displayName']);

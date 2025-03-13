@@ -171,7 +171,7 @@ class SyncUserDataService {
         String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
         String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-        final String accessToken = IveCoreUtilities.generateToken(
+        final String accessToken = Utilities.generateToken(
             userId, 'hcapp_syncUserData',
             paramString: deviceSecret.toUpperCase());
 

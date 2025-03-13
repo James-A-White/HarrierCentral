@@ -15,7 +15,8 @@ class SyncKennelAdminService {
   int _hashersLastUpdated = FORCE;
 
   Future<int> _getLastUpdatedTime(String colName, String tableName) async {
-    final List<Map<String, dynamic>> table = await G0<Database>().rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
+    final List<Map<String, dynamic>> table = await G0<Database>()
+        .rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
     final int? timeValue = table.first['maxDate'];
     //print(timeValue.toString());
     return timeValue ?? FORCE;
@@ -24,13 +25,25 @@ class SyncKennelAdminService {
   Future<void> getLastUpdatedTimes(int flags) async {
     _kennelLastUpdated = (flags & flagKennelTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(G0<TableModel>().kennelsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.kennel));
+        : await _getLastUpdatedTime(
+            G0<TableModel>().kennelsTableHelper.colUpdatedAtValue,
+            G0<TableModel>()
+                .kennelsTableHelper
+                .getTableName(AppDomainType.kennel));
     _hashersLastUpdated = (flags & flagHashersTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(G0<TableModel>().hashersTableHelper.colUpdatedAtValue, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
+        : await _getLastUpdatedTime(
+            G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
+            G0<TableModel>()
+                .hashersTableHelper
+                .getTableName(AppDomainType.user));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue, G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel));
+        : await _getLastUpdatedTime(
+            G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+            G0<TableModel>()
+                .hasherKennelMapTableHelper
+                .getTableName(AppDomainType.kennel));
   }
 
   Future<bool> updateFromBackend(
@@ -49,7 +62,9 @@ class SyncKennelAdminService {
       await G0<TableModel>().baseService.clearTable(
             G0<Database>(),
             G0<TableModel>().hasherKennelMapTableHelper,
-            G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel),
+            G0<TableModel>()
+                .hasherKennelMapTableHelper
+                .getTableName(AppDomainType.kennel),
           );
 
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
@@ -89,28 +104,46 @@ class SyncKennelAdminService {
       // the table and add one second to it
       await getLastUpdatedTimes(flags);
 
-      final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_kennelLastUpdated + 1);
-      final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
-      final DateTime hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+      final DateTime kennelsUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_kennelLastUpdated + 1);
+      final DateTime hashersUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+      final DateTime hasherKennelMapUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
 
       String userId = getStringPref(StringPrefsEnum.userId) ?? '';
       if (userId.isEmpty) {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = IveCoreUtilities.generateToken(userId, 'syncKennelAdminData800');
+      String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+      String deviceSecret =
+          (getStringPref(StringPrefsEnum.deviceSecret) ?? '').toUpperCase();
+
+      final String accessToken = Utilities.generateToken(
+        userId,
+        'hcapp_syncKennelAdminData',
+        paramString: deviceSecret,
+      );
 
       final String body = jsonEncode(<String, String>{
-        'userId': userId,
+        'queryType': 'syncKennelAdminData',
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'kennelId': kennelId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0 ? 'ignore' : ('${kennelsUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+        'hashersUpdatedAfter': (flags & flagHashersTable) == 0
+            ? 'ignore'
+            : ('${hashersUpdatedAfter}000000').substring(0, 26),
+        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0
+            ? 'ignore'
+            : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0
+            ? 'ignore'
+            : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       });
 
-      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_kennel_admin_data_800', body);
+      final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(
@@ -129,7 +162,10 @@ class SyncKennelAdminService {
     G0<TableModel>().hasherKennelMapTableHelper,
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function? informUser}) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(jsonResults, kennelTables, G0<Database>(), AppDomainType.kennel);
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(
+      String jsonResults,
+      {Function? informUser}) async {
+    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(
+        jsonResults, kennelTables, G0<Database>(), AppDomainType.kennel);
   }
 }

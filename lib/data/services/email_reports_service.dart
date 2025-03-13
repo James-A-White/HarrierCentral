@@ -12,7 +12,8 @@ class EmailReportsService {
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
     if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
-      final String accessToken = IveCoreUtilities.generateToken(userId!, 'rptKennelRunStats');
+      final String accessToken =
+          Utilities.generateToken(userId!, 'rptKennelRunStats');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
@@ -25,7 +26,11 @@ class EmailReportsService {
         'currencySymbol': currencySymbol
       });
 
-      final Response response = await post(Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      final Response response = await post(
+              Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body)
+          .catchError(
         (dynamic error) {
           return Future<Response>.value(Response('error', 500));
         },
@@ -33,7 +38,10 @@ class EmailReportsService {
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
-    return <String, String>{'result': 'No valid email address found', 'email': ''};
+    return <String, String>{
+      'result': 'No valid email address found',
+      'email': ''
+    };
   }
 
   Future<Map<String, String>> sendKennelInvitesByEmail({
@@ -46,7 +54,9 @@ class EmailReportsService {
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
     if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
-      final String accessToken = IveCoreUtilities.generateToken(userId!, 'rptApi_emailKennelInviteCodes', paramString: kennelId);
+      final String accessToken = Utilities.generateToken(
+          userId!, 'rptApi_emailKennelInviteCodes',
+          paramString: kennelId);
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
@@ -58,7 +68,11 @@ class EmailReportsService {
         'isPreview': isPreview,
       });
 
-      final Response response = await post(Uri.parse(EMAIL_KENNEL_INVITE_CODES_API_URL), headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      final Response response = await post(
+              Uri.parse(EMAIL_KENNEL_INVITE_CODES_API_URL),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body)
+          .catchError(
         (dynamic error) {
           return Future<Response>.value(Response('error', 500));
         },
@@ -66,6 +80,9 @@ class EmailReportsService {
 
       return <String, String>{'result': response.body};
     }
-    return <String, String>{'result': 'No valid email address found', 'email': ''};
+    return <String, String>{
+      'result': 'No valid email address found',
+      'email': ''
+    };
   }
 }

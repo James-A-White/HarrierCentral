@@ -229,9 +229,10 @@ class EventsService extends BaseService {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    String deviceSecret =
+        (getStringPref(StringPrefsEnum.deviceSecret) ?? '').toUpperCase();
 
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
       userId,
       'hcapp_addEditEvent',
       paramString: deviceSecret.toUpperCase(),
@@ -395,7 +396,7 @@ class EventsService extends BaseService {
     String emailBody = '',
   }) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
         userId, 'rptApi_emailRunDetails',
         paramString: eventId);
 

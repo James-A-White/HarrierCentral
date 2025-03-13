@@ -127,7 +127,7 @@ class HashersService extends BaseService {
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
         userId.toUpperCase(), 'hcapp_addEditUser',
         paramString: deviceSecret.toUpperCase() + targetUserId.toUpperCase());
 
@@ -319,7 +319,7 @@ class HashersService extends BaseService {
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
         userId.toUpperCase(), 'hcapp_addEditUser',
         paramString: deviceSecret.toUpperCase() + targetUserId.toUpperCase());
 
@@ -391,7 +391,7 @@ class HashersService extends BaseService {
       hashersUpdatedAfter = DateTime(2050, 1, 1);
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(
+    final String accessToken = Utilities.generateToken(
         userId.toUpperCase(), 'processThirdPartyLogin',
         paramString: userId.toUpperCase());
 

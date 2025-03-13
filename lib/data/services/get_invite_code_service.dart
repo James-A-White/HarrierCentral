@@ -10,11 +10,16 @@ class GetInviteCodeService {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'getInviteCode');
+    final String accessToken = Utilities.generateToken(userId, 'getInviteCode');
 
-    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'targetUserId': targetUserId});
+    final String body = jsonEncode(<String, String>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'targetUserId': targetUserId
+    });
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_get_invite_code', body);
+    final String responseBody =
+        await ServiceCommon.sendHttpPost('hc3_get_invite_code', body);
 
     SingleResultModel? result;
 

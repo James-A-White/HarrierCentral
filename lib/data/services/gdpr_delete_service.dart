@@ -10,11 +10,13 @@ class GdprDeleteService {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'gdprDelete');
+    final String accessToken = Utilities.generateToken(userId, 'gdprDelete');
 
-    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken});
+    final String body = jsonEncode(
+        <String, String>{'userId': userId, 'accessToken': accessToken});
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_gdpr_delete', body);
+    final String responseBody =
+        await ServiceCommon.sendHttpPost('hc3_gdpr_delete', body);
 
     SingleResultModel? result;
 

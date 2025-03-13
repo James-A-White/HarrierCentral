@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
+import 'package:crypto/crypto.dart';
 
 import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,7 +29,30 @@ class Utilities {
 
 //   static int logCounter = 0;
 
-  static Map<String, String> validateScan(String scanText, int allowedScanTypes) {
+  static String generateToken(
+    String userId,
+    String procName, {
+    String paramString = '',
+    int? timeWindow,
+  }) {
+    timeWindow ??= getIntPref(IntPrefsEnum.timeWindow) ?? 30;
+    final Duration difference =
+        DateTime.now().toUtc().difference(DateTime.utc(1993, 7, 25, 15, 0, 0));
+    //final int timeBlocks = (difference.inSeconds / 5760).toInt();
+    final int timeBlocks = difference.inSeconds ~/ timeWindow;
+    if (paramString.isNotEmpty) {
+      paramString = '#${paramString.toUpperCase()}';
+    }
+    final String accessString =
+        '${userId.toUpperCase()}#$procName#${timeBlocks.toString()}$paramString';
+    final List<int> bytes =
+        utf8.encode(accessString.toUpperCase()); // data being hashed
+    final Digest digest = sha256.convert(bytes);
+    return '$digest'.toUpperCase();
+  }
+
+  static Map<String, String> validateScan(
+      String scanText, int allowedScanTypes) {
     Map<String, String> result;
 
     if (scanText.contains(BASE_HCWEB_MOBILE_URL)) {
@@ -49,7 +73,11 @@ class Utilities {
     }
 
     if (prefix.isEmpty) {
-      result = <String, String>{'validScan': false.toString(), 'prefix': '', 'content': ''};
+      result = <String, String>{
+        'validScan': false.toString(),
+        'prefix': '',
+        'content': ''
+      };
     } else {
       int scanType = 0;
       bool validHcQr = true;
@@ -86,7 +114,12 @@ class Utilities {
 
       final bool scanAllowed = (scanType & allowedScanTypes) != 0;
 
-      result = <String, String>{'validScan': scanAllowed.toString(), 'prefix': prefix, 'content': content, 'validHcQr': validHcQr.toString()};
+      result = <String, String>{
+        'validScan': scanAllowed.toString(),
+        'prefix': prefix,
+        'content': content,
+        'validHcQr': validHcQr.toString()
+      };
     }
 
     return result;
@@ -100,7 +133,8 @@ class Utilities {
     ValueNotifier<bool> saveUserMapPreference,
   ) async {
     try {
-      final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
+      final List<maps.AvailableMap> availableMaps =
+          await maps.MapLauncher.installedMaps;
 
       await showModalBottomSheet<dynamic>(
         context: navigatorKey.currentContext!,
@@ -134,20 +168,27 @@ class Utilities {
                             child: ListTile(
                               onTap: () async {
                                 if (saveUserMapPreference.value) {
-                                  await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
+                                  await setStringPref(
+                                      StringPrefsEnum.mapPreference,
+                                      map.mapName);
                                 }
-                                Navigator.of(navigatorKey.currentContext!).pop();
+                                Navigator.of(navigatorKey.currentContext!)
+                                    .pop();
 
-                                await Future<void>.delayed(const Duration(milliseconds: 200));
+                                await Future<void>.delayed(
+                                    const Duration(milliseconds: 200));
 
                                 // BUG in plugin - doesn't work when sending a title with Google maps
                                 await map.showMarker(
                                   coords: coords,
-                                  title: map.mapName.contains('Google') ? '' : title,
+                                  title: map.mapName.contains('Google')
+                                      ? ''
+                                      : title,
                                   description: address,
                                 );
                               },
-                              title: Text(map.mapName, style: ts_titleLargeBlack),
+                              title:
+                                  Text(map.mapName, style: ts_titleLargeBlack),
                               leading: SvgPicture.asset(
                                 map.icon,
                                 height: 60.0,
@@ -279,9 +320,11 @@ class Utilities {
   static bool isOpeeOrTuna() {
     bool isOpeeOrTuna = false;
 
-    final String currentUserId = getStringPref(StringPrefsEnum.userId) ?? '<no user id>';
+    final String currentUserId =
+        getStringPref(StringPrefsEnum.userId) ?? '<no user id>';
 
-    if ((currentUserId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') || (currentUserId == 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A')) {
+    if ((currentUserId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') ||
+        (currentUserId == 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A')) {
       isOpeeOrTuna = true;
     }
 
@@ -289,16 +332,22 @@ class Utilities {
   }
 
   static Future<void> subscribeToGeoLocationStream() async {
-    G0<DeviceInfo>().deviceLat = getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
-    G0<DeviceInfo>().deviceLon = getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
+    G0<DeviceInfo>().deviceLat =
+        getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
+    G0<DeviceInfo>().deviceLon =
+        getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
 
-    IveCoreUtilities.logTiming('Geostatus query start', G0<AppModel>().appStartTime);
+    IveCoreUtilities.logTiming(
+        'Geostatus query start', G0<AppModel>().appStartTime);
     final LocationPermission permission = await Geolocator.checkPermission();
 
-    IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
-    if ((permission == LocationPermission.always) || (permission == LocationPermission.whileInUse)) {
+    IveCoreUtilities.logTiming(
+        'Geolocation query start', G0<AppModel>().appStartTime);
+    if ((permission == LocationPermission.always) ||
+        (permission == LocationPermission.whileInUse)) {
       G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50),
+        locationSettings: const LocationSettings(
+            accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50),
       ).listen((Position position) {
         G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
         G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
@@ -313,7 +362,10 @@ class Utilities {
       // this function because we want the app to start quickly.
 
       // ignore: unawaited_futures
-      Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.lowest)).then((Position position) {
+      Geolocator.getCurrentPosition(
+              locationSettings:
+                  const LocationSettings(accuracy: LocationAccuracy.lowest))
+          .then((Position position) {
         G0<DeviceInfo>().deviceLat = position.latitude;
         G0<DeviceInfo>().deviceLon = position.longitude;
         setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
@@ -327,7 +379,8 @@ class Utilities {
 
   static String? validateEmail(String? value) {
     if ((value != null) && (value.isNotEmpty)) {
-      const String pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+      const String pattern =
+          r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
       final RegExp regex = RegExp(pattern, caseSensitive: false);
       if (!regex.hasMatch(value)) {
         return 'Please enter a valid email';
@@ -347,7 +400,10 @@ class Utilities {
       if (regex.hasMatch(searchText)) {
         for (RegExpMatch match in regex.allMatches(searchText)) {
           if (match[0] != null) {
-            results.add(match[0]!.replaceFirst(token.replaceFirst(r'\', ''), '').trim().toLowerCase());
+            results.add(match[0]!
+                .replaceFirst(token.replaceFirst(r'\', ''), '')
+                .trim()
+                .toLowerCase());
           }
         }
       }
@@ -358,13 +414,18 @@ class Utilities {
   static List<double?> getLatLongFromString(List<String?> values) {
     for (String? value in values) {
       if ((value ?? '').isNotEmpty) {
-        const String pattern = r'[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)';
+        const String pattern =
+            r'[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)';
         final RegExp regex = RegExp(pattern, caseSensitive: false);
         if (regex.hasMatch(value!)) {
-          final String numStr = regex.allMatches(value).elementAt(0).group(0) ?? '';
+          final String numStr =
+              regex.allMatches(value).elementAt(0).group(0) ?? '';
           final List<String> strs = numStr.split(',');
           if (strs.length == 2) {
-            return <double?>[double.tryParse(strs[0]), double.tryParse(strs[1])];
+            return <double?>[
+              double.tryParse(strs[0]),
+              double.tryParse(strs[1])
+            ];
           }
         }
       }
@@ -469,7 +530,9 @@ class Utilities {
                   key: const Key('511203069'),
                   pageTitle: pageTitle,
                   imageUrl: image.startsWith('http') ? image : null,
-                  assetImage: image.contains('bundle://') ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg' : null,
+                  assetImage: image.contains('bundle://')
+                      ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg'
+                      : null,
                   appBarBackgroundColor: themeAppBarBackground,
                   background: Backgrounds.defaultHcBackground(),
                   margin: 20.0),
@@ -491,11 +554,12 @@ class Utilities {
                         ),
                       ),
                     )),
-                errorWidget: (BuildContext context, String url, dynamic error) => Icon(
-                      Icons.error,
-                      size: height,
-                      color: hc_red,
-                    ),
+                errorWidget:
+                    (BuildContext context, String url, dynamic error) => Icon(
+                          Icons.error,
+                          size: height,
+                          color: hc_red,
+                        ),
                 //fadeOutDuration:  Duration(seconds: 1),
                 fadeInDuration: const Duration(milliseconds: 0),
                 width: width,
@@ -506,7 +570,9 @@ class Utilities {
                     width: width,
                     height: height,
                     fit: BoxFit.fill,
-                    image: AssetImage(('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                    image: AssetImage(
+                        ('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                            .toLowerCase()),
                   )
                 : Image(
                     width: width,

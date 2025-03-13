@@ -96,7 +96,8 @@ class Leaderboard extends StatefulWidget {
   LeaderboardState createState() => LeaderboardState();
 }
 
-class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin {
+class LeaderboardState extends State<Leaderboard>
+    with TickerProviderStateMixin {
   late TabController _timespanTabController;
   Map<String, Map<String, dynamic>>? _kennels;
 
@@ -112,7 +113,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   bool _showKennels = false;
   bool _showHomeKennel = false;
 
-  final ScrollController _leaderScrollController = ScrollController(keepScrollOffset: false, initialScrollOffset: 50.0);
+  final ScrollController _leaderScrollController =
+      ScrollController(keepScrollOffset: false, initialScrollOffset: 50.0);
 
   static const int TABINDEX_365_DAYS = 0;
   static const int TABINDEX_CURRENT_YEAR = 1;
@@ -131,7 +133,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
       _showKennels = true;
     }
 
-    QueryKennels.queryKennelDetails().then((List<Map<String, dynamic>> kennels) {
+    QueryKennels.queryKennelDetails()
+        .then((List<Map<String, dynamic>> kennels) {
       _kennels = {};
 
       for (Map<String, dynamic> kennel in kennels) {
@@ -162,11 +165,16 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
     String responseBody;
     bool updateLocalLeaderboardCache = false;
 
-    DateTime? lastLeaderboardUpdate = getDatePref(DatePrefsEnum.lastLeaderboardUpdate);
+    DateTime? lastLeaderboardUpdate =
+        getDatePref(DatePrefsEnum.lastLeaderboardUpdate);
 
-    if ((widget.kennelId != null) || (lastLeaderboardUpdate == null) || (DateFormat('yyyyMMMdd').format(lastLeaderboardUpdate) != DateFormat('yyyyMMMdd').format(DateTime.now()))) {
+    if ((widget.kennelId != null) ||
+        (lastLeaderboardUpdate == null) ||
+        (DateFormat('yyyyMMMdd').format(lastLeaderboardUpdate) !=
+            DateFormat('yyyyMMMdd').format(DateTime.now()))) {
       final String userId = getStringPref(StringPrefsEnum.userId) ?? '';
-      final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'getLeaderboard');
+      final String accessToken =
+          Utilities.generateToken(userId.toUpperCase(), 'getLeaderboard');
 
       final String body = jsonEncode(<String, Object?>{
         'userId': userId,
@@ -174,7 +182,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         'kennelId': widget.kennelId,
       });
 
-      responseBody = await ServiceCommon.sendHttpPost('hc3_get_leaderboard', body);
+      responseBody =
+          await ServiceCommon.sendHttpPost('hc3_get_leaderboard', body);
       updateLocalLeaderboardCache = true;
     } else {
       responseBody = getStringPref(StringPrefsEnum.leaderboardJson) ?? '';
@@ -200,7 +209,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
 
       jsonResults[0].forEach((element) {
         LeaderboardModel lm = LeaderboardModel.fromJson(element);
-        lm.searchText = ' ${lm.displayName}, ${_kennels![lm.kennelId]!['searchText']}, ';
+        lm.searchText =
+            ' ${lm.displayName}, ${_kennels![lm.kennelId]!['searchText']}, ';
         if ((lm.homeKennelId != null) && (lm.homeKennelId!.isNotEmpty)) {
           lm.searchText += _kennels![lm.kennelId]!['searchText'];
         }
@@ -209,29 +219,47 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         // if we are doing this for all kennels
         if ((widget.kennelId == null) || (widget.kennelId!.isEmpty)) {
           if (leaderAggregateMap.containsKey(lm.hasherId)) {
-            leaderAggregateMap[lm.hasherId]!.rollingYearHaringCount = (leaderAggregateMap[lm.hasherId]!.rollingYearHaringCount + lm.rollingYearHaringCount);
-            leaderAggregateMap[lm.hasherId]!.rollingYearTotalRunCount = (leaderAggregateMap[lm.hasherId]!.rollingYearTotalRunCount + lm.rollingYearTotalRunCount);
-            leaderAggregateMap[lm.hasherId]!.totalHaringCount = (leaderAggregateMap[lm.hasherId]!.totalHaringCount + lm.totalHaringCount);
-            leaderAggregateMap[lm.hasherId]!.totalRunCount = (leaderAggregateMap[lm.hasherId]!.totalRunCount + lm.totalRunCount);
-            leaderAggregateMap[lm.hasherId]!.ytdHaringCount = (leaderAggregateMap[lm.hasherId]!.ytdHaringCount + lm.ytdHaringCount);
-            leaderAggregateMap[lm.hasherId]!.ytdTotalRunCount = (leaderAggregateMap[lm.hasherId]!.ytdTotalRunCount + lm.ytdTotalRunCount);
-            leaderAggregateMap[lm.hasherId]!.searchText += ' ${_kennels![lm.kennelId]!['searchText']}, ';
+            leaderAggregateMap[lm.hasherId]!.rollingYearHaringCount =
+                (leaderAggregateMap[lm.hasherId]!.rollingYearHaringCount +
+                    lm.rollingYearHaringCount);
+            leaderAggregateMap[lm.hasherId]!.rollingYearTotalRunCount =
+                (leaderAggregateMap[lm.hasherId]!.rollingYearTotalRunCount +
+                    lm.rollingYearTotalRunCount);
+            leaderAggregateMap[lm.hasherId]!.totalHaringCount =
+                (leaderAggregateMap[lm.hasherId]!.totalHaringCount +
+                    lm.totalHaringCount);
+            leaderAggregateMap[lm.hasherId]!.totalRunCount =
+                (leaderAggregateMap[lm.hasherId]!.totalRunCount +
+                    lm.totalRunCount);
+            leaderAggregateMap[lm.hasherId]!.ytdHaringCount =
+                (leaderAggregateMap[lm.hasherId]!.ytdHaringCount +
+                    lm.ytdHaringCount);
+            leaderAggregateMap[lm.hasherId]!.ytdTotalRunCount =
+                (leaderAggregateMap[lm.hasherId]!.ytdTotalRunCount +
+                    lm.ytdTotalRunCount);
+            leaderAggregateMap[lm.hasherId]!.searchText +=
+                ' ${_kennels![lm.kennelId]!['searchText']}, ';
 
             if (lm.totalRunCount > 0) {
-              leaderAggregateMap[lm.hasherId]!.kennelCountTotal = (leaderAggregateMap[lm.hasherId]!.kennelCountTotal + 1);
+              leaderAggregateMap[lm.hasherId]!.kennelCountTotal =
+                  (leaderAggregateMap[lm.hasherId]!.kennelCountTotal + 1);
             }
 
             if (lm.rollingYearTotalRunCount > 0) {
-              leaderAggregateMap[lm.hasherId]!.kennelCountRollingYear = (leaderAggregateMap[lm.hasherId]!.kennelCountRollingYear + 1);
+              leaderAggregateMap[lm.hasherId]!.kennelCountRollingYear =
+                  (leaderAggregateMap[lm.hasherId]!.kennelCountRollingYear + 1);
             }
 
             if (lm.ytdTotalRunCount > 0) {
-              leaderAggregateMap[lm.hasherId]!.kennelCountYtd = (leaderAggregateMap[lm.hasherId]!.kennelCountYtd + 1);
+              leaderAggregateMap[lm.hasherId]!.kennelCountYtd =
+                  (leaderAggregateMap[lm.hasherId]!.kennelCountYtd + 1);
             }
           } else {
             LeaderboardModel newLm = LeaderboardModel.clone(lm);
-            newLm.searchText = ' ${newLm.displayName}, ${_kennels![newLm.kennelId]!['searchText']}, ';
-            if ((newLm.homeKennelId != null) && (newLm.homeKennelId!.isNotEmpty)) {
+            newLm.searchText =
+                ' ${newLm.displayName}, ${_kennels![newLm.kennelId]!['searchText']}, ';
+            if ((newLm.homeKennelId != null) &&
+                (newLm.homeKennelId!.isNotEmpty)) {
               newLm.searchText += _kennels![newLm.kennelId]!['searchText'];
             }
 
@@ -256,7 +284,9 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
 
       _filteredLeaderboardAggregateList = _leaderboardAggregateList!.toList();
       if (_leaderboardList != null) {
-        _filteredLeaderboardList = _leaderboardList!.map((item) => LeaderboardModel.clone(item)).toList();
+        _filteredLeaderboardList = _leaderboardList!
+            .map((item) => LeaderboardModel.clone(item))
+            .toList();
       }
     }
 
@@ -276,7 +306,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                     child: Padding(
                       padding: EdgeInsets.all(5.0),
                       child: Center(
-                        child: HcCircularProgressIndicator(key: Key('22030392')),
+                        child:
+                            HcCircularProgressIndicator(key: Key('22030392')),
                       ),
                     ),
                   )
@@ -289,7 +320,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                             controller: _leaderScrollController,
                             slivers: <Widget>[
                               SliverAppBar(
-                                toolbarHeight: widget.kennelId == null ? 155.0 : 106.0,
+                                toolbarHeight:
+                                    widget.kennelId == null ? 155.0 : 106.0,
                                 floating: true,
                                 backgroundColor: Colors.grey.shade400,
                                 shadowColor: Colors.transparent,
@@ -306,11 +338,23 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                       color: Colors.grey.shade400,
                                       child: TabBar(
                                         onTap: (void _) {
-                                          _sortLeaderboard(_leaderboardSortColumnIndex, false);
+                                          _sortLeaderboard(
+                                              _leaderboardSortColumnIndex,
+                                              false);
                                           setState(() {});
                                         },
-                                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                        labelStyle: const TextStyle(
+                                            fontFamily:
+                                                'AvenirNextCondensedBold',
+                                            fontStyle: FontStyle.normal,
+                                            fontSize: 18.0,
+                                            height: 1.0),
+                                        unselectedLabelStyle: const TextStyle(
+                                            fontFamily:
+                                                'AvenirNextCondensedMedium',
+                                            fontStyle: FontStyle.normal,
+                                            fontSize: 18.0,
+                                            height: 1.0),
                                         isScrollable: false,
                                         unselectedLabelColor: Colors.black,
                                         labelColor: Colors.white,
@@ -318,13 +362,17 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                         indicator: BubbleTabIndicator(
                                           indicatorHeight: 25.0,
                                           indicatorColor: hc_red,
-                                          tabBarIndicatorSize: TabBarIndicatorSize.label,
+                                          tabBarIndicatorSize:
+                                              TabBarIndicatorSize.label,
                                           indicatorRadius: 10.0,
-                                          padding: const EdgeInsets.only(top: 5.0),
+                                          padding:
+                                              const EdgeInsets.only(top: 5.0),
                                         ),
                                         tabs: <Tab>[
                                           const Tab(text: '365 days'),
-                                          Tab(text: 'In ${DateTime.now().year}'),
+                                          Tab(
+                                              text:
+                                                  'In ${DateTime.now().year}'),
                                           const Tab(text: 'Total'),
                                         ],
                                         controller: _timespanTabController,
@@ -337,7 +385,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                     ),
                                     if (widget.kennelId == null) ...<Widget>[
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Checkbox(
                                             value: _showKennels,
@@ -350,12 +399,25 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             },
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.only(top: 3.0),
+                                            padding:
+                                                const EdgeInsets.only(top: 3.0),
                                             child: Text(
                                               'Show Kennels',
                                               style: _showKennels
-                                                  ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0)
-                                                  : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                                                  ? const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedBold',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 18.0,
+                                                      height: 1.0)
+                                                  : const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedMedium',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 18.0,
+                                                      height: 1.0),
                                             ),
                                           ),
                                           const SizedBox(width: 10),
@@ -365,17 +427,31 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             activeColor: hc_red,
                                             onChanged: (value) {
                                               setState(() {
-                                                _showHomeKennel = !_showHomeKennel;
+                                                _showHomeKennel =
+                                                    !_showHomeKennel;
                                               });
                                             },
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.only(top: 3.0),
+                                            padding:
+                                                const EdgeInsets.only(top: 3.0),
                                             child: Text(
                                               'Home Kennel',
                                               style: _showHomeKennel
-                                                  ? const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0)
-                                                  : const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
+                                                  ? const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedBold',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 20.0,
+                                                      height: 1.0)
+                                                  : const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedMedium',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 20.0,
+                                                      height: 1.0),
                                             ),
                                           ),
                                           const SizedBox(width: 15),
@@ -393,7 +469,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                               SliverAppBar(
                                 pinned: true,
                                 toolbarHeight: 60.0,
-                                backgroundColor: const Color.fromARGB(255, 26, 0, 65),
+                                backgroundColor:
+                                    const Color.fromARGB(255, 26, 0, 65),
                                 automaticallyImplyLeading: false,
                                 flexibleSpace: Column(children: [
                                   const SizedBox(height: 10.0),
@@ -414,7 +491,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             'Runs',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              fontFamily: _leaderboardSortColumnIndex == 0 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
+                                              fontFamily:
+                                                  _leaderboardSortColumnIndex ==
+                                                          0
+                                                      ? 'AvenirNextCondensedBold'
+                                                      : 'AvenirNextCondensedMedium',
                                               fontStyle: FontStyle.normal,
                                               fontSize: LEADER_FONT_SIZE,
                                               height: 1.0,
@@ -437,7 +518,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             'Hared',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              fontFamily: _leaderboardSortColumnIndex == 1 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
+                                              fontFamily:
+                                                  _leaderboardSortColumnIndex ==
+                                                          1
+                                                      ? 'AvenirNextCondensedBold'
+                                                      : 'AvenirNextCondensedMedium',
                                               fontStyle: FontStyle.normal,
                                               fontSize: LEADER_FONT_SIZE,
                                               height: 1.0,
@@ -457,7 +542,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             'Hasher',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              fontFamily: _leaderboardSortColumnIndex == 2 ? 'AvenirNextCondensedBold' : 'AvenirNextCondensedMedium',
+                                              fontFamily:
+                                                  _leaderboardSortColumnIndex ==
+                                                          2
+                                                      ? 'AvenirNextCondensedBold'
+                                                      : 'AvenirNextCondensedMedium',
                                               fontStyle: FontStyle.normal,
                                               fontSize: LEADER_FONT_SIZE,
                                               height: 1.0,
@@ -479,13 +568,16 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                         },
                                         child: SizedBox(
                                           width: 50.0,
-                                          child: _leaderboardSortColumnIndex != 0
-                                              ? null
-                                              : Icon(
-                                                  _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
-                                                  size: 20.0,
-                                                  color: Colors.yellow,
-                                                ),
+                                          child:
+                                              _leaderboardSortColumnIndex != 0
+                                                  ? null
+                                                  : Icon(
+                                                      _sortOrderAsc
+                                                          ? AntDesign.caretup
+                                                          : AntDesign.caretdown,
+                                                      size: 20.0,
+                                                      color: Colors.yellow,
+                                                    ),
                                         ),
                                       ),
                                       GestureDetector(
@@ -498,13 +590,16 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                         },
                                         child: SizedBox(
                                           width: 70.0,
-                                          child: _leaderboardSortColumnIndex != 1
-                                              ? null
-                                              : Icon(
-                                                  _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
-                                                  size: 20.0,
-                                                  color: Colors.yellow,
-                                                ),
+                                          child:
+                                              _leaderboardSortColumnIndex != 1
+                                                  ? null
+                                                  : Icon(
+                                                      _sortOrderAsc
+                                                          ? AntDesign.caretup
+                                                          : AntDesign.caretdown,
+                                                      size: 20.0,
+                                                      color: Colors.yellow,
+                                                    ),
                                         ),
                                       ),
                                       Expanded(
@@ -515,13 +610,17 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             });
                                           },
                                           child: SizedBox(
-                                            child: _leaderboardSortColumnIndex != 2
-                                                ? null
-                                                : Icon(
-                                                    _sortOrderAsc ? AntDesign.caretup : AntDesign.caretdown,
-                                                    size: 20.0,
-                                                    color: Colors.yellow,
-                                                  ),
+                                            child:
+                                                _leaderboardSortColumnIndex != 2
+                                                    ? null
+                                                    : Icon(
+                                                        _sortOrderAsc
+                                                            ? AntDesign.caretup
+                                                            : AntDesign
+                                                                .caretdown,
+                                                        size: 20.0,
+                                                        color: Colors.yellow,
+                                                      ),
                                           ),
                                         ),
                                       ),
@@ -535,7 +634,9 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                       child: _filteredLeaderboardList.isEmpty
                                           ? Container(
                                               height: 400.0,
-                                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20.0),
                                               child: Center(
                                                 child: Text(
                                                   'No leaderboard records found',
@@ -550,11 +651,18 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                               SliverList(
                                 delegate: SliverChildBuilderDelegate(
                                   (context, index) {
-                                    if (index == (_showKennels ? _filteredLeaderboardList.length : _filteredLeaderboardAggregateList.length)) {
+                                    if (index ==
+                                        (_showKennels
+                                            ? _filteredLeaderboardList.length
+                                            : _filteredLeaderboardAggregateList
+                                                .length)) {
                                       return const SizedBox(height: 50);
                                     }
 
-                                    LeaderboardModel e = !_showKennels ? _filteredLeaderboardAggregateList[index] : _filteredLeaderboardList[index];
+                                    LeaderboardModel e = !_showKennels
+                                        ? _filteredLeaderboardAggregateList[
+                                            index]
+                                        : _filteredLeaderboardList[index];
                                     return Column(
                                       children: [
                                         const SizedBox(height: 3.0),
@@ -563,83 +671,121 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                             SizedBox(
                                                 width: 50.0,
                                                 child: Text(
-                                                    (_timespanTabController.index == TABINDEX_TOTAL
+                                                    (_timespanTabController
+                                                                    .index ==
+                                                                TABINDEX_TOTAL
                                                             ? e.totalRunCount
-                                                            : _timespanTabController.index == TABINDEX_365_DAYS
+                                                            : _timespanTabController
+                                                                        .index ==
+                                                                    TABINDEX_365_DAYS
                                                                 ? e.rollingYearTotalRunCount
                                                                 : e.ytdTotalRunCount)
                                                         .toString(),
                                                     textAlign: TextAlign.center,
                                                     style: const TextStyle(
-                                                      fontFamily: 'AvenirNextCondensedMedium',
-                                                      fontStyle: FontStyle.normal,
-                                                      fontSize: LEADER_FONT_SIZE,
+                                                      fontFamily:
+                                                          'AvenirNextCondensedMedium',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize:
+                                                          LEADER_FONT_SIZE,
                                                       height: 1.0,
                                                       color: Colors.white,
                                                     ))),
                                             SizedBox(
                                                 width: 70.0,
                                                 child: Text(
-                                                    (_timespanTabController.index == TABINDEX_TOTAL
+                                                    (_timespanTabController
+                                                                    .index ==
+                                                                TABINDEX_TOTAL
                                                             ? e.totalHaringCount
-                                                            : _timespanTabController.index == TABINDEX_365_DAYS
+                                                            : _timespanTabController
+                                                                        .index ==
+                                                                    TABINDEX_365_DAYS
                                                                 ? e.rollingYearHaringCount
                                                                 : e.ytdHaringCount)
                                                         .toString(),
                                                     textAlign: TextAlign.center,
                                                     style: const TextStyle(
-                                                      fontFamily: 'AvenirNextCondensedMedium',
-                                                      fontStyle: FontStyle.normal,
-                                                      fontSize: LEADER_FONT_SIZE,
+                                                      fontFamily:
+                                                          'AvenirNextCondensedMedium',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize:
+                                                          LEADER_FONT_SIZE,
                                                       height: 1.0,
                                                       color: Colors.white,
                                                     ))),
                                             Expanded(
                                               child: SingleChildScrollView(
-                                                scrollDirection: Axis.horizontal,
+                                                scrollDirection:
+                                                    Axis.horizontal,
                                                 child: Row(
                                                   children: [
                                                     Text(
                                                       e.displayName,
                                                       style: const TextStyle(
-                                                        fontFamily: 'AvenirNextCondensedMedium',
-                                                        fontStyle: FontStyle.normal,
-                                                        fontSize: LEADER_FONT_SIZE,
+                                                        fontFamily:
+                                                            'AvenirNextCondensedMedium',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize:
+                                                            LEADER_FONT_SIZE,
                                                         height: 1.0,
                                                         color: Colors.white,
                                                       ),
                                                     ),
-                                                    if ((widget.kennelId == null) && _showHomeKennel && (e.homeKennelId != null))
+                                                    if ((widget.kennelId ==
+                                                            null) &&
+                                                        _showHomeKennel &&
+                                                        (e.homeKennelId !=
+                                                            null))
                                                       Text(
                                                         '  -  ${_kennels![e.homeKennelId]!["kennelShortName"]}',
                                                         style: TextStyle(
-                                                          fontFamily: 'AvenirNextCondensedMedium',
-                                                          fontStyle: FontStyle.italic,
-                                                          fontSize: LEADER_FONT_SIZE,
+                                                          fontFamily:
+                                                              'AvenirNextCondensedMedium',
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                          fontSize:
+                                                              LEADER_FONT_SIZE,
                                                           height: 1.0,
-                                                          color: Colors.blue.shade100,
+                                                          color: Colors
+                                                              .blue.shade100,
                                                         ),
                                                       ),
-                                                    if ((widget.kennelId == null) && _showKennels)
+                                                    if ((widget.kennelId ==
+                                                            null) &&
+                                                        _showKennels)
                                                       Text(
                                                         '  -  ${_kennels![e.kennelId]!["kennelName"]}',
                                                         style: TextStyle(
-                                                          fontFamily: 'AvenirNextCondensedMedium',
-                                                          fontStyle: FontStyle.italic,
-                                                          fontSize: LEADER_FONT_SIZE,
+                                                          fontFamily:
+                                                              'AvenirNextCondensedMedium',
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                          fontSize:
+                                                              LEADER_FONT_SIZE,
                                                           height: 1.0,
-                                                          color: Colors.pink.shade100,
+                                                          color: Colors
+                                                              .pink.shade100,
                                                         ),
                                                       ),
-                                                    if ((widget.kennelId == null) && !_showKennels)
+                                                    if ((widget.kennelId ==
+                                                            null) &&
+                                                        !_showKennels)
                                                       Text(
                                                         '  -  ${_timespanTabController.index == TABINDEX_TOTAL ? e.kennelCountTotal : _timespanTabController.index == TABINDEX_365_DAYS ? e.kennelCountRollingYear : e.kennelCountYtd} Kennels',
                                                         style: TextStyle(
-                                                          fontFamily: 'AvenirNextCondensedMedium',
-                                                          fontStyle: FontStyle.italic,
-                                                          fontSize: LEADER_FONT_SIZE,
+                                                          fontFamily:
+                                                              'AvenirNextCondensedMedium',
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                          fontSize:
+                                                              LEADER_FONT_SIZE,
                                                           height: 1.0,
-                                                          color: Colors.pink.shade100,
+                                                          color: Colors
+                                                              .pink.shade100,
                                                         ),
                                                       ),
                                                   ],
@@ -651,7 +797,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                                       ],
                                     );
                                   },
-                                  childCount: _showKennels ? _filteredLeaderboardList.length + 1 : _filteredLeaderboardAggregateList.length + 1,
+                                  childCount: _showKennels
+                                      ? _filteredLeaderboardList.length + 1
+                                      : _filteredLeaderboardAggregateList
+                                              .length +
+                                          1,
                                 ),
                               ),
                             ],
@@ -695,7 +845,10 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                       focusNode: _searchFocusNode,
                       controller: _searchController,
                       keyboardType: TextInputType.text,
-                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                      style: const TextStyle(
+                          fontFamily: 'WorkSansSemiBold',
+                          fontSize: 16.0,
+                          color: Colors.black),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         icon: Icon(
@@ -703,15 +856,18 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
                           color: Colors.black,
                         ),
                         hintText: 'Search...',
-                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        hintStyle: TextStyle(
+                            fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                       ),
                     ),
                   ),
                   SizedBox(
                     width: 40,
                     child: TextButton(
-                      style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.white),
-                      child: const Text('X', style: TextStyle(color: Colors.grey)),
+                      style: TextButton.styleFrom(
+                          shape: button_shape, backgroundColor: Colors.white),
+                      child:
+                          const Text('X', style: TextStyle(color: Colors.grey)),
                       onPressed: () {
                         _searchController.text = '';
                         setState(() {
@@ -731,7 +887,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
   }
 
   void _sortLeaderboard(int columnIndex, bool alternateSortOrder) {
-    if ((_filteredLeaderboardList.isNotEmpty) || (_filteredLeaderboardAggregateList.isNotEmpty)) {
+    if ((_filteredLeaderboardList.isNotEmpty) ||
+        (_filteredLeaderboardAggregateList.isNotEmpty)) {
       if (alternateSortOrder && (columnIndex == _leaderboardSortColumnIndex)) {
         _sortOrderAsc = !_sortOrderAsc;
       }
@@ -746,24 +903,34 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
               _filteredLeaderboardList.sort((a, b) {
                 int cmp = a.totalRunCount.compareTo(b.totalRunCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               _filteredLeaderboardAggregateList.sort((a, b) {
                 int cmp = a.totalRunCount.compareTo(b.totalRunCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               break;
             case TABINDEX_365_DAYS:
               _filteredLeaderboardList.sort((a, b) {
-                int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
+                int cmp = a.rollingYearTotalRunCount
+                    .compareTo(b.rollingYearTotalRunCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               _filteredLeaderboardAggregateList.sort((a, b) {
-                int cmp = a.rollingYearTotalRunCount.compareTo(b.rollingYearTotalRunCount);
+                int cmp = a.rollingYearTotalRunCount
+                    .compareTo(b.rollingYearTotalRunCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               break;
 
@@ -771,12 +938,16 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
               _filteredLeaderboardList.sort((a, b) {
                 int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               _filteredLeaderboardAggregateList.sort((a, b) {
                 int cmp = a.ytdTotalRunCount.compareTo(b.ytdTotalRunCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               break;
           }
@@ -788,36 +959,50 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
               _filteredLeaderboardList.sort((a, b) {
                 int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               _filteredLeaderboardAggregateList.sort((a, b) {
                 int cmp = a.totalHaringCount.compareTo(b.totalHaringCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               break;
             case TABINDEX_365_DAYS:
               _filteredLeaderboardList.sort((a, b) {
-                int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
+                int cmp = a.rollingYearHaringCount
+                    .compareTo(b.rollingYearHaringCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               _filteredLeaderboardAggregateList.sort((a, b) {
-                int cmp = a.rollingYearHaringCount.compareTo(b.rollingYearHaringCount);
+                int cmp = a.rollingYearHaringCount
+                    .compareTo(b.rollingYearHaringCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               break;
             case TABINDEX_CURRENT_YEAR:
               _filteredLeaderboardList.sort((a, b) {
                 int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               _filteredLeaderboardAggregateList.sort((a, b) {
                 int cmp = a.ytdHaringCount.compareTo(b.ytdHaringCount);
                 if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
-                return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+                return a.displayName
+                    .toLowerCase()
+                    .compareTo(b.displayName.toLowerCase());
               });
               break;
           }
@@ -825,13 +1010,17 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         // sort by name
         case 2:
           _filteredLeaderboardList.sort((a, b) {
-            int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+            int cmp = a.displayName
+                .toLowerCase()
+                .compareTo(b.displayName.toLowerCase());
             if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
             return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
           });
 
           _filteredLeaderboardAggregateList.sort((a, b) {
-            int cmp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+            int cmp = a.displayName
+                .toLowerCase()
+                .compareTo(b.displayName.toLowerCase());
             if (cmp != 0) return _sortOrderAsc ? cmp : -cmp;
             return a.kennelId.toLowerCase().compareTo(b.kennelId.toLowerCase());
           });
@@ -862,9 +1051,11 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
       int firstToken = min(firstPositive, firstNegative);
       firstTokenString = filter.substring(0, firstToken).trim().toLowerCase();
     } else if (firstPositive > 0) {
-      firstTokenString = filter.substring(0, firstPositive).trim().toLowerCase();
+      firstTokenString =
+          filter.substring(0, firstPositive).trim().toLowerCase();
     } else if (firstNegative > 0) {
-      firstTokenString = filter.substring(0, firstNegative).trim().toLowerCase();
+      firstTokenString =
+          filter.substring(0, firstNegative).trim().toLowerCase();
     } else {
       firstTokenString = filter.trim().toLowerCase();
     }
@@ -893,7 +1084,8 @@ class LeaderboardState extends State<Leaderboard> with TickerProviderStateMixin 
         return false;
       }).toList();
 
-      _filteredLeaderboardAggregateList = _leaderboardAggregateList!.where((LeaderboardModel a) {
+      _filteredLeaderboardAggregateList =
+          _leaderboardAggregateList!.where((LeaderboardModel a) {
         for (String param in subParams) {
           if (a.searchText.toLowerCase().contains(param)) {
             return false;

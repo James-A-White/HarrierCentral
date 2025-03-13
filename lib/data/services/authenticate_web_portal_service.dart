@@ -10,11 +10,18 @@ class AuthenticateWebPortalService {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'authenticateWebPortal', paramString: scan);
+    final String accessToken = Utilities.generateToken(
+        userId, 'authenticateWebPortal',
+        paramString: scan);
 
-    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'scanData': scan});
+    final String body = jsonEncode(<String, String>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'scanData': scan
+    });
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_authenticate_web_portal', body);
+    final String responseBody =
+        await ServiceCommon.sendHttpPost('hc3_authenticate_web_portal', body);
 
     SingleResultModel? result;
 

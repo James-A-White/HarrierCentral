@@ -61,6 +61,7 @@ enum BoolPrefsEnum { showEnvironmentWarning }
 enum IntPrefsEnum {
   databaseVersion,
   hasherPreferences,
+  timeWindow,
   //lastSuccessfulUserDataSyncInMs,
   //hasLocationPermissions,
   mapCenterOption,

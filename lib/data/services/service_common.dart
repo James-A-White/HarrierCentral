@@ -15,8 +15,8 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
-    //print('>>> http post $httpCounter $procName');
-    //httpCounter++;
+    print('>>> http post $httpCounter $requestBody');
+    httpCounter++;
 
     Response response;
 
