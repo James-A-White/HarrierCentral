@@ -19,16 +19,17 @@ class SupportPageState extends State<SupportPage> {
   // final String _email = getStringPref(StringPrefsEnum.email) ?? '';
   // final String _hashName = getStringPref(StringPrefsEnum.hashName) ?? '';
 
-  final FocusNode _resetCodeFocusNode = FocusNode();
-  final TextEditingController _resetCodeTextController = TextEditingController();
-  final InputDecoration _resetCodeDecoration = InputDecoration(
-    labelText: 'Invite Code',
-    fillColor: hc_red,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(25.0),
-      borderSide: const BorderSide(),
-    ),
-  );
+  // final FocusNode _resetCodeFocusNode = FocusNode();
+  // final TextEditingController _resetCodeTextController =
+  //     TextEditingController();
+  // final InputDecoration _resetCodeDecoration = InputDecoration(
+  //   labelText: 'Invite Code',
+  //   fillColor: hc_red,
+  //   border: OutlineInputBorder(
+  //     borderRadius: BorderRadius.circular(25.0),
+  //     borderSide: const BorderSide(),
+  //   ),
+  // );
 
   @override
   void initState() {
@@ -43,17 +44,19 @@ class SupportPageState extends State<SupportPage> {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-        Text(
-          'Applying Invite Code',
-          style: ts_headingLarge,
-          textAlign: TextAlign.center,
-        ),
-        Container(height: 30),
-        const HcCircularProgressIndicator(
-          key: Key('68462'),
-        ),
-      ]),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Applying Invite Code',
+              style: ts_headingLarge,
+              textAlign: TextAlign.center,
+            ),
+            Container(height: 30),
+            const HcCircularProgressIndicator(
+              key: Key('68462'),
+            ),
+          ]),
     );
   }
 
@@ -70,7 +73,9 @@ class SupportPageState extends State<SupportPage> {
     );
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -79,13 +84,19 @@ class SupportPageState extends State<SupportPage> {
           child: Scaffold(
             appBar: appBar,
             body: isLoading
-                ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+                ? Container(
+                    height: MediaQuery.of(context).size.height -
+                        appBar.preferredSize.height,
+                    decoration: Backgrounds.defaultHcBackground(),
+                    child: _buildCircularProgressIndicator())
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
-                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
+                    height: MediaQuery.of(context).size.height -
+                        appBar.preferredSize.height,
                     child: SingleChildScrollView(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 20, left: 0, right: 0),
+                        padding:
+                            const EdgeInsets.only(top: 20, left: 0, right: 0),
                         child: Column(
                           children: <Widget>[
                             AutoSizeText('Secret QR code for:',
@@ -101,19 +112,27 @@ class SupportPageState extends State<SupportPage> {
                                 style: ts_titleVeryLarge),
                             const SizedBox(height: 15.0),
                             SizedBox(
-                              height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                              width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                              height: (MediaQuery.of(context).size.width * 0.8 <
+                                      MediaQuery.of(context).size.height * 0.4)
+                                  ? MediaQuery.of(context).size.width * 0.8
+                                  : MediaQuery.of(context).size.height * 0.4,
+                              width: (MediaQuery.of(context).size.width * 0.8 <
+                                      MediaQuery.of(context).size.height * 0.4)
+                                  ? MediaQuery.of(context).size.width * 0.8
+                                  : MediaQuery.of(context).size.height * 0.4,
                               child: Stack(
                                 alignment: AlignmentDirectional.center,
                                 children: <Widget>[
                                   QrImageView(
                                       backgroundColor: Colors.white,
                                       padding: const EdgeInsets.all(10.0),
-                                      data: '$QR_PREFIX_USER_SECRET_CODE${_userSecretCode.toUpperCase()}',
+                                      data:
+                                          '$QR_PREFIX_USER_SECRET_CODE${_userSecretCode.toUpperCase()}',
                                       //data: 'testing123',
                                       version: 5,
                                       //size: 200.0,
-                                      errorCorrectionLevel: QrErrorCorrectLevel.M),
+                                      errorCorrectionLevel:
+                                          QrErrorCorrectLevel.M),
                                 ],
                               ),
                             ),
@@ -145,156 +164,156 @@ class SupportPageState extends State<SupportPage> {
                               style: ts_titleVeryLarge,
                               textAlign: TextAlign.center,
                             ),
-                            const FancyDivider(
-                              key: Key('6624334671'),
-                              innerColor: Colors.white,
-                              topMargin: 40.0,
-                              bottomMargin: 30.0,
-                            ),
-                            Text(
-                              'Invite Code:',
-                              style: ts_headingLarge,
-                              textAlign: TextAlign.center,
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(30.0),
+                            // const FancyDivider(
+                            //   key: Key('6624334671'),
+                            //   innerColor: Colors.white,
+                            //   topMargin: 40.0,
+                            //   bottomMargin: 30.0,
+                            // ),
+                            // Text(
+                            //   'Invite Code:',
+                            //   style: ts_headingLarge,
+                            //   textAlign: TextAlign.center,
+                            // ),
+                            // Container(
+                            //   padding: const EdgeInsets.all(30.0),
 
-                              //color: const Color.fromARGB(255, 255, 255, 255),
-                              child: Center(
-                                child: Column(
-                                  children: <Widget>[
-                                    Container(
-                                      //color: Colors.white,
-                                      padding: const EdgeInsets.all(10.0),
-                                      decoration: BoxDecoration(
-                                        color: Colors.yellow[100],
-                                        borderRadius: BorderRadius.circular(5.0),
-                                      ),
-                                      // padding: const EdgeInsets.only(
-                                      //     top: 0.0, bottom: 8.0),
-                                      child: TextFormField(
-                                        autocorrect: false,
-                                        controller: _resetCodeTextController,
-                                        focusNode: _resetCodeFocusNode,
-                                        decoration: _resetCodeDecoration,
-                                        // validator: (val) {
-                                        //   if (val.length == 0) {
-                                        //     return "Email cannot be empty";
-                                        //   } else {
-                                        //     return null;
-                                        //   }
-                                        // },
-                                        keyboardType: TextInputType.text,
-                                        style: const TextStyle(
-                                          color: Colors.yellow,
-                                          fontFamily: 'Poppins',
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 25),
-                                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                        Connection2.styleForConnected(
-                                          G0<AppModel>().connectionStatus,
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                            ),
-                                            onPressed: () async {
-                                              if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
-                                                await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                                      SyncUserDataService.flagAllMasterData,
-                                                      false,
-                                                      debugText: 'support_page: All master data',
-                                                    );
-                                                //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                //print('Master data synchronized $resultStr');
+                            //   //color: const Color.fromARGB(255, 255, 255, 255),
+                            //   child: Center(
+                            //     child: Column(
+                            //       children: <Widget>[
+                            //         Container(
+                            //           //color: Colors.white,
+                            //           padding: const EdgeInsets.all(10.0),
+                            //           decoration: BoxDecoration(
+                            //             color: Colors.yellow[100],
+                            //             borderRadius: BorderRadius.circular(5.0),
+                            //           ),
+                            //           // padding: const EdgeInsets.only(
+                            //           //     top: 0.0, bottom: 8.0),
+                            //           child: TextFormField(
+                            //             autocorrect: false,
+                            //             controller: _resetCodeTextController,
+                            //             focusNode: _resetCodeFocusNode,
+                            //             decoration: _resetCodeDecoration,
+                            //             // validator: (val) {
+                            //             //   if (val.length == 0) {
+                            //             //     return "Email cannot be empty";
+                            //             //   } else {
+                            //             //     return null;
+                            //             //   }
+                            //             // },
+                            //             keyboardType: TextInputType.text,
+                            //             style: const TextStyle(
+                            //               color: Colors.yellow,
+                            //               fontFamily: 'Poppins',
+                            //             ),
+                            //           ),
+                            //         ),
+                            //         Padding(
+                            //           padding: const EdgeInsets.only(top: 25),
+                            //           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                            //             Connection2.styleForConnected(
+                            //               G0<AppModel>().connectionStatus,
+                            //               ElevatedButton(
+                            //                 style: ElevatedButton.styleFrom(
+                            //                   padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                            //                 ),
+                            //                 onPressed: () async {
+                            //                   if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
+                            //                     await G0<TableModel>().syncUserDataService.updateFromBackend(
+                            //                           SyncUserDataService.flagAllMasterData,
+                            //                           false,
+                            //                           debugText: 'support_page: All master data',
+                            //                         );
+                            //                     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                            //                     //print('Master data synchronized $resultStr');
 
-                                                if (_resetCodeTextController.text.length == 6) {
-                                                  setState(() {
-                                                    isLoading = true;
-                                                  });
+                            //                     if (_resetCodeTextController.text.length == 6) {
+                            //                       setState(() {
+                            //                         isLoading = true;
+                            //                       });
 
-                                                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                            //                       final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
-                                                  if (!mounted) return;
-                                                  final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
+                            //                       if (!mounted) return;
+                            //                       final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
-                                                  setState(() {
-                                                    isLoading = false;
-                                                  });
+                            //                       setState(() {
+                            //                         isLoading = false;
+                            //                       });
 
-                                                  if (result['result'] != 'failed') {
-                                                    _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
-                                                    _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
+                            //                       if (result['result'] != 'failed') {
+                            //                         _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
+                            //                         _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            child: Text(
-                                              'Reset App',
-                                              style: ts_button,
-                                            ),
-                                          ),
-                                        ),
-                                      ]),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 25),
-                                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                        Connection2.styleForConnected(
-                                          G0<AppModel>().connectionStatus,
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                            ),
-                                            onPressed: () async {
-                                              if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
-                                                await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                                      SyncUserDataService.flagAllMasterData,
-                                                      false,
-                                                      debugText: 'support_page: All master data 2',
-                                                    );
-                                                // final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                // print('Master data synchronized $resultStr');
+                            //                         await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                            //                       }
+                            //                     }
+                            //                   }
+                            //                 },
+                            //                 child: Text(
+                            //                   'Reset App',
+                            //                   style: ts_button,
+                            //                 ),
+                            //               ),
+                            //             ),
+                            //           ]),
+                            //         ),
+                            //         Padding(
+                            //           padding: const EdgeInsets.only(top: 25),
+                            //           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                            //             Connection2.styleForConnected(
+                            //               G0<AppModel>().connectionStatus,
+                            //               ElevatedButton(
+                            //                 style: ElevatedButton.styleFrom(
+                            //                   padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                            //                 ),
+                            //                 onPressed: () async {
+                            //                   if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
+                            //                     await G0<TableModel>().syncUserDataService.updateFromBackend(
+                            //                           SyncUserDataService.flagAllMasterData,
+                            //                           false,
+                            //                           debugText: 'support_page: All master data 2',
+                            //                         );
+                            //                     // final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                            //                     // print('Master data synchronized $resultStr');
 
-                                                if (_resetCodeTextController.text.length == 6) {
-                                                  setState(() {
-                                                    isLoading = true;
-                                                  });
+                            //                     if (_resetCodeTextController.text.length == 6) {
+                            //                       setState(() {
+                            //                         isLoading = true;
+                            //                       });
 
-                                                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                            //                       final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
-                                                  if (!mounted) return;
-                                                  final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
+                            //                       if (!mounted) return;
+                            //                       final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
-                                                  setState(() {
-                                                    isLoading = false;
-                                                  });
+                            //                       setState(() {
+                            //                         isLoading = false;
+                            //                       });
 
-                                                  if (result['result'] != 'failed') {
-                                                    _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
-                                                    _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
+                            //                       if (result['result'] != 'failed') {
+                            //                         _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
+                            //                         _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
 
-                                                    await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            child: Text(
-                                              'Reload Database',
-                                              style: ts_button,
-                                            ),
-                                          ),
-                                        ),
-                                      ]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            //                         await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                            //                       }
+                            //                     }
+                            //                   }
+                            //                 },
+                            //                 child: Text(
+                            //                   'Reload Database',
+                            //                   style: ts_button,
+                            //                 ),
+                            //               ),
+                            //             ),
+                            //           ]),
+                            //         ),
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
                             const SizedBox(width: 40, height: 40),
                           ],
                         ),
@@ -304,7 +323,8 @@ class SupportPageState extends State<SupportPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {

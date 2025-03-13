@@ -370,6 +370,11 @@ class HashersService extends BaseService {
         getStringPref(StringPrefsEnum.harrierCentralVersion) ??
             '<unknown version>';
     String userId = getStringPref(StringPrefsEnum.userId)!;
+
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
     if (userId.isEmpty) {
       userId = GUID_EMPTY;
       newUserForThisDevice = true;
@@ -392,11 +397,12 @@ class HashersService extends BaseService {
     }
 
     final String accessToken = Utilities.generateToken(
-        userId.toUpperCase(), 'processThirdPartyLogin',
-        paramString: userId.toUpperCase());
+        userId.toUpperCase(), 'hcapp_processThirdPartyLogin',
+        paramString: deviceSecret + userId.toUpperCase());
 
     final String body = jsonEncode(<String, String?>{
-      'userId': userId,
+      'queryType': 'processThirdPartyLogin',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
       'firstName': loginData.firstName,
@@ -416,8 +422,7 @@ class HashersService extends BaseService {
       'thirdPartyEmail': loginData.thirdPartyEmail,
     });
 
-    final String responseBody =
-        await ServiceCommon.sendHttpPost('hc3_process_third_party_login', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {

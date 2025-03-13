@@ -16,7 +16,9 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -43,7 +45,8 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
               resizeToAvoidBottomInset: false),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -61,7 +64,8 @@ class UseInviteCodePageContent extends StatefulWidget {
   });
 
   @override
-  UseInviteCodePageContentState createState() => UseInviteCodePageContentState();
+  UseInviteCodePageContentState createState() =>
+      UseInviteCodePageContentState();
 }
 
 class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
@@ -141,10 +145,13 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final double newFontSize = (ts_headingLarge.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+      final double newFontSize = (ts_headingLarge.fontSize ?? 24.0) *
+          G0<DeviceInfo>().deviceWidthScaleFactor;
 
-      final TextStyle localHeadingStyle = ts_headingLarge.copyWith(fontSize: newFontSize, height: 1.2);
+      final TextStyle localHeadingStyle =
+          ts_headingLarge.copyWith(fontSize: newFontSize, height: 1.2);
 
       return SingleChildScrollView(
         padding: const EdgeInsets.all(15),
@@ -184,7 +191,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               key: _formKey,
               child: Container(
                 margin: const EdgeInsets.only(left: 15, right: 15),
-                padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
+                padding: const EdgeInsets.only(
+                    left: 15, right: 15, top: 15, bottom: 5),
                 color: Colors.yellow[100],
                 child: Column(
                   children: <Widget>[
@@ -213,7 +221,12 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         ),
                         const SizedBox(width: 15.0),
                         TextButton(
-                            style: text_button_style.copyWith(padding: const WidgetStatePropertyAll(EdgeInsets.all(8.0)), minimumSize: const WidgetStatePropertyAll(Size.zero), alignment: Alignment.center),
+                            style: text_button_style.copyWith(
+                                padding: const WidgetStatePropertyAll(
+                                    EdgeInsets.all(8.0)),
+                                minimumSize:
+                                    const WidgetStatePropertyAll(Size.zero),
+                                alignment: Alignment.center),
                             onPressed: () async {
                               setState(() {
                                 _showQrScanner = !_showQrScanner;
@@ -227,7 +240,9 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                                 }
                               });
                             },
-                            child: const Icon(MaterialCommunityIcons.qrcode_scan, color: Colors.white)),
+                            child: const Icon(
+                                MaterialCommunityIcons.qrcode_scan,
+                                color: Colors.white)),
                       ],
                     ),
                     Visibility(
@@ -288,7 +303,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     const SizedBox(height: 8, width: 10),
                     TextButton(
                         style: text_button_style.copyWith(
-                          backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+                          backgroundColor:
+                              const WidgetStatePropertyAll(Colors.transparent),
                           foregroundColor: WidgetStatePropertyAll(hc_red),
                         ),
                         onPressed: () async {
@@ -296,12 +312,14 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             initialEmailAddress: _emailAddress,
                           );
 
-                          final Future<Map<String, String?>?> dlg = showDialog<Map<String, String>>(
-                              context: context,
-                              barrierDismissible: false, // user must tap button!
-                              builder: (BuildContext context) {
-                                return emailPopup;
-                              });
+                          final Future<Map<String, String?>?> dlg =
+                              showDialog<Map<String, String>>(
+                                  context: context,
+                                  barrierDismissible:
+                                      false, // user must tap button!
+                                  builder: (BuildContext context) {
+                                    return emailPopup;
+                                  });
 
                           final Map<String, String?>? x = await dlg;
                           if (x != null) {
@@ -310,8 +328,11 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
                             if (type != 'cancel') {
                               _emailAddress = email;
-                              final String userMessage = await HashersService.sendInviteCodeByEmail(email);
-                              await Utilities.showAlert('Instructions', userMessage, 'OK');
+                              final String userMessage =
+                                  await HashersService.sendInviteCodeByEmail(
+                                      email);
+                              await Utilities.showAlert(
+                                  'Instructions', userMessage, 'OK');
                             }
                           }
                         },
@@ -341,31 +362,47 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           _isLoading = true;
                         });
 
-                        final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                        final Map<String, String> result = await srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + _inviteCodeTextController.text.toUpperCase(),
-                            //includeInGlobalHashDirectory: _includeInGlobalHashDirectory ? 1 : 0);
-                            includeInGlobalHashDirectory: 0);
+                        final AuthorizeDeviceService srv =
+                            AuthorizeDeviceService();
+                        final Map<String, String> result =
+                            await srv.authorizeDevice(
+                                context,
+                                QR_PREFIX_USER_RESET_CODE +
+                                    _inviteCodeTextController.text
+                                        .toUpperCase(),
+                                //includeInGlobalHashDirectory: _includeInGlobalHashDirectory ? 1 : 0);
+                                includeInGlobalHashDirectory: 0);
 
                         setState(() {
                           _isLoading = false;
                         });
 
                         if (result['result'] != 'failed') {
-                          final String userName = getStringPref(StringPrefsEnum.displayName) ?? '<no name>';
+                          final String userName =
+                              getStringPref(StringPrefsEnum.displayName) ??
+                                  '<no name>';
 
-                          String? profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                          profilePhotoUrl ??= 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+                          String? profilePhotoUrl =
+                              getStringPref(StringPrefsEnum.profilePhotoUrl);
+                          profilePhotoUrl ??=
+                              'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
-                          await Utilities.showAlert('Success!', 'The app has been successfully set up for $userName.', 'OK');
+                          await Utilities.showAlert(
+                              'Success!',
+                              'The app has been successfully set up for $userName.',
+                              'OK');
 
                           Navigator.pop(navigatorKey.currentContext!);
                           if (!mounted) return;
                           await Navigator.pushReplacement<dynamic, dynamic>(
                               navigatorKey.currentContext!,
                               MaterialPageRoute<dynamic>(
-                                builder: (BuildContext context) => ChooseProfileImage(
+                                builder: (BuildContext context) =>
+                                    ChooseProfileImage(
                                   isForThisDevice: true,
-                                  fileNamePrefix: getStringPref(StringPrefsEnum.supportCode) ?? '<no code>',
+                                  fileNamePrefix: getStringPref(
+                                          StringPrefsEnum.supportCode) ??
+                                      '<no code>',
                                   currentProfileImage: profilePhotoUrl,
                                   popToCaller: false,
                                 ),
@@ -384,19 +421,28 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   }
 
   Future<void> _onCodeRead(String? scanResult) async {
-    if (((scanResult ?? '').isNotEmpty) && _showQrScanner && (_lastQrCode != scanResult)) {
+    if (((scanResult ?? '').isNotEmpty) &&
+        _showQrScanner &&
+        (_lastQrCode != scanResult)) {
       _lastQrCode = scanResult!;
-      final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_resetCode);
+      final Map<String, String> result = Utilities.validateScan(
+          scanResult,
+          Utilities.qrScanTypeFlag_resetCode +
+              Utilities.qrScanTypeFlag_userSecretCode);
       await _controller!.pauseCamera();
       setState(() {
         _showQrScanner = false;
       });
 
       if (result['validScan'] == 'false') {
-        await Utilities.showAlert('Wrong QR Code', 'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.', 'OK');
+        await Utilities.showAlert(
+            'Wrong QR Code',
+            'The QR Code you scanned is not a valid Harrier Central invite code. Please use a proper invite code or manually type in your invite code on this screen.',
+            'OK');
       } else {
         setState(() {
-          _inviteCodeTextController.text = scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');
+          _inviteCodeTextController.text =
+              scanResult.replaceAll(QR_PREFIX_USER_RESET_CODE, '');
         });
       }
     }
@@ -432,7 +478,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
         _result = scanData.code;
         // "debounce" the listener to discard multiple scans
         // that happen within a 5 second window.
-        if ((_lastScan == null) || (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
+        if ((_lastScan == null) ||
+            (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
           _lastScan = DateTime.now();
           await _toggleScanning();
           await _onCodeRead(_result);

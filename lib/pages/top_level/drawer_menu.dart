@@ -309,23 +309,23 @@ class DrawerMenuState extends State<DrawerMenu> {
                 //   ),
                 // ],
 
-                // ListTile(
-                //   leading: const Icon(FontAwesome.support, color: textColor),
-                //   title: Text('Support', style: _style),
-                //   onTap: () async {
-                //     //onTabTapped(EnumAppPages.settings);
-                //     Navigator.pop(context);
-                //     Navigator.push<dynamic>(
-                //       context,
-                //       MaterialPageRoute<dynamic>(
-                //         settings: const RouteSettings(),
-                //         builder: (BuildContext context) {
-                //           return const SupportPage();
-                //         },
-                //       ),
-                //     );
-                //   },
-                // ),
+                ListTile(
+                  leading: const Icon(FontAwesome.support, color: textColor),
+                  title: Text('Support', style: _style),
+                  onTap: () async {
+                    //onTabTapped(EnumAppPages.settings);
+                    Navigator.pop(context);
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        settings: const RouteSettings(),
+                        builder: (BuildContext context) {
+                          return const SupportPage();
+                        },
+                      ),
+                    );
+                  },
+                ),
                 // ListTile(
                 //   leading: const Icon(Icons.integration_instructions, color: textColor),
                 //   title: Text('Data integrations', style: style),

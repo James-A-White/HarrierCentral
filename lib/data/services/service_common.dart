@@ -1,6 +1,6 @@
 import 'package:harrier_central/imports.dart';
 
-int httpCounter = 1000;
+//int httpCounter = 1000;
 
 class ServiceCommon {
   // the variable below is there to suppress a warning about defining classes with only static members
@@ -15,8 +15,8 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
-    print('>>> http post $httpCounter $requestBody');
-    httpCounter++;
+    // print('>>> http post $httpCounter $requestBody');
+    // httpCounter++;
 
     Response response;
 
@@ -47,47 +47,47 @@ class ServiceCommon {
     return returnValue;
   }
 
-  static Future<String> sendHttpPost(
-    String procName,
-    String requestBody, {
-    Function? errorCallback,
-    Client? client,
-  }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
-      return ERROR_NO_CONNECTION;
-    }
+  // static Future<String> sendHttpPost(
+  //   String procName,
+  //   String requestBody, {
+  //   Function? errorCallback,
+  //   Client? client,
+  // }) async {
+  //   if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+  //     return ERROR_NO_CONNECTION;
+  //   }
 
-    print('>>> http post $httpCounter $procName');
-    httpCounter++;
+  //   print('>>> http post $httpCounter $procName');
+  //   httpCounter++;
 
-    Response response;
+  //   Response response;
 
-    if (client == null) {
-      response = await post(Uri.parse(BASE_API_URL + procName),
-              headers: <String, String>{'content-type': 'application/json'},
-              body: requestBody)
-          .catchError(
-        (dynamic error) {
-          return Future<Response>.value(Response('', 500)); // CHECK
-        },
-      );
-    } else {
-      response = await client
-          .post(Uri.parse(BASE_API_URL + procName),
-              headers: <String, String>{'content-type': 'application/json'},
-              body: requestBody)
-          .catchError(
-        (dynamic error) {
-          return Future<Response>.value(Response('', 500)); // CHECK
-        },
-      );
-    }
+  //   if (client == null) {
+  //     response = await post(Uri.parse(BASE_API_URL + procName),
+  //             headers: <String, String>{'content-type': 'application/json'},
+  //             body: requestBody)
+  //         .catchError(
+  //       (dynamic error) {
+  //         return Future<Response>.value(Response('', 500)); // CHECK
+  //       },
+  //     );
+  //   } else {
+  //     response = await client
+  //         .post(Uri.parse(BASE_API_URL + procName),
+  //             headers: <String, String>{'content-type': 'application/json'},
+  //             body: requestBody)
+  //         .catchError(
+  //       (dynamic error) {
+  //         return Future<Response>.value(Response('', 500)); // CHECK
+  //       },
+  //     );
+  //   }
 
-    String returnValue =
-        await checkHttpPostResponse(response, errorCallback: errorCallback);
+  //   String returnValue =
+  //       await checkHttpPostResponse(response, errorCallback: errorCallback);
 
-    return returnValue;
-  }
+  //   return returnValue;
+  // }
 
   static Future<String> checkHttpPostResponse(Response response,
       {Function? errorCallback}) async {

@@ -173,17 +173,24 @@ class LeaderboardState extends State<Leaderboard>
         (DateFormat('yyyyMMMdd').format(lastLeaderboardUpdate) !=
             DateFormat('yyyyMMMdd').format(DateTime.now()))) {
       final String userId = getStringPref(StringPrefsEnum.userId) ?? '';
-      final String accessToken =
-          Utilities.generateToken(userId.toUpperCase(), 'getLeaderboard');
+      final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+      final String deviceSecret =
+          getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+      final String accessToken = Utilities.generateToken(
+        userId.toUpperCase(),
+        'hcapp_getLeaderboard',
+        paramString: deviceSecret,
+      );
 
       final String body = jsonEncode(<String, Object?>{
-        'userId': userId,
+        'queryType': 'getLeaderboard',
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'kennelId': widget.kennelId,
       });
 
-      responseBody =
-          await ServiceCommon.sendHttpPost('hc3_get_leaderboard', body);
+      responseBody = await ServiceCommon.sendHttpPostV2(body);
       updateLocalLeaderboardCache = true;
     } else {
       responseBody = getStringPref(StringPrefsEnum.leaderboardJson) ?? '';

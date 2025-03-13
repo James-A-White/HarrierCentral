@@ -149,6 +149,9 @@ class PaymentsService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     if ((hasherEventMapId ?? '').isEmpty) {
       hasherEventMapId = GUID_EMPTY;
@@ -159,10 +162,10 @@ class PaymentsService {
     }
 
     final String tokenParameterString =
-        '${hasherEventMapId!.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
+        '$deviceSecret${hasherEventMapId!.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
 
     final String accessToken = Utilities.generateToken(
-        userId, 'processPayment800',
+        userId, 'hcapp_processPayment',
         paramString: tokenParameterString);
 
     final int hasherEventMapLastUpdated =
@@ -202,7 +205,8 @@ class PaymentsService {
     final String appDomainStr = appDomainType.toString();
 
     final Map<String, String?> bodyMap = <String, String?>{
-      'userId': userId,
+      'queryType': 'processPayment',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'userIdWhoPaid': hasherId,
       'eventId': eventId,
@@ -234,8 +238,7 @@ class PaymentsService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody =
-        await ServiceCommon.sendHttpPost('hc3_process_payment_800', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {

@@ -189,8 +189,16 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
+
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
     final String accessToken = Utilities.generateToken(
-        userId.toUpperCase(), 'setEmailAndNotificationPrefs800');
+      userId.toUpperCase(),
+      'hcapp_setEmailAndNotificationPrefs',
+      paramString: deviceSecret,
+    );
 
     final int hasherEventMapLastUpdated =
         await G0<TableModel>().baseService.getLastUpdatedTime(
@@ -220,7 +228,8 @@ class HasherEventMapService {
     // final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
     final Map<String, Object?> bodyMap = <String, Object?>{
-      'userId': userId,
+      'queryType': 'setEmailAndNotificationPrefs',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'hasherId': hasherId,
       'kennelId': null,
@@ -233,8 +242,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPost(
-        'hc3_set_email_notification_prefs_800', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -257,7 +265,7 @@ class HasherEventMapService {
 
   Future<List<dynamic>> setEventRsvp(
     String eventId,
-    String hasherId,
+    String? hasherId,
     AppDomainType appDomainType,
     int rsvpState,
     int isHare, {
@@ -441,8 +449,15 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String accessToken =
-        Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor800');
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final String accessToken = Utilities.generateToken(
+      userId.toUpperCase(),
+      'hcapp_joinEventAsVisitor',
+      paramString: deviceSecret,
+    );
 
     final int hasherEventMapLastUpdated =
         await G0<TableModel>().baseService.getLastUpdatedTime(
@@ -467,7 +482,8 @@ class HasherEventMapService {
         DateTime.fromMicrosecondsSinceEpoch(paymentsLastUpdated + 1);
 
     final String body = jsonEncode(<String, Object>{
-      'userId': userId,
+      'queryType': 'joinEventAsVisitor',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'eventId': eventId,
       'displayName': displayName,
@@ -479,8 +495,7 @@ class HasherEventMapService {
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });
 
-    final String responseBody =
-        await ServiceCommon.sendHttpPost('hc3_join_event_as_visitor_800', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     List<dynamic> adHocData = <dynamic>[];
 

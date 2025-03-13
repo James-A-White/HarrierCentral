@@ -9,21 +9,30 @@ class GdprDeleteService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(userId, 'gdprDelete');
+    final String accessToken = Utilities.generateToken(
+      userId,
+      'hcapp_gdprDelete',
+      paramString: deviceSecret,
+    );
 
-    final String body = jsonEncode(
-        <String, String>{'userId': userId, 'accessToken': accessToken});
+    final String body = jsonEncode(<String, String>{
+      'queryType': 'gdprDelete',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+    });
 
-    final String responseBody =
-        await ServiceCommon.sendHttpPost('hc3_gdpr_delete', body);
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       json.decode(responseBody).forEach(
         (dynamic item) {
-          result = SingleResultModel(result: item['result']);
+          result = SingleResultModel(result: item[0]['result']);
         },
       );
     }

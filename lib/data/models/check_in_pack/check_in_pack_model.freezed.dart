@@ -20,7 +20,7 @@ CheckInPackModel _$CheckInPackModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CheckInPackModel {
-  String get hasherId => throw _privateConstructorUsedError;
+  String? get hasherId => throw _privateConstructorUsedError;
   String? get hemId => throw _privateConstructorUsedError;
   int get isMember => throw _privateConstructorUsedError;
   int get isHare => throw _privateConstructorUsedError;
@@ -71,7 +71,7 @@ abstract class $CheckInPackModelCopyWith<$Res> {
       _$CheckInPackModelCopyWithImpl<$Res, CheckInPackModel>;
   @useResult
   $Res call(
-      {String hasherId,
+      {String? hasherId,
       String? hemId,
       int isMember,
       int isHare,
@@ -120,7 +120,7 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hasherId = null,
+    Object? hasherId = freezed,
     Object? hemId = freezed,
     Object? isMember = null,
     Object? isHare = null,
@@ -151,10 +151,10 @@ class _$CheckInPackModelCopyWithImpl<$Res, $Val extends CheckInPackModel>
     Object? paidStateIndicator = freezed,
   }) {
     return _then(_value.copyWith(
-      hasherId: null == hasherId
+      hasherId: freezed == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       hemId: freezed == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
@@ -280,7 +280,7 @@ abstract class _$$CheckInPackModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String hasherId,
+      {String? hasherId,
       String? hemId,
       int isMember,
       int isHare,
@@ -327,7 +327,7 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hasherId = null,
+    Object? hasherId = freezed,
     Object? hemId = freezed,
     Object? isMember = null,
     Object? isHare = null,
@@ -358,10 +358,10 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
     Object? paidStateIndicator = freezed,
   }) {
     return _then(_$CheckInPackModelImpl(
-      hasherId: null == hasherId
+      hasherId: freezed == hasherId
           ? _value.hasherId
           : hasherId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       hemId: freezed == hemId
           ? _value.hemId
           : hemId // ignore: cast_nullable_to_non_nullable
@@ -482,7 +482,7 @@ class __$$CheckInPackModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CheckInPackModelImpl implements _CheckInPackModel {
   _$CheckInPackModelImpl(
-      {required this.hasherId,
+      {this.hasherId,
       this.hemId,
       this.isMember = 0,
       this.isHare = 0,
@@ -519,7 +519,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
       _$$CheckInPackModelImplFromJson(json);
 
   @override
-  final String hasherId;
+  final String? hasherId;
   @override
   final String? hemId;
   @override
@@ -724,7 +724,7 @@ class _$CheckInPackModelImpl implements _CheckInPackModel {
 
 abstract class _CheckInPackModel implements CheckInPackModel {
   factory _CheckInPackModel(
-      {required final String hasherId,
+      {final String? hasherId,
       final String? hemId,
       final int isMember,
       final int isHare,
@@ -761,7 +761,7 @@ abstract class _CheckInPackModel implements CheckInPackModel {
       _$CheckInPackModelImpl.fromJson;
 
   @override
-  String get hasherId;
+  String? get hasherId;
   @override
   String? get hemId;
   @override

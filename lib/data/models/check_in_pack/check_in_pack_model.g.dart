@@ -9,7 +9,7 @@ part of 'check_in_pack_model.dart';
 _$CheckInPackModelImpl _$$CheckInPackModelImplFromJson(
         Map<String, dynamic> json) =>
     _$CheckInPackModelImpl(
-      hasherId: json['hasherId'] as String,
+      hasherId: json['hasherId'] as String?,
       hemId: json['hemId'] as String?,
       isMember: (json['isMember'] as num?)?.toInt() ?? 0,
       isHare: (json['isHare'] as num?)?.toInt() ?? 0,

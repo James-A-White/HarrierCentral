@@ -6,7 +6,7 @@ part 'check_in_pack_model.g.dart';
 @freezed
 class CheckInPackModel with _$CheckInPackModel implements BaseModel {
   factory CheckInPackModel({
-    required String hasherId,
+    String? hasherId,
     String? hemId,
     @Default(0) int isMember,
     @Default(0) int isHare,
@@ -32,12 +32,16 @@ class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     String? payUpdatedAt,
     @Default(0.0) double credit,
     @Default(0) int isFollowing,
-    @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? rsvpStateIndicator,
-    @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? attendenceStateIndicator,
-    @JsonKey(includeFromJson: false, includeToJson: false) Future<int>? paidStateIndicator,
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    Future<int>? rsvpStateIndicator,
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    Future<int>? attendenceStateIndicator,
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    Future<int>? paidStateIndicator,
   }) = _CheckInPackModel;
 
-  factory CheckInPackModel.fromJson(Map<String, dynamic> json) => _$CheckInPackModelFromJson(json);
+  factory CheckInPackModel.fromJson(Map<String, dynamic> json) =>
+      _$CheckInPackModelFromJson(json);
 
   @override
   factory CheckInPackModel.fromMap(Map<String, dynamic> map) {
