@@ -772,4 +772,79 @@ class Utilities {
     //   G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
     // }
   }
+
+  static String getFullLatLong(EventModel evt) {
+    String fullLatLon = '';
+
+    double? lat = evt.hcLatitude;
+    double? lon = evt.hcLongitude;
+
+    if (evt.useFbLatLon != 0) {
+      lat = evt.fbLatitude;
+      lon = evt.fbLongitude;
+    }
+    if ((lat != null) && (lon != null)) {
+      fullLatLon = '$lat, $lon';
+    }
+    return fullLatLon;
+  }
+
+  static String getUserFriendlyLocation(EventModel evt) {
+    String s = '';
+
+    if (getFullAddress(evt) != '') {
+      s = getFullAddress(evt);
+    } else if (getFullLatLong(evt) != '') {
+      s = getFullLatLong(evt);
+    } else if ((evt.locationOneLineDesc ?? '') != '') {
+      s = evt.locationOneLineDesc ?? '';
+    }
+
+    return s;
+  }
+
+  static String getFullAddress(EventModel evt) {
+    String s = '';
+
+    if ((evt.locationStreet ?? '').isNotEmpty) {
+      s = evt.locationStreet!;
+    }
+
+    if ((evt.locationCity ?? '').isNotEmpty) {
+      if (s.isNotEmpty) {
+        s += ', ';
+      }
+      s += evt.locationCity!;
+    }
+
+    if ((evt.locationSubRegion ?? '').isNotEmpty) {
+      if (s.isNotEmpty) {
+        s += ', ';
+      }
+      s += evt.locationSubRegion!;
+    }
+
+    if ((evt.locationRegion ?? '').isNotEmpty) {
+      if (s.isNotEmpty) {
+        s += ', ';
+      }
+      s += evt.locationRegion!;
+    }
+
+    if ((evt.locationCountry ?? '').isNotEmpty) {
+      if (s.isNotEmpty) {
+        s += ', ';
+      }
+      s += evt.locationCountry!;
+    }
+
+    if ((evt.locationPostCode ?? '').isNotEmpty) {
+      if (s.isNotEmpty) {
+        s += ', ';
+      }
+      s += evt.locationPostCode!;
+    }
+
+    return s;
+  }
 }

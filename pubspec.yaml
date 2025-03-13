@@ -8,6 +8,7 @@ environment:
   flutter: ^3.29.0
 
 dependencies:   
+  add_2_calendar: ^3.0.1
   audioplayers: ^6.1.0 
   auto_size_text: ^3.0.0 
   avoid_keyboard: ^0.3.0

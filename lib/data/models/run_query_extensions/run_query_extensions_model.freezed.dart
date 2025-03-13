@@ -40,7 +40,9 @@ mixin _$RunQueryExtensionsModel {
   double? get longitude => throw _privateConstructorUsedError;
   double? get distToEvent => throw _privateConstructorUsedError;
   int get isMapAndDistanceValid => throw _privateConstructorUsedError;
-  int get runClassification => throw _privateConstructorUsedError;
+  int get runClassification =>
+      throw _privateConstructorUsedError; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+  String? get userFriendlyLocation => throw _privateConstructorUsedError;
 
   /// Serializes this RunQueryExtensionsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -77,7 +79,8 @@ abstract class $RunQueryExtensionsModelCopyWith<$Res> {
       double? longitude,
       double? distToEvent,
       int isMapAndDistanceValid,
-      int runClassification});
+      int runClassification,
+      String? userFriendlyLocation});
 }
 
 /// @nodoc
@@ -115,6 +118,7 @@ class _$RunQueryExtensionsModelCopyWithImpl<$Res,
     Object? distToEvent = freezed,
     Object? isMapAndDistanceValid = null,
     Object? runClassification = null,
+    Object? userFriendlyLocation = freezed,
   }) {
     return _then(_value.copyWith(
       daysUntilEvent: null == daysUntilEvent
@@ -193,6 +197,10 @@ class _$RunQueryExtensionsModelCopyWithImpl<$Res,
           ? _value.runClassification
           : runClassification // ignore: cast_nullable_to_non_nullable
               as int,
+      userFriendlyLocation: freezed == userFriendlyLocation
+          ? _value.userFriendlyLocation
+          : userFriendlyLocation // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -225,7 +233,8 @@ abstract class _$$RunQueryExtensionsModelImplCopyWith<$Res>
       double? longitude,
       double? distToEvent,
       int isMapAndDistanceValid,
-      int runClassification});
+      int runClassification,
+      String? userFriendlyLocation});
 }
 
 /// @nodoc
@@ -262,6 +271,7 @@ class __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>
     Object? distToEvent = freezed,
     Object? isMapAndDistanceValid = null,
     Object? runClassification = null,
+    Object? userFriendlyLocation = freezed,
   }) {
     return _then(_$RunQueryExtensionsModelImpl(
       daysUntilEvent: null == daysUntilEvent
@@ -340,6 +350,10 @@ class __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>
           ? _value.runClassification
           : runClassification // ignore: cast_nullable_to_non_nullable
               as int,
+      userFriendlyLocation: freezed == userFriendlyLocation
+          ? _value.userFriendlyLocation
+          : userFriendlyLocation // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -366,7 +380,8 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
       this.longitude,
       this.distToEvent,
       this.isMapAndDistanceValid = 0,
-      this.runClassification = 3});
+      this.runClassification = 3,
+      this.userFriendlyLocation});
 
   factory _$RunQueryExtensionsModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$RunQueryExtensionsModelImplFromJson(json);
@@ -426,10 +441,13 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
   @override
   @JsonKey()
   final int runClassification;
+// 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+  @override
+  final String? userFriendlyLocation;
 
   @override
   String toString() {
-    return 'RunQueryExtensionsModel(daysUntilEvent: $daysUntilEvent, appAccessFlags: $appAccessFlags, digitsAfterDecimal: $digitsAfterDecimal, currencySymbol: $currencySymbol, rsvpState: $rsvpState, attendenceState: $attendenceState, isPaid: $isPaid, isHare: $isHare, isMember: $isMember, following: $following, notificationPreference: $notificationPreference, emailAlertPreference: $emailAlertPreference, distanceUnitsPref: $distanceUnitsPref, searchRunsText: $searchRunsText, latitude: $latitude, longitude: $longitude, distToEvent: $distToEvent, isMapAndDistanceValid: $isMapAndDistanceValid, runClassification: $runClassification)';
+    return 'RunQueryExtensionsModel(daysUntilEvent: $daysUntilEvent, appAccessFlags: $appAccessFlags, digitsAfterDecimal: $digitsAfterDecimal, currencySymbol: $currencySymbol, rsvpState: $rsvpState, attendenceState: $attendenceState, isPaid: $isPaid, isHare: $isHare, isMember: $isMember, following: $following, notificationPreference: $notificationPreference, emailAlertPreference: $emailAlertPreference, distanceUnitsPref: $distanceUnitsPref, searchRunsText: $searchRunsText, latitude: $latitude, longitude: $longitude, distToEvent: $distToEvent, isMapAndDistanceValid: $isMapAndDistanceValid, runClassification: $runClassification, userFriendlyLocation: $userFriendlyLocation)';
   }
 
   @override
@@ -472,7 +490,9 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
             (identical(other.isMapAndDistanceValid, isMapAndDistanceValid) ||
                 other.isMapAndDistanceValid == isMapAndDistanceValid) &&
             (identical(other.runClassification, runClassification) ||
-                other.runClassification == runClassification));
+                other.runClassification == runClassification) &&
+            (identical(other.userFriendlyLocation, userFriendlyLocation) ||
+                other.userFriendlyLocation == userFriendlyLocation));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -497,7 +517,8 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
         longitude,
         distToEvent,
         isMapAndDistanceValid,
-        runClassification
+        runClassification,
+        userFriendlyLocation
       ]);
 
   /// Create a copy of RunQueryExtensionsModel
@@ -537,7 +558,8 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
       final double? longitude,
       final double? distToEvent,
       final int isMapAndDistanceValid,
-      final int runClassification}) = _$RunQueryExtensionsModelImpl;
+      final int runClassification,
+      final String? userFriendlyLocation}) = _$RunQueryExtensionsModelImpl;
 
   factory _RunQueryExtensionsModel.fromJson(Map<String, dynamic> json) =
       _$RunQueryExtensionsModelImpl.fromJson;
@@ -579,7 +601,9 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
   @override
   int get isMapAndDistanceValid;
   @override
-  int get runClassification;
+  int get runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+  @override
+  String? get userFriendlyLocation;
 
   /// Create a copy of RunQueryExtensionsModel
   /// with the given fields replaced by the non-null parameter values.

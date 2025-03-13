@@ -294,13 +294,13 @@ class QueryRuns {
           break;
       }
 
+      String userFriendlyLocation =
+          Utilities.getUserFriendlyLocation(eventItem);
+
       final RunQueryExtensionsModel extensionsItem =
           RunQueryExtensionsModel.fromJsonWithDateSearchText(
-        results[i],
-        eventItem.eventStartDatetime,
-        dist,
-        meters: meters,
-      );
+              results[i], eventItem.eventStartDatetime, dist,
+              meters: meters, userFriendlyLocation: userFriendlyLocation);
 
       String paymentLinkUrl = '';
 

@@ -31,6 +31,7 @@ _$RunQueryExtensionsModelImpl _$$RunQueryExtensionsModelImplFromJson(
       isMapAndDistanceValid:
           (json['isMapAndDistanceValid'] as num?)?.toInt() ?? 0,
       runClassification: (json['runClassification'] as num?)?.toInt() ?? 3,
+      userFriendlyLocation: json['userFriendlyLocation'] as String?,
     );
 
 Map<String, dynamic> _$$RunQueryExtensionsModelImplToJson(
@@ -55,4 +56,5 @@ Map<String, dynamic> _$$RunQueryExtensionsModelImplToJson(
       'distToEvent': instance.distToEvent,
       'isMapAndDistanceValid': instance.isMapAndDistanceValid,
       'runClassification': instance.runClassification,
+      'userFriendlyLocation': instance.userFriendlyLocation,
     };

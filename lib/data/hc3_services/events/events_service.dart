@@ -449,7 +449,10 @@ class EventsService extends BaseService {
           G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
       final RunQueryExtensionsModel extensionsItem =
           RunQueryExtensionsModel.fromJsonWithDateSearchText(
-              results[0], eventItem.eventStartDatetime, dist);
+        results[0],
+        eventItem.eventStartDatetime,
+        dist,
+      );
 
       String paymentLinkUrl = '';
 

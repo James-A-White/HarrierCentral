@@ -5,6 +5,7 @@
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
+import 'package:add_2_calendar/add_2_calendar.dart';
 
 class RunTabs extends StatefulWidget {
   const RunTabs({
@@ -55,11 +56,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   bool isAdmin = true;
   //bool _isLoading = true;
 
-  latlng.LatLng _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE, G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE);
+  latlng.LatLng _mapCenter = latlng.LatLng(
+      G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE,
+      G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE);
 
   bool _trueNorthLock = true;
 
-  Future<List<PackListAggregate>?> _thePackList = Future<List<PackListAggregate>?>.value(null);
+  Future<List<PackListAggregate>?> _thePackList =
+      Future<List<PackListAggregate>?>.value(null);
 
   Map<String, dynamic> _packCount = <String, dynamic>{};
 
@@ -70,7 +74,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       });
     }
 
-    await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
+    await G0<TableModel>().syncEventAdminService.updateFromBackend(
+        SyncEventAdminService.flagHasherEventMapTable,
+        true,
+        widget.futureRun.event.eventId);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Pack member data synchronized $resultStr');
 
@@ -94,10 +101,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ''';
 
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final HasherEventMapModel packItem = G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
+        final HasherEventMapModel packItem =
+            G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
 
         final HashersModel hasherItem = HashersModel.fromJson(results[i]);
         String displayName = hasherItem.dispName;
@@ -105,7 +114,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           displayName = packItem.displayName ?? 'Virgin / Visitor';
         }
 
-        pla.add(PackListAggregate(hem: packItem, hasher: hasherItem, displayName: displayName));
+        pla.add(PackListAggregate(
+            hem: packItem, hasher: hasherItem, displayName: displayName));
         //}
       }
     } catch (e) {
@@ -113,7 +123,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
 
     pla.sort(
-      (PackListAggregate a, PackListAggregate b) => (a.hem.hemKennelHashName ?? a.displayName).compareTo(b.hem.hemKennelHashName ?? b.displayName),
+      (PackListAggregate a, PackListAggregate b) =>
+          (a.hem.hemKennelHashName ?? a.displayName)
+              .compareTo(b.hem.hemKennelHashName ?? b.displayName),
     );
 
     _thisUserIndex = -1;
@@ -143,7 +155,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ''';
 
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(query);
       if (results.isNotEmpty) {
         _packCount = results[0];
       }
@@ -177,9 +190,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       ],
     );
 
-    double xLat = widget.futureRun.extensions.latitude ?? coords[0] ?? widget.futureRun.kennel.kennelLatitude ?? G0<DeviceInfo>().deviceLon ?? DEFAULT_LATITUDE;
+    double xLat = widget.futureRun.extensions.latitude ??
+        coords[0] ??
+        widget.futureRun.kennel.kennelLatitude ??
+        G0<DeviceInfo>().deviceLon ??
+        DEFAULT_LATITUDE;
 
-    double xLon = widget.futureRun.extensions.longitude ?? coords[1] ?? widget.futureRun.kennel.kennelLongitude ?? G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE;
+    double xLon = widget.futureRun.extensions.longitude ??
+        coords[1] ??
+        widget.futureRun.kennel.kennelLongitude ??
+        G0<DeviceInfo>().deviceLon ??
+        DEFAULT_LONGITUDE;
 
     _mapCenter = latlng.LatLng(xLat, xLon);
 
@@ -245,7 +266,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       widget.futureRun.paymentUrl,
       true,
       widget.futureRun.extensions.isMapAndDistanceValid == 1,
-      eventUrlWithKennelBackup: widget.futureRun.event.eventUrl ?? widget.futureRun.kennel.kennelEventsUrl,
+      eventUrlWithKennelBackup: widget.futureRun.event.eventUrl ??
+          widget.futureRun.kennel.kennelEventsUrl,
       isMember: widget.futureRun.extensions.isMember,
       isPaid: widget.futureRun.extensions.isPaid,
       rsvpState: widget.futureRun.extensions.rsvpState,
@@ -283,7 +305,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         ),
         child: FutureBuilder(
             future: _thePackList,
-            builder: (BuildContext context, AsyncSnapshot<List<PackListAggregate>?> snapshot) {
+            builder: (BuildContext context,
+                AsyncSnapshot<List<PackListAggregate>?> snapshot) {
               if ((!snapshot.hasData) || (snapshot.data == null)) {
                 return const HcCircularProgressIndicator(key: Key('42223995'));
               } else {
@@ -319,12 +342,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(FontAwesome.check_circle),
+                                        icon: const Icon(
+                                            FontAwesome.check_circle),
                                         color: _thisUserIndex == -1
                                             ? Colors.grey
-                                            : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpYes.value
+                                            : snapshot.data![_thisUserIndex].hem
+                                                        .rsvpState ==
+                                                    rsvpYes.value
                                                 ? Colors.green
-                                                : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpYes)
+                                                : (snapshot
+                                                                .data![
+                                                                    _thisUserIndex]
+                                                                .hem
+                                                                .rsvpState ==
+                                                            -1 &&
+                                                        _rsvpRequested ==
+                                                            rsvpYes)
                                                     ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
@@ -352,7 +385,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   Text(
-                                    (_packCount['rsvpYesCount'] ?? 0) >= 0 ? (_packCount['rsvpYesCount'] ?? 0).toString() : '',
+                                    (_packCount['rsvpYesCount'] ?? 0) >= 0
+                                        ? (_packCount['rsvpYesCount'] ?? 0)
+                                            .toString()
+                                        : '',
                                     style: rsvpTitlesView,
                                   ),
                                 ],
@@ -383,12 +419,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(FontAwesome.question_circle),
+                                        icon: const Icon(
+                                            FontAwesome.question_circle),
                                         color: _thisUserIndex == -1
                                             ? Colors.grey
-                                            : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpMaybe.value
+                                            : snapshot.data![_thisUserIndex].hem
+                                                        .rsvpState ==
+                                                    rsvpMaybe.value
                                                 ? Colors.orange
-                                                : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpMaybe)
+                                                : (snapshot
+                                                                .data![
+                                                                    _thisUserIndex]
+                                                                .hem
+                                                                .rsvpState ==
+                                                            -1 &&
+                                                        _rsvpRequested ==
+                                                            rsvpMaybe)
                                                     ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
@@ -402,7 +448,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   Text(
-                                    (_packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (_packCount['rsvpMaybeCount'] ?? 0).toString() : '',
+                                    (_packCount['rsvpMaybeCount'] ?? 0) >= 0
+                                        ? (_packCount['rsvpMaybeCount'] ?? 0)
+                                            .toString()
+                                        : '',
                                     style: rsvpTitlesView,
                                   ),
                                   // Text(
@@ -444,12 +493,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(FontAwesome.times_circle),
+                                        icon: const Icon(
+                                            FontAwesome.times_circle),
                                         color: _thisUserIndex == -1
                                             ? Colors.grey
-                                            : snapshot.data![_thisUserIndex].hem.rsvpState == rsvpNo.value
+                                            : snapshot.data![_thisUserIndex].hem
+                                                        .rsvpState ==
+                                                    rsvpNo.value
                                                 ? hc_red
-                                                : (snapshot.data![_thisUserIndex].hem.rsvpState == -1 && _rsvpRequested == rsvpNo)
+                                                : (snapshot.data![_thisUserIndex]
+                                                                .hem.rsvpState ==
+                                                            -1 &&
+                                                        _rsvpRequested == rsvpNo)
                                                     ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
@@ -463,7 +518,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   Text(
-                                    (_packCount['rsvpNoCount'] ?? 0) >= 0 ? (_packCount['rsvpNoCount'] ?? 0).toString() : '',
+                                    (_packCount['rsvpNoCount'] ?? 0) >= 0
+                                        ? (_packCount['rsvpNoCount'] ?? 0)
+                                            .toString()
+                                        : '',
                                     style: rsvpTitlesView,
                                   ),
 
@@ -503,12 +561,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
+                                        icon: const ImageIcon(AssetImage(
+                                            'images/icons/hare_icon.png')),
                                         color: _thisUserIndex == -1
                                             ? Colors.grey
-                                            : snapshot.data![_thisUserIndex].hem.isHare == isHareYes.value
+                                            : snapshot.data![_thisUserIndex].hem
+                                                        .isHare ==
+                                                    isHareYes.value
                                                 ? Colors.deepPurple
-                                                : snapshot.data![_thisUserIndex].hem.isHare == -1
+                                                : snapshot.data![_thisUserIndex]
+                                                            .hem.isHare ==
+                                                        -1
                                                     ? hc_blue
                                                     : Colors.grey,
                                         //tooltip: 'Select to follow a Kennel',
@@ -522,7 +585,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   Text(
-                                    (_packCount['isHareCount'] ?? 0) >= 0 ? (_packCount['isHareCount'] ?? 0).toString() : '',
+                                    (_packCount['isHareCount'] ?? 0) >= 0
+                                        ? (_packCount['isHareCount'] ?? 0)
+                                            .toString()
+                                        : '',
                                     style: rsvpTitlesView,
                                   ),
                                 ],
@@ -537,31 +603,151 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 //color: Colors.grey[300],
                                 width: 70.0,
                                 height: 70.0,
-                                child: Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: Key('22030392')))),
+                                child: Padding(
+                                    padding: EdgeInsets.all(5.0),
+                                    child: Center(
+                                        child: HcCircularProgressIndicator(
+                                            key: Key('22030392')))),
                               )
-                            : ((snapshot.data!.isEmpty) && (widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().subtract(const Duration(hours: 6)))))
+                            : ((snapshot.data!.isEmpty) &&
+                                    (widget.futureRun.event.eventStartDatetime
+                                        .isAfter(DateTime.now().subtract(
+                                            const Duration(hours: 6)))))
                                 ? Column(
                                     children: <Widget>[
-                                      const Expanded(flex: 40, child: SizedBox()),
+                                      const Expanded(
+                                          flex: 40, child: SizedBox()),
                                       Text(
                                         'Be the first to RSVP\r\nfor this run!',
                                         style: ts_headingVeryLarge,
                                         textAlign: TextAlign.center,
                                       ),
-                                      if (_thisUserIndex == -1) ..._getRsvpButtons(),
-                                      const Expanded(flex: 100, child: SizedBox()),
+                                      if (_thisUserIndex == -1)
+                                        ..._getRsvpButtons(),
+                                      if (_thisUserIndex == -1) ...<Widget>[
+                                        const SizedBox(height: 10)
+                                      ],
                                     ],
                                   )
                                 : Column(
                                     children: <Widget>[
                                       if ((_thisUserIndex == -1) &&
-                                          (widget.futureRun.event.eventStartDatetime.isAfter(
+                                          (widget.futureRun.event
+                                              .eventStartDatetime
+                                              .isAfter(
                                             DateTime.now().subtract(
                                               const Duration(hours: 6),
                                             ),
                                           )))
                                         ..._getRsvpButtons(),
-                                      if (_thisUserIndex == -1) ...<Widget>[const SizedBox(height: 10)],
+                                      if (_thisUserIndex == -1) ...<Widget>[
+                                        const SizedBox(height: 10)
+                                      ],
+                                      if ((_thisUserIndex >= 0) &&
+                                          (snapshot.data![_thisUserIndex].hem
+                                                  .rsvpState >=
+                                              rsvpMaybe.value)) ...<Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          child: ElevatedButton(
+                                            child: SizedBox(
+                                              width: 230.0,
+                                              height: 40.0,
+                                              child: Row(
+                                                children: <Widget>[
+                                                  Stack(
+                                                    alignment:
+                                                        AlignmentDirectional
+                                                            .center,
+                                                    children: <Widget>[
+                                                      Container(
+                                                        height: 24,
+                                                        width: 24,
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          color: Colors.white,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 22.0,
+                                                        width: 22.0,
+                                                        child: Icon(
+                                                            Icons
+                                                                .calendar_month,
+                                                            size: 22.0,
+                                                            color:
+                                                                Colors.black),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  const SizedBox(width: 15.0),
+                                                  Text(
+                                                    'Add to calendar',
+                                                    style: ts_button,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            onPressed: () async {
+                                              // HACK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
+                                              String time = widget.futureRun
+                                                  .event.eventStartDatetime
+                                                  .toString();
+                                              time = time.substring(
+                                                  0, time.length - 1);
+                                              DateTime localTime =
+                                                  DateTime.parse(time);
+
+                                              Event event = Event(
+                                                title: widget
+                                                    .futureRun.event.eventName,
+                                                description: widget.futureRun
+                                                    .event.eventDescription,
+                                                location: widget
+                                                    .futureRun
+                                                    .extensions
+                                                    .userFriendlyLocation,
+                                                startDate: localTime,
+                                                endDate: localTime.add(
+                                                    const Duration(hours: 4)),
+                                                iosParams: IOSParams(
+                                                    reminder: const Duration(
+                                                        hours:
+                                                            4), // on iOS, you can set alarm notification after your event.
+                                                    url:
+                                                        'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light' // on iOS, you can set url to your event.
+                                                    ),
+                                                // androidParams: AndroidParams(
+                                                //   emailInvites: [], // on Android, you can add invite emails to your event.
+                                                // ),
+                                              );
+
+                                              // PermissionStatus ps;
+
+                                              // if (!await Permission.calendarFullAccess.isGranted) {
+                                              //   ps = await Permission.calendarReadOnly.request();
+                                              //   if (ps.isGranted) {
+                                              //     ps = await Permission.calendarFullAccess.request();
+                                              //   }
+                                              // }
+
+                                              await Add2Calendar.addEvent2Cal(
+                                                  event);
+
+                                              // bool success = await Add2Calendar.addEvent2Cal(event);
+
+                                              // if (success) {
+                                              //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} has been added to your calendar', 'OK');
+                                              // } else {
+                                              //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} was not added to your calendar', 'OK');
+                                              // }
+                                            },
+                                          ),
+                                        ),
+                                      ],
                                       Container(
                                         padding: const EdgeInsets.all(8.0),
                                         width: 140.0,
@@ -570,21 +756,29 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                             setState(() {});
                                           },
                                           labelStyle: ts_tabSelected,
-                                          unselectedLabelStyle: ts_tabUnselected,
+                                          unselectedLabelStyle:
+                                              ts_tabUnselected,
                                           isScrollable: false,
                                           unselectedLabelColor: Colors.white,
                                           labelColor: Colors.white,
                                           //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                                          indicatorSize: TabBarIndicatorSize.label,
+                                          indicatorSize:
+                                              TabBarIndicatorSize.label,
                                           indicator: BubbleTabIndicator(
                                             indicatorHeight: 40.0,
                                             indicatorColor: hc_red,
-                                            tabBarIndicatorSize: TabBarIndicatorSize.label,
+                                            tabBarIndicatorSize:
+                                                TabBarIndicatorSize.label,
                                             indicatorRadius: 20.0,
                                           ),
                                           tabs: const <Tab>[
-                                            Tab(icon: Icon(MaterialCommunityIcons.format_list_bulleted_square)),
-                                            Tab(icon: Icon(MaterialCommunityIcons.view_grid_outline)),
+                                            Tab(
+                                                icon: Icon(MaterialCommunityIcons
+                                                    .format_list_bulleted_square)),
+                                            Tab(
+                                                icon: Icon(
+                                                    MaterialCommunityIcons
+                                                        .view_grid_outline)),
                                           ],
                                           controller: _gridListTabController,
                                         ),
@@ -592,45 +786,88 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       Expanded(
                                         child: Container(
                                           //key: packListBox,
-                                          color: const Color.fromARGB(60, 255, 255, 255),
-                                          margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
+                                          color: const Color.fromARGB(
+                                              60, 255, 255, 255),
+                                          margin: const EdgeInsets.only(
+                                              left: 16.0,
+                                              right: 16.0,
+                                              bottom: 15.0),
                                           padding: const EdgeInsets.all(8.0),
-                                          width: MediaQuery.of(context).size.width,
+                                          width:
+                                              MediaQuery.of(context).size.width,
                                           child: Scrollbar(
                                             controller: _scrollController,
                                             child: RefreshIndicator(
-                                              onRefresh: () => _refreshHemTableFromBackend(true),
-                                              child: _gridListTabController.index == 0
+                                              onRefresh: () =>
+                                                  _refreshHemTableFromBackend(
+                                                      true),
+                                              child: _gridListTabController.index ==
+                                                      0
                                                   ? ListView.separated(
-                                                      separatorBuilder: (BuildContext context, int index) => const Divider(
-                                                            height: 3.0,
-                                                            color: Colors.black45,
-                                                            thickness: 1.5,
-                                                          ),
-                                                      physics: const AlwaysScrollableScrollPhysics(),
-                                                      controller: _scrollController,
-                                                      itemCount: snapshot.data!.length,
-                                                      itemBuilder: (BuildContext context, int index) {
-                                                        final PackListAggregate e = snapshot.data![index];
+                                                      separatorBuilder:
+                                                          (BuildContext context,
+                                                                  int index) =>
+                                                              const Divider(
+                                                                height: 3.0,
+                                                                color: Colors
+                                                                    .black45,
+                                                                thickness: 1.5,
+                                                              ),
+                                                      physics:
+                                                          const AlwaysScrollableScrollPhysics(),
+                                                      controller:
+                                                          _scrollController,
+                                                      itemCount:
+                                                          snapshot.data!.length,
+                                                      itemBuilder:
+                                                          (BuildContext context,
+                                                              int index) {
+                                                        final PackListAggregate
+                                                            e = snapshot
+                                                                .data![index];
 
                                                         return GestureDetector(
                                                           onTap: () {
-                                                            if (e.hasher.photo != null) {
-                                                              _getHasherZoomablePhoto(e.hasher.photo!, e.displayName);
+                                                            if (e.hasher
+                                                                    .photo !=
+                                                                null) {
+                                                              _getHasherZoomablePhoto(
+                                                                  e.hasher
+                                                                      .photo!,
+                                                                  e.displayName);
                                                             }
                                                           },
                                                           child: Row(
                                                             children: <Widget>[
                                                               _rsvpIcon(e),
-                                                              const SizedBox(width: 6.0),
-                                                              Container(height: 60, width: 60, padding: const EdgeInsets.all(4), child: _hasherPhoto(e, false)),
-                                                              const SizedBox(width: 8.0),
+                                                              const SizedBox(
+                                                                  width: 6.0),
+                                                              Container(
+                                                                  height: 60,
+                                                                  width: 60,
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .all(
+                                                                          4),
+                                                                  child:
+                                                                      _hasherPhoto(
+                                                                          e,
+                                                                          false)),
+                                                              const SizedBox(
+                                                                  width: 8.0),
                                                               Expanded(
-                                                                  child: Container(
-                                                                padding: const EdgeInsets.only(top: 7.0),
+                                                                  child:
+                                                                      Container(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        top:
+                                                                            7.0),
                                                                 child: Text(
-                                                                  e.hem.hemKennelHashName ?? e.displayName,
-                                                                  style: ts_condensedLarge,
+                                                                  e.hem.hemKennelHashName ??
+                                                                      e.displayName,
+                                                                  style:
+                                                                      ts_condensedLarge,
                                                                 ),
                                                               )),
                                                             ],
@@ -638,30 +875,58 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                         );
                                                       })
                                                   : SingleChildScrollView(
-                                                      controller: _scrollController,
+                                                      controller:
+                                                          _scrollController,
                                                       child: Column(
                                                         children: <Widget>[
                                                           StaggeredGrid.count(
-                                                            mainAxisSpacing: 8.0,
-                                                            crossAxisSpacing: 8.0,
+                                                            mainAxisSpacing:
+                                                                8.0,
+                                                            crossAxisSpacing:
+                                                                8.0,
                                                             crossAxisCount: 4,
-                                                            axisDirection: AxisDirection.down,
-                                                            children: snapshot.data!.map((PackListAggregate e) {
-                                                              return StaggeredGridTile.count(
-                                                                crossAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                                                mainAxisCellCount: (e.hem.isHare != 0) ? 2 : 1,
-                                                                child: GestureDetector(
+                                                            axisDirection:
+                                                                AxisDirection
+                                                                    .down,
+                                                            children: snapshot
+                                                                .data!
+                                                                .map(
+                                                                    (PackListAggregate
+                                                                        e) {
+                                                              return StaggeredGridTile
+                                                                  .count(
+                                                                crossAxisCellCount:
+                                                                    (e.hem.isHare !=
+                                                                            0)
+                                                                        ? 2
+                                                                        : 1,
+                                                                mainAxisCellCount:
+                                                                    (e.hem.isHare !=
+                                                                            0)
+                                                                        ? 2
+                                                                        : 1,
+                                                                child:
+                                                                    GestureDetector(
                                                                   onTap: () {
-                                                                    if (e.hasher.photo != null) {
-                                                                      _getHasherZoomablePhoto(e.hasher.photo!, e.displayName);
+                                                                    if (e.hasher
+                                                                            .photo !=
+                                                                        null) {
+                                                                      _getHasherZoomablePhoto(
+                                                                          e.hasher
+                                                                              .photo!,
+                                                                          e.displayName);
                                                                     }
                                                                   },
-                                                                  child: _hasherPhoto(e, true),
+                                                                  child:
+                                                                      _hasherPhoto(
+                                                                          e,
+                                                                          true),
                                                                 ),
                                                               );
                                                             }).toList(),
                                                           ),
-                                                          const SizedBox(height: 100.0),
+                                                          const SizedBox(
+                                                              height: 100.0),
                                                         ],
                                                       ),
                                                     ),
@@ -687,7 +952,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             key: const Key('39392001'),
             pageTitle: dispName,
             imageUrl: photo.startsWith('http') ? photo : null,
-            assetImage: photo.contains('bundle://') ? 'images/avatars/${photo.replaceAll('bundle://', '')}.jpg' : null,
+            assetImage: photo.contains('bundle://')
+                ? 'images/avatars/${photo.replaceAll('bundle://', '')}.jpg'
+                : null,
             appBarBackgroundColor: themeAppBarBackground,
             background: Backgrounds.defaultHcBackground(),
             margin: 20.0),
@@ -699,13 +966,20 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     return Stack(
       children: <Widget>[
         (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('http')
-            ? CachedNetworkImage(imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo!), fadeInDuration: const Duration(milliseconds: 0), width: 300.0, height: 300.0, fit: BoxFit.fill)
+            ? CachedNetworkImage(
+                imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo!),
+                fadeInDuration: const Duration(milliseconds: 0),
+                width: 300.0,
+                height: 300.0,
+                fit: BoxFit.fill)
             : (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('bundle')
                 ? Image(
                     width: 300.0,
                     height: 300.0,
                     fit: BoxFit.fill,
-                    image: AssetImage(('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo!).toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                    image: AssetImage(
+                        ('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo!).toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                            .toLowerCase()),
                   )
                 : const Image(
                     width: 300.0,
@@ -740,23 +1014,33 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             : (e.hem.rsvpState == 1)
                 ? Icon(FontAwesome.times_circle, color: hc_red, size: 21.0)
                 : (e.hem.rsvpState == 2)
-                    ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
+                    ? const Icon(FontAwesome.question_circle,
+                        color: Colors.orange, size: 21.0)
                     : (e.hem.isHare == 0)
-                        ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
-                        : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
+                        ? const Icon(FontAwesome.check_circle,
+                            color: Colors.green, size: 21.0)
+                        : Image.asset('images/icons/hare_icon.png',
+                            color: Colors.deepPurple,
+                            height: 18.0,
+                            width: 18.0),
       ],
     );
   }
 
   Future<void> _setRsvpHare() async {
-    final bool willHare = await Utilities.promptForHare(widget.futureRun.event.hares ?? '') ?? false;
+    final bool willHare =
+        await Utilities.promptForHare(widget.futureRun.event.hares ?? '') ??
+            false;
     if (willHare) {
       List<PackListAggregate>? lPla = await _thePackList;
       if (lPla != null) {
         setState(() {
           if (_thisUserIndex >= 0) {
             PackListAggregate a = lPla[_thisUserIndex];
-            lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
+            lPla[_thisUserIndex] = PackListAggregate(
+                hasher: a.hasher,
+                displayName: a.displayName,
+                hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
 
             // _thePackList[_thisUserIndex].hem.rsvpState = -1;
             // _thePackList[_thisUserIndex].hem.isHare = -1;
@@ -766,13 +1050,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       }
 
       //final String userId = getStringPref(StringPrefsEnum.userId);
-      final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
-            widget.futureRun.event.eventId,
-            _userId,
-            AppDomainType.user,
-            rsvpYes.value,
-            isHareYes.value,
-          );
+      final List<dynamic> adHocData =
+          await G0<TableModel>().hasherEventMapService.setEventRsvp(
+                widget.futureRun.event.eventId,
+                _userId,
+                AppDomainType.user,
+                rsvpYes.value,
+                isHareYes.value,
+              );
 
       await _refreshHemTableFromBackend(false);
       final String serverMessage = adHocData[0]['serverMessage'] ?? '';
@@ -792,20 +1077,24 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           // _thePackList[_thisUserIndex].hem.isHare = 0;
 
           PackListAggregate a = lPla[_thisUserIndex];
-          lPla[_thisUserIndex] = PackListAggregate(hasher: a.hasher, displayName: a.displayName, hem: a.hem.copyWith(rsvpState: -1, isHare: 0));
+          lPla[_thisUserIndex] = PackListAggregate(
+              hasher: a.hasher,
+              displayName: a.displayName,
+              hem: a.hem.copyWith(rsvpState: -1, isHare: 0));
         }
         _rsvpRequested = rsvpState;
       });
     }
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
-          widget.futureRun.event.eventId,
-          _userId,
-          AppDomainType.user,
-          rsvpState.value,
-          isHareNo.value,
-        );
+    final List<dynamic> adHocData =
+        await G0<TableModel>().hasherEventMapService.setEventRsvp(
+              widget.futureRun.event.eventId,
+              _userId,
+              AppDomainType.user,
+              rsvpState.value,
+              isHareNo.value,
+            );
 
     await _refreshHemTableFromBackend(false);
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
@@ -816,8 +1105,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Widget _buildMapView() {
-    final List<double?> coords =
-        Utilities.getLatLongFromString(<String>[widget.futureRun.event.locationOneLineDesc ?? '', widget.futureRun.event.eventDescription ?? '', widget.futureRun.event.eventName]);
+    final List<double?> coords = Utilities.getLatLongFromString(<String>[
+      widget.futureRun.event.locationOneLineDesc ?? '',
+      widget.futureRun.event.eventDescription ?? '',
+      widget.futureRun.event.eventName
+    ]);
 
     return ConnectedWidget(
       refreshFunction: () {
@@ -843,9 +1135,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               MyFlutterMap(
                 (widget.futureRun.extensions.latitude ?? coords[0]) == null
                     ? null
-                    : latlng.LatLng((widget.futureRun.extensions.latitude ?? coords[0]!), (widget.futureRun.extensions.longitude ?? coords[1])!),
+                    : latlng.LatLng(
+                        (widget.futureRun.extensions.latitude ?? coords[0]!),
+                        (widget.futureRun.extensions.longitude ?? coords[1])!),
                 _mapCenter,
-                latlng.LatLng(widget.futureRun.kennel.kennelLatitude!, widget.futureRun.kennel.kennelLongitude!),
+                latlng.LatLng(widget.futureRun.kennel.kennelLatitude!,
+                    widget.futureRun.kennel.kennelLongitude!),
                 1.0,
                 18.0,
                 14.0,
@@ -870,25 +1165,34 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   child: SizedBox(
                     height: 50.0,
                     width: 50.0,
-                    child: Image.asset(_trueNorthLock ? 'images/other/set_map_to_true_north_lock.png' : 'images/other/set_map_rotation_enabled.png'),
+                    child: Image.asset(_trueNorthLock
+                        ? 'images/other/set_map_to_true_north_lock.png'
+                        : 'images/other/set_map_rotation_enabled.png'),
                   ),
                 ),
               ),
-              if (widget.futureRun.extensions.isMapAndDistanceValid == 0) ...<Widget>[
+              if (widget.futureRun.extensions.isMapAndDistanceValid ==
+                  0) ...<Widget>[
                 Positioned(
                   right: 10.0,
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
-                      _mapCenter = latlng.LatLng(widget.futureRun.extensions.latitude ?? widget.futureRun.kennel.kennelLatitude ?? DEFAULT_LATITUDE,
-                          widget.futureRun.extensions.longitude ?? widget.futureRun.kennel.kennelLongitude ?? DEFAULT_LONGITUDE);
+                      _mapCenter = latlng.LatLng(
+                          widget.futureRun.extensions.latitude ??
+                              widget.futureRun.kennel.kennelLatitude ??
+                              DEFAULT_LATITUDE,
+                          widget.futureRun.extensions.longitude ??
+                              widget.futureRun.kennel.kennelLongitude ??
+                              DEFAULT_LONGITUDE);
 
                       setState(() {});
                     },
                     child: SizedBox(
                       height: 50.0,
                       width: 50.0,
-                      child: Image.asset('images/other/set_map_to_event_location.png'),
+                      child: Image.asset(
+                          'images/other/set_map_to_event_location.png'),
                     ),
                   ),
                 ),
@@ -898,20 +1202,25 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
-                          _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!);
+                        if ((G0<DeviceInfo>().deviceLat != null) &&
+                            (G0<DeviceInfo>().deviceLon != null)) {
+                          _mapCenter = latlng.LatLng(
+                              G0<DeviceInfo>().deviceLat!,
+                              G0<DeviceInfo>().deviceLon!);
                         }
                       });
                     },
                     child: SizedBox(
                       height: 50.0,
                       width: 50.0,
-                      child: Image.asset('images/other/set_map_to_current_location.png'),
+                      child: Image.asset(
+                          'images/other/set_map_to_current_location.png'),
                     ),
                   ),
                 ),
               ],
-              if (widget.futureRun.extensions.isMapAndDistanceValid != 1) ...<Widget>[
+              if (widget.futureRun.extensions.isMapAndDistanceValid !=
+                  1) ...<Widget>[
                 Container(color: Colors.black54),
                 Container(
                   margin: const EdgeInsets.only(bottom: 60.0),
@@ -931,7 +1240,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   bool _fabIsVisible = false;
 
-  Widget _getRsvpButton(IconData iconData, Color iconColor, String text, EnumRsvpState<int> rsvpState) {
+  Widget _getRsvpButton(IconData iconData, Color iconColor, String text,
+      EnumRsvpState<int> rsvpState) {
     return ElevatedButton(
       child: SizedBox(
         width: 200.0,
@@ -975,9 +1285,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     } else {
       return <Widget>[
         const SizedBox(height: 30.0),
-        _getRsvpButton(FontAwesome.check_circle, Colors.green, 'I\'ll be there!', rsvpYes),
-        _getRsvpButton(FontAwesome.check_circle, Colors.orange, 'I might come!', rsvpMaybe),
-        _getRsvpButton(FontAwesome.check_circle, hc_red, 'I will not come', rsvpNo),
+        _getRsvpButton(
+            FontAwesome.check_circle, Colors.green, 'I\'ll be there!', rsvpYes),
+        _getRsvpButton(FontAwesome.check_circle, Colors.orange, 'I might come!',
+            rsvpMaybe),
+        _getRsvpButton(
+            FontAwesome.check_circle, hc_red, 'I will not come', rsvpNo),
       ];
     }
   }
@@ -1042,7 +1355,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               },
             ),
             SpeedDialChild(
-              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.deepPurple),
+              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'),
+                  color: Colors.deepPurple),
               backgroundColor: Colors.white,
               label: 'I will hare',
               labelStyle: const TextStyle(fontSize: 18.0),
@@ -1075,7 +1389,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       labelStyle: ts_tabSelected,
                       unselectedLabelStyle: ts_tabUnselected,
                       isScrollable: false,
-                      labelPadding: const EdgeInsets.only(top: 5, left: 0, right: 0),
+                      labelPadding:
+                          const EdgeInsets.only(top: 5, left: 0, right: 0),
                       unselectedLabelColor: Colors.black,
                       labelColor: Colors.white,
                       indicatorSize: TabBarIndicatorSize.tab,
@@ -1400,7 +1715,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     if ((lat == null) || (lon == null)) {
       // try to get lat/lons from other sources
-      final List<double?> coords = Utilities.getLatLongFromString(<String>[rda.event.locationOneLineDesc ?? '', rda.event.eventDescription ?? '', rda.event.eventName]);
+      final List<double?> coords = Utilities.getLatLongFromString(<String>[
+        rda.event.locationOneLineDesc ?? '',
+        rda.event.eventDescription ?? '',
+        rda.event.eventName
+      ]);
 
       if ((coords[0] != null) && (coords[1] != null)) {
         lat = coords[0]!;
@@ -1442,8 +1761,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           _saveUserMapPreference,
         );
       } else {
-        final List<maps.AvailableMap> availableMaps = await maps.MapLauncher.installedMaps;
-        final maps.AvailableMap activeMap = availableMaps.where((maps.AvailableMap map) => map.mapName == mapName).first;
+        final List<maps.AvailableMap> availableMaps =
+            await maps.MapLauncher.installedMaps;
+        final maps.AvailableMap activeMap = availableMaps
+            .where((maps.AvailableMap map) => map.mapName == mapName)
+            .first;
 
         // BUG in plugin - doesn't work when sending a title with Google maps
         activeMap.showMarker(

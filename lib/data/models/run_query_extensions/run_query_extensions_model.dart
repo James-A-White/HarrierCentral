@@ -6,7 +6,9 @@ part 'run_query_extensions_model.freezed.dart';
 part 'run_query_extensions_model.g.dart';
 
 @freezed
-class RunQueryExtensionsModel with _$RunQueryExtensionsModel implements BaseModel {
+class RunQueryExtensionsModel
+    with _$RunQueryExtensionsModel
+    implements BaseModel {
   factory RunQueryExtensionsModel({
     @Default(0) int daysUntilEvent,
     @Default(0) int appAccessFlags,
@@ -27,10 +29,13 @@ class RunQueryExtensionsModel with _$RunQueryExtensionsModel implements BaseMode
     double? longitude,
     double? distToEvent,
     @Default(0) int isMapAndDistanceValid,
-    @Default(3) int runClassification, // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+    @Default(3)
+    int runClassification, // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+    String? userFriendlyLocation,
   }) = _RunQueryExtensionsModel;
 
-  factory RunQueryExtensionsModel.fromJson(Map<String, dynamic> json) => _$RunQueryExtensionsModelFromJson(json);
+  factory RunQueryExtensionsModel.fromJson(Map<String, dynamic> json) =>
+      _$RunQueryExtensionsModelFromJson(json);
 
   @override
   factory RunQueryExtensionsModel.fromMap(Map<String, dynamic> map) {
@@ -42,20 +47,26 @@ class RunQueryExtensionsModel with _$RunQueryExtensionsModel implements BaseMode
     DateTime eventStartDateTime,
     double? distanceToEvent, {
     double? meters,
+    String? userFriendlyLocation,
   }) {
     RunQueryExtensionsModel m = _$RunQueryExtensionsModelFromJson(json);
 
     int runClassification = 4;
 
     if (meters != null) {
-      final int userDistPrefs = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceForAutoDisplay;
+      final int userDistPrefs =
+          (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
+              hasherPref_distanceForAutoDisplay;
 
       // if the user has set their preferences to miles or
       // the user has set their preferences to "auto" and the
       // distance preference associated with the kennel is miles
       // then convert our range for runs from meters to miles.
-      if (((userDistPrefs & hasherPref_distanceMeasuredIn) == 3) || (((userDistPrefs & hasherPref_distanceMeasuredIn) == 0) && (m.distanceUnitsPref == 3))) {
-        meters = meters * MILES_TO_METERS / 1000; // this calculation is correct!
+      if (((userDistPrefs & hasherPref_distanceMeasuredIn) == 3) ||
+          (((userDistPrefs & hasherPref_distanceMeasuredIn) == 0) &&
+              (m.distanceUnitsPref == 3))) {
+        meters =
+            meters * MILES_TO_METERS / 1000; // this calculation is correct!
       }
 
       if ((m.rsvpState == 3) || (m.rsvpState == 2)) {
@@ -73,6 +84,7 @@ class RunQueryExtensionsModel with _$RunQueryExtensionsModel implements BaseMode
     m = m.copyWith(
         runClassification: runClassification,
         distToEvent: distanceToEvent,
+        userFriendlyLocation: userFriendlyLocation,
         searchRunsText: m.searchRunsText +
             getSearchDateString(
               eventStartDateTime,
@@ -86,12 +98,16 @@ class RunQueryExtensionsModel with _$RunQueryExtensionsModel implements BaseMode
       return '';
     }
 
-    final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
+    final DateFormat df = DateFormat(
+        "' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm",
+        'en_US');
     String days = '';
     String weekend = '';
     String thisDay = '';
 
-    final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
+    final int deltaDays =
+        eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) -
+            DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
       if (deltaDays == 1) {
         days = ' 1 day ago is yesterday ';
@@ -134,7 +150,8 @@ class RunQueryExtensionsModel with _$RunQueryExtensionsModel implements BaseMode
       }
     }
 
-    if ((eventStartDateTime.weekday == DateTime.sunday) || (eventStartDateTime.weekday == DateTime.saturday)) {
+    if ((eventStartDateTime.weekday == DateTime.sunday) ||
+        (eventStartDateTime.weekday == DateTime.saturday)) {
       weekend = ' is weekend ';
     }
 
