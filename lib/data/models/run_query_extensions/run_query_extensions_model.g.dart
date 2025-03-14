@@ -27,6 +27,8 @@ _$RunQueryExtensionsModelImpl _$$RunQueryExtensionsModelImplFromJson(
       searchRunsText: json['searchRunsText'] as String? ?? '',
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      evtLat: (json['evtLat'] as num?)?.toDouble(),
+      evtLon: (json['evtLon'] as num?)?.toDouble(),
       distToEvent: (json['distToEvent'] as num?)?.toDouble(),
       isMapAndDistanceValid:
           (json['isMapAndDistanceValid'] as num?)?.toInt() ?? 0,
@@ -53,6 +55,8 @@ Map<String, dynamic> _$$RunQueryExtensionsModelImplToJson(
       'searchRunsText': instance.searchRunsText,
       'latitude': instance.latitude,
       'longitude': instance.longitude,
+      'evtLat': instance.evtLat,
+      'evtLon': instance.evtLon,
       'distToEvent': instance.distToEvent,
       'isMapAndDistanceValid': instance.isMapAndDistanceValid,
       'runClassification': instance.runClassification,

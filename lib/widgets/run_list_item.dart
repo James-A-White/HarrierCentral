@@ -41,12 +41,15 @@ class RunListItem extends StatelessWidget {
       rliController.setHareState(futureRun.extensions.isHare);
     }
 
-    if (futureRun.extensions.emailAlertPreference != rliController.emailAlertPreference.value) {
+    if (futureRun.extensions.emailAlertPreference !=
+        rliController.emailAlertPreference.value) {
       rliController.setEmailState(futureRun.extensions.emailAlertPreference);
     }
 
-    if (futureRun.extensions.notificationPreference != rliController.notificationPreference.value) {
-      rliController.setNotificationState(futureRun.extensions.notificationPreference);
+    if (futureRun.extensions.notificationPreference !=
+        rliController.notificationPreference.value) {
+      rliController
+          .setNotificationState(futureRun.extensions.notificationPreference);
     }
 
     if (futureRun.event.hares != rliController.hares.value) {
@@ -75,7 +78,8 @@ class RunListItem extends StatelessWidget {
                     _showRsvpOptionsPopup();
                   },
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0, bottom: 5.0),
+                    padding: const EdgeInsets.only(
+                        left: 5.0, right: 5.0, top: 5.0, bottom: 5.0),
                     child: Obx(() => _getRsvpWidget()),
                   ),
                 ),
@@ -102,7 +106,8 @@ class RunListItem extends StatelessWidget {
                     child: Obx(() => _getEmailWidget()),
                   ),
                 ),
-                ((futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
+                ((futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(
+                        const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
                     ? Container()
                     : Container(
                         padding: const EdgeInsets.only(right: 10),
@@ -121,7 +126,8 @@ class RunListItem extends StatelessWidget {
               height: 1.0,
               color: Colors.grey[300],
             ),
-            if ((futureRun.event.eventImage != null) && (futureRun.event.eventImage!.isNotEmpty)) ...<Widget>[
+            if ((futureRun.event.eventImage != null) &&
+                (futureRun.event.eventImage!.isNotEmpty)) ...<Widget>[
               GestureDetector(
                 onLongPress: () {
                   Navigator.push<void>(
@@ -156,7 +162,8 @@ class RunListItem extends StatelessWidget {
                     Expanded(
                       flex: 100,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 4.0),
+                        padding: const EdgeInsets.only(
+                            top: 10.0, bottom: 10.0, left: 4.0),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -182,18 +189,35 @@ class RunListItem extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
-                                      (futureRun.event.isCountedRun == 1 ? 'Run #${futureRun.event.eventNumber}, ' : 'Run / Event ') +
-                                          (futureRun.extensions.daysUntilEvent <= 14
-                                              ? futureRun.extensions.daysUntilEvent.toInt() == -1
+                                      (futureRun.event.isCountedRun == 1
+                                              ? 'Run #${futureRun.event.eventNumber}, '
+                                              : 'Run / Event ') +
+                                          (futureRun.extensions
+                                                      .daysUntilEvent <=
+                                                  14
+                                              ? futureRun.extensions
+                                                          .daysUntilEvent
+                                                          .toInt() ==
+                                                      -1
                                                   ? 'Yesterday'
-                                                  : futureRun.extensions.daysUntilEvent.toInt() == 0
+                                                  : futureRun.extensions
+                                                              .daysUntilEvent
+                                                              .toInt() ==
+                                                          0
                                                       ? 'TODAY'
-                                                      : futureRun.extensions.daysUntilEvent.toInt() == 1
+                                                      : futureRun.extensions
+                                                                  .daysUntilEvent
+                                                                  .toInt() ==
+                                                              1
                                                           ? 'Tomorrow'
                                                           : 'in ${futureRun.extensions.daysUntilEvent.toInt().toString()} days'
-                                              : (futureRun.extensions.daysUntilEvent <= 30)
+                                              : (futureRun.extensions
+                                                          .daysUntilEvent <=
+                                                      30)
                                                   ? 'in ${futureRun.extensions.daysUntilEvent ~/ 7.0}${(futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
-                                                  : futureRun.extensions.daysUntilEvent <= 365
+                                                  : futureRun.extensions
+                                                              .daysUntilEvent <=
+                                                          365
                                                       ? 'in ${futureRun.extensions.daysUntilEvent ~/ 30.0}${(futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
                                                       : 'in ${futureRun.extensions.daysUntilEvent ~/ 365.0}${(futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
                                       style: ts_titleMediumBlack,
@@ -201,7 +225,8 @@ class RunListItem extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
-                                      DateFormat("E, MMM d 'at' h:mm a").format(futureRun.event.eventStartDatetime),
+                                      DateFormat("E, MMM d 'at' h:mm a").format(
+                                          futureRun.event.eventStartDatetime),
                                       style: ts_regularMediumBlack,
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
@@ -209,9 +234,15 @@ class RunListItem extends StatelessWidget {
                                     Obx(
                                       () => _getHaresWidget(),
                                     ),
-                                    if ((futureRun.extensions.latitude != null && futureRun.extensions.isMapAndDistanceValid == 1) &&
-                                        ((futureRun.extensions.distToEvent ?? -1.0) >= 0) &&
-                                        (G0<AppModel>().hasLocationPermissions)) ...<Widget>[
+                                    if ((futureRun.extensions.evtLat != null &&
+                                            futureRun.extensions
+                                                    .isMapAndDistanceValid ==
+                                                1) &&
+                                        ((futureRun.extensions.distToEvent ??
+                                                -1.0) >=
+                                            0) &&
+                                        (G0<AppModel>()
+                                            .hasLocationPermissions)) ...<Widget>[
                                       Text(
                                         '${Utilities.getDistance(futureRun.extensions.distToEvent!, isMetric: ((futureRun.extensions.distanceUnitsPref) & 0x01) == 0)} from here',
                                         style: ts_regularMediumBlack,
@@ -219,10 +250,13 @@ class RunListItem extends StatelessWidget {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ] else
-                                      Text('No location provided', style: ts_regularMediumBlack),
-                                    if (futureRun.event.eventGeographicScope > 1) ...<Widget>[
+                                      Text('No location provided',
+                                          style: ts_regularMediumBlack),
+                                    if (futureRun.event.eventGeographicScope >
+                                        1) ...<Widget>[
                                       Text(
-                                        Utilities.getEventScopeText(futureRun.event.eventGeographicScope),
+                                        Utilities.getEventScopeText(futureRun
+                                            .event.eventGeographicScope),
                                         style: ts_titleMediumDarkBlue,
                                         textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
@@ -235,9 +269,11 @@ class RunListItem extends StatelessWidget {
                               ),
                             ),
 
-                            if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) ...<Widget>[
+                            if (G0<AppModel>().connectionStatus ==
+                                EnumConnectionStatus2.connected) ...<Widget>[
                               IconButton(
-                                icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                                icon: const Icon(
+                                    MaterialCommunityIcons.dots_vertical),
                                 iconSize: Theme.of(context).iconTheme.size,
                                 color: Colors.black54,
                                 splashColor: Theme.of(context).highlightColor,
@@ -293,7 +329,9 @@ class RunListItem extends StatelessWidget {
             futureRun.extensions.isPaid,
             true,
             (int r, int p) {
-              futureRun.extensions = futureRun.extensions.copyWith(rsvpState: r, isPaid: p != -1 ? p : futureRun.extensions.isPaid);
+              futureRun.extensions = futureRun.extensions.copyWith(
+                  rsvpState: r,
+                  isPaid: p != -1 ? p : futureRun.extensions.isPaid);
 
               rliController.setRsvpState(futureRun.extensions.rsvpState);
 
@@ -307,22 +345,36 @@ class RunListItem extends StatelessWidget {
   Future<void> _showAllOptionsPopup() async {
     if (Connection2.checkForConnection(
       G0<AppModel>().connectionStatus,
-      message: 'Setting run options is not available in offline mode. Please connect to the Internet.',
+      message:
+          'Setting run options is not available in offline mode. Please connect to the Internet.',
     )) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
           'icon': <Widget>[
             Image.asset('images/icons/checkbox_yes.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpYes
         },
         <String, dynamic>{
           'title': 'I might be there',
           'icon': <Widget>[
-            Image.asset('images/icons/checkbox_maybe.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Image.asset('images/icons/checkbox_maybe.png',
+                width: 30, height: 30),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpMaybe
         },
@@ -330,15 +382,28 @@ class RunListItem extends StatelessWidget {
           'title': 'I won\'t make it',
           'icon': <Widget>[
             Image.asset('images/icons/checkbox_no.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpNo
         },
         <String, dynamic>{
           'title': 'I\'ll hare!',
           'icon': <Widget>[
-            Image.asset('images/icons/checkbox_hare.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Image.asset('images/icons/checkbox_hare.png',
+                width: 30, height: 30),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': isHareYes
         },
@@ -346,7 +411,11 @@ class RunListItem extends StatelessWidget {
             ? <String, dynamic>{
                 'title': 'Notifications on',
                 'icon': <Widget>[
-                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  Container(
+                      height: 30,
+                      width: 30,
+                      decoration: const BoxDecoration(
+                          color: Colors.white, shape: BoxShape.circle)),
                   const Positioned(
                     left: 3,
                     top: 1.5,
@@ -363,7 +432,11 @@ class RunListItem extends StatelessWidget {
             : <String, dynamic>{
                 'title': 'Notifications off',
                 'icon': <Widget>[
-                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  Container(
+                      height: 30,
+                      width: 30,
+                      decoration: const BoxDecoration(
+                          color: Colors.white, shape: BoxShape.circle)),
                   const Positioned(
                     left: 3,
                     top: 1.5,
@@ -371,7 +444,8 @@ class RunListItem extends StatelessWidget {
                       width: 25.0,
                       height: 25.0,
                       fit: BoxFit.fill,
-                      image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+                      image: AssetImage(
+                          'images/icons/bell_silver_strike_out_50px.png'),
                     ),
                   )
                 ],
@@ -381,7 +455,11 @@ class RunListItem extends StatelessWidget {
             ? <String, dynamic>{
                 'title': 'Send e-mail',
                 'icon': <Widget>[
-                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  Container(
+                      height: 30,
+                      width: 30,
+                      decoration: const BoxDecoration(
+                          color: Colors.white, shape: BoxShape.circle)),
                   const Positioned(
                     left: 3,
                     top: 1.5,
@@ -398,7 +476,11 @@ class RunListItem extends StatelessWidget {
             : <String, dynamic>{
                 'title': 'Don\'t send email',
                 'icon': <Widget>[
-                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  Container(
+                      height: 30,
+                      width: 30,
+                      decoration: const BoxDecoration(
+                          color: Colors.white, shape: BoxShape.circle)),
                   const Positioned(
                     left: 3,
                     top: 1.5,
@@ -406,7 +488,8 @@ class RunListItem extends StatelessWidget {
                       width: 25.0,
                       height: 25.0,
                       fit: BoxFit.fill,
-                      image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                      image: AssetImage(
+                          'images/icons/envelope_silver_strike_out_50px.png'),
                     ),
                   )
                 ],
@@ -434,7 +517,8 @@ class RunListItem extends StatelessWidget {
       } else if (retVal is EnumRsvpState) {
         await _setRsvpState(retVal as EnumRsvpState<int>, false);
       } else if (retVal is EnumIsHare) {
-        final bool willHare = await Utilities.promptForHare(rliController.hares.value) ?? false;
+        final bool willHare =
+            await Utilities.promptForHare(rliController.hares.value) ?? false;
         await _setRsvpState(rsvpYes, willHare);
       }
     }
@@ -461,8 +545,10 @@ class RunListItem extends StatelessWidget {
             image: rliController.notificationPreference.value == 1
                 ? const AssetImage('images/icons/bell_gold_50px.png')
                 : rliController.notificationPreference.value == 2
-                    ? const AssetImage('images/icons/bell_silver_strike_out_50px.png')
-                    : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+                    ? const AssetImage(
+                        'images/icons/bell_silver_strike_out_50px.png')
+                    : const AssetImage(
+                        'images/icons/bell_silver_strike_out_50px.png'),
           );
   }
 
@@ -476,8 +562,10 @@ class RunListItem extends StatelessWidget {
             image: rliController.emailAlertPreference.value == 1
                 ? const AssetImage('images/icons/envelope_gold_50px.png')
                 : rliController.emailAlertPreference.value == 2
-                    ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png')
-                    : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                    ? const AssetImage(
+                        'images/icons/envelope_silver_strike_out_50px.png')
+                    : const AssetImage(
+                        'images/icons/envelope_silver_strike_out_50px.png'),
           );
   }
 
@@ -518,21 +606,36 @@ class RunListItem extends StatelessWidget {
   }
 
   void _showRsvpOptionsPopup() async {
-    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus,
+        message:
+            'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
           'icon': <Widget>[
             Image.asset('images/icons/checkbox_yes.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpYes
         },
         <String, dynamic>{
           'title': 'I might be there',
           'icon': <Widget>[
-            Image.asset('images/icons/checkbox_maybe.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Image.asset('images/icons/checkbox_maybe.png',
+                width: 30, height: 30),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpMaybe
         },
@@ -540,15 +643,28 @@ class RunListItem extends StatelessWidget {
           'title': 'I won\'t make it',
           'icon': <Widget>[
             Image.asset('images/icons/checkbox_no.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': rsvpNo
         },
         <String, dynamic>{
           'title': 'I\'ll hare!',
           'icon': <Widget>[
-            Image.asset('images/icons/checkbox_hare.png', width: 30, height: 30),
-            Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
+            Image.asset('images/icons/checkbox_hare.png',
+                width: 30, height: 30),
+            Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(color: Colors.white, width: 3.0))),
           ],
           'returnValue': isHareYes
         },
@@ -570,7 +686,8 @@ class RunListItem extends StatelessWidget {
           false,
         );
       } else if (retVal is EnumIsHare) {
-        final bool willHare = await Utilities.promptForHare(futureRun.event.hares) ?? false;
+        final bool willHare =
+            await Utilities.promptForHare(futureRun.event.hares) ?? false;
         await _setRsvpState(rsvpYes, willHare);
       }
     }
@@ -583,13 +700,14 @@ class RunListItem extends StatelessWidget {
     rliController.rsvpState.value = -1;
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventRsvp(
-          futureRun.event.eventId,
-          userId,
-          AppDomainType.user,
-          rsvpState.value,
-          willHare ? isHareYes.value : isHareNo.value,
-        );
+    final List<dynamic> adHocData =
+        await G0<TableModel>().hasherEventMapService.setEventRsvp(
+              futureRun.event.eventId,
+              userId,
+              AppDomainType.user,
+              rsvpState.value,
+              willHare ? isHareYes.value : isHareNo.value,
+            );
 
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
@@ -613,7 +731,11 @@ class RunListItem extends StatelessWidget {
       <String, dynamic>{
         'title': 'Notifications on',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -630,7 +752,11 @@ class RunListItem extends StatelessWidget {
       <String, dynamic>{
         'title': 'Notifications off',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -647,7 +773,11 @@ class RunListItem extends StatelessWidget {
       <String, dynamic>{
         'title': 'Use Kennel setting',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -685,12 +815,16 @@ class RunListItem extends StatelessWidget {
   }
 
   Future<void> _setEmailAlertState(EnumEmailAlertState<int> retVal) async {
-    if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
+    if ((retVal == emailAlertsOn) ||
+        (retVal == emailAlertsOff) ||
+        (retVal == emailAlertsAuto)) {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumEmailAlertState<int> nState = retVal;
       rliController.setEmailState(-1);
 
-      List<dynamic> results = await G0<TableModel>().hasherEventMapService.setEmailAndNotificationPreferences(
+      List<dynamic> results = await G0<TableModel>()
+          .hasherEventMapService
+          .setEmailAndNotificationPreferences(
             futureRun.event.eventId,
             userId,
             AppDomainType.user,
@@ -703,12 +837,16 @@ class RunListItem extends StatelessWidget {
   }
 
   Future<void> _setNotificationState(EnumNotificationState<int> retVal) async {
-    if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
+    if ((retVal == notificationsOn) ||
+        (retVal == notificationsOff) ||
+        (retVal == notificationsAuto)) {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumNotificationState<int> nState = retVal;
       rliController.setNotificationState(-1);
 
-      List<dynamic> results = await G0<TableModel>().hasherEventMapService.setEmailAndNotificationPreferences(
+      List<dynamic> results = await G0<TableModel>()
+          .hasherEventMapService
+          .setEmailAndNotificationPreferences(
             futureRun.event.eventId,
             userId,
             AppDomainType.user,
@@ -720,7 +858,8 @@ class RunListItem extends StatelessWidget {
       // notifications.setNotificationState(eventId: _rda.event.eventId);
       // // T0D0(James): Fix this to reflect true value of what is in the DB not just the value
       // // provided to the function
-      rliController.setNotificationState(results[0]?['notificationPreference'] ?? 0);
+      rliController
+          .setNotificationState(results[0]?['notificationPreference'] ?? 0);
     }
   }
 
@@ -729,7 +868,11 @@ class RunListItem extends StatelessWidget {
       <String, dynamic>{
         'title': 'Turn email\r\nmessages on',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -746,7 +889,11 @@ class RunListItem extends StatelessWidget {
       <String, dynamic>{
         'title': 'Turn email\r\nmessages off',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -754,7 +901,8 @@ class RunListItem extends StatelessWidget {
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+              image: AssetImage(
+                  'images/icons/envelope_silver_strike_out_50px.png'),
             ),
           )
         ],
@@ -763,7 +911,11 @@ class RunListItem extends StatelessWidget {
       <String, dynamic>{
         'title': 'Use Kennel setting',
         'icon': <Widget>[
-          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,

@@ -27,6 +27,8 @@ class RunQueryExtensionsModel
     @Default('') String searchRunsText,
     double? latitude,
     double? longitude,
+    double? evtLat,
+    double? evtLon,
     double? distToEvent,
     @Default(0) int isMapAndDistanceValid,
     @Default(3)

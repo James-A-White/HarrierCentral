@@ -190,13 +190,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       ],
     );
 
-    double xLat = widget.futureRun.extensions.latitude ??
+    double xLat = widget.futureRun.extensions.evtLat ??
         coords[0] ??
         widget.futureRun.kennel.kennelLatitude ??
         G0<DeviceInfo>().deviceLon ??
         DEFAULT_LATITUDE;
 
-    double xLon = widget.futureRun.extensions.longitude ??
+    double xLon = widget.futureRun.extensions.evtLon ??
         coords[1] ??
         widget.futureRun.kennel.kennelLongitude ??
         G0<DeviceInfo>().deviceLon ??
@@ -1133,11 +1133,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             alignment: AlignmentDirectional.center,
             children: <Widget>[
               MyFlutterMap(
-                (widget.futureRun.extensions.latitude ?? coords[0]) == null
+                // (widget.futureRun.extensions.latitude ?? coords[0]) == null
+                //     ? null
+                //     : latlng.LatLng(
+                //         (widget.futureRun.extensions.latitude ?? coords[0]!),
+                //         (widget.futureRun.extensions.longitude ?? coords[1])!),
+                (widget.futureRun.extensions.evtLat ?? coords[0]) == null
                     ? null
                     : latlng.LatLng(
-                        (widget.futureRun.extensions.latitude ?? coords[0]!),
-                        (widget.futureRun.extensions.longitude ?? coords[1])!),
+                        (widget.futureRun.extensions.evtLat ?? coords[0]!),
+                        (widget.futureRun.extensions.evtLon ?? coords[1])!),
                 _mapCenter,
                 latlng.LatLng(widget.futureRun.kennel.kennelLatitude!,
                     widget.futureRun.kennel.kennelLongitude!),
@@ -1179,10 +1184,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   child: GestureDetector(
                     onTap: () {
                       _mapCenter = latlng.LatLng(
-                          widget.futureRun.extensions.latitude ??
+                          widget.futureRun.extensions.evtLat ??
                               widget.futureRun.kennel.kennelLatitude ??
                               DEFAULT_LATITUDE,
-                          widget.futureRun.extensions.longitude ??
+                          widget.futureRun.extensions.evtLon ??
                               widget.futureRun.kennel.kennelLongitude ??
                               DEFAULT_LONGITUDE);
 
@@ -1705,12 +1710,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     double? lon;
     String address = '';
 
-    if (rda.extensions.latitude != null) {
-      lat = rda.extensions.latitude;
+    if (rda.extensions.evtLat != null) {
+      lat = rda.extensions.evtLat;
     }
 
-    if (rda.extensions.longitude != null) {
-      lon = rda.extensions.longitude;
+    if (rda.extensions.evtLon != null) {
+      lon = rda.extensions.evtLon;
     }
 
     if ((lat == null) || (lon == null)) {

@@ -38,6 +38,8 @@ mixin _$RunQueryExtensionsModel {
   String get searchRunsText => throw _privateConstructorUsedError;
   double? get latitude => throw _privateConstructorUsedError;
   double? get longitude => throw _privateConstructorUsedError;
+  double? get evtLat => throw _privateConstructorUsedError;
+  double? get evtLon => throw _privateConstructorUsedError;
   double? get distToEvent => throw _privateConstructorUsedError;
   int get isMapAndDistanceValid => throw _privateConstructorUsedError;
   int get runClassification =>
@@ -77,6 +79,8 @@ abstract class $RunQueryExtensionsModelCopyWith<$Res> {
       String searchRunsText,
       double? latitude,
       double? longitude,
+      double? evtLat,
+      double? evtLon,
       double? distToEvent,
       int isMapAndDistanceValid,
       int runClassification,
@@ -115,6 +119,8 @@ class _$RunQueryExtensionsModelCopyWithImpl<$Res,
     Object? searchRunsText = null,
     Object? latitude = freezed,
     Object? longitude = freezed,
+    Object? evtLat = freezed,
+    Object? evtLon = freezed,
     Object? distToEvent = freezed,
     Object? isMapAndDistanceValid = null,
     Object? runClassification = null,
@@ -185,6 +191,14 @@ class _$RunQueryExtensionsModelCopyWithImpl<$Res,
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double?,
+      evtLat: freezed == evtLat
+          ? _value.evtLat
+          : evtLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      evtLon: freezed == evtLon
+          ? _value.evtLon
+          : evtLon // ignore: cast_nullable_to_non_nullable
+              as double?,
       distToEvent: freezed == distToEvent
           ? _value.distToEvent
           : distToEvent // ignore: cast_nullable_to_non_nullable
@@ -231,6 +245,8 @@ abstract class _$$RunQueryExtensionsModelImplCopyWith<$Res>
       String searchRunsText,
       double? latitude,
       double? longitude,
+      double? evtLat,
+      double? evtLon,
       double? distToEvent,
       int isMapAndDistanceValid,
       int runClassification,
@@ -268,6 +284,8 @@ class __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>
     Object? searchRunsText = null,
     Object? latitude = freezed,
     Object? longitude = freezed,
+    Object? evtLat = freezed,
+    Object? evtLon = freezed,
     Object? distToEvent = freezed,
     Object? isMapAndDistanceValid = null,
     Object? runClassification = null,
@@ -338,6 +356,14 @@ class __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double?,
+      evtLat: freezed == evtLat
+          ? _value.evtLat
+          : evtLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      evtLon: freezed == evtLon
+          ? _value.evtLon
+          : evtLon // ignore: cast_nullable_to_non_nullable
+              as double?,
       distToEvent: freezed == distToEvent
           ? _value.distToEvent
           : distToEvent // ignore: cast_nullable_to_non_nullable
@@ -378,6 +404,8 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
       this.searchRunsText = '',
       this.latitude,
       this.longitude,
+      this.evtLat,
+      this.evtLon,
       this.distToEvent,
       this.isMapAndDistanceValid = 0,
       this.runClassification = 3,
@@ -434,6 +462,10 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
   @override
   final double? longitude;
   @override
+  final double? evtLat;
+  @override
+  final double? evtLon;
+  @override
   final double? distToEvent;
   @override
   @JsonKey()
@@ -447,7 +479,7 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
 
   @override
   String toString() {
-    return 'RunQueryExtensionsModel(daysUntilEvent: $daysUntilEvent, appAccessFlags: $appAccessFlags, digitsAfterDecimal: $digitsAfterDecimal, currencySymbol: $currencySymbol, rsvpState: $rsvpState, attendenceState: $attendenceState, isPaid: $isPaid, isHare: $isHare, isMember: $isMember, following: $following, notificationPreference: $notificationPreference, emailAlertPreference: $emailAlertPreference, distanceUnitsPref: $distanceUnitsPref, searchRunsText: $searchRunsText, latitude: $latitude, longitude: $longitude, distToEvent: $distToEvent, isMapAndDistanceValid: $isMapAndDistanceValid, runClassification: $runClassification, userFriendlyLocation: $userFriendlyLocation)';
+    return 'RunQueryExtensionsModel(daysUntilEvent: $daysUntilEvent, appAccessFlags: $appAccessFlags, digitsAfterDecimal: $digitsAfterDecimal, currencySymbol: $currencySymbol, rsvpState: $rsvpState, attendenceState: $attendenceState, isPaid: $isPaid, isHare: $isHare, isMember: $isMember, following: $following, notificationPreference: $notificationPreference, emailAlertPreference: $emailAlertPreference, distanceUnitsPref: $distanceUnitsPref, searchRunsText: $searchRunsText, latitude: $latitude, longitude: $longitude, evtLat: $evtLat, evtLon: $evtLon, distToEvent: $distToEvent, isMapAndDistanceValid: $isMapAndDistanceValid, runClassification: $runClassification, userFriendlyLocation: $userFriendlyLocation)';
   }
 
   @override
@@ -485,6 +517,8 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
                 other.latitude == latitude) &&
             (identical(other.longitude, longitude) ||
                 other.longitude == longitude) &&
+            (identical(other.evtLat, evtLat) || other.evtLat == evtLat) &&
+            (identical(other.evtLon, evtLon) || other.evtLon == evtLon) &&
             (identical(other.distToEvent, distToEvent) ||
                 other.distToEvent == distToEvent) &&
             (identical(other.isMapAndDistanceValid, isMapAndDistanceValid) ||
@@ -515,6 +549,8 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
         searchRunsText,
         latitude,
         longitude,
+        evtLat,
+        evtLon,
         distToEvent,
         isMapAndDistanceValid,
         runClassification,
@@ -556,6 +592,8 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
       final String searchRunsText,
       final double? latitude,
       final double? longitude,
+      final double? evtLat,
+      final double? evtLon,
       final double? distToEvent,
       final int isMapAndDistanceValid,
       final int runClassification,
@@ -596,6 +634,10 @@ abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
   double? get latitude;
   @override
   double? get longitude;
+  @override
+  double? get evtLat;
+  @override
+  double? get evtLon;
   @override
   double? get distToEvent;
   @override
