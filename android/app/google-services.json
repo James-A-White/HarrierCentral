@@ -3,7 +3,7 @@
     "project_number": "699693953835",
     "firebase_url": "https://harrier-central-mobile.firebaseio.com",
     "project_id": "harrier-central-mobile",
-    "storage_bucket": "harrier-central-mobile.appspot.com"
+    "storage_bucket": "harrier-central-mobile.firebasestorage.app"
   },
   "client": [
     {
@@ -24,14 +24,11 @@
           "current_key": "AIzaSyAwo7nAC02nMVQn36ULyyKIgmnKaxP5XKs"
         }
       ],
-      "services": {       
-         "analytics_service": {
-        "status": 1
-      },
+      "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "699693953835-git8gjtc7qjcvq4l7c6srdf4c63nugil.apps.googleusercontent.com",
+              "client_id": "116406146374728773905",
               "client_type": 3
             },
             {
@@ -43,9 +40,6 @@
               }
             }
           ]
-        },
-        "ads_service": {
-          "status": 2
         }
       }
     }

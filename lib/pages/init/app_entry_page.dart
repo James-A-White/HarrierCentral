@@ -8,7 +8,8 @@ class AppEntryPage extends StatefulWidget {
   AppEntryPageState createState() => AppEntryPageState();
 }
 
-class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderStateMixin {
+class AppEntryPageState extends State<AppEntryPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _iconAnimationController;
   late CurvedAnimation _iconAnimation;
 
@@ -30,13 +31,23 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
     G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
 
-    G0<DeviceInfo>().deviceWidthScaleFactor = MediaQuery.of(navigatorKey.currentContext!).size.width / BASE_DEVICE_WIDTH;
-    G0<DeviceInfo>().deviceHeightScaleFactor = MediaQuery.of(navigatorKey.currentContext!).size.height / BASE_DEVICE_HEIGHT;
-    G0<DeviceInfo>().deviceMaxScaleFactor = max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
-    G0<DeviceInfo>().deviceMinScaleFactor = min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
+    G0<DeviceInfo>().deviceWidthScaleFactor =
+        MediaQuery.of(navigatorKey.currentContext!).size.width /
+            BASE_DEVICE_WIDTH;
+    G0<DeviceInfo>().deviceHeightScaleFactor =
+        MediaQuery.of(navigatorKey.currentContext!).size.height /
+            BASE_DEVICE_HEIGHT;
+    G0<DeviceInfo>().deviceMaxScaleFactor = max(
+        G0<DeviceInfo>().deviceWidthScaleFactor,
+        G0<DeviceInfo>().deviceHeightScaleFactor);
+    G0<DeviceInfo>().deviceMinScaleFactor = min(
+        G0<DeviceInfo>().deviceWidthScaleFactor,
+        G0<DeviceInfo>().deviceHeightScaleFactor);
 
-    G0<DeviceInfo>().deviceWidth = MediaQuery.of(navigatorKey.currentContext!).size.width;
-    G0<DeviceInfo>().deviceHeight = MediaQuery.of(navigatorKey.currentContext!).size.height;
+    G0<DeviceInfo>().deviceWidth =
+        MediaQuery.of(navigatorKey.currentContext!).size.width;
+    G0<DeviceInfo>().deviceHeight =
+        MediaQuery.of(navigatorKey.currentContext!).size.height;
 
     final String? userId = getStringPref(StringPrefsEnum.userId);
 
@@ -52,7 +63,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
       //facebookAccessToken = await _checkFacebookLogin();
 
-      final String responseBody = await svc.approveLogin(navigatorKey.currentContext!, null);
+      final String responseBody =
+          await svc.approveLogin(navigatorKey.currentContext!, null);
 
       if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
         exit(0);
@@ -66,19 +78,28 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
     }
 
     if (loginResult != null) {
-      await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
-      await setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
-      await setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
-      await setIntPref(IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
+      await setStringPref(
+          StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
+      await setStringPref(
+          StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+      await setStringPref(
+          StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
+      await setIntPref(
+          IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
       await setStringPref(StringPrefsEnum.email, loginResult.email);
-      await setStringPref(StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
+      await setStringPref(
+          StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
     }
 
-    if ((loginResult == null) && (((userId ?? '').isEmpty) || (userId == GUID_EMPTY))) {
+    if ((loginResult == null) &&
+        (((userId ?? '').isEmpty) || (userId == GUID_EMPTY))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
 
-      await Utilities.showAlert('Network Error', 'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.', 'Quit');
+      await Utilities.showAlert(
+          'Network Error',
+          'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.',
+          'Quit');
       exit(0);
     } else if (loginResult == null) {
       // open app in offline mode
@@ -99,7 +120,10 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
         if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-          await _displayAlert(navigatorKey.currentContext!, loginResult.loginMessage ?? 'Harrier Central status is normal', loginResult.loginMessageTitle ?? 'Harrier Central Status');
+          await _displayAlert(
+              navigatorKey.currentContext!,
+              loginResult.loginMessage ?? 'Harrier Central status is normal',
+              loginResult.loginMessageTitle ?? 'Harrier Central Status');
         }
       }
 
@@ -108,19 +132,25 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
           if (loginResult.approvalCode == loginApprovalApproved.value) {
             G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
             //if (true) {
-            if (((userId == null) || (userId.isEmpty) || (userId == GUID_EMPTY))) {
+            if (((userId == null) ||
+                (userId.isEmpty) ||
+                (userId == GUID_EMPTY))) {
               // first time the app has run
               if (!mounted) return;
-              await Navigator.of(navigatorKey.currentContext!).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+              await Navigator.of(navigatorKey.currentContext!)
+                  .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
               // app has been run before... let's check the DB version.
-              final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
-              if ((installedDbVersion != DB_VERSION) && ((installedDbVersion + 9) < DB_VERSION)) {
+              final int installedDbVersion =
+                  getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
+              if ((installedDbVersion != DB_VERSION) &&
+                  ((installedDbVersion + 9) < DB_VERSION)) {
                 // the installed DB version is not up to date
                 // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
 
-                final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
+                final String resetCode =
+                    getStringPref(StringPrefsEnum.resetCode) ?? '';
 
                 if (resetCode.isNotEmpty) {
                   await DBProvider.deleteDb(DB_NAME);
@@ -132,22 +162,29 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
                   if (!mounted) return;
-                  final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, resetCode.toUpperCase());
+                  final Map<String, String> result = await srv.authorizeDevice(
+                      navigatorKey.currentContext!, resetCode.toUpperCase());
 
                   setState(() {
                     //isLoading = false;
                   });
 
                   if (result['result'] != 'failed') {
-                    userName = getStringPref(StringPrefsEnum.displayName) ?? '<no user name>';
+                    userName = getStringPref(StringPrefsEnum.displayName) ??
+                        '<no user name>';
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
-                    await Utilities.showAlert('Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void _) {
+                    await Utilities.showAlert(
+                            'Profile Load Successful',
+                            'The app has been successfully updated for $userName.',
+                            'OK')
+                        .then((void _) {
                       Navigator.pushReplacement<dynamic, dynamic>(
                           navigatorKey.currentContext!,
                           MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) => const MainNavigationPage(
+                              builder: (BuildContext context) =>
+                                  const MainNavigationPage(
                                     promos: <PromoModel>[],
                                     firstPromoImage: null,
                                   )));
@@ -162,29 +199,36 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
                   try {
                     promoImage = Image.network(
-                      promoResult[0].promoImage + promoResult[0].promoImageExtension,
+                      promoResult[0].promoImage +
+                          promoResult[0].promoImageExtension,
                       fit: BoxFit.fitWidth,
-                      errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                      errorBuilder: (BuildContext context, Object exception,
+                          StackTrace? stackTrace) {
                         // Appropriate logging or analytics, e.g.
                         // myAnalytics.recordError(
                         //   'An error occurred loading "https://example.does.not.exist/image.jpg"',
                         //   exception,
                         //   stackTrace,
                         // );
-                        return Image.asset('images/other/white_square.jpg', width: 1, height: 1, fit: BoxFit.fitHeight);
+                        return Image.asset('images/other/white_square.jpg',
+                            width: 1, height: 1, fit: BoxFit.fitHeight);
                       },
                     );
                   } catch (error) {
-                    promoImage = Image.asset('images/other/white_square.jpg', width: 1, height: 1, fit: BoxFit.fitHeight);
+                    promoImage = Image.asset('images/other/white_square.jpg',
+                        width: 1, height: 1, fit: BoxFit.fitHeight);
                   }
 
-                  promoImage.image.resolve(const ImageConfiguration()).addListener(
+                  promoImage.image
+                      .resolve(const ImageConfiguration())
+                      .addListener(
                     ImageStreamListener(
                       (ImageInfo info, bool syncCall) async {
                         await Navigator.pushReplacement<dynamic, dynamic>(
                             context,
                             MaterialPageRoute<dynamic>(
-                                builder: (BuildContext context) => MainNavigationPage(
+                                builder: (BuildContext context) =>
+                                    MainNavigationPage(
                                       promos: promoResult!,
                                       firstPromoImage: promoImage,
                                     )));
@@ -196,7 +240,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
                   await Navigator.pushReplacement<dynamic, dynamic>(
                       navigatorKey.currentContext!,
                       MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => const MainNavigationPage(
+                          builder: (BuildContext context) =>
+                              const MainNavigationPage(
                                 promos: <PromoModel>[],
                                 firstPromoImage: null,
                               )));
@@ -250,7 +295,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
   //   return facebookAccessToken;
   // }
 
-  Future<bool?> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
+  Future<bool?> _displayAlert(
+      BuildContext context, String alertText, String alertTitle) async {
     return showDialog<bool?>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -293,7 +339,8 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
   Future<void> _startTimeout() async {
     await initPrefs();
-    await Future<dynamic>.delayed(const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
+    await Future<dynamic>.delayed(
+        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
 
     if (!mounted) return;
     await _handleStartup(context);
@@ -302,8 +349,10 @@ class AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSta
 
   @override
   void initState() {
-    _iconAnimationController = AnimationController(duration: const Duration(milliseconds: 3000), vsync: this);
-    _iconAnimation = CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
+    _iconAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 3000), vsync: this);
+    _iconAnimation =
+        CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
     _iconAnimation.addListener(() => setState(() {}));
     _iconAnimationController.forward();
 

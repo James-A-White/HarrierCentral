@@ -71,9 +71,18 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
   void initState() {
     super.initState();
 
-    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
+    descriptionStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    titleStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    navStyle = TextStyle(
+        color: themeAppBarBackground,
+        fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextDemiBold');
 
     slides.add(
       ContentConfig(
@@ -96,7 +105,8 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Smile for the camera!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Can we access your camera for your profile photo and to scan QR codes?',
+        description:
+            'Can we access your camera for your profile photo and to scan QR codes?',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_old_camera.png',
         heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -112,7 +122,8 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Keep up to date',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Let us notify you about changes to runs you are following',
+        description:
+            'Let us notify you about changes to runs you are following',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_notification.png',
         heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -128,7 +139,8 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Some Last\r\nDetails',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Please Provide Just a Tiny Bit of Personal Information...',
+        description:
+            'Please Provide Just a Tiny Bit of Personal Information...',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_pen.png',
         heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -141,7 +153,8 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
   }
 
   void _onDonePress() {
-    Navigator.of(context).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+    Navigator.of(context)
+        .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
   }
 
   bool permission1requested = false;
@@ -203,10 +216,28 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         // // ignore: unawaited_futures
         // await notifications.configureNotifications(false);
 
+        await requestNotificationPermission();
+
         activeTab = 3;
         _goToTab(3);
       }
       _permissionRequestInProgress = false;
+    }
+  }
+
+  Future<void> requestNotificationPermission() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    } else {
+      print('User declined or has not accepted permission');
     }
   }
 
@@ -220,7 +251,13 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
   void _onSkipPress() {
     if (activeTab == 0) {
-      Utilities.showAlert('Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool? allow) async {
+      Utilities.showAlert(
+              'Location Preference',
+              'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.',
+              'Allow',
+              showCancelButton: true,
+              cancelButtonText: 'Disallow')
+          .then((bool? allow) async {
         if (allow ?? false) {
           if (await Permission.locationWhenInUse.request().isGranted) {
             await Utilities.subscribeToGeoLocationStream();
@@ -233,7 +270,13 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      Utilities.showAlert('Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool? allow) async {
+      Utilities.showAlert(
+              'Camera Preference',
+              'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.',
+              'Allow',
+              showCancelButton: true,
+              cancelButtonText: 'Disallow')
+          .then((bool? allow) async {
         if (allow ?? false) {
           if (await Permission.camera.request().isGranted) {
             if (await Permission.photos.request().isGranted) {
@@ -247,7 +290,13 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      Utilities.showAlert('Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool? allow) async {
+      Utilities.showAlert(
+              'Notification Preference',
+              'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change',
+              'Allow',
+              showCancelButton: true,
+              cancelButtonText: 'Disallow')
+          .then((bool? allow) async {
         if (allow ?? false) {
           // final NotificationSupport notifications = NotificationSupport();
           // await notifications.configureNotifications(false);
@@ -302,12 +351,16 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         indicatorWidget: Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: themeAppBarBackground40),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: themeAppBarBackground40),
         ),
         activeIndicatorWidget: Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: themeAppBarBackground),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: themeAppBarBackground),
         ),
         spaceBetweenIndicator: 10,
         typeIndicatorAnimation: TypeIndicatorAnimation.sliding,

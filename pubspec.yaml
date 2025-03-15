@@ -23,6 +23,8 @@ dependencies:
   diacritic: ^0.1.6
   device_info_plus: ^11.3.0
   fancy_bottom_navigation_2: ^0.3.5
+  firebase_core: ^3.12.1
+  firebase_messaging: ^15.2.4
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
@@ -88,7 +90,6 @@ dependencies:
   # responsive_navigation_bar: ^3.2.6 <------ new nav bar
   shared_preferences: ^2.0.7 
   sign_in_with_apple: ^6.0.0 
-
   step_progress_indicator: ^1.0.2
   # sumup: ^0.8.1
   table_calendar: ^3.0.2 
@@ -96,6 +97,7 @@ dependencies:
   url_launcher: ^6.0.15 
   uuid: ^4.5.1
   video_player: ^2.4.10
+  
   
 dependency_overrides:
   intl: 0.17.0

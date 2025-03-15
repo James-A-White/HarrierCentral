@@ -37,7 +37,7 @@ class AuthorizeDeviceService {
     var deviceIdUuid = Uuid();
     String deviceId = deviceIdUuid.v4(); // Generate a random GUID
 
-    final String body = jsonEncode(<String, String>{
+    Map<String, String> params = (<String, String>{
       'queryType': 'authorizeDevice',
       'deviceId': deviceId,
       'accessToken': accessToken,
@@ -46,6 +46,21 @@ class AuthorizeDeviceService {
       'scanText': scanText,
       'deviceData': deviceDataJson,
     });
+
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    // Ensure APNs token is set
+    String? apnsToken = await messaging.getAPNSToken();
+    String? fcmToken = await messaging.getToken();
+
+    if (apnsToken != null) {
+      params.addAll({'apnsToken': apnsToken});
+    }
+
+    if (fcmToken != null) {
+      params.addAll({'fcmToken': fcmToken});
+    }
+
+    final String body = jsonEncode(params);
 
     Map<String, String> resultMap = <String, String>{};
 

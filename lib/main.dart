@@ -1,7 +1,28 @@
 import 'package:harrier_central/imports.dart';
 import 'package:get/get.dart';
 
-void main() {
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling background message: ${message.messageId}");
+}
+
+void setupFirebaseListeners() {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message while in the foreground!');
+    print('Message data: ${message.data}');
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print('Message clicked!');
+  });
+}
+
+Future<String?> getToken() async {
+  String? token = await FirebaseMessaging.instance.getToken();
+  print('FCM Token: $token');
+  return token;
+}
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //debugPaintSizeEnabled=true;
 
@@ -12,6 +33,27 @@ void main() {
     //DeviceOrientation.landscapeLeft,
     //DeviceOrientation.landscapeRight
   ]);
+
+  await Firebase.initializeApp();
+
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  // Ensure APNs token is set
+  String? apnsToken = await messaging.getAPNSToken();
+  //print("APNs Token: $apnsToken");
+
+  if (apnsToken != null) {
+    // Retrieve the FCM token after APNs token is set
+    String? fcmToken = await messaging.getToken();
+    print("FCM Token: $fcmToken");
+  } else {
+    print("Error: APNs token is null");
+  }
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  setupFirebaseListeners();
+  getToken();
 
   runApp(
     Phoenix(
@@ -50,7 +92,8 @@ void main() {
                 statusBarColor: hc_red,
 
                 // Status bar brightness (optional)
-                statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
+                statusBarIconBrightness:
+                    Brightness.dark, // For Android (dark icons)
                 statusBarBrightness: Brightness.dark, // For iOS (dark icons)
               ),
             ),
@@ -62,7 +105,8 @@ void main() {
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                   backgroundColor: hc_red,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0)),
                   textStyle: const TextStyle(color: Colors.white),
                   shadowColor: Colors.transparent,
                   elevation: 0),
