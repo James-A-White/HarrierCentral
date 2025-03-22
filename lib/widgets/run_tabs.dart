@@ -6,14 +6,17 @@ import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:get/get.dart';
 
 class RunTabs extends StatefulWidget {
   const RunTabs({
     super.key,
     required this.futureRun,
+    this.openToChatTab = false,
   });
 
   final RunDetailsAggregate futureRun;
+  final bool openToChatTab;
 
   @override
   State<RunTabs> createState() {
@@ -37,13 +40,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   static const String LABEL_DETAILS = 'Details';
   static const String LABEL_MAP = 'Map';
   static const String LABEL_RSVP = 'RSVP';
-  static const String LABEL_GETALIFE = 'Get A Life';
+  static const String LABEL_STATS = 'Stats';
+  static const String LABEL_CHAT = 'Chat';
 
   final List<Tab> _tabs = <Tab>[
     const Tab(text: LABEL_DETAILS),
     const Tab(text: LABEL_RSVP),
     const Tab(text: LABEL_MAP),
-    const Tab(text: LABEL_GETALIFE),
+    const Tab(text: LABEL_CHAT),
+    const Tab(text: LABEL_STATS),
   ];
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -210,7 +215,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       },
     );
 
+    if (widget.openToChatTab) {
+      // switch to the chat tab if a notification was tapped to open the app
+      _tabController.animateTo(3);
+    } else if ((widget.futureRun.extensions.rsvpState == 0) &&
+        (widget.futureRun.event.eventStartDatetime.isAfter(
+          DateTime.now().subtract(
+            const Duration(hours: 6),
+          ),
+        )) &&
+        ((widget.futureRun.extensions.distToEvent ?? 9999999.0) < 250000)) {
+      _tabController.animateTo(1);
+    }
+
     _tabController.addListener(() async {
+      FocusScope.of(context).unfocus();
+
       if (_fabIsVisible != (_tabs[_tabController.index].text == LABEL_RSVP)) {
         _fabIsVisible = _tabs[_tabController.index].text == LABEL_RSVP;
         if (_tabs[_tabController.index].text == LABEL_RSVP) {
@@ -226,15 +246,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       setState(() {});
     });
 
-    if ((widget.futureRun.extensions.rsvpState == 0) &&
-        (widget.futureRun.event.eventStartDatetime.isAfter(
-          DateTime.now().subtract(
-            const Duration(hours: 6),
-          ),
-        )) &&
-        ((widget.futureRun.extensions.distToEvent ?? 9999999.0) < 250000)) {
-      _tabController.animateTo(1);
-    }
     super.initState();
   }
 
@@ -243,6 +254,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _tabController.dispose();
     _gridListTabController.dispose();
     _saveUserMapPreference.dispose();
+
+    print('run tabs disposedd');
+
+    Get.delete<ChatSheetController>();
 
     super.dispose();
   }
@@ -1104,6 +1119,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
+  Widget _buildChatView() {
+    return ChatUi(eventId: widget.futureRun.event.eventId);
+  }
+
   Widget _buildMapView() {
     final List<double?> coords = Utilities.getLatLongFromString(<String>[
       widget.futureRun.event.locationOneLineDesc ?? '',
@@ -1306,72 +1325,75 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     return Scaffold(
       key: _scaffoldKey,
-      floatingActionButton: AnimatedOpacity(
-        duration: const Duration(milliseconds: 500),
-        opacity: _fabIsVisible ? 1.0 : 0.0,
-        child: SpeedDial(
-          // both default to 16
-          // marginEnd: 18,
-          // marginBottom: 20,
-          animatedIcon: AnimatedIcons.menu_close,
-          animatedIconTheme: const IconThemeData(size: 22.0),
-          // this is ignored if animatedIcon is non null
-          // child:const  Icon(Icons.add),
-          visible: true,
-          curve: Curves.bounceIn,
-          overlayColor: Colors.black,
-          overlayOpacity: 0.5,
-          onOpen: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-          //onClose: () => //print('DIAL CLOSED'),
-          tooltip: 'Speed Dial',
-          heroTag: 'speed-dial-hero-tag',
-          backgroundColor: hc_red,
-          foregroundColor: Colors.white,
-          elevation: 8.0,
-          shape: const CircleBorder(),
-          children: <SpeedDialChild>[
-            SpeedDialChild(
-              child: const Icon(Feather.x),
-              backgroundColor: hc_red,
-              label: 'I\'m not coming',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () async {
-                await _setRsvpState(rsvpNo);
-              },
+      floatingActionButton: (!_fabIsVisible)
+          ? null
+          : AnimatedOpacity(
+              duration: const Duration(milliseconds: 500),
+              opacity: _fabIsVisible ? 1.0 : 0.0,
+              child: SpeedDial(
+                // both default to 16
+                // marginEnd: 18,
+                // marginBottom: 20,
+                animatedIcon: AnimatedIcons.menu_close,
+                animatedIconTheme: const IconThemeData(size: 22.0),
+                // this is ignored if animatedIcon is non null
+                // child:const  Icon(Icons.add),
+                visible: true,
+                curve: Curves.bounceIn,
+                overlayColor: Colors.black,
+                overlayOpacity: 0.5,
+                onOpen: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+                //onClose: () => //print('DIAL CLOSED'),
+                tooltip: 'Speed Dial',
+                heroTag: 'speed-dial-hero-tag',
+                backgroundColor: hc_red,
+                foregroundColor: Colors.white,
+                elevation: 8.0,
+                shape: const CircleBorder(),
+                children: <SpeedDialChild>[
+                  SpeedDialChild(
+                    child: const Icon(Feather.x),
+                    backgroundColor: hc_red,
+                    label: 'I\'m not coming',
+                    labelStyle: const TextStyle(fontSize: 18.0),
+                    onTap: () async {
+                      await _setRsvpState(rsvpNo);
+                    },
+                  ),
+                  SpeedDialChild(
+                    child: const Icon(AntDesign.question),
+                    backgroundColor: Colors.orange,
+                    label: 'I might come',
+                    labelStyle: const TextStyle(fontSize: 18.0),
+                    onTap: () async {
+                      await _setRsvpState(rsvpMaybe);
+                    },
+                  ),
+                  SpeedDialChild(
+                    child: const Icon(Feather.check),
+                    backgroundColor: Colors.green,
+                    label: 'I\'m coming',
+                    labelStyle: const TextStyle(fontSize: 18.0),
+                    onTap: () async {
+                      await _setRsvpState(rsvpYes);
+                    },
+                  ),
+                  SpeedDialChild(
+                    child: const ImageIcon(
+                        AssetImage('images/icons/hare_icon.png'),
+                        color: Colors.deepPurple),
+                    backgroundColor: Colors.white,
+                    label: 'I will hare',
+                    labelStyle: const TextStyle(fontSize: 18.0),
+                    onTap: () async {
+                      await _setRsvpHare();
+                    },
+                  ),
+                ],
+              ),
             ),
-            SpeedDialChild(
-              child: const Icon(AntDesign.question),
-              backgroundColor: Colors.orange,
-              label: 'I might come',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () async {
-                await _setRsvpState(rsvpMaybe);
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(Feather.check),
-              backgroundColor: Colors.green,
-              label: 'I\'m coming',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () async {
-                await _setRsvpState(rsvpYes);
-              },
-            ),
-            SpeedDialChild(
-              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'),
-                  color: Colors.deepPurple),
-              backgroundColor: Colors.white,
-              label: 'I will hare',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () async {
-                await _setRsvpHare();
-              },
-            ),
-          ],
-        ),
-      ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: Column(
@@ -1419,6 +1441,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 _buildRunDetailsView(),
                 _buildRsvpView(),
                 _buildMapView(),
+                _buildChatView(),
                 ConnectedWidget(
                   refreshFunction: () {
                     setState(() {});

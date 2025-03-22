@@ -5,10 +5,12 @@ class RunDetailsPage extends StatefulWidget {
     super.key,
     required this.futureRun,
     this.refreshPage,
+    this.openToChatTab = false,
   });
 
   final RunDetailsAggregate futureRun;
   final Function? refreshPage;
+  final bool openToChatTab;
 
   @override
   RunDetailsPageState createState() => RunDetailsPageState();
@@ -20,8 +22,15 @@ class RunDetailsPageState extends State<RunDetailsPage> {
   @override
   void initState() {
     _futureRun = widget.futureRun;
+    if (widget.openToChatTab) {}
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    print('Run Details page disposed');
+    super.dispose();
   }
 
   bool _isUpdating = false;
@@ -30,6 +39,13 @@ class RunDetailsPageState extends State<RunDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              print('Run details popped');
+              Navigator.of(context).pop(); // or Get.back();
+            },
+          ),
           actions: <Widget>[
             _futureRun.extensions.appAccessFlags == 0
                 ? Container()
@@ -81,6 +97,9 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                 ? Center(
                     child: HcCircularProgressIndicator(key: UniqueKey()),
                   )
-                : RunTabs(futureRun: _futureRun)));
+                : RunTabs(
+                    futureRun: _futureRun,
+                    openToChatTab: widget.openToChatTab,
+                  )));
   }
 }

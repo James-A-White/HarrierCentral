@@ -102,7 +102,30 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     _refreshFromBackend().then((void _) {
       _refreshFromTable(true).then((void _) {
-        setState(() {});
+        FirebaseMessaging.instance
+            .getInitialMessage()
+            .then((RemoteMessage? msg) {
+          if (msg != null) {
+            // {UserId: b6bafd0d-5d2e-41cd-8495-811d551f01d0, UserPhoto: https://harriercentral.blob.core.windows.net/profile-photos/0CDBB109-215E-4B5F-A405-F6C9FBCB18EC_20230716214555_thumb.jpg, EventId: 39b17580-8d85-4677-9ec5-6244b4ddf2fb, MessageRelesabilityFlags: 63, MessageId: df1b2bc7-af77-4595-a9e5-96b111c377e6, UserDisplayName: Opee, Title: CH3 - Oxford Circus, Message: test}
+
+            String? eventId = msg.data['EventId']?.toString().toUpperCase();
+            if ((eventId != null) && (_allRuns != null)) {
+              dynamic runs = _allRuns!
+                  .where(
+                      (dynamic a) => a.event?.eventId?.toUpperCase() == eventId)
+                  .toList();
+
+              if ((runs != null) && (runs.length > 0)) {
+                var run = runs[0];
+                openRun(
+                  run,
+                  openToChatTab: true,
+                );
+              }
+            }
+          }
+          setState(() {});
+        });
       });
     });
     super.initState();
@@ -534,28 +557,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                             return RunListItem(
                               futureRun: _filteredRuns![index],
                               onItemTapped: () {
-                                Navigator.push<dynamic>(
-                                  this.context,
-                                  MaterialPageRoute<dynamic>(
-                                    builder: (BuildContext context) =>
-                                        RunDetailsPage(
-                                      futureRun: _filteredRuns![index],
-                                      refreshPage: () async {
-                                        // WARNING!!!!  We need to return the filtered run based
-                                        // on it's ID and not the index
-                                        // await _refreshFromBackend(
-                                        //     clearLocalTables: true);
-                                        await _refreshFromTable(true);
-                                        return _filteredRuns![index];
-                                      },
-                                    ),
-                                  ),
-                                ).then((void _) {
-                                  _refreshFromBackend(clearLocalTables: false)
-                                      .then((void _) {
-                                    setState(() {});
-                                  });
-                                });
+                                openRun(
+                                  _filteredRuns![index],
+                                  openToChatTab: false,
+                                );
                               },
                             );
                           }
@@ -564,6 +569,33 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               ),
             ),
     );
+  }
+
+  Future<void> openRun(
+    dynamic run, {
+    required bool openToChatTab,
+  }) async {
+    Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute<dynamic>(
+        builder: (BuildContext context) => RunDetailsPage(
+          futureRun: run,
+          openToChatTab: openToChatTab,
+          refreshPage: () async {
+            // WARNING!!!!  We need to return the filtered run based
+            // on it's ID and not the index
+            // await _refreshFromBackend(
+            //     clearLocalTables: true);
+            await _refreshFromTable(true);
+            return run;
+          },
+        ),
+      ),
+    ).then((void _) {
+      _refreshFromBackend(clearLocalTables: false).then((void _) {
+        setState(() {});
+      });
+    });
   }
 
   void _showConfigureDistancePopup() {

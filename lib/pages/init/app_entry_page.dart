@@ -4,6 +4,7 @@ class AppEntryPage extends StatefulWidget {
   const AppEntryPage({
     super.key,
   });
+
   @override
   AppEntryPageState createState() => AppEntryPageState();
 }
@@ -108,7 +109,7 @@ class AppEntryPageState extends State<AppEntryPage>
       await Navigator.pushReplacement<dynamic, dynamic>(
           navigatorKey.currentContext!,
           MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) => const MainNavigationPage(
+              builder: (BuildContext context) => MainNavigationPage(
                     promos: <PromoModel>[],
                     firstPromoImage: null,
                   )));
@@ -184,7 +185,7 @@ class AppEntryPageState extends State<AppEntryPage>
                           navigatorKey.currentContext!,
                           MaterialPageRoute<dynamic>(
                               builder: (BuildContext context) =>
-                                  const MainNavigationPage(
+                                  MainNavigationPage(
                                     promos: <PromoModel>[],
                                     firstPromoImage: null,
                                   )));
@@ -240,8 +241,7 @@ class AppEntryPageState extends State<AppEntryPage>
                   await Navigator.pushReplacement<dynamic, dynamic>(
                       navigatorKey.currentContext!,
                       MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) =>
-                              const MainNavigationPage(
+                          builder: (BuildContext context) => MainNavigationPage(
                                 promos: <PromoModel>[],
                                 firstPromoImage: null,
                               )));

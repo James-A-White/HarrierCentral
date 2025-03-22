@@ -47,6 +47,7 @@ enum StringPrefsEnum {
   thirdPartyLoginType,
   thirdPartyUserId,
   userId,
+  publicHasherId,
 }
 
 enum NumPrefsEnum {

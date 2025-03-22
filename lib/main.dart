@@ -1,26 +1,41 @@
 import 'package:harrier_central/imports.dart';
 import 'package:get/get.dart';
 
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling background message: ${message.messageId}");
-}
+// Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   print("Handling background message: ${message.messageId}");
+// }
 
 void setupFirebaseListeners() {
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message while in the foreground!');
-    print('Message data: ${message.data}');
-  });
+  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //   print('Got a message while in the foreground!');
+  //   print('Message data: ${message.data}');
+  // });
 
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('Message clicked!');
+    _handleNotificationClick(message);
   });
 }
 
-Future<String?> getToken() async {
-  String? token = await FirebaseMessaging.instance.getToken();
-  print('FCM Token: $token');
-  return token;
+void _handleNotificationClick(RemoteMessage message) {
+  final data = message.data;
+  print(data);
+  // final screen = data['screen'];
+
+  // if (screen == 'chat' && data['chatId'] != null) {
+  //   Get.to(() => ChatPage(chatId: data['chatId']));
+  // } else if (screen == 'profile') {
+  //   Get.to(() => ProfilePage(userId: data['userId']));
+  // } else {
+  //   // Default fallback
+  //   Get.to(() => HomePage());
+  // }
 }
+
+// Future<String?> getToken() async {
+//   String? token = await FirebaseMessaging.instance.getToken();
+//   print('FCM Token: $token');
+//   return token;
+// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +43,7 @@ void main() async {
 
   //timeDilation = 4.0;
 
-  SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+  await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
     //DeviceOrientation.landscapeLeft,
     //DeviceOrientation.landscapeRight
@@ -36,24 +51,24 @@ void main() async {
 
   await Firebase.initializeApp();
 
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  //FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-  // Ensure APNs token is set
-  String? apnsToken = await messaging.getAPNSToken();
-  //print("APNs Token: $apnsToken");
+  // // Ensure APNs token is set
+  // String? apnsToken = await messaging.getAPNSToken();
+  // //print("APNs Token: $apnsToken");
 
-  if (apnsToken != null) {
-    // Retrieve the FCM token after APNs token is set
-    String? fcmToken = await messaging.getToken();
-    print("FCM Token: $fcmToken");
-  } else {
-    print("Error: APNs token is null");
-  }
+  // if (apnsToken != null) {
+  //   // Retrieve the FCM token after APNs token is set
+  //   String? fcmToken = await messaging.getToken();
+  //   print("FCM Token: $fcmToken");
+  // } else {
+  //   print("Error: APNs token is null");
+  // }
 
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  //FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   setupFirebaseListeners();
-  getToken();
+  //await getToken();
 
   runApp(
     Phoenix(
@@ -83,7 +98,7 @@ void main() async {
           Locale('de', 'DE'), // German
           // ... other locales the app supports
         ],
-        home: const AppEntryPage(),
+        home: AppEntryPage(),
         routes: routes,
         theme: ThemeData(
             appBarTheme: AppBarTheme(

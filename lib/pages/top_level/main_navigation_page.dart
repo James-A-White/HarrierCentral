@@ -17,8 +17,10 @@ class MainNavigationPage extends StatefulWidget {
   MainNavigationPageState createState() => MainNavigationPageState();
 }
 
-final GlobalKey<RunAndKennelMapPageState> _runAndKennelMapPageKey = GlobalKey<RunAndKennelMapPageState>();
-final GlobalKey<KennelsListPageState> _kennelLocationsPageKey = GlobalKey<KennelsListPageState>();
+final GlobalKey<RunAndKennelMapPageState> _runAndKennelMapPageKey =
+    GlobalKey<RunAndKennelMapPageState>();
+final GlobalKey<KennelsListPageState> _kennelLocationsPageKey =
+    GlobalKey<KennelsListPageState>();
 
 class MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
@@ -31,7 +33,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     'Run Counts',
   ];
 
-  final List<List<String>> _tutorials = <List<String>>[_tutorialUpcomingRuns, _tutorialKennelsView, _tutorialRunLocations, _tutorialRunCounts];
+  final List<List<String>> _tutorials = <List<String>>[
+    _tutorialUpcomingRuns,
+    _tutorialKennelsView,
+    _tutorialRunLocations,
+    _tutorialRunCounts
+  ];
 
   // ignore: prefer_final_fields
   static List<String> _tutorialRunLocations = <String>[
@@ -111,7 +118,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) => a.dbVersion.compareTo(b.dbVersion));
+    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) =>
+        a.dbVersion.compareTo(b.dbVersion));
 
     // make sure the DB_VERSION is equal to the maximum migration in the list
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
@@ -163,11 +171,13 @@ class MainNavigationPageState extends State<MainNavigationPage> {
         });
         _timeRemaining = widget.promos[0].promoDisplayTimeInMs;
         _steps = widget.promos[0].promoDisplayTimingDotsToDisplay;
-        _promoDisplayDuration = Duration(milliseconds: _timeRemaining! ~/ _steps);
+        _promoDisplayDuration =
+            Duration(milliseconds: _timeRemaining! ~/ _steps);
 
         if (widget.promos.isNotEmpty) {
           _promoTimer = PausableTimer(_promoDisplayDuration, () {
-            _timeRemaining = _timeRemaining! - widget.promos[0].promoDisplayTimeInMs ~/ _steps;
+            _timeRemaining = _timeRemaining! -
+                widget.promos[0].promoDisplayTimeInMs ~/ _steps;
             if (_timeRemaining! < 0) {
               _promoTimer!.cancel();
               _promoTimer = null;
@@ -192,7 +202,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       return true;
     });
 
-    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((void _) {
+    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground)
+        .then((void _) {
       FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
     });
 
@@ -201,7 +212,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
   Future<void> _checkAreWeAtRunStart() async {
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
-    final List<AreWeAtRunModel> resultList = await CommonQueries.areWeAtRunStart();
+    final List<AreWeAtRunModel> resultList =
+        await CommonQueries.areWeAtRunStart();
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     if (resultList.length == 1) {
@@ -215,35 +227,47 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           cancelButtonTitle: 'No',
         );
 
-        final EnumCheckinOptions<int>? retVal = await showDialog<EnumCheckinOptions<int>>(
-            context: navigatorKey.currentContext!,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return popup;
-            });
+        final EnumCheckinOptions<int>? retVal =
+            await showDialog<EnumCheckinOptions<int>>(
+                context: navigatorKey.currentContext!,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return popup;
+                });
 
         if (retVal == enumCheckInOption_Yes) {
           await _checkInAtEvent(result.eventId, userId);
-        } else if ((retVal == enumCheckInOption_YesAndPayByCredit) || (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
+        } else if ((retVal == enumCheckInOption_YesAndPayByCredit) ||
+            (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
           final PaymentsService paySrv = PaymentsService();
           await paySrv.payForEvent(
             result.eventId,
             userId,
             GUID_EMPTY,
-            retVal == enumCheckInOption_YesAndPayByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
-            result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice,
+            retVal == enumCheckInOption_YesAndPayByCredit
+                ? paymentHashCredit.value
+                : paymentBankTransfer.value,
+            result.membershipExpirationDate.isAfter(DateTime.now())
+                ? result.memberPrice
+                : result.nonMemberPrice,
             attendenceAtHash.value,
             payForRunOnly,
             AppDomainType.user,
           );
-        } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) || (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
+        } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) ||
+            (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
           final PaymentsService paySrv = PaymentsService();
           await paySrv.payForEvent(
               result.eventId,
               userId,
               GUID_EMPTY,
-              retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit ? paymentHashCredit.value : paymentBankTransfer.value,
-              result.extrasCost + (result.membershipExpirationDate.isAfter(DateTime.now()) ? result.memberPrice : result.nonMemberPrice),
+              retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit
+                  ? paymentHashCredit.value
+                  : paymentBankTransfer.value,
+              result.extrasCost +
+                  (result.membershipExpirationDate.isAfter(DateTime.now())
+                      ? result.memberPrice
+                      : result.nonMemberPrice),
               attendenceAtHash.value,
               payForRunAndExtras,
               AppDomainType.user);
@@ -257,7 +281,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       final Map<String, bool> selectedRuns = <String, bool>{};
 
       for (AreWeAtRunModel result in resultList) {
-        selectedRuns[result.eventId] = false; //prepare the selection result list
+        selectedRuns[result.eventId] =
+            false; //prepare the selection result list
         if (result.attendenceState >= attendenceAtHash.value) {
           showRunList = false;
           break;
@@ -269,12 +294,14 @@ class MainNavigationPageState extends State<MainNavigationPage> {
         final dynamic doCheckIn = await Navigator.push<dynamic>(
           context,
           MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) => SelectRunPage(runList: resultList, selected: selectedRuns),
+            builder: (BuildContext context) =>
+                SelectRunPage(runList: resultList, selected: selectedRuns),
           ),
         );
         if ((doCheckIn as bool) == true) {
           for (AreWeAtRunModel result in resultList) {
-            if ((selectedRuns.containsKey(result.eventId)) && (selectedRuns[result.eventId] == true)) {
+            if ((selectedRuns.containsKey(result.eventId)) &&
+                (selectedRuns[result.eventId] == true)) {
               await _checkInAtEvent(result.eventId, userId);
             }
           }
@@ -343,11 +370,15 @@ class MainNavigationPageState extends State<MainNavigationPage> {
   Widget? _getFab() {
     Widget? fab;
 
-    if ((_runAndKennelMapPageKey.currentState != null) && !_isFlipped && (_currentPage == 2)) {
+    if ((_runAndKennelMapPageKey.currentState != null) &&
+        !_isFlipped &&
+        (_currentPage == 2)) {
       fab = _runAndKennelMapPageKey.currentState!.getMapFab();
     }
 
-    if ((_kennelLocationsPageKey.currentState != null) && !_isFlipped && (_currentPage == 1)) {
+    if ((_kennelLocationsPageKey.currentState != null) &&
+        !_isFlipped &&
+        (_currentPage == 1)) {
       fab = _kennelLocationsPageKey.currentState!.getKennelFab();
     }
 
@@ -381,7 +412,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                     title: Text(
                       _appBarText,
                       style: ts_appBarTitle,
-                      textScaler: TextScaler.linear(G0<DeviceInfo>().textClamp00),
+                      textScaler:
+                          TextScaler.linear(G0<DeviceInfo>().textClamp00),
                       //textScaleFactor: G0<DeviceInfo>().textClamp00,
                     ),
                     centerTitle: true,
@@ -394,7 +426,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             Navigator.push<dynamic>(
                               context,
                               MaterialPageRoute<dynamic>(
-                                builder: (BuildContext context) => const UserQrCodePage(),
+                                builder: (BuildContext context) =>
+                                    const UserQrCodePage(),
                               ),
                             );
                           }),
@@ -423,7 +456,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                       back: Container(
                         child: Swiper(
                           pagination: SwiperCustomPagination(
-                            builder: (BuildContext context, SwiperPluginConfig config) {
+                            builder: (BuildContext context,
+                                SwiperPluginConfig config) {
                               return Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: <Widget>[
@@ -457,7 +491,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             // this configuration of LayoutBuilder is used to center images that do not
                             // overflow the height of the available render area, but align images
                             // to the top of the render space if they will overflow the available space.
-                            return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+                            return LayoutBuilder(builder: (BuildContext context,
+                                BoxConstraints constraints) {
                               return Stack(
                                 clipBehavior: Clip.hardEdge,
                                 fit: StackFit.passthrough,
@@ -470,7 +505,11 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                     child: Column(
                                       children: <Widget>[
                                         ConstrainedBox(
-                                          constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
+                                          constraints: BoxConstraints(
+                                              minHeight: constraints.maxHeight >
+                                                      60
+                                                  ? constraints.maxHeight - 60
+                                                  : constraints.maxHeight),
                                           child: Image.asset(
                                             _tutorials[_currentPage][index],
                                             fit: BoxFit.fitWidth,
@@ -479,7 +518,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                       ],
                                     ),
                                   ),
-                                  Positioned(bottom: 0.0, left: 0.0, right: 0.0, child: Container(height: 60.0, color: Colors.white))
+                                  Positioned(
+                                      bottom: 0.0,
+                                      left: 0.0,
+                                      right: 0.0,
+                                      child: Container(
+                                          height: 60.0, color: Colors.white))
                                 ],
                               );
                             });
@@ -537,7 +581,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                               // this extra setState is here to ensure that the FAB
                               // displays properly when the map page is showing
                               if ((!_isFlipped) && (_currentPage == 2)) {
-                                Future<void>.delayed(const Duration(milliseconds: 250)).then((void _) {
+                                Future<void>.delayed(
+                                        const Duration(milliseconds: 250))
+                                    .then((void _) {
                                   setState(() {});
                                 });
                               }
@@ -557,7 +603,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -610,14 +657,18 @@ class MainNavigationPageState extends State<MainNavigationPage> {
   final List<Widget> _overlays = <Widget>[];
 
   Widget _getPromoScreen() {
-    final List<String> overlaysToDisplay = widget.promos[0].promoOverlayTiming.split(',');
+    final List<String> overlaysToDisplay =
+        widget.promos[0].promoOverlayTiming.split(',');
 
     int currentStep = 0;
 
     if (_timeRemaining != null) {
-      currentStep = _steps - ((_timeRemaining ?? 0) ~/ (widget.promos[0].promoDisplayTimeInMs / _steps));
+      currentStep = _steps -
+          ((_timeRemaining ?? 0) ~/
+              (widget.promos[0].promoDisplayTimeInMs / _steps));
 
-      final List<int> overlaysToDisplayInt = overlaysToDisplay.map(int.parse).toList();
+      final List<int> overlaysToDisplayInt =
+          overlaysToDisplay.map(int.parse).toList();
 
       if (overlaysToDisplayInt.contains(currentStep)) {
         _overlays.add(
@@ -629,7 +680,8 @@ class MainNavigationPageState extends State<MainNavigationPage> {
             child: SizedBox(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
-              child: Image.network('${widget.promos[0].promoImage}_$currentStep${widget.promos[0].promoImageExtension}'),
+              child: Image.network(
+                  '${widget.promos[0].promoImage}_$currentStep${widget.promos[0].promoImageExtension}'),
             ),
           ),
         );
@@ -663,7 +715,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 color: Colors.white60,
                 child: Text(
-                  _initializationMessage.isEmpty ? 'Loading data...' : _initializationMessage,
+                  _initializationMessage.isEmpty
+                      ? 'Loading data...'
+                      : _initializationMessage,
                   style: ts_titleLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -700,19 +754,30 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                           ]),
                     child: Column(
                       children: <Widget>[
-                        if (widget.promos[0].promoExternalUrl != null && widget.promos[0].promoExternalUrlButtonText != null && Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) ...<Widget>[
+                        if (widget.promos[0].promoExternalUrl != null &&
+                            widget.promos[0].promoExternalUrlButtonText !=
+                                null &&
+                            Utilities.isValidUrl(
+                                widget.promos[0].promoExternalUrl)) ...<Widget>[
                           Padding(
                             padding: const EdgeInsets.only(bottom: 15.0),
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(width: 2.0, color: Colors.black),
+                                side: const BorderSide(
+                                    width: 2.0, color: Colors.black),
                                 foregroundColor: Colors.black,
                                 backgroundColor: Colors.white38,
-                                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(100))),
                               ),
                               onPressed: () async {
-                                if (Utilities.isValidUrl(widget.promos[0].promoExternalUrl)) {
-                                  await launchUrl(Uri.parse(widget.promos[0].promoExternalUrl!), mode: LaunchMode.externalApplication);
+                                if (Utilities.isValidUrl(
+                                    widget.promos[0].promoExternalUrl)) {
+                                  await launchUrl(
+                                      Uri.parse(
+                                          widget.promos[0].promoExternalUrl!),
+                                      mode: LaunchMode.externalApplication);
                                 } else {
                                   await Utilities.showAlert(
                                     'Unable to open link',
@@ -722,8 +787,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                 }
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                                child: Text(widget.promos[0].promoExternalUrlButtonText!, style: const TextStyle(fontSize: 20.0)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10.0, vertical: 8.0),
+                                child: Text(
+                                    widget
+                                        .promos[0].promoExternalUrlButtonText!,
+                                    style: const TextStyle(fontSize: 20.0)),
                               ),
                             ),
                           ),
@@ -756,8 +825,10 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             ),
                             GestureDetector(
                               onTap: () async {
-                                final SnoozePromotionService svc = SnoozePromotionService();
-                                await svc.snoozePromotion(widget.promos[0].promotionId, true);
+                                final SnoozePromotionService svc =
+                                    SnoozePromotionService();
+                                await svc.snoozePromotion(
+                                    widget.promos[0].promotionId, true);
                                 if (_promoTimer != null) {
                                   _promoTimer!.cancel();
                                   _promoTimer = null;
@@ -773,8 +844,10 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                             ),
                             GestureDetector(
                               onTap: () async {
-                                final SnoozePromotionService svc = SnoozePromotionService();
-                                await svc.snoozePromotion(widget.promos[0].promotionId, false);
+                                final SnoozePromotionService svc =
+                                    SnoozePromotionService();
+                                await svc.snoozePromotion(
+                                    widget.promos[0].promotionId, false);
                                 if (_promoTimer != null) {
                                   _promoTimer!.cancel();
                                   _promoTimer = null;
@@ -814,39 +887,61 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 30.0),
                     child: StepProgressIndicator(
                       totalSteps: _steps,
-                      currentStep: _timeRemaining == null ? 0 : _steps - ((_timeRemaining ?? 0) ~/ (widget.promos[0].promoDisplayTimeInMs / _steps)),
+                      currentStep: _timeRemaining == null
+                          ? 0
+                          : _steps -
+                              ((_timeRemaining ?? 0) ~/
+                                  (widget.promos[0].promoDisplayTimeInMs /
+                                      _steps)),
                       //size: 10.0,
                       padding: 0.0,
                       // selectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
                       // unselectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
                       customSize: (int index, bool selected) {
-                        return widget.promos[0].promoDisplayTimingDotsSize + 0.0;
+                        return widget.promos[0].promoDisplayTimingDotsSize +
+                            0.0;
                       },
-                      selectedColor: widget.promos[0].promoImageIsDark == 0 ? Colors.black : Colors.white,
-                      unselectedColor: widget.promos[0].promoImageIsDark == 0 ? Colors.black26 : Colors.white30,
+                      selectedColor: widget.promos[0].promoImageIsDark == 0
+                          ? Colors.black
+                          : Colors.white,
+                      unselectedColor: widget.promos[0].promoImageIsDark == 0
+                          ? Colors.black26
+                          : Colors.white30,
                       customStep: (int index, Color color, _) => Container(
                         color: Colors.transparent,
                         height: 10.0,
-                        child: widget.promos[0].promoDisplayTimingDotsShape == 'circle'
+                        child: widget.promos[0].promoDisplayTimingDotsShape ==
+                                'circle'
                             ? Icon(
                                 FontAwesome.circle,
                                 color: color,
-                                size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                size: widget
+                                        .promos[0].promoDisplayTimingDotsSize +
+                                    0.0,
                               )
-                            : widget.promos[0].promoDisplayTimingDotsShape == 'square'
+                            : widget.promos[0].promoDisplayTimingDotsShape ==
+                                    'square'
                                 ? Icon(
                                     FontAwesome.square,
                                     color: color,
-                                    size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                    size: widget.promos[0]
+                                            .promoDisplayTimingDotsSize +
+                                        0.0,
                                   )
                                 : ImageIcon(
-                                    AssetImage(widget.promos[0].promoDisplayTimingDotsShape == 'chevron long'
+                                    AssetImage(widget.promos[0]
+                                                .promoDisplayTimingDotsShape ==
+                                            'chevron long'
                                         ? 'images/icons/chevron_long.png'
-                                        : widget.promos[0].promoDisplayTimingDotsShape == 'chevron medium'
+                                        : widget.promos[0]
+                                                    .promoDisplayTimingDotsShape ==
+                                                'chevron medium'
                                             ? 'images/icons/chevron_medium.png'
                                             : 'images/icons/chevron_short.png'),
                                     color: color,
-                                    size: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
+                                    size: widget.promos[0]
+                                            .promoDisplayTimingDotsSize +
+                                        0.0,
                                   ),
                       ),
                     ),

@@ -1,0 +1,396 @@
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:harrier_central/imports.dart';
+import 'package:get/get.dart';
+
+class ChatSheetController extends GetxController {
+  ChatSheetController({required this.eventId}) {
+    // Initialize controllers with initial data if available
+  }
+  String eventId;
+
+  RxDouble width = 0.0.obs;
+  RxDouble height = 0.0.obs;
+
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
+
+  RxList<types.Message> messages = <types.Message>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    _fcmSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // EventId = eventId,
+      // Title = title,
+      // UserId = userId,
+      // UserDisplayName = userDisplayName,
+      // UserPhoto = userPhoto,
+      // Message = messageContent,
+      // MessageId = messageId,
+      // MessageRelesabilityFlags = messageRelesabilityFlags
+
+      if (eventId.toUpperCase() ==
+          message.data['EventId'].toString().toUpperCase()) {
+        final msgUser = types.User(
+          id: message.data['UserId'].toString().toUpperCase(),
+          firstName: message.data['UserDisplayName'],
+          imageUrl: message.data['UserPhoto'],
+        );
+
+        final textMessage = types.TextMessage(
+          author: msgUser,
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+          id: message.data['MessageId'].toString().toUpperCase(),
+          text: message.data['Message'],
+        );
+
+        addMessage(textMessage);
+      }
+    });
+
+    //final String hasherId = getStringPref(StringPrefsEnum.userId)!;
+    final String publicHasherId =
+        getStringPref(StringPrefsEnum.publicHasherId)!;
+
+    //final String publicHasherId = getStringPref(StringPrefsEnum.pu)!;
+    final String hashName = getStringPref(StringPrefsEnum.displayName) ??
+        getStringPref(StringPrefsEnum.firstName) ??
+        '';
+    final String photo = getStringPref(StringPrefsEnum.profilePhotoUrl)!;
+
+    user = types.User(
+      id: publicHasherId.toUpperCase(),
+      firstName: hashName,
+      imageUrl: photo,
+    );
+
+    _getEventMessages(eventId).then<void>((String? result) {
+      if (result != null) {
+        final outerItem = jsonDecode(result) as List<dynamic>;
+        messages.value = loadMessages(outerItem[0] as List<dynamic>);
+        update();
+      }
+    });
+
+    //_startSendingMessages();
+  }
+
+  Future<String?> _getEventMessages(String publicEventId) async {
+    final String hasherId = getStringPref(StringPrefsEnum.userId)!;
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final accessToken = Utilities.generateToken(
+      hasherId,
+      'hcapp_getEventMessages',
+      paramString: deviceSecret + publicEventId,
+    );
+
+    final body = <String, String>{
+      'queryType': 'getEventMessages',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'eventId': publicEventId,
+    };
+
+    final jsonResult = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+    return jsonResult;
+  }
+
+  @override
+  void onClose() {
+    _fcmSubscription?.cancel();
+    print('chat controller closed');
+    super.onClose();
+  }
+
+  late final types.User user;
+
+  void updateSizeWithDebounce(double newWidth, double newHeight) {
+    if (width.value != newWidth) {
+      width.value = newWidth;
+    }
+    if (height.value != newHeight) {
+      height.value = newHeight;
+    }
+  }
+
+  void addMessage(types.Message message) {
+    messages.insert(0, message);
+    update();
+  }
+
+  void handleAttachmentPressed() {
+    Get.bottomSheet<void>(
+      SafeArea(
+        child: SizedBox(
+          height: 144,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Get.back<void>(); // Close the bottom sheet
+                  handleImageSelection();
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Photo'),
+                ),
+              ),
+              // TextButton(
+              //   onPressed: () {
+              //     Get.back<void>(); // Close the bottom sheet
+              //     handleFileSelection();
+              //   },
+              //   child: const Align(
+              //     alignment: AlignmentDirectional.centerStart,
+              //     child: Text('File'),
+              //   ),
+              // ),
+              TextButton(
+                onPressed: () => Get.back<void>(), // Close the bottom sheet
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Cancel'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierColor: Colors.black54, // Optional: Background dimming
+      // isDismissible: true,          // Optional: Allows dismissing by tapping outside
+      // enableDrag: true,             // Optional: Allows dragging to close
+    );
+  }
+
+  // Future<void> handleFileSelection() async {
+  //   final result = await FilePicker.platform.pickFiles(
+  //       //type: FileType.any,
+  //       );
+
+  //   if (result != null && result.files.single.path != null) {
+  //     final message = types.FileMessage(
+  //       author: user,
+  //       createdAt: DateTime.now().millisecondsSinceEpoch,
+  //       id: const Uuid().v4(),
+  //       mimeType: lookupMimeType(result.files.single.path!),
+  //       name: result.files.single.name,
+  //       size: result.files.single.size,
+  //       uri: result.files.single.path!,
+  //     );
+
+  //     addMessage(message);
+  //   }
+  // }
+
+  Future<void> handleImageSelection() async {
+    final result = await ImagePicker().pickImage(
+      imageQuality: 70,
+      maxWidth: 1440,
+      source: ImageSource.gallery,
+    );
+
+    if (result != null) {
+      final bytes = await result.readAsBytes();
+      final image = await decodeImageFromList(bytes);
+
+      final message = types.ImageMessage(
+        author: user,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+        height: image.height.toDouble(),
+        id: const Uuid().v4(),
+        name: result.name,
+        size: bytes.length,
+        uri: result.path,
+        width: image.width.toDouble(),
+      );
+
+      addMessage(message);
+    }
+  }
+
+  Future<void> handleMessageTap(BuildContext _, types.Message message) async {
+    if (message is types.FileMessage) {
+      //var localPath = message.uri;
+
+      if (message.uri.startsWith('http')) {
+        try {
+          final index =
+              messages.indexWhere((element) => element.id == message.id);
+          final updatedMessage =
+              (messages[index] as types.FileMessage).copyWith(
+            isLoading: true,
+          );
+
+          messages[index] = updatedMessage;
+
+          // final client = http.Client();
+          // final request = await client.get(Uri.parse(message.uri));
+          // final bytes = request.bodyBytes;
+          //final documentsDir = (await getApplicationDocumentsDirectory()).path;
+          //localPath = '$documentsDir/${message.name}';
+
+          // if (!File(localPath).existsSync()) {
+          //   final file = File(localPath);
+          //   await file.writeAsBytes(bytes);
+          // }
+        } finally {
+          final index =
+              messages.indexWhere((element) => element.id == message.id);
+          final updatedMessage =
+              (messages[index] as types.FileMessage).copyWith(
+                  //isLoading: null,
+                  );
+
+          messages[index] = updatedMessage;
+        }
+      }
+
+      //await OpenFilex.open(localPath);
+    }
+  }
+
+  void handlePreviewDataFetched(
+    types.TextMessage message,
+    types.PreviewData previewData,
+  ) {
+    final index = messages.indexWhere((element) => element.id == message.id);
+    final updatedMessage = (messages[index] as types.TextMessage).copyWith(
+      previewData: previewData,
+    );
+
+    messages[index] = updatedMessage;
+  }
+
+  Future<void> handleSendPressed(types.PartialText message) async {
+    final textMessage = types.TextMessage(
+      author: user,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: const Uuid().v4(),
+      text: message.text,
+    );
+
+    addMessage(textMessage);
+
+    //final hasherId = await box!.get(HIVE_HASHER_ID) as String;
+    final hasherId = getStringPref(StringPrefsEnum.userId)!;
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final accessToken = Utilities.generateToken(
+      hasherId,
+      'hcapp_sendEventMessage',
+      paramString: deviceSecret + eventId,
+    );
+
+    final body = <String, dynamic>{
+      'queryType': 'sendEventMessage',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'eventId': eventId,
+      'messageContent': textMessage.text,
+      'messageReleasabilityFlags': 63,
+    };
+
+    final result = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+
+    print(result);
+    // await sendNotification(
+    //   'fSH1Tfm2jEo_p_XsWxExsl:APA91bHIspRWUqleOS5OxtXz2dqjuQdswjpM8IPb0WeV0LuVx-dmaVboDKBgqJr9LTB2BX3BsylF7ygZpEjWNE3ZN9oGv8o4aQwiI24C7t8KBw2RY4jFo5U',
+    //   'Run Start Changed',
+    //   textMessage.text,
+    // );
+  }
+
+  List<Map<String, dynamic>> preprocessMessages(List<dynamic> messageList) {
+    return messageList.map((item) {
+      final Map<String, dynamic> message = item as Map<String, dynamic>;
+
+      // Decode the author field if it is a string
+      if (message['author'] is String) {
+        message['author'] = jsonDecode(message['author'].toString());
+      }
+
+      return message;
+    }).toList();
+  }
+
+  List<types.Message> loadMessages(List<dynamic> messageList) {
+    final mList = preprocessMessages(messageList);
+    final msgs = mList.map(types.Message.fromJson).toList();
+
+    return msgs;
+  }
+}
+
+//   Future<void> loadMessages(String messageJson) async {
+//     final crap = messageJson
+//         .replaceAll('[[', '[')
+//         .replaceAll(']]', ']');
+
+//     messages.value = (jsonDecode(crap) as List)
+//         .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
+//         .toList();
+//   }
+// }
+
+// Future<void> sendNotification(
+//     String fcmToken, String title, String message) async {
+//   const fcmUrl =
+//       'https://fcm.googleapis.com/v1/projects/harrier-central-mobile/messages:send';
+
+//   final messageBody = {
+//     'message': {
+//       'token': fcmToken,
+//       'notification': {'title': title, 'body': message},
+//       'data': {'customKey1': 'value1', 'customKey2': 'value2'},
+//     },
+//   };
+
+//   final credentials = await getFirebaseCredentials();
+
+//   if (credentials != null) {
+//     final token = credentials.accessToken.data;
+
+//     final response = await http.post(
+//       Uri.parse(fcmUrl),
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': 'Bearer $token',
+//       },
+//       body: jsonEncode(messageBody),
+//     );
+
+//     if (response.statusCode == 200) {
+//       print('FCM message sent successfully!');
+//     } else {
+//       print('Error sending FCM message: ${response.body}');
+//     }
+//   }
+// }
+
+// Future<AccessCredentials?> getFirebaseCredentials() async {
+//   try {
+//     final jsonString =
+//         await rootBundle.loadString('firebase_service_account.json');
+//     final jsonMap = jsonDecode(jsonString);
+
+//     final privateKey = ServiceAccountCredentials.fromJson(jsonMap);
+
+//     // ✅ Correct scope for Firebase Cloud Messaging
+//     final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+//     final client = http.Client();
+//     final credentials = await obtainAccessCredentialsViaServiceAccount(
+//         privateKey, scopes, client);
+
+//     client.close();
+//     return credentials;
+//   } on Exception catch (e) {
+//     print('Error loading service account: $e');
+//     return null;
+//   }
+// }

@@ -7,6 +7,8 @@ environment:
   sdk: '>=3.3.1 <4.0.0'
   flutter: ^3.29.0
 
+# curved_labeled_navigation_bar 2.0.6
+
 dependencies:   
   add_2_calendar: ^3.0.1
   audioplayers: ^6.1.0 
@@ -28,6 +30,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
+  flutter_chat_types: ^3.6.2
+  flutter_chat_ui: ^1.6.15
   # flutter_facebook_auth: ^7.1.1
   flutter_image: ^4.1.0  
   flutter_image_compress: ^2.1.0 
@@ -113,11 +117,12 @@ dev_dependencies:
 
 flutter_icons:
   android: true 
-  ios: 'HarrierCentralIcon'
-  image_path: 'assets/icon/icon.png'
+  ios: true
+  image_path_ios_dark_transparent: 'assets/icon/hc_dark_mode_icon.png'
+  image_path_ios_tinted_grayscale: 'assets/icon/hc_tinted_icon.png'
+  image_path: 'assets/icon/hc_standard_icon.png'
   adaptive_icon_background: '#FFE02000'
   adaptive_icon_foreground: 'assets/icon/hc_app_icon_adaptive_foot.png'
-
 
   # hc_app_icon_adaptive_foot
 
