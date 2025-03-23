@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:pdfx/pdfx.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -11,13 +12,14 @@ class PrivacyPolicyPage extends StatefulWidget {
   PrivacyPolicyPageState createState() => PrivacyPolicyPageState();
 }
 
-Future<File> createFileOfPdfUrl() async {
-  final ByteData bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
-  final String dir = (await getApplicationDocumentsDirectory()).path;
-  final File file = File('$dir/privacy_policy_internal.pdf');
-  await file.writeAsBytes(bytes.buffer.asInt8List());
-  return file;
-}
+// Future<File> createFileOfPdfUrl() async {
+//   final ByteData bytes =
+//       await rootBundle.load('assets/documents/privacy_policy.pdf');
+//   final String dir = (await getApplicationDocumentsDirectory()).path;
+//   final File file = File('$dir/privacy_policy_internal.pdf');
+//   await file.writeAsBytes(bytes.buffer.asInt8List());
+//   return file;
+// }
 
 class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   String pathPDF = '';
@@ -25,19 +27,20 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   @override
   void initState() {
     super.initState();
-    createFileOfPdfUrl().then((File f) {
-      setState(() {
-        pathPDF = f.path;
-        //print(pathPDF);
-      });
-    });
+    // createFileOfPdfUrl().then((File f) {
+    //   setState(() {
+    //     pathPDF = f.path;
+    //   });
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -62,15 +65,21 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     ElevatedButton(
-                      child: Text('Open Privacy Policy', style: ts_headingLarge),
+                      child:
+                          Text('Open Privacy Policy', style: ts_headingLarge),
                       onPressed: () => Navigator.push<dynamic>(
                         context,
-                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => PDFScreen(pathPDF)),
+                        MaterialPageRoute<dynamic>(
+                            builder: (BuildContext context) =>
+                                PDFScreen(pathPDF)),
                       ),
                     ),
                     Container(
                       margin: const EdgeInsets.all(30),
-                      child: Text('The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com', textAlign: TextAlign.center, style: ts_medium),
+                      child: Text(
+                          'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
+                          textAlign: TextAlign.center,
+                          style: ts_medium),
                     ),
                   ],
                 ),
@@ -79,7 +88,8 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -92,26 +102,31 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 }
 
 class PDFScreen extends StatelessWidget {
-  const PDFScreen(
+  PDFScreen(
     this.pathPDF, {
     super.key,
   });
 
   final String pathPDF;
 
+  final pdfPinchController = PdfControllerPinch(
+    document: PdfDocument.openAsset('assets/documents/privacy_policy.pdf'),
+  );
+
   @override
   Widget build(BuildContext context) {
     //return Container();
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Privacy Policy', style: ts_appBarTitle),
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 28.0,
+        appBar: AppBar(
+          title: Text('Privacy Policy', style: ts_appBarTitle),
+          backgroundColor: themeAppBarBackground,
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 28.0,
+          ),
         ),
-      ),
-      body: PdfView(path: pathPDF),
-    );
+        body: PdfViewPinch(
+          controller: pdfPinchController,
+        ));
   }
 }

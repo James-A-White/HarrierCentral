@@ -196,7 +196,6 @@ export 'package:keyboard_actions/keyboard_actions.dart';
 export 'package:package_info_plus/package_info_plus.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:pausable_timer/pausable_timer.dart';
-export 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
 export 'package:permission_handler/permission_handler.dart';
 export 'package:progress_stepper/progress_stepper.dart';
 export 'package:qr_code_scanner/qr_code_scanner.dart';

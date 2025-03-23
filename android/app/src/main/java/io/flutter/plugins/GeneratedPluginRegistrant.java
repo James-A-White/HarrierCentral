@@ -101,9 +101,9 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin path_provider_android, io.flutter.plugins.pathprovider.PathProviderPlugin", e);
     }
     try {
-      flutterEngine.getPlugins().add(new dev.britto.pdf_viewer_plugin.PdfViewerPlugin());
+      flutterEngine.getPlugins().add(new io.scer.pdfx.PdfxPlugin());
     } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin pdf_viewer_plugin, dev.britto.pdf_viewer_plugin.PdfViewerPlugin", e);
+      Log.e(TAG, "Error registering plugin pdfx, io.scer.pdfx.PdfxPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new com.baseflow.permissionhandler.PermissionHandlerPlugin());
