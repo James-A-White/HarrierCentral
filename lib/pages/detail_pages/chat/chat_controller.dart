@@ -45,7 +45,19 @@ class ChatSheetController extends GetxController {
           text: message.data['Message'],
         );
 
-        addMessage(textMessage);
+        final index = messages.indexWhere((element) =>
+            element.id.toUpperCase() ==
+            message.data['MessageId'].toString().toUpperCase());
+
+        if (index == -1) {
+          addMessage(textMessage);
+        } else {
+          final updatedMessage = (messages[index] as types.TextMessage)
+              .copyWith(status: types.Status.sent);
+
+          messages[index] = updatedMessage;
+          update();
+        }
       }
     });
 
@@ -266,11 +278,14 @@ class ChatSheetController extends GetxController {
   }
 
   Future<void> handleSendPressed(types.PartialText message) async {
+    String uuid = const Uuid().v4();
     final textMessage = types.TextMessage(
       author: user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
-      id: const Uuid().v4(),
+      id: uuid,
       text: message.text,
+      showStatus: true,
+      status: types.Status.sending,
     );
 
     addMessage(textMessage);
@@ -291,13 +306,14 @@ class ChatSheetController extends GetxController {
       'deviceId': deviceId,
       'accessToken': accessToken,
       'eventId': eventId,
+      'messageId': uuid,
       'messageContent': textMessage.text,
       'messageReleasabilityFlags': 63,
     };
 
-    final result = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+    await ServiceCommon.sendHttpPostV2(jsonEncode(body));
 
-    print(result);
+    // print(result);
     // await sendNotification(
     //   'fSH1Tfm2jEo_p_XsWxExsl:APA91bHIspRWUqleOS5OxtXz2dqjuQdswjpM8IPb0WeV0LuVx-dmaVboDKBgqJr9LTB2BX3BsylF7ygZpEjWNE3ZN9oGv8o4aQwiI24C7t8KBw2RY4jFo5U',
     //   'Run Start Changed',
@@ -314,6 +330,9 @@ class ChatSheetController extends GetxController {
         message['author'] = jsonDecode(message['author'].toString());
       }
 
+      message['showStatus'] = true;
+      //message['status'] = Status.sending;
+
       return message;
     }).toList();
   }
@@ -322,7 +341,10 @@ class ChatSheetController extends GetxController {
     final mList = preprocessMessages(messageList);
     final msgs = mList.map(types.Message.fromJson).toList();
 
-    return msgs;
+    final updatedMsgs =
+        msgs.map((msg) => msg.copyWith(status: types.Status.sent)).toList();
+
+    return updatedMsgs;
   }
 }
 
