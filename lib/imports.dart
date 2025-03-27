@@ -86,7 +86,6 @@ export 'package:harrier_central/database/query_runs.dart';
 export 'package:harrier_central/database/tables.dart';
 export 'package:harrier_central/localization.dart';
 export 'package:harrier_central/main.dart';
-export 'package:harrier_central/notifications/notification_support.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_controller.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_ui.dart';
 export 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
