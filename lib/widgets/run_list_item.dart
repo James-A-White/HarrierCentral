@@ -1,3 +1,4 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
@@ -25,11 +26,13 @@ class RunListItem extends StatelessWidget {
     super.key,
     required this.futureRun,
     required this.onItemTapped,
+    required this.eventChatCount,
   });
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;
   final RunListItemController rliController = RunListItemController();
+  final int eventChatCount;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +121,28 @@ class RunListItem extends StatelessWidget {
                           child: Obx(() => _getNotificationWidget()),
                         ),
                       ),
+                if (eventChatCount != 0) ...<Widget>[
+                  badges.Badge(
+                    position: badges.BadgePosition.topEnd(top: -5, end: 0),
+                    badgeContent: Text(
+                        eventChatCount < 100 ? eventChatCount.toString() : '>',
+                        style: ts_badge.copyWith(
+                          fontSize: eventChatCount < 10
+                              ? 20
+                              : eventChatCount < 100
+                                  ? 15
+                                  : 20,
+                        )),
+                    badgeStyle: badges.BadgeStyle(
+                      badgeColor: Colors.red.shade800,
+                      padding: const EdgeInsets.all(6),
+                    ),
+                    showBadge: (eventChatCount != 0),
+                  ),
+                  SizedBox(
+                    width: 5,
+                  )
+                ]
               ],
             ),
             Container(

@@ -17,6 +17,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   bool _showRsvpInstructions = false;
 
+  Map<String, EventChatSummary> chatSummaryMap = {};
+
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   String _searchRunsText = '';
@@ -102,33 +104,74 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     _refreshFromBackend().then((void _) {
       _refreshFromTable(true).then((void _) {
-        FirebaseMessaging.instance
-            .getInitialMessage()
-            .then((RemoteMessage? msg) {
-          if (msg != null) {
-            // {UserId: b6bafd0d-5d2e-41cd-8495-811d551f01d0, UserPhoto: https://harriercentral.blob.core.windows.net/profile-photos/0CDBB109-215E-4B5F-A405-F6C9FBCB18EC_20230716214555_thumb.jpg, EventId: 39b17580-8d85-4677-9ec5-6244b4ddf2fb, MessageRelesabilityFlags: 63, MessageId: df1b2bc7-af77-4595-a9e5-96b111c377e6, UserDisplayName: Opee, Title: CH3 - Oxford Circus, Message: test}
+        _getEventChatMessageCounts().then((Map<String, EventChatSummary> csm) {
+          chatSummaryMap = csm;
+          FirebaseMessaging.instance
+              .getInitialMessage()
+              .then((RemoteMessage? msg) {
+            if (msg != null) {
+              // {UserId: b6bafd0d-5d2e-41cd-8495-811d551f01d0, UserPhoto: https://harriercentral.blob.core.windows.net/profile-photos/0CDBB109-215E-4B5F-A405-F6C9FBCB18EC_20230716214555_thumb.jpg, EventId: 39b17580-8d85-4677-9ec5-6244b4ddf2fb, MessageRelesabilityFlags: 63, MessageId: df1b2bc7-af77-4595-a9e5-96b111c377e6, UserDisplayName: Opee, Title: CH3 - Oxford Circus, Message: test}
 
-            String? eventId = msg.data['EventId']?.toString().toUpperCase();
-            if ((eventId != null) && (_allRuns != null)) {
-              dynamic runs = _allRuns!
-                  .where(
-                      (dynamic a) => a.event?.eventId?.toUpperCase() == eventId)
-                  .toList();
+              String? eventId = msg.data['EventId']?.toString().toUpperCase();
+              if ((eventId != null) && (_allRuns != null)) {
+                dynamic runs = _allRuns!
+                    .where((dynamic a) =>
+                        a.event?.eventId?.toUpperCase() == eventId)
+                    .toList();
 
-              if ((runs != null) && (runs.length > 0)) {
-                var run = runs[0];
-                openRun(
-                  run,
-                  openToChatTab: true,
-                );
+                if ((runs != null) && (runs.length > 0)) {
+                  var run = runs[0];
+                  openRun(
+                    run,
+                    openToChatTab: true,
+                  );
+                }
               }
             }
-          }
-          setState(() {});
+            setState(() {});
+          });
         });
       });
     });
     super.initState();
+  }
+
+  Future<Map<String, EventChatSummary>> _getEventChatMessageCounts() async {
+    final hasherId = getStringPref(StringPrefsEnum.userId)!;
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final accessToken = Utilities.generateToken(
+      hasherId,
+      'hcapp_getEventMessageCounts',
+      paramString: deviceSecret,
+    );
+
+    final body = <String, dynamic>{
+      'queryType': 'getEventMessageCounts',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+    };
+
+    String responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      final decoded = json.decode(responseBody) as List;
+      List<EventChatSummary> chatSummary =
+          decoded.map<List<EventChatSummary>>((innerList) {
+        return (innerList as List)
+            .map<EventChatSummary>((item) => EventChatSummary.fromJson(item))
+            .toList();
+      }).toList()[0];
+
+      var chatSummaryMap = {
+        for (var summary in chatSummary) summary.id: summary
+      };
+
+      return chatSummaryMap;
+    }
+
+    return {};
   }
 
   Widget _searchBar() {
@@ -554,8 +597,15 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                               ],
                             );
                           } else {
+                            String eventId =
+                                (_filteredRuns![index] as RunDetailsAggregate)
+                                    .event
+                                    .eventId;
                             return RunListItem(
                               futureRun: _filteredRuns![index],
+                              eventChatCount: chatSummaryMap[eventId]
+                                      ?.eventChatMessageCount ??
+                                  0,
                               onItemTapped: () {
                                 openRun(
                                   _filteredRuns![index],
@@ -864,5 +914,33 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     }
 
     return precursorText;
+  }
+}
+
+class EventChatSummary {
+  final String id;
+  final String publicEventId;
+  final int eventChatMessageCount;
+
+  EventChatSummary({
+    required this.id,
+    required this.publicEventId,
+    required this.eventChatMessageCount,
+  });
+
+  factory EventChatSummary.fromJson(Map<String, dynamic> json) {
+    return EventChatSummary(
+      id: json['id'] as String,
+      publicEventId: json['PublicEventId'] as String,
+      eventChatMessageCount: json['EventChatMessageCount'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'PublicEventId': publicEventId,
+      'EventChatMessageCount': eventChatMessageCount,
+    };
   }
 }

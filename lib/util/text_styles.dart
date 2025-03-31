@@ -649,6 +649,14 @@ TextStyle ts_tileText = const TextStyle(
   height: 1.0,
 );
 
+TextStyle ts_badge = const TextStyle(
+  color: Colors.white,
+  fontFamily: 'AvenirNextDemiBold',
+  fontStyle: FontStyle.normal,
+  fontSize: 20.0,
+  height: 1.0,
+);
+
 TextStyle ts_appBarTitle = const TextStyle(
   fontFamily: 'AvenirNextMedium',
   fontStyle: FontStyle.normal,
