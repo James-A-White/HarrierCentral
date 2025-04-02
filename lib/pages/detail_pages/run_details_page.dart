@@ -29,7 +29,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
 
   @override
   void dispose() {
-    print('Run Details page disposed');
+    //print('Run Details page disposed');
     super.dispose();
   }
 
@@ -42,7 +42,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
-              print('Run details popped');
+              //print('Run details popped');
               Navigator.of(context).pop(); // or Get.back();
             },
           ),

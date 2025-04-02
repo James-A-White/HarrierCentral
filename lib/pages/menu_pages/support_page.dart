@@ -36,8 +36,8 @@ class SupportPageState extends State<SupportPage> {
     super.initState();
   }
 
-  String _userName = getStringPref(StringPrefsEnum.displayName) ?? '';
-  String _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? '';
+  final _userName = getStringPref(StringPrefsEnum.displayName) ?? '';
+  final _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? '';
   final String _supportCode = getStringPref(StringPrefsEnum.supportCode) ?? '';
 
   bool isLoading = false;

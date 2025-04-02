@@ -8,7 +8,7 @@ Future<void> initPrefs() async {
 
 Future<bool> clearPrefs() async {
   _sharedPreferences = await SharedPreferences.getInstance();
-  return _sharedPreferences.clear();
+  return await _sharedPreferences.clear();
 }
 
 // STRING
@@ -21,7 +21,7 @@ Future<bool> setStringPref(dynamic key, String? value) async {
   if ((key == null) || (value == null)) {
     return false;
   }
-  return _sharedPreferences.setString(key.toString(), value);
+  return await _sharedPreferences.setString(key.toString(), value);
 }
 
 // NUM
@@ -39,10 +39,10 @@ Future<bool> setNumPref(dynamic key, num? value) async {
     return false;
   }
   if (value == null) {
-    return removePref(key);
+    return await removePref(key.toString());
   }
 
-  return _sharedPreferences.setDouble(key.toString(), value.toDouble());
+  return await _sharedPreferences.setDouble(key.toString(), value.toDouble());
 }
 
 // INT
@@ -57,9 +57,9 @@ Future<bool> setIntPref(dynamic key, int? value) async {
   }
 
   if (value == null) {
-    return removePref(key);
+    return await removePref(key.toString());
   }
-  return _sharedPreferences.setInt(key.toString(), value);
+  return await _sharedPreferences.setInt(key.toString(), value);
 }
 
 // DATE
@@ -70,10 +70,11 @@ Future<bool> setDatePref(dynamic key, DateTime? value) async {
   }
 
   if (value == null) {
-    return removePref(key);
+    return await removePref(key.toString());
   }
 
-  return _sharedPreferences.setInt(key.toString(), value.millisecondsSinceEpoch);
+  return await _sharedPreferences.setInt(
+      key.toString(), value.millisecondsSinceEpoch);
 }
 
 DateTime? getDatePref(dynamic key) {
@@ -92,14 +93,39 @@ Future<bool> setBoolPref(dynamic key, bool? value) async {
   }
 
   if (value == null) {
-    return removePref(key);
+    return await removePref(key.toString());
   }
 
-  return _sharedPreferences.setInt(key.toString(), value == true ? 1 : 0);
+  return await _sharedPreferences.setInt(key.toString(), value == true ? 1 : 0);
 }
 
 bool getBoolPref(dynamic key) {
   return _sharedPreferences.getInt(key.toString()) == 1;
+}
+
+// Map<String,int>
+
+Future<bool> setMapIntPref(dynamic key, Map<String, int>? value) async {
+  if (key == null) {
+    return false;
+  }
+
+  if (value == null) {
+    return await removePref(key.toString());
+  }
+
+  final jsonString = jsonEncode(value);
+
+  return await _sharedPreferences.setString(key.toString(), jsonString);
+}
+
+Map<String, int> getMapIntPref(dynamic key) {
+  final jsonString = _sharedPreferences.getString(key.toString());
+  if (jsonString != null) {
+    final Map<String, dynamic> decoded = jsonDecode(jsonString);
+    return decoded.map((key, value) => MapEntry(key, value as int));
+  }
+  return {}; // Return an empty map if nothing found
 }
 
 Future<bool> removePref(dynamic key) async {

@@ -17,8 +17,8 @@ void setupFirebaseListeners() {
 }
 
 void _handleNotificationClick(RemoteMessage message) {
-  final data = message.data;
-  print(data);
+  // final data = message.data;
+  // print(data);
   // final screen = data['screen'];
 
   // if (screen == 'chat' && data['chatId'] != null) {

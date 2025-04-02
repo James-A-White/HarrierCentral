@@ -3,10 +3,14 @@ import 'package:harrier_central/imports.dart';
 import 'package:get/get.dart';
 
 class ChatSheetController extends GetxController {
-  ChatSheetController({required this.eventId}) {
+  ChatSheetController({
+    required this.eventId,
+    required this.publicEventId,
+  }) {
     // Initialize controllers with initial data if available
   }
   String eventId;
+  String publicEventId;
 
   RxDouble width = 0.0.obs;
   RxDouble height = 0.0.obs;
@@ -88,7 +92,7 @@ class ChatSheetController extends GetxController {
     //_startSendingMessages();
   }
 
-  Future<String?> _getEventMessages(String publicEventId) async {
+  Future<String?> _getEventMessages(String eventId) async {
     final String hasherId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -96,14 +100,14 @@ class ChatSheetController extends GetxController {
     final accessToken = Utilities.generateToken(
       hasherId,
       'hcapp_getEventMessages',
-      paramString: deviceSecret + publicEventId,
+      paramString: deviceSecret + eventId,
     );
 
     final body = <String, String>{
       'queryType': 'getEventMessages',
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'eventId': publicEventId,
+      'eventId': eventId,
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
@@ -113,7 +117,7 @@ class ChatSheetController extends GetxController {
   @override
   void onClose() {
     _fcmSubscription?.cancel();
-    print('chat controller closed');
+    //print('chat controller closed');
     super.onClose();
   }
 
@@ -131,6 +135,12 @@ class ChatSheetController extends GetxController {
   void addMessage(types.Message message) {
     messages.insert(0, message);
     update();
+
+    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+    chatsCounts[publicEventId] = messages.length;
+
+    // it's fine to call this async method unawaited
+    setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
   }
 
   void handleAttachmentPressed() {
@@ -343,6 +353,13 @@ class ChatSheetController extends GetxController {
 
     final updatedMsgs =
         msgs.map((msg) => msg.copyWith(status: types.Status.sent)).toList();
+
+    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+
+    chatsCounts[publicEventId] = updatedMsgs.length;
+
+    // it's fine to call this async method unawaited
+    setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
 
     return updatedMsgs;
   }

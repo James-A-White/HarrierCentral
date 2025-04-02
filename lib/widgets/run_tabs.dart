@@ -255,7 +255,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _gridListTabController.dispose();
     _saveUserMapPreference.dispose();
 
-    print('run tabs disposedd');
+    //('run tabs disposedd');
 
     Get.delete<ChatSheetController>();
 
@@ -707,7 +707,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                               ),
                                             ),
                                             onPressed: () async {
-                                              // HACK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
+                                              // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
                                               String time = widget.futureRun
                                                   .event.eventStartDatetime
                                                   .toString();
@@ -1120,7 +1120,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Widget _buildChatView() {
-    return ChatUi(eventId: widget.futureRun.event.eventId);
+    return ChatUi(
+      eventId: widget.futureRun.event.eventId,
+      publicEventId: widget.futureRun.event.publicEventId,
+    );
   }
 
   Widget _buildMapView() {

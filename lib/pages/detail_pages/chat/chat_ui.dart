@@ -4,14 +4,19 @@ import 'package:get/get.dart';
 class ChatUi extends StatelessWidget {
   ChatUi({
     required this.eventId,
+    required this.publicEventId,
     super.key,
   });
 
   final String eventId;
+  final String publicEventId;
 
   // Initialize the controller with the provided arguments
   late final ChatSheetController chatSheetController = Get.put(
-    ChatSheetController(eventId: eventId),
+    ChatSheetController(
+      eventId: eventId,
+      publicEventId: publicEventId,
+    ),
     // permanent: true,
   );
 

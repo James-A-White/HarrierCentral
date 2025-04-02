@@ -84,6 +84,10 @@ enum DatePrefsEnum {
   lastLeaderboardUpdate,
 }
 
+enum MapPrefsEnum {
+  chatCounts;
+}
+
 enum ThirdPartyLoginType { apple, facebook, none }
 
 enum EnumDataContext { user, event, kennel }

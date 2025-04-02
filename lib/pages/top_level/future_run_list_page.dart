@@ -83,14 +83,33 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     //print('Events user data synchronized $resultStr');
   }
 
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
+  Map<String, int> thisEventChatCount = {};
+
+  @override
+  void dispose() {
+    _fcmSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   void initState() {
-    // const SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
-    //   statusBarColor:hc_red,
-    //   statusBarIconBrightness: Brightness.dark,
-    //   statusBarBrightness: Brightness.dark,
-    // );
-    // SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
+    _fcmSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final publicEventId = message.data['PublicEventId'] as String?;
+
+      if (publicEventId != null) {
+        thisEventChatCount[publicEventId] =
+            int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0;
+
+        final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+
+        thisEventChatCount[publicEventId] = thisEventChatCount[publicEventId]! -
+            (chatsCounts[publicEventId] ?? 0);
+
+        setState(() {});
+      }
+    });
 
     IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
     _searchController.text = '';
@@ -164,13 +183,20 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             .toList();
       }).toList()[0];
 
-      var chatSummaryMap = {
-        for (var summary in chatSummary) summary.id: summary
-      };
+      final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
 
-      return chatSummaryMap;
+      Map<String, EventChatSummary> result = {};
+      for (var summary in chatSummary) {
+        result[summary.publicEventId] = EventChatSummary(
+          id: summary.id,
+          publicEventId: summary.publicEventId,
+          eventChatMessageCount: summary.eventChatMessageCount -
+              (chatsCounts[summary.publicEventId] ?? 0),
+        );
+      }
+
+      return result;
     }
-
     return {};
   }
 
@@ -597,15 +623,20 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                               ],
                             );
                           } else {
-                            String eventId =
+                            String publicEventId =
                                 (_filteredRuns![index] as RunDetailsAggregate)
                                     .event
-                                    .eventId;
+                                    .publicEventId;
+                            // print(
+                            //     'chatSummaryMap = ${(chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0)} / thisEventChatCount = ${(thisEventChatCount[publicEventId] ?? 0)} ');
+
                             return RunListItem(
                               futureRun: _filteredRuns![index],
-                              eventChatCount: chatSummaryMap[eventId]
-                                      ?.eventChatMessageCount ??
-                                  0,
+                              currentChatCount:
+                                  (thisEventChatCount[publicEventId] ??
+                                      chatSummaryMap[publicEventId]
+                                          ?.eventChatMessageCount ??
+                                      0),
                               onItemTapped: () {
                                 openRun(
                                   _filteredRuns![index],
@@ -622,9 +653,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   Future<void> openRun(
-    dynamic run, {
+    RunDetailsAggregate run, {
     required bool openToChatTab,
   }) async {
+    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
     Navigator.push<dynamic>(
       context,
       MaterialPageRoute<dynamic>(
@@ -643,6 +675,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       ),
     ).then((void _) {
       _refreshFromBackend(clearLocalTables: false).then((void _) {
+        // this means the user went to the chat page, so reset to zero to hide the badge
+        // I don't like this logic, but it will have to do for now.
+        final chatsCounts2 = getMapIntPref(MapPrefsEnum.chatCounts);
+        if ((chatsCounts2[run.event.publicEventId] ?? 0) !=
+            (chatsCounts[run.event.publicEventId] ?? 0)) {
+          thisEventChatCount[run.event.publicEventId] = 0;
+        }
+
         setState(() {});
       });
     });
