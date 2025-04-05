@@ -22,7 +22,8 @@ dependencies:
   crypto: ^3.0.1  
   cupertino_icons: ^1.0.3  
   dart_ipify: ^1.1.1
-  date_time_picker: 2.0.0  # NOTE: There's a bug in 2.1.0 with AM/PM selection so stick with 2.0.0
+  date_time_picker_plus: ^1.0.1
+  # date_time_picker: 2.0.0  # NOTE: There's a bug in 2.1.0 with AM/PM selection so stick with 2.0.0
   diacritic: ^0.1.6
   device_info_plus: ^11.3.0
   fancy_bottom_navigation_2: ^0.3.5
@@ -36,9 +37,7 @@ dependencies:
   flutter_image: ^4.1.0  
   flutter_image_compress: ^2.1.0 
   flutter_linkify: ^6.0.0  
-  
-  flutter_localizations:
-    sdk: flutter
+  flutter_localization: ^0.3.2
   flutter_map: ^7.0.2
   flutter_map_marker_cluster: ^1.3.6
   flutter_native_splash: ^2.4.5
@@ -50,8 +49,8 @@ dependencies:
   flutter_statusbarcolor_ns: ^0.6.0
   flutter_svg: ^2.0.1
   flutter_vector_icons: ^2.0.0 
-  freezed: ^2.3.2
-  freezed_annotation: ^2.4.1
+  freezed: ^3.0.6
+  freezed_annotation: ^3.0.0
   geolocator: ^13.0.1
   get: ^4.6.5
   get_it: ^8.0.3 
@@ -60,16 +59,16 @@ dependencies:
   image_cropper: ^9.0.0
   image_picker: ^1.0.7
   internet_connection_checker: ^3.0.1
-  intl: ^0.19.0
+  intl: ^0.20.2
   intro_slider: ^4.2.0
   ive_flutter_core:
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core.git
-      ref: 324ea4ce6807b47ca13b30cacada0fcdf7266215 # Version 1.2.6f
+      ref: f8f4b492944fff4142c9cae15b97f273c6543607 # Version 1.2.8b
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
-      ref: 0cfa988533a92931b524a20c8f33321d6fdff4e0 # Version 1.2.6
+      ref: b2e6621515de5e19b834b68257777c502ec33c41 # Version 1.2.8
   json_annotation: ^4.9.0
   keyboard_actions: ^4.0.0 
   latlong2: ^0.9.0
@@ -98,17 +97,17 @@ dependencies:
   
   
 dependency_overrides:
-  intl: 0.17.0
+  intl: 0.19.0
   device_info_plus: ^10.1.2
 
 dev_dependencies: 
   # flutter_test:
   #   sdk: flutter
-  build_runner: ^2.4.12
+  build_runner: ^2.4.15
   flutter_launcher_icons: ^0.14.3 
   # intl_translation: ^0.17.10+1 
   flutter_lints: ^5.0.0
-  json_serializable: ^6.7.1
+  json_serializable: ^6.9.4
 
 flutter_icons:
   android: true 

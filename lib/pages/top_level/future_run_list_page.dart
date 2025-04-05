@@ -140,7 +140,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
                 if ((runs != null) && (runs.length > 0)) {
                   var run = runs[0];
-                  openRun(
+                  _openRun(
                     run,
                     openToChatTab: true,
                   );
@@ -638,7 +638,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                           ?.eventChatMessageCount ??
                                       0),
                               onItemTapped: () {
-                                openRun(
+                                _openRun(
                                   _filteredRuns![index],
                                   openToChatTab: false,
                                 );
@@ -652,7 +652,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  Future<void> openRun(
+  Future<void> _openRun(
     RunDetailsAggregate run, {
     required bool openToChatTab,
   }) async {

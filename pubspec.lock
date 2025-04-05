@@ -409,14 +409,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
-  date_time_picker:
+  date_time_picker_plus:
     dependency: "direct main"
     description:
-      name: date_time_picker
-      sha256: ec78507c51b68fe18bc12f09f7cabdf8c885a8cf14b1e7bdd00e9fe013cf28f2
+      name: date_time_picker_plus
+      sha256: "4eae1cbb152a27cfff9e1f1f1f864999abc155d675f7357e2a590523288befd8"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "1.0.1"
   dbus:
     dependency: transitive
     description:
@@ -710,8 +710,16 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
-  flutter_localizations:
+  flutter_localization:
     dependency: "direct main"
+    description:
+      name: flutter_localization
+      sha256: "987faf0a6c13a267202b28d3ed680647e234245ead1a1c1f95f87e86c6f12490"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2"
+  flutter_localizations:
+    dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -841,18 +849,18 @@ packages:
     dependency: "direct main"
     description:
       name: freezed
-      sha256: "59a584c24b3acdc5250bb856d0d3e9c0b798ed14a4af1ddb7dc1c7b41df91c9c"
+      sha256: "6022db4c7bfa626841b2a10f34dd1e1b68e8f8f9650db6112dcdeeca45ca793c"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.8"
+    version: "3.0.6"
   freezed_annotation:
     dependency: "direct main"
     description:
       name: freezed_annotation
-      sha256: c2e2d632dd9b8a2b7751117abcfc2b4888ecfe181bd9fca7170d9ef02e595fe2
+      sha256: c87ff004c8aa6af2d531668b46a4ea379f7191dc6dfa066acd53d506da6e044b
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.4"
+    version: "3.0.0"
   frontend_server_client:
     dependency: transitive
     description:
@@ -1105,10 +1113,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: "910f85bce16fb5c6f614e117efa303e85a1731bb0081edf3604a2ae6e9a3cc91"
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
       url: "https://pub.dev"
     source: hosted
-    version: "0.17.0"
+    version: "0.19.0"
   intro_slider:
     dependency: "direct main"
     description:
@@ -1129,20 +1137,20 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "324ea4ce6807b47ca13b30cacada0fcdf7266215"
-      resolved-ref: "324ea4ce6807b47ca13b30cacada0fcdf7266215"
+      ref: f8f4b492944fff4142c9cae15b97f273c6543607
+      resolved-ref: f8f4b492944fff4142c9cae15b97f273c6543607
       url: "https://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
-    version: "1.2.6"
+    version: "1.2.8"
   ive_flutter_core_mobile:
     dependency: "direct main"
     description:
       path: "."
-      ref: "0cfa988533a92931b524a20c8f33321d6fdff4e0"
-      resolved-ref: "0cfa988533a92931b524a20c8f33321d6fdff4e0"
+      ref: b2e6621515de5e19b834b68257777c502ec33c41
+      resolved-ref: b2e6621515de5e19b834b68257777c502ec33c41
       url: "https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git"
     source: git
-    version: "1.2.6"
+    version: "1.2.8"
   js:
     dependency: transitive
     description:
@@ -1619,10 +1627,10 @@ packages:
     dependency: "direct main"
     description:
       name: shared_preferences
-      sha256: "846849e3e9b68f3ef4b60c60cf4b3e02e9321bc7f4d8c4692cf87ffa82fc8a3a"
+      sha256: "6e8bf70b7fef813df4e9a36f658ac46d107db4b4cfe1048b477d4e453a8159f5"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.2"
+    version: "2.5.3"
   shared_preferences_android:
     dependency: transitive
     description:
@@ -2174,4 +2182,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.7.0 <4.0.0"
-  flutter: ">=3.29.0"
+  flutter: ">=3.29.2"

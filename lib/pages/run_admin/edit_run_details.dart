@@ -1,4 +1,4 @@
-import 'package:date_time_picker/date_time_picker.dart';
+import 'package:date_time_picker_plus/date_time_picker.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -19,7 +19,8 @@ class EditRunDetailsPage extends StatefulWidget {
   EditRunDetailsPageState createState() => EditRunDetailsPageState();
 }
 
-class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class EditRunDetailsPageState extends State<EditRunDetailsPage>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final List<Tab> _tabs = <Tab>[];
 
   late TabController _tabController;
@@ -47,15 +48,23 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
   final FocusNode _focusNodeLocationOneLineDesc = FocusNode();
   final FocusNode _focusNodeHares = FocusNode();
 
-  final TextEditingController _eventDatetimeController = TextEditingController();
+  final TextEditingController _eventDatetimeController =
+      TextEditingController();
   final TextEditingController _eventNameController = TextEditingController();
-  final TextEditingController _eventDescriptionController = TextEditingController();
-  final TextEditingController _locationOneLineDescController = TextEditingController();
-  final TextEditingController _absoluteEventNumberController = TextEditingController();
-  final TextEditingController _eventPriceForMembersController = TextEditingController();
-  final TextEditingController _eventPriceForNonMembersController = TextEditingController();
-  final TextEditingController _eventPriceForExtrasController = TextEditingController();
-  final TextEditingController _extrasDescriptionController = TextEditingController();
+  final TextEditingController _eventDescriptionController =
+      TextEditingController();
+  final TextEditingController _locationOneLineDescController =
+      TextEditingController();
+  final TextEditingController _absoluteEventNumberController =
+      TextEditingController();
+  final TextEditingController _eventPriceForMembersController =
+      TextEditingController();
+  final TextEditingController _eventPriceForNonMembersController =
+      TextEditingController();
+  final TextEditingController _eventPriceForExtrasController =
+      TextEditingController();
+  final TextEditingController _extrasDescriptionController =
+      TextEditingController();
   final TextEditingController _haresController = TextEditingController();
 
   bool _isVisible = true;
@@ -102,16 +111,30 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
   void _setTextFields() {
     _eventNameController.text = _eventAggregate.event.eventName;
-    _eventDescriptionController.text = _eventAggregate.event.eventDescription ?? '';
-    _eventDatetimeController.text = _eventAggregate.event.eventStartDatetime.toString();
-    _locationOneLineDescController.text = _eventAggregate.event.locationOneLineDesc ?? '';
+    _eventDescriptionController.text =
+        _eventAggregate.event.eventDescription ?? '';
+    _eventDatetimeController.text =
+        _eventAggregate.event.eventStartDatetime.toString();
+    _locationOneLineDescController.text =
+        _eventAggregate.event.locationOneLineDesc ?? '';
     _haresController.text = _eventAggregate.event.hares ?? '';
 
-    _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
-    _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ?? '';
-    _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ?? '';
-    _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ?? '';
-    _extrasDescriptionController.text = _eventAggregate.event.extrasDescription ?? '';
+    _absoluteEventNumberController.text =
+        _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
+    _eventPriceForMembersController.text = _eventAggregate
+            .event.eventPriceForMembers
+            ?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ??
+        '';
+    _eventPriceForNonMembersController.text = _eventAggregate
+            .event.eventPriceForNonMembers
+            ?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ??
+        '';
+    _eventPriceForExtrasController.text = _eventAggregate
+            .event.eventPriceForExtras
+            ?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ??
+        '';
+    _extrasDescriptionController.text =
+        _eventAggregate.event.extrasDescription ?? '';
     _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
   }
 
@@ -191,7 +214,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
-                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                    labelPadding:
+                        const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
@@ -244,7 +268,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
     _mapCenter = latlng.LatLng(
       _eventAggregate.extensions.latitude ?? _eventAggregate.extensions.kenlLat,
-      _eventAggregate.extensions.longitude ?? _eventAggregate.extensions.kenlLon,
+      _eventAggregate.extensions.longitude ??
+          _eventAggregate.extensions.kenlLon,
     );
 
     _setTextFields();
@@ -313,7 +338,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
       final SnackBar snackBar = SnackBar(
         duration: const Duration(seconds: 3),
         content: Text(
-          _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
+          _eventAggregate.event.eventInboundIntegrationId >=
+                  integrationPlatformNames.length
               ? 'Run details being synced from external source'
               : 'Run details being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
           textAlign: TextAlign.center,
@@ -346,15 +372,26 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
           useFbRunDetails: 0,
           isCountedRun: _eventAggregate.event.isCountedRun == 1,
           kennelId: _eventAggregate.event.kennelId,
-          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForMembersController.text.replaceAll(',', '.')),
-          eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForNonMembersController.text.replaceAll(',', '.')),
-          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : double.tryParse(_eventPriceForExtrasController.text.replaceAll(',', '.')),
+          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
+              ? -2
+              : double.tryParse(
+                  _eventPriceForMembersController.text.replaceAll(',', '.')),
+          eventPriceForNonMembers: _eventPriceForNonMembersController
+                  .text.isEmpty
+              ? -2
+              : double.tryParse(
+                  _eventPriceForNonMembersController.text.replaceAll(',', '.')),
+          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
+              ? -2
+              : double.tryParse(
+                  _eventPriceForExtrasController.text.replaceAll(',', '.')),
         );
 
         _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
       }
     } else {
-      if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
+      if ((_eventAggregate.event.eventId.isEmpty) ||
+          (_eventAggregate.event.eventId == GUID_EMPTY)) {
         await Utilities.showAlert(
           'Please save Details first',
           'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.',
@@ -371,13 +408,27 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
           final EventsService nSvc = EventsService();
           final String eventId = await nSvc.addEditEvent(
             eventId: _eventAggregate.event.eventId,
-            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForMembersController.text.replaceAll(',', '.')),
-            eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty ? -2 : double.tryParse(_eventPriceForNonMembersController.text.replaceAll(',', '.')),
+            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
+                ? -2
+                : double.tryParse(
+                    _eventPriceForMembersController.text.replaceAll(',', '.')),
+            eventPriceForNonMembers:
+                _eventPriceForNonMembersController.text.isEmpty
+                    ? -2
+                    : double.tryParse(_eventPriceForNonMembersController.text
+                        .replaceAll(',', '.')),
             // note for "auto" the value we send to the server is '0' because this will
             // remove any previous absoluteEventNumber that is stored there
-            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty ? 0 : int.tryParse(_absoluteEventNumberController.text),
-            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty ? -2 : double.tryParse(_eventPriceForExtrasController.text.replaceAll(',', '.')),
-            extrasDescription: _extrasDescriptionController.text.isEmpty ? '<none>' : _extrasDescriptionController.text,
+            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty
+                ? 0
+                : int.tryParse(_absoluteEventNumberController.text),
+            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
+                ? -2
+                : double.tryParse(
+                    _eventPriceForExtrasController.text.replaceAll(',', '.')),
+            extrasDescription: _extrasDescriptionController.text.isEmpty
+                ? '<none>'
+                : _extrasDescriptionController.text,
             hares: _haresController.text,
             isCountedRun: _isCountedRun,
             isVisible: _isVisible,
@@ -400,7 +451,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
             );
 
             if (!mounted) return;
-            ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
+            ScaffoldMessenger.of(navigatorKey.currentContext!)
+                .showSnackBar(snackBar);
           });
         }
       }
@@ -472,15 +524,19 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   children: <Widget>[
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
-                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      padding: const EdgeInsets.only(
+                          top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
-                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10.0)),
                       ),
                       child: Text(
                           _eventAggregate.event.useFbRunDetails == 1
-                              ? _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
+                              ? _eventAggregate
+                                          .event.eventInboundIntegrationId >=
+                                      integrationPlatformNames.length
                                   ? 'Run data from external source'
                                   : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                               : 'Run data from Harrier Central',
@@ -488,8 +544,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           style: ts_headingBlack),
                     ),
                     Container(
-                      color: _focusNodeEventName.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      color: _focusNodeEventName.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
+                      margin: const EdgeInsets.only(
+                          top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
                       child: TextFormField(
                         focusNode: _focusNodeEventName,
                         controller: _eventNameController,
@@ -521,8 +580,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      color: _focusNodeEventDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      color: _focusNodeEventDescription.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       child: TextFormField(
                         onChanged: (String text) {
                           //widget.EventDescription = text;
@@ -553,8 +615,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      color: _focusNodeLocationOneLineDesc.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      color: _focusNodeLocationOneLineDesc.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
+                      margin: const EdgeInsets.only(
+                          top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
                       child: TextFormField(
                         focusNode: _focusNodeLocationOneLineDesc,
                         controller: _locationOneLineDescController,
@@ -586,8 +651,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      color: _focusNodeDatetime.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      color: _focusNodeDatetime.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       // child: OmniDateTimePicker(
                       //   onDateTimeChanged: (value) {},
                       // ),
@@ -618,15 +686,19 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     ),
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
-                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      padding: const EdgeInsets.only(
+                          top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
-                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10.0)),
                       ),
                       child: Text(
                           _eventAggregate.event.useFbRunDetails == 1
-                              ? _eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length
+                              ? _eventAggregate
+                                          .event.eventInboundIntegrationId >=
+                                      integrationPlatformNames.length
                                   ? 'Run data from external source'
                                   : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                               : 'Run data from Harrier Central',
@@ -638,12 +710,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         ? const SizedBox(
                             height: 70.0,
                             width: 70.0,
-                            child: HcCircularProgressIndicator(key: Key('112096562')),
+                            child: HcCircularProgressIndicator(
+                                key: Key('112096562')),
                           )
                         : ElevatedButton(
-                            child: Text(widget.isNewRun ? 'Next' : 'Save changes to Harrier Central', style: ts_button),
+                            child: Text(
+                                widget.isNewRun
+                                    ? 'Next'
+                                    : 'Save changes to Harrier Central',
+                                style: ts_button),
                             onPressed: () async {
-                              if (_detailsFormKey.currentState?.validate() ?? false) {
+                              if (_detailsFormKey.currentState?.validate() ??
+                                  false) {
                                 await _updateRunDetails(true);
 
                                 if (widget.isNewRun) {
@@ -662,16 +740,20 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                   );
 
                                   if (!mounted) return;
-                                  ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
+                                  ScaffoldMessenger.of(
+                                          navigatorKey.currentContext!)
+                                      .showSnackBar(snackBar);
                                 }
-                                await Future<void>.delayed(const Duration(milliseconds: 500));
+                                await Future<void>.delayed(
+                                    const Duration(milliseconds: 500));
                                 setState(() {
                                   _isUpdating = false;
                                 });
                               }
                             },
                           ),
-                    if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                    if ((_eventAggregate.event.eventFacebookId != null) &&
+                        (!_isUpdating)) ...<Widget>[
                       ElevatedButton(
                         child: Text(
                             'Copy data from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
@@ -715,12 +797,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                        minimumSize: const Size(double.infinity,
+                            40), // double.infinity is the width and 30 is the height
                       ),
                       child: Text('Use this image', style: ts_button),
                       onPressed: () async {
-                        if ((_eventAggregate.event.eventId.isNotEmpty) && (_eventAggregate.event.eventId != GUID_EMPTY)) {
-                          final String fileName = _upload(snapshot.data!, _eventAggregate.event.eventId);
+                        if ((_eventAggregate.event.eventId.isNotEmpty) &&
+                            (_eventAggregate.event.eventId != GUID_EMPTY)) {
+                          final String fileName = _upload(
+                              snapshot.data!, _eventAggregate.event.eventId);
 
                           final EventsService nSvc = EventsService();
                           final String eventId = await nSvc.addEditEvent(
@@ -729,13 +814,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             useFbImage: 0,
                           );
 
-                          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                          _eventAggregate =
+                              await widget.getUpdatedEventAggregate(eventId);
 
                           if (widget.isNewRun) {
                             setState(() {
                               _isUpdating = false;
                             });
-                            await Future<void>.delayed(const Duration(milliseconds: 1000));
+                            await Future<void>.delayed(
+                                const Duration(milliseconds: 1000));
                             _tabController.animateTo(3);
                           } else {
                             setState(() {
@@ -753,7 +840,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             );
 
                             if (!mounted) return;
-                            ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
+                            ScaffoldMessenger.of(navigatorKey.currentContext!)
+                                .showSnackBar(snackBar);
                           }
                         }
                       }),
@@ -763,7 +851,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                      minimumSize: const Size(double.infinity,
+                          40), // double.infinity is the width and 30 is the height
                     ),
                     child: Text('Select again from gallery', style: ts_button),
                     onPressed: () {
@@ -771,14 +860,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     },
                   ),
                 ),
-                if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                if ((_eventAggregate.event.eventFacebookId != null) &&
+                    (!_isUpdating)) ...<Widget>[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                        minimumSize: const Size(double.infinity,
+                            40), // double.infinity is the width and 30 is the height
                       ),
-                      child: Text('Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}', style: ts_button),
+                      child: Text(
+                          'Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                          style: ts_button),
                       onPressed: () async {
                         setState(() {
                           _isUpdating = true;
@@ -789,7 +882,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           useFbImage: 1,
                         );
 
-                        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                        _eventAggregate =
+                            await widget.getUpdatedEventAggregate(eventId);
                         setState(() {
                           _isUpdating = false;
                           final SnackBar snackBar = SnackBar(
@@ -812,7 +906,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                      minimumSize: const Size(double.infinity,
+                          40), // double.infinity is the width and 30 is the height
                     ),
                     child: Text('Use original image', style: ts_button),
                     onPressed: () {
@@ -854,27 +949,39 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 ),
                                 const SizedBox(height: 20),
                                 Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: <Widget>[
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20.0),
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                                          minimumSize: const Size(
+                                              double.infinity,
+                                              40), // double.infinity is the width and 30 is the height
                                         ),
-                                        child: Text('Select from gallery', style: ts_button),
+                                        child: Text('Select from gallery',
+                                            style: ts_button),
                                         onPressed: () {
-                                          _getImageFromGallery(ImageSource.gallery);
+                                          _getImageFromGallery(
+                                              ImageSource.gallery);
                                         },
                                       ),
                                     ),
-                                    if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                                    if ((_eventAggregate
+                                                .event.eventFacebookId !=
+                                            null) &&
+                                        (!_isUpdating)) ...<Widget>[
                                       const SizedBox(height: 10),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20.0),
                                         child: ElevatedButton(
                                           style: ElevatedButton.styleFrom(
-                                            minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                                            minimumSize: const Size(
+                                                double.infinity,
+                                                40), // double.infinity is the width and 30 is the height
                                           ),
                                           child: Text(
                                               'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
@@ -883,17 +990,24 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                             setState(() {
                                               _isUpdating = true;
                                             });
-                                            final EventsService nSvc = EventsService();
-                                            final String eventId = await nSvc.addEditEvent(
-                                              eventId: _eventAggregate.event.eventId,
+                                            final EventsService nSvc =
+                                                EventsService();
+                                            final String eventId =
+                                                await nSvc.addEditEvent(
+                                              eventId:
+                                                  _eventAggregate.event.eventId,
                                               useFbImage: 1,
                                             );
 
-                                            _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                            _eventAggregate = await widget
+                                                .getUpdatedEventAggregate(
+                                                    eventId);
                                             setState(() {
                                               _isUpdating = false;
-                                              final SnackBar snackBar = SnackBar(
-                                                duration: const Duration(seconds: 3),
+                                              final SnackBar snackBar =
+                                                  SnackBar(
+                                                duration:
+                                                    const Duration(seconds: 3),
                                                 content: Text(
                                                   'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                                                   textAlign: TextAlign.center,
@@ -901,7 +1015,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                                 ),
                                                 backgroundColor: hc_blue,
                                               );
-                                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(snackBar);
                                             });
                                           },
                                         ),
@@ -919,15 +1034,19 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                         Text(
                           'No image provided',
                           textAlign: TextAlign.center,
-                          style: ts_headingVeryLarge.copyWith(color: Colors.black),
+                          style:
+                              ts_headingVeryLarge.copyWith(color: Colors.black),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 50.0),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                              minimumSize: const Size(double.infinity,
+                                  40), // double.infinity is the width and 30 is the height
                             ),
-                            child: Text('Select from gallery', style: ts_button),
+                            child:
+                                Text('Select from gallery', style: ts_button),
                             onPressed: () {
                               _getImageFromGallery(ImageSource.gallery);
                             },
@@ -962,7 +1081,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
     final Request request = Request('PUT', uri);
 
-    final Map<String, String> headers = <String, String>{'content-type': 'image/jpeg', 'x-ms-blob-type': 'BlockBlob'};
+    final Map<String, String> headers = <String, String>{
+      'content-type': 'image/jpeg',
+      'x-ms-blob-type': 'BlockBlob'
+    };
 
     request.headers.addAll(headers);
 
@@ -975,7 +1097,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
   }
 
   Future<void> _getImageFromGallery(ImageSource source) async {
-    if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
+    if ((_eventAggregate.event.eventId.isEmpty) ||
+        (_eventAggregate.event.eventId == GUID_EMPTY)) {
       await Utilities.showAlert(
         'Please save Details first',
         'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.',
@@ -1026,9 +1149,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
               //   child:
 
               MyFlutterMap(
-                _eventAggregate.extensions.latitude == null ? null : latlng.LatLng(_eventAggregate.extensions.latitude!, _eventAggregate.extensions.longitude!),
+                _eventAggregate.extensions.latitude == null
+                    ? null
+                    : latlng.LatLng(_eventAggregate.extensions.latitude!,
+                        _eventAggregate.extensions.longitude!),
                 _mapCenter,
-                latlng.LatLng(_eventAggregate.extensions.kenlLat, _eventAggregate.extensions.kenlLon),
+                latlng.LatLng(_eventAggregate.extensions.kenlLat,
+                    _eventAggregate.extensions.kenlLon),
                 1.0,
                 18.0,
                 14.0,
@@ -1038,11 +1165,14 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   _mapCenter = newPosition;
                 },
               ),
-              if ((_mapCenter.latitude == CLEAR_LATLONG) || (_mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
+              if ((_mapCenter.latitude == CLEAR_LATLONG) ||
+                  (_mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
                 GestureDetector(
                   onTapDown: (dynamic tapDownDetails) {
                     setState(() {
-                      _mapCenter = latlng.LatLng(_eventAggregate.extensions.kenlLat, _eventAggregate.extensions.kenlLon);
+                      _mapCenter = latlng.LatLng(
+                          _eventAggregate.extensions.kenlLat,
+                          _eventAggregate.extensions.kenlLon);
                     });
                   },
                   child: Container(color: Colors.black54),
@@ -1059,10 +1189,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   ),
                 ),
               ],
-              if ((_mapCenter.latitude != CLEAR_LATLONG) || (_mapCenter.longitude != CLEAR_LATLONG)) ...<Widget>[
+              if ((_mapCenter.latitude != CLEAR_LATLONG) ||
+                  (_mapCenter.longitude != CLEAR_LATLONG)) ...<Widget>[
                 IgnorePointer(
                   ignoring: true,
-                  child: Image.asset('images/other/map_center_target.png', height: 300.0, width: 300.0),
+                  child: Image.asset('images/other/map_center_target.png',
+                      height: 300.0, width: 300.0),
                 ),
               ],
 
@@ -1092,37 +1224,43 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _mapCenter = const latlng.LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
+                      _mapCenter =
+                          const latlng.LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
                     });
                   },
                   child: SizedBox(
                     height: 50.0,
                     width: 50.0,
-                    child: Image.asset('images/other/set_map_to_no_location.png'),
+                    child:
+                        Image.asset('images/other/set_map_to_no_location.png'),
                   ),
                 ),
               ),
 
-              if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) ...<Widget>[
+              if ((G0<DeviceInfo>().deviceLat != null) &&
+                  (G0<DeviceInfo>().deviceLon != null)) ...<Widget>[
                 Positioned(
                   right: 70.0,
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!);
+                        _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat!,
+                            G0<DeviceInfo>().deviceLon!);
                       });
                     },
                     child: SizedBox(
                       height: 50.0,
                       width: 50.0,
-                      child: Image.asset('images/other/set_map_to_current_location.png'),
+                      child: Image.asset(
+                          'images/other/set_map_to_current_location.png'),
                     ),
                   ),
                 ),
               ],
 
-              if (_eventAggregate.extensions.isMapAndDistanceValid ?? false) ...<Widget>[
+              if (_eventAggregate.extensions.isMapAndDistanceValid ??
+                  false) ...<Widget>[
                 Positioned(
                   right: 130.0,
                   top: 10.0,
@@ -1138,7 +1276,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     child: SizedBox(
                       height: 50.0,
                       width: 50.0,
-                      child: Image.asset('images/other/set_map_to_event_location.png'),
+                      child: Image.asset(
+                          'images/other/set_map_to_event_location.png'),
                     ),
                   ),
                 ),
@@ -1155,7 +1294,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   child: SizedBox(
                     height: 50.0,
                     width: 50.0,
-                    child: Image.asset(_trueNorthLock ? 'images/other/set_map_to_true_north_lock.png' : 'images/other/set_map_rotation_enabled.png'),
+                    child: Image.asset(_trueNorthLock
+                        ? 'images/other/set_map_to_true_north_lock.png'
+                        : 'images/other/set_map_rotation_enabled.png'),
                   ),
                 ),
               ),
@@ -1167,7 +1308,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     ? const SizedBox(
                         height: 70.0,
                         width: 70.0,
-                        child: HcCircularProgressIndicator(key: Key('655931031')),
+                        child:
+                            HcCircularProgressIndicator(key: Key('655931031')),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1188,11 +1330,16 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           ],
                           ElevatedButton(
                             child: Text(
-                              ((_mapCenter.latitude == CLEAR_LATLONG) && (_mapCenter.longitude == CLEAR_LATLONG)) ? 'Set no location' : 'Set Location',
+                              ((_mapCenter.latitude == CLEAR_LATLONG) &&
+                                      (_mapCenter.longitude == CLEAR_LATLONG))
+                                  ? 'Set no location'
+                                  : 'Set Location',
                               style: ts_button,
                             ),
                             onPressed: () async {
-                              if ((_eventAggregate.event.eventId.isEmpty) || (_eventAggregate.event.eventId == GUID_EMPTY)) {
+                              if ((_eventAggregate.event.eventId.isEmpty) ||
+                                  (_eventAggregate.event.eventId ==
+                                      GUID_EMPTY)) {
                                 await Utilities.showAlert(
                                   'Please save details first',
                                   'When creating a new event, please save the information on the Details tab before saving the location',
@@ -1206,8 +1353,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 });
                                 final EventsService nSvc = EventsService();
                                 // check to see if "no location" is set. If so, don't overwrite it
-                                if ((_mapCenter.latitude != CLEAR_LATLONG) && (_mapCenter.longitude != CLEAR_LATLONG) && (_mapKey.currentState?.mapController != null)) {
-                                  _mapCenter = _mapKey.currentState!.mapController.camera.center;
+                                if ((_mapCenter.latitude != CLEAR_LATLONG) &&
+                                    (_mapCenter.longitude != CLEAR_LATLONG) &&
+                                    (_mapKey.currentState?.mapController !=
+                                        null)) {
+                                  _mapCenter = _mapKey.currentState!
+                                      .mapController.camera.center;
                                 }
                                 final String eventId = await nSvc.addEditEvent(
                                   eventId: _eventAggregate.event.eventId,
@@ -1215,13 +1366,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                   lon: _mapCenter.longitude,
                                   useFbLatLon: 0,
                                 );
-                                _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                _eventAggregate = await widget
+                                    .getUpdatedEventAggregate(eventId);
 
                                 if (widget.isNewRun) {
                                   setState(() {
                                     _isUpdating = false;
                                   });
-                                  await Future<void>.delayed(const Duration(milliseconds: 1000));
+                                  await Future<void>.delayed(
+                                      const Duration(milliseconds: 1000));
                                   _tabController.animateTo(2);
                                 } else {
                                   final SnackBar snackBar = SnackBar(
@@ -1235,10 +1388,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                   );
 
                                   if (!mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
                                 }
 
-                                await Future<void>.delayed(const Duration(milliseconds: 500));
+                                await Future<void>.delayed(
+                                    const Duration(milliseconds: 500));
                                 setState(() {
                                   _isUpdating = false;
                                 });
@@ -1247,7 +1402,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               }
                             },
                           ),
-                          if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                          if ((_eventAggregate.event.eventFacebookId != null) &&
+                              (!_isUpdating)) ...<Widget>[
                             const SizedBox(width: 20.0),
                             Expanded(
                               child: ElevatedButton(
@@ -1263,14 +1419,19 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                     _isUpdating = true;
                                   });
                                   final EventsService nSvc = EventsService();
-                                  final String eventId = await nSvc.addEditEvent(
+                                  final String eventId =
+                                      await nSvc.addEditEvent(
                                     eventId: _eventAggregate.event.eventId,
                                     useFbLatLon: 1,
                                   );
 
-                                  _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                  _eventAggregate = await widget
+                                      .getUpdatedEventAggregate(eventId);
                                   setState(() {
-                                    if ((_eventAggregate.extensions.latitude == null) || (_eventAggregate.extensions.longitude == null)) {
+                                    if ((_eventAggregate.extensions.latitude ==
+                                            null) ||
+                                        (_eventAggregate.extensions.longitude ==
+                                            null)) {
                                       _mapCenter = latlng.LatLng(
                                         _eventAggregate.extensions.kenlLat,
                                         _eventAggregate.extensions.kenlLon,
@@ -1291,7 +1452,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                       ),
                                       backgroundColor: hc_blue,
                                     );
-                                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(snackBar);
                                   });
                                 },
                               ),
@@ -1330,24 +1492,31 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                   children: <Widget>[
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
-                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                      padding: const EdgeInsets.only(
+                          top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
-                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10.0)),
                       ),
-                      child: Text('Run data from Harrier Central', textAlign: TextAlign.center, style: ts_headingBlack),
+                      child: Text('Run data from Harrier Central',
+                          textAlign: TextAlign.center, style: ts_headingBlack),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      margin: const EdgeInsets.only(
+                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Enter hares here. These names will be presented in addition to anyone who has RSVPed as a Hare using the app',
                         style: ts_mediumBlack,
                       ),
                     ),
                     Container(
-                      color: _focusNodeHares.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      color: _focusNodeHares.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       child: TextFormField(
                         // onChanged: (String text) {
                         //   if ((text == null) || (text.isEmpty)) {
@@ -1383,15 +1552,19 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      margin: const EdgeInsets.only(
+                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Harrier Central automatically numbers runs. But if there is a reason to override this, you can manually enter a run number here.',
                         style: ts_mediumBlack,
                       ),
                     ),
                     Container(
-                      color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      color: _focusNodeAbsoluteEventNumber.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       child: TextFormField(
                         // onChanged: (String text) {
                         //   if ((text == null) || (text.isEmpty)) {
@@ -1427,21 +1600,25 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      margin: const EdgeInsets.only(
+                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Enter in the hash cash amount here if it is different than the normal hash cash value.',
                         style: ts_mediumBlack,
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              color: _focusNodeEventPriceForMembers.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1455,8 +1632,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 maxLines: 1,
                                 focusNode: _focusNodeEventPriceForMembers,
                                 controller: _eventPriceForMembersController,
-                                keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
-                                textCapitalization: TextCapitalization.sentences,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        signed: false, decimal: true),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Member price',
@@ -1474,7 +1654,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForNonMembers.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              color: _focusNodeEventPriceForNonMembers.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1489,8 +1671,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 maxLines: 1,
                                 focusNode: _focusNodeEventPriceForNonMembers,
                                 controller: _eventPriceForNonMembersController,
-                                keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
-                                textCapitalization: TextCapitalization.sentences,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        signed: false, decimal: true),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Non-member price',
@@ -1509,21 +1694,25 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      margin: const EdgeInsets.only(
+                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'If you have extra charges associated with your run, such as for dinner, you can put in the price and description here.',
                         style: ts_mediumBlack,
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForExtras.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              color: _focusNodeEventPriceForExtras.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1537,8 +1726,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 maxLines: 1,
                                 focusNode: _focusNodeEventPriceForExtras,
                                 controller: _eventPriceForExtrasController,
-                                keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: true),
-                                textCapitalization: TextCapitalization.sentences,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        signed: false, decimal: true),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Price for extras',
@@ -1556,7 +1748,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeExtrasDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                              color: _focusNodeExtrasDescription.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1571,7 +1765,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                 focusNode: _focusNodeExtrasDescription,
                                 controller: _extrasDescriptionController,
                                 keyboardType: TextInputType.text,
-                                textCapitalization: TextCapitalization.sentences,
+                                textCapitalization:
+                                    TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
                                   labelText: 'Description',
@@ -1591,7 +1786,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     ),
                     Container(
                       //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey.shade500),
@@ -1601,7 +1797,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       child: Column(
                         children: <Widget>[
                           CheckboxFormField(
-                            title: Text('Show run in Harrier Central', style: ts_regularBlack),
+                            title: Text('Show run in Harrier Central',
+                                style: ts_regularBlack),
                             validator: (bool? result) {
                               _isVisible = result ?? false;
                               return null;
@@ -1609,16 +1806,24 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             initialValue: _eventAggregate.event.isVisible == 1,
                           ),
                           CheckboxFormField(
-                            title: Text('Count this run', style: ts_regularBlack),
-                            initialValue: _eventAggregate.event.isCountedRun == 1,
+                            title:
+                                Text('Count this run', style: ts_regularBlack),
+                            initialValue:
+                                _eventAggregate.event.isCountedRun == 1,
                             validator: (bool? result) {
                               _isCountedRun = result ?? false;
                               return null;
                             },
                           ),
                           CheckboxFormField(
-                            title: Text('Users can edit run history', style: ts_regularBlack),
-                            initialValue: _eventAggregate.event.canEditRunAttendence == null ? false : _eventAggregate.event.canEditRunAttendence == 1,
+                            title: Text('Users can edit run history',
+                                style: ts_regularBlack),
+                            initialValue: _eventAggregate
+                                        .event.canEditRunAttendence ==
+                                    null
+                                ? false
+                                : _eventAggregate.event.canEditRunAttendence ==
+                                    1,
                             tristate: true,
                             validator: (bool? result) {
                               if (result == null) {
@@ -1631,8 +1836,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             },
                           ),
                           CheckboxFormField(
-                            title: Text('Promote this run', style: ts_regularBlack),
-                            initialValue: _eventAggregate.event.isPromotedEvent == 1,
+                            title: Text('Promote this run',
+                                style: ts_regularBlack),
+                            initialValue:
+                                _eventAggregate.event.isPromotedEvent == 1,
                             validator: (bool? result) {
                               _isPromotedEvent = result ?? false;
                               return null;
@@ -1642,7 +1849,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                      margin: const EdgeInsets.only(
+                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                       child: Text(
                         'Let Hashers around the corner or around the world know about your run if it is interesting to them! By telling us the geographic scope of your run it will help us do a better job promoting it for you!',
                         style: ts_mediumBlack,
@@ -1650,7 +1858,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                     ),
                     Container(
                       //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
                       decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey.shade500),
@@ -1660,7 +1869,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       child: Column(
                         children: <Widget>[
                           ListTile(
-                            title: Text('Local (normal run)', style: ts_regularBlack),
+                            title: Text('Local (normal run)',
+                                style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 1,
                               groupValue: _eventGeographicScope,
@@ -1672,7 +1882,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: Text('Local (special event)', style: ts_regularBlack),
+                            title: Text('Local (special event)',
+                                style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 2,
                               groupValue: _eventGeographicScope,
@@ -1684,7 +1895,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: Text('Regional / State', style: ts_regularBlack),
+                            title: Text('Regional / State',
+                                style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 3,
                               groupValue: _eventGeographicScope,
@@ -1696,7 +1908,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: Text('Nash Hash (national)', style: ts_regularBlack),
+                            title: Text('Nash Hash (national)',
+                                style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 4,
                               groupValue: _eventGeographicScope,
@@ -1708,7 +1921,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: Text('Interhash / Continent', style: ts_regularBlack),
+                            title: Text('Interhash / Continent',
+                                style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 5,
                               groupValue: _eventGeographicScope,
@@ -1720,7 +1934,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: Text('World Interhash / Global', style: ts_regularBlack),
+                            title: Text('World Interhash / Global',
+                                style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 6,
                               groupValue: _eventGeographicScope,
@@ -1744,7 +1959,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                             ),
                           ),
                           ListTile(
-                            title: Text('Not specified', style: ts_regularBlack),
+                            title:
+                                Text('Not specified', style: ts_regularBlack),
                             leading: Radio<int>(
                               value: 0,
                               groupValue: _eventGeographicScope,
@@ -1759,7 +1975,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
+                      margin: const EdgeInsets.only(
+                          top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         //crossAxisAlignment: CrossAxisAlignment.center,
@@ -1768,12 +1985,17 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                               ? const SizedBox(
                                   height: 70.0,
                                   width: 70.0,
-                                  child: HcCircularProgressIndicator(key: Key('3444910299')),
+                                  child: HcCircularProgressIndicator(
+                                      key: Key('3444910299')),
                                 )
                               : SizedBox(
                                   width: 300.0,
                                   child: ElevatedButton(
-                                    child: Text(widget.isNewRun ? 'Finish' : 'Save Other Information', style: ts_button),
+                                    child: Text(
+                                        widget.isNewRun
+                                            ? 'Finish'
+                                            : 'Save Other Information',
+                                        style: ts_button),
                                     onPressed: () async {
                                       setState(() {
                                         _isUpdating = true;
@@ -1782,7 +2004,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
 
                                       if (widget.isNewRun) {
                                         if (!mounted) return;
-                                        Navigator.of(navigatorKey.currentContext!).pop();
+                                        Navigator.of(
+                                                navigatorKey.currentContext!)
+                                            .pop();
                                       } else {
                                         final SnackBar snackBar = SnackBar(
                                           duration: const Duration(seconds: 3),
@@ -1795,7 +2019,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKe
                                         );
 
                                         if (!mounted) return;
-                                        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
+                                        ScaffoldMessenger.of(
+                                                navigatorKey.currentContext!)
+                                            .showSnackBar(snackBar);
                                       }
                                       setState(() {
                                         _isUpdating = false;
@@ -1851,7 +2077,8 @@ class CheckboxFormField extends FormField<bool> {
                 ? Builder(
                     builder: (BuildContext context) => Text(
                       state.errorText ?? '',
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   )
                 : null,

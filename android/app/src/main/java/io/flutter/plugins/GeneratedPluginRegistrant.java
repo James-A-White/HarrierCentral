@@ -51,6 +51,11 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin flutter_image_compress_common, com.fluttercandies.flutter_image_compress.ImageCompressPlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.mastertipsy.flutter_localization.FlutterLocalizationPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin flutter_localization, com.mastertipsy.flutter_localization.FlutterLocalizationPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new net.jonhanson.flutter_native_splash.FlutterNativeSplashPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin flutter_native_splash, net.jonhanson.flutter_native_splash.FlutterNativeSplashPlugin", e);

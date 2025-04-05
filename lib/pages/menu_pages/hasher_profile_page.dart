@@ -398,7 +398,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         // edge cases where more than one Hasher record
         // is returned.
         for (int i = 0; i < jsonResult.length; i++) {
-          if (jsonResult[i][0].containsKey('hasherId')) {
+          if ((jsonResult[i].length > 0) &&
+              (jsonResult[i][0].containsKey('hasherId'))) {
             for (int j = 0; j < jsonResult[i].length; j++) {
               if ((jsonResult[i][j]['firstName'].toString().toLowerCase() ==
                       (_hasher.firstName ?? '').toLowerCase()) &&

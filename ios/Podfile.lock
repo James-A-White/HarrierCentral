@@ -45,6 +45,8 @@ PODS:
     - Mantle
     - SDWebImage
     - SDWebImageWebPCoder
+  - flutter_localization (0.0.1):
+    - Flutter
   - flutter_native_splash (2.4.3):
     - Flutter
   - flutter_statusbarcolor_ns (0.0.1):
@@ -152,6 +154,7 @@ DEPENDENCIES:
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
+  - flutter_localization (from `.symlinks/plugins/flutter_localization/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - flutter_statusbarcolor_ns (from `.symlinks/plugins/flutter_statusbarcolor_ns/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
@@ -205,6 +208,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_image_compress_common:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
+  flutter_localization:
+    :path: ".symlinks/plugins/flutter_localization/ios"
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
   flutter_statusbarcolor_ns:
@@ -254,6 +259,7 @@ SPEC CHECKSUMS:
   FirebaseMessaging: 487b634ccdf6f7b7ff180fdcb2a9935490f764e8
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_image_compress_common: ec1d45c362c9d30a3f6a0426c297f47c52007e3e
+  flutter_localization: f43b18844a2b3d2c71fd64f04ffd6b1e64dd54d4
   flutter_native_splash: df59bb2e1421aa0282cb2e95618af4dcb0c56c29
   flutter_statusbarcolor_ns: 68a360889d88d7915ae524e422aeab62e4063804
   geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd
