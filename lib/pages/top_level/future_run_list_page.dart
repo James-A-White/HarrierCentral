@@ -1,203 +1,41 @@
 import 'package:harrier_central/imports.dart';
+import 'package:get/get.dart';
 
-final GlobalKey<FutureRunListPageState> futureRunsListPageKey =
-    GlobalKey<FutureRunListPageState>();
+class FutureRunsListPage extends StatelessWidget {
+  FutureRunsListPage() : super(key: UniqueKey());
 
-class FutureRunsListPage extends StatefulWidget {
-  FutureRunsListPage() : super(key: futureRunsListPageKey);
+  // Initialize the controller with the provided arguments
+  final FutureRunListPageController controller = Get.put(
+    FutureRunListPageController(),
+    // permanent: true,
+  );
 
-  @override
-  State<FutureRunsListPage> createState() => FutureRunListPageState();
-}
-
-class FutureRunListPageState extends State<FutureRunsListPage> {
-  int pageIndex = 1;
-  List<dynamic>? _allRuns;
-  List<dynamic>? _filteredRuns;
-
-  bool _showRsvpInstructions = false;
-
-  Map<String, EventChatSummary> chatSummaryMap = {};
-
-  final FocusNode _searchFocusNode = FocusNode();
-  final TextEditingController _searchController = TextEditingController();
-  String _searchRunsText = '';
   final ScrollController _scrollController =
       ScrollController(initialScrollOffset: 100.0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _allRuns == null
-          ? const HcCircularProgressIndicator(key: Key('16669020'))
-          : _buildListView(),
+      body: GetBuilder<FutureRunListPageController>(
+          id: 'runList',
+          builder: (listController) {
+            return listController.allRuns == null
+                ? HcCircularProgressIndicator(key: UniqueKey())
+                : _buildListView(listController);
+          }),
     );
   }
 
-  Future<void> forceRefreshFromTableExternal() async {
-    await _refreshFromTable(true);
-  }
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //       body: controller.allRuns == null
+  //           ? HcCircularProgressIndicator(key: UniqueKey())
+  //           : _buildListView(controller));
+  // }
 
-  Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
-    if (clearLocalTables) {
-      setState(() {
-        _allRuns = null;
-      });
-
-      String query =
-          'DELETE FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
-      try {
-        await G0<Database>().rawQuery(query);
-      } catch (e) {
-        //print(e);
-      }
-
-      query =
-          'DELETE FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)}';
-      try {
-        await G0<Database>().rawQuery(query);
-      } catch (e) {
-        //print(e);
-      }
-
-      query =
-          'DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}';
-      try {
-        await G0<Database>().rawQuery(query);
-      } catch (e) {
-        //print(e);
-      }
-    }
-
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable |
-              SyncUserDataService.flagNarrowEventsTable |
-              SyncUserDataService.flagKennelsTable |
-              SyncUserDataService.flagPaymentsTable,
-          false,
-          debugText: 'future_run_list_page: HEM, Events, Kennels',
-        );
-
-    await _refreshFromTable(true);
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('Events user data synchronized $resultStr');
-  }
-
-  StreamSubscription<RemoteMessage>? _fcmSubscription;
-  Map<String, int> thisEventChatCount = {};
-
-  @override
-  void dispose() {
-    _fcmSubscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    _fcmSubscription =
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final publicEventId = message.data['PublicEventId'] as String?;
-
-      if (publicEventId != null) {
-        thisEventChatCount[publicEventId] =
-            int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0;
-
-        final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-
-        thisEventChatCount[publicEventId] = thisEventChatCount[publicEventId]! -
-            (chatsCounts[publicEventId] ?? 0);
-
-        setState(() {});
-      }
-    });
-
-    IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
-    _searchController.text = '';
-    _searchRunsText = '';
-
-    Permission.location.isGranted.then((bool isGranted) {
-      setState(() {
-        G0<AppModel>().hasLocationPermissions = isGranted;
-      });
-    });
-
-    _refreshFromBackend().then((void _) {
-      _refreshFromTable(true).then((void _) {
-        _getEventChatMessageCounts().then((Map<String, EventChatSummary> csm) {
-          chatSummaryMap = csm;
-          FirebaseMessaging.instance
-              .getInitialMessage()
-              .then((RemoteMessage? msg) {
-            if (msg != null) {
-              // {UserId: b6bafd0d-5d2e-41cd-8495-811d551f01d0, UserPhoto: https://harriercentral.blob.core.windows.net/profile-photos/0CDBB109-215E-4B5F-A405-F6C9FBCB18EC_20230716214555_thumb.jpg, EventId: 39b17580-8d85-4677-9ec5-6244b4ddf2fb, MessageRelesabilityFlags: 63, MessageId: df1b2bc7-af77-4595-a9e5-96b111c377e6, UserDisplayName: Opee, Title: CH3 - Oxford Circus, Message: test}
-
-              String? eventId = msg.data['EventId']?.toString().toUpperCase();
-              if ((eventId != null) && (_allRuns != null)) {
-                dynamic runs = _allRuns!
-                    .where((dynamic a) =>
-                        a.event?.eventId?.toUpperCase() == eventId)
-                    .toList();
-
-                if ((runs != null) && (runs.length > 0)) {
-                  var run = runs[0];
-                  _openRun(
-                    run,
-                    openToChatTab: true,
-                  );
-                }
-              }
-            }
-            setState(() {});
-          });
-        });
-      });
-    });
-    super.initState();
-  }
-
-  Future<Map<String, EventChatSummary>> _getEventChatMessageCounts() async {
-    final hasherId = getStringPref(StringPrefsEnum.userId)!;
-    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-
-    final accessToken = Utilities.generateToken(
-      hasherId,
-      'hcapp_getEventMessageCounts',
-      paramString: deviceSecret,
-    );
-
-    final body = <String, dynamic>{
-      'queryType': 'getEventMessageCounts',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-    };
-
-    String responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
-
-    if (!responseBody.startsWith(ERROR_PREFIX)) {
-      final decoded = json.decode(responseBody) as List;
-      List<EventChatSummary> chatSummary =
-          decoded.map<List<EventChatSummary>>((innerList) {
-        return (innerList as List)
-            .map<EventChatSummary>((item) => EventChatSummary.fromJson(item))
-            .toList();
-      }).toList()[0];
-
-      final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-
-      Map<String, EventChatSummary> result = {};
-      for (var summary in chatSummary) {
-        result[summary.publicEventId] = EventChatSummary(
-          id: summary.id,
-          publicEventId: summary.publicEventId,
-          eventChatMessageCount: summary.eventChatMessageCount -
-              (chatsCounts[summary.publicEventId] ?? 0),
-        );
-      }
-
-      return result;
-    }
-    return {};
+  Future<void> refreshFromTableExternal() async {
+    await controller.refreshFromTable(true);
   }
 
   Widget _searchBar() {
@@ -211,10 +49,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           // Row(
           //   children: <Widget>[
           //     Checkbox(
-          //       value: _searchAllRuns,
+          //       value: _searchcontroller.allRuns,
           //       onChanged: (bool value) {
-          //         _searchAllRuns = !_searchAllRuns;
-          //         refreshFromTable(true).then((void _) {
+          //         _searchcontroller.allRuns = !_searchcontroller.allRuns;
+          //         controller.refreshFromTable(true).then((void _) {
           //           setState(() {});
           //         });
           //       },
@@ -238,13 +76,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                     child: TextField(
                       autocorrect: false,
                       onChanged: (String text) {
-                        setState(() {
-                          _searchRunsText = text;
-                          _filterRuns();
-                        });
+                        //setState(() {
+                        controller.searchRunsText = text;
+                        controller.filterRuns();
+                        //});
                       },
-                      focusNode: _searchFocusNode,
-                      controller: _searchController,
+                      focusNode: controller.searchFocusNode,
+                      controller: controller.searchController,
                       keyboardType: TextInputType.text,
                       style: ts_footnoteBlack,
                       decoration: InputDecoration(
@@ -270,11 +108,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                           style: ts_headingBlack.copyWith(
                               color: Colors.grey.shade700)),
                       onPressed: () {
-                        _searchController.text = '';
-                        _searchRunsText = '';
-                        setState(() {
-                          _filterRuns();
-                        });
+                        controller.searchController.text = '';
+                        controller.searchRunsText = '';
+                        //setState(() {
+                        controller.filterRuns();
+                        //});
                       },
                     ),
                   ),
@@ -287,116 +125,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  Future<void> _refreshFromTable(bool forceRefresh) async {
-    if (forceRefresh || (_allRuns == null) || (_allRuns!.isEmpty)) {
-      _allRuns = await QueryRuns.getRunDetailsAggregates(true);
-      _filterRuns();
-
-      setState(() {});
-    }
-    return;
-  }
-
-  /// filterRuns() provides a complex filtering (search) option
-  /// where the plus sign (+) is used as a logical OR allowing
-  /// query results to be added together and commas (,) to be used
-  /// to separate query options and act as a logical AND function, thus
-  /// limiting the query results. Finally the text 'not ' at the beginning
-  /// of a search term will negate the resdults.
-  ///
-  /// For example: "AH3 + FILTH, not Wednesday + Thursday" will show all
-  /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
-  ///
-  void _filterRuns() {
-    _showRsvpInstructions = true;
-    _filteredRuns =
-        QueryRuns.doRunsFilter(_searchRunsText, _allRuns ?? <dynamic>[]);
-
-    _filteredRuns!.sort((dynamic a, dynamic b) {
-      // start by sorting by run classification, closest runs should be listed first, then runs
-      // from Kennels the user is following, then the rest
-      int result = a.extensions.runClassification
-          .compareTo(b.extensions.runClassification);
-
-      if (result == 0) {
-        result = _toDateOnly(a.event.eventStartDatetime)
-            .compareTo(_toDateOnly(b.event.eventStartDatetime));
-        // if the runs are on the same day then try to sort by distance
-        // if there are no distances because location services are off, then sort by Kennel name
-        if (result == 0) {
-          if ((a.extensions.distToEvent != null) &&
-              (b.extensions.distToEvent != null)) {
-            final num distA = a.extensions.latitude == null
-                ? 99999999
-                : a.extensions.distToEvent;
-            final num distB = b.extensions.latitude == null
-                ? 99999999
-                : b.extensions.distToEvent;
-            result = distA.compareTo(distB);
-          } else {
-            result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
-          }
-        }
-      }
-      return result;
-    });
-
-    int lastInsertedClassification = 4;
-
-    final int listLength = _filteredRuns!.length;
-
-    for (int i = listLength - 1; i >= 0; i--) {
-      if (_filteredRuns![i].extensions.runClassification == 1) {
-        _showRsvpInstructions = false;
-      }
-
-      int currentClassification = 1;
-      if (i > 0) {
-        currentClassification =
-            _filteredRuns![i - 1].extensions.runClassification ?? 1;
-      }
-
-      if (currentClassification != lastInsertedClassification) {
-        for (int j = lastInsertedClassification - currentClassification - 1;
-            j >= 0;
-            j--) {
-          _filteredRuns!.insert(i, currentClassification + j + 1);
-        }
-
-        lastInsertedClassification = currentClassification;
-      }
-    }
-
-    _filteredRuns!.insert(0, 1);
-
-    // if (_filteredRuns.isNotEmpty) {
-    //   // make sure the "All runs within..." bar always shows
-
-    //   _filteredRuns.insert(0, _filteredRuns[0].extensions.runClassification);
-
-    //   if ((_filteredRuns[0] != 1) && (_filteredRuns[0] != 2)) {
-    //     _filteredRuns.insert(0, 2);
-    //   } else if ((_filteredRuns[0] == 1) && (_filteredRuns[0] != 2)) {
-
-    //     _filteredRuns.insert(1, 2);
-    //   }
-
-    //   if (_filteredRuns[0] != 1) {
-    //     _filteredRuns.insert(0, 1);
-    //   }
-    // }
-
-    setState(() {});
-  }
-
-  DateTime _toDateOnly(DateTime dt) {
-    return DateTime(dt.year, dt.month, dt.day);
-  }
-
-  Widget _buildListView() {
+  Widget _buildListView(FutureRunListPageController listController) {
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
-      child: (_allRuns ?? <dynamic>[]).isEmpty
+      child: (controller.allRuns ?? <dynamic>[]).isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -426,7 +158,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                     style: text_button_style,
                     child: Text('Reload runs', style: ts_button),
                     onPressed: () async {
-                      await _refreshFromBackend(clearLocalTables: false);
+                      await controller.refreshFromBackend(
+                          clearLocalTables: false);
                     },
                   ),
                 ),
@@ -452,20 +185,25 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 ];
               },
               body: RefreshIndicator(
-                onRefresh: () => _refreshFromBackend(
+                onRefresh: () => controller.refreshFromBackend(
                   clearLocalTables: false,
                 ),
                 displacement: 40.0,
-                child: _filteredRuns == null
-                    ? const SizedBox()
-                    : ListView.builder(
+                child:
+
+                    // GetBuilder<FutureRunListPageController>(
+                    //     id: 'runList',
+                    //     builder: (listController) {
+                    //       return
+
+                    ListView.builder(
                         padding: const EdgeInsets.only(
                             left: 10, right: 10, top: 0, bottom: 50),
                         physics: const AlwaysScrollableScrollPhysics(),
                         //padding: const EdgeInsets.only( bottom: 40.0),
-                        itemCount: _filteredRuns?.length ?? 0,
+                        itemCount: listController.filteredRuns.length,
                         itemBuilder: (BuildContext context, int index) {
-                          if (_filteredRuns![index] is int) {
+                          if (listController.filteredRuns[index] is int) {
                             return Column(
                               children: <Widget>[
                                 Container(
@@ -477,33 +215,43 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
-                                      if ((_filteredRuns![index] == 2) &&
+                                      if ((listController.filteredRuns[index] ==
+                                              2) &&
                                           (G0<AppModel>().connectionStatus ==
                                               EnumConnectionStatus2
                                                   .connected)) ...<Widget>[
                                         const SizedBox(width: 36.0),
                                       ],
-                                      if ((_filteredRuns![index] == 1) &&
-                                          _showRsvpInstructions) ...<Widget>[
+                                      if ((listController.filteredRuns[index] ==
+                                              1) &&
+                                          listController
+                                              .showRsvpInstructions) ...<Widget>[
                                         const SizedBox(width: 36.0),
                                       ],
                                       Text(
-                                        _filteredRuns![index] == 1
-                                            ? _showRsvpInstructions
+                                        listController.filteredRuns[index] == 1
+                                            ? listController
+                                                    .showRsvpInstructions
                                                 ? 'Learn about RSVPs →'
                                                 : 'My upcoming runs'
-                                            : _filteredRuns![index] == 2
+                                            : listController
+                                                        .filteredRuns[index] ==
+                                                    2
                                                 ? _getDistancePreferenceString(
                                                     'Runs within ')
-                                                : _filteredRuns![index] == 3
+                                                : listController.filteredRuns[
+                                                            index] ==
+                                                        3
                                                     ? 'Runs from Kennels I follow'
                                                     : 'All other upcoming runs',
                                         textAlign: TextAlign.center,
                                         //textScaleFactor: G0<DeviceInfo>().textClamp15,
                                         style: ts_titleLarge,
                                       ),
-                                      if ((_filteredRuns![index] == 1) &&
-                                          _showRsvpInstructions) ...<Widget>[
+                                      if ((listController.filteredRuns[index] ==
+                                              1) &&
+                                          listController
+                                              .showRsvpInstructions) ...<Widget>[
                                         GestureDetector(
                                           onTap: () async {
                                             await Utilities.showAlert(
@@ -521,7 +269,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                           ),
                                         )
                                       ],
-                                      if ((_filteredRuns![index] == 2) &&
+                                      if ((listController.filteredRuns[index] ==
+                                              2) &&
                                           (G0<AppModel>().connectionStatus ==
                                               EnumConnectionStatus2
                                                   .connected)) ...<Widget>[
@@ -608,8 +357,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                                   ),
                                 ),
                                 // add some text if no runs are found within the distance filter
-                                if ((_filteredRuns![index] == 2) &&
-                                    (_filteredRuns![index + 1] ==
+                                if ((listController.filteredRuns[index] == 2) &&
+                                    (listController.filteredRuns[index + 1] ==
                                         3)) ...<Widget>[
                                   Padding(
                                     padding: const EdgeInsets.only(
@@ -623,69 +372,33 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                               ],
                             );
                           } else {
-                            String publicEventId =
-                                (_filteredRuns![index] as RunDetailsAggregate)
-                                    .event
-                                    .publicEventId;
+                            String publicEventId = (listController
+                                    .filteredRuns[index] as RunDetailsAggregate)
+                                .event
+                                .publicEventId;
                             // print(
                             //     'chatSummaryMap = ${(chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0)} / thisEventChatCount = ${(thisEventChatCount[publicEventId] ?? 0)} ');
 
                             return RunListItem(
-                              futureRun: _filteredRuns![index],
-                              currentChatCount:
-                                  (thisEventChatCount[publicEventId] ??
-                                      chatSummaryMap[publicEventId]
-                                          ?.eventChatMessageCount ??
-                                      0),
+                              futureRun: listController.filteredRuns[index],
+                              currentChatCount: (listController
+                                      .thisEventUnseenChats[publicEventId]
+                                      ?.value ??
+                                  listController.chatSummaryMap[publicEventId]
+                                      ?.eventChatMessageCount ??
+                                  0),
                               onItemTapped: () {
-                                _openRun(
-                                  _filteredRuns![index],
+                                listController.openRun(
+                                  listController.filteredRuns[index],
                                   openToChatTab: false,
                                 );
                               },
                             );
                           }
-                        },
-                      ),
+                        }),
               ),
             ),
     );
-  }
-
-  Future<void> _openRun(
-    RunDetailsAggregate run, {
-    required bool openToChatTab,
-  }) async {
-    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-    Navigator.push<dynamic>(
-      context,
-      MaterialPageRoute<dynamic>(
-        builder: (BuildContext context) => RunDetailsPage(
-          futureRun: run,
-          openToChatTab: openToChatTab,
-          refreshPage: () async {
-            // WARNING!!!!  We need to return the filtered run based
-            // on it's ID and not the index
-            // await _refreshFromBackend(
-            //     clearLocalTables: true);
-            await _refreshFromTable(true);
-            return run;
-          },
-        ),
-      ),
-    ).then((void _) {
-      _refreshFromBackend(clearLocalTables: false).then((void _) {
-        // this means the user went to the chat page, so reset to zero to hide the badge
-        // I don't like this logic, but it will have to do for now.
-        final chatsCounts2 = getMapIntPref(MapPrefsEnum.chatCounts);
-        if ((chatsCounts2[run.event.publicEventId] ?? 0) !=
-            (chatsCounts[run.event.publicEventId] ?? 0)) {
-          thisEventChatCount[run.event.publicEventId] = 0;
-        }
-
-        setState(() {});
-      });
-    });
   }
 
   void _showConfigureDistancePopup() {
@@ -849,61 +562,61 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       cancelButtonReturnValue: followTypeCancel,
     );
 
-    showDialog<dynamic>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
-        }).then((dynamic retVal) async {
-      if (retVal == 9999) {
-        if (G0<AppModel>().connectionStatus ==
-            EnumConnectionStatus2.connected) {
-          final HashersService srv = HashersService();
+    // showDialog<dynamic>(
+    //     context: context,
+    //     barrierDismissible: false, // user must tap button!
+    //     builder: (BuildContext context) {
+    //       return popup;
+    //     }).then((dynamic retVal) async {
+    //   if (retVal == 9999) {
+    //     if (G0<AppModel>().connectionStatus ==
+    //         EnumConnectionStatus2.connected) {
+    //       final HashersService srv = HashersService();
 
-          final int hasherPreferences =
-              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-          final int distanceMeasuredIn =
-              ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
-                  ? 2
-                  : 3;
+    //       final int hasherPreferences =
+    //           getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+    //       final int distanceMeasuredIn =
+    //           ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
+    //               ? 2
+    //               : 3;
 
-          final int distance =
-              hasherPreferences & hasherPref_distanceForAutoDisplay;
+    //       final int distance =
+    //           hasherPreferences & hasherPref_distanceForAutoDisplay;
 
-          await srv.addEditUser(
-            targetUserId: getStringPref(StringPrefsEnum.userId)!,
-            preferences: distanceMeasuredIn + distance,
-          );
+    //       await srv.addEditUser(
+    //         targetUserId: getStringPref(StringPrefsEnum.userId)!,
+    //         preferences: distanceMeasuredIn + distance,
+    //       );
 
-          await setIntPref(
-              IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
-          await _refreshFromTable(true);
-        }
-      } else if ((retVal is! EnumFollowType) &&
-          (retVal >= hasherPref_0) &&
-          (retVal <= hasherPref_500)) {
-        if (G0<AppModel>().connectionStatus ==
-            EnumConnectionStatus2.connected) {
-          final HashersService srv = HashersService();
+    //       await setIntPref(
+    //           IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
+    //       await controller.refreshFromTable(true);
+    //     }
+    //   } else if ((retVal is! EnumFollowType) &&
+    //       (retVal >= hasherPref_0) &&
+    //       (retVal <= hasherPref_500)) {
+    //     if (G0<AppModel>().connectionStatus ==
+    //         EnumConnectionStatus2.connected) {
+    //       final HashersService srv = HashersService();
 
-          final int hasherPreferences =
-              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-          final int distanceMeasuredIn =
-              hasherPreferences & hasherPref_distanceMeasuredIn;
-          //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
+    //       final int hasherPreferences =
+    //           getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+    //       final int distanceMeasuredIn =
+    //           hasherPreferences & hasherPref_distanceMeasuredIn;
+    //       //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
 
-          await srv.addEditUser(
-            targetUserId: getStringPref(StringPrefsEnum.userId)!,
-            preferences: distanceMeasuredIn + (retVal as int),
-          );
+    //       await srv.addEditUser(
+    //         targetUserId: getStringPref(StringPrefsEnum.userId)!,
+    //         preferences: distanceMeasuredIn + (retVal as int),
+    //       );
 
-          await setIntPref(
-              IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
+    //       await setIntPref(
+    //           IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
 
-          await _refreshFromTable(true);
-        }
-      }
-    });
+    //       await controller.refreshFromTable(true);
+    //     }
+    //   }
+    // });
   }
 
   String _getDistancePreferenceString(String precursorText) {

@@ -318,9 +318,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           attendenceAtHash.value,
         );
 
-    if (futureRunsListPageKey.currentState != null) {
-      await futureRunsListPageKey.currentState!.forceRefreshFromTableExternal();
-    }
+    // if (futureRunsListPageKey.currentState != null) {
+    //   await futureRunsListPageKey.currentState!.forceRefreshFromTableExternal();
+    // }
   }
 
   Future<bool> _checkLocationPermissions() async {
@@ -598,7 +598,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                   ),
             drawer: DrawerMenu(
               scaffoldKey: _scaffoldKey,
-              futureRunsListKey: futureRunsListPageKey,
+              //futureRunsListKey: futureRunsListPageKey,
             ),
           ),
         ),

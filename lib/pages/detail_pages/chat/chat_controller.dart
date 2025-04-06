@@ -15,6 +15,8 @@ class ChatSheetController extends GetxController {
   RxDouble width = 0.0.obs;
   RxDouble height = 0.0.obs;
 
+  double visibility = 0.0;
+
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   RxList<types.Message> messages = <types.Message>[].obs;
@@ -134,13 +136,18 @@ class ChatSheetController extends GetxController {
 
   void addMessage(types.Message message) {
     messages.insert(0, message);
+
+    if (visibility > .1) {
+      final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+      print('Add message chat message length = ${messages.length}');
+
+      chatsCounts[publicEventId] = messages.length;
+
+      // it's fine to call this async method unawaited
+      setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
+    }
+
     update();
-
-    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-    chatsCounts[publicEventId] = messages.length;
-
-    // it's fine to call this async method unawaited
-    setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
   }
 
   void handleAttachmentPressed() {
@@ -354,12 +361,15 @@ class ChatSheetController extends GetxController {
     final updatedMsgs =
         msgs.map((msg) => msg.copyWith(status: types.Status.sent)).toList();
 
+    // if (visibility > .1) {
     final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+    print('Load messages chat message length = ${updatedMsgs.length}');
 
     chatsCounts[publicEventId] = updatedMsgs.length;
 
     // it's fine to call this async method unawaited
     setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
+    //  }
 
     return updatedMsgs;
   }

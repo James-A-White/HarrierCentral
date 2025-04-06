@@ -1,12 +1,12 @@
 import 'package:harrier_central/imports.dart';
+import 'package:get/get.dart';
 
 class RunDetailsPage extends StatefulWidget {
-  const RunDetailsPage({
-    super.key,
-    required this.futureRun,
-    this.refreshPage,
-    this.openToChatTab = false,
-  });
+  const RunDetailsPage(
+      {super.key,
+      required this.futureRun,
+      this.refreshPage,
+      this.openToChatTab = false});
 
   final RunDetailsAggregate futureRun;
   final Function? refreshPage;
@@ -22,7 +22,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
   @override
   void initState() {
     _futureRun = widget.futureRun;
-    if (widget.openToChatTab) {}
+    // if (widget.openToChatTab) {}
 
     super.initState();
   }
@@ -99,7 +99,6 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                   )
                 : RunTabs(
                     futureRun: _futureRun,
-                    openToChatTab: widget.openToChatTab,
-                  )));
+                    openToChatTab: widget.openToChatTab)));
   }
 }

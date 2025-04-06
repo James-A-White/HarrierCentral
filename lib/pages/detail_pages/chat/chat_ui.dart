@@ -24,20 +24,29 @@ class ChatUi extends StatelessWidget {
   Widget build(BuildContext context) {
     final messages = chatSheetController.messages;
     return GetBuilder<ChatSheetController>(builder: (controller) {
-      return Column(
-        children: [
-          Expanded(
-              child: Chat(
-            messages: messages, // Convert RxList to List
-            onAttachmentPressed: chatSheetController.handleAttachmentPressed,
-            onMessageTap: chatSheetController.handleMessageTap,
-            onPreviewDataFetched: chatSheetController.handlePreviewDataFetched,
-            onSendPressed: chatSheetController.handleSendPressed,
-            showUserAvatars: true,
-            showUserNames: true,
-            user: chatSheetController.user,
-          )),
-        ],
+      return VisibilityDetector(
+        key: Key('my-widget-key'),
+        onVisibilityChanged: (visibilityInfo) {
+          controller.visibility = visibilityInfo.visibleFraction;
+          debugPrint(
+              'Widget ${visibilityInfo.key} is ${controller.visibility * 100}% visible');
+        },
+        child: Column(
+          children: [
+            Expanded(
+                child: Chat(
+              messages: messages, // Convert RxList to List
+              onAttachmentPressed: chatSheetController.handleAttachmentPressed,
+              onMessageTap: chatSheetController.handleMessageTap,
+              onPreviewDataFetched:
+                  chatSheetController.handlePreviewDataFetched,
+              onSendPressed: chatSheetController.handleSendPressed,
+              showUserAvatars: true,
+              showUserNames: true,
+              user: chatSheetController.user,
+            )),
+          ],
+        ),
       );
     });
   }

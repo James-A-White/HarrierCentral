@@ -2,6 +2,7 @@
 
 // ignore_for_file: constant_identifier_names
 
+import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -47,8 +48,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     const Tab(text: LABEL_DETAILS),
     const Tab(text: LABEL_RSVP),
     const Tab(text: LABEL_MAP),
-    const Tab(text: LABEL_CHAT),
     const Tab(text: LABEL_STATS),
+    const Tab(text: LABEL_CHAT),
   ];
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -217,7 +218,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     if (widget.openToChatTab) {
       // switch to the chat tab if a notification was tapped to open the app
-      _tabController.animateTo(3);
+      _tabController.animateTo(4);
     } else if ((widget.futureRun.extensions.rsvpState == 0) &&
         (widget.futureRun.event.eventStartDatetime.isAfter(
           DateTime.now().subtract(
@@ -241,6 +242,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             },
           );
         }
+      }
+
+      if (_tabController.previousIndex == 4) {
+        final controller = Get.find<FutureRunListPageController>();
+        controller.thisEventUnseenChats[widget.futureRun.event.publicEventId]
+            ?.value = 0;
+        controller.update(['runList', 'chatTab']);
       }
 
       setState(() {});
@@ -1415,26 +1423,65 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                   child: TextScaleFactorClamper(
                     textScaleFactor: G0<DeviceInfo>().textClamp15,
-                    child: TabBar(
-                      labelStyle: ts_tabSelected,
-                      unselectedLabelStyle: ts_tabUnselected,
-                      isScrollable: false,
-                      labelPadding:
-                          const EdgeInsets.only(top: 5, left: 0, right: 0),
-                      unselectedLabelColor: Colors.black,
-                      labelColor: Colors.white,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicator: BubbleTabIndicator(
-                        indicatorHeight: 30.0,
-                        indicatorColor: hc_red,
-                        tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                        indicatorRadius: 10.0,
-                        // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
-                        // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
-                      ),
-                      tabs: _tabs,
-                      controller: _tabController,
-                    ),
+                    child: GetBuilder<FutureRunListPageController>(
+                        id: 'chatTab',
+                        builder: (controller) {
+                          final chatCount = controller
+                              .thisEventUnseenChats[
+                                  widget.futureRun.event.publicEventId]
+                              ?.value;
+
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: TabBar(
+                                  labelStyle: ts_tabSelected,
+                                  unselectedLabelStyle: ts_tabUnselected,
+                                  isScrollable: false,
+                                  labelPadding: const EdgeInsets.only(
+                                      top: 5, left: 0, right: 0),
+                                  unselectedLabelColor: Colors.black,
+                                  labelColor: Colors.white,
+                                  indicatorSize: TabBarIndicatorSize.tab,
+                                  indicator: BubbleTabIndicator(
+                                    indicatorHeight: 30.0,
+                                    indicatorColor: hc_red,
+                                    tabBarIndicatorSize:
+                                        TabBarIndicatorSize.tab,
+                                    indicatorRadius: 10.0,
+                                    // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+                                    // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
+                                  ),
+                                  tabs: _tabs,
+                                  controller: _tabController,
+                                ),
+                              ),
+                              if ((chatCount != null) &&
+                                  (chatCount > 0) &&
+                                  (_tabController.index != 4)) ...<Widget>[
+                                badges.Badge(
+                                  position: badges.BadgePosition.topEnd(
+                                      top: 0, end: 0),
+                                  badgeContent: Text(
+                                      chatCount < 100
+                                          ? chatCount.toString()
+                                          : '>',
+                                      style: ts_badge.copyWith(
+                                        fontSize: chatCount < 10
+                                            ? 20
+                                            : chatCount < 100
+                                                ? 15
+                                                : 20,
+                                      )),
+                                  badgeStyle: badges.BadgeStyle(
+                                    badgeColor: Colors.red.shade800,
+                                    padding: const EdgeInsets.all(6),
+                                  ),
+                                ),
+                              ]
+                            ],
+                          );
+                        }),
                   ),
                 ),
               ),
@@ -1444,7 +1491,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 _buildRunDetailsView(),
                 _buildRsvpView(),
                 _buildMapView(),
-                _buildChatView(),
                 ConnectedWidget(
                   refreshFunction: () {
                     setState(() {});
@@ -1463,6 +1509,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     kennelId: widget.futureRun.kennel.kennelId,
                   ),
                 ),
+                _buildChatView(),
               ]
                   // children: tabs.map((Tab tab) {
                   //   return Center(

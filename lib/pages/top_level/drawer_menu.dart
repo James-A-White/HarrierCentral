@@ -7,11 +7,11 @@ class DrawerMenu extends StatefulWidget {
   const DrawerMenu({
     super.key,
     required this.scaffoldKey,
-    required this.futureRunsListKey,
+    //required this.futureRunsListKey,
   });
 
   final GlobalKey<ScaffoldState> scaffoldKey;
-  final GlobalKey<FutureRunListPageState> futureRunsListKey;
+  //final GlobalKey<FutureRunListPageState> futureRunsListKey;
 
   @override
   DrawerMenuState createState() => DrawerMenuState();
@@ -153,10 +153,10 @@ class DrawerMenuState extends State<DrawerMenu> {
                         },
                       ),
                     );
-                    if (futureRunsListPageKey.currentState != null) {
-                      await futureRunsListPageKey.currentState!
-                          .forceRefreshFromTableExternal();
-                    }
+                    // if (futureRunsListPageKey.currentState != null) {
+                    //   await futureRunsListPageKey.currentState!
+                    //       .forceRefreshFromTableExternal();
+                    // }
                   },
                 ),
                 // ListTile(
