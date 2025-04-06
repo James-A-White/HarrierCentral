@@ -108,10 +108,8 @@ class FutureRunListPageController extends GetxController {
     RunDetailsAggregate run, {
     required bool openToChatTab,
   }) async {
-    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-
     await Get.to(
-      RunDetailsPage(
+      () => RunDetailsPage(
         futureRun: run,
         openToChatTab: openToChatTab,
         refreshPage: () async {
