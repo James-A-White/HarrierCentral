@@ -335,14 +335,19 @@ class FutureRunsListPage extends StatelessWidget {
                                                         'Location Services have been enabled.',
                                                         'OK',
                                                       );
-
-                                                      _showConfigureDistancePopup();
+                                                      if (context.mounted) {
+                                                        _showConfigureDistancePopup(
+                                                            context);
+                                                      }
                                                     });
                                                   }
                                                 }
                                               }
                                             } else {
-                                              _showConfigureDistancePopup();
+                                              if (context.mounted) {
+                                                _showConfigureDistancePopup(
+                                                    context);
+                                              }
                                             }
                                           },
                                           child: const Padding(
@@ -401,7 +406,7 @@ class FutureRunsListPage extends StatelessWidget {
     );
   }
 
-  void _showConfigureDistancePopup() {
+  void _showConfigureDistancePopup(BuildContext context) {
     final String units = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
                 hasherPref_distanceMeasuredIn ==
             2
@@ -562,61 +567,61 @@ class FutureRunsListPage extends StatelessWidget {
       cancelButtonReturnValue: followTypeCancel,
     );
 
-    // showDialog<dynamic>(
-    //     context: context,
-    //     barrierDismissible: false, // user must tap button!
-    //     builder: (BuildContext context) {
-    //       return popup;
-    //     }).then((dynamic retVal) async {
-    //   if (retVal == 9999) {
-    //     if (G0<AppModel>().connectionStatus ==
-    //         EnumConnectionStatus2.connected) {
-    //       final HashersService srv = HashersService();
+    showDialog<dynamic>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        }).then((dynamic retVal) async {
+      if (retVal == 9999) {
+        if (G0<AppModel>().connectionStatus ==
+            EnumConnectionStatus2.connected) {
+          final HashersService srv = HashersService();
 
-    //       final int hasherPreferences =
-    //           getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-    //       final int distanceMeasuredIn =
-    //           ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
-    //               ? 2
-    //               : 3;
+          final int hasherPreferences =
+              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+          final int distanceMeasuredIn =
+              ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
+                  ? 2
+                  : 3;
 
-    //       final int distance =
-    //           hasherPreferences & hasherPref_distanceForAutoDisplay;
+          final int distance =
+              hasherPreferences & hasherPref_distanceForAutoDisplay;
 
-    //       await srv.addEditUser(
-    //         targetUserId: getStringPref(StringPrefsEnum.userId)!,
-    //         preferences: distanceMeasuredIn + distance,
-    //       );
+          await srv.addEditUser(
+            targetUserId: getStringPref(StringPrefsEnum.userId)!,
+            preferences: distanceMeasuredIn + distance,
+          );
 
-    //       await setIntPref(
-    //           IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
-    //       await controller.refreshFromTable(true);
-    //     }
-    //   } else if ((retVal is! EnumFollowType) &&
-    //       (retVal >= hasherPref_0) &&
-    //       (retVal <= hasherPref_500)) {
-    //     if (G0<AppModel>().connectionStatus ==
-    //         EnumConnectionStatus2.connected) {
-    //       final HashersService srv = HashersService();
+          await setIntPref(
+              IntPrefsEnum.hasherPreferences, distanceMeasuredIn + distance);
+          await controller.refreshFromTable(true);
+        }
+      } else if ((retVal is! EnumFollowType) &&
+          (retVal >= hasherPref_0) &&
+          (retVal <= hasherPref_500)) {
+        if (G0<AppModel>().connectionStatus ==
+            EnumConnectionStatus2.connected) {
+          final HashersService srv = HashersService();
 
-    //       final int hasherPreferences =
-    //           getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-    //       final int distanceMeasuredIn =
-    //           hasherPreferences & hasherPref_distanceMeasuredIn;
-    //       //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
+          final int hasherPreferences =
+              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+          final int distanceMeasuredIn =
+              hasherPreferences & hasherPref_distanceMeasuredIn;
+          //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
 
-    //       await srv.addEditUser(
-    //         targetUserId: getStringPref(StringPrefsEnum.userId)!,
-    //         preferences: distanceMeasuredIn + (retVal as int),
-    //       );
+          await srv.addEditUser(
+            targetUserId: getStringPref(StringPrefsEnum.userId)!,
+            preferences: distanceMeasuredIn + (retVal as int),
+          );
 
-    //       await setIntPref(
-    //           IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
+          await setIntPref(
+              IntPrefsEnum.hasherPreferences, distanceMeasuredIn + retVal);
 
-    //       await controller.refreshFromTable(true);
-    //     }
-    //   }
-    // });
+          await controller.refreshFromTable(true);
+        }
+      }
+    });
   }
 
   String _getDistancePreferenceString(String precursorText) {

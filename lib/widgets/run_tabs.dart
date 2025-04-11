@@ -13,11 +13,13 @@ class RunTabs extends StatefulWidget {
   const RunTabs({
     super.key,
     required this.futureRun,
+    required this.relayActiveTab,
     this.openToChatTab = false,
   });
 
   final RunDetailsAggregate futureRun;
   final bool openToChatTab;
+  final Function relayActiveTab;
 
   @override
   State<RunTabs> createState() {
@@ -248,8 +250,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         final controller = Get.find<FutureRunListPageController>();
         controller.thisEventUnseenChats[widget.futureRun.event.publicEventId]
             ?.value = 0;
-        controller.update(['runList', 'chatTab']);
+        controller.update(['runList', 'chatTab', 'main_nav_page']);
       }
+
+      widget.relayActiveTab(_tabController.index);
 
       setState(() {});
     });

@@ -1,7 +1,9 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 import 'package:fancy_bottom_navigation_2/fancy_bottom_navigation.dart';
+import 'package:get/get.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({
@@ -403,6 +405,37 @@ class MainNavigationPageState extends State<MainNavigationPage> {
             appBar: (!_showMainScreen)
                 ? null
                 : AppBar(
+                    leading: GetBuilder<FutureRunListPageController>(
+                        id: 'main_nav_page',
+                        builder: (controller) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                                left: 8.0), // Optional spacing
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Builder(
+                                  builder: (context) => IconButton(
+                                    icon: Icon(Icons.menu),
+                                    onPressed: () =>
+                                        Scaffold.of(context).openDrawer(),
+                                  ),
+                                ),
+                                badges.Badge(
+                                  position: badges.BadgePosition.topEnd(
+                                      top: -8, end: -4),
+                                  badgeContent: Text(
+                                    controller.totalNotifications.value
+                                        .toString(), // number of unread messages
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 10),
+                                  ),
+                                  child: Icon(Icons.chat_bubble_outline),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                     elevation: 3.0,
                     backgroundColor: themeAppBarBackground,
                     iconTheme: const IconThemeData(

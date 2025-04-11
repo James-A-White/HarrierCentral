@@ -14,6 +14,7 @@ class FutureRunListPageController extends GetxController {
   RxList<dynamic> filteredRuns = [].obs;
   String searchRunsText = '';
   Map<String, RxInt> thisEventUnseenChats = {};
+  RxInt totalNotifications = 0.obs;
 
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
@@ -34,7 +35,7 @@ class FutureRunListPageController extends GetxController {
       final chatCount =
           (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
 
-      updateChatCountBadges(publicEventId, chatCount);
+      _updateChatCountBadges(publicEventId, chatCount);
     });
 
     IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
@@ -44,7 +45,7 @@ class FutureRunListPageController extends GetxController {
     _onInitAsync();
   }
 
-  void updateChatCountBadges(String? publicEventId, int chatCount) {
+  void _updateChatCountBadges(String? publicEventId, int chatCount) {
     if (publicEventId != null) {
       // get the number of chats last displayed in the chat window
       // when it was last shown
@@ -58,13 +59,28 @@ class FutureRunListPageController extends GetxController {
         thisEventUnseenChats[publicEventId]!.value =
             chatCount - (chatsCounts[publicEventId] ?? 0);
       }
-      print('Total chat count = $chatCount');
-      print('Total seen chats = ${chatsCounts[publicEventId]}');
-      print(
-          'Total unseen chats = ${thisEventUnseenChats[publicEventId]!.value}');
     }
 
-    update(['runList', 'chatTab']);
+    _updateTotalNotificationCounter();
+
+    update(['runList', 'chatTab', 'main_nav_page']);
+  }
+
+  void _updateTotalNotificationCounter() {
+    int total = 0;
+
+    for (var run in filteredRuns) {
+      if (run is! int) {
+        String? publicEventId = run.event?.publicEventId as String?;
+        if (publicEventId != null) {
+          total += (thisEventUnseenChats[publicEventId]?.value ??
+              chatSummaryMap[publicEventId]?.eventChatMessageCount ??
+              0);
+        }
+      }
+    }
+
+    totalNotifications.value = total;
   }
 
   Future<void> _onInitAsync() async {
@@ -124,6 +140,10 @@ class FutureRunListPageController extends GetxController {
     );
 
     await refreshFromBackend(clearLocalTables: false);
+
+    _updateTotalNotificationCounter();
+
+    update(['runList', 'chatTab', 'main_nav_page']);
 
     //setState(() {});
 
