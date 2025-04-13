@@ -86,22 +86,36 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            //_facebookLogin();
-                          },
-                          child: const Padding(
+                        // GestureDetector(
+                        //   onTap: () {
+                        //     //_facebookLogin();
+                        //   },
+                        //   child: const Padding(
+                        //     padding: EdgeInsets.symmetric(
+                        //         horizontal: 0.0, vertical: 20.0),
+                        //     child: Image(
+                        //       height: 60,
+                        //       fit: BoxFit.fitWidth,
+                        //       image:
+                        //           AssetImage('images/init/facebook_login.png'),
+                        //     ),
+                        //   ),
+                        // ),
+                        // only show Apple login on iOS devices
+
+                        if (!Platform.isIOS) ...<Widget>[
+                          Padding(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 0.0, vertical: 20.0),
-                            child: Image(
-                              height: 60,
-                              fit: BoxFit.fitWidth,
-                              image:
-                                  AssetImage('images/init/facebook_login.png'),
-                            ),
+                            child: Center(
+                                child: Text(
+                              'No third party logins are available on Android devices.',
+                              style: ts_headingVeryLarge,
+                              textAlign: TextAlign.center,
+                            )),
                           ),
-                        ),
-                        // only show Apple login on iOS devices
+                        ],
+
                         if (Platform.isIOS) ...<Widget>[
                           GestureDetector(
                             onTap: () {

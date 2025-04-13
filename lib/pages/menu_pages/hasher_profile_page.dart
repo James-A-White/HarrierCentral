@@ -39,6 +39,8 @@ class HasherProfilePage extends StatefulWidget {
   static const int flagUiElement_gdprDeleteAccount = 0x00000040;
   static const int flagUiElement_getInviteCodeButton = 0x00000080;
   //static const int flagUiElement_logOutOfFacebook = 0x00000100;
+  static const int flagUiElement_logOutButton = 0x00000200;
+  static const int flagUiElement_getUserRunHistory = 0x00000400;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -1410,6 +1412,124 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_getUserRunHistory ==
+                                            0)
+                                        ? Container()
+                                        : Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: <Widget>[
+                                              const FancyDivider(
+                                                key: Key('4542543'),
+                                                innerColor: Colors.white,
+                                                bottomMargin: 20.0,
+                                                topMargin: 10.0,
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 15, bottom: 40),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceAround,
+                                                  children: <Widget>[
+                                                    Connection2
+                                                        .styleForConnected(
+                                                      G0<AppModel>()
+                                                          .connectionStatus,
+                                                      ElevatedButton(
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 8,
+                                                                  bottom: 8,
+                                                                  left: 20,
+                                                                  right: 20),
+                                                        ),
+                                                        onPressed: () async {
+                                                          final runHistory =
+                                                              await RunHistoryQueries
+                                                                  .getRunHistory(
+                                                                      widget
+                                                                          .hasherId,
+                                                                      widget
+                                                                          .kennelId);
+
+                                                          await G0<TableModel>()
+                                                              .syncKennelAdminService
+                                                              .clearEventData();
+
+                                                          await G0<TableModel>()
+                                                              .syncKennelAdminService
+                                                              .updateFromBackend(
+                                                                SyncKennelAdminService
+                                                                        .flagHasherEventMapTable |
+                                                                    SyncKennelAdminService
+                                                                        .flagPaymentsTable,
+                                                                false,
+                                                                widget.kennelId,
+                                                                targetHasherId:
+                                                                    widget
+                                                                        .hasherId,
+                                                              );
+
+                                                          if (context.mounted) {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .push<dynamic>(
+                                                              MaterialPageRoute<
+                                                                  dynamic>(
+                                                                builder:
+                                                                    (BuildContext
+                                                                        context) {
+                                                                  return UserRunHistoryListPage(
+                                                                      appDomain:
+                                                                          AppDomainType
+                                                                              .kennel,
+                                                                      hashName:
+                                                                          widget
+                                                                              .hashNameFromSearch,
+                                                                      hasherId:
+                                                                          widget
+                                                                              .hasherId,
+                                                                      kennelInfo:
+                                                                          runHistory[
+                                                                              0],
+                                                                      refreshKennelInfo:
+                                                                          () {});
+                                                                },
+                                                              ),
+                                                            ).then((void _) {});
+                                                          }
+                                                          //                                              Navigator.of(context).push<dynamic>(
+                                                          //   MaterialPageRoute<dynamic>(
+                                                          //     builder: (BuildContext context) {
+                                                          //       return UserRunHistoryListPage(
+                                                          //           kennelInfo: kennelInfo,
+                                                          //           refreshKennelInfo: () {
+                                                          //             return refreshCounters(kennelInfo.kennelId);
+                                                          //           });
+                                                          //     },
+                                                          //   ),
+                                                          // ).then((void _) {
+                                                          //   refreshCounters(kennelInfo.kennelId);
+                                                          // });
+                                                        },
+                                                        child: Text(
+                                                          'View Run History',
+                                                          style: ts_button,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                     if (_externalMapProvider !=
                                         null) ...<Widget>[
                                       Column(
@@ -1559,86 +1679,93 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ],
                                       ),
                                     ],
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: <Widget>[
-                                        const FancyDivider(
-                                          key: Key('655522013'),
-                                          innerColor: Colors.white,
-                                          topMargin: 30.0,
-                                          bottomMargin: 20.0,
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            'Log out of Harrier Central',
-                                            style: ts_heading,
-                                            textAlign: TextAlign.center,
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_logOutButton !=
+                                        0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('655522013'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
                                           ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
-                                            style: ts_body,
-                                            textAlign: TextAlign.center,
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Log out of Harrier Central',
+                                              style: ts_heading,
+                                              textAlign: TextAlign.center,
+                                            ),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 15, bottom: 15),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: <Widget>[
-                                              Connection2.styleForConnected(
-                                                G0<AppModel>().connectionStatus,
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 8,
-                                                            bottom: 8,
-                                                            left: 20,
-                                                            right: 20),
-                                                  ),
-                                                  onPressed: () async {
-                                                    await IveCoreUtilities.showAlert(
-                                                            context,
-                                                            'Log out?',
-                                                            'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                                            'Log out',
-                                                            showCancelButton:
-                                                                true,
-                                                            cancelButtonText:
-                                                                'Stay logged in')
-                                                        .then((bool?
-                                                            result) async {
-                                                      if (result ?? false) {
-                                                        await clearPrefs();
-                                                        await DBProvider
-                                                            .deleteDb(DB_NAME);
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
+                                              style: ts_body,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 15, bottom: 15),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection2.styleForConnected(
+                                                  G0<AppModel>()
+                                                      .connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20),
+                                                    ),
+                                                    onPressed: () async {
+                                                      await IveCoreUtilities.showAlert(
+                                                              context,
+                                                              'Log out?',
+                                                              'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                              'Log out',
+                                                              showCancelButton:
+                                                                  true,
+                                                              cancelButtonText:
+                                                                  'Stay logged in')
+                                                          .then((bool?
+                                                              result) async {
+                                                        if (result ?? false) {
+                                                          await clearPrefs();
+                                                          await DBProvider
+                                                              .deleteDb(
+                                                                  DB_NAME);
 
-                                                        await G0.reset();
-                                                        Phoenix.rebirth(
-                                                            navigatorKey
-                                                                .currentContext!);
-                                                      }
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    'Log out of Harrier Central',
-                                                    style: ts_button,
+                                                          await G0.reset();
+                                                          Phoenix.rebirth(
+                                                              navigatorKey
+                                                                  .currentContext!);
+                                                        }
+                                                      });
+                                                    },
+                                                    child: Text(
+                                                      'Log out of Harrier Central',
+                                                      style: ts_button,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                                    ],
                                     if (widget.uiElementsToDisplay &
                                             HasherProfilePage
                                                 .flagUiElement_refresh3rdPartyLogin !=

@@ -54,14 +54,14 @@ class Tables {
     // MIGRATION 270
     MigrationsModel(
         dbVersion: 351,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().regionsTableHelper.colRegionAbbreviation} TEXT;
     ''',
         appliedAtInt: 0),
 
     MigrationsModel(
         dbVersion: 352,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().citiesTableHelper.colCitySearchTags} TEXT;
       ALTER TABLE ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().regionsTableHelper.colRegionSearchTags} TEXT;
       ALTER TABLE ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().countriesTableHelper.colCountrySearchTags} TEXT;
@@ -71,7 +71,7 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 365,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
@@ -99,7 +99,7 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 366,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEventUrl} TEXT;
       
       ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colIntegrationType} TEXT;
@@ -110,14 +110,14 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 378,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId} INT DEFAULT 0 NOT NULL;
       ''',
         appliedAtInt: 0),
 
     MigrationsModel(
         dbVersion: 379,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
@@ -126,7 +126,7 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 380,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
       ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
@@ -156,7 +156,7 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 381,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colDisseminateAllowWebLinks} INT DEFAULT 0 NOT NULL;
 
        ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEvtDisseminateAllowWebLinks} INT NULL;
@@ -165,7 +165,7 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 392,
-        migrationText: ''' 
+        migrationText: '''
       ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colPublicKennelId} TEXT NOT NULL;
 
        ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colPublicEventId} TEXT NOT NULL;
@@ -174,7 +174,7 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 405,
-        migrationText: ''' 
+        migrationText: '''
         -- DB structure not changed, but migration required to accommodate for
         -- a change in the values stored in the [updatedAtValue] field
       ''',
@@ -182,14 +182,14 @@ class Tables {
 
     MigrationsModel(
         dbVersion: 416,
-        migrationText: ''' 
+        migrationText: '''
      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
       ''',
         appliedAtInt: 0),
 
     MigrationsModel(
         dbVersion: 417,
-        migrationText: ''' 
+        migrationText: '''
 
         ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
 
@@ -218,56 +218,132 @@ class Tables {
     // fields being defined properly
     MigrationsModel(
         dbVersion: 430,
-        migrationText: ''' 
+        migrationText: '''
         -- DB structure not changed, but migration required to accommodate for
         -- a change in the values stored in the [updatedAtValue] field
       ''',
         appliedAtInt: 0),
+
+    // force rebuild of database to account for nullable / non-nullable
+    // fields being defined properly
+    MigrationsModel(
+        dbVersion: 440,
+        migrationText: '''
+        -- Major upgrade to App to support NULL SAFETY along with migration of
+        -- the APIs from Azure Mobile Services to Azure Functions. Bumped Database
+        -- version by 10 to force a rebuild of the internal data structures upon 
+        -- an app upgrade.
+      ''',
+        appliedAtInt: 0),
   ];
 
-  static Future<void> createTables(Database db, int version, Function informUser) async {
-    await G0<TableModel>().hashersTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().citiesTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().regionsTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().countriesTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().kennelsTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().hasherEventMapTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().eventsTableHelper.createTable(db, version, AppDomainType.user);
-    await G0<TableModel>().paymentsTableHelper.createTable(db, version, AppDomainType.user);
+  static Future<void> createTables(
+      Database db, int version, Function informUser) async {
+    await G0<TableModel>()
+        .hashersTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .citiesTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .regionsTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .countriesTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .kennelsTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .hasherKennelMapTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .hasherEventMapTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .eventsTableHelper
+        .createTable(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .paymentsTableHelper
+        .createTable(db, version, AppDomainType.user);
     await NotificationsTableHelper.createTable(db, version);
     await MigrationsTableHelper.createTable(db, version);
 
     // create event admin tables
-    await G0<TableModel>().hasherEventMapTableHelper.createTable(db, version, AppDomainType.event);
-    await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.event);
-    await G0<TableModel>().paymentsTableHelper.createTable(db, version, AppDomainType.event);
-    await G0<TableModel>().receiptsTableHelper.createTable(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .hasherEventMapTableHelper
+        .createTable(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .hasherKennelMapTableHelper
+        .createTable(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .paymentsTableHelper
+        .createTable(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .receiptsTableHelper
+        .createTable(db, version, AppDomainType.event);
     //await G0<TableModel>().kennelCreditsTableHelper.createTable(db, version, AppDomainType.event);
 
     // create kennel admin tables
-    await G0<TableModel>().hasherKennelMapTableHelper.createTable(db, version, AppDomainType.kennel);
+    await G0<TableModel>()
+        .hasherKennelMapTableHelper
+        .createTable(db, version, AppDomainType.kennel);
+    await G0<TableModel>()
+        .hasherEventMapTableHelper
+        .createTable(db, version, AppDomainType.kennel);
+    await G0<TableModel>()
+        .paymentsTableHelper
+        .createTable(db, version, AppDomainType.kennel);
   }
 
-  static Future<void> createIndexes(Database db, int version, Function informUser, String clientAppIdentifier) async {
-    await G0<TableModel>().hashersTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().citiesTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().regionsTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().countriesTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().kennelsTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().hasherEventMapTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().eventsTableHelper.createIndexes(db, version, AppDomainType.user);
-    await G0<TableModel>().paymentsTableHelper.createIndexes(db, version, AppDomainType.user);
+  static Future<void> createIndexes(Database db, int version,
+      Function informUser, String clientAppIdentifier) async {
+    await G0<TableModel>()
+        .hashersTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .citiesTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .regionsTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .countriesTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .kennelsTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .hasherKennelMapTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .hasherEventMapTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .eventsTableHelper
+        .createIndexes(db, version, AppDomainType.user);
+    await G0<TableModel>()
+        .paymentsTableHelper
+        .createIndexes(db, version, AppDomainType.user);
 
     // create event admin tables
-    await G0<TableModel>().hasherEventMapTableHelper.createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>().paymentsTableHelper.createIndexes(db, version, AppDomainType.event);
-    await G0<TableModel>().receiptsTableHelper.createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .hasherEventMapTableHelper
+        .createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .hasherKennelMapTableHelper
+        .createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .paymentsTableHelper
+        .createIndexes(db, version, AppDomainType.event);
+    await G0<TableModel>()
+        .receiptsTableHelper
+        .createIndexes(db, version, AppDomainType.event);
     //await G0<TableModel>().kennelCreditsTableHelper.createIndexes(db, version, AppDomainType.event);
 
     // create kennel admin tables
-    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(db, version, AppDomainType.kennel);
+    await G0<TableModel>()
+        .hasherKennelMapTableHelper
+        .createIndexes(db, version, AppDomainType.kennel);
   }
 }

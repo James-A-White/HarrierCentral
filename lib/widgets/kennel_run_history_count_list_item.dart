@@ -22,6 +22,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
               MaterialPageRoute<dynamic>(
                 builder: (BuildContext context) {
                   return UserRunHistoryListPage(
+                      appDomain: AppDomainType.user,
                       kennelInfo: kennelInfo,
                       refreshKennelInfo: () {
                         return refreshCounters(kennelInfo.kennelId);
@@ -72,7 +73,8 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                               '(${kennelInfo.totalHaringThisKennel.toString()} times hared)',
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
-                              style: ts_titleMediumCondensedBlack.copyWith(fontSize: 18.0),
+                              style: ts_titleMediumCondensedBlack.copyWith(
+                                  fontSize: 18.0),
                               textAlign: TextAlign.left,
                             ),
                           ),

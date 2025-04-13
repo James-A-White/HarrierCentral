@@ -587,28 +587,28 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           ),
                                         ),
                                       ),
-                                      IconButton(
-                                        icon: const ImageIcon(AssetImage(
-                                            'images/icons/hare_icon.png')),
-                                        color: _thisUserIndex == -1
-                                            ? Colors.grey
-                                            : snapshot.data![_thisUserIndex].hem
-                                                        .isHare ==
-                                                    isHareYes.value
-                                                ? Colors.deepPurple
-                                                : snapshot.data![_thisUserIndex]
-                                                            .hem.isHare ==
-                                                        -1
-                                                    ? hc_blue
-                                                    : Colors.grey,
-                                        //tooltip: 'Select to follow a Kennel',
-                                        iconSize: 30.0,
-                                        alignment: Alignment.center,
-                                        splashColor: Colors.greenAccent,
-                                        onPressed: () async {
-                                          await _setRsvpHare();
-                                        },
-                                      ),
+                                      // IconButton(
+                                      //   icon: const ImageIcon(AssetImage(
+                                      //       'images/icons/hare_icon.png')),
+                                      //   color: _thisUserIndex == -1
+                                      //       ? Colors.grey
+                                      //       : snapshot.data![_thisUserIndex].hem
+                                      //                   .isHare ==
+                                      //               isHareYes.value
+                                      //           ? Colors.deepPurple
+                                      //           : snapshot.data![_thisUserIndex]
+                                      //                       .hem.isHare ==
+                                      //                   -1
+                                      //               ? hc_blue
+                                      //               : Colors.grey,
+                                      //   //tooltip: 'Select to follow a Kennel',
+                                      //   iconSize: 30.0,
+                                      //   alignment: Alignment.center,
+                                      //   splashColor: Colors.greenAccent,
+                                      //   onPressed: () async {
+                                      //     await _setRsvpHare();
+                                      //   },
+                                      // ),
                                     ],
                                   ),
                                   Text(
@@ -1054,46 +1054,46 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> _setRsvpHare() async {
-    final bool willHare =
-        await Utilities.promptForHare(widget.futureRun.event.hares ?? '') ??
-            false;
-    if (willHare) {
-      List<PackListAggregate>? lPla = await _thePackList;
-      if (lPla != null) {
-        setState(() {
-          if (_thisUserIndex >= 0) {
-            PackListAggregate a = lPla[_thisUserIndex];
-            lPla[_thisUserIndex] = PackListAggregate(
-                hasher: a.hasher,
-                displayName: a.displayName,
-                hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
+  // Future<void> _setRsvpHare() async {
+  //   final bool willHare =
+  //       await Utilities.promptForHare(widget.futureRun.event.hares ?? '') ??
+  //           false;
+  //   if (willHare) {
+  //     List<PackListAggregate>? lPla = await _thePackList;
+  //     if (lPla != null) {
+  //       setState(() {
+  //         if (_thisUserIndex >= 0) {
+  //           PackListAggregate a = lPla[_thisUserIndex];
+  //           lPla[_thisUserIndex] = PackListAggregate(
+  //               hasher: a.hasher,
+  //               displayName: a.displayName,
+  //               hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
 
-            // _thePackList[_thisUserIndex].hem.rsvpState = -1;
-            // _thePackList[_thisUserIndex].hem.isHare = -1;
-            _rsvpRequested = rsvpYes;
-          }
-        });
-      }
+  //           // _thePackList[_thisUserIndex].hem.rsvpState = -1;
+  //           // _thePackList[_thisUserIndex].hem.isHare = -1;
+  //           _rsvpRequested = rsvpYes;
+  //         }
+  //       });
+  //     }
 
-      //final String userId = getStringPref(StringPrefsEnum.userId);
-      final List<dynamic> adHocData =
-          await G0<TableModel>().hasherEventMapService.setEventRsvp(
-                widget.futureRun.event.eventId,
-                _userId,
-                AppDomainType.user,
-                rsvpYes.value,
-                isHareYes.value,
-              );
+  //     //final String userId = getStringPref(StringPrefsEnum.userId);
+  //     final List<dynamic> adHocData =
+  //         await G0<TableModel>().hasherEventMapService.setEventRsvp(
+  //               widget.futureRun.event.eventId,
+  //               _userId,
+  //               AppDomainType.user,
+  //               rsvpYes.value,
+  //               isHareYes.value,
+  //             );
 
-      await _refreshHemTableFromBackend(false);
-      final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+  //     await _refreshHemTableFromBackend(false);
+  //     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
-      if (serverMessage.isNotEmpty) {
-        await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
-      }
-    }
-  }
+  //     if (serverMessage.isNotEmpty) {
+  //       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
+  //     }
+  //   }
+  // }
 
   Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
     List<PackListAggregate>? lPla = await _thePackList;
@@ -1120,7 +1120,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               _userId,
               AppDomainType.user,
               rsvpState.value,
-              isHareNo.value,
             );
 
     await _refreshHemTableFromBackend(false);
@@ -1395,17 +1394,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       await _setRsvpState(rsvpYes);
                     },
                   ),
-                  SpeedDialChild(
-                    child: const ImageIcon(
-                        AssetImage('images/icons/hare_icon.png'),
-                        color: Colors.deepPurple),
-                    backgroundColor: Colors.white,
-                    label: 'I will hare',
-                    labelStyle: const TextStyle(fontSize: 18.0),
-                    onTap: () async {
-                      await _setRsvpHare();
-                    },
-                  ),
+                  // SpeedDialChild(
+                  //   child: const ImageIcon(
+                  //       AssetImage('images/icons/hare_icon.png'),
+                  //       color: Colors.deepPurple),
+                  //   backgroundColor: Colors.white,
+                  //   label: 'I will hare',
+                  //   labelStyle: const TextStyle(fontSize: 18.0),
+                  //   onTap: () async {
+                  //     await _setRsvpHare();
+                  //   },
+                  // ),
                 ],
               ),
             ),

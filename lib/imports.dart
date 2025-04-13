@@ -68,6 +68,7 @@ export 'package:harrier_central/data/models/lite_event/lite_event_model.dart';
 export 'package:harrier_central/data/models/payment_query_extensions/payment_query_extensions_model.dart';
 export 'package:harrier_central/data/models/promo/promo_model.dart';
 export 'package:harrier_central/data/models/run_history/run_history_model.dart';
+export 'package:harrier_central/data/models/run_history/run_history_queries.dart';
 export 'package:harrier_central/data/models/run_query_extensions/run_query_extensions_model.dart';
 export 'package:harrier_central/data/models/single_result/single_result_model.dart';
 export 'package:harrier_central/data/models/user_run_history/user_run_history_model.dart';

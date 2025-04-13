@@ -39,9 +39,13 @@ class KennelMemberListItem extends StatelessWidget {
                   dataContext: EnumDataContext.kennel,
                   pageType: EnumMyProfilePageType.anyHasherProfile,
                   hasherId: kennelMember.hasherId,
-                  uiElementsToDisplay: HasherProfilePage.flagUiElement_previousRunCount | HasherProfilePage.flagUiElement_getInviteCodeButton,
+                  uiElementsToDisplay:
+                      HasherProfilePage.flagUiElement_previousRunCount |
+                          HasherProfilePage.flagUiElement_getInviteCodeButton |
+                          HasherProfilePage.flagUiElement_getUserRunHistory,
                   kennelShortName: kennelMember.kennelShortName ?? '',
                   kennelId: kennelMember.kennelId,
+                  hashNameFromSearch: kennelMember.dispName,
                 ),
               ),
             )
@@ -56,7 +60,8 @@ class KennelMemberListItem extends StatelessWidget {
                   refreshThisUserData = true;
                 }
 
-                await refreshRunCountsCallback(refreshThisUserData, result.dispName, result.photo);
+                await refreshRunCountsCallback(
+                    refreshThisUserData, result.dispName, result.photo);
               }
             } as FutureOr Function(HashersModel? value));
       },
@@ -82,8 +87,14 @@ class KennelMemberListItem extends StatelessWidget {
                             builder: (BuildContext context) => ZoomableImagePage2(
                                 key: const Key('36601939'),
                                 pageTitle: kennelMember.dispName,
-                                imageUrl: (kennelMember.photo!.startsWith('http')) ? kennelMember.photo : null,
-                                assetImage: kennelMember.photo!.contains('bundle://') ? 'images/avatars/${kennelMember.photo!.replaceAll('bundle://', '')}.jpg' : null,
+                                imageUrl:
+                                    (kennelMember.photo!.startsWith('http'))
+                                        ? kennelMember.photo
+                                        : null,
+                                assetImage: kennelMember.photo!
+                                        .contains('bundle://')
+                                    ? 'images/avatars/${kennelMember.photo!.replaceAll('bundle://', '')}.jpg'
+                                    : null,
                                 appBarBackgroundColor: themeAppBarBackground,
                                 background: Backgrounds.defaultHcBackground(),
                                 margin: 20.0),
@@ -98,7 +109,10 @@ class KennelMemberListItem extends StatelessWidget {
                               // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: Key('yyyyyyy')),
 
                               // TODO(James): Replace avatar icon with missing image icon
-                              errorWidget: (BuildContext context, String url, dynamic error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
+                              errorWidget: (BuildContext context, String url,
+                                      dynamic error) =>
+                                  Image.asset('images/avatars/avatar-2.jpg',
+                                      height: 80, width: 80, fit: BoxFit.fill),
                               fadeInDuration: const Duration(milliseconds: 0),
                               width: PROFILE_PIC_SIZE,
                               height: PROFILE_PIC_SIZE,
@@ -108,13 +122,16 @@ class KennelMemberListItem extends StatelessWidget {
                                   width: PROFILE_PIC_SIZE,
                                   height: PROFILE_PIC_SIZE,
                                   fit: BoxFit.fill,
-                                  image: AssetImage(('images/avatars/${kennelMember.photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg').toLowerCase()),
+                                  image: AssetImage(
+                                      ('images/avatars/${kennelMember.photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                                          .toLowerCase()),
                                 )
                               : const Image(
                                   width: PROFILE_PIC_SIZE,
                                   height: PROFILE_PIC_SIZE,
                                   fit: BoxFit.fill,
-                                  image: AssetImage('images/avatars/avatar-2.jpg'),
+                                  image:
+                                      AssetImage('images/avatars/avatar-2.jpg'),
                                 ),
                     ),
             ),
@@ -137,7 +154,12 @@ class KennelMemberListItem extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                     color: Colors.black,
-                                    fontFamily: (kennelMember.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now()) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed',
+                                    fontFamily: (kennelMember
+                                                    .membershipExpirationDate ??
+                                                DateTime.parse('19900101'))
+                                            .isAfter(DateTime.now())
+                                        ? 'AvenirNextCondensedDemiBold'
+                                        : 'AvenirNextCondensed',
                                     fontStyle: FontStyle.normal,
                                     fontSize: 22.0,
                                     height: 1.0),
@@ -145,11 +167,23 @@ class KennelMemberListItem extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 10.0),
-                            if (AppAccess(kennelMember.appAccessFlags).isAdmin) ...<Widget>[
-                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(FontAwesome.gear, color: hc_blue, size: 24.0))
+                            if (AppAccess(kennelMember.appAccessFlags)
+                                .isAdmin) ...<Widget>[
+                              Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 5.0, left: 3.0),
+                                  child: Icon(FontAwesome.gear,
+                                      color: hc_blue, size: 24.0))
                             ],
-                            if (Mismanagement(kennelMember.mismanagementRoles).isOnMismanagement) ...<Widget>[
-                              Padding(padding: const EdgeInsets.only(bottom: 5.0, left: 3.0), child: Icon(MaterialCommunityIcons.account_tie, color: hc_blue, size: 24.0))
+                            if (Mismanagement(kennelMember.mismanagementRoles)
+                                .isOnMismanagement) ...<Widget>[
+                              Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 5.0, left: 3.0),
+                                  child: Icon(
+                                      MaterialCommunityIcons.account_tie,
+                                      color: hc_blue,
+                                      size: 24.0))
                             ],
                           ]),
                         ),
@@ -170,21 +204,34 @@ class KennelMemberListItem extends StatelessWidget {
                     if (kennelMember.dateOfLastRun != null) ...<Widget>[
                       Text(
                         'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun!)}',
-                        style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
+                        style: ts_regularBlack.copyWith(
+                            fontSize:
+                                13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
                         textAlign: TextAlign.center,
                       ),
                     ],
-                    ((kennelMember.hcHaringCount == 0) && (kennelMember.hcTotalRunCount == 0) && (kennelMember.historicalHaringCount == 0) && (kennelMember.historicalTotalRunCount == 0))
+                    ((kennelMember.hcHaringCount == 0) &&
+                            (kennelMember.hcTotalRunCount == 0) &&
+                            (kennelMember.historicalHaringCount == 0) &&
+                            (kennelMember.historicalTotalRunCount == 0))
                         ? Container()
                         : Text(
                             'Runs: ${kennelMember.hcTotalRunCount + kennelMember.historicalTotalRunCount}, Haring: ${kennelMember.hcHaringCount + kennelMember.historicalHaringCount}',
-                            style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
+                            style: ts_regularBlack.copyWith(
+                                fontSize: 13.0 *
+                                    G0<DeviceInfo>().deviceWidthScaleFactor),
                             textAlign: TextAlign.center,
                           ),
                     kennelMember.memberInfoBeingUpdated
                         ? Text(
                             '<Updating membership>',
-                            style: TextStyle(fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0, color: hc_blue),
+                            style: TextStyle(
+                                fontFamily: 'AvenirNextBold',
+                                fontStyle: FontStyle.normal,
+                                fontSize: 13.0 *
+                                    G0<DeviceInfo>().deviceWidthScaleFactor,
+                                height: 1.0,
+                                color: hc_blue),
                             textAlign: TextAlign.center,
                           )
                         : kennelMember.membershipExpirationDate == null
@@ -192,21 +239,44 @@ class KennelMemberListItem extends StatelessWidget {
                                 ? Container()
                                 : Text(
                                     '(following this Kennel)',
-                                    style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
+                                    style: ts_regularBlack.copyWith(
+                                        fontSize: 13.0 *
+                                            G0<DeviceInfo>()
+                                                .deviceWidthScaleFactor),
                                     textAlign: TextAlign.center,
                                   )
                             : Text(
-                                kennelMember.membershipExpirationDate!.year >= 2100 ? 'Permanent Member' : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate!)}',
-                                style: ts_regularBlack.copyWith(fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
+                                kennelMember.membershipExpirationDate!.year >=
+                                        2100
+                                    ? 'Permanent Member'
+                                    : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate!)}',
+                                style: ts_regularBlack.copyWith(
+                                    fontSize: 13.0 *
+                                        G0<DeviceInfo>()
+                                            .deviceWidthScaleFactor),
                                 textAlign: TextAlign.center,
                               ),
                     if ((kennelMember.kennelCredit) != 0) ...<Widget>[
                       Text(
-                        (kennelMember.kennelCredit >= 0 ? 'Credit available: ' : 'Funds owed: ') +
-                            IveCoreUtilities.getFormattedMoney(kennelMember.kennelCredit.abs(), kennelListAggregate.kennel.digitsAfterDecimal ?? 2,
-                                kennelListAggregate.kennel.currencySymbol ?? kennelListAggregate.extensions.currencySymbol ?? r'$^'),
+                        (kennelMember.kennelCredit >= 0
+                                ? 'Credit available: '
+                                : 'Funds owed: ') +
+                            IveCoreUtilities.getFormattedMoney(
+                                kennelMember.kennelCredit.abs(),
+                                kennelListAggregate.kennel.digitsAfterDecimal ??
+                                    2,
+                                kennelListAggregate.kennel.currencySymbol ??
+                                    kennelListAggregate
+                                        .extensions.currencySymbol ??
+                                    r'$^'),
                         style: TextStyle(
-                            fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0, color: kennelMember.kennelCredit >= 0 ? Colors.green.shade900 : hc_red),
+                            fontFamily: 'AvenirNextDemiBold',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 16.0,
+                            height: 1.0,
+                            color: kennelMember.kennelCredit >= 0
+                                ? Colors.green.shade900
+                                : hc_red),
                       ),
                     ]
                   ],
@@ -225,10 +295,13 @@ class KennelMemberListItem extends StatelessWidget {
                           height: 24.0,
                           fit: BoxFit.fill,
                           image: kennelMember.kennelEmailAlertPreference == 1
-                              ? const AssetImage('images/icons/envelope_gold_50px.png')
+                              ? const AssetImage(
+                                  'images/icons/envelope_gold_50px.png')
                               : kennelMember.kennelEmailAlertPreference == 2
-                                  ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png')
-                                  : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                                  ? const AssetImage(
+                                      'images/icons/envelope_silver_strike_out_50px.png')
+                                  : const AssetImage(
+                                      'images/icons/envelope_silver_strike_out_50px.png'),
                         ),
                 ),
               ),
@@ -242,14 +315,16 @@ class KennelMemberListItem extends StatelessWidget {
                   onPressed: () {
                     //
 
-                    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+                    final List<Map<String, dynamic>> buttons =
+                        <Map<String, dynamic>>[
                       <String, dynamic>{
                         'title': 'Add one month',
                         'icon': <Widget>[
                           const SizedBox(
                             height: 30,
                             width: 30,
-                            child: Icon(MaterialCommunityIcons.numeric_1_circle, color: Colors.yellow),
+                            child: Icon(MaterialCommunityIcons.numeric_1_circle,
+                                color: Colors.yellow),
                           ),
                         ],
                         'returnValue': EnumMemberPopupActions.addOneMonth,
@@ -260,7 +335,8 @@ class KennelMemberListItem extends StatelessWidget {
                           const SizedBox(
                             height: 30,
                             width: 30,
-                            child: Icon(MaterialCommunityIcons.numeric_6_circle, color: Colors.yellow),
+                            child: Icon(MaterialCommunityIcons.numeric_6_circle,
+                                color: Colors.yellow),
                           ),
                         ],
                         'returnValue': EnumMemberPopupActions.addSixMonths,
@@ -271,7 +347,8 @@ class KennelMemberListItem extends StatelessWidget {
                           const SizedBox(
                             height: 30,
                             width: 30,
-                            child: Icon(MaterialCommunityIcons.numeric_1_box, color: Colors.yellow),
+                            child: Icon(MaterialCommunityIcons.numeric_1_box,
+                                color: Colors.yellow),
                           ),
                         ],
                         'returnValue': EnumMemberPopupActions.addOneYear,
@@ -282,10 +359,12 @@ class KennelMemberListItem extends StatelessWidget {
                           SizedBox(
                             height: 30,
                             width: 30,
-                            child: Icon(FontAwesome.check_square, color: Colors.green.shade300),
+                            child: Icon(FontAwesome.check_square,
+                                color: Colors.green.shade300),
                           ),
                         ],
-                        'returnValue': EnumMemberPopupActions.permanentMembership,
+                        'returnValue':
+                            EnumMemberPopupActions.permanentMembership,
                       },
                       <String, dynamic>{
                         'title': 'Cancel membership',
@@ -293,7 +372,8 @@ class KennelMemberListItem extends StatelessWidget {
                           SizedBox(
                             height: 30,
                             width: 30,
-                            child: Icon(FontAwesome.times_circle, color: Colors.red.shade200),
+                            child: Icon(FontAwesome.times_circle,
+                                color: Colors.red.shade200),
                           ),
                         ],
                         'returnValue': EnumMemberPopupActions.cancelMembership,
@@ -303,7 +383,8 @@ class KennelMemberListItem extends StatelessWidget {
                     // if the current user of this device is a superAdmin
                     // give them the ability to set and clear admin flags for other
                     // users
-                    if (kennelListAggregate.hkm?.appAccess.isSuperAdmin ?? false) {
+                    if (kennelListAggregate.hkm?.appAccess.isSuperAdmin ??
+                        false) {
                       buttons.add(
                         <String, dynamic>{
                           'title': 'Edit HC admin roles',
@@ -311,7 +392,8 @@ class KennelMemberListItem extends StatelessWidget {
                             const SizedBox(
                               height: 30,
                               width: 30,
-                              child: Icon(FontAwesome.gear, color: Colors.white),
+                              child:
+                                  Icon(FontAwesome.gear, color: Colors.white),
                             ),
                           ],
                           'returnValue': EnumMemberPopupActions.editKennelAdmin,
@@ -325,10 +407,12 @@ class KennelMemberListItem extends StatelessWidget {
                             SizedBox(
                               height: 30,
                               width: 30,
-                              child: Icon(MaterialCommunityIcons.account_tie, color: Colors.blue.shade200),
+                              child: Icon(MaterialCommunityIcons.account_tie,
+                                  color: Colors.blue.shade200),
                             ),
                           ],
-                          'returnValue': EnumMemberPopupActions.editMismanagementRole,
+                          'returnValue':
+                              EnumMemberPopupActions.editMismanagementRole,
                         },
                       );
                     }

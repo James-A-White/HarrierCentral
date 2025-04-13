@@ -15,8 +15,9 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
       case AppDomainType.event:
         tableName = 'hasherEventMapForRunAdmin';
         break;
-      // case AppDomainType.kennel:
-      //   break;
+      case AppDomainType.kennel:
+        tableName = 'hasherEventMapForKennelAdmin';
+        break;
       case AppDomainType.user:
         tableName = 'hasherEventMap';
         break;
@@ -267,8 +268,8 @@ class HasherEventMapService {
     String eventId,
     String? hasherId,
     AppDomainType appDomainType,
-    int rsvpState,
-    int isHare, {
+    int rsvpState, {
+    int? isHare,
     String? hemId,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
@@ -318,12 +319,15 @@ class HasherEventMapService {
       'accessToken': accessToken,
       'eventId': eventId,
       'hasherId': hasherId,
-      'isHare': isHare,
       'rsvpState': rsvpState,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'hemId': hemId,
     };
+
+    if (isHare != null) {
+      bodyMap['isHare'] = isHare;
+    }
 
     final String body = jsonEncode(bodyMap);
 

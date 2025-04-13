@@ -1822,7 +1822,7 @@ class CheckInPackPageState extends State<CheckInPackPage>
               hasherId,
               AppDomainType.event,
               rsvpState,
-              isHare,
+              isHare: isHare,
               hemId: packMember.hemId,
             );
 

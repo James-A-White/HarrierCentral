@@ -4,7 +4,10 @@ class SyncKennelAdminService {
   static const int flagKennelTable = 0x00000001;
   static const int flagHasherKennelMapTable = 0x00000002;
   static const int flagHashersTable = 0x00000004;
+  static const int flagHasherEventMapTable = 0x00000008;
+  static const int flagPaymentsTable = 0x00000008;
 
+  // exclude HasherEventMap and Payment from allData flags
   static const int flagsAllData = 0x00000007;
 
   // ignore: constant_identifier_names
@@ -13,6 +16,8 @@ class SyncKennelAdminService {
   int _kennelLastUpdated = FORCE;
   int _hasherKennelMapLastUpdated = FORCE;
   int _hashersLastUpdated = FORCE;
+  int _hasherEventMapLastUpdated = FORCE;
+  int _paymentsLastUpdated = FORCE;
 
   Future<int> _getLastUpdatedTime(String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await G0<Database>()
@@ -44,6 +49,37 @@ class SyncKennelAdminService {
             G0<TableModel>()
                 .hasherKennelMapTableHelper
                 .getTableName(AppDomainType.kennel));
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+            G0<TableModel>()
+                .hasherEventMapTableHelper
+                .getTableName(AppDomainType.kennel));
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+            G0<TableModel>()
+                .paymentsTableHelper
+                .getTableName(AppDomainType.kennel));
+  }
+
+  Future<void> clearEventData() async {
+    await G0<TableModel>().baseService.clearTable(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>()
+              .hasherEventMapTableHelper
+              .getTableName(AppDomainType.kennel),
+        );
+    await G0<TableModel>().baseService.clearTable(
+          G0<Database>(),
+          G0<TableModel>().paymentsTableHelper,
+          G0<TableModel>()
+              .paymentsTableHelper
+              .getTableName(AppDomainType.kennel),
+        );
   }
 
   Future<bool> updateFromBackend(
@@ -52,6 +88,7 @@ class SyncKennelAdminService {
     String kennelId, {
     Function? informUser,
     bool usePaging = false,
+    String? targetHasherId,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
       return false;
@@ -110,6 +147,10 @@ class SyncKennelAdminService {
           DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
       final DateTime hasherKennelMapUpdatedAfter =
           DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+      final DateTime hasherEventMapUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+      final DateTime paymentsUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
 
       String userId = getStringPref(StringPrefsEnum.userId) ?? '';
       if (userId.isEmpty) {
@@ -126,7 +167,7 @@ class SyncKennelAdminService {
         paramString: deviceSecret,
       );
 
-      final String body = jsonEncode(<String, String>{
+      final Map<String, dynamic> params = <String, String>{
         'queryType': 'syncKennelAdminData',
         'deviceId': deviceId,
         'accessToken': accessToken,
@@ -140,8 +181,20 @@ class SyncKennelAdminService {
         'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0
             ? 'ignore'
             : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0
+            ? 'ignore'
+            : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0
+            ? 'ignore'
+            : ('${paymentsUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
-      });
+      };
+
+      if (targetHasherId != null) {
+        params['targetHasherId'] = targetHasherId;
+      }
+
+      final String body = jsonEncode(params);
 
       final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
@@ -160,6 +213,8 @@ class SyncKennelAdminService {
     G0<TableModel>().kennelsTableHelper,
     G0<TableModel>().hashersTableHelper,
     G0<TableModel>().hasherKennelMapTableHelper,
+    G0<TableModel>().hasherEventMapTableHelper,
+    G0<TableModel>().paymentsTableHelper,
   ];
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(

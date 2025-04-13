@@ -26,8 +26,9 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
       case AppDomainType.event:
         tableName = 'Payments';
         break;
-      // case AppDomainType.kennel:
-      //   break;
+      case AppDomainType.kennel:
+        tableName = 'KennelPayments';
+        break;
       case AppDomainType.user:
         tableName = 'userPayments';
         break;

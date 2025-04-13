@@ -439,21 +439,21 @@ class RunListItem extends StatelessWidget {
           ],
           'returnValue': rsvpNo
         },
-        <String, dynamic>{
-          'title': 'I\'ll hare!',
-          'icon': <Widget>[
-            Image.asset('images/icons/checkbox_hare.png',
-                width: 30, height: 30),
-            Container(
-                height: 30,
-                width: 30,
-                decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    shape: BoxShape.rectangle,
-                    border: Border.all(color: Colors.white, width: 3.0))),
-          ],
-          'returnValue': isHareYes
-        },
+        // <String, dynamic>{
+        //   'title': 'I\'ll hare!',
+        //   'icon': <Widget>[
+        //     Image.asset('images/icons/checkbox_hare.png',
+        //         width: 30, height: 30),
+        //     Container(
+        //         height: 30,
+        //         width: 30,
+        //         decoration: BoxDecoration(
+        //             color: Colors.transparent,
+        //             shape: BoxShape.rectangle,
+        //             border: Border.all(color: Colors.white, width: 3.0))),
+        //   ],
+        //   'returnValue': isHareYes
+        // },
         rliController.notificationPreference.value == 2
             ? <String, dynamic>{
                 'title': 'Notifications on',
@@ -562,12 +562,14 @@ class RunListItem extends StatelessWidget {
       } else if (retVal is EnumNotificationState) {
         _setNotificationState(retVal as EnumNotificationState<int>);
       } else if (retVal is EnumRsvpState) {
-        await _setRsvpState(retVal as EnumRsvpState<int>, false);
-      } else if (retVal is EnumIsHare) {
-        final bool willHare =
-            await Utilities.promptForHare(rliController.hares.value) ?? false;
-        await _setRsvpState(rsvpYes, willHare);
+        await _setRsvpState(retVal as EnumRsvpState<int>);
       }
+
+      // else if (retVal is EnumIsHare) {
+      //   // final bool willHare =
+      //   //     await Utilities.promptForHare(rliController.hares.value) ?? false;
+      //   await _setRsvpState(rsvpYes);
+      // }
     }
   }
 
@@ -715,21 +717,21 @@ class RunListItem extends StatelessWidget {
           ],
           'returnValue': rsvpNo
         },
-        <String, dynamic>{
-          'title': 'I\'ll hare!',
-          'icon': <Widget>[
-            Image.asset('images/icons/checkbox_hare.png',
-                width: 30, height: 30),
-            Container(
-                height: 30,
-                width: 30,
-                decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    shape: BoxShape.rectangle,
-                    border: Border.all(color: Colors.white, width: 3.0))),
-          ],
-          'returnValue': isHareYes
-        },
+        // <String, dynamic>{
+        //   'title': 'I\'ll hare!',
+        //   'icon': <Widget>[
+        //     Image.asset('images/icons/checkbox_hare.png',
+        //         width: 30, height: 30),
+        //     Container(
+        //         height: 30,
+        //         width: 30,
+        //         decoration: BoxDecoration(
+        //             color: Colors.transparent,
+        //             shape: BoxShape.rectangle,
+        //             border: Border.all(color: Colors.white, width: 3.0))),
+        //   ],
+        //   'returnValue': isHareYes
+        // },
       ];
 
       final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
@@ -745,20 +747,17 @@ class RunListItem extends StatelessWidget {
       if (retVal is EnumRsvpState<int>) {
         await _setRsvpState(
           retVal,
-          false,
         );
       } else if (retVal is EnumIsHare) {
-        final bool willHare =
-            await Utilities.promptForHare(futureRun.event.hares) ?? false;
-        await _setRsvpState(rsvpYes, willHare);
+        // final bool willHare =
+        //     await Utilities.promptForHare(futureRun.event.hares) ?? false;
+        //await _setRsvpState(rsvpYes, willHare);
+        await _setRsvpState(rsvpYes);
       }
     }
   }
 
-  Future<void> _setRsvpState(
-    EnumRsvpState<int> rsvpState,
-    bool willHare,
-  ) async {
+  Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
     rliController.rsvpState.value = -1;
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
@@ -768,7 +767,6 @@ class RunListItem extends StatelessWidget {
               userId,
               AppDomainType.user,
               rsvpState.value,
-              willHare ? isHareYes.value : isHareNo.value,
             );
 
     final int rsvpResult = adHocData[0]['rsvpState'];

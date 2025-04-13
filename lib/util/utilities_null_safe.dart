@@ -272,50 +272,50 @@ class Utilities {
   //   );
   // }
 
-  static Future<bool?> promptForHare(String? hareList) async {
-    return await Get.dialog<bool?>(
-      AlertDialog(
-        title: Text(
-          'Will you Hare this run?',
-          style: ts_alertDialogTitle,
-        ),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text(
-                'Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}',
-                style: ts_alertDialogBody,
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: text_button_style,
-            child: Text(
-              'No Thanks!',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Get.back<bool?>(result: false, canPop: true);
-            },
-          ),
-          TextButton(
-            style: text_button_style,
-            child: Text(
-              'Yes, I\'ll Hare!',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Get.back<bool?>(result: true, canPop: true);
-            },
-          ),
-        ],
-      ),
+  // static Future<bool?> promptForHare(String? hareList) async {
+  //   return await Get.dialog<bool?>(
+  //     AlertDialog(
+  //       title: Text(
+  //         'Will you Hare this run?',
+  //         style: ts_alertDialogTitle,
+  //       ),
+  //       content: SingleChildScrollView(
+  //         child: ListBody(
+  //           children: <Widget>[
+  //             Text(
+  //               'Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}',
+  //               style: ts_alertDialogBody,
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       actions: <Widget>[
+  //         TextButton(
+  //           style: text_button_style,
+  //           child: Text(
+  //             'No Thanks!',
+  //             style: ts_button,
+  //           ),
+  //           onPressed: () {
+  //             Get.back<bool?>(result: false, canPop: true);
+  //           },
+  //         ),
+  //         TextButton(
+  //           style: text_button_style,
+  //           child: Text(
+  //             'Yes, I\'ll Hare!',
+  //             style: ts_button,
+  //           ),
+  //           onPressed: () {
+  //             Get.back<bool?>(result: true, canPop: true);
+  //           },
+  //         ),
+  //       ],
+  //     ),
 
-      barrierDismissible: false, // user must tap button!
-    );
-  }
+  //     barrierDismissible: false, // user must tap button!
+  //   );
+  // }
 
   static bool isOpeeOrTuna() {
     bool isOpeeOrTuna = false;

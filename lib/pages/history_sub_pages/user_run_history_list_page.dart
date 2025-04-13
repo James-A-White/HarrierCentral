@@ -1,14 +1,19 @@
 import 'package:harrier_central/imports.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
-  const UserRunHistoryListPage({
-    super.key,
-    required this.kennelInfo,
-    required this.refreshKennelInfo,
-  });
+  const UserRunHistoryListPage(
+      {super.key,
+      required this.kennelInfo,
+      required this.refreshKennelInfo,
+      required this.appDomain,
+      this.hasherId,
+      this.hashName});
 
   final RunHistoryModel kennelInfo;
   final Function refreshKennelInfo;
+  final AppDomainType appDomain;
+  final String? hasherId;
+  final String? hashName;
 
   @override
   UserRunHistoryPageState createState() => UserRunHistoryPageState();
@@ -16,18 +21,18 @@ class UserRunHistoryListPage extends StatefulWidget {
 
 class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   UserRunHistoryPageState();
-
   bool _isLoading = false;
 
   List<UserRunHistoryModel> _runCountsList = <UserRunHistoryModel>[];
-  final String _userId = getStringPref(StringPrefsEnum.userId)!;
+  late final String userId;
 
   RunHistoryModel? _kennelInfo;
 
   @override
   void initState() {
-    _refreshRunHistoryFromTable(true);
     super.initState();
+    userId = widget.hasherId ?? getStringPref(StringPrefsEnum.userId)!;
+    _refreshRunHistoryFromTable(true);
   }
 
   Future<void> _refreshRunHistoryFromTable(bool forceRefresh) async {
@@ -35,6 +40,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     // of the current runs for a kennel that are cached on the phone and joins to HEM.
     // But for runs that are old and no longer cached on the phone, it looks at the
     // HEM record only in the second half of the UNION statement.
+
     final String query = '''
           SELECT
           hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
@@ -56,9 +62,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           pay.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM narrowEvents e
           INNER JOIN kennels k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$_userId"
-          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
+          LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$userId"
+          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
@@ -84,10 +90,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           pay.${G0<TableModel>().paymentsTableHelper.colCreditAvailable} as creditAvailable,
           pay.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM hasherEventMap hem
-          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
+          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
           WHERE 
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$_userId"
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRemoved} = 0 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
@@ -145,7 +151,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                 size: 28.0,
               ),
               title: Text(
-                  'My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}',
+                  widget.hashName ??
+                      'My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}',
                   style: ts_appBarTitle),
             ),
             floatingActionButton: SpeedDial(
@@ -239,7 +246,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             ),
             body: _isLoading
                 ? _buildCircularProgressIndicator()
-                : _buildListView(),
+                : _buildListView(widget.appDomain),
           ),
         ),
         OfflineModeRibbon(
@@ -414,7 +421,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //   myHaringCount = haringCount;
   // }
 
-  Widget _buildListView() {
+  Widget _buildListView(AppDomainType appDomain) {
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
@@ -568,24 +575,36 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   _runCountsList[index] = _runCountsList[index]
                                       .copyWith(isUpdating: true);
                                   item = _runCountsList[index];
-                                  await _setAttendenceState(item, rsvpYes,
-                                      attendenceAtHash, isHareNo);
+                                  await _setAttendenceState(
+                                    item,
+                                    rsvpYes,
+                                    attendenceAtHash,
+                                    isHareNo,
+                                    appDomain,
+                                  );
                                 } else {
                                   _runCountsList[index] = _runCountsList[index]
                                       .copyWith(isUpdating: true);
                                   item = _runCountsList[index];
                                   await _setAttendenceState(
-                                      item,
-                                      rsvpYes,
-                                      attendenceAtHash,
-                                      item.isHare == 1 ? isHareNo : isHareYes);
+                                    item,
+                                    rsvpYes,
+                                    attendenceAtHash,
+                                    item.isHare == 1 ? isHareNo : isHareYes,
+                                    appDomain,
+                                  );
                                 }
                               } else {
                                 // swipe from left to right to
                                 // indicate that the hasher did
                                 // not participate in this event
                                 await _setAttendenceState(
-                                    item, rsvpNo, attendenceNo, isHareNo);
+                                  item,
+                                  rsvpNo,
+                                  attendenceNo,
+                                  isHareNo,
+                                  appDomain,
+                                );
                               }
 
                               _kennelInfo = await widget.refreshKennelInfo();
@@ -755,14 +774,29 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
                                 if (attendenceState == attendenceNo) {
                                   await _setAttendenceState(
-                                      item, rsvpNo, attendenceNo, isHareNo);
+                                    item,
+                                    rsvpNo,
+                                    attendenceNo,
+                                    isHareNo,
+                                    appDomain,
+                                  );
                                 } else {
                                   if (isHare == isHareYes) {
-                                    await _setAttendenceState(item, rsvpYes,
-                                        attendenceAtHash, isHareYes);
+                                    await _setAttendenceState(
+                                      item,
+                                      rsvpYes,
+                                      attendenceAtHash,
+                                      isHareYes,
+                                      appDomain,
+                                    );
                                   } else {
-                                    await _setAttendenceState(item, rsvpYes,
-                                        attendenceAtHash, isHareNo);
+                                    await _setAttendenceState(
+                                      item,
+                                      rsvpYes,
+                                      attendenceAtHash,
+                                      isHareNo,
+                                      appDomain,
+                                    );
                                   }
                                 }
 
@@ -798,11 +832,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     EnumRsvpState<int> rsvpState,
     EnumAttendenceState<int> attendenceState,
     EnumIsHare<int> isHare,
+    AppDomainType appDomain,
   ) async {
     await G0<TableModel>().hasherEventMapService.setEventAttendence(
           item.eventId,
-          _userId,
-          AppDomainType.user,
+          userId,
+          appDomain,
           attendenceState.value,
           isHare: isHare.value,
           hemId: item.hemId,

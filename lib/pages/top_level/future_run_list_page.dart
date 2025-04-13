@@ -385,15 +385,22 @@ class FutureRunsListPage extends StatelessWidget {
                             // print(
                             //     'chatSummaryMap = ${(chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0)} / thisEventChatCount = ${(thisEventChatCount[publicEventId] ?? 0)} ');
 
+                            // hide any runs that don't have messages
                             if (controller.showOnlyEventsWithMessages.value &&
-                                ((listController
-                                            .thisEventUnseenChats[publicEventId]
-                                            ?.value ??
-                                        listController
-                                            .chatSummaryMap[publicEventId]
-                                            ?.eventChatMessageCount ??
-                                        0) ==
-                                    0)) {
+                                (((listController
+                                                .thisEventUnseenChats[
+                                                    publicEventId]
+                                                ?.value ??
+                                            listController
+                                                .chatSummaryMap[publicEventId]
+                                                ?.eventChatMessageCount ??
+                                            0) ==
+                                        0) ||
+                                    ((listController.filteredRuns[index]
+                                                as RunDetailsAggregate)
+                                            .extensions
+                                            .notificationPreference ==
+                                        notificationsIgnore.value))) {
                               return SizedBox();
                             } else {
                               return RunListItem(

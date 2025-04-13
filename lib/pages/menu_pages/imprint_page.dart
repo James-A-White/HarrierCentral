@@ -16,7 +16,9 @@ class ImprintPageState extends State<ImprintPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -40,7 +42,8 @@ class ImprintPageState extends State<ImprintPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -78,7 +81,8 @@ class ImprintPageContentState extends State<ImprintPageContent> {
       });
     });
 
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
         child: ConstrainedBox(
           constraints: const BoxConstraints(
@@ -100,7 +104,9 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}', style: ts_regular),
+                      Text(
+                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}',
+                          style: ts_regular),
                     ],
                   ),
                   Row(
@@ -112,7 +118,9 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31', style: ts_regular),
+                      Text(
+                          'Harrier Central\r\n\r\nMelissa and James White\r\nTuna Melt and Opee\r\n\r\nLondon, England',
+                          style: ts_regular),
                     ],
                   ),
                   Expanded(
@@ -126,7 +134,7 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('connect@harriercentral.com', style: ts_regular),
+                      Text('harriercentral@gmail.com', style: ts_regular),
                     ],
                   ),
                   Row(
@@ -138,7 +146,9 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('© ${DateTime.now().year}, InnoVet Europe\r\nAll rights reserved', style: ts_regular),
+                      Text(
+                          '© ${DateTime.now().year}, Melissa and James White\r\nAll rights reserved',
+                          style: ts_regular),
                     ],
                   ),
                   Row(
@@ -147,7 +157,9 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                       Text('\r\nTechnical data:', style: ts_headingLarge),
                     ],
                   ),
-                  Text('The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.', style: ts_regular),
+                  Text(
+                      'The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.',
+                      style: ts_regular),
                   const SizedBox(width: 40, height: 40),
                 ],
               ),

@@ -148,6 +148,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                                       .flagUiElement_logOutAndRefreshButton |
                                   HasherProfilePage
                                       .flagUiElement_refresh3rdPartyLogin |
+                                  HasherProfilePage.flagUiElement_logOutButton |
                                   HasherProfilePage
                                       .flagUiElement_gdprDeleteAccount);
                         },
