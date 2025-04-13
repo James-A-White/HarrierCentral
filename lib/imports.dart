@@ -21,7 +21,7 @@ export 'package:flutter_cache_manager/flutter_cache_manager.dart';
 export 'package:flutter_chat_ui/flutter_chat_ui.dart';
 export 'package:flutter_image_compress/flutter_image_compress.dart';
 export 'package:flutter_linkify/flutter_linkify.dart';
-export 'package:flutter_localizations/flutter_localizations.dart';
+//export 'package:flutter_localization/flutter_localization.dart';
 export 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 export 'package:flutter_map/flutter_map.dart';
 export 'package:flutter_phoenix/flutter_phoenix.dart';

@@ -1,4 +1,3 @@
-import 'package:date_time_picker_plus/date_time_picker.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -113,8 +112,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _eventNameController.text = _eventAggregate.event.eventName;
     _eventDescriptionController.text =
         _eventAggregate.event.eventDescription ?? '';
-    _eventDatetimeController.text =
-        _eventAggregate.event.eventStartDatetime.toString();
+    _eventDatetimeController.text = DateFormat('E, d MMM, yyyy, h:mm a')
+        .format(_eventAggregate.event.eventStartDatetime);
     _locationOneLineDescController.text =
         _eventAggregate.event.locationOneLineDesc ?? '';
     _haresController.text = _eventAggregate.event.hares ?? '';
@@ -362,11 +361,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           _isUpdating = true;
         });
 
+        final DateFormat formatter = DateFormat('E, d MMM, yyyy, h:mm a');
+
         final EventsService nSvc = EventsService();
         final String eventId = await nSvc.addEditEvent(
           eventId: _eventAggregate.event.eventId,
           eventName: _eventNameController.text,
-          eventStartDatetime: DateTime.tryParse(_eventDatetimeController.text),
+          eventStartDatetime: formatter.tryParse(_eventDatetimeController.text),
           eventDescription: _eventDescriptionController.text,
           locationOneLineDesc: _locationOneLineDescController.text,
           useFbRunDetails: 0,
@@ -651,39 +652,127 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color: _focusNodeDatetime.hasFocus
-                          ? Colors.yellow.shade50
-                          : Colors.white,
-                      margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                      // child: OmniDateTimePicker(
-                      //   onDateTimeChanged: (value) {},
-                      // ),
-                      child: DateTimePicker(
-                        decoration: InputDecoration(
-                          labelText: 'Date / Time',
-                          fillColor: hc_red,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: const BorderSide(),
+                        color: _focusNodeDatetime.hasFocus
+                            ? Colors.yellow.shade50
+                            : Colors.white,
+                        margin: const EdgeInsets.only(
+                            top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        // child: OmniDateTimePicker(
+                        //   onDateTimeChanged: (value) {},
+                        // ),
+                        child: TextFormField(
+                          controller: _eventDatetimeController,
+                          focusNode: _focusNodeDatetime,
+                          readOnly: true,
+                          onTap: () async {
+                            final DateFormat formatter =
+                                DateFormat('E, d MMM, yyyy, h:mm a');
+                            DateTime eventStartDate = formatter
+                                    .tryParse(_eventDatetimeController.text) ??
+                                DateTime.now();
+
+                            // Dismiss keyboard (just in case)
+                            FocusScope.of(context).requestFocus(FocusNode());
+
+                            // Show date picker
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: eventStartDate,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+
+                            if (pickedDate == null) return;
+
+                            if (context.mounted) {
+                              // Show time picker
+                              TimeOfDay? pickedTime = await showTimePicker(
+                                context: context,
+                                initialTime:
+                                    TimeOfDay.fromDateTime(eventStartDate),
+                                builder: (BuildContext context, Widget? child) {
+                                  return MediaQuery(
+                                    data: MediaQuery.of(context)
+                                        .copyWith(alwaysUse24HourFormat: false),
+                                    child: child!,
+                                  );
+                                },
+                              );
+
+                              if (pickedTime == null) return;
+
+                              final selectedDateTime = DateTime(
+                                pickedDate.year,
+                                pickedDate.month,
+                                pickedDate.day,
+                                pickedTime.hour,
+                                pickedTime.minute,
+                              );
+
+                              // Format to desired string
+                              final formatted =
+                                  DateFormat('E, d MMM, yyyy, h:mm a')
+                                      .format(selectedDateTime);
+
+                              // Update the controller
+                              _eventDatetimeController.text = formatted;
+
+                              // Optionally trigger rebuild or setState
+                              setState(() {});
+                            }
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Date / Time',
+                            fillColor: hc_red,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(),
+                            ),
+                            hintStyle: ts_hint,
                           ),
-                          hintStyle: ts_hint,
+                          validator: (String? val) {
+                            return null; // or your custom validation
+                          },
+                        )
+
+                        // DateTimePicker(
+                        //   onFieldSubmitted: (value) {
+                        //     _eventDatetimeController.text = value;
+                        //     setState(() {});
+                        //   },
+                        //   onChanged: (value) {
+                        //     _eventDatetimeController.text = value;
+                        //     setState(() {});
+                        //   },
+                        //   onSaved: (newValue) {
+                        //     _eventDatetimeController.text = newValue ?? '';
+                        //     setState(() {});
+                        //   },
+                        //   decoration: InputDecoration(
+                        //     labelText: 'Date / Time',
+                        //     fillColor: hc_red,
+                        //     border: OutlineInputBorder(
+                        //       borderRadius: BorderRadius.circular(10.0),
+                        //       borderSide: const BorderSide(),
+                        //     ),
+                        //     hintStyle: ts_hint,
+                        //   ),
+                        //   focusNode: _focusNodeDatetime,
+                        //   controller: _eventDatetimeController,
+                        //   type: DateTimePickerType.dateTime,
+                        //   use24HourFormat: false,
+                        //   locale: const Locale('en', 'US'),
+                        //   dateMask: 'E, d MMM, yyyy, h:mm a',
+                        //   firstDate: DateTime(2000),
+                        //   lastDate: DateTime(2100),
+                        //   dateLabelText: 'Date',
+                        //   timeLabelText: 'Hour',
+                        //   validator: (String? val) {
+                        //     return null;
+                        //   },
+                        // ),
+
                         ),
-                        focusNode: _focusNodeDatetime,
-                        controller: _eventDatetimeController,
-                        type: DateTimePickerType.dateTime,
-                        use24HourFormat: false,
-                        locale: const Locale('en', 'US'),
-                        dateMask: 'E, d MMM, yyyy, h:mm a',
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2100),
-                        dateLabelText: 'Date',
-                        timeLabelText: 'Hour',
-                        validator: (String? val) {
-                          return null;
-                        },
-                      ),
-                    ),
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(

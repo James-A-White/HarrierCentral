@@ -202,6 +202,7 @@ class FutureRunsListPage extends StatelessWidget {
                         physics: const AlwaysScrollableScrollPhysics(),
                         //padding: const EdgeInsets.only( bottom: 40.0),
                         itemCount: listController.filteredRuns.length,
+                        //itemCount: 5,
                         itemBuilder: (BuildContext context, int index) {
                           if (listController.filteredRuns[index] is int) {
                             return Column(
@@ -384,21 +385,33 @@ class FutureRunsListPage extends StatelessWidget {
                             // print(
                             //     'chatSummaryMap = ${(chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0)} / thisEventChatCount = ${(thisEventChatCount[publicEventId] ?? 0)} ');
 
-                            return RunListItem(
-                              futureRun: listController.filteredRuns[index],
-                              currentChatCount: (listController
-                                      .thisEventUnseenChats[publicEventId]
-                                      ?.value ??
-                                  listController.chatSummaryMap[publicEventId]
-                                      ?.eventChatMessageCount ??
-                                  0),
-                              onItemTapped: () {
-                                listController.openRun(
-                                  listController.filteredRuns[index],
-                                  openToChatTab: false,
-                                );
-                              },
-                            );
+                            if (controller.showOnlyEventsWithMessages.value &&
+                                ((listController
+                                            .thisEventUnseenChats[publicEventId]
+                                            ?.value ??
+                                        listController
+                                            .chatSummaryMap[publicEventId]
+                                            ?.eventChatMessageCount ??
+                                        0) ==
+                                    0)) {
+                              return SizedBox();
+                            } else {
+                              return RunListItem(
+                                futureRun: listController.filteredRuns[index],
+                                currentChatCount: (listController
+                                        .thisEventUnseenChats[publicEventId]
+                                        ?.value ??
+                                    listController.chatSummaryMap[publicEventId]
+                                        ?.eventChatMessageCount ??
+                                    0),
+                                onItemTapped: () {
+                                  listController.openRun(
+                                    listController.filteredRuns[index],
+                                    openToChatTab: false,
+                                  );
+                                },
+                              );
+                            }
                           }
                         }),
               ),

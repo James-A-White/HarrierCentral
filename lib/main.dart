@@ -86,11 +86,11 @@ void main() async {
         },
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
-        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-          AppLocalizationsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
+        // localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+        //   AppLocalizationsDelegate(),
+        //   GlobalMaterialLocalizations.delegate,
+        //   GlobalWidgetsLocalizations.delegate,
+        // ],
         supportedLocales: const <Locale>[
           Locale('en', 'US'), // English
           Locale('es', 'ES'), // Spanish

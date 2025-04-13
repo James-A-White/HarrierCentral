@@ -4,21 +4,38 @@ import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 
 class RunListItemController extends GetxController {
-  RunListItemController();
+  RunListItemController(RunDetailsAggregate futureRun, int ccc)
+      : rsvpState = (futureRun.extensions.rsvpState).obs,
+        isHareState = (futureRun.extensions.isHare).obs,
+        emailAlertPreference = (futureRun.extensions.emailAlertPreference).obs,
+        notificationPreference =
+            (futureRun.extensions.notificationPreference).obs,
+        isPaid = (futureRun.extensions.isPaid).obs,
+        hares = (futureRun.event.hares ?? '').obs,
+        currentChatCount = ccc.obs;
 
-  Rx<int> rsvpState = 0.obs;
-  Rx<int> isHareState = 0.obs;
-  Rx<int> emailAlertPreference = 0.obs;
-  Rx<int> notificationPreference = 0.obs;
-  Rx<int> isPaid = 0.obs;
-  Rx<String> hares = ''.obs;
+  final Rx<int> rsvpState;
+  final Rx<int> currentChatCount;
+  final Rx<int> isHareState;
+  final Rx<int> emailAlertPreference;
+  final Rx<int> notificationPreference;
+  final Rx<int> isPaid;
+  final Rx<String> hares;
 
   void setRsvpState(int state) => rsvpState.value = state;
-  void setHareState(int state) => isHareState.value = state;
   void setEmailState(int state) => emailAlertPreference.value = state;
-  void setNotificationState(int state) => notificationPreference.value = state;
-  void setHares(String state) => hares.value = state;
+
+  void setNotificationState(int state) {
+    if (notificationPreference.value != state) {
+      notificationPreference.value = state;
+      //update(['badge']);
+    }
+  }
+
   void setIsPaid(int state) => isPaid.value = state;
+
+  // void setHares(String state) => hares.value = state;
+  // void setHareState(int state) => isHareState.value = state;
 }
 
 class RunListItem extends StatelessWidget {
@@ -26,42 +43,41 @@ class RunListItem extends StatelessWidget {
     super.key,
     required this.futureRun,
     required this.onItemTapped,
-    required this.currentChatCount,
-  });
+    required int currentChatCount,
+  }) : rliController = RunListItemController(futureRun, currentChatCount);
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;
-  final RunListItemController rliController = RunListItemController();
-  final int currentChatCount;
+  final RunListItemController rliController;
 
   @override
   Widget build(BuildContext context) {
-    if (futureRun.extensions.rsvpState != rliController.rsvpState.value) {
-      rliController.setRsvpState(futureRun.extensions.rsvpState);
-    }
+    // if (futureRun.extensions.rsvpState != rliController.rsvpState.value) {
+    //   rliController.setRsvpState(futureRun.extensions.rsvpState);
+    // }
 
-    if (futureRun.extensions.isHare != rliController.isHareState.value) {
-      rliController.setHareState(futureRun.extensions.isHare);
-    }
+    // if (futureRun.extensions.isHare != rliController.isHareState.value) {
+    //   rliController.setHareState(futureRun.extensions.isHare);
+    // }
 
-    if (futureRun.extensions.emailAlertPreference !=
-        rliController.emailAlertPreference.value) {
-      rliController.setEmailState(futureRun.extensions.emailAlertPreference);
-    }
+    // if (futureRun.extensions.emailAlertPreference !=
+    //     rliController.emailAlertPreference.value) {
+    //   rliController.setEmailState(futureRun.extensions.emailAlertPreference);
+    // }
 
-    if (futureRun.extensions.notificationPreference !=
-        rliController.notificationPreference.value) {
-      rliController
-          .setNotificationState(futureRun.extensions.notificationPreference);
-    }
+    // if (futureRun.extensions.notificationPreference !=
+    //     rliController.notificationPreference.value) {
+    //   rliController
+    //       .setNotificationState(futureRun.extensions.notificationPreference);
+    // }
 
-    if (futureRun.event.hares != rliController.hares.value) {
-      rliController.setHares(futureRun.event.hares ?? '');
-    }
+    // if (futureRun.event.hares != rliController.hares.value) {
+    //   rliController.setHares(futureRun.event.hares ?? '');
+    // }
 
-    if (futureRun.extensions.isPaid != rliController.isPaid.value) {
-      rliController.setIsPaid(futureRun.extensions.isPaid);
-    }
+    // if (futureRun.extensions.isPaid != rliController.isPaid.value) {
+    //   rliController.setIsPaid(futureRun.extensions.isPaid);
+    // }
 
     return GestureDetector(
       onTap: () {
@@ -74,78 +90,83 @@ class RunListItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    _showRsvpOptionsPopup();
+            Row(children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  _showRsvpOptionsPopup();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 5.0, right: 5.0, top: 5.0, bottom: 5.0),
+                  child: Obx(() => _getRsvpWidget()),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: const EdgeInsets.only(top: 5.0, left: 5.0),
+                  child: AutoSizeText(
+                    futureRun.event.eventName,
+                    style: ts_tileText,
+                    textAlign: TextAlign.left,
+                    maxLines: 1,
+                    minFontSize: 18,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.only(right: 10),
+                child: GestureDetector(
+                  onTap: () async {
+                    await _showEmailAlertPopup();
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 5.0, right: 5.0, top: 5.0, bottom: 5.0),
-                    child: Obx(() => _getRsvpWidget()),
-                  ),
+                  child: Obx(() => _getEmailWidget()),
                 ),
-                Expanded(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(top: 5.0, left: 5.0),
-                    child: AutoSizeText(
-                      futureRun.event.eventName,
-                      style: ts_tileText,
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      minFontSize: 18,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: GestureDetector(
-                    onTap: () async {
-                      await _showEmailAlertPopup();
-                    },
-                    child: Obx(() => _getEmailWidget()),
-                  ),
-                ),
-                ((futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(
-                        const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
-                    ? Container()
-                    : Container(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: GestureDetector(
-                          onTap: () async {
-                            await _showNotificationPopup();
-                          },
-                          child: Obx(() => _getNotificationWidget()),
-                        ),
+              ),
+              ((futureRun.event.eventStartDatetime.isAfter(DateTime.now()
+                      .add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
+                  ? Container()
+                  : Container(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: GestureDetector(
+                        onTap: () async {
+                          await _showNotificationPopup();
+                        },
+                        child: Obx(() => _getNotificationWidget()),
                       ),
-                if (currentChatCount != 0) ...<Widget>[
-                  badges.Badge(
+                    ),
+              Obx(() {
+                if ((rliController.currentChatCount.value == 0) ||
+                    (rliController.notificationPreference.value ==
+                        notificationsIgnore.value)) {
+                  return SizedBox();
+                } else {
+                  return badges.Badge(
                     position: badges.BadgePosition.topEnd(top: -5, end: 0),
                     badgeContent: Text(
-                        currentChatCount < 100
-                            ? currentChatCount.toString()
-                            : '>',
-                        style: ts_badge.copyWith(
-                          fontSize: currentChatCount < 10
-                              ? 20
-                              : currentChatCount < 100
-                                  ? 15
-                                  : 20,
-                        )),
+                      rliController.currentChatCount < 100
+                          ? rliController.currentChatCount.toString()
+                          : '>',
+                      style: ts_badge.copyWith(
+                        fontSize: rliController.currentChatCount < 10
+                            ? 20
+                            : rliController.currentChatCount < 100
+                                ? 15
+                                : 20,
+                      ),
+                    ),
                     badgeStyle: badges.BadgeStyle(
                       badgeColor: Colors.red.shade800,
                       padding: const EdgeInsets.all(6),
                     ),
-                  ),
-                  SizedBox(
-                    width: 5,
-                  )
-                ]
-              ],
-            ),
+                  );
+                }
+              }),
+              SizedBox(
+                width: 5,
+              )
+            ]),
             Container(
               margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
               padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
@@ -475,7 +496,7 @@ class RunListItem extends StatelessWidget {
                     ),
                   )
                 ],
-                'returnValue': notificationsOff,
+                'returnValue': notificationsIgnore,
               },
         rliController.emailAlertPreference.value == 2
             ? <String, dynamic>{
@@ -562,20 +583,33 @@ class RunListItem extends StatelessWidget {
   }
 
   Widget _getNotificationWidget() {
+    String path = 'images/icons/bell_silver_strike_out_50px.png';
+    print(rliController.notificationPreference.value);
+    switch (rliController.notificationPreference.value) {
+      case 0:
+        path = 'images/icons/bell_silver_50px.png';
+        break;
+      case 1:
+        path = 'images/icons/bell_gold_50px.png';
+        break;
+      case 2:
+        path = 'images/icons/bell_silver_strike_out_50px.png';
+        break;
+      case 3:
+        path = 'images/icons/bell_silver_50px.png';
+        break;
+      case 4:
+        path = 'images/icons/bell_time_50px.png';
+        break;
+    }
+
     return rliController.notificationPreference.value == -1
         ? Icon(delayIcon, color: hc_blue, size: 24.0)
         : Image(
             width: 24.0,
             height: 24.0,
             fit: BoxFit.fill,
-            image: rliController.notificationPreference.value == 1
-                ? const AssetImage('images/icons/bell_gold_50px.png')
-                : rliController.notificationPreference.value == 2
-                    ? const AssetImage(
-                        'images/icons/bell_silver_strike_out_50px.png')
-                    : const AssetImage(
-                        'images/icons/bell_silver_strike_out_50px.png'),
-          );
+            image: AssetImage(path));
   }
 
   Widget _getEmailWidget() {
@@ -585,9 +619,11 @@ class RunListItem extends StatelessWidget {
             width: 24.0,
             height: 24.0,
             fit: BoxFit.fill,
-            image: rliController.emailAlertPreference.value == 1
+            image: rliController.emailAlertPreference.value ==
+                    notificationsOn.value
                 ? const AssetImage('images/icons/envelope_gold_50px.png')
-                : rliController.emailAlertPreference.value == 2
+                : rliController.emailAlertPreference.value ==
+                        notificationsIgnore.value
                     ? const AssetImage(
                         'images/icons/envelope_silver_strike_out_50px.png')
                     : const AssetImage(
@@ -755,7 +791,7 @@ class RunListItem extends StatelessWidget {
   Future<void> _showNotificationPopup() async {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
-        'title': 'Notifications on',
+        'title': 'Always on',
         'icon': <Widget>[
           Container(
               height: 30,
@@ -776,7 +812,7 @@ class RunListItem extends StatelessWidget {
         'returnValue': notificationsOn,
       },
       <String, dynamic>{
-        'title': 'Notifications off',
+        'title': 'On 4 hours before run',
         'icon': <Widget>[
           Container(
               height: 30,
@@ -790,14 +826,14 @@ class RunListItem extends StatelessWidget {
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+              image: AssetImage('images/icons/bell_time_50px.png'),
             ),
           )
         ],
-        'returnValue': notificationsOff,
+        'returnValue': notificationsOnBeforeRun,
       },
       <String, dynamic>{
-        'title': 'Use Kennel setting',
+        'title': 'On but muted',
         'icon': <Widget>[
           Container(
               height: 30,
@@ -815,6 +851,46 @@ class RunListItem extends StatelessWidget {
             ),
           )
         ],
+        'returnValue': notificationsMute,
+      },
+      <String, dynamic>{
+        'title': 'Off',
+        'icon': <Widget>[
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
+          const Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+            ),
+          )
+        ],
+        'returnValue': notificationsIgnore,
+      },
+      <String, dynamic>{
+        'title': 'Use Kennel setting',
+        'icon': <Widget>[
+          Container(
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+              left: 1,
+              top: 1,
+              child: Icon(
+                FontAwesome.home,
+                size: 28,
+                color: Colors.red.shade900,
+              ))
+        ],
         'returnValue': notificationsAuto,
       },
       // <String, dynamic>{
@@ -829,7 +905,7 @@ class RunListItem extends StatelessWidget {
       title: 'Notification options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
-      cancelButtonReturnValue: followTypeCancel,
+      cancelButtonReturnValue: notificationsUnchanged,
     );
 
     dynamic retVal = await Get.dialog<dynamic>(
@@ -863,9 +939,7 @@ class RunListItem extends StatelessWidget {
   }
 
   Future<void> _setNotificationState(EnumNotificationState<int> retVal) async {
-    if ((retVal == notificationsOn) ||
-        (retVal == notificationsOff) ||
-        (retVal == notificationsAuto)) {
+    if ((retVal != notificationsUnchanged)) {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
       final EnumNotificationState<int> nState = retVal;
       rliController.setNotificationState(-1);

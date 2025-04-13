@@ -16,6 +16,8 @@ class FutureRunListPageController extends GetxController {
   Map<String, RxInt> thisEventUnseenChats = {};
   RxInt totalNotifications = 0.obs;
 
+  RxBool showOnlyEventsWithMessages = false.obs;
+
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
 
@@ -36,6 +38,10 @@ class FutureRunListPageController extends GetxController {
           (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
 
       _updateChatCountBadges(publicEventId, chatCount);
+    });
+
+    showOnlyEventsWithMessages.listen((bool value) {
+      filterRuns();
     });
 
     IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
@@ -109,7 +115,9 @@ class FutureRunListPageController extends GetxController {
       }
     }
 
-    update(['runList']);
+    _updateTotalNotificationCounter();
+
+    update(['runList', 'main_nav_page']);
   }
 
   @override

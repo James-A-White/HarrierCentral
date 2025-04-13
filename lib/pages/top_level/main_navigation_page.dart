@@ -405,6 +405,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
             appBar: (!_showMainScreen)
                 ? null
                 : AppBar(
+                    leadingWidth: 120,
                     leading: GetBuilder<FutureRunListPageController>(
                         id: 'main_nav_page',
                         builder: (controller) {
@@ -421,16 +422,33 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                         Scaffold.of(context).openDrawer(),
                                   ),
                                 ),
-                                badges.Badge(
-                                  position: badges.BadgePosition.topEnd(
-                                      top: -8, end: -4),
-                                  badgeContent: Text(
-                                    controller.totalNotifications.value
-                                        .toString(), // number of unread messages
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 10),
+                                Builder(
+                                  builder: (context) => GestureDetector(
+                                    onTap: () {
+                                      if (controller.totalNotifications.value >
+                                          0) {
+                                        controller.showOnlyEventsWithMessages
+                                                .value =
+                                            !controller
+                                                .showOnlyEventsWithMessages
+                                                .value;
+                                      }
+                                    },
+                                    child: badges.Badge(
+                                      position: badges.BadgePosition.topEnd(
+                                          top: -8, end: -4),
+                                      badgeContent: Text(
+                                        controller.totalNotifications.value
+                                            .toString(), // number of unread messages
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      showBadge:
+                                          controller.totalNotifications.value !=
+                                              0,
+                                      child: Icon(Icons.chat_bubble_outline),
+                                    ),
                                   ),
-                                  child: Icon(Icons.chat_bubble_outline),
                                 ),
                               ],
                             ),

@@ -133,8 +133,12 @@ const EnumNotificationState<int> notificationsAuto =
     EnumNotificationState<int>(0);
 const EnumNotificationState<int> notificationsOn =
     EnumNotificationState<int>(1);
-const EnumNotificationState<int> notificationsOff =
+const EnumNotificationState<int> notificationsIgnore =
     EnumNotificationState<int>(2);
+const EnumNotificationState<int> notificationsMute =
+    EnumNotificationState<int>(3);
+const EnumNotificationState<int> notificationsOnBeforeRun =
+    EnumNotificationState<int>(4);
 
 //////////////////////////
 ///
@@ -304,14 +308,14 @@ class EnumNotificationType<int> extends HcEnum<int> {
   const EnumNotificationType(super.val);
 }
 
-const EnumNotificationType<int> notificationTypeCancel =
-    EnumNotificationType<int>(-1);
-const EnumNotificationType<int> notificationTypeAuto =
-    EnumNotificationType<int>(0);
-const EnumNotificationType<int> notificationTypeAlways =
-    EnumNotificationType<int>(1);
-const EnumNotificationType<int> notificationTypeBlock =
-    EnumNotificationType<int>(2);
+// const EnumNotificationType<int> notificationTypeCancel =
+//     EnumNotificationType<int>(-1);
+// const EnumNotificationType<int> notificationTypeAuto =
+//     EnumNotificationType<int>(0);
+// const EnumNotificationType<int> notificationTypeAlways =
+//     EnumNotificationType<int>(1);
+// const EnumNotificationType<int> notificationTypeBlock =
+//     EnumNotificationType<int>(2);
 
 //////////////////////////
 
