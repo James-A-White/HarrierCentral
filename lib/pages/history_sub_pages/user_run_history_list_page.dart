@@ -19,7 +19,8 @@ class UserRunHistoryListPage extends StatefulWidget {
   UserRunHistoryPageState createState() => UserRunHistoryPageState();
 }
 
-class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
+class UserRunHistoryPageState extends State<UserRunHistoryListPage>
+    with SingleTickerProviderStateMixin {
   UserRunHistoryPageState();
   bool _isLoading = false;
 
@@ -28,11 +29,29 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   RunHistoryModel? _kennelInfo;
 
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabSelection);
     userId = widget.hasherId ?? getStringPref(StringPrefsEnum.userId)!;
     _refreshRunHistoryFromTable(true);
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      // This means the user tapped a new tab, but the animation hasn't finished yet.
+      print('Tab is changing to index: ${_tabController.index}');
+      _refreshRunHistoryFromTable(true);
+      //setState(() {});
+    } else if (_tabController.index != _tabController.previousIndex) {
+      // This is triggered after the tab has finished changing.
+      print('Tab changed to index: ${_tabController.index}');
+      _refreshRunHistoryFromTable(true);
+      //setState(() {});
+    }
   }
 
   Future<void> _refreshRunHistoryFromTable(bool forceRefresh) async {
@@ -41,7 +60,13 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     // But for runs that are old and no longer cached on the phone, it looks at the
     // HEM record only in the second half of the UNION statement.
 
-    final String query = '''
+    int attendenceState = 0;
+
+    if (_tabController.index == 0) {
+      attendenceState = 20;
+    }
+
+    String query = '''
           SELECT
           hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
@@ -69,6 +94,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
           AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
+          AND coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
           AND DateTime(e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) <= DateTime('now')
         UNION
           SELECT 
@@ -97,7 +123,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRemoved} = 0 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
-          AND DateTime(hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime}) <= DateTime('now')
+          AND coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
+          AND DateTime(hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime}) <= DateTime('now') 
           ORDER BY eventStartDatetime desc
           ''';
 
@@ -425,268 +452,305 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
-      child: _runCountsList.isEmpty
-          ? Center(child: Text('No runs logged yet.', style: ts_regular))
-          : RefreshIndicator(
-              onRefresh: _handleRefresh,
-              displacement: 130.0,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Container(
-                    decoration: const BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, 6.0),
-                          blurRadius: 10.0,
-                        ),
-                      ],
+      child: RefreshIndicator(
+          onRefresh: _handleRefresh,
+          displacement: 130.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              Container(
+                decoration: const BoxDecoration(
+                  // border: new Border.all(width: 1.0, color: Colors.black),
+                  //shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: Color.fromARGB(70, 0, 0, 0),
+                      offset: Offset(0.0, 6.0),
+                      blurRadius: 10.0,
                     ),
-                    //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(
-                        left: 5, top: 5, right: 0, bottom: 5),
+                  ],
+                ),
+                //color:Color.fromARGB(30, 0, 0, 0),
+                padding:
+                    const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
 
-                    child: Row(children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.only(right: 12.0),
-                        height: 90,
-                        child: KennelLogo(
-                          kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId,
-                          kennelLogoUrl:
-                              (_kennelInfo ?? widget.kennelInfo).kennelLogo,
-                          kennelShortName: (_kennelInfo ?? widget.kennelInfo)
-                              .kennelShortName,
-                          logoHeight:
-                              60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                          leftPadding: 5.0,
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            AutoSizeText(
-                              (_kennelInfo ?? widget.kennelInfo).kennelName,
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: boldTitleStyle,
-                              textAlign: TextAlign.left,
-                            ),
-                            AutoSizeText(
-                              'My verified run count: ${(_kennelInfo ?? widget.kennelInfo).hcRunsThisKennel}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 12.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.center,
-                            ),
-                            AutoSizeText(
-                              'My verified haring count: ${(_kennelInfo ?? widget.kennelInfo).hcHaringThisKennel}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 12.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.center,
-                            ),
-                            AutoSizeText(
-                              'Kennel credit: ${IveCoreUtilities.getFormattedMoney((_kennelInfo ?? widget.kennelInfo).kennelCredit, widget.kennelInfo.digitsAfterDecimal, widget.kennelInfo.currencySymbol)}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 12.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.center,
-                            ),
-                            ((_kennelInfo ?? widget.kennelInfo)
-                                        .historicalTotalRunCount) ==
-                                    0
-                                ? Container()
-                                : AutoSizeText(
-                                    'Historical run count: ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount}',
-                                    //'Super fucking long text thats sure to overflow and more',
-                                    //'999',
-                                    overflow: TextOverflow.ellipsis,
-                                    minFontSize: 18.0,
-                                    maxLines: 1,
-                                    style: numberStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
-                            ((_kennelInfo ?? widget.kennelInfo)
-                                        .historicalTotalRunCount) ==
-                                    0
-                                ? Container()
-                                : AutoSizeText(
-                                    'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount}',
-                                    //'Super fucking long text thats sure to overflow and more',
-                                    //'999',
-                                    overflow: TextOverflow.ellipsis,
-                                    minFontSize: 18.0,
-                                    maxLines: 1,
-                                    style: numberStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
-                          ],
-                        ),
-                      ),
-                    ]),
+                child: Row(children: <Widget>[
+                  Container(
+                    margin: const EdgeInsets.only(right: 12.0),
+                    height: 90,
+                    child: KennelLogo(
+                      kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId,
+                      kennelLogoUrl:
+                          (_kennelInfo ?? widget.kennelInfo).kennelLogo,
+                      kennelShortName:
+                          (_kennelInfo ?? widget.kennelInfo).kennelShortName,
+                      logoHeight:
+                          60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                      leftPadding: 5.0,
+                    ),
                   ),
                   Expanded(
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: _runCountsList.length,
-                      padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const Divider(
-                        height: 1.0,
-                        color: Colors.black45,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        AutoSizeText(
+                          (_kennelInfo ?? widget.kennelInfo).kennelName,
+                          //'Super fucking long text thats sure to overflow and more',
+                          //'999',
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 18.0,
+                          maxLines: 1,
+                          style: boldTitleStyle,
+                          textAlign: TextAlign.left,
+                        ),
+                        AutoSizeText(
+                          'My verified run count: ${(_kennelInfo ?? widget.kennelInfo).hcRunsThisKennel}',
+                          //'Super fucking long text thats sure to overflow and more',
+                          //'999',
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 12.0,
+                          maxLines: 1,
+                          style: numberStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                        AutoSizeText(
+                          'My verified haring count: ${(_kennelInfo ?? widget.kennelInfo).hcHaringThisKennel}',
+                          //'Super fucking long text thats sure to overflow and more',
+                          //'999',
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 12.0,
+                          maxLines: 1,
+                          style: numberStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                        AutoSizeText(
+                          'Kennel credit: ${IveCoreUtilities.getFormattedMoney((_kennelInfo ?? widget.kennelInfo).kennelCredit, widget.kennelInfo.digitsAfterDecimal, widget.kennelInfo.currencySymbol)}',
+                          //'Super fucking long text thats sure to overflow and more',
+                          //'999',
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 12.0,
+                          maxLines: 1,
+                          style: numberStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                        ((_kennelInfo ?? widget.kennelInfo)
+                                    .historicalTotalRunCount) ==
+                                0
+                            ? Container()
+                            : AutoSizeText(
+                                'Historical run count: ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                        ((_kennelInfo ?? widget.kennelInfo)
+                                    .historicalTotalRunCount) ==
+                                0
+                            ? Container()
+                            : AutoSizeText(
+                                'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                      ],
+                    ),
+                  ),
+                ]),
+              ),
+              Container(
+                // color: Colors.red,
+                width: 100,
+                padding: const EdgeInsets.only(
+                  left: 60,
+                  right: 60,
+                  top: 10.0,
+                ),
+                child: DefaultTabController(
+                  length: 2,
+                  child: TabBar(
+                    onTap: (void _) {
+                      setState(() {});
+                    },
+                    labelStyle: ts_tabSelected,
+                    unselectedLabelStyle: ts_tabUnselected,
+                    isScrollable: false,
+                    unselectedLabelColor: Colors.white,
+                    labelColor: Colors.white,
+                    //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                    indicatorSize: TabBarIndicatorSize.label,
+                    indicator: BubbleTabIndicator(
+                        indicatorHeight: 30.0,
+                        indicatorColor: hc_red,
+                        tabBarIndicatorSize: TabBarIndicatorSize.label,
+                        indicatorRadius: 15.0,
+                        padding: EdgeInsets.only(top: 5)),
+                    tabs: <Tab>[
+                      Tab(
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 120,
+                          child: Text(
+                            'My Runs',
+                            style: numberStyle.copyWith(
+                                color: _tabController.index == 0
+                                    ? Colors.white
+                                    : Colors.black),
+                          ),
+                        ),
                       ),
-                      //itemExtent: 58.0,
-                      //shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        UserRunHistoryModel item = _runCountsList[index];
+                      Tab(
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 120,
+                          child: Text(
+                            'All Runs',
+                            style: numberStyle.copyWith(
+                                color: _tabController.index == 1
+                                    ? Colors.white
+                                    : Colors.black),
+                          ),
+                        ),
+                      ),
+                    ],
+                    controller: _tabController,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _runCountsList.isEmpty
+                    ? Center(
+                        child: Text('No runs logged yet.', style: ts_regular))
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: _runCountsList.length,
+                        padding: const EdgeInsets.only(top: 5),
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const Divider(
+                          height: 1.0,
+                          color: Colors.black45,
+                        ),
+                        //itemExtent: 58.0,
+                        //shrinkWrap: true,
+                        itemBuilder: (BuildContext context, int index) {
+                          UserRunHistoryModel item = _runCountsList[index];
 
-                        return Dismissible(
-                          key: Key(item.eventId),
-                          confirmDismiss: (DismissDirection direction) async {
-                            if (item.canEditRunAttendence != 0) {
-                              // swipe from right to left to indicate that
-                              // the hasher either attended the run as a pack
-                              // member or as a hare
-                              if (direction == DismissDirection.endToStart) {
-                                // here, we're going from an attendence state of
-                                // not at the Hash to being at the Hash,
-                                // so assume that the person was not a hare
-                                if (item.attendenceState <
-                                    attendenceAtHash.value) {
-                                  _runCountsList[index] = _runCountsList[index]
-                                      .copyWith(isUpdating: true);
-                                  item = _runCountsList[index];
+                          return Dismissible(
+                            key: Key(item.eventId),
+                            confirmDismiss: (DismissDirection direction) async {
+                              if (item.canEditRunAttendence != 0) {
+                                // swipe from right to left to indicate that
+                                // the hasher either attended the run as a pack
+                                // member or as a hare
+                                if (direction == DismissDirection.endToStart) {
+                                  // here, we're going from an attendence state of
+                                  // not at the Hash to being at the Hash,
+                                  // so assume that the person was not a hare
+                                  if (item.attendenceState <
+                                      attendenceAtHash.value) {
+                                    _runCountsList[index] =
+                                        _runCountsList[index]
+                                            .copyWith(isUpdating: true);
+                                    item = _runCountsList[index];
+                                    await _setAttendenceState(
+                                      item,
+                                      rsvpYes,
+                                      attendenceAtHash,
+                                      isHareNo,
+                                      appDomain,
+                                    );
+                                  } else {
+                                    _runCountsList[index] =
+                                        _runCountsList[index]
+                                            .copyWith(isUpdating: true);
+                                    item = _runCountsList[index];
+                                    await _setAttendenceState(
+                                      item,
+                                      rsvpYes,
+                                      attendenceAtHash,
+                                      item.isHare == 1 ? isHareNo : isHareYes,
+                                      appDomain,
+                                    );
+                                  }
+                                } else {
+                                  // swipe from left to right to
+                                  // indicate that the hasher did
+                                  // not participate in this event
                                   await _setAttendenceState(
                                     item,
-                                    rsvpYes,
-                                    attendenceAtHash,
+                                    rsvpNo,
+                                    attendenceNo,
                                     isHareNo,
                                     appDomain,
                                   );
-                                } else {
-                                  _runCountsList[index] = _runCountsList[index]
-                                      .copyWith(isUpdating: true);
-                                  item = _runCountsList[index];
-                                  await _setAttendenceState(
-                                    item,
-                                    rsvpYes,
-                                    attendenceAtHash,
-                                    item.isHare == 1 ? isHareNo : isHareYes,
-                                    appDomain,
-                                  );
                                 }
-                              } else {
-                                // swipe from left to right to
-                                // indicate that the hasher did
-                                // not participate in this event
-                                await _setAttendenceState(
-                                  item,
-                                  rsvpNo,
-                                  attendenceNo,
-                                  isHareNo,
-                                  appDomain,
-                                );
+
+                                _kennelInfo = await widget.refreshKennelInfo();
+
+                                // await historyListPageKey.currentState.refreshRunHistoryFromTable(true);
+
+                                setState(() {});
                               }
-
-                              _kennelInfo = await widget.refreshKennelInfo();
-
-                              // await historyListPageKey.currentState.refreshRunHistoryFromTable(true);
-
-                              setState(() {});
-                            }
-                            return Future<bool>.value(false);
-                          },
-                          background: item.canEditRunAttendence == 0
-                              ? Container(
-                                  color: Colors.grey,
-                                  child: Row(children: <Widget>[
-                                    const Padding(
-                                      padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.lock,
-                                          color: Colors.white, size: 35.0),
-                                    ),
-                                    Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 15.0),
-                                        child: Text(
-                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                          'Run locked',
-                                          style: ts_titleMedium,
-                                        ))
-                                  ]))
-                              : Container(
-                                  color: hc_red,
-                                  child: Row(children: <Widget>[
-                                    const Padding(
-                                      padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.times_circle,
-                                          color: Colors.white, size: 35.0),
-                                    ),
-                                    Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 15.0),
-                                        child: Text(
-                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                          'I was not\r\nat the Hash',
-                                          maxLines: 2,
-                                          style: ts_titleMedium,
-                                        ))
-                                  ])),
-                          secondaryBackground: item.canEditRunAttendence == 0
-                              ? Container(
-                                  color: Colors.grey,
-                                  child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: <Widget>[
-                                        const Padding(
-                                          padding: EdgeInsets.only(right: 15.0),
-                                          child: Icon(FontAwesome.lock,
-                                              color: Colors.white, size: 35.0),
-                                        ),
-                                        Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 15.0),
-                                            child: Text(
-                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                              'Run locked',
-                                              style: ts_titleMedium,
-                                            ))
-                                      ]))
-                              : (item.attendenceState <
-                                          attendenceAtHash.value) ||
-                                      ((item.attendenceState >=
-                                              attendenceAtHash.value) &&
-                                          (item.isHare == isHareYes.value))
-                                  ? Container(
-                                      color: Colors.green,
-                                      child: Row(
+                              return Future<bool>.value(false);
+                            },
+                            background: item.canEditRunAttendence == 0
+                                ? Container(
+                                    color: Colors.grey,
+                                    child: Row(children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 10.0),
+                                        child: Icon(FontAwesome.lock,
+                                            color: Colors.white, size: 35.0),
+                                      ),
+                                      Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 15.0),
+                                          child: Text(
+                                            // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                            'Run locked',
+                                            style: ts_titleMedium,
+                                          ))
+                                    ]))
+                                : Container(
+                                    color: hc_red,
+                                    child: Row(children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 10.0),
+                                        child: Icon(FontAwesome.times_circle,
+                                            color: Colors.white, size: 35.0),
+                                      ),
+                                      Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 15.0),
+                                          child: Text(
+                                            // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                            'I was not\r\nat the Hash',
+                                            maxLines: 2,
+                                            style: ts_titleMedium,
+                                          ))
+                                    ])),
+                            secondaryBackground: item.canEditRunAttendence == 0
+                                ? Container(
+                                    color: Colors.grey,
+                                    child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
                                         children: <Widget>[
                                           const Padding(
                                             padding:
                                                 EdgeInsets.only(right: 15.0),
-                                            child: Icon(
-                                                FontAwesome.check_circle,
+                                            child: Icon(FontAwesome.lock,
                                                 color: Colors.white,
                                                 size: 35.0),
                                           ),
@@ -695,135 +759,165 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                                   right: 15.0),
                                               child: Text(
                                                 //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                                'I was at\r\nthe Hash',
-                                                maxLines: 2,
-                                                textAlign: TextAlign.right,
+                                                'Run locked',
                                                 style: ts_titleMedium,
                                               ))
-                                        ],
-                                      ),
-                                    )
-                                  : Container(
-                                      color: Colors.purple,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: <Widget>[
-                                          const Padding(
-                                            padding:
-                                                EdgeInsets.only(right: 15.0),
-                                            child: Padding(
-                                              padding: EdgeInsets.only(
-                                                  left: 2.5, right: 2.5),
-                                              child: ImageIcon(
-                                                  AssetImage(
-                                                      'images/icons/hare_icon.png'),
+                                        ]))
+                                : (item.attendenceState <
+                                            attendenceAtHash.value) ||
+                                        ((item.attendenceState >=
+                                                attendenceAtHash.value) &&
+                                            (item.isHare == isHareYes.value))
+                                    ? Container(
+                                        color: Colors.green,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: <Widget>[
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(right: 15.0),
+                                              child: Icon(
+                                                  FontAwesome.check_circle,
                                                   color: Colors.white,
-                                                  size: 30.0),
+                                                  size: 35.0),
                                             ),
-                                          ),
-                                          Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 15.0),
-                                              child: Text(
-                                                //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                                'I was a Hare',
-                                                style: ts_titleMedium,
-                                              ))
-                                        ],
+                                            Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 15.0),
+                                                child: Text(
+                                                  //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                                  'I was at\r\nthe Hash',
+                                                  maxLines: 2,
+                                                  textAlign: TextAlign.right,
+                                                  style: ts_titleMedium,
+                                                ))
+                                          ],
+                                        ),
+                                      )
+                                    : Container(
+                                        color: Colors.purple,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: <Widget>[
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(right: 15.0),
+                                              child: Padding(
+                                                padding: EdgeInsets.only(
+                                                    left: 2.5, right: 2.5),
+                                                child: ImageIcon(
+                                                    AssetImage(
+                                                        'images/icons/hare_icon.png'),
+                                                    color: Colors.white,
+                                                    size: 30.0),
+                                              ),
+                                            ),
+                                            Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 15.0),
+                                                child: Text(
+                                                  //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                                  'I was a Hare',
+                                                  style: ts_titleMedium,
+                                                ))
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                          onDismissed: (DismissDirection direction) {
-                            //print(direction.toString() + ' NOTE: We should never reach this point');
-                          },
-                          child: GestureDetector(
-                            onTapUp: (TapUpDetails details) async {
-                              final List<dynamic> run =
-                                  await QueryRuns.getRunDetailsAggregates(
-                                true,
-                                eventId: item.eventId,
-                                queryType: EnumRunQueryType.singleRun,
-                              );
-
-                              if (run.isNotEmpty) {
-                                if (!mounted) return;
-                                await Navigator.push<dynamic>(
-                                  navigatorKey.currentContext!,
-                                  MaterialPageRoute<dynamic>(
-                                    builder: (BuildContext context) {
-                                      return RunDetailsPage(
-                                        futureRun: run[0],
-                                        //refreshPage: () async {},
-                                      );
-                                    },
-                                  ),
-                                );
-                              }
+                            onDismissed: (DismissDirection direction) {
+                              //print(direction.toString() + ' NOTE: We should never reach this point');
                             },
-                            child: UserEventListItem(
-                              item: item,
-                              kennelInfo: _kennelInfo ?? widget.kennelInfo,
-                              setAttendenceStateCallback:
-                                  (EnumAttendenceState<int> attendenceState,
-                                      EnumIsHare<int> isHare) async {
-                                setState(() {
-                                  _runCountsList[index] = _runCountsList[index]
-                                      .copyWith(isUpdating: true);
-                                  item = _runCountsList[index];
-                                });
+                            child: GestureDetector(
+                              onTapUp: (TapUpDetails details) async {
+                                final List<dynamic> run =
+                                    await QueryRuns.getRunDetailsAggregates(
+                                  true,
+                                  eventId: item.eventId,
+                                  queryType: EnumRunQueryType.singleRun,
+                                );
 
-                                if (attendenceState == attendenceNo) {
-                                  await _setAttendenceState(
-                                    item,
-                                    rsvpNo,
-                                    attendenceNo,
-                                    isHareNo,
-                                    appDomain,
+                                if (run.isNotEmpty) {
+                                  if (!mounted) return;
+                                  await Navigator.push<dynamic>(
+                                    navigatorKey.currentContext!,
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (BuildContext context) {
+                                        return RunDetailsPage(
+                                          futureRun: run[0],
+                                          //refreshPage: () async {},
+                                        );
+                                      },
+                                    ),
                                   );
-                                } else {
-                                  if (isHare == isHareYes) {
+                                }
+                              },
+                              child: UserEventListItem(
+                                item: item,
+                                kennelInfo: _kennelInfo ?? widget.kennelInfo,
+                                setAttendenceStateCallback:
+                                    (EnumAttendenceState<int> attendenceState,
+                                        EnumIsHare<int> isHare) async {
+                                  setState(() {
+                                    _runCountsList[index] =
+                                        _runCountsList[index]
+                                            .copyWith(isUpdating: true);
+                                    item = _runCountsList[index];
+                                  });
+
+                                  if (attendenceState == attendenceNo) {
                                     await _setAttendenceState(
                                       item,
-                                      rsvpYes,
-                                      attendenceAtHash,
-                                      isHareYes,
-                                      appDomain,
-                                    );
-                                  } else {
-                                    await _setAttendenceState(
-                                      item,
-                                      rsvpYes,
-                                      attendenceAtHash,
+                                      rsvpNo,
+                                      attendenceNo,
                                       isHareNo,
                                       appDomain,
                                     );
+                                  } else {
+                                    if (isHare == isHareYes) {
+                                      await _setAttendenceState(
+                                        item,
+                                        rsvpYes,
+                                        attendenceAtHash,
+                                        isHareYes,
+                                        appDomain,
+                                      );
+                                    } else {
+                                      await _setAttendenceState(
+                                        item,
+                                        rsvpYes,
+                                        attendenceAtHash,
+                                        isHareNo,
+                                        appDomain,
+                                      );
+                                    }
                                   }
-                                }
 
-                                setState(() {
-                                  _runCountsList[index] = _runCountsList[index]
-                                      .copyWith(isUpdating: false);
-                                });
-                              },
+                                  setState(() {
+                                    _runCountsList[index] =
+                                        _runCountsList[index]
+                                            .copyWith(isUpdating: false);
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                        );
+                          );
 
-                        // Container(
-                        //   height: 60.0,
-                        //   //padding: const EdgeInsets.only(top: 10.0),
-                        //   child:
+                          // Container(
+                          //   height: 60.0,
+                          //   //padding: const EdgeInsets.only(top: 10.0),
+                          //   child:
 
-                        // KennelRunHistoryCountListItem(
-                        //     kennelRunHistoryCount:
-                        //         model.kennelRunCountList[index]);
+                          // KennelRunHistoryCountListItem(
+                          //     kennelRunHistoryCount:
+                          //         model.kennelRunCountList[index]);
 
-                        // );
-                      },
-                    ),
-                  ),
-                ],
-              )),
+                          // );
+                        },
+                      ),
+              ),
+            ],
+          )),
     );
   }
 
