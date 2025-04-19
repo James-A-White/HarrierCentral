@@ -15,6 +15,7 @@ class FutureRunListPageController extends GetxController {
   String searchRunsText = '';
   Map<String, RxInt> thisEventUnseenChats = {};
   RxInt totalNotifications = 0.obs;
+  RxBool showChatBubbleLoading = false.obs;
 
   RxBool showOnlyEventsWithMessages = false.obs;
 
@@ -40,7 +41,19 @@ class FutureRunListPageController extends GetxController {
       _updateChatCountBadges(publicEventId, chatCount);
     });
 
-    showOnlyEventsWithMessages.listen((bool value) {
+    showOnlyEventsWithMessages.listen((bool value) async {
+      showChatBubbleLoading.value = true;
+      update(['main_nav_page']);
+      Future<void>.delayed(const Duration(seconds: 1)).then(
+        (value) {
+          showChatBubbleLoading.value = false;
+          update(['main_nav_page']);
+        },
+      );
+      // for some reason,we need to put this little delay in otherwise the
+      // update to the main_nav_page does not get fired before the filterRuns
+      // starts executing.
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       filterRuns();
     });
 

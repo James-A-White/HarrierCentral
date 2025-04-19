@@ -587,28 +587,28 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           ),
                                         ),
                                       ),
-                                      // IconButton(
-                                      //   icon: const ImageIcon(AssetImage(
-                                      //       'images/icons/hare_icon.png')),
-                                      //   color: _thisUserIndex == -1
-                                      //       ? Colors.grey
-                                      //       : snapshot.data![_thisUserIndex].hem
-                                      //                   .isHare ==
-                                      //               isHareYes.value
-                                      //           ? Colors.deepPurple
-                                      //           : snapshot.data![_thisUserIndex]
-                                      //                       .hem.isHare ==
-                                      //                   -1
-                                      //               ? hc_blue
-                                      //               : Colors.grey,
-                                      //   //tooltip: 'Select to follow a Kennel',
-                                      //   iconSize: 30.0,
-                                      //   alignment: Alignment.center,
-                                      //   splashColor: Colors.greenAccent,
-                                      //   onPressed: () async {
-                                      //     await _setRsvpHare();
-                                      //   },
-                                      // ),
+                                      IconButton(
+                                        icon: const ImageIcon(AssetImage(
+                                            'images/icons/hare_icon.png')),
+                                        color: _thisUserIndex == -1
+                                            ? Colors.grey
+                                            : snapshot.data![_thisUserIndex].hem
+                                                        .isHare ==
+                                                    isHareYes.value
+                                                ? Colors.deepPurple
+                                                : snapshot.data![_thisUserIndex]
+                                                            .hem.isHare ==
+                                                        -1
+                                                    ? hc_blue
+                                                    : Colors.grey,
+                                        //tooltip: 'Select to follow a Kennel',
+                                        iconSize: 30.0,
+                                        alignment: Alignment.center,
+                                        splashColor: Colors.greenAccent,
+                                        onPressed: () async {
+                                          //await _setRsvpHare();
+                                        },
+                                      ),
                                     ],
                                   ),
                                   Text(
@@ -1465,17 +1465,20 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 badges.Badge(
                                   position: badges.BadgePosition.topEnd(
                                       top: 0, end: 0),
-                                  badgeContent: Text(
-                                      chatCount < 100
-                                          ? chatCount.toString()
-                                          : '>',
-                                      style: ts_badge.copyWith(
-                                        fontSize: chatCount < 10
-                                            ? 20
-                                            : chatCount < 100
-                                                ? 15
-                                                : 20,
-                                      )),
+                                  badgeContent: Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 2),
+                                    width: 30,
+                                    height: 13,
+                                    child: AutoSizeText(
+                                      chatCount.toString(),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                      maxFontSize: 13,
+                                      style: ts_badge,
+                                    ),
+                                  ),
                                   badgeStyle: badges.BadgeStyle(
                                     badgeColor: Colors.red.shade800,
                                     padding: const EdgeInsets.all(6),

@@ -405,7 +405,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
             appBar: (!_showMainScreen)
                 ? null
                 : AppBar(
-                    leadingWidth: 120,
+                    leadingWidth: 90,
                     leading: GetBuilder<FutureRunListPageController>(
                         id: 'main_nav_page',
                         builder: (controller) {
@@ -425,29 +425,39 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                                 Builder(
                                   builder: (context) => GestureDetector(
                                     onTap: () {
-                                      if (controller.totalNotifications.value >
-                                          0) {
-                                        controller.showOnlyEventsWithMessages
-                                                .value =
-                                            !controller
-                                                .showOnlyEventsWithMessages
-                                                .value;
-                                      }
+                                      // if (controller.totalNotifications.value >
+                                      //     0) {
+                                      controller.showOnlyEventsWithMessages
+                                              .value =
+                                          !controller
+                                              .showOnlyEventsWithMessages.value;
+                                      //}
                                     },
                                     child: badges.Badge(
-                                      position: badges.BadgePosition.topEnd(
-                                          top: -8, end: -4),
-                                      badgeContent: Text(
-                                        controller.totalNotifications.value
-                                            .toString(), // number of unread messages
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 10),
-                                      ),
-                                      showBadge:
-                                          controller.totalNotifications.value !=
-                                              0,
-                                      child: Icon(Icons.chat_bubble_outline),
-                                    ),
+                                        position: badges.BadgePosition.topEnd(
+                                            top: -10, end: -17),
+                                        badgeContent: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 2),
+                                          width: 30,
+                                          height: 13,
+                                          child: AutoSizeText(
+                                            controller.totalNotifications.value
+                                                .toString(),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            minFontSize: 10,
+                                            maxFontSize: 13,
+                                            style: ts_badge,
+                                          ),
+                                        ),
+                                        showBadge: controller
+                                                .totalNotifications.value !=
+                                            0,
+                                        child: controller
+                                                .showChatBubbleLoading.value
+                                            ? Icon(Fontisto.spinner_refresh)
+                                            : Icon(Icons.chat_bubble_outline)),
                                   ),
                                 ),
                               ],
@@ -460,11 +470,12 @@ class MainNavigationPageState extends State<MainNavigationPage> {
                       color: Colors.white,
                       size: 28.0,
                     ),
-                    title: Text(
+                    title: AutoSizeText(
                       _appBarText,
                       style: ts_appBarTitle,
-                      textScaler:
-                          TextScaler.linear(G0<DeviceInfo>().textClamp00),
+                      maxLines: 1,
+                      // textScaler:
+                      //     TextScaler.linear(G0<DeviceInfo>().textClamp00),
                       //textScaleFactor: G0<DeviceInfo>().textClamp00,
                     ),
                     centerTitle: true,

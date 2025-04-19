@@ -299,12 +299,14 @@ class QueryKennels {
           INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
           LEFT OUTER JOIN $hkmTable hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$hasherId"
+          WHERE k.${G0<TableModel>().kennelsTableHelper.colRemoved} = 0
           ''';
 
     final String whereClauseForSingleKenenel = kennelId == null
         ? ''
         : '''
-            WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"
+            AND k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId" 
+            
           ''';
 
     String query = queryBase;
@@ -334,6 +336,7 @@ class QueryKennels {
           INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
           ON evt.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"
+          AND k.${G0<TableModel>().kennelsTableHelper.colRemoved} = 0 
           ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} desc
           ''';
 
@@ -382,6 +385,7 @@ class QueryKennels {
           ON c.${G0<TableModel>().citiesTableHelper.colRegionId} = r.${G0<TableModel>().regionsTableHelper.colRegionId}
           INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n
           ON r.${G0<TableModel>().regionsTableHelper.colCountryId} = n.${G0<TableModel>().countriesTableHelper.colCountryId}
+          WHERE k.${G0<TableModel>().kennelsTableHelper.colRemoved} = 0
           ''';
 
     return G0<Database>().rawQuery(query);

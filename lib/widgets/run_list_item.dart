@@ -128,7 +128,7 @@ class RunListItem extends StatelessWidget {
                       .add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))))
                   ? Container()
                   : Container(
-                      padding: const EdgeInsets.only(right: 10),
+                      padding: const EdgeInsets.only(right: 3),
                       child: GestureDetector(
                         onTap: () async {
                           await _showNotificationPopup();
@@ -144,18 +144,32 @@ class RunListItem extends StatelessWidget {
                 } else {
                   return badges.Badge(
                     position: badges.BadgePosition.topEnd(top: -5, end: 0),
-                    badgeContent: Text(
-                      rliController.currentChatCount < 100
-                          ? rliController.currentChatCount.toString()
-                          : '>',
-                      style: ts_badge.copyWith(
-                        fontSize: rliController.currentChatCount < 10
-                            ? 20
-                            : rliController.currentChatCount < 100
-                                ? 15
-                                : 20,
+                    badgeContent: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 2),
+                      width: 30,
+                      height: 13,
+                      child: AutoSizeText(
+                        rliController.currentChatCount.toString(),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        minFontSize: 10,
+                        maxFontSize: 13,
+                        style: ts_badge,
                       ),
                     ),
+
+                    // Text(
+                    //   rliController.currentChatCount < 100
+                    //       ? rliController.currentChatCount.toString()
+                    //       : '>',
+                    //   style: ts_badge.copyWith(
+                    //     fontSize: rliController.currentChatCount < 10
+                    //         ? 20
+                    //         : rliController.currentChatCount < 100
+                    //             ? 15
+                    //             : 20,
+                    //   ),
+                    // ),
                     badgeStyle: badges.BadgeStyle(
                       badgeColor: Colors.red.shade800,
                       padding: const EdgeInsets.all(6),
@@ -810,7 +824,7 @@ class RunListItem extends StatelessWidget {
         'returnValue': notificationsOn,
       },
       <String, dynamic>{
-        'title': 'On 4 hours before run',
+        'title': 'On 6 hours before run',
         'icon': <Widget>[
           Container(
               height: 30,

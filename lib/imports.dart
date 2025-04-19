@@ -24,7 +24,7 @@ export 'package:flutter_linkify/flutter_linkify.dart';
 //export 'package:flutter_localization/flutter_localization.dart';
 export 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 export 'package:flutter_map/flutter_map.dart';
-export 'package:flutter_phoenix/flutter_phoenix.dart';
+//export 'package:flutter_phoenix/flutter_phoenix.dart';
 export 'package:flutter_speed_dial/flutter_speed_dial.dart';
 export 'package:flutter_spinkit/flutter_spinkit.dart';
 export 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -208,7 +208,7 @@ export 'package:step_progress_indicator/step_progress_indicator.dart';
 export 'package:table_calendar/table_calendar.dart';
 export 'package:url_launcher/url_launcher.dart';
 export 'package:uuid/uuid.dart';
-export 'package:video_player/video_player.dart';
+//export 'package:video_player/video_player.dart';
 export 'package:visibility_detector/visibility_detector.dart';
 
 // export 'package:sumup/sumup.dart';

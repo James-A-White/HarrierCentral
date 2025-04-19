@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:get/get.dart';
 import 'package:harrier_central/data/services/gdpr_delete_service.dart';
 import 'package:harrier_central/data/services/get_invite_code_service.dart';
 import 'package:harrier_central/imports.dart';
@@ -1743,14 +1744,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               result) async {
                                                         if (result ?? false) {
                                                           await clearPrefs();
+
                                                           await DBProvider
                                                               .deleteDb(
                                                                   DB_NAME);
 
                                                           await G0.reset();
-                                                          Phoenix.rebirth(
-                                                              navigatorKey
-                                                                  .currentContext!);
+
+                                                          await GetIt.I.reset(
+                                                              dispose: true);
+
+                                                          setupDependencies();
+                                                          await GetIt.I
+                                                              .allReady();
+                                                          Get.offAll(() =>
+                                                              AppEntryPage());
                                                         }
                                                       });
                                                     },
@@ -1955,9 +1963,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           await G0.reset();
 
                                                           await G0.reset();
-                                                          Phoenix.rebirth(
-                                                              navigatorKey
-                                                                  .currentContext!);
+                                                          Get.offAll(() =>
+                                                              AppEntryPage());
                                                         }
                                                       }
                                                     },
@@ -2027,6 +2034,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
+  void setupDependencies() {
+    // GetIt.I.registerSingleton<DeviceInfo>(DeviceInfo());
+    // Register other dependencies here
+  }
+
   Future<void> _reloadData() async {
     final String? userId = getStringPref(StringPrefsEnum.userId);
     final String? resetCode = getStringPref(StringPrefsEnum.resetCode);
@@ -2078,7 +2090,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     await DBProvider.deleteDb(DB_NAME);
 
     await G0.reset();
-    Phoenix.rebirth(navigatorKey.currentContext!);
+
+    Get.offAll(() => AppEntryPage());
   }
 
   Future<void> _enableLocationServices() async {

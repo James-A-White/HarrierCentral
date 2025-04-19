@@ -453,7 +453,7 @@ class KennelListItemState extends State<KennelListItem> {
         'returnValue': notificationsOn,
       },
       <String, dynamic>{
-        'title': 'On 4 hours before run',
+        'title': 'On 6 hours before run',
         'icon': <Widget>[
           Container(
               height: 30,
