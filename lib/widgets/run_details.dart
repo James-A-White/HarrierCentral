@@ -799,8 +799,8 @@ class RunDetails extends StatelessWidget {
               child: Obx(
                 () => Text(
                   runDetailsController.showQrCodes.value
-                      ? 'Hide QR Codes'
-                      : 'Share this run',
+                      ? 'Hide Run Codes'
+                      : 'Share ${kennel.kennelShortName} Runs',
                   style: ts_button,
                   textAlign: TextAlign.center,
                   maxLines: 3,
@@ -818,6 +818,11 @@ class RunDetails extends StatelessWidget {
           Obx(() {
             return runDetailsController.showQrCodes.value
                 ? Column(children: [
+                    Text(
+                      'QR Codes for Sharing Runs',
+                      style: ts_headingLarge,
+                      //textScaleFactor: G0<DeviceInfo>().textClamp50,
+                    ),
                     const SizedBox(
                       height: 20,
                     ),
@@ -872,7 +877,7 @@ class RunDetails extends StatelessWidget {
                           Column(
                             children: <Widget>[
                               Text(
-                                '${kennel.kennelShortName} Run list',
+                                '${kennel.kennelShortName} upcoming runs list',
                                 style: ts_title,
                               ),
                               const SizedBox(

@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 1.8.0+926
+version: 1.8.1+928
 publish_to: none
 
 environment:
@@ -75,7 +75,12 @@ dependencies:
   package_info_plus: ^8.0.2
   path_provider: ^2.0.11
   pausable_timer: ^3.1.0+3
-  pdfx: 2.9.0
+  # pdfx: 2.8.0
+  # pdfx: ^2.9.0
+  pdfx:
+    git:
+      url: https://github.com/SamuelGadiel/packages.flutter.git
+      path: packages/pdfx
   permission_handler: ^12.0.0+1
   photo_view: ^0.15.0
   progress_stepper: ^3.1.0
