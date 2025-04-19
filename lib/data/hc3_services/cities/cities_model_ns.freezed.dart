@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,267 +10,53 @@ part of 'cities_model_ns.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) {
-  return _CitiesModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$CitiesModel {
-  String get cityId => throw _privateConstructorUsedError;
-  String get cityName => throw _privateConstructorUsedError;
-  String? get citySearchTags => throw _privateConstructorUsedError;
-  String get regionId => throw _privateConstructorUsedError;
-  double get latitude => throw _privateConstructorUsedError;
-  double get longitude => throw _privateConstructorUsedError;
-  String get cityAscii => throw _privateConstructorUsedError;
-  String? get flagFile => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-
-  /// Serializes this CitiesModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$CitiesModel implements DiagnosticableTreeMixin {
+  String get cityId;
+  String get cityName;
+  String? get citySearchTags;
+  String get regionId;
+  double get latitude;
+  double get longitude;
+  String get cityAscii;
+  String? get flagFile;
+  int? get removed;
+  DateTime? get updatedAt;
 
   /// Create a copy of CitiesModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $CitiesModelCopyWith<CitiesModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$CitiesModelCopyWithImpl<CitiesModel>(this as CitiesModel, _$identity);
 
-/// @nodoc
-abstract class $CitiesModelCopyWith<$Res> {
-  factory $CitiesModelCopyWith(
-          CitiesModel value, $Res Function(CitiesModel) then) =
-      _$CitiesModelCopyWithImpl<$Res, CitiesModel>;
-  @useResult
-  $Res call(
-      {String cityId,
-      String cityName,
-      String? citySearchTags,
-      String regionId,
-      double latitude,
-      double longitude,
-      String cityAscii,
-      String? flagFile,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class _$CitiesModelCopyWithImpl<$Res, $Val extends CitiesModel>
-    implements $CitiesModelCopyWith<$Res> {
-  _$CitiesModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of CitiesModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? cityId = null,
-    Object? cityName = null,
-    Object? citySearchTags = freezed,
-    Object? regionId = null,
-    Object? latitude = null,
-    Object? longitude = null,
-    Object? cityAscii = null,
-    Object? flagFile = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      cityId: null == cityId
-          ? _value.cityId
-          : cityId // ignore: cast_nullable_to_non_nullable
-              as String,
-      cityName: null == cityName
-          ? _value.cityName
-          : cityName // ignore: cast_nullable_to_non_nullable
-              as String,
-      citySearchTags: freezed == citySearchTags
-          ? _value.citySearchTags
-          : citySearchTags // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionId: null == regionId
-          ? _value.regionId
-          : regionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      latitude: null == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      longitude: null == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      cityAscii: null == cityAscii
-          ? _value.cityAscii
-          : cityAscii // ignore: cast_nullable_to_non_nullable
-              as String,
-      flagFile: freezed == flagFile
-          ? _value.flagFile
-          : flagFile // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$CitiesModelImplCopyWith<$Res>
-    implements $CitiesModelCopyWith<$Res> {
-  factory _$$CitiesModelImplCopyWith(
-          _$CitiesModelImpl value, $Res Function(_$CitiesModelImpl) then) =
-      __$$CitiesModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String cityId,
-      String cityName,
-      String? citySearchTags,
-      String regionId,
-      double latitude,
-      double longitude,
-      String cityAscii,
-      String? flagFile,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class __$$CitiesModelImplCopyWithImpl<$Res>
-    extends _$CitiesModelCopyWithImpl<$Res, _$CitiesModelImpl>
-    implements _$$CitiesModelImplCopyWith<$Res> {
-  __$$CitiesModelImplCopyWithImpl(
-      _$CitiesModelImpl _value, $Res Function(_$CitiesModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of CitiesModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? cityId = null,
-    Object? cityName = null,
-    Object? citySearchTags = freezed,
-    Object? regionId = null,
-    Object? latitude = null,
-    Object? longitude = null,
-    Object? cityAscii = null,
-    Object? flagFile = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_$CitiesModelImpl(
-      cityId: null == cityId
-          ? _value.cityId
-          : cityId // ignore: cast_nullable_to_non_nullable
-              as String,
-      cityName: null == cityName
-          ? _value.cityName
-          : cityName // ignore: cast_nullable_to_non_nullable
-              as String,
-      citySearchTags: freezed == citySearchTags
-          ? _value.citySearchTags
-          : citySearchTags // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionId: null == regionId
-          ? _value.regionId
-          : regionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      latitude: null == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      longitude: null == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      cityAscii: null == cityAscii
-          ? _value.cityAscii
-          : cityAscii // ignore: cast_nullable_to_non_nullable
-              as String,
-      flagFile: freezed == flagFile
-          ? _value.flagFile
-          : flagFile // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$CitiesModelImpl implements _CitiesModel {
-  const _$CitiesModelImpl(
-      {required this.cityId,
-      required this.cityName,
-      this.citySearchTags,
-      required this.regionId,
-      required this.latitude,
-      required this.longitude,
-      required this.cityAscii,
-      this.flagFile,
-      this.removed,
-      this.updatedAt});
-
-  factory _$CitiesModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CitiesModelImplFromJson(json);
+  /// Serializes this CitiesModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String cityId;
-  @override
-  final String cityName;
-  @override
-  final String? citySearchTags;
-  @override
-  final String regionId;
-  @override
-  final double latitude;
-  @override
-  final double longitude;
-  @override
-  final String cityAscii;
-  @override
-  final String? flagFile;
-  @override
-  final int? removed;
-  @override
-  final DateTime? updatedAt;
-
-  @override
-  String toString() {
-    return 'CitiesModel(cityId: $cityId, cityName: $cityName, citySearchTags: $citySearchTags, regionId: $regionId, latitude: $latitude, longitude: $longitude, cityAscii: $cityAscii, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'CitiesModel'))
+      ..add(DiagnosticsProperty('cityId', cityId))
+      ..add(DiagnosticsProperty('cityName', cityName))
+      ..add(DiagnosticsProperty('citySearchTags', citySearchTags))
+      ..add(DiagnosticsProperty('regionId', regionId))
+      ..add(DiagnosticsProperty('latitude', latitude))
+      ..add(DiagnosticsProperty('longitude', longitude))
+      ..add(DiagnosticsProperty('cityAscii', cityAscii))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$CitiesModelImpl &&
+            other is CitiesModel &&
             (identical(other.cityId, cityId) || other.cityId == cityId) &&
             (identical(other.cityName, cityName) ||
                 other.cityName == cityName) &&
@@ -295,63 +82,291 @@ class _$CitiesModelImpl implements _CitiesModel {
   int get hashCode => Object.hash(runtimeType, cityId, cityName, citySearchTags,
       regionId, latitude, longitude, cityAscii, flagFile, removed, updatedAt);
 
-  /// Create a copy of CitiesModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$CitiesModelImplCopyWith<_$CitiesModelImpl> get copyWith =>
-      __$$CitiesModelImplCopyWithImpl<_$CitiesModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CitiesModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'CitiesModel(cityId: $cityId, cityName: $cityName, citySearchTags: $citySearchTags, regionId: $regionId, latitude: $latitude, longitude: $longitude, cityAscii: $cityAscii, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
-abstract class _CitiesModel implements CitiesModel {
-  const factory _CitiesModel(
-      {required final String cityId,
-      required final String cityName,
-      final String? citySearchTags,
-      required final String regionId,
-      required final double latitude,
-      required final double longitude,
-      required final String cityAscii,
-      final String? flagFile,
-      final int? removed,
-      final DateTime? updatedAt}) = _$CitiesModelImpl;
+/// @nodoc
+abstract mixin class $CitiesModelCopyWith<$Res> {
+  factory $CitiesModelCopyWith(
+          CitiesModel value, $Res Function(CitiesModel) _then) =
+      _$CitiesModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String cityId,
+      String cityName,
+      String? citySearchTags,
+      String regionId,
+      double latitude,
+      double longitude,
+      String cityAscii,
+      String? flagFile,
+      int? removed,
+      DateTime? updatedAt});
+}
 
-  factory _CitiesModel.fromJson(Map<String, dynamic> json) =
-      _$CitiesModelImpl.fromJson;
+/// @nodoc
+class _$CitiesModelCopyWithImpl<$Res> implements $CitiesModelCopyWith<$Res> {
+  _$CitiesModelCopyWithImpl(this._self, this._then);
+
+  final CitiesModel _self;
+  final $Res Function(CitiesModel) _then;
+
+  /// Create a copy of CitiesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? cityId = null,
+    Object? cityName = null,
+    Object? citySearchTags = freezed,
+    Object? regionId = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? cityAscii = null,
+    Object? flagFile = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_self.copyWith(
+      cityId: null == cityId
+          ? _self.cityId
+          : cityId // ignore: cast_nullable_to_non_nullable
+              as String,
+      cityName: null == cityName
+          ? _self.cityName
+          : cityName // ignore: cast_nullable_to_non_nullable
+              as String,
+      citySearchTags: freezed == citySearchTags
+          ? _self.citySearchTags
+          : citySearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      regionId: null == regionId
+          ? _self.regionId
+          : regionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      latitude: null == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      longitude: null == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      cityAscii: null == cityAscii
+          ? _self.cityAscii
+          : cityAscii // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: freezed == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _CitiesModel with DiagnosticableTreeMixin implements CitiesModel {
+  const _CitiesModel(
+      {required this.cityId,
+      required this.cityName,
+      this.citySearchTags,
+      required this.regionId,
+      required this.latitude,
+      required this.longitude,
+      required this.cityAscii,
+      this.flagFile,
+      this.removed,
+      this.updatedAt});
+  factory _CitiesModel.fromJson(Map<String, dynamic> json) =>
+      _$CitiesModelFromJson(json);
 
   @override
-  String get cityId;
+  final String cityId;
   @override
-  String get cityName;
+  final String cityName;
   @override
-  String? get citySearchTags;
+  final String? citySearchTags;
   @override
-  String get regionId;
+  final String regionId;
   @override
-  double get latitude;
+  final double latitude;
   @override
-  double get longitude;
+  final double longitude;
   @override
-  String get cityAscii;
+  final String cityAscii;
   @override
-  String? get flagFile;
+  final String? flagFile;
   @override
-  int? get removed;
+  final int? removed;
   @override
-  DateTime? get updatedAt;
+  final DateTime? updatedAt;
 
   /// Create a copy of CitiesModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$CitiesModelImplCopyWith<_$CitiesModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$CitiesModelCopyWith<_CitiesModel> get copyWith =>
+      __$CitiesModelCopyWithImpl<_CitiesModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$CitiesModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'CitiesModel'))
+      ..add(DiagnosticsProperty('cityId', cityId))
+      ..add(DiagnosticsProperty('cityName', cityName))
+      ..add(DiagnosticsProperty('citySearchTags', citySearchTags))
+      ..add(DiagnosticsProperty('regionId', regionId))
+      ..add(DiagnosticsProperty('latitude', latitude))
+      ..add(DiagnosticsProperty('longitude', longitude))
+      ..add(DiagnosticsProperty('cityAscii', cityAscii))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _CitiesModel &&
+            (identical(other.cityId, cityId) || other.cityId == cityId) &&
+            (identical(other.cityName, cityName) ||
+                other.cityName == cityName) &&
+            (identical(other.citySearchTags, citySearchTags) ||
+                other.citySearchTags == citySearchTags) &&
+            (identical(other.regionId, regionId) ||
+                other.regionId == regionId) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude) &&
+            (identical(other.cityAscii, cityAscii) ||
+                other.cityAscii == cityAscii) &&
+            (identical(other.flagFile, flagFile) ||
+                other.flagFile == flagFile) &&
+            (identical(other.removed, removed) || other.removed == removed) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, cityId, cityName, citySearchTags,
+      regionId, latitude, longitude, cityAscii, flagFile, removed, updatedAt);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'CitiesModel(cityId: $cityId, cityName: $cityName, citySearchTags: $citySearchTags, regionId: $regionId, latitude: $latitude, longitude: $longitude, cityAscii: $cityAscii, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$CitiesModelCopyWith<$Res>
+    implements $CitiesModelCopyWith<$Res> {
+  factory _$CitiesModelCopyWith(
+          _CitiesModel value, $Res Function(_CitiesModel) _then) =
+      __$CitiesModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String cityId,
+      String cityName,
+      String? citySearchTags,
+      String regionId,
+      double latitude,
+      double longitude,
+      String cityAscii,
+      String? flagFile,
+      int? removed,
+      DateTime? updatedAt});
+}
+
+/// @nodoc
+class __$CitiesModelCopyWithImpl<$Res> implements _$CitiesModelCopyWith<$Res> {
+  __$CitiesModelCopyWithImpl(this._self, this._then);
+
+  final _CitiesModel _self;
+  final $Res Function(_CitiesModel) _then;
+
+  /// Create a copy of CitiesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? cityId = null,
+    Object? cityName = null,
+    Object? citySearchTags = freezed,
+    Object? regionId = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? cityAscii = null,
+    Object? flagFile = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_CitiesModel(
+      cityId: null == cityId
+          ? _self.cityId
+          : cityId // ignore: cast_nullable_to_non_nullable
+              as String,
+      cityName: null == cityName
+          ? _self.cityName
+          : cityName // ignore: cast_nullable_to_non_nullable
+              as String,
+      citySearchTags: freezed == citySearchTags
+          ? _self.citySearchTags
+          : citySearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      regionId: null == regionId
+          ? _self.regionId
+          : regionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      latitude: null == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      longitude: null == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      cityAscii: null == cityAscii
+          ? _self.cityAscii
+          : cityAscii // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: freezed == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+// dart format on

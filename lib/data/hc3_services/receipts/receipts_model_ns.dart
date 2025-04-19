@@ -4,7 +4,7 @@ part 'receipts_model_ns.freezed.dart';
 part 'receipts_model_ns.g.dart';
 
 @freezed
-class ReceiptsModel with _$ReceiptsModel implements BaseModel {
+abstract class ReceiptsModel with _$ReceiptsModel implements BaseModel {
   factory ReceiptsModel({
     required String receiptId,
     required String eventId,

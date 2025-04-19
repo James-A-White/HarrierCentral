@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,235 +10,50 @@ part of 'regions_model_ns.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-RegionsModel _$RegionsModelFromJson(Map<String, dynamic> json) {
-  return _RegionsModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$RegionsModel {
-  String get regionId => throw _privateConstructorUsedError;
-  String get regionName => throw _privateConstructorUsedError;
-  String? get regionSearchTags => throw _privateConstructorUsedError;
-  String? get regionAbbreviation => throw _privateConstructorUsedError;
-  String get countryId => throw _privateConstructorUsedError;
-  String? get flagFile => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-
-  /// Serializes this RegionsModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$RegionsModel implements DiagnosticableTreeMixin {
+  String get regionId;
+  String get regionName;
+  String? get regionSearchTags;
+  String? get regionAbbreviation;
+  String get countryId;
+  String? get flagFile;
+  int? get removed;
+  DateTime? get updatedAt;
 
   /// Create a copy of RegionsModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $RegionsModelCopyWith<RegionsModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$RegionsModelCopyWithImpl<RegionsModel>(
+          this as RegionsModel, _$identity);
 
-/// @nodoc
-abstract class $RegionsModelCopyWith<$Res> {
-  factory $RegionsModelCopyWith(
-          RegionsModel value, $Res Function(RegionsModel) then) =
-      _$RegionsModelCopyWithImpl<$Res, RegionsModel>;
-  @useResult
-  $Res call(
-      {String regionId,
-      String regionName,
-      String? regionSearchTags,
-      String? regionAbbreviation,
-      String countryId,
-      String? flagFile,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class _$RegionsModelCopyWithImpl<$Res, $Val extends RegionsModel>
-    implements $RegionsModelCopyWith<$Res> {
-  _$RegionsModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of RegionsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? regionId = null,
-    Object? regionName = null,
-    Object? regionSearchTags = freezed,
-    Object? regionAbbreviation = freezed,
-    Object? countryId = null,
-    Object? flagFile = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      regionId: null == regionId
-          ? _value.regionId
-          : regionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      regionName: null == regionName
-          ? _value.regionName
-          : regionName // ignore: cast_nullable_to_non_nullable
-              as String,
-      regionSearchTags: freezed == regionSearchTags
-          ? _value.regionSearchTags
-          : regionSearchTags // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionAbbreviation: freezed == regionAbbreviation
-          ? _value.regionAbbreviation
-          : regionAbbreviation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      countryId: null == countryId
-          ? _value.countryId
-          : countryId // ignore: cast_nullable_to_non_nullable
-              as String,
-      flagFile: freezed == flagFile
-          ? _value.flagFile
-          : flagFile // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$RegionsModelImplCopyWith<$Res>
-    implements $RegionsModelCopyWith<$Res> {
-  factory _$$RegionsModelImplCopyWith(
-          _$RegionsModelImpl value, $Res Function(_$RegionsModelImpl) then) =
-      __$$RegionsModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String regionId,
-      String regionName,
-      String? regionSearchTags,
-      String? regionAbbreviation,
-      String countryId,
-      String? flagFile,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class __$$RegionsModelImplCopyWithImpl<$Res>
-    extends _$RegionsModelCopyWithImpl<$Res, _$RegionsModelImpl>
-    implements _$$RegionsModelImplCopyWith<$Res> {
-  __$$RegionsModelImplCopyWithImpl(
-      _$RegionsModelImpl _value, $Res Function(_$RegionsModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of RegionsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? regionId = null,
-    Object? regionName = null,
-    Object? regionSearchTags = freezed,
-    Object? regionAbbreviation = freezed,
-    Object? countryId = null,
-    Object? flagFile = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_$RegionsModelImpl(
-      regionId: null == regionId
-          ? _value.regionId
-          : regionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      regionName: null == regionName
-          ? _value.regionName
-          : regionName // ignore: cast_nullable_to_non_nullable
-              as String,
-      regionSearchTags: freezed == regionSearchTags
-          ? _value.regionSearchTags
-          : regionSearchTags // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regionAbbreviation: freezed == regionAbbreviation
-          ? _value.regionAbbreviation
-          : regionAbbreviation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      countryId: null == countryId
-          ? _value.countryId
-          : countryId // ignore: cast_nullable_to_non_nullable
-              as String,
-      flagFile: freezed == flagFile
-          ? _value.flagFile
-          : flagFile // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$RegionsModelImpl implements _RegionsModel {
-  _$RegionsModelImpl(
-      {required this.regionId,
-      required this.regionName,
-      this.regionSearchTags,
-      this.regionAbbreviation,
-      required this.countryId,
-      this.flagFile,
-      this.removed,
-      this.updatedAt});
-
-  factory _$RegionsModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$RegionsModelImplFromJson(json);
+  /// Serializes this RegionsModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String regionId;
-  @override
-  final String regionName;
-  @override
-  final String? regionSearchTags;
-  @override
-  final String? regionAbbreviation;
-  @override
-  final String countryId;
-  @override
-  final String? flagFile;
-  @override
-  final int? removed;
-  @override
-  final DateTime? updatedAt;
-
-  @override
-  String toString() {
-    return 'RegionsModel(regionId: $regionId, regionName: $regionName, regionSearchTags: $regionSearchTags, regionAbbreviation: $regionAbbreviation, countryId: $countryId, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'RegionsModel'))
+      ..add(DiagnosticsProperty('regionId', regionId))
+      ..add(DiagnosticsProperty('regionName', regionName))
+      ..add(DiagnosticsProperty('regionSearchTags', regionSearchTags))
+      ..add(DiagnosticsProperty('regionAbbreviation', regionAbbreviation))
+      ..add(DiagnosticsProperty('countryId', countryId))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$RegionsModelImpl &&
+            other is RegionsModel &&
             (identical(other.regionId, regionId) ||
                 other.regionId == regionId) &&
             (identical(other.regionName, regionName) ||
@@ -268,57 +84,265 @@ class _$RegionsModelImpl implements _RegionsModel {
       removed,
       updatedAt);
 
-  /// Create a copy of RegionsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$RegionsModelImplCopyWith<_$RegionsModelImpl> get copyWith =>
-      __$$RegionsModelImplCopyWithImpl<_$RegionsModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$RegionsModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'RegionsModel(regionId: $regionId, regionName: $regionName, regionSearchTags: $regionSearchTags, regionAbbreviation: $regionAbbreviation, countryId: $countryId, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
-abstract class _RegionsModel implements RegionsModel {
-  factory _RegionsModel(
-      {required final String regionId,
-      required final String regionName,
-      final String? regionSearchTags,
-      final String? regionAbbreviation,
-      required final String countryId,
-      final String? flagFile,
-      final int? removed,
-      final DateTime? updatedAt}) = _$RegionsModelImpl;
+/// @nodoc
+abstract mixin class $RegionsModelCopyWith<$Res> {
+  factory $RegionsModelCopyWith(
+          RegionsModel value, $Res Function(RegionsModel) _then) =
+      _$RegionsModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String regionId,
+      String regionName,
+      String? regionSearchTags,
+      String? regionAbbreviation,
+      String countryId,
+      String? flagFile,
+      int? removed,
+      DateTime? updatedAt});
+}
 
-  factory _RegionsModel.fromJson(Map<String, dynamic> json) =
-      _$RegionsModelImpl.fromJson;
+/// @nodoc
+class _$RegionsModelCopyWithImpl<$Res> implements $RegionsModelCopyWith<$Res> {
+  _$RegionsModelCopyWithImpl(this._self, this._then);
+
+  final RegionsModel _self;
+  final $Res Function(RegionsModel) _then;
+
+  /// Create a copy of RegionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? regionId = null,
+    Object? regionName = null,
+    Object? regionSearchTags = freezed,
+    Object? regionAbbreviation = freezed,
+    Object? countryId = null,
+    Object? flagFile = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_self.copyWith(
+      regionId: null == regionId
+          ? _self.regionId
+          : regionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      regionName: null == regionName
+          ? _self.regionName
+          : regionName // ignore: cast_nullable_to_non_nullable
+              as String,
+      regionSearchTags: freezed == regionSearchTags
+          ? _self.regionSearchTags
+          : regionSearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      regionAbbreviation: freezed == regionAbbreviation
+          ? _self.regionAbbreviation
+          : regionAbbreviation // ignore: cast_nullable_to_non_nullable
+              as String?,
+      countryId: null == countryId
+          ? _self.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: freezed == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _RegionsModel with DiagnosticableTreeMixin implements RegionsModel {
+  _RegionsModel(
+      {required this.regionId,
+      required this.regionName,
+      this.regionSearchTags,
+      this.regionAbbreviation,
+      required this.countryId,
+      this.flagFile,
+      this.removed,
+      this.updatedAt});
+  factory _RegionsModel.fromJson(Map<String, dynamic> json) =>
+      _$RegionsModelFromJson(json);
 
   @override
-  String get regionId;
+  final String regionId;
   @override
-  String get regionName;
+  final String regionName;
   @override
-  String? get regionSearchTags;
+  final String? regionSearchTags;
   @override
-  String? get regionAbbreviation;
+  final String? regionAbbreviation;
   @override
-  String get countryId;
+  final String countryId;
   @override
-  String? get flagFile;
+  final String? flagFile;
   @override
-  int? get removed;
+  final int? removed;
   @override
-  DateTime? get updatedAt;
+  final DateTime? updatedAt;
 
   /// Create a copy of RegionsModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RegionsModelImplCopyWith<_$RegionsModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$RegionsModelCopyWith<_RegionsModel> get copyWith =>
+      __$RegionsModelCopyWithImpl<_RegionsModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$RegionsModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'RegionsModel'))
+      ..add(DiagnosticsProperty('regionId', regionId))
+      ..add(DiagnosticsProperty('regionName', regionName))
+      ..add(DiagnosticsProperty('regionSearchTags', regionSearchTags))
+      ..add(DiagnosticsProperty('regionAbbreviation', regionAbbreviation))
+      ..add(DiagnosticsProperty('countryId', countryId))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _RegionsModel &&
+            (identical(other.regionId, regionId) ||
+                other.regionId == regionId) &&
+            (identical(other.regionName, regionName) ||
+                other.regionName == regionName) &&
+            (identical(other.regionSearchTags, regionSearchTags) ||
+                other.regionSearchTags == regionSearchTags) &&
+            (identical(other.regionAbbreviation, regionAbbreviation) ||
+                other.regionAbbreviation == regionAbbreviation) &&
+            (identical(other.countryId, countryId) ||
+                other.countryId == countryId) &&
+            (identical(other.flagFile, flagFile) ||
+                other.flagFile == flagFile) &&
+            (identical(other.removed, removed) || other.removed == removed) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      regionId,
+      regionName,
+      regionSearchTags,
+      regionAbbreviation,
+      countryId,
+      flagFile,
+      removed,
+      updatedAt);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'RegionsModel(regionId: $regionId, regionName: $regionName, regionSearchTags: $regionSearchTags, regionAbbreviation: $regionAbbreviation, countryId: $countryId, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$RegionsModelCopyWith<$Res>
+    implements $RegionsModelCopyWith<$Res> {
+  factory _$RegionsModelCopyWith(
+          _RegionsModel value, $Res Function(_RegionsModel) _then) =
+      __$RegionsModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String regionId,
+      String regionName,
+      String? regionSearchTags,
+      String? regionAbbreviation,
+      String countryId,
+      String? flagFile,
+      int? removed,
+      DateTime? updatedAt});
+}
+
+/// @nodoc
+class __$RegionsModelCopyWithImpl<$Res>
+    implements _$RegionsModelCopyWith<$Res> {
+  __$RegionsModelCopyWithImpl(this._self, this._then);
+
+  final _RegionsModel _self;
+  final $Res Function(_RegionsModel) _then;
+
+  /// Create a copy of RegionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? regionId = null,
+    Object? regionName = null,
+    Object? regionSearchTags = freezed,
+    Object? regionAbbreviation = freezed,
+    Object? countryId = null,
+    Object? flagFile = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_RegionsModel(
+      regionId: null == regionId
+          ? _self.regionId
+          : regionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      regionName: null == regionName
+          ? _self.regionName
+          : regionName // ignore: cast_nullable_to_non_nullable
+              as String,
+      regionSearchTags: freezed == regionSearchTags
+          ? _self.regionSearchTags
+          : regionSearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      regionAbbreviation: freezed == regionAbbreviation
+          ? _self.regionAbbreviation
+          : regionAbbreviation // ignore: cast_nullable_to_non_nullable
+              as String?,
+      countryId: null == countryId
+          ? _self.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: freezed == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+// dart format on

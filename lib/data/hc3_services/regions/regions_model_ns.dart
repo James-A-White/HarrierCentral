@@ -4,7 +4,7 @@ part 'regions_model_ns.freezed.dart';
 part 'regions_model_ns.g.dart';
 
 @freezed
-class RegionsModel with _$RegionsModel implements BaseModel {
+abstract class RegionsModel with _$RegionsModel implements BaseModel {
   factory RegionsModel({
     required String regionId,
     required String regionName,
@@ -16,5 +16,6 @@ class RegionsModel with _$RegionsModel implements BaseModel {
     DateTime? updatedAt,
   }) = _RegionsModel;
 
-  factory RegionsModel.fromJson(Map<String, dynamic> json) => _$RegionsModelFromJson(json);
+  factory RegionsModel.fromJson(Map<String, dynamic> json) =>
+      _$RegionsModelFromJson(json);
 }

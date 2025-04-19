@@ -4,7 +4,7 @@ part 'event_model_ns.freezed.dart';
 part 'event_model_ns.g.dart';
 
 @freezed
-class EventModel with _$EventModel implements BaseModel {
+abstract class EventModel with _$EventModel implements BaseModel {
   factory EventModel({
     required String eventId,
     required String publicEventId,
@@ -56,7 +56,8 @@ class EventModel with _$EventModel implements BaseModel {
     DateTime? updatedAt,
   }) = _EventModel;
 
-  factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
+  factory EventModel.fromJson(Map<String, dynamic> json) =>
+      _$EventModelFromJson(json);
 
   @override
   factory EventModel.fromMap(Map<String, dynamic> map) {

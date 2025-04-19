@@ -104,7 +104,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 440;
+const int DB_VERSION = 450;
 
 const double CLEAR_LATLONG = -2.0;
 

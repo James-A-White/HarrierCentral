@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,450 +10,77 @@ part of 'are_we_at_run_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-AreWeAtRunModel _$AreWeAtRunModelFromJson(Map<String, dynamic> json) {
-  return _AreWeAtRunModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$AreWeAtRunModel {
-  String get eventId => throw _privateConstructorUsedError;
-  String get eventName => throw _privateConstructorUsedError;
-  String? get eventImage => throw _privateConstructorUsedError;
-  String get kennelId => throw _privateConstructorUsedError;
-  String get kennelLogo => throw _privateConstructorUsedError;
-  String get kennelShortName => throw _privateConstructorUsedError;
-  int get eventNumber => throw _privateConstructorUsedError;
-  double get distanceInMeters => throw _privateConstructorUsedError;
-  double get deltaHours => throw _privateConstructorUsedError;
-  double get kennelCredit => throw _privateConstructorUsedError;
-  double get memberPrice => throw _privateConstructorUsedError;
-  double get nonMemberPrice => throw _privateConstructorUsedError;
-  double get extrasCost => throw _privateConstructorUsedError;
-  double get discountAmount => throw _privateConstructorUsedError;
-  double get discountPercent => throw _privateConstructorUsedError;
-  int get attendenceState => throw _privateConstructorUsedError;
-  int get digitsAfterDecimal => throw _privateConstructorUsedError;
-  int get allowSelfPayment => throw _privateConstructorUsedError;
-  String get currencySymbol => throw _privateConstructorUsedError;
-  DateTime get membershipExpirationDate => throw _privateConstructorUsedError;
-  String? get extrasDescription => throw _privateConstructorUsedError;
-
-  /// Serializes this AreWeAtRunModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$AreWeAtRunModel implements DiagnosticableTreeMixin {
+  String get eventId;
+  String get eventName;
+  String? get eventImage;
+  String get kennelId;
+  String get kennelLogo;
+  String get kennelShortName;
+  int get eventNumber;
+  double get distanceInMeters;
+  double get deltaHours;
+  double get kennelCredit;
+  double get memberPrice;
+  double get nonMemberPrice;
+  double get extrasCost;
+  double get discountAmount;
+  double get discountPercent;
+  int get attendenceState;
+  int get digitsAfterDecimal;
+  int get allowSelfPayment;
+  String get currencySymbol;
+  DateTime get membershipExpirationDate;
+  String? get extrasDescription;
 
   /// Create a copy of AreWeAtRunModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $AreWeAtRunModelCopyWith<AreWeAtRunModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$AreWeAtRunModelCopyWithImpl<AreWeAtRunModel>(
+          this as AreWeAtRunModel, _$identity);
 
-/// @nodoc
-abstract class $AreWeAtRunModelCopyWith<$Res> {
-  factory $AreWeAtRunModelCopyWith(
-          AreWeAtRunModel value, $Res Function(AreWeAtRunModel) then) =
-      _$AreWeAtRunModelCopyWithImpl<$Res, AreWeAtRunModel>;
-  @useResult
-  $Res call(
-      {String eventId,
-      String eventName,
-      String? eventImage,
-      String kennelId,
-      String kennelLogo,
-      String kennelShortName,
-      int eventNumber,
-      double distanceInMeters,
-      double deltaHours,
-      double kennelCredit,
-      double memberPrice,
-      double nonMemberPrice,
-      double extrasCost,
-      double discountAmount,
-      double discountPercent,
-      int attendenceState,
-      int digitsAfterDecimal,
-      int allowSelfPayment,
-      String currencySymbol,
-      DateTime membershipExpirationDate,
-      String? extrasDescription});
-}
-
-/// @nodoc
-class _$AreWeAtRunModelCopyWithImpl<$Res, $Val extends AreWeAtRunModel>
-    implements $AreWeAtRunModelCopyWith<$Res> {
-  _$AreWeAtRunModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of AreWeAtRunModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? eventId = null,
-    Object? eventName = null,
-    Object? eventImage = freezed,
-    Object? kennelId = null,
-    Object? kennelLogo = null,
-    Object? kennelShortName = null,
-    Object? eventNumber = null,
-    Object? distanceInMeters = null,
-    Object? deltaHours = null,
-    Object? kennelCredit = null,
-    Object? memberPrice = null,
-    Object? nonMemberPrice = null,
-    Object? extrasCost = null,
-    Object? discountAmount = null,
-    Object? discountPercent = null,
-    Object? attendenceState = null,
-    Object? digitsAfterDecimal = null,
-    Object? allowSelfPayment = null,
-    Object? currencySymbol = null,
-    Object? membershipExpirationDate = null,
-    Object? extrasDescription = freezed,
-  }) {
-    return _then(_value.copyWith(
-      eventId: null == eventId
-          ? _value.eventId
-          : eventId // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventName: null == eventName
-          ? _value.eventName
-          : eventName // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventImage: freezed == eventImage
-          ? _value.eventImage
-          : eventImage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelId: null == kennelId
-          ? _value.kennelId
-          : kennelId // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelLogo: null == kennelLogo
-          ? _value.kennelLogo
-          : kennelLogo // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelShortName: null == kennelShortName
-          ? _value.kennelShortName
-          : kennelShortName // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventNumber: null == eventNumber
-          ? _value.eventNumber
-          : eventNumber // ignore: cast_nullable_to_non_nullable
-              as int,
-      distanceInMeters: null == distanceInMeters
-          ? _value.distanceInMeters
-          : distanceInMeters // ignore: cast_nullable_to_non_nullable
-              as double,
-      deltaHours: null == deltaHours
-          ? _value.deltaHours
-          : deltaHours // ignore: cast_nullable_to_non_nullable
-              as double,
-      kennelCredit: null == kennelCredit
-          ? _value.kennelCredit
-          : kennelCredit // ignore: cast_nullable_to_non_nullable
-              as double,
-      memberPrice: null == memberPrice
-          ? _value.memberPrice
-          : memberPrice // ignore: cast_nullable_to_non_nullable
-              as double,
-      nonMemberPrice: null == nonMemberPrice
-          ? _value.nonMemberPrice
-          : nonMemberPrice // ignore: cast_nullable_to_non_nullable
-              as double,
-      extrasCost: null == extrasCost
-          ? _value.extrasCost
-          : extrasCost // ignore: cast_nullable_to_non_nullable
-              as double,
-      discountAmount: null == discountAmount
-          ? _value.discountAmount
-          : discountAmount // ignore: cast_nullable_to_non_nullable
-              as double,
-      discountPercent: null == discountPercent
-          ? _value.discountPercent
-          : discountPercent // ignore: cast_nullable_to_non_nullable
-              as double,
-      attendenceState: null == attendenceState
-          ? _value.attendenceState
-          : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int,
-      digitsAfterDecimal: null == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
-          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as int,
-      allowSelfPayment: null == allowSelfPayment
-          ? _value.allowSelfPayment
-          : allowSelfPayment // ignore: cast_nullable_to_non_nullable
-              as int,
-      currencySymbol: null == currencySymbol
-          ? _value.currencySymbol
-          : currencySymbol // ignore: cast_nullable_to_non_nullable
-              as String,
-      membershipExpirationDate: null == membershipExpirationDate
-          ? _value.membershipExpirationDate
-          : membershipExpirationDate // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      extrasDescription: freezed == extrasDescription
-          ? _value.extrasDescription
-          : extrasDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$AreWeAtRunModelImplCopyWith<$Res>
-    implements $AreWeAtRunModelCopyWith<$Res> {
-  factory _$$AreWeAtRunModelImplCopyWith(_$AreWeAtRunModelImpl value,
-          $Res Function(_$AreWeAtRunModelImpl) then) =
-      __$$AreWeAtRunModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String eventId,
-      String eventName,
-      String? eventImage,
-      String kennelId,
-      String kennelLogo,
-      String kennelShortName,
-      int eventNumber,
-      double distanceInMeters,
-      double deltaHours,
-      double kennelCredit,
-      double memberPrice,
-      double nonMemberPrice,
-      double extrasCost,
-      double discountAmount,
-      double discountPercent,
-      int attendenceState,
-      int digitsAfterDecimal,
-      int allowSelfPayment,
-      String currencySymbol,
-      DateTime membershipExpirationDate,
-      String? extrasDescription});
-}
-
-/// @nodoc
-class __$$AreWeAtRunModelImplCopyWithImpl<$Res>
-    extends _$AreWeAtRunModelCopyWithImpl<$Res, _$AreWeAtRunModelImpl>
-    implements _$$AreWeAtRunModelImplCopyWith<$Res> {
-  __$$AreWeAtRunModelImplCopyWithImpl(
-      _$AreWeAtRunModelImpl _value, $Res Function(_$AreWeAtRunModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of AreWeAtRunModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? eventId = null,
-    Object? eventName = null,
-    Object? eventImage = freezed,
-    Object? kennelId = null,
-    Object? kennelLogo = null,
-    Object? kennelShortName = null,
-    Object? eventNumber = null,
-    Object? distanceInMeters = null,
-    Object? deltaHours = null,
-    Object? kennelCredit = null,
-    Object? memberPrice = null,
-    Object? nonMemberPrice = null,
-    Object? extrasCost = null,
-    Object? discountAmount = null,
-    Object? discountPercent = null,
-    Object? attendenceState = null,
-    Object? digitsAfterDecimal = null,
-    Object? allowSelfPayment = null,
-    Object? currencySymbol = null,
-    Object? membershipExpirationDate = null,
-    Object? extrasDescription = freezed,
-  }) {
-    return _then(_$AreWeAtRunModelImpl(
-      eventId: null == eventId
-          ? _value.eventId
-          : eventId // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventName: null == eventName
-          ? _value.eventName
-          : eventName // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventImage: freezed == eventImage
-          ? _value.eventImage
-          : eventImage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelId: null == kennelId
-          ? _value.kennelId
-          : kennelId // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelLogo: null == kennelLogo
-          ? _value.kennelLogo
-          : kennelLogo // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelShortName: null == kennelShortName
-          ? _value.kennelShortName
-          : kennelShortName // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventNumber: null == eventNumber
-          ? _value.eventNumber
-          : eventNumber // ignore: cast_nullable_to_non_nullable
-              as int,
-      distanceInMeters: null == distanceInMeters
-          ? _value.distanceInMeters
-          : distanceInMeters // ignore: cast_nullable_to_non_nullable
-              as double,
-      deltaHours: null == deltaHours
-          ? _value.deltaHours
-          : deltaHours // ignore: cast_nullable_to_non_nullable
-              as double,
-      kennelCredit: null == kennelCredit
-          ? _value.kennelCredit
-          : kennelCredit // ignore: cast_nullable_to_non_nullable
-              as double,
-      memberPrice: null == memberPrice
-          ? _value.memberPrice
-          : memberPrice // ignore: cast_nullable_to_non_nullable
-              as double,
-      nonMemberPrice: null == nonMemberPrice
-          ? _value.nonMemberPrice
-          : nonMemberPrice // ignore: cast_nullable_to_non_nullable
-              as double,
-      extrasCost: null == extrasCost
-          ? _value.extrasCost
-          : extrasCost // ignore: cast_nullable_to_non_nullable
-              as double,
-      discountAmount: null == discountAmount
-          ? _value.discountAmount
-          : discountAmount // ignore: cast_nullable_to_non_nullable
-              as double,
-      discountPercent: null == discountPercent
-          ? _value.discountPercent
-          : discountPercent // ignore: cast_nullable_to_non_nullable
-              as double,
-      attendenceState: null == attendenceState
-          ? _value.attendenceState
-          : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int,
-      digitsAfterDecimal: null == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
-          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as int,
-      allowSelfPayment: null == allowSelfPayment
-          ? _value.allowSelfPayment
-          : allowSelfPayment // ignore: cast_nullable_to_non_nullable
-              as int,
-      currencySymbol: null == currencySymbol
-          ? _value.currencySymbol
-          : currencySymbol // ignore: cast_nullable_to_non_nullable
-              as String,
-      membershipExpirationDate: null == membershipExpirationDate
-          ? _value.membershipExpirationDate
-          : membershipExpirationDate // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      extrasDescription: freezed == extrasDescription
-          ? _value.extrasDescription
-          : extrasDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$AreWeAtRunModelImpl implements _AreWeAtRunModel {
-  _$AreWeAtRunModelImpl(
-      {required this.eventId,
-      required this.eventName,
-      this.eventImage,
-      required this.kennelId,
-      required this.kennelLogo,
-      required this.kennelShortName,
-      required this.eventNumber,
-      required this.distanceInMeters,
-      required this.deltaHours,
-      this.kennelCredit = 0.0,
-      required this.memberPrice,
-      required this.nonMemberPrice,
-      required this.extrasCost,
-      this.discountAmount = 0.0,
-      this.discountPercent = 0.0,
-      this.attendenceState = 0,
-      this.digitsAfterDecimal = 2,
-      this.allowSelfPayment = 0,
-      this.currencySymbol = r'$^',
-      required this.membershipExpirationDate,
-      this.extrasDescription});
-
-  factory _$AreWeAtRunModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$AreWeAtRunModelImplFromJson(json);
+  /// Serializes this AreWeAtRunModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String eventId;
-  @override
-  final String eventName;
-  @override
-  final String? eventImage;
-  @override
-  final String kennelId;
-  @override
-  final String kennelLogo;
-  @override
-  final String kennelShortName;
-  @override
-  final int eventNumber;
-  @override
-  final double distanceInMeters;
-  @override
-  final double deltaHours;
-  @override
-  @JsonKey()
-  final double kennelCredit;
-  @override
-  final double memberPrice;
-  @override
-  final double nonMemberPrice;
-  @override
-  final double extrasCost;
-  @override
-  @JsonKey()
-  final double discountAmount;
-  @override
-  @JsonKey()
-  final double discountPercent;
-  @override
-  @JsonKey()
-  final int attendenceState;
-  @override
-  @JsonKey()
-  final int digitsAfterDecimal;
-  @override
-  @JsonKey()
-  final int allowSelfPayment;
-  @override
-  @JsonKey()
-  final String currencySymbol;
-  @override
-  final DateTime membershipExpirationDate;
-  @override
-  final String? extrasDescription;
-
-  @override
-  String toString() {
-    return 'AreWeAtRunModel(eventId: $eventId, eventName: $eventName, eventImage: $eventImage, kennelId: $kennelId, kennelLogo: $kennelLogo, kennelShortName: $kennelShortName, eventNumber: $eventNumber, distanceInMeters: $distanceInMeters, deltaHours: $deltaHours, kennelCredit: $kennelCredit, memberPrice: $memberPrice, nonMemberPrice: $nonMemberPrice, extrasCost: $extrasCost, discountAmount: $discountAmount, discountPercent: $discountPercent, attendenceState: $attendenceState, digitsAfterDecimal: $digitsAfterDecimal, allowSelfPayment: $allowSelfPayment, currencySymbol: $currencySymbol, membershipExpirationDate: $membershipExpirationDate, extrasDescription: $extrasDescription)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'AreWeAtRunModel'))
+      ..add(DiagnosticsProperty('eventId', eventId))
+      ..add(DiagnosticsProperty('eventName', eventName))
+      ..add(DiagnosticsProperty('eventImage', eventImage))
+      ..add(DiagnosticsProperty('kennelId', kennelId))
+      ..add(DiagnosticsProperty('kennelLogo', kennelLogo))
+      ..add(DiagnosticsProperty('kennelShortName', kennelShortName))
+      ..add(DiagnosticsProperty('eventNumber', eventNumber))
+      ..add(DiagnosticsProperty('distanceInMeters', distanceInMeters))
+      ..add(DiagnosticsProperty('deltaHours', deltaHours))
+      ..add(DiagnosticsProperty('kennelCredit', kennelCredit))
+      ..add(DiagnosticsProperty('memberPrice', memberPrice))
+      ..add(DiagnosticsProperty('nonMemberPrice', nonMemberPrice))
+      ..add(DiagnosticsProperty('extrasCost', extrasCost))
+      ..add(DiagnosticsProperty('discountAmount', discountAmount))
+      ..add(DiagnosticsProperty('discountPercent', discountPercent))
+      ..add(DiagnosticsProperty('attendenceState', attendenceState))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('allowSelfPayment', allowSelfPayment))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty(
+          'membershipExpirationDate', membershipExpirationDate))
+      ..add(DiagnosticsProperty('extrasDescription', extrasDescription));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$AreWeAtRunModelImpl &&
+            other is AreWeAtRunModel &&
             (identical(other.eventId, eventId) || other.eventId == eventId) &&
             (identical(other.eventName, eventName) ||
                 other.eventName == eventName) &&
@@ -524,97 +152,523 @@ class _$AreWeAtRunModelImpl implements _AreWeAtRunModel {
         extrasDescription
       ]);
 
-  /// Create a copy of AreWeAtRunModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$AreWeAtRunModelImplCopyWith<_$AreWeAtRunModelImpl> get copyWith =>
-      __$$AreWeAtRunModelImplCopyWithImpl<_$AreWeAtRunModelImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$AreWeAtRunModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'AreWeAtRunModel(eventId: $eventId, eventName: $eventName, eventImage: $eventImage, kennelId: $kennelId, kennelLogo: $kennelLogo, kennelShortName: $kennelShortName, eventNumber: $eventNumber, distanceInMeters: $distanceInMeters, deltaHours: $deltaHours, kennelCredit: $kennelCredit, memberPrice: $memberPrice, nonMemberPrice: $nonMemberPrice, extrasCost: $extrasCost, discountAmount: $discountAmount, discountPercent: $discountPercent, attendenceState: $attendenceState, digitsAfterDecimal: $digitsAfterDecimal, allowSelfPayment: $allowSelfPayment, currencySymbol: $currencySymbol, membershipExpirationDate: $membershipExpirationDate, extrasDescription: $extrasDescription)';
   }
 }
 
-abstract class _AreWeAtRunModel implements AreWeAtRunModel {
-  factory _AreWeAtRunModel(
-      {required final String eventId,
-      required final String eventName,
-      final String? eventImage,
-      required final String kennelId,
-      required final String kennelLogo,
-      required final String kennelShortName,
-      required final int eventNumber,
-      required final double distanceInMeters,
-      required final double deltaHours,
-      final double kennelCredit,
-      required final double memberPrice,
-      required final double nonMemberPrice,
-      required final double extrasCost,
-      final double discountAmount,
-      final double discountPercent,
-      final int attendenceState,
-      final int digitsAfterDecimal,
-      final int allowSelfPayment,
-      final String currencySymbol,
-      required final DateTime membershipExpirationDate,
-      final String? extrasDescription}) = _$AreWeAtRunModelImpl;
+/// @nodoc
+abstract mixin class $AreWeAtRunModelCopyWith<$Res> {
+  factory $AreWeAtRunModelCopyWith(
+          AreWeAtRunModel value, $Res Function(AreWeAtRunModel) _then) =
+      _$AreWeAtRunModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String eventId,
+      String eventName,
+      String? eventImage,
+      String kennelId,
+      String kennelLogo,
+      String kennelShortName,
+      int eventNumber,
+      double distanceInMeters,
+      double deltaHours,
+      double kennelCredit,
+      double memberPrice,
+      double nonMemberPrice,
+      double extrasCost,
+      double discountAmount,
+      double discountPercent,
+      int attendenceState,
+      int digitsAfterDecimal,
+      int allowSelfPayment,
+      String currencySymbol,
+      DateTime membershipExpirationDate,
+      String? extrasDescription});
+}
 
-  factory _AreWeAtRunModel.fromJson(Map<String, dynamic> json) =
-      _$AreWeAtRunModelImpl.fromJson;
+/// @nodoc
+class _$AreWeAtRunModelCopyWithImpl<$Res>
+    implements $AreWeAtRunModelCopyWith<$Res> {
+  _$AreWeAtRunModelCopyWithImpl(this._self, this._then);
+
+  final AreWeAtRunModel _self;
+  final $Res Function(AreWeAtRunModel) _then;
+
+  /// Create a copy of AreWeAtRunModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? eventId = null,
+    Object? eventName = null,
+    Object? eventImage = freezed,
+    Object? kennelId = null,
+    Object? kennelLogo = null,
+    Object? kennelShortName = null,
+    Object? eventNumber = null,
+    Object? distanceInMeters = null,
+    Object? deltaHours = null,
+    Object? kennelCredit = null,
+    Object? memberPrice = null,
+    Object? nonMemberPrice = null,
+    Object? extrasCost = null,
+    Object? discountAmount = null,
+    Object? discountPercent = null,
+    Object? attendenceState = null,
+    Object? digitsAfterDecimal = null,
+    Object? allowSelfPayment = null,
+    Object? currencySymbol = null,
+    Object? membershipExpirationDate = null,
+    Object? extrasDescription = freezed,
+  }) {
+    return _then(_self.copyWith(
+      eventId: null == eventId
+          ? _self.eventId
+          : eventId // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventName: null == eventName
+          ? _self.eventName
+          : eventName // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventImage: freezed == eventImage
+          ? _self.eventImage
+          : eventImage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelId: null == kennelId
+          ? _self.kennelId
+          : kennelId // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelLogo: null == kennelLogo
+          ? _self.kennelLogo
+          : kennelLogo // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelShortName: null == kennelShortName
+          ? _self.kennelShortName
+          : kennelShortName // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventNumber: null == eventNumber
+          ? _self.eventNumber
+          : eventNumber // ignore: cast_nullable_to_non_nullable
+              as int,
+      distanceInMeters: null == distanceInMeters
+          ? _self.distanceInMeters
+          : distanceInMeters // ignore: cast_nullable_to_non_nullable
+              as double,
+      deltaHours: null == deltaHours
+          ? _self.deltaHours
+          : deltaHours // ignore: cast_nullable_to_non_nullable
+              as double,
+      kennelCredit: null == kennelCredit
+          ? _self.kennelCredit
+          : kennelCredit // ignore: cast_nullable_to_non_nullable
+              as double,
+      memberPrice: null == memberPrice
+          ? _self.memberPrice
+          : memberPrice // ignore: cast_nullable_to_non_nullable
+              as double,
+      nonMemberPrice: null == nonMemberPrice
+          ? _self.nonMemberPrice
+          : nonMemberPrice // ignore: cast_nullable_to_non_nullable
+              as double,
+      extrasCost: null == extrasCost
+          ? _self.extrasCost
+          : extrasCost // ignore: cast_nullable_to_non_nullable
+              as double,
+      discountAmount: null == discountAmount
+          ? _self.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double,
+      discountPercent: null == discountPercent
+          ? _self.discountPercent
+          : discountPercent // ignore: cast_nullable_to_non_nullable
+              as double,
+      attendenceState: null == attendenceState
+          ? _self.attendenceState
+          : attendenceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      digitsAfterDecimal: null == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int,
+      allowSelfPayment: null == allowSelfPayment
+          ? _self.allowSelfPayment
+          : allowSelfPayment // ignore: cast_nullable_to_non_nullable
+              as int,
+      currencySymbol: null == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String,
+      membershipExpirationDate: null == membershipExpirationDate
+          ? _self.membershipExpirationDate
+          : membershipExpirationDate // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      extrasDescription: freezed == extrasDescription
+          ? _self.extrasDescription
+          : extrasDescription // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _AreWeAtRunModel with DiagnosticableTreeMixin implements AreWeAtRunModel {
+  _AreWeAtRunModel(
+      {required this.eventId,
+      required this.eventName,
+      this.eventImage,
+      required this.kennelId,
+      required this.kennelLogo,
+      required this.kennelShortName,
+      required this.eventNumber,
+      required this.distanceInMeters,
+      required this.deltaHours,
+      this.kennelCredit = 0.0,
+      required this.memberPrice,
+      required this.nonMemberPrice,
+      required this.extrasCost,
+      this.discountAmount = 0.0,
+      this.discountPercent = 0.0,
+      this.attendenceState = 0,
+      this.digitsAfterDecimal = 2,
+      this.allowSelfPayment = 0,
+      this.currencySymbol = r'$^',
+      required this.membershipExpirationDate,
+      this.extrasDescription});
+  factory _AreWeAtRunModel.fromJson(Map<String, dynamic> json) =>
+      _$AreWeAtRunModelFromJson(json);
 
   @override
-  String get eventId;
+  final String eventId;
   @override
-  String get eventName;
+  final String eventName;
   @override
-  String? get eventImage;
+  final String? eventImage;
   @override
-  String get kennelId;
+  final String kennelId;
   @override
-  String get kennelLogo;
+  final String kennelLogo;
   @override
-  String get kennelShortName;
+  final String kennelShortName;
   @override
-  int get eventNumber;
+  final int eventNumber;
   @override
-  double get distanceInMeters;
+  final double distanceInMeters;
   @override
-  double get deltaHours;
+  final double deltaHours;
   @override
-  double get kennelCredit;
+  @JsonKey()
+  final double kennelCredit;
   @override
-  double get memberPrice;
+  final double memberPrice;
   @override
-  double get nonMemberPrice;
+  final double nonMemberPrice;
   @override
-  double get extrasCost;
+  final double extrasCost;
   @override
-  double get discountAmount;
+  @JsonKey()
+  final double discountAmount;
   @override
-  double get discountPercent;
+  @JsonKey()
+  final double discountPercent;
   @override
-  int get attendenceState;
+  @JsonKey()
+  final int attendenceState;
   @override
-  int get digitsAfterDecimal;
+  @JsonKey()
+  final int digitsAfterDecimal;
   @override
-  int get allowSelfPayment;
+  @JsonKey()
+  final int allowSelfPayment;
   @override
-  String get currencySymbol;
+  @JsonKey()
+  final String currencySymbol;
   @override
-  DateTime get membershipExpirationDate;
+  final DateTime membershipExpirationDate;
   @override
-  String? get extrasDescription;
+  final String? extrasDescription;
 
   /// Create a copy of AreWeAtRunModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AreWeAtRunModelImplCopyWith<_$AreWeAtRunModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$AreWeAtRunModelCopyWith<_AreWeAtRunModel> get copyWith =>
+      __$AreWeAtRunModelCopyWithImpl<_AreWeAtRunModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$AreWeAtRunModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'AreWeAtRunModel'))
+      ..add(DiagnosticsProperty('eventId', eventId))
+      ..add(DiagnosticsProperty('eventName', eventName))
+      ..add(DiagnosticsProperty('eventImage', eventImage))
+      ..add(DiagnosticsProperty('kennelId', kennelId))
+      ..add(DiagnosticsProperty('kennelLogo', kennelLogo))
+      ..add(DiagnosticsProperty('kennelShortName', kennelShortName))
+      ..add(DiagnosticsProperty('eventNumber', eventNumber))
+      ..add(DiagnosticsProperty('distanceInMeters', distanceInMeters))
+      ..add(DiagnosticsProperty('deltaHours', deltaHours))
+      ..add(DiagnosticsProperty('kennelCredit', kennelCredit))
+      ..add(DiagnosticsProperty('memberPrice', memberPrice))
+      ..add(DiagnosticsProperty('nonMemberPrice', nonMemberPrice))
+      ..add(DiagnosticsProperty('extrasCost', extrasCost))
+      ..add(DiagnosticsProperty('discountAmount', discountAmount))
+      ..add(DiagnosticsProperty('discountPercent', discountPercent))
+      ..add(DiagnosticsProperty('attendenceState', attendenceState))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('allowSelfPayment', allowSelfPayment))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty(
+          'membershipExpirationDate', membershipExpirationDate))
+      ..add(DiagnosticsProperty('extrasDescription', extrasDescription));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _AreWeAtRunModel &&
+            (identical(other.eventId, eventId) || other.eventId == eventId) &&
+            (identical(other.eventName, eventName) ||
+                other.eventName == eventName) &&
+            (identical(other.eventImage, eventImage) ||
+                other.eventImage == eventImage) &&
+            (identical(other.kennelId, kennelId) ||
+                other.kennelId == kennelId) &&
+            (identical(other.kennelLogo, kennelLogo) ||
+                other.kennelLogo == kennelLogo) &&
+            (identical(other.kennelShortName, kennelShortName) ||
+                other.kennelShortName == kennelShortName) &&
+            (identical(other.eventNumber, eventNumber) ||
+                other.eventNumber == eventNumber) &&
+            (identical(other.distanceInMeters, distanceInMeters) ||
+                other.distanceInMeters == distanceInMeters) &&
+            (identical(other.deltaHours, deltaHours) ||
+                other.deltaHours == deltaHours) &&
+            (identical(other.kennelCredit, kennelCredit) ||
+                other.kennelCredit == kennelCredit) &&
+            (identical(other.memberPrice, memberPrice) ||
+                other.memberPrice == memberPrice) &&
+            (identical(other.nonMemberPrice, nonMemberPrice) ||
+                other.nonMemberPrice == nonMemberPrice) &&
+            (identical(other.extrasCost, extrasCost) ||
+                other.extrasCost == extrasCost) &&
+            (identical(other.discountAmount, discountAmount) ||
+                other.discountAmount == discountAmount) &&
+            (identical(other.discountPercent, discountPercent) ||
+                other.discountPercent == discountPercent) &&
+            (identical(other.attendenceState, attendenceState) ||
+                other.attendenceState == attendenceState) &&
+            (identical(other.digitsAfterDecimal, digitsAfterDecimal) ||
+                other.digitsAfterDecimal == digitsAfterDecimal) &&
+            (identical(other.allowSelfPayment, allowSelfPayment) ||
+                other.allowSelfPayment == allowSelfPayment) &&
+            (identical(other.currencySymbol, currencySymbol) ||
+                other.currencySymbol == currencySymbol) &&
+            (identical(
+                    other.membershipExpirationDate, membershipExpirationDate) ||
+                other.membershipExpirationDate == membershipExpirationDate) &&
+            (identical(other.extrasDescription, extrasDescription) ||
+                other.extrasDescription == extrasDescription));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        eventId,
+        eventName,
+        eventImage,
+        kennelId,
+        kennelLogo,
+        kennelShortName,
+        eventNumber,
+        distanceInMeters,
+        deltaHours,
+        kennelCredit,
+        memberPrice,
+        nonMemberPrice,
+        extrasCost,
+        discountAmount,
+        discountPercent,
+        attendenceState,
+        digitsAfterDecimal,
+        allowSelfPayment,
+        currencySymbol,
+        membershipExpirationDate,
+        extrasDescription
+      ]);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'AreWeAtRunModel(eventId: $eventId, eventName: $eventName, eventImage: $eventImage, kennelId: $kennelId, kennelLogo: $kennelLogo, kennelShortName: $kennelShortName, eventNumber: $eventNumber, distanceInMeters: $distanceInMeters, deltaHours: $deltaHours, kennelCredit: $kennelCredit, memberPrice: $memberPrice, nonMemberPrice: $nonMemberPrice, extrasCost: $extrasCost, discountAmount: $discountAmount, discountPercent: $discountPercent, attendenceState: $attendenceState, digitsAfterDecimal: $digitsAfterDecimal, allowSelfPayment: $allowSelfPayment, currencySymbol: $currencySymbol, membershipExpirationDate: $membershipExpirationDate, extrasDescription: $extrasDescription)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$AreWeAtRunModelCopyWith<$Res>
+    implements $AreWeAtRunModelCopyWith<$Res> {
+  factory _$AreWeAtRunModelCopyWith(
+          _AreWeAtRunModel value, $Res Function(_AreWeAtRunModel) _then) =
+      __$AreWeAtRunModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String eventId,
+      String eventName,
+      String? eventImage,
+      String kennelId,
+      String kennelLogo,
+      String kennelShortName,
+      int eventNumber,
+      double distanceInMeters,
+      double deltaHours,
+      double kennelCredit,
+      double memberPrice,
+      double nonMemberPrice,
+      double extrasCost,
+      double discountAmount,
+      double discountPercent,
+      int attendenceState,
+      int digitsAfterDecimal,
+      int allowSelfPayment,
+      String currencySymbol,
+      DateTime membershipExpirationDate,
+      String? extrasDescription});
+}
+
+/// @nodoc
+class __$AreWeAtRunModelCopyWithImpl<$Res>
+    implements _$AreWeAtRunModelCopyWith<$Res> {
+  __$AreWeAtRunModelCopyWithImpl(this._self, this._then);
+
+  final _AreWeAtRunModel _self;
+  final $Res Function(_AreWeAtRunModel) _then;
+
+  /// Create a copy of AreWeAtRunModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? eventId = null,
+    Object? eventName = null,
+    Object? eventImage = freezed,
+    Object? kennelId = null,
+    Object? kennelLogo = null,
+    Object? kennelShortName = null,
+    Object? eventNumber = null,
+    Object? distanceInMeters = null,
+    Object? deltaHours = null,
+    Object? kennelCredit = null,
+    Object? memberPrice = null,
+    Object? nonMemberPrice = null,
+    Object? extrasCost = null,
+    Object? discountAmount = null,
+    Object? discountPercent = null,
+    Object? attendenceState = null,
+    Object? digitsAfterDecimal = null,
+    Object? allowSelfPayment = null,
+    Object? currencySymbol = null,
+    Object? membershipExpirationDate = null,
+    Object? extrasDescription = freezed,
+  }) {
+    return _then(_AreWeAtRunModel(
+      eventId: null == eventId
+          ? _self.eventId
+          : eventId // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventName: null == eventName
+          ? _self.eventName
+          : eventName // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventImage: freezed == eventImage
+          ? _self.eventImage
+          : eventImage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelId: null == kennelId
+          ? _self.kennelId
+          : kennelId // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelLogo: null == kennelLogo
+          ? _self.kennelLogo
+          : kennelLogo // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelShortName: null == kennelShortName
+          ? _self.kennelShortName
+          : kennelShortName // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventNumber: null == eventNumber
+          ? _self.eventNumber
+          : eventNumber // ignore: cast_nullable_to_non_nullable
+              as int,
+      distanceInMeters: null == distanceInMeters
+          ? _self.distanceInMeters
+          : distanceInMeters // ignore: cast_nullable_to_non_nullable
+              as double,
+      deltaHours: null == deltaHours
+          ? _self.deltaHours
+          : deltaHours // ignore: cast_nullable_to_non_nullable
+              as double,
+      kennelCredit: null == kennelCredit
+          ? _self.kennelCredit
+          : kennelCredit // ignore: cast_nullable_to_non_nullable
+              as double,
+      memberPrice: null == memberPrice
+          ? _self.memberPrice
+          : memberPrice // ignore: cast_nullable_to_non_nullable
+              as double,
+      nonMemberPrice: null == nonMemberPrice
+          ? _self.nonMemberPrice
+          : nonMemberPrice // ignore: cast_nullable_to_non_nullable
+              as double,
+      extrasCost: null == extrasCost
+          ? _self.extrasCost
+          : extrasCost // ignore: cast_nullable_to_non_nullable
+              as double,
+      discountAmount: null == discountAmount
+          ? _self.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double,
+      discountPercent: null == discountPercent
+          ? _self.discountPercent
+          : discountPercent // ignore: cast_nullable_to_non_nullable
+              as double,
+      attendenceState: null == attendenceState
+          ? _self.attendenceState
+          : attendenceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      digitsAfterDecimal: null == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int,
+      allowSelfPayment: null == allowSelfPayment
+          ? _self.allowSelfPayment
+          : allowSelfPayment // ignore: cast_nullable_to_non_nullable
+              as int,
+      currencySymbol: null == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String,
+      membershipExpirationDate: null == membershipExpirationDate
+          ? _self.membershipExpirationDate
+          : membershipExpirationDate // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      extrasDescription: freezed == extrasDescription
+          ? _self.extrasDescription
+          : extrasDescription // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+// dart format on

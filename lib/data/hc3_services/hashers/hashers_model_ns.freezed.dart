@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,267 +10,55 @@ part of 'hashers_model_ns.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-HashersModel _$HashersModelFromJson(Map<String, dynamic> json) {
-  return _HashersModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$HashersModel {
-  String get hasherId => throw _privateConstructorUsedError;
-  String? get firstName => throw _privateConstructorUsedError;
-  String? get lastName => throw _privateConstructorUsedError;
-  String get dispName => throw _privateConstructorUsedError;
-  String? get hashName => throw _privateConstructorUsedError;
-  String? get photo => throw _privateConstructorUsedError;
-  int get dispPref => throw _privateConstructorUsedError;
-  int get includeInGlobalHashDirectory => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-
-  /// Serializes this HashersModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$HashersModel implements DiagnosticableTreeMixin {
+  String get hasherId;
+  String? get firstName;
+  String? get lastName;
+  String get dispName;
+  String? get hashName;
+  String? get photo;
+  int get dispPref;
+  int get includeInGlobalHashDirectory;
+  int? get removed;
+  DateTime? get updatedAt;
 
   /// Create a copy of HashersModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $HashersModelCopyWith<HashersModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$HashersModelCopyWithImpl<HashersModel>(
+          this as HashersModel, _$identity);
 
-/// @nodoc
-abstract class $HashersModelCopyWith<$Res> {
-  factory $HashersModelCopyWith(
-          HashersModel value, $Res Function(HashersModel) then) =
-      _$HashersModelCopyWithImpl<$Res, HashersModel>;
-  @useResult
-  $Res call(
-      {String hasherId,
-      String? firstName,
-      String? lastName,
-      String dispName,
-      String? hashName,
-      String? photo,
-      int dispPref,
-      int includeInGlobalHashDirectory,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class _$HashersModelCopyWithImpl<$Res, $Val extends HashersModel>
-    implements $HashersModelCopyWith<$Res> {
-  _$HashersModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of HashersModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? hasherId = null,
-    Object? firstName = freezed,
-    Object? lastName = freezed,
-    Object? dispName = null,
-    Object? hashName = freezed,
-    Object? photo = freezed,
-    Object? dispPref = null,
-    Object? includeInGlobalHashDirectory = null,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      hasherId: null == hasherId
-          ? _value.hasherId
-          : hasherId // ignore: cast_nullable_to_non_nullable
-              as String,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dispName: null == dispName
-          ? _value.dispName
-          : dispName // ignore: cast_nullable_to_non_nullable
-              as String,
-      hashName: freezed == hashName
-          ? _value.hashName
-          : hashName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      photo: freezed == photo
-          ? _value.photo
-          : photo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dispPref: null == dispPref
-          ? _value.dispPref
-          : dispPref // ignore: cast_nullable_to_non_nullable
-              as int,
-      includeInGlobalHashDirectory: null == includeInGlobalHashDirectory
-          ? _value.includeInGlobalHashDirectory
-          : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
-              as int,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$HashersModelImplCopyWith<$Res>
-    implements $HashersModelCopyWith<$Res> {
-  factory _$$HashersModelImplCopyWith(
-          _$HashersModelImpl value, $Res Function(_$HashersModelImpl) then) =
-      __$$HashersModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String hasherId,
-      String? firstName,
-      String? lastName,
-      String dispName,
-      String? hashName,
-      String? photo,
-      int dispPref,
-      int includeInGlobalHashDirectory,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class __$$HashersModelImplCopyWithImpl<$Res>
-    extends _$HashersModelCopyWithImpl<$Res, _$HashersModelImpl>
-    implements _$$HashersModelImplCopyWith<$Res> {
-  __$$HashersModelImplCopyWithImpl(
-      _$HashersModelImpl _value, $Res Function(_$HashersModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of HashersModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? hasherId = null,
-    Object? firstName = freezed,
-    Object? lastName = freezed,
-    Object? dispName = null,
-    Object? hashName = freezed,
-    Object? photo = freezed,
-    Object? dispPref = null,
-    Object? includeInGlobalHashDirectory = null,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_$HashersModelImpl(
-      hasherId: null == hasherId
-          ? _value.hasherId
-          : hasherId // ignore: cast_nullable_to_non_nullable
-              as String,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dispName: null == dispName
-          ? _value.dispName
-          : dispName // ignore: cast_nullable_to_non_nullable
-              as String,
-      hashName: freezed == hashName
-          ? _value.hashName
-          : hashName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      photo: freezed == photo
-          ? _value.photo
-          : photo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dispPref: null == dispPref
-          ? _value.dispPref
-          : dispPref // ignore: cast_nullable_to_non_nullable
-              as int,
-      includeInGlobalHashDirectory: null == includeInGlobalHashDirectory
-          ? _value.includeInGlobalHashDirectory
-          : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
-              as int,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$HashersModelImpl implements _HashersModel {
-  _$HashersModelImpl(
-      {required this.hasherId,
-      this.firstName,
-      this.lastName,
-      required this.dispName,
-      this.hashName,
-      this.photo,
-      required this.dispPref,
-      required this.includeInGlobalHashDirectory,
-      this.removed,
-      this.updatedAt});
-
-  factory _$HashersModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$HashersModelImplFromJson(json);
+  /// Serializes this HashersModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String hasherId;
-  @override
-  final String? firstName;
-  @override
-  final String? lastName;
-  @override
-  final String dispName;
-  @override
-  final String? hashName;
-  @override
-  final String? photo;
-  @override
-  final int dispPref;
-  @override
-  final int includeInGlobalHashDirectory;
-  @override
-  final int? removed;
-  @override
-  final DateTime? updatedAt;
-
-  @override
-  String toString() {
-    return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'HashersModel'))
+      ..add(DiagnosticsProperty('hasherId', hasherId))
+      ..add(DiagnosticsProperty('firstName', firstName))
+      ..add(DiagnosticsProperty('lastName', lastName))
+      ..add(DiagnosticsProperty('dispName', dispName))
+      ..add(DiagnosticsProperty('hashName', hashName))
+      ..add(DiagnosticsProperty('photo', photo))
+      ..add(DiagnosticsProperty('dispPref', dispPref))
+      ..add(DiagnosticsProperty(
+          'includeInGlobalHashDirectory', includeInGlobalHashDirectory))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$HashersModelImpl &&
+            other is HashersModel &&
             (identical(other.hasherId, hasherId) ||
                 other.hasherId == hasherId) &&
             (identical(other.firstName, firstName) ||
@@ -307,63 +96,305 @@ class _$HashersModelImpl implements _HashersModel {
       removed,
       updatedAt);
 
-  /// Create a copy of HashersModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$HashersModelImplCopyWith<_$HashersModelImpl> get copyWith =>
-      __$$HashersModelImplCopyWithImpl<_$HashersModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$HashersModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
-abstract class _HashersModel implements HashersModel {
-  factory _HashersModel(
-      {required final String hasherId,
-      final String? firstName,
-      final String? lastName,
-      required final String dispName,
-      final String? hashName,
-      final String? photo,
-      required final int dispPref,
-      required final int includeInGlobalHashDirectory,
-      final int? removed,
-      final DateTime? updatedAt}) = _$HashersModelImpl;
+/// @nodoc
+abstract mixin class $HashersModelCopyWith<$Res> {
+  factory $HashersModelCopyWith(
+          HashersModel value, $Res Function(HashersModel) _then) =
+      _$HashersModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String hasherId,
+      String? firstName,
+      String? lastName,
+      String dispName,
+      String? hashName,
+      String? photo,
+      int dispPref,
+      int includeInGlobalHashDirectory,
+      int? removed,
+      DateTime? updatedAt});
+}
 
-  factory _HashersModel.fromJson(Map<String, dynamic> json) =
-      _$HashersModelImpl.fromJson;
+/// @nodoc
+class _$HashersModelCopyWithImpl<$Res> implements $HashersModelCopyWith<$Res> {
+  _$HashersModelCopyWithImpl(this._self, this._then);
+
+  final HashersModel _self;
+  final $Res Function(HashersModel) _then;
+
+  /// Create a copy of HashersModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? hasherId = null,
+    Object? firstName = freezed,
+    Object? lastName = freezed,
+    Object? dispName = null,
+    Object? hashName = freezed,
+    Object? photo = freezed,
+    Object? dispPref = null,
+    Object? includeInGlobalHashDirectory = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_self.copyWith(
+      hasherId: null == hasherId
+          ? _self.hasherId
+          : hasherId // ignore: cast_nullable_to_non_nullable
+              as String,
+      firstName: freezed == firstName
+          ? _self.firstName
+          : firstName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastName: freezed == lastName
+          ? _self.lastName
+          : lastName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dispName: null == dispName
+          ? _self.dispName
+          : dispName // ignore: cast_nullable_to_non_nullable
+              as String,
+      hashName: freezed == hashName
+          ? _self.hashName
+          : hashName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      photo: freezed == photo
+          ? _self.photo
+          : photo // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dispPref: null == dispPref
+          ? _self.dispPref
+          : dispPref // ignore: cast_nullable_to_non_nullable
+              as int,
+      includeInGlobalHashDirectory: null == includeInGlobalHashDirectory
+          ? _self.includeInGlobalHashDirectory
+          : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
+              as int,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _HashersModel with DiagnosticableTreeMixin implements HashersModel {
+  _HashersModel(
+      {required this.hasherId,
+      this.firstName,
+      this.lastName,
+      required this.dispName,
+      this.hashName,
+      this.photo,
+      required this.dispPref,
+      required this.includeInGlobalHashDirectory,
+      this.removed,
+      this.updatedAt});
+  factory _HashersModel.fromJson(Map<String, dynamic> json) =>
+      _$HashersModelFromJson(json);
 
   @override
-  String get hasherId;
+  final String hasherId;
   @override
-  String? get firstName;
+  final String? firstName;
   @override
-  String? get lastName;
+  final String? lastName;
   @override
-  String get dispName;
+  final String dispName;
   @override
-  String? get hashName;
+  final String? hashName;
   @override
-  String? get photo;
+  final String? photo;
   @override
-  int get dispPref;
+  final int dispPref;
   @override
-  int get includeInGlobalHashDirectory;
+  final int includeInGlobalHashDirectory;
   @override
-  int? get removed;
+  final int? removed;
   @override
-  DateTime? get updatedAt;
+  final DateTime? updatedAt;
 
   /// Create a copy of HashersModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$HashersModelImplCopyWith<_$HashersModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$HashersModelCopyWith<_HashersModel> get copyWith =>
+      __$HashersModelCopyWithImpl<_HashersModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$HashersModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'HashersModel'))
+      ..add(DiagnosticsProperty('hasherId', hasherId))
+      ..add(DiagnosticsProperty('firstName', firstName))
+      ..add(DiagnosticsProperty('lastName', lastName))
+      ..add(DiagnosticsProperty('dispName', dispName))
+      ..add(DiagnosticsProperty('hashName', hashName))
+      ..add(DiagnosticsProperty('photo', photo))
+      ..add(DiagnosticsProperty('dispPref', dispPref))
+      ..add(DiagnosticsProperty(
+          'includeInGlobalHashDirectory', includeInGlobalHashDirectory))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _HashersModel &&
+            (identical(other.hasherId, hasherId) ||
+                other.hasherId == hasherId) &&
+            (identical(other.firstName, firstName) ||
+                other.firstName == firstName) &&
+            (identical(other.lastName, lastName) ||
+                other.lastName == lastName) &&
+            (identical(other.dispName, dispName) ||
+                other.dispName == dispName) &&
+            (identical(other.hashName, hashName) ||
+                other.hashName == hashName) &&
+            (identical(other.photo, photo) || other.photo == photo) &&
+            (identical(other.dispPref, dispPref) ||
+                other.dispPref == dispPref) &&
+            (identical(other.includeInGlobalHashDirectory,
+                    includeInGlobalHashDirectory) ||
+                other.includeInGlobalHashDirectory ==
+                    includeInGlobalHashDirectory) &&
+            (identical(other.removed, removed) || other.removed == removed) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      hasherId,
+      firstName,
+      lastName,
+      dispName,
+      hashName,
+      photo,
+      dispPref,
+      includeInGlobalHashDirectory,
+      removed,
+      updatedAt);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$HashersModelCopyWith<$Res>
+    implements $HashersModelCopyWith<$Res> {
+  factory _$HashersModelCopyWith(
+          _HashersModel value, $Res Function(_HashersModel) _then) =
+      __$HashersModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String hasherId,
+      String? firstName,
+      String? lastName,
+      String dispName,
+      String? hashName,
+      String? photo,
+      int dispPref,
+      int includeInGlobalHashDirectory,
+      int? removed,
+      DateTime? updatedAt});
+}
+
+/// @nodoc
+class __$HashersModelCopyWithImpl<$Res>
+    implements _$HashersModelCopyWith<$Res> {
+  __$HashersModelCopyWithImpl(this._self, this._then);
+
+  final _HashersModel _self;
+  final $Res Function(_HashersModel) _then;
+
+  /// Create a copy of HashersModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? hasherId = null,
+    Object? firstName = freezed,
+    Object? lastName = freezed,
+    Object? dispName = null,
+    Object? hashName = freezed,
+    Object? photo = freezed,
+    Object? dispPref = null,
+    Object? includeInGlobalHashDirectory = null,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_HashersModel(
+      hasherId: null == hasherId
+          ? _self.hasherId
+          : hasherId // ignore: cast_nullable_to_non_nullable
+              as String,
+      firstName: freezed == firstName
+          ? _self.firstName
+          : firstName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastName: freezed == lastName
+          ? _self.lastName
+          : lastName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dispName: null == dispName
+          ? _self.dispName
+          : dispName // ignore: cast_nullable_to_non_nullable
+              as String,
+      hashName: freezed == hashName
+          ? _self.hashName
+          : hashName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      photo: freezed == photo
+          ? _self.photo
+          : photo // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dispPref: null == dispPref
+          ? _self.dispPref
+          : dispPref // ignore: cast_nullable_to_non_nullable
+              as int,
+      includeInGlobalHashDirectory: null == includeInGlobalHashDirectory
+          ? _self.includeInGlobalHashDirectory
+          : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
+              as int,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+// dart format on

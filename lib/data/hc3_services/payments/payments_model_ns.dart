@@ -4,7 +4,7 @@ part 'payments_model_ns.freezed.dart';
 part 'payments_model_ns.g.dart';
 
 @freezed
-class PaymentsModel with _$PaymentsModel implements BaseModel {
+abstract class PaymentsModel with _$PaymentsModel implements BaseModel {
   factory PaymentsModel({
     required String paymentId,
     required String kennelId,
@@ -35,5 +35,6 @@ class PaymentsModel with _$PaymentsModel implements BaseModel {
     DateTime? updatedAt,
   }) = _PaymentsModel;
 
-  factory PaymentsModel.fromJson(Map<String, dynamic> json) => _$PaymentsModelFromJson(json);
+  factory PaymentsModel.fromJson(Map<String, dynamic> json) =>
+      _$PaymentsModelFromJson(json);
 }

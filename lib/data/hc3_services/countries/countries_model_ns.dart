@@ -5,7 +5,7 @@ part 'countries_model_ns.freezed.dart';
 part 'countries_model_ns.g.dart';
 
 @freezed
-class CountriesModel with _$CountriesModel implements BaseModel {
+abstract class CountriesModel with _$CountriesModel implements BaseModel {
   factory CountriesModel({
     required String countryId,
     required String countryCode,
@@ -25,5 +25,6 @@ class CountriesModel with _$CountriesModel implements BaseModel {
     DateTime? updatedAt,
   }) = _CountriesModel;
 
-  factory CountriesModel.fromJson(Map<String, dynamic> json) => _$CountriesModelFromJson(json);
+  factory CountriesModel.fromJson(Map<String, dynamic> json) =>
+      _$CountriesModelFromJson(json);
 }

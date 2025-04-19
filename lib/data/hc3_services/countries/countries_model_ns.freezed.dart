@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,363 +10,66 @@ part of 'countries_model_ns.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-CountriesModel _$CountriesModelFromJson(Map<String, dynamic> json) {
-  return _CountriesModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$CountriesModel {
-  String get countryId => throw _privateConstructorUsedError;
-  String get countryCode => throw _privateConstructorUsedError;
-  double get latitude => throw _privateConstructorUsedError;
-  double get longitude => throw _privateConstructorUsedError;
-  String get countryName => throw _privateConstructorUsedError;
-  String? get countrySearchTags => throw _privateConstructorUsedError;
-  String get continentCode => throw _privateConstructorUsedError;
-  String? get flagFile => throw _privateConstructorUsedError;
-  String get currencyCode => throw _privateConstructorUsedError;
-  String get primaryCultureCode => throw _privateConstructorUsedError;
-  int get showRegion => throw _privateConstructorUsedError;
-  String? get currencySymbol => throw _privateConstructorUsedError;
-  int? get digitsAfterDecimal => throw _privateConstructorUsedError;
-  int? get distancePreference => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-
-  /// Serializes this CountriesModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$CountriesModel implements DiagnosticableTreeMixin {
+  String get countryId;
+  String get countryCode;
+  double get latitude;
+  double get longitude;
+  String get countryName;
+  String? get countrySearchTags;
+  String get continentCode;
+  String? get flagFile;
+  String get currencyCode;
+  String get primaryCultureCode;
+  int get showRegion;
+  String? get currencySymbol;
+  int? get digitsAfterDecimal;
+  int? get distancePreference;
+  int? get removed;
+  DateTime? get updatedAt;
 
   /// Create a copy of CountriesModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $CountriesModelCopyWith<CountriesModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$CountriesModelCopyWithImpl<CountriesModel>(
+          this as CountriesModel, _$identity);
 
-/// @nodoc
-abstract class $CountriesModelCopyWith<$Res> {
-  factory $CountriesModelCopyWith(
-          CountriesModel value, $Res Function(CountriesModel) then) =
-      _$CountriesModelCopyWithImpl<$Res, CountriesModel>;
-  @useResult
-  $Res call(
-      {String countryId,
-      String countryCode,
-      double latitude,
-      double longitude,
-      String countryName,
-      String? countrySearchTags,
-      String continentCode,
-      String? flagFile,
-      String currencyCode,
-      String primaryCultureCode,
-      int showRegion,
-      String? currencySymbol,
-      int? digitsAfterDecimal,
-      int? distancePreference,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class _$CountriesModelCopyWithImpl<$Res, $Val extends CountriesModel>
-    implements $CountriesModelCopyWith<$Res> {
-  _$CountriesModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of CountriesModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? countryId = null,
-    Object? countryCode = null,
-    Object? latitude = null,
-    Object? longitude = null,
-    Object? countryName = null,
-    Object? countrySearchTags = freezed,
-    Object? continentCode = null,
-    Object? flagFile = freezed,
-    Object? currencyCode = null,
-    Object? primaryCultureCode = null,
-    Object? showRegion = null,
-    Object? currencySymbol = freezed,
-    Object? digitsAfterDecimal = freezed,
-    Object? distancePreference = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      countryId: null == countryId
-          ? _value.countryId
-          : countryId // ignore: cast_nullable_to_non_nullable
-              as String,
-      countryCode: null == countryCode
-          ? _value.countryCode
-          : countryCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      latitude: null == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      longitude: null == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      countryName: null == countryName
-          ? _value.countryName
-          : countryName // ignore: cast_nullable_to_non_nullable
-              as String,
-      countrySearchTags: freezed == countrySearchTags
-          ? _value.countrySearchTags
-          : countrySearchTags // ignore: cast_nullable_to_non_nullable
-              as String?,
-      continentCode: null == continentCode
-          ? _value.continentCode
-          : continentCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      flagFile: freezed == flagFile
-          ? _value.flagFile
-          : flagFile // ignore: cast_nullable_to_non_nullable
-              as String?,
-      currencyCode: null == currencyCode
-          ? _value.currencyCode
-          : currencyCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      primaryCultureCode: null == primaryCultureCode
-          ? _value.primaryCultureCode
-          : primaryCultureCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      showRegion: null == showRegion
-          ? _value.showRegion
-          : showRegion // ignore: cast_nullable_to_non_nullable
-              as int,
-      currencySymbol: freezed == currencySymbol
-          ? _value.currencySymbol
-          : currencySymbol // ignore: cast_nullable_to_non_nullable
-              as String?,
-      digitsAfterDecimal: freezed == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
-          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as int?,
-      distancePreference: freezed == distancePreference
-          ? _value.distancePreference
-          : distancePreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$CountriesModelImplCopyWith<$Res>
-    implements $CountriesModelCopyWith<$Res> {
-  factory _$$CountriesModelImplCopyWith(_$CountriesModelImpl value,
-          $Res Function(_$CountriesModelImpl) then) =
-      __$$CountriesModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String countryId,
-      String countryCode,
-      double latitude,
-      double longitude,
-      String countryName,
-      String? countrySearchTags,
-      String continentCode,
-      String? flagFile,
-      String currencyCode,
-      String primaryCultureCode,
-      int showRegion,
-      String? currencySymbol,
-      int? digitsAfterDecimal,
-      int? distancePreference,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class __$$CountriesModelImplCopyWithImpl<$Res>
-    extends _$CountriesModelCopyWithImpl<$Res, _$CountriesModelImpl>
-    implements _$$CountriesModelImplCopyWith<$Res> {
-  __$$CountriesModelImplCopyWithImpl(
-      _$CountriesModelImpl _value, $Res Function(_$CountriesModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of CountriesModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? countryId = null,
-    Object? countryCode = null,
-    Object? latitude = null,
-    Object? longitude = null,
-    Object? countryName = null,
-    Object? countrySearchTags = freezed,
-    Object? continentCode = null,
-    Object? flagFile = freezed,
-    Object? currencyCode = null,
-    Object? primaryCultureCode = null,
-    Object? showRegion = null,
-    Object? currencySymbol = freezed,
-    Object? digitsAfterDecimal = freezed,
-    Object? distancePreference = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_$CountriesModelImpl(
-      countryId: null == countryId
-          ? _value.countryId
-          : countryId // ignore: cast_nullable_to_non_nullable
-              as String,
-      countryCode: null == countryCode
-          ? _value.countryCode
-          : countryCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      latitude: null == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      longitude: null == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as double,
-      countryName: null == countryName
-          ? _value.countryName
-          : countryName // ignore: cast_nullable_to_non_nullable
-              as String,
-      countrySearchTags: freezed == countrySearchTags
-          ? _value.countrySearchTags
-          : countrySearchTags // ignore: cast_nullable_to_non_nullable
-              as String?,
-      continentCode: null == continentCode
-          ? _value.continentCode
-          : continentCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      flagFile: freezed == flagFile
-          ? _value.flagFile
-          : flagFile // ignore: cast_nullable_to_non_nullable
-              as String?,
-      currencyCode: null == currencyCode
-          ? _value.currencyCode
-          : currencyCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      primaryCultureCode: null == primaryCultureCode
-          ? _value.primaryCultureCode
-          : primaryCultureCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      showRegion: null == showRegion
-          ? _value.showRegion
-          : showRegion // ignore: cast_nullable_to_non_nullable
-              as int,
-      currencySymbol: freezed == currencySymbol
-          ? _value.currencySymbol
-          : currencySymbol // ignore: cast_nullable_to_non_nullable
-              as String?,
-      digitsAfterDecimal: freezed == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
-          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as int?,
-      distancePreference: freezed == distancePreference
-          ? _value.distancePreference
-          : distancePreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$CountriesModelImpl implements _CountriesModel {
-  _$CountriesModelImpl(
-      {required this.countryId,
-      required this.countryCode,
-      required this.latitude,
-      required this.longitude,
-      required this.countryName,
-      this.countrySearchTags,
-      required this.continentCode,
-      this.flagFile,
-      required this.currencyCode,
-      required this.primaryCultureCode,
-      required this.showRegion,
-      this.currencySymbol,
-      this.digitsAfterDecimal,
-      this.distancePreference,
-      this.removed,
-      this.updatedAt});
-
-  factory _$CountriesModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CountriesModelImplFromJson(json);
+  /// Serializes this CountriesModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String countryId;
-  @override
-  final String countryCode;
-  @override
-  final double latitude;
-  @override
-  final double longitude;
-  @override
-  final String countryName;
-  @override
-  final String? countrySearchTags;
-  @override
-  final String continentCode;
-  @override
-  final String? flagFile;
-  @override
-  final String currencyCode;
-  @override
-  final String primaryCultureCode;
-  @override
-  final int showRegion;
-  @override
-  final String? currencySymbol;
-  @override
-  final int? digitsAfterDecimal;
-  @override
-  final int? distancePreference;
-  @override
-  final int? removed;
-  @override
-  final DateTime? updatedAt;
-
-  @override
-  String toString() {
-    return 'CountriesModel(countryId: $countryId, countryCode: $countryCode, latitude: $latitude, longitude: $longitude, countryName: $countryName, countrySearchTags: $countrySearchTags, continentCode: $continentCode, flagFile: $flagFile, currencyCode: $currencyCode, primaryCultureCode: $primaryCultureCode, showRegion: $showRegion, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, distancePreference: $distancePreference, removed: $removed, updatedAt: $updatedAt)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'CountriesModel'))
+      ..add(DiagnosticsProperty('countryId', countryId))
+      ..add(DiagnosticsProperty('countryCode', countryCode))
+      ..add(DiagnosticsProperty('latitude', latitude))
+      ..add(DiagnosticsProperty('longitude', longitude))
+      ..add(DiagnosticsProperty('countryName', countryName))
+      ..add(DiagnosticsProperty('countrySearchTags', countrySearchTags))
+      ..add(DiagnosticsProperty('continentCode', continentCode))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
+      ..add(DiagnosticsProperty('currencyCode', currencyCode))
+      ..add(DiagnosticsProperty('primaryCultureCode', primaryCultureCode))
+      ..add(DiagnosticsProperty('showRegion', showRegion))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('distancePreference', distancePreference))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$CountriesModelImpl &&
+            other is CountriesModel &&
             (identical(other.countryId, countryId) ||
                 other.countryId == countryId) &&
             (identical(other.countryCode, countryCode) ||
@@ -420,82 +124,418 @@ class _$CountriesModelImpl implements _CountriesModel {
       removed,
       updatedAt);
 
-  /// Create a copy of CountriesModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$CountriesModelImplCopyWith<_$CountriesModelImpl> get copyWith =>
-      __$$CountriesModelImplCopyWithImpl<_$CountriesModelImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CountriesModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'CountriesModel(countryId: $countryId, countryCode: $countryCode, latitude: $latitude, longitude: $longitude, countryName: $countryName, countrySearchTags: $countrySearchTags, continentCode: $continentCode, flagFile: $flagFile, currencyCode: $currencyCode, primaryCultureCode: $primaryCultureCode, showRegion: $showRegion, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, distancePreference: $distancePreference, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
-abstract class _CountriesModel implements CountriesModel {
-  factory _CountriesModel(
-      {required final String countryId,
-      required final String countryCode,
-      required final double latitude,
-      required final double longitude,
-      required final String countryName,
-      final String? countrySearchTags,
-      required final String continentCode,
-      final String? flagFile,
-      required final String currencyCode,
-      required final String primaryCultureCode,
-      required final int showRegion,
-      final String? currencySymbol,
-      final int? digitsAfterDecimal,
-      final int? distancePreference,
-      final int? removed,
-      final DateTime? updatedAt}) = _$CountriesModelImpl;
+/// @nodoc
+abstract mixin class $CountriesModelCopyWith<$Res> {
+  factory $CountriesModelCopyWith(
+          CountriesModel value, $Res Function(CountriesModel) _then) =
+      _$CountriesModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String countryId,
+      String countryCode,
+      double latitude,
+      double longitude,
+      String countryName,
+      String? countrySearchTags,
+      String continentCode,
+      String? flagFile,
+      String currencyCode,
+      String primaryCultureCode,
+      int showRegion,
+      String? currencySymbol,
+      int? digitsAfterDecimal,
+      int? distancePreference,
+      int? removed,
+      DateTime? updatedAt});
+}
 
-  factory _CountriesModel.fromJson(Map<String, dynamic> json) =
-      _$CountriesModelImpl.fromJson;
+/// @nodoc
+class _$CountriesModelCopyWithImpl<$Res>
+    implements $CountriesModelCopyWith<$Res> {
+  _$CountriesModelCopyWithImpl(this._self, this._then);
+
+  final CountriesModel _self;
+  final $Res Function(CountriesModel) _then;
+
+  /// Create a copy of CountriesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? countryId = null,
+    Object? countryCode = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? countryName = null,
+    Object? countrySearchTags = freezed,
+    Object? continentCode = null,
+    Object? flagFile = freezed,
+    Object? currencyCode = null,
+    Object? primaryCultureCode = null,
+    Object? showRegion = null,
+    Object? currencySymbol = freezed,
+    Object? digitsAfterDecimal = freezed,
+    Object? distancePreference = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_self.copyWith(
+      countryId: null == countryId
+          ? _self.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
+              as String,
+      countryCode: null == countryCode
+          ? _self.countryCode
+          : countryCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      latitude: null == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      longitude: null == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      countryName: null == countryName
+          ? _self.countryName
+          : countryName // ignore: cast_nullable_to_non_nullable
+              as String,
+      countrySearchTags: freezed == countrySearchTags
+          ? _self.countrySearchTags
+          : countrySearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      continentCode: null == continentCode
+          ? _self.continentCode
+          : continentCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: freezed == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      currencyCode: null == currencyCode
+          ? _self.currencyCode
+          : currencyCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      primaryCultureCode: null == primaryCultureCode
+          ? _self.primaryCultureCode
+          : primaryCultureCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      showRegion: null == showRegion
+          ? _self.showRegion
+          : showRegion // ignore: cast_nullable_to_non_nullable
+              as int,
+      currencySymbol: freezed == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String?,
+      digitsAfterDecimal: freezed == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int?,
+      distancePreference: freezed == distancePreference
+          ? _self.distancePreference
+          : distancePreference // ignore: cast_nullable_to_non_nullable
+              as int?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _CountriesModel with DiagnosticableTreeMixin implements CountriesModel {
+  _CountriesModel(
+      {required this.countryId,
+      required this.countryCode,
+      required this.latitude,
+      required this.longitude,
+      required this.countryName,
+      this.countrySearchTags,
+      required this.continentCode,
+      this.flagFile,
+      required this.currencyCode,
+      required this.primaryCultureCode,
+      required this.showRegion,
+      this.currencySymbol,
+      this.digitsAfterDecimal,
+      this.distancePreference,
+      this.removed,
+      this.updatedAt});
+  factory _CountriesModel.fromJson(Map<String, dynamic> json) =>
+      _$CountriesModelFromJson(json);
 
   @override
-  String get countryId;
+  final String countryId;
   @override
-  String get countryCode;
+  final String countryCode;
   @override
-  double get latitude;
+  final double latitude;
   @override
-  double get longitude;
+  final double longitude;
   @override
-  String get countryName;
+  final String countryName;
   @override
-  String? get countrySearchTags;
+  final String? countrySearchTags;
   @override
-  String get continentCode;
+  final String continentCode;
   @override
-  String? get flagFile;
+  final String? flagFile;
   @override
-  String get currencyCode;
+  final String currencyCode;
   @override
-  String get primaryCultureCode;
+  final String primaryCultureCode;
   @override
-  int get showRegion;
+  final int showRegion;
   @override
-  String? get currencySymbol;
+  final String? currencySymbol;
   @override
-  int? get digitsAfterDecimal;
+  final int? digitsAfterDecimal;
   @override
-  int? get distancePreference;
+  final int? distancePreference;
   @override
-  int? get removed;
+  final int? removed;
   @override
-  DateTime? get updatedAt;
+  final DateTime? updatedAt;
 
   /// Create a copy of CountriesModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$CountriesModelImplCopyWith<_$CountriesModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$CountriesModelCopyWith<_CountriesModel> get copyWith =>
+      __$CountriesModelCopyWithImpl<_CountriesModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$CountriesModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'CountriesModel'))
+      ..add(DiagnosticsProperty('countryId', countryId))
+      ..add(DiagnosticsProperty('countryCode', countryCode))
+      ..add(DiagnosticsProperty('latitude', latitude))
+      ..add(DiagnosticsProperty('longitude', longitude))
+      ..add(DiagnosticsProperty('countryName', countryName))
+      ..add(DiagnosticsProperty('countrySearchTags', countrySearchTags))
+      ..add(DiagnosticsProperty('continentCode', continentCode))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
+      ..add(DiagnosticsProperty('currencyCode', currencyCode))
+      ..add(DiagnosticsProperty('primaryCultureCode', primaryCultureCode))
+      ..add(DiagnosticsProperty('showRegion', showRegion))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('distancePreference', distancePreference))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _CountriesModel &&
+            (identical(other.countryId, countryId) ||
+                other.countryId == countryId) &&
+            (identical(other.countryCode, countryCode) ||
+                other.countryCode == countryCode) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude) &&
+            (identical(other.countryName, countryName) ||
+                other.countryName == countryName) &&
+            (identical(other.countrySearchTags, countrySearchTags) ||
+                other.countrySearchTags == countrySearchTags) &&
+            (identical(other.continentCode, continentCode) ||
+                other.continentCode == continentCode) &&
+            (identical(other.flagFile, flagFile) ||
+                other.flagFile == flagFile) &&
+            (identical(other.currencyCode, currencyCode) ||
+                other.currencyCode == currencyCode) &&
+            (identical(other.primaryCultureCode, primaryCultureCode) ||
+                other.primaryCultureCode == primaryCultureCode) &&
+            (identical(other.showRegion, showRegion) ||
+                other.showRegion == showRegion) &&
+            (identical(other.currencySymbol, currencySymbol) ||
+                other.currencySymbol == currencySymbol) &&
+            (identical(other.digitsAfterDecimal, digitsAfterDecimal) ||
+                other.digitsAfterDecimal == digitsAfterDecimal) &&
+            (identical(other.distancePreference, distancePreference) ||
+                other.distancePreference == distancePreference) &&
+            (identical(other.removed, removed) || other.removed == removed) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      countryId,
+      countryCode,
+      latitude,
+      longitude,
+      countryName,
+      countrySearchTags,
+      continentCode,
+      flagFile,
+      currencyCode,
+      primaryCultureCode,
+      showRegion,
+      currencySymbol,
+      digitsAfterDecimal,
+      distancePreference,
+      removed,
+      updatedAt);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'CountriesModel(countryId: $countryId, countryCode: $countryCode, latitude: $latitude, longitude: $longitude, countryName: $countryName, countrySearchTags: $countrySearchTags, continentCode: $continentCode, flagFile: $flagFile, currencyCode: $currencyCode, primaryCultureCode: $primaryCultureCode, showRegion: $showRegion, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, distancePreference: $distancePreference, removed: $removed, updatedAt: $updatedAt)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$CountriesModelCopyWith<$Res>
+    implements $CountriesModelCopyWith<$Res> {
+  factory _$CountriesModelCopyWith(
+          _CountriesModel value, $Res Function(_CountriesModel) _then) =
+      __$CountriesModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String countryId,
+      String countryCode,
+      double latitude,
+      double longitude,
+      String countryName,
+      String? countrySearchTags,
+      String continentCode,
+      String? flagFile,
+      String currencyCode,
+      String primaryCultureCode,
+      int showRegion,
+      String? currencySymbol,
+      int? digitsAfterDecimal,
+      int? distancePreference,
+      int? removed,
+      DateTime? updatedAt});
+}
+
+/// @nodoc
+class __$CountriesModelCopyWithImpl<$Res>
+    implements _$CountriesModelCopyWith<$Res> {
+  __$CountriesModelCopyWithImpl(this._self, this._then);
+
+  final _CountriesModel _self;
+  final $Res Function(_CountriesModel) _then;
+
+  /// Create a copy of CountriesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? countryId = null,
+    Object? countryCode = null,
+    Object? latitude = null,
+    Object? longitude = null,
+    Object? countryName = null,
+    Object? countrySearchTags = freezed,
+    Object? continentCode = null,
+    Object? flagFile = freezed,
+    Object? currencyCode = null,
+    Object? primaryCultureCode = null,
+    Object? showRegion = null,
+    Object? currencySymbol = freezed,
+    Object? digitsAfterDecimal = freezed,
+    Object? distancePreference = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_CountriesModel(
+      countryId: null == countryId
+          ? _self.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
+              as String,
+      countryCode: null == countryCode
+          ? _self.countryCode
+          : countryCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      latitude: null == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      longitude: null == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double,
+      countryName: null == countryName
+          ? _self.countryName
+          : countryName // ignore: cast_nullable_to_non_nullable
+              as String,
+      countrySearchTags: freezed == countrySearchTags
+          ? _self.countrySearchTags
+          : countrySearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      continentCode: null == continentCode
+          ? _self.continentCode
+          : continentCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: freezed == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      currencyCode: null == currencyCode
+          ? _self.currencyCode
+          : currencyCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      primaryCultureCode: null == primaryCultureCode
+          ? _self.primaryCultureCode
+          : primaryCultureCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      showRegion: null == showRegion
+          ? _self.showRegion
+          : showRegion // ignore: cast_nullable_to_non_nullable
+              as int,
+      currencySymbol: freezed == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String?,
+      digitsAfterDecimal: freezed == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int?,
+      distancePreference: freezed == distancePreference
+          ? _self.distancePreference
+          : distancePreference // ignore: cast_nullable_to_non_nullable
+              as int?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+// dart format on

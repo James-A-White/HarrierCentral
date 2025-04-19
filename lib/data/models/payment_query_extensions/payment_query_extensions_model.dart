@@ -4,7 +4,9 @@ part 'payment_query_extensions_model.freezed.dart';
 part 'payment_query_extensions_model.g.dart';
 
 @freezed
-class PaymentQueryExtensionsModel with _$PaymentQueryExtensionsModel implements BaseModel {
+abstract class PaymentQueryExtensionsModel
+    with _$PaymentQueryExtensionsModel
+    implements BaseModel {
   factory PaymentQueryExtensionsModel({
     required String pkHemId,
     required String paidByName,
@@ -23,7 +25,8 @@ class PaymentQueryExtensionsModel with _$PaymentQueryExtensionsModel implements 
     @Default(false) bool isHashCredit,
   }) = _PaymentQueryExtensionsModel;
 
-  factory PaymentQueryExtensionsModel.fromJson(Map<String, dynamic> json) => _$PaymentQueryExtensionsModelFromJson(json);
+  factory PaymentQueryExtensionsModel.fromJson(Map<String, dynamic> json) =>
+      _$PaymentQueryExtensionsModelFromJson(json);
 
   @override
   factory PaymentQueryExtensionsModel.fromMap(Map<String, dynamic> map) {

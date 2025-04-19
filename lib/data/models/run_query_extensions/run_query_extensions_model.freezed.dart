@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,484 +10,79 @@ part of 'run_query_extensions_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-RunQueryExtensionsModel _$RunQueryExtensionsModelFromJson(
-    Map<String, dynamic> json) {
-  return _RunQueryExtensionsModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$RunQueryExtensionsModel {
-  int get daysUntilEvent => throw _privateConstructorUsedError;
-  int get appAccessFlags => throw _privateConstructorUsedError;
-  int get digitsAfterDecimal => throw _privateConstructorUsedError;
-  String get currencySymbol => throw _privateConstructorUsedError;
-  int get rsvpState => throw _privateConstructorUsedError;
-  int get attendenceState => throw _privateConstructorUsedError;
-  int get isPaid => throw _privateConstructorUsedError;
-  int get isHare => throw _privateConstructorUsedError;
-  int get isMember => throw _privateConstructorUsedError;
-  int get following => throw _privateConstructorUsedError;
-  int get notificationPreference => throw _privateConstructorUsedError;
-  int get emailAlertPreference => throw _privateConstructorUsedError;
-  int get distanceUnitsPref =>
-      throw _privateConstructorUsedError; //int userPrefs,
-  String get searchRunsText => throw _privateConstructorUsedError;
-  double? get latitude => throw _privateConstructorUsedError;
-  double? get longitude => throw _privateConstructorUsedError;
-  double? get evtLat => throw _privateConstructorUsedError;
-  double? get evtLon => throw _privateConstructorUsedError;
-  double? get distToEvent => throw _privateConstructorUsedError;
-  int get isMapAndDistanceValid => throw _privateConstructorUsedError;
-  int get runClassification =>
-      throw _privateConstructorUsedError; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
-  String? get userFriendlyLocation => throw _privateConstructorUsedError;
-
-  /// Serializes this RunQueryExtensionsModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$RunQueryExtensionsModel implements DiagnosticableTreeMixin {
+  int get daysUntilEvent;
+  int get appAccessFlags;
+  int get digitsAfterDecimal;
+  String get currencySymbol;
+  int get rsvpState;
+  int get attendenceState;
+  int get isPaid;
+  int get isHare;
+  int get isMember;
+  int get following;
+  int get notificationPreference;
+  int get emailAlertPreference;
+  int get distanceUnitsPref; //int userPrefs,
+  String get searchRunsText;
+  double? get latitude;
+  double? get longitude;
+  double? get evtLat;
+  double? get evtLon;
+  double? get distToEvent;
+  int get isMapAndDistanceValid;
+  int get runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+  String? get userFriendlyLocation;
 
   /// Create a copy of RunQueryExtensionsModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $RunQueryExtensionsModelCopyWith<RunQueryExtensionsModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$RunQueryExtensionsModelCopyWithImpl<RunQueryExtensionsModel>(
+          this as RunQueryExtensionsModel, _$identity);
 
-/// @nodoc
-abstract class $RunQueryExtensionsModelCopyWith<$Res> {
-  factory $RunQueryExtensionsModelCopyWith(RunQueryExtensionsModel value,
-          $Res Function(RunQueryExtensionsModel) then) =
-      _$RunQueryExtensionsModelCopyWithImpl<$Res, RunQueryExtensionsModel>;
-  @useResult
-  $Res call(
-      {int daysUntilEvent,
-      int appAccessFlags,
-      int digitsAfterDecimal,
-      String currencySymbol,
-      int rsvpState,
-      int attendenceState,
-      int isPaid,
-      int isHare,
-      int isMember,
-      int following,
-      int notificationPreference,
-      int emailAlertPreference,
-      int distanceUnitsPref,
-      String searchRunsText,
-      double? latitude,
-      double? longitude,
-      double? evtLat,
-      double? evtLon,
-      double? distToEvent,
-      int isMapAndDistanceValid,
-      int runClassification,
-      String? userFriendlyLocation});
-}
-
-/// @nodoc
-class _$RunQueryExtensionsModelCopyWithImpl<$Res,
-        $Val extends RunQueryExtensionsModel>
-    implements $RunQueryExtensionsModelCopyWith<$Res> {
-  _$RunQueryExtensionsModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of RunQueryExtensionsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? daysUntilEvent = null,
-    Object? appAccessFlags = null,
-    Object? digitsAfterDecimal = null,
-    Object? currencySymbol = null,
-    Object? rsvpState = null,
-    Object? attendenceState = null,
-    Object? isPaid = null,
-    Object? isHare = null,
-    Object? isMember = null,
-    Object? following = null,
-    Object? notificationPreference = null,
-    Object? emailAlertPreference = null,
-    Object? distanceUnitsPref = null,
-    Object? searchRunsText = null,
-    Object? latitude = freezed,
-    Object? longitude = freezed,
-    Object? evtLat = freezed,
-    Object? evtLon = freezed,
-    Object? distToEvent = freezed,
-    Object? isMapAndDistanceValid = null,
-    Object? runClassification = null,
-    Object? userFriendlyLocation = freezed,
-  }) {
-    return _then(_value.copyWith(
-      daysUntilEvent: null == daysUntilEvent
-          ? _value.daysUntilEvent
-          : daysUntilEvent // ignore: cast_nullable_to_non_nullable
-              as int,
-      appAccessFlags: null == appAccessFlags
-          ? _value.appAccessFlags
-          : appAccessFlags // ignore: cast_nullable_to_non_nullable
-              as int,
-      digitsAfterDecimal: null == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
-          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as int,
-      currencySymbol: null == currencySymbol
-          ? _value.currencySymbol
-          : currencySymbol // ignore: cast_nullable_to_non_nullable
-              as String,
-      rsvpState: null == rsvpState
-          ? _value.rsvpState
-          : rsvpState // ignore: cast_nullable_to_non_nullable
-              as int,
-      attendenceState: null == attendenceState
-          ? _value.attendenceState
-          : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int,
-      isPaid: null == isPaid
-          ? _value.isPaid
-          : isPaid // ignore: cast_nullable_to_non_nullable
-              as int,
-      isHare: null == isHare
-          ? _value.isHare
-          : isHare // ignore: cast_nullable_to_non_nullable
-              as int,
-      isMember: null == isMember
-          ? _value.isMember
-          : isMember // ignore: cast_nullable_to_non_nullable
-              as int,
-      following: null == following
-          ? _value.following
-          : following // ignore: cast_nullable_to_non_nullable
-              as int,
-      notificationPreference: null == notificationPreference
-          ? _value.notificationPreference
-          : notificationPreference // ignore: cast_nullable_to_non_nullable
-              as int,
-      emailAlertPreference: null == emailAlertPreference
-          ? _value.emailAlertPreference
-          : emailAlertPreference // ignore: cast_nullable_to_non_nullable
-              as int,
-      distanceUnitsPref: null == distanceUnitsPref
-          ? _value.distanceUnitsPref
-          : distanceUnitsPref // ignore: cast_nullable_to_non_nullable
-              as int,
-      searchRunsText: null == searchRunsText
-          ? _value.searchRunsText
-          : searchRunsText // ignore: cast_nullable_to_non_nullable
-              as String,
-      latitude: freezed == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as double?,
-      longitude: freezed == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as double?,
-      evtLat: freezed == evtLat
-          ? _value.evtLat
-          : evtLat // ignore: cast_nullable_to_non_nullable
-              as double?,
-      evtLon: freezed == evtLon
-          ? _value.evtLon
-          : evtLon // ignore: cast_nullable_to_non_nullable
-              as double?,
-      distToEvent: freezed == distToEvent
-          ? _value.distToEvent
-          : distToEvent // ignore: cast_nullable_to_non_nullable
-              as double?,
-      isMapAndDistanceValid: null == isMapAndDistanceValid
-          ? _value.isMapAndDistanceValid
-          : isMapAndDistanceValid // ignore: cast_nullable_to_non_nullable
-              as int,
-      runClassification: null == runClassification
-          ? _value.runClassification
-          : runClassification // ignore: cast_nullable_to_non_nullable
-              as int,
-      userFriendlyLocation: freezed == userFriendlyLocation
-          ? _value.userFriendlyLocation
-          : userFriendlyLocation // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$RunQueryExtensionsModelImplCopyWith<$Res>
-    implements $RunQueryExtensionsModelCopyWith<$Res> {
-  factory _$$RunQueryExtensionsModelImplCopyWith(
-          _$RunQueryExtensionsModelImpl value,
-          $Res Function(_$RunQueryExtensionsModelImpl) then) =
-      __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {int daysUntilEvent,
-      int appAccessFlags,
-      int digitsAfterDecimal,
-      String currencySymbol,
-      int rsvpState,
-      int attendenceState,
-      int isPaid,
-      int isHare,
-      int isMember,
-      int following,
-      int notificationPreference,
-      int emailAlertPreference,
-      int distanceUnitsPref,
-      String searchRunsText,
-      double? latitude,
-      double? longitude,
-      double? evtLat,
-      double? evtLon,
-      double? distToEvent,
-      int isMapAndDistanceValid,
-      int runClassification,
-      String? userFriendlyLocation});
-}
-
-/// @nodoc
-class __$$RunQueryExtensionsModelImplCopyWithImpl<$Res>
-    extends _$RunQueryExtensionsModelCopyWithImpl<$Res,
-        _$RunQueryExtensionsModelImpl>
-    implements _$$RunQueryExtensionsModelImplCopyWith<$Res> {
-  __$$RunQueryExtensionsModelImplCopyWithImpl(
-      _$RunQueryExtensionsModelImpl _value,
-      $Res Function(_$RunQueryExtensionsModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of RunQueryExtensionsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? daysUntilEvent = null,
-    Object? appAccessFlags = null,
-    Object? digitsAfterDecimal = null,
-    Object? currencySymbol = null,
-    Object? rsvpState = null,
-    Object? attendenceState = null,
-    Object? isPaid = null,
-    Object? isHare = null,
-    Object? isMember = null,
-    Object? following = null,
-    Object? notificationPreference = null,
-    Object? emailAlertPreference = null,
-    Object? distanceUnitsPref = null,
-    Object? searchRunsText = null,
-    Object? latitude = freezed,
-    Object? longitude = freezed,
-    Object? evtLat = freezed,
-    Object? evtLon = freezed,
-    Object? distToEvent = freezed,
-    Object? isMapAndDistanceValid = null,
-    Object? runClassification = null,
-    Object? userFriendlyLocation = freezed,
-  }) {
-    return _then(_$RunQueryExtensionsModelImpl(
-      daysUntilEvent: null == daysUntilEvent
-          ? _value.daysUntilEvent
-          : daysUntilEvent // ignore: cast_nullable_to_non_nullable
-              as int,
-      appAccessFlags: null == appAccessFlags
-          ? _value.appAccessFlags
-          : appAccessFlags // ignore: cast_nullable_to_non_nullable
-              as int,
-      digitsAfterDecimal: null == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
-          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as int,
-      currencySymbol: null == currencySymbol
-          ? _value.currencySymbol
-          : currencySymbol // ignore: cast_nullable_to_non_nullable
-              as String,
-      rsvpState: null == rsvpState
-          ? _value.rsvpState
-          : rsvpState // ignore: cast_nullable_to_non_nullable
-              as int,
-      attendenceState: null == attendenceState
-          ? _value.attendenceState
-          : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int,
-      isPaid: null == isPaid
-          ? _value.isPaid
-          : isPaid // ignore: cast_nullable_to_non_nullable
-              as int,
-      isHare: null == isHare
-          ? _value.isHare
-          : isHare // ignore: cast_nullable_to_non_nullable
-              as int,
-      isMember: null == isMember
-          ? _value.isMember
-          : isMember // ignore: cast_nullable_to_non_nullable
-              as int,
-      following: null == following
-          ? _value.following
-          : following // ignore: cast_nullable_to_non_nullable
-              as int,
-      notificationPreference: null == notificationPreference
-          ? _value.notificationPreference
-          : notificationPreference // ignore: cast_nullable_to_non_nullable
-              as int,
-      emailAlertPreference: null == emailAlertPreference
-          ? _value.emailAlertPreference
-          : emailAlertPreference // ignore: cast_nullable_to_non_nullable
-              as int,
-      distanceUnitsPref: null == distanceUnitsPref
-          ? _value.distanceUnitsPref
-          : distanceUnitsPref // ignore: cast_nullable_to_non_nullable
-              as int,
-      searchRunsText: null == searchRunsText
-          ? _value.searchRunsText
-          : searchRunsText // ignore: cast_nullable_to_non_nullable
-              as String,
-      latitude: freezed == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as double?,
-      longitude: freezed == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as double?,
-      evtLat: freezed == evtLat
-          ? _value.evtLat
-          : evtLat // ignore: cast_nullable_to_non_nullable
-              as double?,
-      evtLon: freezed == evtLon
-          ? _value.evtLon
-          : evtLon // ignore: cast_nullable_to_non_nullable
-              as double?,
-      distToEvent: freezed == distToEvent
-          ? _value.distToEvent
-          : distToEvent // ignore: cast_nullable_to_non_nullable
-              as double?,
-      isMapAndDistanceValid: null == isMapAndDistanceValid
-          ? _value.isMapAndDistanceValid
-          : isMapAndDistanceValid // ignore: cast_nullable_to_non_nullable
-              as int,
-      runClassification: null == runClassification
-          ? _value.runClassification
-          : runClassification // ignore: cast_nullable_to_non_nullable
-              as int,
-      userFriendlyLocation: freezed == userFriendlyLocation
-          ? _value.userFriendlyLocation
-          : userFriendlyLocation // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
-  _$RunQueryExtensionsModelImpl(
-      {this.daysUntilEvent = 0,
-      this.appAccessFlags = 0,
-      this.digitsAfterDecimal = 2,
-      this.currencySymbol = r'$^',
-      this.rsvpState = 0,
-      this.attendenceState = 0,
-      this.isPaid = 0,
-      this.isHare = 0,
-      this.isMember = 0,
-      this.following = 0,
-      this.notificationPreference = 0,
-      this.emailAlertPreference = 0,
-      this.distanceUnitsPref = 0,
-      this.searchRunsText = '',
-      this.latitude,
-      this.longitude,
-      this.evtLat,
-      this.evtLon,
-      this.distToEvent,
-      this.isMapAndDistanceValid = 0,
-      this.runClassification = 3,
-      this.userFriendlyLocation});
-
-  factory _$RunQueryExtensionsModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$RunQueryExtensionsModelImplFromJson(json);
+  /// Serializes this RunQueryExtensionsModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  @JsonKey()
-  final int daysUntilEvent;
-  @override
-  @JsonKey()
-  final int appAccessFlags;
-  @override
-  @JsonKey()
-  final int digitsAfterDecimal;
-  @override
-  @JsonKey()
-  final String currencySymbol;
-  @override
-  @JsonKey()
-  final int rsvpState;
-  @override
-  @JsonKey()
-  final int attendenceState;
-  @override
-  @JsonKey()
-  final int isPaid;
-  @override
-  @JsonKey()
-  final int isHare;
-  @override
-  @JsonKey()
-  final int isMember;
-  @override
-  @JsonKey()
-  final int following;
-  @override
-  @JsonKey()
-  final int notificationPreference;
-  @override
-  @JsonKey()
-  final int emailAlertPreference;
-  @override
-  @JsonKey()
-  final int distanceUnitsPref;
-//int userPrefs,
-  @override
-  @JsonKey()
-  final String searchRunsText;
-  @override
-  final double? latitude;
-  @override
-  final double? longitude;
-  @override
-  final double? evtLat;
-  @override
-  final double? evtLon;
-  @override
-  final double? distToEvent;
-  @override
-  @JsonKey()
-  final int isMapAndDistanceValid;
-  @override
-  @JsonKey()
-  final int runClassification;
-// 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
-  @override
-  final String? userFriendlyLocation;
-
-  @override
-  String toString() {
-    return 'RunQueryExtensionsModel(daysUntilEvent: $daysUntilEvent, appAccessFlags: $appAccessFlags, digitsAfterDecimal: $digitsAfterDecimal, currencySymbol: $currencySymbol, rsvpState: $rsvpState, attendenceState: $attendenceState, isPaid: $isPaid, isHare: $isHare, isMember: $isMember, following: $following, notificationPreference: $notificationPreference, emailAlertPreference: $emailAlertPreference, distanceUnitsPref: $distanceUnitsPref, searchRunsText: $searchRunsText, latitude: $latitude, longitude: $longitude, evtLat: $evtLat, evtLon: $evtLon, distToEvent: $distToEvent, isMapAndDistanceValid: $isMapAndDistanceValid, runClassification: $runClassification, userFriendlyLocation: $userFriendlyLocation)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'RunQueryExtensionsModel'))
+      ..add(DiagnosticsProperty('daysUntilEvent', daysUntilEvent))
+      ..add(DiagnosticsProperty('appAccessFlags', appAccessFlags))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('rsvpState', rsvpState))
+      ..add(DiagnosticsProperty('attendenceState', attendenceState))
+      ..add(DiagnosticsProperty('isPaid', isPaid))
+      ..add(DiagnosticsProperty('isHare', isHare))
+      ..add(DiagnosticsProperty('isMember', isMember))
+      ..add(DiagnosticsProperty('following', following))
+      ..add(
+          DiagnosticsProperty('notificationPreference', notificationPreference))
+      ..add(DiagnosticsProperty('emailAlertPreference', emailAlertPreference))
+      ..add(DiagnosticsProperty('distanceUnitsPref', distanceUnitsPref))
+      ..add(DiagnosticsProperty('searchRunsText', searchRunsText))
+      ..add(DiagnosticsProperty('latitude', latitude))
+      ..add(DiagnosticsProperty('longitude', longitude))
+      ..add(DiagnosticsProperty('evtLat', evtLat))
+      ..add(DiagnosticsProperty('evtLon', evtLon))
+      ..add(DiagnosticsProperty('distToEvent', distToEvent))
+      ..add(DiagnosticsProperty('isMapAndDistanceValid', isMapAndDistanceValid))
+      ..add(DiagnosticsProperty('runClassification', runClassification))
+      ..add(DiagnosticsProperty('userFriendlyLocation', userFriendlyLocation));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$RunQueryExtensionsModelImpl &&
+            other is RunQueryExtensionsModel &&
             (identical(other.daysUntilEvent, daysUntilEvent) ||
                 other.daysUntilEvent == daysUntilEvent) &&
             (identical(other.appAccessFlags, appAccessFlags) ||
@@ -557,100 +153,552 @@ class _$RunQueryExtensionsModelImpl implements _RunQueryExtensionsModel {
         userFriendlyLocation
       ]);
 
-  /// Create a copy of RunQueryExtensionsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$RunQueryExtensionsModelImplCopyWith<_$RunQueryExtensionsModelImpl>
-      get copyWith => __$$RunQueryExtensionsModelImplCopyWithImpl<
-          _$RunQueryExtensionsModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$RunQueryExtensionsModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'RunQueryExtensionsModel(daysUntilEvent: $daysUntilEvent, appAccessFlags: $appAccessFlags, digitsAfterDecimal: $digitsAfterDecimal, currencySymbol: $currencySymbol, rsvpState: $rsvpState, attendenceState: $attendenceState, isPaid: $isPaid, isHare: $isHare, isMember: $isMember, following: $following, notificationPreference: $notificationPreference, emailAlertPreference: $emailAlertPreference, distanceUnitsPref: $distanceUnitsPref, searchRunsText: $searchRunsText, latitude: $latitude, longitude: $longitude, evtLat: $evtLat, evtLon: $evtLon, distToEvent: $distToEvent, isMapAndDistanceValid: $isMapAndDistanceValid, runClassification: $runClassification, userFriendlyLocation: $userFriendlyLocation)';
   }
 }
 
-abstract class _RunQueryExtensionsModel implements RunQueryExtensionsModel {
-  factory _RunQueryExtensionsModel(
-      {final int daysUntilEvent,
-      final int appAccessFlags,
-      final int digitsAfterDecimal,
-      final String currencySymbol,
-      final int rsvpState,
-      final int attendenceState,
-      final int isPaid,
-      final int isHare,
-      final int isMember,
-      final int following,
-      final int notificationPreference,
-      final int emailAlertPreference,
-      final int distanceUnitsPref,
-      final String searchRunsText,
-      final double? latitude,
-      final double? longitude,
-      final double? evtLat,
-      final double? evtLon,
-      final double? distToEvent,
-      final int isMapAndDistanceValid,
-      final int runClassification,
-      final String? userFriendlyLocation}) = _$RunQueryExtensionsModelImpl;
+/// @nodoc
+abstract mixin class $RunQueryExtensionsModelCopyWith<$Res> {
+  factory $RunQueryExtensionsModelCopyWith(RunQueryExtensionsModel value,
+          $Res Function(RunQueryExtensionsModel) _then) =
+      _$RunQueryExtensionsModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {int daysUntilEvent,
+      int appAccessFlags,
+      int digitsAfterDecimal,
+      String currencySymbol,
+      int rsvpState,
+      int attendenceState,
+      int isPaid,
+      int isHare,
+      int isMember,
+      int following,
+      int notificationPreference,
+      int emailAlertPreference,
+      int distanceUnitsPref,
+      String searchRunsText,
+      double? latitude,
+      double? longitude,
+      double? evtLat,
+      double? evtLon,
+      double? distToEvent,
+      int isMapAndDistanceValid,
+      int runClassification,
+      String? userFriendlyLocation});
+}
 
-  factory _RunQueryExtensionsModel.fromJson(Map<String, dynamic> json) =
-      _$RunQueryExtensionsModelImpl.fromJson;
+/// @nodoc
+class _$RunQueryExtensionsModelCopyWithImpl<$Res>
+    implements $RunQueryExtensionsModelCopyWith<$Res> {
+  _$RunQueryExtensionsModelCopyWithImpl(this._self, this._then);
+
+  final RunQueryExtensionsModel _self;
+  final $Res Function(RunQueryExtensionsModel) _then;
+
+  /// Create a copy of RunQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? daysUntilEvent = null,
+    Object? appAccessFlags = null,
+    Object? digitsAfterDecimal = null,
+    Object? currencySymbol = null,
+    Object? rsvpState = null,
+    Object? attendenceState = null,
+    Object? isPaid = null,
+    Object? isHare = null,
+    Object? isMember = null,
+    Object? following = null,
+    Object? notificationPreference = null,
+    Object? emailAlertPreference = null,
+    Object? distanceUnitsPref = null,
+    Object? searchRunsText = null,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
+    Object? evtLat = freezed,
+    Object? evtLon = freezed,
+    Object? distToEvent = freezed,
+    Object? isMapAndDistanceValid = null,
+    Object? runClassification = null,
+    Object? userFriendlyLocation = freezed,
+  }) {
+    return _then(_self.copyWith(
+      daysUntilEvent: null == daysUntilEvent
+          ? _self.daysUntilEvent
+          : daysUntilEvent // ignore: cast_nullable_to_non_nullable
+              as int,
+      appAccessFlags: null == appAccessFlags
+          ? _self.appAccessFlags
+          : appAccessFlags // ignore: cast_nullable_to_non_nullable
+              as int,
+      digitsAfterDecimal: null == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int,
+      currencySymbol: null == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String,
+      rsvpState: null == rsvpState
+          ? _self.rsvpState
+          : rsvpState // ignore: cast_nullable_to_non_nullable
+              as int,
+      attendenceState: null == attendenceState
+          ? _self.attendenceState
+          : attendenceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      isPaid: null == isPaid
+          ? _self.isPaid
+          : isPaid // ignore: cast_nullable_to_non_nullable
+              as int,
+      isHare: null == isHare
+          ? _self.isHare
+          : isHare // ignore: cast_nullable_to_non_nullable
+              as int,
+      isMember: null == isMember
+          ? _self.isMember
+          : isMember // ignore: cast_nullable_to_non_nullable
+              as int,
+      following: null == following
+          ? _self.following
+          : following // ignore: cast_nullable_to_non_nullable
+              as int,
+      notificationPreference: null == notificationPreference
+          ? _self.notificationPreference
+          : notificationPreference // ignore: cast_nullable_to_non_nullable
+              as int,
+      emailAlertPreference: null == emailAlertPreference
+          ? _self.emailAlertPreference
+          : emailAlertPreference // ignore: cast_nullable_to_non_nullable
+              as int,
+      distanceUnitsPref: null == distanceUnitsPref
+          ? _self.distanceUnitsPref
+          : distanceUnitsPref // ignore: cast_nullable_to_non_nullable
+              as int,
+      searchRunsText: null == searchRunsText
+          ? _self.searchRunsText
+          : searchRunsText // ignore: cast_nullable_to_non_nullable
+              as String,
+      latitude: freezed == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      evtLat: freezed == evtLat
+          ? _self.evtLat
+          : evtLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      evtLon: freezed == evtLon
+          ? _self.evtLon
+          : evtLon // ignore: cast_nullable_to_non_nullable
+              as double?,
+      distToEvent: freezed == distToEvent
+          ? _self.distToEvent
+          : distToEvent // ignore: cast_nullable_to_non_nullable
+              as double?,
+      isMapAndDistanceValid: null == isMapAndDistanceValid
+          ? _self.isMapAndDistanceValid
+          : isMapAndDistanceValid // ignore: cast_nullable_to_non_nullable
+              as int,
+      runClassification: null == runClassification
+          ? _self.runClassification
+          : runClassification // ignore: cast_nullable_to_non_nullable
+              as int,
+      userFriendlyLocation: freezed == userFriendlyLocation
+          ? _self.userFriendlyLocation
+          : userFriendlyLocation // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _RunQueryExtensionsModel
+    with DiagnosticableTreeMixin
+    implements RunQueryExtensionsModel {
+  _RunQueryExtensionsModel(
+      {this.daysUntilEvent = 0,
+      this.appAccessFlags = 0,
+      this.digitsAfterDecimal = 2,
+      this.currencySymbol = r'$^',
+      this.rsvpState = 0,
+      this.attendenceState = 0,
+      this.isPaid = 0,
+      this.isHare = 0,
+      this.isMember = 0,
+      this.following = 0,
+      this.notificationPreference = 0,
+      this.emailAlertPreference = 0,
+      this.distanceUnitsPref = 0,
+      this.searchRunsText = '',
+      this.latitude,
+      this.longitude,
+      this.evtLat,
+      this.evtLon,
+      this.distToEvent,
+      this.isMapAndDistanceValid = 0,
+      this.runClassification = 3,
+      this.userFriendlyLocation});
+  factory _RunQueryExtensionsModel.fromJson(Map<String, dynamic> json) =>
+      _$RunQueryExtensionsModelFromJson(json);
 
   @override
-  int get daysUntilEvent;
+  @JsonKey()
+  final int daysUntilEvent;
   @override
-  int get appAccessFlags;
+  @JsonKey()
+  final int appAccessFlags;
   @override
-  int get digitsAfterDecimal;
+  @JsonKey()
+  final int digitsAfterDecimal;
   @override
-  String get currencySymbol;
+  @JsonKey()
+  final String currencySymbol;
   @override
-  int get rsvpState;
+  @JsonKey()
+  final int rsvpState;
   @override
-  int get attendenceState;
+  @JsonKey()
+  final int attendenceState;
   @override
-  int get isPaid;
+  @JsonKey()
+  final int isPaid;
   @override
-  int get isHare;
+  @JsonKey()
+  final int isHare;
   @override
-  int get isMember;
+  @JsonKey()
+  final int isMember;
   @override
-  int get following;
+  @JsonKey()
+  final int following;
   @override
-  int get notificationPreference;
+  @JsonKey()
+  final int notificationPreference;
   @override
-  int get emailAlertPreference;
+  @JsonKey()
+  final int emailAlertPreference;
   @override
-  int get distanceUnitsPref; //int userPrefs,
+  @JsonKey()
+  final int distanceUnitsPref;
+//int userPrefs,
   @override
-  String get searchRunsText;
+  @JsonKey()
+  final String searchRunsText;
   @override
-  double? get latitude;
+  final double? latitude;
   @override
-  double? get longitude;
+  final double? longitude;
   @override
-  double? get evtLat;
+  final double? evtLat;
   @override
-  double? get evtLon;
+  final double? evtLon;
   @override
-  double? get distToEvent;
+  final double? distToEvent;
   @override
-  int get isMapAndDistanceValid;
+  @JsonKey()
+  final int isMapAndDistanceValid;
   @override
-  int get runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+  @JsonKey()
+  final int runClassification;
+// 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
   @override
-  String? get userFriendlyLocation;
+  final String? userFriendlyLocation;
 
   /// Create a copy of RunQueryExtensionsModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RunQueryExtensionsModelImplCopyWith<_$RunQueryExtensionsModelImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$RunQueryExtensionsModelCopyWith<_RunQueryExtensionsModel> get copyWith =>
+      __$RunQueryExtensionsModelCopyWithImpl<_RunQueryExtensionsModel>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$RunQueryExtensionsModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'RunQueryExtensionsModel'))
+      ..add(DiagnosticsProperty('daysUntilEvent', daysUntilEvent))
+      ..add(DiagnosticsProperty('appAccessFlags', appAccessFlags))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('rsvpState', rsvpState))
+      ..add(DiagnosticsProperty('attendenceState', attendenceState))
+      ..add(DiagnosticsProperty('isPaid', isPaid))
+      ..add(DiagnosticsProperty('isHare', isHare))
+      ..add(DiagnosticsProperty('isMember', isMember))
+      ..add(DiagnosticsProperty('following', following))
+      ..add(
+          DiagnosticsProperty('notificationPreference', notificationPreference))
+      ..add(DiagnosticsProperty('emailAlertPreference', emailAlertPreference))
+      ..add(DiagnosticsProperty('distanceUnitsPref', distanceUnitsPref))
+      ..add(DiagnosticsProperty('searchRunsText', searchRunsText))
+      ..add(DiagnosticsProperty('latitude', latitude))
+      ..add(DiagnosticsProperty('longitude', longitude))
+      ..add(DiagnosticsProperty('evtLat', evtLat))
+      ..add(DiagnosticsProperty('evtLon', evtLon))
+      ..add(DiagnosticsProperty('distToEvent', distToEvent))
+      ..add(DiagnosticsProperty('isMapAndDistanceValid', isMapAndDistanceValid))
+      ..add(DiagnosticsProperty('runClassification', runClassification))
+      ..add(DiagnosticsProperty('userFriendlyLocation', userFriendlyLocation));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _RunQueryExtensionsModel &&
+            (identical(other.daysUntilEvent, daysUntilEvent) ||
+                other.daysUntilEvent == daysUntilEvent) &&
+            (identical(other.appAccessFlags, appAccessFlags) ||
+                other.appAccessFlags == appAccessFlags) &&
+            (identical(other.digitsAfterDecimal, digitsAfterDecimal) ||
+                other.digitsAfterDecimal == digitsAfterDecimal) &&
+            (identical(other.currencySymbol, currencySymbol) ||
+                other.currencySymbol == currencySymbol) &&
+            (identical(other.rsvpState, rsvpState) ||
+                other.rsvpState == rsvpState) &&
+            (identical(other.attendenceState, attendenceState) ||
+                other.attendenceState == attendenceState) &&
+            (identical(other.isPaid, isPaid) || other.isPaid == isPaid) &&
+            (identical(other.isHare, isHare) || other.isHare == isHare) &&
+            (identical(other.isMember, isMember) ||
+                other.isMember == isMember) &&
+            (identical(other.following, following) ||
+                other.following == following) &&
+            (identical(other.notificationPreference, notificationPreference) ||
+                other.notificationPreference == notificationPreference) &&
+            (identical(other.emailAlertPreference, emailAlertPreference) ||
+                other.emailAlertPreference == emailAlertPreference) &&
+            (identical(other.distanceUnitsPref, distanceUnitsPref) ||
+                other.distanceUnitsPref == distanceUnitsPref) &&
+            (identical(other.searchRunsText, searchRunsText) ||
+                other.searchRunsText == searchRunsText) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude) &&
+            (identical(other.evtLat, evtLat) || other.evtLat == evtLat) &&
+            (identical(other.evtLon, evtLon) || other.evtLon == evtLon) &&
+            (identical(other.distToEvent, distToEvent) ||
+                other.distToEvent == distToEvent) &&
+            (identical(other.isMapAndDistanceValid, isMapAndDistanceValid) ||
+                other.isMapAndDistanceValid == isMapAndDistanceValid) &&
+            (identical(other.runClassification, runClassification) ||
+                other.runClassification == runClassification) &&
+            (identical(other.userFriendlyLocation, userFriendlyLocation) ||
+                other.userFriendlyLocation == userFriendlyLocation));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        daysUntilEvent,
+        appAccessFlags,
+        digitsAfterDecimal,
+        currencySymbol,
+        rsvpState,
+        attendenceState,
+        isPaid,
+        isHare,
+        isMember,
+        following,
+        notificationPreference,
+        emailAlertPreference,
+        distanceUnitsPref,
+        searchRunsText,
+        latitude,
+        longitude,
+        evtLat,
+        evtLon,
+        distToEvent,
+        isMapAndDistanceValid,
+        runClassification,
+        userFriendlyLocation
+      ]);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'RunQueryExtensionsModel(daysUntilEvent: $daysUntilEvent, appAccessFlags: $appAccessFlags, digitsAfterDecimal: $digitsAfterDecimal, currencySymbol: $currencySymbol, rsvpState: $rsvpState, attendenceState: $attendenceState, isPaid: $isPaid, isHare: $isHare, isMember: $isMember, following: $following, notificationPreference: $notificationPreference, emailAlertPreference: $emailAlertPreference, distanceUnitsPref: $distanceUnitsPref, searchRunsText: $searchRunsText, latitude: $latitude, longitude: $longitude, evtLat: $evtLat, evtLon: $evtLon, distToEvent: $distToEvent, isMapAndDistanceValid: $isMapAndDistanceValid, runClassification: $runClassification, userFriendlyLocation: $userFriendlyLocation)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$RunQueryExtensionsModelCopyWith<$Res>
+    implements $RunQueryExtensionsModelCopyWith<$Res> {
+  factory _$RunQueryExtensionsModelCopyWith(_RunQueryExtensionsModel value,
+          $Res Function(_RunQueryExtensionsModel) _then) =
+      __$RunQueryExtensionsModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {int daysUntilEvent,
+      int appAccessFlags,
+      int digitsAfterDecimal,
+      String currencySymbol,
+      int rsvpState,
+      int attendenceState,
+      int isPaid,
+      int isHare,
+      int isMember,
+      int following,
+      int notificationPreference,
+      int emailAlertPreference,
+      int distanceUnitsPref,
+      String searchRunsText,
+      double? latitude,
+      double? longitude,
+      double? evtLat,
+      double? evtLon,
+      double? distToEvent,
+      int isMapAndDistanceValid,
+      int runClassification,
+      String? userFriendlyLocation});
+}
+
+/// @nodoc
+class __$RunQueryExtensionsModelCopyWithImpl<$Res>
+    implements _$RunQueryExtensionsModelCopyWith<$Res> {
+  __$RunQueryExtensionsModelCopyWithImpl(this._self, this._then);
+
+  final _RunQueryExtensionsModel _self;
+  final $Res Function(_RunQueryExtensionsModel) _then;
+
+  /// Create a copy of RunQueryExtensionsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? daysUntilEvent = null,
+    Object? appAccessFlags = null,
+    Object? digitsAfterDecimal = null,
+    Object? currencySymbol = null,
+    Object? rsvpState = null,
+    Object? attendenceState = null,
+    Object? isPaid = null,
+    Object? isHare = null,
+    Object? isMember = null,
+    Object? following = null,
+    Object? notificationPreference = null,
+    Object? emailAlertPreference = null,
+    Object? distanceUnitsPref = null,
+    Object? searchRunsText = null,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
+    Object? evtLat = freezed,
+    Object? evtLon = freezed,
+    Object? distToEvent = freezed,
+    Object? isMapAndDistanceValid = null,
+    Object? runClassification = null,
+    Object? userFriendlyLocation = freezed,
+  }) {
+    return _then(_RunQueryExtensionsModel(
+      daysUntilEvent: null == daysUntilEvent
+          ? _self.daysUntilEvent
+          : daysUntilEvent // ignore: cast_nullable_to_non_nullable
+              as int,
+      appAccessFlags: null == appAccessFlags
+          ? _self.appAccessFlags
+          : appAccessFlags // ignore: cast_nullable_to_non_nullable
+              as int,
+      digitsAfterDecimal: null == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int,
+      currencySymbol: null == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String,
+      rsvpState: null == rsvpState
+          ? _self.rsvpState
+          : rsvpState // ignore: cast_nullable_to_non_nullable
+              as int,
+      attendenceState: null == attendenceState
+          ? _self.attendenceState
+          : attendenceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      isPaid: null == isPaid
+          ? _self.isPaid
+          : isPaid // ignore: cast_nullable_to_non_nullable
+              as int,
+      isHare: null == isHare
+          ? _self.isHare
+          : isHare // ignore: cast_nullable_to_non_nullable
+              as int,
+      isMember: null == isMember
+          ? _self.isMember
+          : isMember // ignore: cast_nullable_to_non_nullable
+              as int,
+      following: null == following
+          ? _self.following
+          : following // ignore: cast_nullable_to_non_nullable
+              as int,
+      notificationPreference: null == notificationPreference
+          ? _self.notificationPreference
+          : notificationPreference // ignore: cast_nullable_to_non_nullable
+              as int,
+      emailAlertPreference: null == emailAlertPreference
+          ? _self.emailAlertPreference
+          : emailAlertPreference // ignore: cast_nullable_to_non_nullable
+              as int,
+      distanceUnitsPref: null == distanceUnitsPref
+          ? _self.distanceUnitsPref
+          : distanceUnitsPref // ignore: cast_nullable_to_non_nullable
+              as int,
+      searchRunsText: null == searchRunsText
+          ? _self.searchRunsText
+          : searchRunsText // ignore: cast_nullable_to_non_nullable
+              as String,
+      latitude: freezed == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      evtLat: freezed == evtLat
+          ? _self.evtLat
+          : evtLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      evtLon: freezed == evtLon
+          ? _self.evtLon
+          : evtLon // ignore: cast_nullable_to_non_nullable
+              as double?,
+      distToEvent: freezed == distToEvent
+          ? _self.distToEvent
+          : distToEvent // ignore: cast_nullable_to_non_nullable
+              as double?,
+      isMapAndDistanceValid: null == isMapAndDistanceValid
+          ? _self.isMapAndDistanceValid
+          : isMapAndDistanceValid // ignore: cast_nullable_to_non_nullable
+              as int,
+      runClassification: null == runClassification
+          ? _self.runClassification
+          : runClassification // ignore: cast_nullable_to_non_nullable
+              as int,
+      userFriendlyLocation: freezed == userFriendlyLocation
+          ? _self.userFriendlyLocation
+          : userFriendlyLocation // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+// dart format on

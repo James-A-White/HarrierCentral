@@ -6,8 +6,8 @@ part of 'countries_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CountriesModelImpl _$$CountriesModelImplFromJson(Map<String, dynamic> json) =>
-    _$CountriesModelImpl(
+_CountriesModel _$CountriesModelFromJson(Map<String, dynamic> json) =>
+    _CountriesModel(
       countryId: json['countryId'] as String,
       countryCode: json['countryCode'] as String,
       latitude: (json['latitude'] as num).toDouble(),
@@ -28,8 +28,7 @@ _$CountriesModelImpl _$$CountriesModelImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$CountriesModelImplToJson(
-        _$CountriesModelImpl instance) =>
+Map<String, dynamic> _$CountriesModelToJson(_CountriesModel instance) =>
     <String, dynamic>{
       'countryId': instance.countryId,
       'countryCode': instance.countryCode,

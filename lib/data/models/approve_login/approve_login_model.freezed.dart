@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,332 +10,63 @@ part of 'approve_login_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-ApproveLoginModel _$ApproveLoginModelFromJson(Map<String, dynamic> json) {
-  return _ApproveLoginModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$ApproveLoginModel {
-  String? get apiVersion => throw _privateConstructorUsedError;
-  int? get approvalCode => throw _privateConstructorUsedError;
-  String? get loginMessage => throw _privateConstructorUsedError;
-  String? get loginMessageTitle => throw _privateConstructorUsedError;
-  int? get serverStatusCode => throw _privateConstructorUsedError;
-  DateTime? get messageEndDate => throw _privateConstructorUsedError;
-  int? get messageDisplayType => throw _privateConstructorUsedError;
-  String? get iosDownloadLink => throw _privateConstructorUsedError;
-  String? get androidDownloadLink => throw _privateConstructorUsedError;
-  String? get imageRootUrl => throw _privateConstructorUsedError;
-  int? get isBetaTester => throw _privateConstructorUsedError;
-  String? get email => throw _privateConstructorUsedError;
-  String? get homeKennelId => throw _privateConstructorUsedError;
-  DateTime? get thirdPartyForceTokenRefresh =>
-      throw _privateConstructorUsedError;
-
-  /// Serializes this ApproveLoginModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$ApproveLoginModel implements DiagnosticableTreeMixin {
+  String? get apiVersion;
+  int? get approvalCode;
+  String? get loginMessage;
+  String? get loginMessageTitle;
+  int? get serverStatusCode;
+  DateTime? get messageEndDate;
+  int? get messageDisplayType;
+  String? get iosDownloadLink;
+  String? get androidDownloadLink;
+  String? get imageRootUrl;
+  int? get isBetaTester;
+  String? get email;
+  String? get homeKennelId;
+  DateTime? get thirdPartyForceTokenRefresh;
 
   /// Create a copy of ApproveLoginModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $ApproveLoginModelCopyWith<ApproveLoginModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$ApproveLoginModelCopyWithImpl<ApproveLoginModel>(
+          this as ApproveLoginModel, _$identity);
 
-/// @nodoc
-abstract class $ApproveLoginModelCopyWith<$Res> {
-  factory $ApproveLoginModelCopyWith(
-          ApproveLoginModel value, $Res Function(ApproveLoginModel) then) =
-      _$ApproveLoginModelCopyWithImpl<$Res, ApproveLoginModel>;
-  @useResult
-  $Res call(
-      {String? apiVersion,
-      int? approvalCode,
-      String? loginMessage,
-      String? loginMessageTitle,
-      int? serverStatusCode,
-      DateTime? messageEndDate,
-      int? messageDisplayType,
-      String? iosDownloadLink,
-      String? androidDownloadLink,
-      String? imageRootUrl,
-      int? isBetaTester,
-      String? email,
-      String? homeKennelId,
-      DateTime? thirdPartyForceTokenRefresh});
-}
-
-/// @nodoc
-class _$ApproveLoginModelCopyWithImpl<$Res, $Val extends ApproveLoginModel>
-    implements $ApproveLoginModelCopyWith<$Res> {
-  _$ApproveLoginModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ApproveLoginModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? apiVersion = freezed,
-    Object? approvalCode = freezed,
-    Object? loginMessage = freezed,
-    Object? loginMessageTitle = freezed,
-    Object? serverStatusCode = freezed,
-    Object? messageEndDate = freezed,
-    Object? messageDisplayType = freezed,
-    Object? iosDownloadLink = freezed,
-    Object? androidDownloadLink = freezed,
-    Object? imageRootUrl = freezed,
-    Object? isBetaTester = freezed,
-    Object? email = freezed,
-    Object? homeKennelId = freezed,
-    Object? thirdPartyForceTokenRefresh = freezed,
-  }) {
-    return _then(_value.copyWith(
-      apiVersion: freezed == apiVersion
-          ? _value.apiVersion
-          : apiVersion // ignore: cast_nullable_to_non_nullable
-              as String?,
-      approvalCode: freezed == approvalCode
-          ? _value.approvalCode
-          : approvalCode // ignore: cast_nullable_to_non_nullable
-              as int?,
-      loginMessage: freezed == loginMessage
-          ? _value.loginMessage
-          : loginMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      loginMessageTitle: freezed == loginMessageTitle
-          ? _value.loginMessageTitle
-          : loginMessageTitle // ignore: cast_nullable_to_non_nullable
-              as String?,
-      serverStatusCode: freezed == serverStatusCode
-          ? _value.serverStatusCode
-          : serverStatusCode // ignore: cast_nullable_to_non_nullable
-              as int?,
-      messageEndDate: freezed == messageEndDate
-          ? _value.messageEndDate
-          : messageEndDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      messageDisplayType: freezed == messageDisplayType
-          ? _value.messageDisplayType
-          : messageDisplayType // ignore: cast_nullable_to_non_nullable
-              as int?,
-      iosDownloadLink: freezed == iosDownloadLink
-          ? _value.iosDownloadLink
-          : iosDownloadLink // ignore: cast_nullable_to_non_nullable
-              as String?,
-      androidDownloadLink: freezed == androidDownloadLink
-          ? _value.androidDownloadLink
-          : androidDownloadLink // ignore: cast_nullable_to_non_nullable
-              as String?,
-      imageRootUrl: freezed == imageRootUrl
-          ? _value.imageRootUrl
-          : imageRootUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isBetaTester: freezed == isBetaTester
-          ? _value.isBetaTester
-          : isBetaTester // ignore: cast_nullable_to_non_nullable
-              as int?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      homeKennelId: freezed == homeKennelId
-          ? _value.homeKennelId
-          : homeKennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      thirdPartyForceTokenRefresh: freezed == thirdPartyForceTokenRefresh
-          ? _value.thirdPartyForceTokenRefresh
-          : thirdPartyForceTokenRefresh // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$ApproveLoginModelImplCopyWith<$Res>
-    implements $ApproveLoginModelCopyWith<$Res> {
-  factory _$$ApproveLoginModelImplCopyWith(_$ApproveLoginModelImpl value,
-          $Res Function(_$ApproveLoginModelImpl) then) =
-      __$$ApproveLoginModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String? apiVersion,
-      int? approvalCode,
-      String? loginMessage,
-      String? loginMessageTitle,
-      int? serverStatusCode,
-      DateTime? messageEndDate,
-      int? messageDisplayType,
-      String? iosDownloadLink,
-      String? androidDownloadLink,
-      String? imageRootUrl,
-      int? isBetaTester,
-      String? email,
-      String? homeKennelId,
-      DateTime? thirdPartyForceTokenRefresh});
-}
-
-/// @nodoc
-class __$$ApproveLoginModelImplCopyWithImpl<$Res>
-    extends _$ApproveLoginModelCopyWithImpl<$Res, _$ApproveLoginModelImpl>
-    implements _$$ApproveLoginModelImplCopyWith<$Res> {
-  __$$ApproveLoginModelImplCopyWithImpl(_$ApproveLoginModelImpl _value,
-      $Res Function(_$ApproveLoginModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ApproveLoginModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? apiVersion = freezed,
-    Object? approvalCode = freezed,
-    Object? loginMessage = freezed,
-    Object? loginMessageTitle = freezed,
-    Object? serverStatusCode = freezed,
-    Object? messageEndDate = freezed,
-    Object? messageDisplayType = freezed,
-    Object? iosDownloadLink = freezed,
-    Object? androidDownloadLink = freezed,
-    Object? imageRootUrl = freezed,
-    Object? isBetaTester = freezed,
-    Object? email = freezed,
-    Object? homeKennelId = freezed,
-    Object? thirdPartyForceTokenRefresh = freezed,
-  }) {
-    return _then(_$ApproveLoginModelImpl(
-      apiVersion: freezed == apiVersion
-          ? _value.apiVersion
-          : apiVersion // ignore: cast_nullable_to_non_nullable
-              as String?,
-      approvalCode: freezed == approvalCode
-          ? _value.approvalCode
-          : approvalCode // ignore: cast_nullable_to_non_nullable
-              as int?,
-      loginMessage: freezed == loginMessage
-          ? _value.loginMessage
-          : loginMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      loginMessageTitle: freezed == loginMessageTitle
-          ? _value.loginMessageTitle
-          : loginMessageTitle // ignore: cast_nullable_to_non_nullable
-              as String?,
-      serverStatusCode: freezed == serverStatusCode
-          ? _value.serverStatusCode
-          : serverStatusCode // ignore: cast_nullable_to_non_nullable
-              as int?,
-      messageEndDate: freezed == messageEndDate
-          ? _value.messageEndDate
-          : messageEndDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      messageDisplayType: freezed == messageDisplayType
-          ? _value.messageDisplayType
-          : messageDisplayType // ignore: cast_nullable_to_non_nullable
-              as int?,
-      iosDownloadLink: freezed == iosDownloadLink
-          ? _value.iosDownloadLink
-          : iosDownloadLink // ignore: cast_nullable_to_non_nullable
-              as String?,
-      androidDownloadLink: freezed == androidDownloadLink
-          ? _value.androidDownloadLink
-          : androidDownloadLink // ignore: cast_nullable_to_non_nullable
-              as String?,
-      imageRootUrl: freezed == imageRootUrl
-          ? _value.imageRootUrl
-          : imageRootUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isBetaTester: freezed == isBetaTester
-          ? _value.isBetaTester
-          : isBetaTester // ignore: cast_nullable_to_non_nullable
-              as int?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      homeKennelId: freezed == homeKennelId
-          ? _value.homeKennelId
-          : homeKennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      thirdPartyForceTokenRefresh: freezed == thirdPartyForceTokenRefresh
-          ? _value.thirdPartyForceTokenRefresh
-          : thirdPartyForceTokenRefresh // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ApproveLoginModelImpl implements _ApproveLoginModel {
-  _$ApproveLoginModelImpl(
-      {this.apiVersion,
-      this.approvalCode,
-      this.loginMessage,
-      this.loginMessageTitle,
-      this.serverStatusCode,
-      this.messageEndDate,
-      this.messageDisplayType,
-      this.iosDownloadLink,
-      this.androidDownloadLink,
-      this.imageRootUrl,
-      this.isBetaTester,
-      this.email,
-      this.homeKennelId,
-      this.thirdPartyForceTokenRefresh});
-
-  factory _$ApproveLoginModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ApproveLoginModelImplFromJson(json);
+  /// Serializes this ApproveLoginModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String? apiVersion;
-  @override
-  final int? approvalCode;
-  @override
-  final String? loginMessage;
-  @override
-  final String? loginMessageTitle;
-  @override
-  final int? serverStatusCode;
-  @override
-  final DateTime? messageEndDate;
-  @override
-  final int? messageDisplayType;
-  @override
-  final String? iosDownloadLink;
-  @override
-  final String? androidDownloadLink;
-  @override
-  final String? imageRootUrl;
-  @override
-  final int? isBetaTester;
-  @override
-  final String? email;
-  @override
-  final String? homeKennelId;
-  @override
-  final DateTime? thirdPartyForceTokenRefresh;
-
-  @override
-  String toString() {
-    return 'ApproveLoginModel(apiVersion: $apiVersion, approvalCode: $approvalCode, loginMessage: $loginMessage, loginMessageTitle: $loginMessageTitle, serverStatusCode: $serverStatusCode, messageEndDate: $messageEndDate, messageDisplayType: $messageDisplayType, iosDownloadLink: $iosDownloadLink, androidDownloadLink: $androidDownloadLink, imageRootUrl: $imageRootUrl, isBetaTester: $isBetaTester, email: $email, homeKennelId: $homeKennelId, thirdPartyForceTokenRefresh: $thirdPartyForceTokenRefresh)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'ApproveLoginModel'))
+      ..add(DiagnosticsProperty('apiVersion', apiVersion))
+      ..add(DiagnosticsProperty('approvalCode', approvalCode))
+      ..add(DiagnosticsProperty('loginMessage', loginMessage))
+      ..add(DiagnosticsProperty('loginMessageTitle', loginMessageTitle))
+      ..add(DiagnosticsProperty('serverStatusCode', serverStatusCode))
+      ..add(DiagnosticsProperty('messageEndDate', messageEndDate))
+      ..add(DiagnosticsProperty('messageDisplayType', messageDisplayType))
+      ..add(DiagnosticsProperty('iosDownloadLink', iosDownloadLink))
+      ..add(DiagnosticsProperty('androidDownloadLink', androidDownloadLink))
+      ..add(DiagnosticsProperty('imageRootUrl', imageRootUrl))
+      ..add(DiagnosticsProperty('isBetaTester', isBetaTester))
+      ..add(DiagnosticsProperty('email', email))
+      ..add(DiagnosticsProperty('homeKennelId', homeKennelId))
+      ..add(DiagnosticsProperty(
+          'thirdPartyForceTokenRefresh', thirdPartyForceTokenRefresh));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ApproveLoginModelImpl &&
+            other is ApproveLoginModel &&
             (identical(other.apiVersion, apiVersion) ||
                 other.apiVersion == apiVersion) &&
             (identical(other.approvalCode, approvalCode) ||
@@ -385,76 +117,385 @@ class _$ApproveLoginModelImpl implements _ApproveLoginModel {
       homeKennelId,
       thirdPartyForceTokenRefresh);
 
-  /// Create a copy of ApproveLoginModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$ApproveLoginModelImplCopyWith<_$ApproveLoginModelImpl> get copyWith =>
-      __$$ApproveLoginModelImplCopyWithImpl<_$ApproveLoginModelImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ApproveLoginModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'ApproveLoginModel(apiVersion: $apiVersion, approvalCode: $approvalCode, loginMessage: $loginMessage, loginMessageTitle: $loginMessageTitle, serverStatusCode: $serverStatusCode, messageEndDate: $messageEndDate, messageDisplayType: $messageDisplayType, iosDownloadLink: $iosDownloadLink, androidDownloadLink: $androidDownloadLink, imageRootUrl: $imageRootUrl, isBetaTester: $isBetaTester, email: $email, homeKennelId: $homeKennelId, thirdPartyForceTokenRefresh: $thirdPartyForceTokenRefresh)';
   }
 }
 
-abstract class _ApproveLoginModel implements ApproveLoginModel {
-  factory _ApproveLoginModel(
-      {final String? apiVersion,
-      final int? approvalCode,
-      final String? loginMessage,
-      final String? loginMessageTitle,
-      final int? serverStatusCode,
-      final DateTime? messageEndDate,
-      final int? messageDisplayType,
-      final String? iosDownloadLink,
-      final String? androidDownloadLink,
-      final String? imageRootUrl,
-      final int? isBetaTester,
-      final String? email,
-      final String? homeKennelId,
-      final DateTime? thirdPartyForceTokenRefresh}) = _$ApproveLoginModelImpl;
+/// @nodoc
+abstract mixin class $ApproveLoginModelCopyWith<$Res> {
+  factory $ApproveLoginModelCopyWith(
+          ApproveLoginModel value, $Res Function(ApproveLoginModel) _then) =
+      _$ApproveLoginModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String? apiVersion,
+      int? approvalCode,
+      String? loginMessage,
+      String? loginMessageTitle,
+      int? serverStatusCode,
+      DateTime? messageEndDate,
+      int? messageDisplayType,
+      String? iosDownloadLink,
+      String? androidDownloadLink,
+      String? imageRootUrl,
+      int? isBetaTester,
+      String? email,
+      String? homeKennelId,
+      DateTime? thirdPartyForceTokenRefresh});
+}
 
-  factory _ApproveLoginModel.fromJson(Map<String, dynamic> json) =
-      _$ApproveLoginModelImpl.fromJson;
+/// @nodoc
+class _$ApproveLoginModelCopyWithImpl<$Res>
+    implements $ApproveLoginModelCopyWith<$Res> {
+  _$ApproveLoginModelCopyWithImpl(this._self, this._then);
+
+  final ApproveLoginModel _self;
+  final $Res Function(ApproveLoginModel) _then;
+
+  /// Create a copy of ApproveLoginModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? apiVersion = freezed,
+    Object? approvalCode = freezed,
+    Object? loginMessage = freezed,
+    Object? loginMessageTitle = freezed,
+    Object? serverStatusCode = freezed,
+    Object? messageEndDate = freezed,
+    Object? messageDisplayType = freezed,
+    Object? iosDownloadLink = freezed,
+    Object? androidDownloadLink = freezed,
+    Object? imageRootUrl = freezed,
+    Object? isBetaTester = freezed,
+    Object? email = freezed,
+    Object? homeKennelId = freezed,
+    Object? thirdPartyForceTokenRefresh = freezed,
+  }) {
+    return _then(_self.copyWith(
+      apiVersion: freezed == apiVersion
+          ? _self.apiVersion
+          : apiVersion // ignore: cast_nullable_to_non_nullable
+              as String?,
+      approvalCode: freezed == approvalCode
+          ? _self.approvalCode
+          : approvalCode // ignore: cast_nullable_to_non_nullable
+              as int?,
+      loginMessage: freezed == loginMessage
+          ? _self.loginMessage
+          : loginMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      loginMessageTitle: freezed == loginMessageTitle
+          ? _self.loginMessageTitle
+          : loginMessageTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
+      serverStatusCode: freezed == serverStatusCode
+          ? _self.serverStatusCode
+          : serverStatusCode // ignore: cast_nullable_to_non_nullable
+              as int?,
+      messageEndDate: freezed == messageEndDate
+          ? _self.messageEndDate
+          : messageEndDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      messageDisplayType: freezed == messageDisplayType
+          ? _self.messageDisplayType
+          : messageDisplayType // ignore: cast_nullable_to_non_nullable
+              as int?,
+      iosDownloadLink: freezed == iosDownloadLink
+          ? _self.iosDownloadLink
+          : iosDownloadLink // ignore: cast_nullable_to_non_nullable
+              as String?,
+      androidDownloadLink: freezed == androidDownloadLink
+          ? _self.androidDownloadLink
+          : androidDownloadLink // ignore: cast_nullable_to_non_nullable
+              as String?,
+      imageRootUrl: freezed == imageRootUrl
+          ? _self.imageRootUrl
+          : imageRootUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      isBetaTester: freezed == isBetaTester
+          ? _self.isBetaTester
+          : isBetaTester // ignore: cast_nullable_to_non_nullable
+              as int?,
+      email: freezed == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      homeKennelId: freezed == homeKennelId
+          ? _self.homeKennelId
+          : homeKennelId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      thirdPartyForceTokenRefresh: freezed == thirdPartyForceTokenRefresh
+          ? _self.thirdPartyForceTokenRefresh
+          : thirdPartyForceTokenRefresh // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ApproveLoginModel
+    with DiagnosticableTreeMixin
+    implements ApproveLoginModel {
+  _ApproveLoginModel(
+      {this.apiVersion,
+      this.approvalCode,
+      this.loginMessage,
+      this.loginMessageTitle,
+      this.serverStatusCode,
+      this.messageEndDate,
+      this.messageDisplayType,
+      this.iosDownloadLink,
+      this.androidDownloadLink,
+      this.imageRootUrl,
+      this.isBetaTester,
+      this.email,
+      this.homeKennelId,
+      this.thirdPartyForceTokenRefresh});
+  factory _ApproveLoginModel.fromJson(Map<String, dynamic> json) =>
+      _$ApproveLoginModelFromJson(json);
 
   @override
-  String? get apiVersion;
+  final String? apiVersion;
   @override
-  int? get approvalCode;
+  final int? approvalCode;
   @override
-  String? get loginMessage;
+  final String? loginMessage;
   @override
-  String? get loginMessageTitle;
+  final String? loginMessageTitle;
   @override
-  int? get serverStatusCode;
+  final int? serverStatusCode;
   @override
-  DateTime? get messageEndDate;
+  final DateTime? messageEndDate;
   @override
-  int? get messageDisplayType;
+  final int? messageDisplayType;
   @override
-  String? get iosDownloadLink;
+  final String? iosDownloadLink;
   @override
-  String? get androidDownloadLink;
+  final String? androidDownloadLink;
   @override
-  String? get imageRootUrl;
+  final String? imageRootUrl;
   @override
-  int? get isBetaTester;
+  final int? isBetaTester;
   @override
-  String? get email;
+  final String? email;
   @override
-  String? get homeKennelId;
+  final String? homeKennelId;
   @override
-  DateTime? get thirdPartyForceTokenRefresh;
+  final DateTime? thirdPartyForceTokenRefresh;
 
   /// Create a copy of ApproveLoginModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ApproveLoginModelImplCopyWith<_$ApproveLoginModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$ApproveLoginModelCopyWith<_ApproveLoginModel> get copyWith =>
+      __$ApproveLoginModelCopyWithImpl<_ApproveLoginModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ApproveLoginModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'ApproveLoginModel'))
+      ..add(DiagnosticsProperty('apiVersion', apiVersion))
+      ..add(DiagnosticsProperty('approvalCode', approvalCode))
+      ..add(DiagnosticsProperty('loginMessage', loginMessage))
+      ..add(DiagnosticsProperty('loginMessageTitle', loginMessageTitle))
+      ..add(DiagnosticsProperty('serverStatusCode', serverStatusCode))
+      ..add(DiagnosticsProperty('messageEndDate', messageEndDate))
+      ..add(DiagnosticsProperty('messageDisplayType', messageDisplayType))
+      ..add(DiagnosticsProperty('iosDownloadLink', iosDownloadLink))
+      ..add(DiagnosticsProperty('androidDownloadLink', androidDownloadLink))
+      ..add(DiagnosticsProperty('imageRootUrl', imageRootUrl))
+      ..add(DiagnosticsProperty('isBetaTester', isBetaTester))
+      ..add(DiagnosticsProperty('email', email))
+      ..add(DiagnosticsProperty('homeKennelId', homeKennelId))
+      ..add(DiagnosticsProperty(
+          'thirdPartyForceTokenRefresh', thirdPartyForceTokenRefresh));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ApproveLoginModel &&
+            (identical(other.apiVersion, apiVersion) ||
+                other.apiVersion == apiVersion) &&
+            (identical(other.approvalCode, approvalCode) ||
+                other.approvalCode == approvalCode) &&
+            (identical(other.loginMessage, loginMessage) ||
+                other.loginMessage == loginMessage) &&
+            (identical(other.loginMessageTitle, loginMessageTitle) ||
+                other.loginMessageTitle == loginMessageTitle) &&
+            (identical(other.serverStatusCode, serverStatusCode) ||
+                other.serverStatusCode == serverStatusCode) &&
+            (identical(other.messageEndDate, messageEndDate) ||
+                other.messageEndDate == messageEndDate) &&
+            (identical(other.messageDisplayType, messageDisplayType) ||
+                other.messageDisplayType == messageDisplayType) &&
+            (identical(other.iosDownloadLink, iosDownloadLink) ||
+                other.iosDownloadLink == iosDownloadLink) &&
+            (identical(other.androidDownloadLink, androidDownloadLink) ||
+                other.androidDownloadLink == androidDownloadLink) &&
+            (identical(other.imageRootUrl, imageRootUrl) ||
+                other.imageRootUrl == imageRootUrl) &&
+            (identical(other.isBetaTester, isBetaTester) ||
+                other.isBetaTester == isBetaTester) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.homeKennelId, homeKennelId) ||
+                other.homeKennelId == homeKennelId) &&
+            (identical(other.thirdPartyForceTokenRefresh,
+                    thirdPartyForceTokenRefresh) ||
+                other.thirdPartyForceTokenRefresh ==
+                    thirdPartyForceTokenRefresh));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      apiVersion,
+      approvalCode,
+      loginMessage,
+      loginMessageTitle,
+      serverStatusCode,
+      messageEndDate,
+      messageDisplayType,
+      iosDownloadLink,
+      androidDownloadLink,
+      imageRootUrl,
+      isBetaTester,
+      email,
+      homeKennelId,
+      thirdPartyForceTokenRefresh);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'ApproveLoginModel(apiVersion: $apiVersion, approvalCode: $approvalCode, loginMessage: $loginMessage, loginMessageTitle: $loginMessageTitle, serverStatusCode: $serverStatusCode, messageEndDate: $messageEndDate, messageDisplayType: $messageDisplayType, iosDownloadLink: $iosDownloadLink, androidDownloadLink: $androidDownloadLink, imageRootUrl: $imageRootUrl, isBetaTester: $isBetaTester, email: $email, homeKennelId: $homeKennelId, thirdPartyForceTokenRefresh: $thirdPartyForceTokenRefresh)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$ApproveLoginModelCopyWith<$Res>
+    implements $ApproveLoginModelCopyWith<$Res> {
+  factory _$ApproveLoginModelCopyWith(
+          _ApproveLoginModel value, $Res Function(_ApproveLoginModel) _then) =
+      __$ApproveLoginModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String? apiVersion,
+      int? approvalCode,
+      String? loginMessage,
+      String? loginMessageTitle,
+      int? serverStatusCode,
+      DateTime? messageEndDate,
+      int? messageDisplayType,
+      String? iosDownloadLink,
+      String? androidDownloadLink,
+      String? imageRootUrl,
+      int? isBetaTester,
+      String? email,
+      String? homeKennelId,
+      DateTime? thirdPartyForceTokenRefresh});
+}
+
+/// @nodoc
+class __$ApproveLoginModelCopyWithImpl<$Res>
+    implements _$ApproveLoginModelCopyWith<$Res> {
+  __$ApproveLoginModelCopyWithImpl(this._self, this._then);
+
+  final _ApproveLoginModel _self;
+  final $Res Function(_ApproveLoginModel) _then;
+
+  /// Create a copy of ApproveLoginModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? apiVersion = freezed,
+    Object? approvalCode = freezed,
+    Object? loginMessage = freezed,
+    Object? loginMessageTitle = freezed,
+    Object? serverStatusCode = freezed,
+    Object? messageEndDate = freezed,
+    Object? messageDisplayType = freezed,
+    Object? iosDownloadLink = freezed,
+    Object? androidDownloadLink = freezed,
+    Object? imageRootUrl = freezed,
+    Object? isBetaTester = freezed,
+    Object? email = freezed,
+    Object? homeKennelId = freezed,
+    Object? thirdPartyForceTokenRefresh = freezed,
+  }) {
+    return _then(_ApproveLoginModel(
+      apiVersion: freezed == apiVersion
+          ? _self.apiVersion
+          : apiVersion // ignore: cast_nullable_to_non_nullable
+              as String?,
+      approvalCode: freezed == approvalCode
+          ? _self.approvalCode
+          : approvalCode // ignore: cast_nullable_to_non_nullable
+              as int?,
+      loginMessage: freezed == loginMessage
+          ? _self.loginMessage
+          : loginMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      loginMessageTitle: freezed == loginMessageTitle
+          ? _self.loginMessageTitle
+          : loginMessageTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
+      serverStatusCode: freezed == serverStatusCode
+          ? _self.serverStatusCode
+          : serverStatusCode // ignore: cast_nullable_to_non_nullable
+              as int?,
+      messageEndDate: freezed == messageEndDate
+          ? _self.messageEndDate
+          : messageEndDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      messageDisplayType: freezed == messageDisplayType
+          ? _self.messageDisplayType
+          : messageDisplayType // ignore: cast_nullable_to_non_nullable
+              as int?,
+      iosDownloadLink: freezed == iosDownloadLink
+          ? _self.iosDownloadLink
+          : iosDownloadLink // ignore: cast_nullable_to_non_nullable
+              as String?,
+      androidDownloadLink: freezed == androidDownloadLink
+          ? _self.androidDownloadLink
+          : androidDownloadLink // ignore: cast_nullable_to_non_nullable
+              as String?,
+      imageRootUrl: freezed == imageRootUrl
+          ? _self.imageRootUrl
+          : imageRootUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      isBetaTester: freezed == isBetaTester
+          ? _self.isBetaTester
+          : isBetaTester // ignore: cast_nullable_to_non_nullable
+              as int?,
+      email: freezed == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      homeKennelId: freezed == homeKennelId
+          ? _self.homeKennelId
+          : homeKennelId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      thirdPartyForceTokenRefresh: freezed == thirdPartyForceTokenRefresh
+          ? _self.thirdPartyForceTokenRefresh
+          : thirdPartyForceTokenRefresh // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+// dart format on

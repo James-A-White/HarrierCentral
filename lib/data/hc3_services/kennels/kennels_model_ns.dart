@@ -4,7 +4,7 @@ part 'kennels_model_ns.freezed.dart';
 part 'kennels_model_ns.g.dart';
 
 @freezed
-class KennelsModel with _$KennelsModel implements BaseModel {
+abstract class KennelsModel with _$KennelsModel implements BaseModel {
   factory KennelsModel({
     required String kennelId,
     required String publicKennelId,
@@ -14,6 +14,7 @@ class KennelsModel with _$KennelsModel implements BaseModel {
     required String kennelName,
     String? kennelSearchTags,
     required String kennelShortName,
+    required String kennelUniqueShortName,
     String? kennelDescription,
     required String kennelLogo,
     required int kennelPinColor,
@@ -64,5 +65,6 @@ class KennelsModel with _$KennelsModel implements BaseModel {
     int? removed,
   }) = _KennelsModel;
 
-  factory KennelsModel.fromJson(Map<String, dynamic> json) => _$KennelsModelFromJson(json);
+  factory KennelsModel.fromJson(Map<String, dynamic> json) =>
+      _$KennelsModelFromJson(json);
 }

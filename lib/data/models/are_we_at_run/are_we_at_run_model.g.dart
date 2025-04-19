@@ -6,9 +6,8 @@ part of 'are_we_at_run_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AreWeAtRunModelImpl _$$AreWeAtRunModelImplFromJson(
-        Map<String, dynamic> json) =>
-    _$AreWeAtRunModelImpl(
+_AreWeAtRunModel _$AreWeAtRunModelFromJson(Map<String, dynamic> json) =>
+    _AreWeAtRunModel(
       eventId: json['eventId'] as String,
       eventName: json['eventName'] as String,
       eventImage: json['eventImage'] as String?,
@@ -33,8 +32,7 @@ _$AreWeAtRunModelImpl _$$AreWeAtRunModelImplFromJson(
       extrasDescription: json['extrasDescription'] as String?,
     );
 
-Map<String, dynamic> _$$AreWeAtRunModelImplToJson(
-        _$AreWeAtRunModelImpl instance) =>
+Map<String, dynamic> _$AreWeAtRunModelToJson(_AreWeAtRunModel instance) =>
     <String, dynamic>{
       'eventId': instance.eventId,
       'eventName': instance.eventName,

@@ -235,6 +235,13 @@ class Tables {
         -- an app upgrade.
       ''',
         appliedAtInt: 0),
+    MigrationsModel(
+        dbVersion: 450,
+        migrationText: '''
+        -- Added KennelUniqueShortName field to KennelsModel. No need for migration as
+        -- we don't have any active users. Bumping to 450 will cause a reload for our testers
+      ''',
+        appliedAtInt: 0),
   ];
 
   static Future<void> createTables(

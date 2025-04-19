@@ -6,9 +6,8 @@ part of 'user_run_history_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UserRunHistoryModelImpl _$$UserRunHistoryModelImplFromJson(
-        Map<String, dynamic> json) =>
-    _$UserRunHistoryModelImpl(
+_UserRunHistoryModel _$UserRunHistoryModelFromJson(Map<String, dynamic> json) =>
+    _UserRunHistoryModel(
       eventId: json['eventId'] as String,
       eventName: json['eventName'] as String,
       eventNumber: (json['eventNumber'] as num).toInt(),
@@ -29,8 +28,8 @@ _$UserRunHistoryModelImpl _$$UserRunHistoryModelImplFromJson(
       totalHaringThisKennel: (json['totalHaringThisKennel'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$$UserRunHistoryModelImplToJson(
-        _$UserRunHistoryModelImpl instance) =>
+Map<String, dynamic> _$UserRunHistoryModelToJson(
+        _UserRunHistoryModel instance) =>
     <String, dynamic>{
       'eventId': instance.eventId,
       'eventName': instance.eventName,

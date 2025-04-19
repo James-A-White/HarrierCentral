@@ -6,8 +6,8 @@ part of 'payments_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PaymentsModelImpl _$$PaymentsModelImplFromJson(Map<String, dynamic> json) =>
-    _$PaymentsModelImpl(
+_PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) =>
+    _PaymentsModel(
       paymentId: json['paymentId'] as String,
       kennelId: json['kennelId'] as String,
       paidBy: json['paidBy'] as String,
@@ -43,7 +43,7 @@ _$PaymentsModelImpl _$$PaymentsModelImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$PaymentsModelImplToJson(_$PaymentsModelImpl instance) =>
+Map<String, dynamic> _$PaymentsModelToJson(_PaymentsModel instance) =>
     <String, dynamic>{
       'paymentId': instance.paymentId,
       'kennelId': instance.kennelId,

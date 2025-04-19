@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,82 +10,65 @@ part of 'single_result_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-SingleResultModel _$SingleResultModelFromJson(Map<String, dynamic> json) {
-  return _SingleResultModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$SingleResultModel {
-  String? get result => throw _privateConstructorUsedError;
-
-  /// Serializes this SingleResultModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$SingleResultModel implements DiagnosticableTreeMixin {
+  String? get result;
 
   /// Create a copy of SingleResultModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SingleResultModelCopyWith<SingleResultModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $SingleResultModelCopyWith<$Res> {
-  factory $SingleResultModelCopyWith(
-          SingleResultModel value, $Res Function(SingleResultModel) then) =
-      _$SingleResultModelCopyWithImpl<$Res, SingleResultModel>;
-  @useResult
-  $Res call({String? result});
-}
-
-/// @nodoc
-class _$SingleResultModelCopyWithImpl<$Res, $Val extends SingleResultModel>
-    implements $SingleResultModelCopyWith<$Res> {
-  _$SingleResultModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of SingleResultModel
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $SingleResultModelCopyWith<SingleResultModel> get copyWith =>
+      _$SingleResultModelCopyWithImpl<SingleResultModel>(
+          this as SingleResultModel, _$identity);
+
+  /// Serializes this SingleResultModel to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? result = freezed,
-  }) {
-    return _then(_value.copyWith(
-      result: freezed == result
-          ? _value.result
-          : result // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'SingleResultModel'))
+      ..add(DiagnosticsProperty('result', result));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SingleResultModel &&
+            (identical(other.result, result) || other.result == result));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, result);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'SingleResultModel(result: $result)';
   }
 }
 
 /// @nodoc
-abstract class _$$SingleResultModelImplCopyWith<$Res>
-    implements $SingleResultModelCopyWith<$Res> {
-  factory _$$SingleResultModelImplCopyWith(_$SingleResultModelImpl value,
-          $Res Function(_$SingleResultModelImpl) then) =
-      __$$SingleResultModelImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $SingleResultModelCopyWith<$Res> {
+  factory $SingleResultModelCopyWith(
+          SingleResultModel value, $Res Function(SingleResultModel) _then) =
+      _$SingleResultModelCopyWithImpl;
   @useResult
   $Res call({String? result});
 }
 
 /// @nodoc
-class __$$SingleResultModelImplCopyWithImpl<$Res>
-    extends _$SingleResultModelCopyWithImpl<$Res, _$SingleResultModelImpl>
-    implements _$$SingleResultModelImplCopyWith<$Res> {
-  __$$SingleResultModelImplCopyWithImpl(_$SingleResultModelImpl _value,
-      $Res Function(_$SingleResultModelImpl) _then)
-      : super(_value, _then);
+class _$SingleResultModelCopyWithImpl<$Res>
+    implements $SingleResultModelCopyWith<$Res> {
+  _$SingleResultModelCopyWithImpl(this._self, this._then);
+
+  final SingleResultModel _self;
+  final $Res Function(SingleResultModel) _then;
 
   /// Create a copy of SingleResultModel
   /// with the given fields replaced by the non-null parameter values.
@@ -93,9 +77,9 @@ class __$$SingleResultModelImplCopyWithImpl<$Res>
   $Res call({
     Object? result = freezed,
   }) {
-    return _then(_$SingleResultModelImpl(
+    return _then(_self.copyWith(
       result: freezed == result
-          ? _value.result
+          ? _self.result
           : result // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
@@ -104,25 +88,43 @@ class __$$SingleResultModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SingleResultModelImpl implements _SingleResultModel {
-  _$SingleResultModelImpl({this.result});
-
-  factory _$SingleResultModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SingleResultModelImplFromJson(json);
+class _SingleResultModel
+    with DiagnosticableTreeMixin
+    implements SingleResultModel {
+  _SingleResultModel({this.result});
+  factory _SingleResultModel.fromJson(Map<String, dynamic> json) =>
+      _$SingleResultModelFromJson(json);
 
   @override
   final String? result;
 
+  /// Create a copy of SingleResultModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'SingleResultModel(result: $result)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SingleResultModelCopyWith<_SingleResultModel> get copyWith =>
+      __$SingleResultModelCopyWithImpl<_SingleResultModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SingleResultModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'SingleResultModel'))
+      ..add(DiagnosticsProperty('result', result));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SingleResultModelImpl &&
+            other is _SingleResultModel &&
             (identical(other.result, result) || other.result == result));
   }
 
@@ -130,36 +132,45 @@ class _$SingleResultModelImpl implements _SingleResultModel {
   @override
   int get hashCode => Object.hash(runtimeType, result);
 
-  /// Create a copy of SingleResultModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$SingleResultModelImplCopyWith<_$SingleResultModelImpl> get copyWith =>
-      __$$SingleResultModelImplCopyWithImpl<_$SingleResultModelImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$SingleResultModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'SingleResultModel(result: $result)';
   }
 }
 
-abstract class _SingleResultModel implements SingleResultModel {
-  factory _SingleResultModel({final String? result}) = _$SingleResultModelImpl;
-
-  factory _SingleResultModel.fromJson(Map<String, dynamic> json) =
-      _$SingleResultModelImpl.fromJson;
-
+/// @nodoc
+abstract mixin class _$SingleResultModelCopyWith<$Res>
+    implements $SingleResultModelCopyWith<$Res> {
+  factory _$SingleResultModelCopyWith(
+          _SingleResultModel value, $Res Function(_SingleResultModel) _then) =
+      __$SingleResultModelCopyWithImpl;
   @override
-  String? get result;
+  @useResult
+  $Res call({String? result});
+}
+
+/// @nodoc
+class __$SingleResultModelCopyWithImpl<$Res>
+    implements _$SingleResultModelCopyWith<$Res> {
+  __$SingleResultModelCopyWithImpl(this._self, this._then);
+
+  final _SingleResultModel _self;
+  final $Res Function(_SingleResultModel) _then;
 
   /// Create a copy of SingleResultModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SingleResultModelImplCopyWith<_$SingleResultModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? result = freezed,
+  }) {
+    return _then(_SingleResultModel(
+      result: freezed == result
+          ? _self.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
+
+// dart format on

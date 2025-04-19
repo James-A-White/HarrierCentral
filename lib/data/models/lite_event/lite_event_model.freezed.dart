@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,287 +10,57 @@ part of 'lite_event_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-LiteEventModel _$LiteEventModelFromJson(Map<String, dynamic> json) {
-  return _LiteEventModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$LiteEventModel {
-  String get eventId => throw _privateConstructorUsedError;
-  int get isVisible => throw _privateConstructorUsedError;
-  int get isCountedRun => throw _privateConstructorUsedError;
-  int? get absoluteEventNumber => throw _privateConstructorUsedError;
-  String? get externalIntegrationId => throw _privateConstructorUsedError;
-  String get eventName => throw _privateConstructorUsedError;
-  int get eventNumber => throw _privateConstructorUsedError;
-  DateTime get eventStartDatetime => throw _privateConstructorUsedError;
-  int? get eventInboundIntegrationId => throw _privateConstructorUsedError;
-  int get appAccessFlags => throw _privateConstructorUsedError;
-  int get canEditRunAttendance => throw _privateConstructorUsedError;
-
-  /// Serializes this LiteEventModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$LiteEventModel implements DiagnosticableTreeMixin {
+  String get eventId;
+  int get isVisible;
+  int get isCountedRun;
+  int? get absoluteEventNumber;
+  String? get externalIntegrationId;
+  String get eventName;
+  int get eventNumber;
+  DateTime get eventStartDatetime;
+  int? get eventInboundIntegrationId;
+  int get appAccessFlags;
+  int get canEditRunAttendance;
 
   /// Create a copy of LiteEventModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $LiteEventModelCopyWith<LiteEventModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$LiteEventModelCopyWithImpl<LiteEventModel>(
+          this as LiteEventModel, _$identity);
 
-/// @nodoc
-abstract class $LiteEventModelCopyWith<$Res> {
-  factory $LiteEventModelCopyWith(
-          LiteEventModel value, $Res Function(LiteEventModel) then) =
-      _$LiteEventModelCopyWithImpl<$Res, LiteEventModel>;
-  @useResult
-  $Res call(
-      {String eventId,
-      int isVisible,
-      int isCountedRun,
-      int? absoluteEventNumber,
-      String? externalIntegrationId,
-      String eventName,
-      int eventNumber,
-      DateTime eventStartDatetime,
-      int? eventInboundIntegrationId,
-      int appAccessFlags,
-      int canEditRunAttendance});
-}
-
-/// @nodoc
-class _$LiteEventModelCopyWithImpl<$Res, $Val extends LiteEventModel>
-    implements $LiteEventModelCopyWith<$Res> {
-  _$LiteEventModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of LiteEventModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? eventId = null,
-    Object? isVisible = null,
-    Object? isCountedRun = null,
-    Object? absoluteEventNumber = freezed,
-    Object? externalIntegrationId = freezed,
-    Object? eventName = null,
-    Object? eventNumber = null,
-    Object? eventStartDatetime = null,
-    Object? eventInboundIntegrationId = freezed,
-    Object? appAccessFlags = null,
-    Object? canEditRunAttendance = null,
-  }) {
-    return _then(_value.copyWith(
-      eventId: null == eventId
-          ? _value.eventId
-          : eventId // ignore: cast_nullable_to_non_nullable
-              as String,
-      isVisible: null == isVisible
-          ? _value.isVisible
-          : isVisible // ignore: cast_nullable_to_non_nullable
-              as int,
-      isCountedRun: null == isCountedRun
-          ? _value.isCountedRun
-          : isCountedRun // ignore: cast_nullable_to_non_nullable
-              as int,
-      absoluteEventNumber: freezed == absoluteEventNumber
-          ? _value.absoluteEventNumber
-          : absoluteEventNumber // ignore: cast_nullable_to_non_nullable
-              as int?,
-      externalIntegrationId: freezed == externalIntegrationId
-          ? _value.externalIntegrationId
-          : externalIntegrationId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventName: null == eventName
-          ? _value.eventName
-          : eventName // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventNumber: null == eventNumber
-          ? _value.eventNumber
-          : eventNumber // ignore: cast_nullable_to_non_nullable
-              as int,
-      eventStartDatetime: null == eventStartDatetime
-          ? _value.eventStartDatetime
-          : eventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      eventInboundIntegrationId: freezed == eventInboundIntegrationId
-          ? _value.eventInboundIntegrationId
-          : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      appAccessFlags: null == appAccessFlags
-          ? _value.appAccessFlags
-          : appAccessFlags // ignore: cast_nullable_to_non_nullable
-              as int,
-      canEditRunAttendance: null == canEditRunAttendance
-          ? _value.canEditRunAttendance
-          : canEditRunAttendance // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$LiteEventModelImplCopyWith<$Res>
-    implements $LiteEventModelCopyWith<$Res> {
-  factory _$$LiteEventModelImplCopyWith(_$LiteEventModelImpl value,
-          $Res Function(_$LiteEventModelImpl) then) =
-      __$$LiteEventModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String eventId,
-      int isVisible,
-      int isCountedRun,
-      int? absoluteEventNumber,
-      String? externalIntegrationId,
-      String eventName,
-      int eventNumber,
-      DateTime eventStartDatetime,
-      int? eventInboundIntegrationId,
-      int appAccessFlags,
-      int canEditRunAttendance});
-}
-
-/// @nodoc
-class __$$LiteEventModelImplCopyWithImpl<$Res>
-    extends _$LiteEventModelCopyWithImpl<$Res, _$LiteEventModelImpl>
-    implements _$$LiteEventModelImplCopyWith<$Res> {
-  __$$LiteEventModelImplCopyWithImpl(
-      _$LiteEventModelImpl _value, $Res Function(_$LiteEventModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of LiteEventModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? eventId = null,
-    Object? isVisible = null,
-    Object? isCountedRun = null,
-    Object? absoluteEventNumber = freezed,
-    Object? externalIntegrationId = freezed,
-    Object? eventName = null,
-    Object? eventNumber = null,
-    Object? eventStartDatetime = null,
-    Object? eventInboundIntegrationId = freezed,
-    Object? appAccessFlags = null,
-    Object? canEditRunAttendance = null,
-  }) {
-    return _then(_$LiteEventModelImpl(
-      eventId: null == eventId
-          ? _value.eventId
-          : eventId // ignore: cast_nullable_to_non_nullable
-              as String,
-      isVisible: null == isVisible
-          ? _value.isVisible
-          : isVisible // ignore: cast_nullable_to_non_nullable
-              as int,
-      isCountedRun: null == isCountedRun
-          ? _value.isCountedRun
-          : isCountedRun // ignore: cast_nullable_to_non_nullable
-              as int,
-      absoluteEventNumber: freezed == absoluteEventNumber
-          ? _value.absoluteEventNumber
-          : absoluteEventNumber // ignore: cast_nullable_to_non_nullable
-              as int?,
-      externalIntegrationId: freezed == externalIntegrationId
-          ? _value.externalIntegrationId
-          : externalIntegrationId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eventName: null == eventName
-          ? _value.eventName
-          : eventName // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventNumber: null == eventNumber
-          ? _value.eventNumber
-          : eventNumber // ignore: cast_nullable_to_non_nullable
-              as int,
-      eventStartDatetime: null == eventStartDatetime
-          ? _value.eventStartDatetime
-          : eventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      eventInboundIntegrationId: freezed == eventInboundIntegrationId
-          ? _value.eventInboundIntegrationId
-          : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      appAccessFlags: null == appAccessFlags
-          ? _value.appAccessFlags
-          : appAccessFlags // ignore: cast_nullable_to_non_nullable
-              as int,
-      canEditRunAttendance: null == canEditRunAttendance
-          ? _value.canEditRunAttendance
-          : canEditRunAttendance // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$LiteEventModelImpl implements _LiteEventModel {
-  _$LiteEventModelImpl(
-      {required this.eventId,
-      this.isVisible = 1,
-      this.isCountedRun = 1,
-      this.absoluteEventNumber,
-      this.externalIntegrationId,
-      required this.eventName,
-      required this.eventNumber,
-      required this.eventStartDatetime,
-      this.eventInboundIntegrationId,
-      this.appAccessFlags = 0,
-      this.canEditRunAttendance = 0});
-
-  factory _$LiteEventModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$LiteEventModelImplFromJson(json);
+  /// Serializes this LiteEventModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String eventId;
-  @override
-  @JsonKey()
-  final int isVisible;
-  @override
-  @JsonKey()
-  final int isCountedRun;
-  @override
-  final int? absoluteEventNumber;
-  @override
-  final String? externalIntegrationId;
-  @override
-  final String eventName;
-  @override
-  final int eventNumber;
-  @override
-  final DateTime eventStartDatetime;
-  @override
-  final int? eventInboundIntegrationId;
-  @override
-  @JsonKey()
-  final int appAccessFlags;
-  @override
-  @JsonKey()
-  final int canEditRunAttendance;
-
-  @override
-  String toString() {
-    return 'LiteEventModel(eventId: $eventId, isVisible: $isVisible, isCountedRun: $isCountedRun, absoluteEventNumber: $absoluteEventNumber, externalIntegrationId: $externalIntegrationId, eventName: $eventName, eventNumber: $eventNumber, eventStartDatetime: $eventStartDatetime, eventInboundIntegrationId: $eventInboundIntegrationId, appAccessFlags: $appAccessFlags, canEditRunAttendance: $canEditRunAttendance)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'LiteEventModel'))
+      ..add(DiagnosticsProperty('eventId', eventId))
+      ..add(DiagnosticsProperty('isVisible', isVisible))
+      ..add(DiagnosticsProperty('isCountedRun', isCountedRun))
+      ..add(DiagnosticsProperty('absoluteEventNumber', absoluteEventNumber))
+      ..add(DiagnosticsProperty('externalIntegrationId', externalIntegrationId))
+      ..add(DiagnosticsProperty('eventName', eventName))
+      ..add(DiagnosticsProperty('eventNumber', eventNumber))
+      ..add(DiagnosticsProperty('eventStartDatetime', eventStartDatetime))
+      ..add(DiagnosticsProperty(
+          'eventInboundIntegrationId', eventInboundIntegrationId))
+      ..add(DiagnosticsProperty('appAccessFlags', appAccessFlags))
+      ..add(DiagnosticsProperty('canEditRunAttendance', canEditRunAttendance));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$LiteEventModelImpl &&
+            other is LiteEventModel &&
             (identical(other.eventId, eventId) || other.eventId == eventId) &&
             (identical(other.isVisible, isVisible) ||
                 other.isVisible == isVisible) &&
@@ -330,67 +101,329 @@ class _$LiteEventModelImpl implements _LiteEventModel {
       appAccessFlags,
       canEditRunAttendance);
 
-  /// Create a copy of LiteEventModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$LiteEventModelImplCopyWith<_$LiteEventModelImpl> get copyWith =>
-      __$$LiteEventModelImplCopyWithImpl<_$LiteEventModelImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$LiteEventModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'LiteEventModel(eventId: $eventId, isVisible: $isVisible, isCountedRun: $isCountedRun, absoluteEventNumber: $absoluteEventNumber, externalIntegrationId: $externalIntegrationId, eventName: $eventName, eventNumber: $eventNumber, eventStartDatetime: $eventStartDatetime, eventInboundIntegrationId: $eventInboundIntegrationId, appAccessFlags: $appAccessFlags, canEditRunAttendance: $canEditRunAttendance)';
   }
 }
 
-abstract class _LiteEventModel implements LiteEventModel {
-  factory _LiteEventModel(
-      {required final String eventId,
-      final int isVisible,
-      final int isCountedRun,
-      final int? absoluteEventNumber,
-      final String? externalIntegrationId,
-      required final String eventName,
-      required final int eventNumber,
-      required final DateTime eventStartDatetime,
-      final int? eventInboundIntegrationId,
-      final int appAccessFlags,
-      final int canEditRunAttendance}) = _$LiteEventModelImpl;
+/// @nodoc
+abstract mixin class $LiteEventModelCopyWith<$Res> {
+  factory $LiteEventModelCopyWith(
+          LiteEventModel value, $Res Function(LiteEventModel) _then) =
+      _$LiteEventModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String eventId,
+      int isVisible,
+      int isCountedRun,
+      int? absoluteEventNumber,
+      String? externalIntegrationId,
+      String eventName,
+      int eventNumber,
+      DateTime eventStartDatetime,
+      int? eventInboundIntegrationId,
+      int appAccessFlags,
+      int canEditRunAttendance});
+}
 
-  factory _LiteEventModel.fromJson(Map<String, dynamic> json) =
-      _$LiteEventModelImpl.fromJson;
+/// @nodoc
+class _$LiteEventModelCopyWithImpl<$Res>
+    implements $LiteEventModelCopyWith<$Res> {
+  _$LiteEventModelCopyWithImpl(this._self, this._then);
+
+  final LiteEventModel _self;
+  final $Res Function(LiteEventModel) _then;
+
+  /// Create a copy of LiteEventModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? eventId = null,
+    Object? isVisible = null,
+    Object? isCountedRun = null,
+    Object? absoluteEventNumber = freezed,
+    Object? externalIntegrationId = freezed,
+    Object? eventName = null,
+    Object? eventNumber = null,
+    Object? eventStartDatetime = null,
+    Object? eventInboundIntegrationId = freezed,
+    Object? appAccessFlags = null,
+    Object? canEditRunAttendance = null,
+  }) {
+    return _then(_self.copyWith(
+      eventId: null == eventId
+          ? _self.eventId
+          : eventId // ignore: cast_nullable_to_non_nullable
+              as String,
+      isVisible: null == isVisible
+          ? _self.isVisible
+          : isVisible // ignore: cast_nullable_to_non_nullable
+              as int,
+      isCountedRun: null == isCountedRun
+          ? _self.isCountedRun
+          : isCountedRun // ignore: cast_nullable_to_non_nullable
+              as int,
+      absoluteEventNumber: freezed == absoluteEventNumber
+          ? _self.absoluteEventNumber
+          : absoluteEventNumber // ignore: cast_nullable_to_non_nullable
+              as int?,
+      externalIntegrationId: freezed == externalIntegrationId
+          ? _self.externalIntegrationId
+          : externalIntegrationId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      eventName: null == eventName
+          ? _self.eventName
+          : eventName // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventNumber: null == eventNumber
+          ? _self.eventNumber
+          : eventNumber // ignore: cast_nullable_to_non_nullable
+              as int,
+      eventStartDatetime: null == eventStartDatetime
+          ? _self.eventStartDatetime
+          : eventStartDatetime // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      eventInboundIntegrationId: freezed == eventInboundIntegrationId
+          ? _self.eventInboundIntegrationId
+          : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      appAccessFlags: null == appAccessFlags
+          ? _self.appAccessFlags
+          : appAccessFlags // ignore: cast_nullable_to_non_nullable
+              as int,
+      canEditRunAttendance: null == canEditRunAttendance
+          ? _self.canEditRunAttendance
+          : canEditRunAttendance // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _LiteEventModel with DiagnosticableTreeMixin implements LiteEventModel {
+  _LiteEventModel(
+      {required this.eventId,
+      this.isVisible = 1,
+      this.isCountedRun = 1,
+      this.absoluteEventNumber,
+      this.externalIntegrationId,
+      required this.eventName,
+      required this.eventNumber,
+      required this.eventStartDatetime,
+      this.eventInboundIntegrationId,
+      this.appAccessFlags = 0,
+      this.canEditRunAttendance = 0});
+  factory _LiteEventModel.fromJson(Map<String, dynamic> json) =>
+      _$LiteEventModelFromJson(json);
 
   @override
-  String get eventId;
+  final String eventId;
   @override
-  int get isVisible;
+  @JsonKey()
+  final int isVisible;
   @override
-  int get isCountedRun;
+  @JsonKey()
+  final int isCountedRun;
   @override
-  int? get absoluteEventNumber;
+  final int? absoluteEventNumber;
   @override
-  String? get externalIntegrationId;
+  final String? externalIntegrationId;
   @override
-  String get eventName;
+  final String eventName;
   @override
-  int get eventNumber;
+  final int eventNumber;
   @override
-  DateTime get eventStartDatetime;
+  final DateTime eventStartDatetime;
   @override
-  int? get eventInboundIntegrationId;
+  final int? eventInboundIntegrationId;
   @override
-  int get appAccessFlags;
+  @JsonKey()
+  final int appAccessFlags;
   @override
-  int get canEditRunAttendance;
+  @JsonKey()
+  final int canEditRunAttendance;
 
   /// Create a copy of LiteEventModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$LiteEventModelImplCopyWith<_$LiteEventModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$LiteEventModelCopyWith<_LiteEventModel> get copyWith =>
+      __$LiteEventModelCopyWithImpl<_LiteEventModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$LiteEventModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'LiteEventModel'))
+      ..add(DiagnosticsProperty('eventId', eventId))
+      ..add(DiagnosticsProperty('isVisible', isVisible))
+      ..add(DiagnosticsProperty('isCountedRun', isCountedRun))
+      ..add(DiagnosticsProperty('absoluteEventNumber', absoluteEventNumber))
+      ..add(DiagnosticsProperty('externalIntegrationId', externalIntegrationId))
+      ..add(DiagnosticsProperty('eventName', eventName))
+      ..add(DiagnosticsProperty('eventNumber', eventNumber))
+      ..add(DiagnosticsProperty('eventStartDatetime', eventStartDatetime))
+      ..add(DiagnosticsProperty(
+          'eventInboundIntegrationId', eventInboundIntegrationId))
+      ..add(DiagnosticsProperty('appAccessFlags', appAccessFlags))
+      ..add(DiagnosticsProperty('canEditRunAttendance', canEditRunAttendance));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _LiteEventModel &&
+            (identical(other.eventId, eventId) || other.eventId == eventId) &&
+            (identical(other.isVisible, isVisible) ||
+                other.isVisible == isVisible) &&
+            (identical(other.isCountedRun, isCountedRun) ||
+                other.isCountedRun == isCountedRun) &&
+            (identical(other.absoluteEventNumber, absoluteEventNumber) ||
+                other.absoluteEventNumber == absoluteEventNumber) &&
+            (identical(other.externalIntegrationId, externalIntegrationId) ||
+                other.externalIntegrationId == externalIntegrationId) &&
+            (identical(other.eventName, eventName) ||
+                other.eventName == eventName) &&
+            (identical(other.eventNumber, eventNumber) ||
+                other.eventNumber == eventNumber) &&
+            (identical(other.eventStartDatetime, eventStartDatetime) ||
+                other.eventStartDatetime == eventStartDatetime) &&
+            (identical(other.eventInboundIntegrationId,
+                    eventInboundIntegrationId) ||
+                other.eventInboundIntegrationId == eventInboundIntegrationId) &&
+            (identical(other.appAccessFlags, appAccessFlags) ||
+                other.appAccessFlags == appAccessFlags) &&
+            (identical(other.canEditRunAttendance, canEditRunAttendance) ||
+                other.canEditRunAttendance == canEditRunAttendance));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      eventId,
+      isVisible,
+      isCountedRun,
+      absoluteEventNumber,
+      externalIntegrationId,
+      eventName,
+      eventNumber,
+      eventStartDatetime,
+      eventInboundIntegrationId,
+      appAccessFlags,
+      canEditRunAttendance);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'LiteEventModel(eventId: $eventId, isVisible: $isVisible, isCountedRun: $isCountedRun, absoluteEventNumber: $absoluteEventNumber, externalIntegrationId: $externalIntegrationId, eventName: $eventName, eventNumber: $eventNumber, eventStartDatetime: $eventStartDatetime, eventInboundIntegrationId: $eventInboundIntegrationId, appAccessFlags: $appAccessFlags, canEditRunAttendance: $canEditRunAttendance)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$LiteEventModelCopyWith<$Res>
+    implements $LiteEventModelCopyWith<$Res> {
+  factory _$LiteEventModelCopyWith(
+          _LiteEventModel value, $Res Function(_LiteEventModel) _then) =
+      __$LiteEventModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String eventId,
+      int isVisible,
+      int isCountedRun,
+      int? absoluteEventNumber,
+      String? externalIntegrationId,
+      String eventName,
+      int eventNumber,
+      DateTime eventStartDatetime,
+      int? eventInboundIntegrationId,
+      int appAccessFlags,
+      int canEditRunAttendance});
+}
+
+/// @nodoc
+class __$LiteEventModelCopyWithImpl<$Res>
+    implements _$LiteEventModelCopyWith<$Res> {
+  __$LiteEventModelCopyWithImpl(this._self, this._then);
+
+  final _LiteEventModel _self;
+  final $Res Function(_LiteEventModel) _then;
+
+  /// Create a copy of LiteEventModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? eventId = null,
+    Object? isVisible = null,
+    Object? isCountedRun = null,
+    Object? absoluteEventNumber = freezed,
+    Object? externalIntegrationId = freezed,
+    Object? eventName = null,
+    Object? eventNumber = null,
+    Object? eventStartDatetime = null,
+    Object? eventInboundIntegrationId = freezed,
+    Object? appAccessFlags = null,
+    Object? canEditRunAttendance = null,
+  }) {
+    return _then(_LiteEventModel(
+      eventId: null == eventId
+          ? _self.eventId
+          : eventId // ignore: cast_nullable_to_non_nullable
+              as String,
+      isVisible: null == isVisible
+          ? _self.isVisible
+          : isVisible // ignore: cast_nullable_to_non_nullable
+              as int,
+      isCountedRun: null == isCountedRun
+          ? _self.isCountedRun
+          : isCountedRun // ignore: cast_nullable_to_non_nullable
+              as int,
+      absoluteEventNumber: freezed == absoluteEventNumber
+          ? _self.absoluteEventNumber
+          : absoluteEventNumber // ignore: cast_nullable_to_non_nullable
+              as int?,
+      externalIntegrationId: freezed == externalIntegrationId
+          ? _self.externalIntegrationId
+          : externalIntegrationId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      eventName: null == eventName
+          ? _self.eventName
+          : eventName // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventNumber: null == eventNumber
+          ? _self.eventNumber
+          : eventNumber // ignore: cast_nullable_to_non_nullable
+              as int,
+      eventStartDatetime: null == eventStartDatetime
+          ? _self.eventStartDatetime
+          : eventStartDatetime // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      eventInboundIntegrationId: freezed == eventInboundIntegrationId
+          ? _self.eventInboundIntegrationId
+          : eventInboundIntegrationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      appAccessFlags: null == appAccessFlags
+          ? _self.appAccessFlags
+          : appAccessFlags // ignore: cast_nullable_to_non_nullable
+              as int,
+      canEditRunAttendance: null == canEditRunAttendance
+          ? _self.canEditRunAttendance
+          : canEditRunAttendance // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+// dart format on

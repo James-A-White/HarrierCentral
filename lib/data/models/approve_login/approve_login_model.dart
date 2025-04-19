@@ -4,7 +4,7 @@ part 'approve_login_model.freezed.dart';
 part 'approve_login_model.g.dart';
 
 @freezed
-class ApproveLoginModel with _$ApproveLoginModel implements BaseModel {
+abstract class ApproveLoginModel with _$ApproveLoginModel implements BaseModel {
   factory ApproveLoginModel({
     String? apiVersion,
     int? approvalCode,
@@ -22,15 +22,14 @@ class ApproveLoginModel with _$ApproveLoginModel implements BaseModel {
     DateTime? thirdPartyForceTokenRefresh,
   }) = _ApproveLoginModel;
 
-  factory ApproveLoginModel.fromJson(Map<String, dynamic> json) => _$ApproveLoginModelFromJson(json);
+  factory ApproveLoginModel.fromJson(Map<String, dynamic> json) =>
+      _$ApproveLoginModelFromJson(json);
 
   @override
   factory ApproveLoginModel.fromMap(Map<String, dynamic> map) {
     return ApproveLoginModel.fromJson(map);
   }
 }
-
-
 
 // import 'package:harrier_central/imports.dart';
 

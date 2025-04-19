@@ -6,14 +6,12 @@ part of 'single_result_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SingleResultModelImpl _$$SingleResultModelImplFromJson(
-        Map<String, dynamic> json) =>
-    _$SingleResultModelImpl(
+_SingleResultModel _$SingleResultModelFromJson(Map<String, dynamic> json) =>
+    _SingleResultModel(
       result: json['result'] as String?,
     );
 
-Map<String, dynamic> _$$SingleResultModelImplToJson(
-        _$SingleResultModelImpl instance) =>
+Map<String, dynamic> _$SingleResultModelToJson(_SingleResultModel instance) =>
     <String, dynamic>{
       'result': instance.result,
     };

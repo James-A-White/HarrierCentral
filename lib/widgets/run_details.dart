@@ -1,8 +1,58 @@
+import 'dart:math' as math;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
+
+class RunDetailsController extends GetxController {
+  RunDetailsController({
+    required this.event,
+    required this.kennel,
+  }) {
+    // Initialize controllers with initial data if available
+  }
+
+  EventModel event;
+  KennelsModel kennel;
+
+  RxBool showQrCodes = false.obs;
+
+  String runUrlForCopy = '';
+  String thisRunUrlForQr = '';
+  String nextRunUrlForQr = '';
+  String kennelUrlForQr = '';
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    thisRunUrlForQr = 'https://www.hashruns.org';
+    nextRunUrlForQr = thisRunUrlForQr;
+    kennelUrlForQr = thisRunUrlForQr;
+
+    if (event.isCountedRun != 0) {
+      runUrlForCopy += '/${kennel.kennelUniqueShortName}/${event.eventNumber}';
+      thisRunUrlForQr +=
+          '/${kennel.kennelUniqueShortName}/${event.eventNumber}';
+      nextRunUrlForQr += '/${kennel.kennelUniqueShortName}/nextrun';
+      kennelUrlForQr += '/${kennel.kennelUniqueShortName}';
+    } else {
+      runUrlForCopy += '/#/RID?publicEventId=${event.publicEventId}';
+
+      thisRunUrlForQr += '/#/RID?publicEventId=${event.publicEventId}';
+
+      kennelUrlForQr = '';
+    }
+  }
+
+  @override
+  void onClose() {
+    //print('chat controller closed');
+    super.onClose();
+  }
+}
 
 class RunDetails extends StatelessWidget {
-  const RunDetails(
+  RunDetails(
     this.event,
     this.kennel,
     this.digitsAfterDecimal,
@@ -40,6 +90,15 @@ class RunDetails extends StatelessWidget {
 
   static const double _spaceBetweenColumns = 11.0;
   static const double _spaceBetweenRows = 26.0;
+
+  // Initialize the controller with the provided arguments
+  late final RunDetailsController runDetailsController = Get.put(
+    RunDetailsController(
+      event: event,
+      kennel: kennel,
+    ),
+    // permanent: true,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -671,7 +730,6 @@ class RunDetails extends StatelessWidget {
                     }
                   },
                 ),
-
           (event.tags1) == 0 && (event.tags2) == 0
               ? Container()
               : Column(
@@ -729,55 +787,142 @@ class RunDetails extends StatelessWidget {
                     ),
                   ],
                 ),
-          (event.eventDescription ?? '') == ''
-              ? Container()
-              : const FancyDivider(
-                  key: Key('67020392'),
-                  innerColor: Colors.white,
-                  topMargin: 30.0,
+          FancyDivider(
+            key: UniqueKey(),
+            innerColor: Colors.white,
+            topMargin: 30.0,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+            child: ElevatedButton(
+              // style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
+              child: Obx(
+                () => Text(
+                  runDetailsController.showQrCodes.value
+                      ? 'Hide QR Codes'
+                      : 'Share this run',
+                  style: ts_button,
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  //textScaleFactor: G0<DeviceInfo>().textClamp50,
                 ),
-          (event.eventDescription ?? '') == ''
-              ? Container()
-              : Padding(
-                  padding: const EdgeInsets.only(
-                      top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
-                  child: Linkify(
-                    text: event.eventDescription!.replaceAll('\r\n', '\n'),
-                    style: ts_body.copyWith(
-                        fontSize: 20 * G0<DeviceInfo>().textClamp50),
-                    linkStyle: ts_bodyYellow,
-                    onOpen: (LinkableElement link) async {
-                      if (Utilities.isValidUrl(link.url)) {
-                        await launchUrl(
-                          Uri.parse(link.url),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      } else {
-                        await Utilities.showAlert(
-                            'Unable to open link',
-                            'Harrier Central was unable to open ${link.url}',
-                            'OK');
-                      }
-                    },
-                  ),
-                ),
-          // for the Facebook button, we want to check
-          // if the actual eventUrl is empty without
-          // considering the Kennel Events URL
+              ),
 
-          if ((((event.eventFacebookId ?? '') != '') &&
-                  (event.eventInboundIntegrationId ==
-                      INBOUND_INTEGRATION_FACEBOOK) &&
-                  ((event.eventUrl == null) || (event.eventUrl!.isEmpty))) ||
-              ((event.evtDisseminateAllowWebLinks == 1) ||
-                  (kennel.disseminateAllowWebLinks == 1))) ...<Widget>[
-            const FancyDivider(
-              key: Key('40019292'),
-              innerColor: Colors.white,
-              topMargin: 30.0,
+              onPressed: () async {
+                runDetailsController.showQrCodes.value =
+                    !runDetailsController.showQrCodes.value;
+              },
             ),
-          ],
-
+          ),
+          Obx(() {
+            return runDetailsController.showQrCodes.value
+                ? Column(children: [
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    OverflowBar(
+                      spacing: 80,
+                      overflowSpacing: 40,
+                      alignment: MainAxisAlignment.center,
+                      overflowAlignment: OverflowBarAlignment.center,
+                      children: <Widget>[
+                        Column(
+                          children: <Widget>[
+                            Text(
+                              'This Run',
+                              style: ts_title,
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                              color: Colors.white,
+                              padding: const EdgeInsets.all(10),
+                              child: QrImageView(
+                                  data: runDetailsController.thisRunUrlForQr,
+                                  version: QrVersions.auto,
+                                  size: math.min(200,
+                                      MediaQuery.of(context).size.width / 2)),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Text(
+                              'Next ${kennel.kennelShortName} Run',
+                              style: ts_title,
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                              color: Colors.white,
+                              padding: const EdgeInsets.all(10),
+                              child: QrImageView(
+                                  data: runDetailsController.nextRunUrlForQr,
+                                  version: QrVersions.auto,
+                                  size: math.min(200,
+                                      MediaQuery.of(context).size.width / 2)),
+                            ),
+                          ],
+                        ),
+                        if (runDetailsController
+                            .kennelUrlForQr.isNotEmpty) ...<Widget>[
+                          Column(
+                            children: <Widget>[
+                              Text(
+                                '${kennel.kennelShortName} Run list',
+                                style: ts_title,
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Container(
+                                color: Colors.white,
+                                padding: const EdgeInsets.all(10),
+                                child: QrImageView(
+                                    data: runDetailsController.kennelUrlForQr,
+                                    version: QrVersions.auto,
+                                    size: math.min(200,
+                                        MediaQuery.of(context).size.width / 2)),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (((kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
+                            (kennel.kennelWebsiteUrl!
+                                .toLowerCase()
+                                .startsWith('http'))) ...<Widget>[
+                          Column(
+                            children: <Widget>[
+                              Text(
+                                '${kennel.kennelShortName} Website',
+                                style: ts_title,
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Container(
+                                color: Colors.white,
+                                padding: const EdgeInsets.all(10),
+                                child: QrImageView(
+                                    data: kennel.kennelWebsiteUrl!,
+                                    version: QrVersions.auto,
+                                    size: math.min(200,
+                                        MediaQuery.of(context).size.width / 2)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 40,
+                    )
+                  ])
+                : const SizedBox.shrink();
+          }),
           if ((event.evtDisseminateAllowWebLinks == 1) ||
               (kennel.disseminateAllowWebLinks == 1)) ...<Widget>[
             Padding(
@@ -805,28 +950,6 @@ class RunDetails extends StatelessWidget {
               ),
             ),
           ],
-
-          // if (((event.eventFacebookId ?? '') != '') && (event.eventInboundIntegrationId == INBOUND_INTEGRATION_FACEBOOK) && ((event.eventUrl == null) || (event.eventUrl.isEmpty))) ...<Widget>[
-          //   Padding(
-          //     padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
-          //     child: ElevatedButton(
-          //       style: ButtonStyle(shadowColor: MaterialStateProperty.all(Colors.transparent), backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-          //       child: Image.asset('images/other/visit_event_on_fb.png', height: 60.0, width: 325.0),
-          //       onPressed: () async {
-          //         final String linkUrl = 'https://www.facebook.com/${event.eventFacebookId}';
-          //         if (Utilities.isValidUrl(linkUrl)) {
-          //           await launchUrl(
-          //             Uri.parse(linkUrl),
-          //             mode: LaunchMode.externalApplication,
-          //           );
-          //         } else {
-          //           await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Unable to open link', 'Harrier Central was unable to open $linkUrl', 'OK');
-          //         }
-          //       },
-          //     ),
-          //   ),
-          // ],
-          //
           if (!(((event.eventFacebookId ?? '') != '') &&
                   (event.eventInboundIntegrationId ==
                       INBOUND_INTEGRATION_FACEBOOK)) &&
@@ -856,7 +979,35 @@ class RunDetails extends StatelessWidget {
                 },
               ),
             ),
-          ]
+          ],
+          if ((event.eventDescription ?? '') != '') ...<Widget>[
+            FancyDivider(
+              key: UniqueKey(),
+              innerColor: Colors.white,
+              topMargin: 30.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                  top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
+              child: Linkify(
+                text: event.eventDescription!.replaceAll('\r\n', '\n'),
+                style: ts_body.copyWith(
+                    fontSize: 20 * G0<DeviceInfo>().textClamp50),
+                linkStyle: ts_bodyYellow,
+                onOpen: (LinkableElement link) async {
+                  if (Utilities.isValidUrl(link.url)) {
+                    await launchUrl(
+                      Uri.parse(link.url),
+                      mode: LaunchMode.externalApplication,
+                    );
+                  } else {
+                    await Utilities.showAlert('Unable to open link',
+                        'Harrier Central was unable to open ${link.url}', 'OK');
+                  }
+                },
+              ),
+            ),
+          ],
         ],
       ),
     );

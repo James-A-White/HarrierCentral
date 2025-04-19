@@ -4,7 +4,7 @@ part 'hashers_model_ns.freezed.dart';
 part 'hashers_model_ns.g.dart';
 
 @freezed
-class HashersModel with _$HashersModel implements BaseModel {
+abstract class HashersModel with _$HashersModel implements BaseModel {
   factory HashersModel({
     required String hasherId,
     String? firstName,
@@ -18,7 +18,8 @@ class HashersModel with _$HashersModel implements BaseModel {
     DateTime? updatedAt,
   }) = _HashersModel;
 
-  factory HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);
+  factory HashersModel.fromJson(Map<String, dynamic> json) =>
+      _$HashersModelFromJson(json);
 
   factory HashersModel.empty() => _$HashersModelFromJson(json.decode('''{
         "hasherId": "$GUID_EMPTY",

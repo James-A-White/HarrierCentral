@@ -6,8 +6,7 @@ part of 'event_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$EventModelImpl _$$EventModelImplFromJson(Map<String, dynamic> json) =>
-    _$EventModelImpl(
+_EventModel _$EventModelFromJson(Map<String, dynamic> json) => _EventModel(
       eventId: json['eventId'] as String,
       publicEventId: json['publicEventId'] as String,
       eventStartDatetime: DateTime.parse(json['eventStartDatetime'] as String),
@@ -66,7 +65,7 @@ _$EventModelImpl _$$EventModelImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$EventModelImplToJson(_$EventModelImpl instance) =>
+Map<String, dynamic> _$EventModelToJson(_EventModel instance) =>
     <String, dynamic>{
       'eventId': instance.eventId,
       'publicEventId': instance.publicEventId,

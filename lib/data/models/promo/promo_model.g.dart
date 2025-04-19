@@ -6,8 +6,7 @@ part of 'promo_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PromoModelImpl _$$PromoModelImplFromJson(Map<String, dynamic> json) =>
-    _$PromoModelImpl(
+_PromoModel _$PromoModelFromJson(Map<String, dynamic> json) => _PromoModel(
       promotionId: json['promotionId'] as String,
       kennelId: json['kennelId'] as String?,
       cityId: json['cityId'] as String?,
@@ -37,7 +36,7 @@ _$PromoModelImpl _$$PromoModelImplFromJson(Map<String, dynamic> json) =>
       promoDisplayTimeInMs: (json['promoDisplayTimeInMs'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$PromoModelImplToJson(_$PromoModelImpl instance) =>
+Map<String, dynamic> _$PromoModelToJson(_PromoModel instance) =>
     <String, dynamic>{
       'promotionId': instance.promotionId,
       'kennelId': instance.kennelId,

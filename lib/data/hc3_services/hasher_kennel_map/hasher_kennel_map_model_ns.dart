@@ -9,7 +9,9 @@ extension HasherKennelMapModelExtension on HasherKennelMapModel {
 }
 
 @freezed
-class HasherKennelMapModel with _$HasherKennelMapModel implements BaseModel {
+abstract class HasherKennelMapModel
+    with _$HasherKennelMapModel
+    implements BaseModel {
   factory HasherKennelMapModel({
     required String hkmId,
     required String userId,
@@ -43,5 +45,6 @@ class HasherKennelMapModel with _$HasherKennelMapModel implements BaseModel {
     int? removed,
   }) = _HasherKennelMapModel;
 
-  factory HasherKennelMapModel.fromJson(Map<String, dynamic> json) => _$HasherKennelMapModelFromJson(json);
+  factory HasherKennelMapModel.fromJson(Map<String, dynamic> json) =>
+      _$HasherKennelMapModelFromJson(json);
 }

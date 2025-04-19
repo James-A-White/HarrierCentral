@@ -4,7 +4,7 @@ part 'lite_event_model.freezed.dart';
 part 'lite_event_model.g.dart';
 
 @freezed
-class LiteEventModel with _$LiteEventModel implements BaseModel {
+abstract class LiteEventModel with _$LiteEventModel implements BaseModel {
   factory LiteEventModel({
     required String eventId,
     @Default(1) int isVisible,
@@ -19,7 +19,8 @@ class LiteEventModel with _$LiteEventModel implements BaseModel {
     @Default(0) int canEditRunAttendance,
   }) = _LiteEventModel;
 
-  factory LiteEventModel.fromJson(Map<String, dynamic> json) => _$LiteEventModelFromJson(json);
+  factory LiteEventModel.fromJson(Map<String, dynamic> json) =>
+      _$LiteEventModelFromJson(json);
 
   @override
   factory LiteEventModel.fromMap(Map<String, dynamic> map) {

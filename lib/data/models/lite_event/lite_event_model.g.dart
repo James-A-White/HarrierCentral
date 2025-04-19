@@ -6,8 +6,8 @@ part of 'lite_event_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$LiteEventModelImpl _$$LiteEventModelImplFromJson(Map<String, dynamic> json) =>
-    _$LiteEventModelImpl(
+_LiteEventModel _$LiteEventModelFromJson(Map<String, dynamic> json) =>
+    _LiteEventModel(
       eventId: json['eventId'] as String,
       isVisible: (json['isVisible'] as num?)?.toInt() ?? 1,
       isCountedRun: (json['isCountedRun'] as num?)?.toInt() ?? 1,
@@ -23,8 +23,7 @@ _$LiteEventModelImpl _$$LiteEventModelImplFromJson(Map<String, dynamic> json) =>
           (json['canEditRunAttendance'] as num?)?.toInt() ?? 0,
     );
 
-Map<String, dynamic> _$$LiteEventModelImplToJson(
-        _$LiteEventModelImpl instance) =>
+Map<String, dynamic> _$LiteEventModelToJson(_LiteEventModel instance) =>
     <String, dynamic>{
       'eventId': instance.eventId,
       'isVisible': instance.isVisible,

@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,466 +10,329 @@ part of 'kennels_model_ns.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-KennelsModel _$KennelsModelFromJson(Map<String, dynamic> json) {
-  return _KennelsModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$KennelsModel {
-  String get kennelId => throw _privateConstructorUsedError;
-  String get publicKennelId => throw _privateConstructorUsedError;
-  String get cityId => throw _privateConstructorUsedError;
-  String get regionId => throw _privateConstructorUsedError;
-  String get countryId => throw _privateConstructorUsedError;
-  String get kennelName => throw _privateConstructorUsedError;
-  String? get kennelSearchTags => throw _privateConstructorUsedError;
-  String get kennelShortName => throw _privateConstructorUsedError;
-  String? get kennelDescription => throw _privateConstructorUsedError;
-  String get kennelLogo => throw _privateConstructorUsedError;
-  int get kennelPinColor => throw _privateConstructorUsedError;
-  int get disseminateAllowWebLinks => throw _privateConstructorUsedError;
-  String? get kennelCoverPhoto => throw _privateConstructorUsedError;
-  String? get kennelWebsiteUrl => throw _privateConstructorUsedError;
-  String? get defaultEventCurrencyType => throw _privateConstructorUsedError;
-  String? get integrationType => throw _privateConstructorUsedError;
-  int? get kennelInboundIntegrationId => throw _privateConstructorUsedError;
-  String? get kennelEventsUrl => throw _privateConstructorUsedError;
-  int get kennelStatus => throw _privateConstructorUsedError;
-  int get canEditRunAttendence => throw _privateConstructorUsedError;
-  int get allowNegativeCredit => throw _privateConstructorUsedError;
-  int get allowSelfPayment => throw _privateConstructorUsedError;
-  double? get kennelLatitude => throw _privateConstructorUsedError;
-  double? get kennelLongitude => throw _privateConstructorUsedError;
-  double get defaultPriceForMembers => throw _privateConstructorUsedError;
-  double get defaultPriceForNonMembers => throw _privateConstructorUsedError;
-  int get membershipDurationInMonths => throw _privateConstructorUsedError;
-  DateTime get defaultRunStartTime => throw _privateConstructorUsedError;
-  String? get currencyCode => throw _privateConstructorUsedError;
-  String? get primaryCultureCode => throw _privateConstructorUsedError;
-  String? get currencySymbol => throw _privateConstructorUsedError;
-  int? get digitsAfterDecimal => throw _privateConstructorUsedError;
-  String? get bankScheme => throw _privateConstructorUsedError;
-  String? get bankAccountNumber => throw _privateConstructorUsedError;
-  String? get bankBic => throw _privateConstructorUsedError;
-  String? get bankBeneficiary => throw _privateConstructorUsedError;
-  String? get kennelPaymentScheme => throw _privateConstructorUsedError;
-  String? get kennelPaymentUrl => throw _privateConstructorUsedError;
-  DateTime? get kennelPaymentUrlExpires => throw _privateConstructorUsedError;
-  double? get kennelPaymentMemberSurcharge =>
-      throw _privateConstructorUsedError;
-  double? get kennelPaymentNonMemberSurcharge =>
-      throw _privateConstructorUsedError;
-  String? get kennelPaymentScheme2 => throw _privateConstructorUsedError;
-  String? get kennelPaymentUrl2 => throw _privateConstructorUsedError;
-  DateTime? get kennelPaymentUrlExpires2 => throw _privateConstructorUsedError;
-  double? get kennelPaymentMemberSurcharge2 =>
-      throw _privateConstructorUsedError;
-  double? get kennelPaymentNonMemberSurcharge2 =>
-      throw _privateConstructorUsedError;
-  String? get kennelPaymentScheme3 => throw _privateConstructorUsedError;
-  String? get kennelPaymentUrl3 => throw _privateConstructorUsedError;
-  DateTime? get kennelPaymentUrlExpires3 => throw _privateConstructorUsedError;
-  double? get kennelPaymentMemberSurcharge3 =>
-      throw _privateConstructorUsedError;
-  double? get kennelPaymentNonMemberSurcharge3 =>
-      throw _privateConstructorUsedError;
-  DateTime? get runCountStartDate => throw _privateConstructorUsedError;
-  String? get kennelMismanagementTeam => throw _privateConstructorUsedError;
-  int? get distancePreference => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-
-  /// Serializes this KennelsModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+mixin _$KennelsModel implements DiagnosticableTreeMixin {
+  String get kennelId;
+  String get publicKennelId;
+  String get cityId;
+  String get regionId;
+  String get countryId;
+  String get kennelName;
+  String? get kennelSearchTags;
+  String get kennelShortName;
+  String get kennelUniqueShortName;
+  String? get kennelDescription;
+  String get kennelLogo;
+  int get kennelPinColor;
+  int get disseminateAllowWebLinks;
+  String? get kennelCoverPhoto;
+  String? get kennelWebsiteUrl;
+  String? get defaultEventCurrencyType;
+  String? get integrationType;
+  int? get kennelInboundIntegrationId;
+  String? get kennelEventsUrl;
+  int get kennelStatus;
+  int get canEditRunAttendence;
+  int get allowNegativeCredit;
+  int get allowSelfPayment;
+  double? get kennelLatitude;
+  double? get kennelLongitude;
+  double get defaultPriceForMembers;
+  double get defaultPriceForNonMembers;
+  int get membershipDurationInMonths;
+  DateTime get defaultRunStartTime;
+  String? get currencyCode;
+  String? get primaryCultureCode;
+  String? get currencySymbol;
+  int? get digitsAfterDecimal;
+  String? get bankScheme;
+  String? get bankAccountNumber;
+  String? get bankBic;
+  String? get bankBeneficiary;
+  String? get kennelPaymentScheme;
+  String? get kennelPaymentUrl;
+  DateTime? get kennelPaymentUrlExpires;
+  double? get kennelPaymentMemberSurcharge;
+  double? get kennelPaymentNonMemberSurcharge;
+  String? get kennelPaymentScheme2;
+  String? get kennelPaymentUrl2;
+  DateTime? get kennelPaymentUrlExpires2;
+  double? get kennelPaymentMemberSurcharge2;
+  double? get kennelPaymentNonMemberSurcharge2;
+  String? get kennelPaymentScheme3;
+  String? get kennelPaymentUrl3;
+  DateTime? get kennelPaymentUrlExpires3;
+  double? get kennelPaymentMemberSurcharge3;
+  double? get kennelPaymentNonMemberSurcharge3;
+  DateTime? get runCountStartDate;
+  String? get kennelMismanagementTeam;
+  int? get distancePreference;
+  DateTime? get updatedAt;
+  int? get removed;
 
   /// Create a copy of KennelsModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $KennelsModelCopyWith<KennelsModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $KennelsModelCopyWith<$Res> {
-  factory $KennelsModelCopyWith(
-          KennelsModel value, $Res Function(KennelsModel) then) =
-      _$KennelsModelCopyWithImpl<$Res, KennelsModel>;
-  @useResult
-  $Res call(
-      {String kennelId,
-      String publicKennelId,
-      String cityId,
-      String regionId,
-      String countryId,
-      String kennelName,
-      String? kennelSearchTags,
-      String kennelShortName,
-      String? kennelDescription,
-      String kennelLogo,
-      int kennelPinColor,
-      int disseminateAllowWebLinks,
-      String? kennelCoverPhoto,
-      String? kennelWebsiteUrl,
-      String? defaultEventCurrencyType,
-      String? integrationType,
-      int? kennelInboundIntegrationId,
-      String? kennelEventsUrl,
-      int kennelStatus,
-      int canEditRunAttendence,
-      int allowNegativeCredit,
-      int allowSelfPayment,
-      double? kennelLatitude,
-      double? kennelLongitude,
-      double defaultPriceForMembers,
-      double defaultPriceForNonMembers,
-      int membershipDurationInMonths,
-      DateTime defaultRunStartTime,
-      String? currencyCode,
-      String? primaryCultureCode,
-      String? currencySymbol,
-      int? digitsAfterDecimal,
-      String? bankScheme,
-      String? bankAccountNumber,
-      String? bankBic,
-      String? bankBeneficiary,
-      String? kennelPaymentScheme,
-      String? kennelPaymentUrl,
-      DateTime? kennelPaymentUrlExpires,
-      double? kennelPaymentMemberSurcharge,
-      double? kennelPaymentNonMemberSurcharge,
-      String? kennelPaymentScheme2,
-      String? kennelPaymentUrl2,
-      DateTime? kennelPaymentUrlExpires2,
-      double? kennelPaymentMemberSurcharge2,
-      double? kennelPaymentNonMemberSurcharge2,
-      String? kennelPaymentScheme3,
-      String? kennelPaymentUrl3,
-      DateTime? kennelPaymentUrlExpires3,
-      double? kennelPaymentMemberSurcharge3,
-      double? kennelPaymentNonMemberSurcharge3,
-      DateTime? runCountStartDate,
-      String? kennelMismanagementTeam,
-      int? distancePreference,
-      DateTime? updatedAt,
-      int? removed});
-}
-
-/// @nodoc
-class _$KennelsModelCopyWithImpl<$Res, $Val extends KennelsModel>
-    implements $KennelsModelCopyWith<$Res> {
-  _$KennelsModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of KennelsModel
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $KennelsModelCopyWith<KennelsModel> get copyWith =>
+      _$KennelsModelCopyWithImpl<KennelsModel>(
+          this as KennelsModel, _$identity);
+
+  /// Serializes this KennelsModel to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? kennelId = null,
-    Object? publicKennelId = null,
-    Object? cityId = null,
-    Object? regionId = null,
-    Object? countryId = null,
-    Object? kennelName = null,
-    Object? kennelSearchTags = freezed,
-    Object? kennelShortName = null,
-    Object? kennelDescription = freezed,
-    Object? kennelLogo = null,
-    Object? kennelPinColor = null,
-    Object? disseminateAllowWebLinks = null,
-    Object? kennelCoverPhoto = freezed,
-    Object? kennelWebsiteUrl = freezed,
-    Object? defaultEventCurrencyType = freezed,
-    Object? integrationType = freezed,
-    Object? kennelInboundIntegrationId = freezed,
-    Object? kennelEventsUrl = freezed,
-    Object? kennelStatus = null,
-    Object? canEditRunAttendence = null,
-    Object? allowNegativeCredit = null,
-    Object? allowSelfPayment = null,
-    Object? kennelLatitude = freezed,
-    Object? kennelLongitude = freezed,
-    Object? defaultPriceForMembers = null,
-    Object? defaultPriceForNonMembers = null,
-    Object? membershipDurationInMonths = null,
-    Object? defaultRunStartTime = null,
-    Object? currencyCode = freezed,
-    Object? primaryCultureCode = freezed,
-    Object? currencySymbol = freezed,
-    Object? digitsAfterDecimal = freezed,
-    Object? bankScheme = freezed,
-    Object? bankAccountNumber = freezed,
-    Object? bankBic = freezed,
-    Object? bankBeneficiary = freezed,
-    Object? kennelPaymentScheme = freezed,
-    Object? kennelPaymentUrl = freezed,
-    Object? kennelPaymentUrlExpires = freezed,
-    Object? kennelPaymentMemberSurcharge = freezed,
-    Object? kennelPaymentNonMemberSurcharge = freezed,
-    Object? kennelPaymentScheme2 = freezed,
-    Object? kennelPaymentUrl2 = freezed,
-    Object? kennelPaymentUrlExpires2 = freezed,
-    Object? kennelPaymentMemberSurcharge2 = freezed,
-    Object? kennelPaymentNonMemberSurcharge2 = freezed,
-    Object? kennelPaymentScheme3 = freezed,
-    Object? kennelPaymentUrl3 = freezed,
-    Object? kennelPaymentUrlExpires3 = freezed,
-    Object? kennelPaymentMemberSurcharge3 = freezed,
-    Object? kennelPaymentNonMemberSurcharge3 = freezed,
-    Object? runCountStartDate = freezed,
-    Object? kennelMismanagementTeam = freezed,
-    Object? distancePreference = freezed,
-    Object? updatedAt = freezed,
-    Object? removed = freezed,
-  }) {
-    return _then(_value.copyWith(
-      kennelId: null == kennelId
-          ? _value.kennelId
-          : kennelId // ignore: cast_nullable_to_non_nullable
-              as String,
-      publicKennelId: null == publicKennelId
-          ? _value.publicKennelId
-          : publicKennelId // ignore: cast_nullable_to_non_nullable
-              as String,
-      cityId: null == cityId
-          ? _value.cityId
-          : cityId // ignore: cast_nullable_to_non_nullable
-              as String,
-      regionId: null == regionId
-          ? _value.regionId
-          : regionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      countryId: null == countryId
-          ? _value.countryId
-          : countryId // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelName: null == kennelName
-          ? _value.kennelName
-          : kennelName // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelSearchTags: freezed == kennelSearchTags
-          ? _value.kennelSearchTags
-          : kennelSearchTags // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelShortName: null == kennelShortName
-          ? _value.kennelShortName
-          : kennelShortName // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelDescription: freezed == kennelDescription
-          ? _value.kennelDescription
-          : kennelDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelLogo: null == kennelLogo
-          ? _value.kennelLogo
-          : kennelLogo // ignore: cast_nullable_to_non_nullable
-              as String,
-      kennelPinColor: null == kennelPinColor
-          ? _value.kennelPinColor
-          : kennelPinColor // ignore: cast_nullable_to_non_nullable
-              as int,
-      disseminateAllowWebLinks: null == disseminateAllowWebLinks
-          ? _value.disseminateAllowWebLinks
-          : disseminateAllowWebLinks // ignore: cast_nullable_to_non_nullable
-              as int,
-      kennelCoverPhoto: freezed == kennelCoverPhoto
-          ? _value.kennelCoverPhoto
-          : kennelCoverPhoto // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelWebsiteUrl: freezed == kennelWebsiteUrl
-          ? _value.kennelWebsiteUrl
-          : kennelWebsiteUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      defaultEventCurrencyType: freezed == defaultEventCurrencyType
-          ? _value.defaultEventCurrencyType
-          : defaultEventCurrencyType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      integrationType: freezed == integrationType
-          ? _value.integrationType
-          : integrationType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelInboundIntegrationId: freezed == kennelInboundIntegrationId
-          ? _value.kennelInboundIntegrationId
-          : kennelInboundIntegrationId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      kennelEventsUrl: freezed == kennelEventsUrl
-          ? _value.kennelEventsUrl
-          : kennelEventsUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelStatus: null == kennelStatus
-          ? _value.kennelStatus
-          : kennelStatus // ignore: cast_nullable_to_non_nullable
-              as int,
-      canEditRunAttendence: null == canEditRunAttendence
-          ? _value.canEditRunAttendence
-          : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as int,
-      allowNegativeCredit: null == allowNegativeCredit
-          ? _value.allowNegativeCredit
-          : allowNegativeCredit // ignore: cast_nullable_to_non_nullable
-              as int,
-      allowSelfPayment: null == allowSelfPayment
-          ? _value.allowSelfPayment
-          : allowSelfPayment // ignore: cast_nullable_to_non_nullable
-              as int,
-      kennelLatitude: freezed == kennelLatitude
-          ? _value.kennelLatitude
-          : kennelLatitude // ignore: cast_nullable_to_non_nullable
-              as double?,
-      kennelLongitude: freezed == kennelLongitude
-          ? _value.kennelLongitude
-          : kennelLongitude // ignore: cast_nullable_to_non_nullable
-              as double?,
-      defaultPriceForMembers: null == defaultPriceForMembers
-          ? _value.defaultPriceForMembers
-          : defaultPriceForMembers // ignore: cast_nullable_to_non_nullable
-              as double,
-      defaultPriceForNonMembers: null == defaultPriceForNonMembers
-          ? _value.defaultPriceForNonMembers
-          : defaultPriceForNonMembers // ignore: cast_nullable_to_non_nullable
-              as double,
-      membershipDurationInMonths: null == membershipDurationInMonths
-          ? _value.membershipDurationInMonths
-          : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
-              as int,
-      defaultRunStartTime: null == defaultRunStartTime
-          ? _value.defaultRunStartTime
-          : defaultRunStartTime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      currencyCode: freezed == currencyCode
-          ? _value.currencyCode
-          : currencyCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      primaryCultureCode: freezed == primaryCultureCode
-          ? _value.primaryCultureCode
-          : primaryCultureCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      currencySymbol: freezed == currencySymbol
-          ? _value.currencySymbol
-          : currencySymbol // ignore: cast_nullable_to_non_nullable
-              as String?,
-      digitsAfterDecimal: freezed == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
-          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
-              as int?,
-      bankScheme: freezed == bankScheme
-          ? _value.bankScheme
-          : bankScheme // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bankAccountNumber: freezed == bankAccountNumber
-          ? _value.bankAccountNumber
-          : bankAccountNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bankBic: freezed == bankBic
-          ? _value.bankBic
-          : bankBic // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bankBeneficiary: freezed == bankBeneficiary
-          ? _value.bankBeneficiary
-          : bankBeneficiary // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPaymentScheme: freezed == kennelPaymentScheme
-          ? _value.kennelPaymentScheme
-          : kennelPaymentScheme // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPaymentUrl: freezed == kennelPaymentUrl
-          ? _value.kennelPaymentUrl
-          : kennelPaymentUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPaymentUrlExpires: freezed == kennelPaymentUrlExpires
-          ? _value.kennelPaymentUrlExpires
-          : kennelPaymentUrlExpires // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      kennelPaymentMemberSurcharge: freezed == kennelPaymentMemberSurcharge
-          ? _value.kennelPaymentMemberSurcharge
-          : kennelPaymentMemberSurcharge // ignore: cast_nullable_to_non_nullable
-              as double?,
-      kennelPaymentNonMemberSurcharge: freezed ==
-              kennelPaymentNonMemberSurcharge
-          ? _value.kennelPaymentNonMemberSurcharge
-          : kennelPaymentNonMemberSurcharge // ignore: cast_nullable_to_non_nullable
-              as double?,
-      kennelPaymentScheme2: freezed == kennelPaymentScheme2
-          ? _value.kennelPaymentScheme2
-          : kennelPaymentScheme2 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPaymentUrl2: freezed == kennelPaymentUrl2
-          ? _value.kennelPaymentUrl2
-          : kennelPaymentUrl2 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPaymentUrlExpires2: freezed == kennelPaymentUrlExpires2
-          ? _value.kennelPaymentUrlExpires2
-          : kennelPaymentUrlExpires2 // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      kennelPaymentMemberSurcharge2: freezed == kennelPaymentMemberSurcharge2
-          ? _value.kennelPaymentMemberSurcharge2
-          : kennelPaymentMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
-              as double?,
-      kennelPaymentNonMemberSurcharge2: freezed ==
-              kennelPaymentNonMemberSurcharge2
-          ? _value.kennelPaymentNonMemberSurcharge2
-          : kennelPaymentNonMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
-              as double?,
-      kennelPaymentScheme3: freezed == kennelPaymentScheme3
-          ? _value.kennelPaymentScheme3
-          : kennelPaymentScheme3 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPaymentUrl3: freezed == kennelPaymentUrl3
-          ? _value.kennelPaymentUrl3
-          : kennelPaymentUrl3 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      kennelPaymentUrlExpires3: freezed == kennelPaymentUrlExpires3
-          ? _value.kennelPaymentUrlExpires3
-          : kennelPaymentUrlExpires3 // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      kennelPaymentMemberSurcharge3: freezed == kennelPaymentMemberSurcharge3
-          ? _value.kennelPaymentMemberSurcharge3
-          : kennelPaymentMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
-              as double?,
-      kennelPaymentNonMemberSurcharge3: freezed ==
-              kennelPaymentNonMemberSurcharge3
-          ? _value.kennelPaymentNonMemberSurcharge3
-          : kennelPaymentNonMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
-              as double?,
-      runCountStartDate: freezed == runCountStartDate
-          ? _value.runCountStartDate
-          : runCountStartDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      kennelMismanagementTeam: freezed == kennelMismanagementTeam
-          ? _value.kennelMismanagementTeam
-          : kennelMismanagementTeam // ignore: cast_nullable_to_non_nullable
-              as String?,
-      distancePreference: freezed == distancePreference
-          ? _value.distancePreference
-          : distancePreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'KennelsModel'))
+      ..add(DiagnosticsProperty('kennelId', kennelId))
+      ..add(DiagnosticsProperty('publicKennelId', publicKennelId))
+      ..add(DiagnosticsProperty('cityId', cityId))
+      ..add(DiagnosticsProperty('regionId', regionId))
+      ..add(DiagnosticsProperty('countryId', countryId))
+      ..add(DiagnosticsProperty('kennelName', kennelName))
+      ..add(DiagnosticsProperty('kennelSearchTags', kennelSearchTags))
+      ..add(DiagnosticsProperty('kennelShortName', kennelShortName))
+      ..add(DiagnosticsProperty('kennelUniqueShortName', kennelUniqueShortName))
+      ..add(DiagnosticsProperty('kennelDescription', kennelDescription))
+      ..add(DiagnosticsProperty('kennelLogo', kennelLogo))
+      ..add(DiagnosticsProperty('kennelPinColor', kennelPinColor))
+      ..add(DiagnosticsProperty(
+          'disseminateAllowWebLinks', disseminateAllowWebLinks))
+      ..add(DiagnosticsProperty('kennelCoverPhoto', kennelCoverPhoto))
+      ..add(DiagnosticsProperty('kennelWebsiteUrl', kennelWebsiteUrl))
+      ..add(DiagnosticsProperty(
+          'defaultEventCurrencyType', defaultEventCurrencyType))
+      ..add(DiagnosticsProperty('integrationType', integrationType))
+      ..add(DiagnosticsProperty(
+          'kennelInboundIntegrationId', kennelInboundIntegrationId))
+      ..add(DiagnosticsProperty('kennelEventsUrl', kennelEventsUrl))
+      ..add(DiagnosticsProperty('kennelStatus', kennelStatus))
+      ..add(DiagnosticsProperty('canEditRunAttendence', canEditRunAttendence))
+      ..add(DiagnosticsProperty('allowNegativeCredit', allowNegativeCredit))
+      ..add(DiagnosticsProperty('allowSelfPayment', allowSelfPayment))
+      ..add(DiagnosticsProperty('kennelLatitude', kennelLatitude))
+      ..add(DiagnosticsProperty('kennelLongitude', kennelLongitude))
+      ..add(
+          DiagnosticsProperty('defaultPriceForMembers', defaultPriceForMembers))
+      ..add(DiagnosticsProperty(
+          'defaultPriceForNonMembers', defaultPriceForNonMembers))
+      ..add(DiagnosticsProperty(
+          'membershipDurationInMonths', membershipDurationInMonths))
+      ..add(DiagnosticsProperty('defaultRunStartTime', defaultRunStartTime))
+      ..add(DiagnosticsProperty('currencyCode', currencyCode))
+      ..add(DiagnosticsProperty('primaryCultureCode', primaryCultureCode))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('bankScheme', bankScheme))
+      ..add(DiagnosticsProperty('bankAccountNumber', bankAccountNumber))
+      ..add(DiagnosticsProperty('bankBic', bankBic))
+      ..add(DiagnosticsProperty('bankBeneficiary', bankBeneficiary))
+      ..add(DiagnosticsProperty('kennelPaymentScheme', kennelPaymentScheme))
+      ..add(DiagnosticsProperty('kennelPaymentUrl', kennelPaymentUrl))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentUrlExpires', kennelPaymentUrlExpires))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentMemberSurcharge', kennelPaymentMemberSurcharge))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentNonMemberSurcharge', kennelPaymentNonMemberSurcharge))
+      ..add(DiagnosticsProperty('kennelPaymentScheme2', kennelPaymentScheme2))
+      ..add(DiagnosticsProperty('kennelPaymentUrl2', kennelPaymentUrl2))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentUrlExpires2', kennelPaymentUrlExpires2))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentMemberSurcharge2', kennelPaymentMemberSurcharge2))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentNonMemberSurcharge2', kennelPaymentNonMemberSurcharge2))
+      ..add(DiagnosticsProperty('kennelPaymentScheme3', kennelPaymentScheme3))
+      ..add(DiagnosticsProperty('kennelPaymentUrl3', kennelPaymentUrl3))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentUrlExpires3', kennelPaymentUrlExpires3))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentMemberSurcharge3', kennelPaymentMemberSurcharge3))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentNonMemberSurcharge3', kennelPaymentNonMemberSurcharge3))
+      ..add(DiagnosticsProperty('runCountStartDate', runCountStartDate))
+      ..add(DiagnosticsProperty(
+          'kennelMismanagementTeam', kennelMismanagementTeam))
+      ..add(DiagnosticsProperty('distancePreference', distancePreference))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt))
+      ..add(DiagnosticsProperty('removed', removed));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is KennelsModel &&
+            (identical(other.kennelId, kennelId) ||
+                other.kennelId == kennelId) &&
+            (identical(other.publicKennelId, publicKennelId) ||
+                other.publicKennelId == publicKennelId) &&
+            (identical(other.cityId, cityId) || other.cityId == cityId) &&
+            (identical(other.regionId, regionId) ||
+                other.regionId == regionId) &&
+            (identical(other.countryId, countryId) ||
+                other.countryId == countryId) &&
+            (identical(other.kennelName, kennelName) ||
+                other.kennelName == kennelName) &&
+            (identical(other.kennelSearchTags, kennelSearchTags) ||
+                other.kennelSearchTags == kennelSearchTags) &&
+            (identical(other.kennelShortName, kennelShortName) ||
+                other.kennelShortName == kennelShortName) &&
+            (identical(other.kennelUniqueShortName, kennelUniqueShortName) ||
+                other.kennelUniqueShortName == kennelUniqueShortName) &&
+            (identical(other.kennelDescription, kennelDescription) ||
+                other.kennelDescription == kennelDescription) &&
+            (identical(other.kennelLogo, kennelLogo) ||
+                other.kennelLogo == kennelLogo) &&
+            (identical(other.kennelPinColor, kennelPinColor) ||
+                other.kennelPinColor == kennelPinColor) &&
+            (identical(other.disseminateAllowWebLinks, disseminateAllowWebLinks) ||
+                other.disseminateAllowWebLinks == disseminateAllowWebLinks) &&
+            (identical(other.kennelCoverPhoto, kennelCoverPhoto) ||
+                other.kennelCoverPhoto == kennelCoverPhoto) &&
+            (identical(other.kennelWebsiteUrl, kennelWebsiteUrl) ||
+                other.kennelWebsiteUrl == kennelWebsiteUrl) &&
+            (identical(other.defaultEventCurrencyType, defaultEventCurrencyType) ||
+                other.defaultEventCurrencyType == defaultEventCurrencyType) &&
+            (identical(other.integrationType, integrationType) ||
+                other.integrationType == integrationType) &&
+            (identical(other.kennelInboundIntegrationId, kennelInboundIntegrationId) ||
+                other.kennelInboundIntegrationId ==
+                    kennelInboundIntegrationId) &&
+            (identical(other.kennelEventsUrl, kennelEventsUrl) ||
+                other.kennelEventsUrl == kennelEventsUrl) &&
+            (identical(other.kennelStatus, kennelStatus) ||
+                other.kennelStatus == kennelStatus) &&
+            (identical(other.canEditRunAttendence, canEditRunAttendence) ||
+                other.canEditRunAttendence == canEditRunAttendence) &&
+            (identical(other.allowNegativeCredit, allowNegativeCredit) ||
+                other.allowNegativeCredit == allowNegativeCredit) &&
+            (identical(other.allowSelfPayment, allowSelfPayment) ||
+                other.allowSelfPayment == allowSelfPayment) &&
+            (identical(other.kennelLatitude, kennelLatitude) ||
+                other.kennelLatitude == kennelLatitude) &&
+            (identical(other.kennelLongitude, kennelLongitude) ||
+                other.kennelLongitude == kennelLongitude) &&
+            (identical(other.defaultPriceForMembers, defaultPriceForMembers) ||
+                other.defaultPriceForMembers == defaultPriceForMembers) &&
+            (identical(other.defaultPriceForNonMembers, defaultPriceForNonMembers) ||
+                other.defaultPriceForNonMembers == defaultPriceForNonMembers) &&
+            (identical(other.membershipDurationInMonths, membershipDurationInMonths) ||
+                other.membershipDurationInMonths ==
+                    membershipDurationInMonths) &&
+            (identical(other.defaultRunStartTime, defaultRunStartTime) ||
+                other.defaultRunStartTime == defaultRunStartTime) &&
+            (identical(other.currencyCode, currencyCode) ||
+                other.currencyCode == currencyCode) &&
+            (identical(other.primaryCultureCode, primaryCultureCode) ||
+                other.primaryCultureCode == primaryCultureCode) &&
+            (identical(other.currencySymbol, currencySymbol) || other.currencySymbol == currencySymbol) &&
+            (identical(other.digitsAfterDecimal, digitsAfterDecimal) || other.digitsAfterDecimal == digitsAfterDecimal) &&
+            (identical(other.bankScheme, bankScheme) || other.bankScheme == bankScheme) &&
+            (identical(other.bankAccountNumber, bankAccountNumber) || other.bankAccountNumber == bankAccountNumber) &&
+            (identical(other.bankBic, bankBic) || other.bankBic == bankBic) &&
+            (identical(other.bankBeneficiary, bankBeneficiary) || other.bankBeneficiary == bankBeneficiary) &&
+            (identical(other.kennelPaymentScheme, kennelPaymentScheme) || other.kennelPaymentScheme == kennelPaymentScheme) &&
+            (identical(other.kennelPaymentUrl, kennelPaymentUrl) || other.kennelPaymentUrl == kennelPaymentUrl) &&
+            (identical(other.kennelPaymentUrlExpires, kennelPaymentUrlExpires) || other.kennelPaymentUrlExpires == kennelPaymentUrlExpires) &&
+            (identical(other.kennelPaymentMemberSurcharge, kennelPaymentMemberSurcharge) || other.kennelPaymentMemberSurcharge == kennelPaymentMemberSurcharge) &&
+            (identical(other.kennelPaymentNonMemberSurcharge, kennelPaymentNonMemberSurcharge) || other.kennelPaymentNonMemberSurcharge == kennelPaymentNonMemberSurcharge) &&
+            (identical(other.kennelPaymentScheme2, kennelPaymentScheme2) || other.kennelPaymentScheme2 == kennelPaymentScheme2) &&
+            (identical(other.kennelPaymentUrl2, kennelPaymentUrl2) || other.kennelPaymentUrl2 == kennelPaymentUrl2) &&
+            (identical(other.kennelPaymentUrlExpires2, kennelPaymentUrlExpires2) || other.kennelPaymentUrlExpires2 == kennelPaymentUrlExpires2) &&
+            (identical(other.kennelPaymentMemberSurcharge2, kennelPaymentMemberSurcharge2) || other.kennelPaymentMemberSurcharge2 == kennelPaymentMemberSurcharge2) &&
+            (identical(other.kennelPaymentNonMemberSurcharge2, kennelPaymentNonMemberSurcharge2) || other.kennelPaymentNonMemberSurcharge2 == kennelPaymentNonMemberSurcharge2) &&
+            (identical(other.kennelPaymentScheme3, kennelPaymentScheme3) || other.kennelPaymentScheme3 == kennelPaymentScheme3) &&
+            (identical(other.kennelPaymentUrl3, kennelPaymentUrl3) || other.kennelPaymentUrl3 == kennelPaymentUrl3) &&
+            (identical(other.kennelPaymentUrlExpires3, kennelPaymentUrlExpires3) || other.kennelPaymentUrlExpires3 == kennelPaymentUrlExpires3) &&
+            (identical(other.kennelPaymentMemberSurcharge3, kennelPaymentMemberSurcharge3) || other.kennelPaymentMemberSurcharge3 == kennelPaymentMemberSurcharge3) &&
+            (identical(other.kennelPaymentNonMemberSurcharge3, kennelPaymentNonMemberSurcharge3) || other.kennelPaymentNonMemberSurcharge3 == kennelPaymentNonMemberSurcharge3) &&
+            (identical(other.runCountStartDate, runCountStartDate) || other.runCountStartDate == runCountStartDate) &&
+            (identical(other.kennelMismanagementTeam, kennelMismanagementTeam) || other.kennelMismanagementTeam == kennelMismanagementTeam) &&
+            (identical(other.distancePreference, distancePreference) || other.distancePreference == distancePreference) &&
+            (identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt) &&
+            (identical(other.removed, removed) || other.removed == removed));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        kennelId,
+        publicKennelId,
+        cityId,
+        regionId,
+        countryId,
+        kennelName,
+        kennelSearchTags,
+        kennelShortName,
+        kennelUniqueShortName,
+        kennelDescription,
+        kennelLogo,
+        kennelPinColor,
+        disseminateAllowWebLinks,
+        kennelCoverPhoto,
+        kennelWebsiteUrl,
+        defaultEventCurrencyType,
+        integrationType,
+        kennelInboundIntegrationId,
+        kennelEventsUrl,
+        kennelStatus,
+        canEditRunAttendence,
+        allowNegativeCredit,
+        allowSelfPayment,
+        kennelLatitude,
+        kennelLongitude,
+        defaultPriceForMembers,
+        defaultPriceForNonMembers,
+        membershipDurationInMonths,
+        defaultRunStartTime,
+        currencyCode,
+        primaryCultureCode,
+        currencySymbol,
+        digitsAfterDecimal,
+        bankScheme,
+        bankAccountNumber,
+        bankBic,
+        bankBeneficiary,
+        kennelPaymentScheme,
+        kennelPaymentUrl,
+        kennelPaymentUrlExpires,
+        kennelPaymentMemberSurcharge,
+        kennelPaymentNonMemberSurcharge,
+        kennelPaymentScheme2,
+        kennelPaymentUrl2,
+        kennelPaymentUrlExpires2,
+        kennelPaymentMemberSurcharge2,
+        kennelPaymentNonMemberSurcharge2,
+        kennelPaymentScheme3,
+        kennelPaymentUrl3,
+        kennelPaymentUrlExpires3,
+        kennelPaymentMemberSurcharge3,
+        kennelPaymentNonMemberSurcharge3,
+        runCountStartDate,
+        kennelMismanagementTeam,
+        distancePreference,
+        updatedAt,
+        removed
+      ]);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'KennelsModel(kennelId: $kennelId, publicKennelId: $publicKennelId, cityId: $cityId, regionId: $regionId, countryId: $countryId, kennelName: $kennelName, kennelSearchTags: $kennelSearchTags, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelDescription: $kennelDescription, kennelLogo: $kennelLogo, kennelPinColor: $kennelPinColor, disseminateAllowWebLinks: $disseminateAllowWebLinks, kennelCoverPhoto: $kennelCoverPhoto, kennelWebsiteUrl: $kennelWebsiteUrl, defaultEventCurrencyType: $defaultEventCurrencyType, integrationType: $integrationType, kennelInboundIntegrationId: $kennelInboundIntegrationId, kennelEventsUrl: $kennelEventsUrl, kennelStatus: $kennelStatus, canEditRunAttendence: $canEditRunAttendence, allowNegativeCredit: $allowNegativeCredit, allowSelfPayment: $allowSelfPayment, kennelLatitude: $kennelLatitude, kennelLongitude: $kennelLongitude, defaultPriceForMembers: $defaultPriceForMembers, defaultPriceForNonMembers: $defaultPriceForNonMembers, membershipDurationInMonths: $membershipDurationInMonths, defaultRunStartTime: $defaultRunStartTime, currencyCode: $currencyCode, primaryCultureCode: $primaryCultureCode, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, bankScheme: $bankScheme, bankAccountNumber: $bankAccountNumber, bankBic: $bankBic, bankBeneficiary: $bankBeneficiary, kennelPaymentScheme: $kennelPaymentScheme, kennelPaymentUrl: $kennelPaymentUrl, kennelPaymentUrlExpires: $kennelPaymentUrlExpires, kennelPaymentMemberSurcharge: $kennelPaymentMemberSurcharge, kennelPaymentNonMemberSurcharge: $kennelPaymentNonMemberSurcharge, kennelPaymentScheme2: $kennelPaymentScheme2, kennelPaymentUrl2: $kennelPaymentUrl2, kennelPaymentUrlExpires2: $kennelPaymentUrlExpires2, kennelPaymentMemberSurcharge2: $kennelPaymentMemberSurcharge2, kennelPaymentNonMemberSurcharge2: $kennelPaymentNonMemberSurcharge2, kennelPaymentScheme3: $kennelPaymentScheme3, kennelPaymentUrl3: $kennelPaymentUrl3, kennelPaymentUrlExpires3: $kennelPaymentUrlExpires3, kennelPaymentMemberSurcharge3: $kennelPaymentMemberSurcharge3, kennelPaymentNonMemberSurcharge3: $kennelPaymentNonMemberSurcharge3, runCountStartDate: $runCountStartDate, kennelMismanagementTeam: $kennelMismanagementTeam, distancePreference: $distancePreference, updatedAt: $updatedAt, removed: $removed)';
   }
 }
 
 /// @nodoc
-abstract class _$$KennelsModelImplCopyWith<$Res>
-    implements $KennelsModelCopyWith<$Res> {
-  factory _$$KennelsModelImplCopyWith(
-          _$KennelsModelImpl value, $Res Function(_$KennelsModelImpl) then) =
-      __$$KennelsModelImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $KennelsModelCopyWith<$Res> {
+  factory $KennelsModelCopyWith(
+          KennelsModel value, $Res Function(KennelsModel) _then) =
+      _$KennelsModelCopyWithImpl;
   @useResult
   $Res call(
       {String kennelId,
@@ -479,6 +343,7 @@ abstract class _$$KennelsModelImplCopyWith<$Res>
       String kennelName,
       String? kennelSearchTags,
       String kennelShortName,
+      String kennelUniqueShortName,
       String? kennelDescription,
       String kennelLogo,
       int kennelPinColor,
@@ -530,12 +395,11 @@ abstract class _$$KennelsModelImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$KennelsModelImplCopyWithImpl<$Res>
-    extends _$KennelsModelCopyWithImpl<$Res, _$KennelsModelImpl>
-    implements _$$KennelsModelImplCopyWith<$Res> {
-  __$$KennelsModelImplCopyWithImpl(
-      _$KennelsModelImpl _value, $Res Function(_$KennelsModelImpl) _then)
-      : super(_value, _then);
+class _$KennelsModelCopyWithImpl<$Res> implements $KennelsModelCopyWith<$Res> {
+  _$KennelsModelCopyWithImpl(this._self, this._then);
+
+  final KennelsModel _self;
+  final $Res Function(KennelsModel) _then;
 
   /// Create a copy of KennelsModel
   /// with the given fields replaced by the non-null parameter values.
@@ -550,6 +414,7 @@ class __$$KennelsModelImplCopyWithImpl<$Res>
     Object? kennelName = null,
     Object? kennelSearchTags = freezed,
     Object? kennelShortName = null,
+    Object? kennelUniqueShortName = null,
     Object? kennelDescription = freezed,
     Object? kennelLogo = null,
     Object? kennelPinColor = null,
@@ -599,232 +464,236 @@ class __$$KennelsModelImplCopyWithImpl<$Res>
     Object? updatedAt = freezed,
     Object? removed = freezed,
   }) {
-    return _then(_$KennelsModelImpl(
+    return _then(_self.copyWith(
       kennelId: null == kennelId
-          ? _value.kennelId
+          ? _self.kennelId
           : kennelId // ignore: cast_nullable_to_non_nullable
               as String,
       publicKennelId: null == publicKennelId
-          ? _value.publicKennelId
+          ? _self.publicKennelId
           : publicKennelId // ignore: cast_nullable_to_non_nullable
               as String,
       cityId: null == cityId
-          ? _value.cityId
+          ? _self.cityId
           : cityId // ignore: cast_nullable_to_non_nullable
               as String,
       regionId: null == regionId
-          ? _value.regionId
+          ? _self.regionId
           : regionId // ignore: cast_nullable_to_non_nullable
               as String,
       countryId: null == countryId
-          ? _value.countryId
+          ? _self.countryId
           : countryId // ignore: cast_nullable_to_non_nullable
               as String,
       kennelName: null == kennelName
-          ? _value.kennelName
+          ? _self.kennelName
           : kennelName // ignore: cast_nullable_to_non_nullable
               as String,
       kennelSearchTags: freezed == kennelSearchTags
-          ? _value.kennelSearchTags
+          ? _self.kennelSearchTags
           : kennelSearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelShortName: null == kennelShortName
-          ? _value.kennelShortName
+          ? _self.kennelShortName
           : kennelShortName // ignore: cast_nullable_to_non_nullable
               as String,
+      kennelUniqueShortName: null == kennelUniqueShortName
+          ? _self.kennelUniqueShortName
+          : kennelUniqueShortName // ignore: cast_nullable_to_non_nullable
+              as String,
       kennelDescription: freezed == kennelDescription
-          ? _value.kennelDescription
+          ? _self.kennelDescription
           : kennelDescription // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelLogo: null == kennelLogo
-          ? _value.kennelLogo
+          ? _self.kennelLogo
           : kennelLogo // ignore: cast_nullable_to_non_nullable
               as String,
       kennelPinColor: null == kennelPinColor
-          ? _value.kennelPinColor
+          ? _self.kennelPinColor
           : kennelPinColor // ignore: cast_nullable_to_non_nullable
               as int,
       disseminateAllowWebLinks: null == disseminateAllowWebLinks
-          ? _value.disseminateAllowWebLinks
+          ? _self.disseminateAllowWebLinks
           : disseminateAllowWebLinks // ignore: cast_nullable_to_non_nullable
               as int,
       kennelCoverPhoto: freezed == kennelCoverPhoto
-          ? _value.kennelCoverPhoto
+          ? _self.kennelCoverPhoto
           : kennelCoverPhoto // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelWebsiteUrl: freezed == kennelWebsiteUrl
-          ? _value.kennelWebsiteUrl
+          ? _self.kennelWebsiteUrl
           : kennelWebsiteUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       defaultEventCurrencyType: freezed == defaultEventCurrencyType
-          ? _value.defaultEventCurrencyType
+          ? _self.defaultEventCurrencyType
           : defaultEventCurrencyType // ignore: cast_nullable_to_non_nullable
               as String?,
       integrationType: freezed == integrationType
-          ? _value.integrationType
+          ? _self.integrationType
           : integrationType // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelInboundIntegrationId: freezed == kennelInboundIntegrationId
-          ? _value.kennelInboundIntegrationId
+          ? _self.kennelInboundIntegrationId
           : kennelInboundIntegrationId // ignore: cast_nullable_to_non_nullable
               as int?,
       kennelEventsUrl: freezed == kennelEventsUrl
-          ? _value.kennelEventsUrl
+          ? _self.kennelEventsUrl
           : kennelEventsUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelStatus: null == kennelStatus
-          ? _value.kennelStatus
+          ? _self.kennelStatus
           : kennelStatus // ignore: cast_nullable_to_non_nullable
               as int,
       canEditRunAttendence: null == canEditRunAttendence
-          ? _value.canEditRunAttendence
+          ? _self.canEditRunAttendence
           : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
               as int,
       allowNegativeCredit: null == allowNegativeCredit
-          ? _value.allowNegativeCredit
+          ? _self.allowNegativeCredit
           : allowNegativeCredit // ignore: cast_nullable_to_non_nullable
               as int,
       allowSelfPayment: null == allowSelfPayment
-          ? _value.allowSelfPayment
+          ? _self.allowSelfPayment
           : allowSelfPayment // ignore: cast_nullable_to_non_nullable
               as int,
       kennelLatitude: freezed == kennelLatitude
-          ? _value.kennelLatitude
+          ? _self.kennelLatitude
           : kennelLatitude // ignore: cast_nullable_to_non_nullable
               as double?,
       kennelLongitude: freezed == kennelLongitude
-          ? _value.kennelLongitude
+          ? _self.kennelLongitude
           : kennelLongitude // ignore: cast_nullable_to_non_nullable
               as double?,
       defaultPriceForMembers: null == defaultPriceForMembers
-          ? _value.defaultPriceForMembers
+          ? _self.defaultPriceForMembers
           : defaultPriceForMembers // ignore: cast_nullable_to_non_nullable
               as double,
       defaultPriceForNonMembers: null == defaultPriceForNonMembers
-          ? _value.defaultPriceForNonMembers
+          ? _self.defaultPriceForNonMembers
           : defaultPriceForNonMembers // ignore: cast_nullable_to_non_nullable
               as double,
       membershipDurationInMonths: null == membershipDurationInMonths
-          ? _value.membershipDurationInMonths
+          ? _self.membershipDurationInMonths
           : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
               as int,
       defaultRunStartTime: null == defaultRunStartTime
-          ? _value.defaultRunStartTime
+          ? _self.defaultRunStartTime
           : defaultRunStartTime // ignore: cast_nullable_to_non_nullable
               as DateTime,
       currencyCode: freezed == currencyCode
-          ? _value.currencyCode
+          ? _self.currencyCode
           : currencyCode // ignore: cast_nullable_to_non_nullable
               as String?,
       primaryCultureCode: freezed == primaryCultureCode
-          ? _value.primaryCultureCode
+          ? _self.primaryCultureCode
           : primaryCultureCode // ignore: cast_nullable_to_non_nullable
               as String?,
       currencySymbol: freezed == currencySymbol
-          ? _value.currencySymbol
+          ? _self.currencySymbol
           : currencySymbol // ignore: cast_nullable_to_non_nullable
               as String?,
       digitsAfterDecimal: freezed == digitsAfterDecimal
-          ? _value.digitsAfterDecimal
+          ? _self.digitsAfterDecimal
           : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
               as int?,
       bankScheme: freezed == bankScheme
-          ? _value.bankScheme
+          ? _self.bankScheme
           : bankScheme // ignore: cast_nullable_to_non_nullable
               as String?,
       bankAccountNumber: freezed == bankAccountNumber
-          ? _value.bankAccountNumber
+          ? _self.bankAccountNumber
           : bankAccountNumber // ignore: cast_nullable_to_non_nullable
               as String?,
       bankBic: freezed == bankBic
-          ? _value.bankBic
+          ? _self.bankBic
           : bankBic // ignore: cast_nullable_to_non_nullable
               as String?,
       bankBeneficiary: freezed == bankBeneficiary
-          ? _value.bankBeneficiary
+          ? _self.bankBeneficiary
           : bankBeneficiary // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelPaymentScheme: freezed == kennelPaymentScheme
-          ? _value.kennelPaymentScheme
+          ? _self.kennelPaymentScheme
           : kennelPaymentScheme // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelPaymentUrl: freezed == kennelPaymentUrl
-          ? _value.kennelPaymentUrl
+          ? _self.kennelPaymentUrl
           : kennelPaymentUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelPaymentUrlExpires: freezed == kennelPaymentUrlExpires
-          ? _value.kennelPaymentUrlExpires
+          ? _self.kennelPaymentUrlExpires
           : kennelPaymentUrlExpires // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       kennelPaymentMemberSurcharge: freezed == kennelPaymentMemberSurcharge
-          ? _value.kennelPaymentMemberSurcharge
+          ? _self.kennelPaymentMemberSurcharge
           : kennelPaymentMemberSurcharge // ignore: cast_nullable_to_non_nullable
               as double?,
       kennelPaymentNonMemberSurcharge: freezed ==
               kennelPaymentNonMemberSurcharge
-          ? _value.kennelPaymentNonMemberSurcharge
+          ? _self.kennelPaymentNonMemberSurcharge
           : kennelPaymentNonMemberSurcharge // ignore: cast_nullable_to_non_nullable
               as double?,
       kennelPaymentScheme2: freezed == kennelPaymentScheme2
-          ? _value.kennelPaymentScheme2
+          ? _self.kennelPaymentScheme2
           : kennelPaymentScheme2 // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelPaymentUrl2: freezed == kennelPaymentUrl2
-          ? _value.kennelPaymentUrl2
+          ? _self.kennelPaymentUrl2
           : kennelPaymentUrl2 // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelPaymentUrlExpires2: freezed == kennelPaymentUrlExpires2
-          ? _value.kennelPaymentUrlExpires2
+          ? _self.kennelPaymentUrlExpires2
           : kennelPaymentUrlExpires2 // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       kennelPaymentMemberSurcharge2: freezed == kennelPaymentMemberSurcharge2
-          ? _value.kennelPaymentMemberSurcharge2
+          ? _self.kennelPaymentMemberSurcharge2
           : kennelPaymentMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
               as double?,
       kennelPaymentNonMemberSurcharge2: freezed ==
               kennelPaymentNonMemberSurcharge2
-          ? _value.kennelPaymentNonMemberSurcharge2
+          ? _self.kennelPaymentNonMemberSurcharge2
           : kennelPaymentNonMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
               as double?,
       kennelPaymentScheme3: freezed == kennelPaymentScheme3
-          ? _value.kennelPaymentScheme3
+          ? _self.kennelPaymentScheme3
           : kennelPaymentScheme3 // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelPaymentUrl3: freezed == kennelPaymentUrl3
-          ? _value.kennelPaymentUrl3
+          ? _self.kennelPaymentUrl3
           : kennelPaymentUrl3 // ignore: cast_nullable_to_non_nullable
               as String?,
       kennelPaymentUrlExpires3: freezed == kennelPaymentUrlExpires3
-          ? _value.kennelPaymentUrlExpires3
+          ? _self.kennelPaymentUrlExpires3
           : kennelPaymentUrlExpires3 // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       kennelPaymentMemberSurcharge3: freezed == kennelPaymentMemberSurcharge3
-          ? _value.kennelPaymentMemberSurcharge3
+          ? _self.kennelPaymentMemberSurcharge3
           : kennelPaymentMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
               as double?,
       kennelPaymentNonMemberSurcharge3: freezed ==
               kennelPaymentNonMemberSurcharge3
-          ? _value.kennelPaymentNonMemberSurcharge3
+          ? _self.kennelPaymentNonMemberSurcharge3
           : kennelPaymentNonMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
               as double?,
       runCountStartDate: freezed == runCountStartDate
-          ? _value.runCountStartDate
+          ? _self.runCountStartDate
           : runCountStartDate // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       kennelMismanagementTeam: freezed == kennelMismanagementTeam
-          ? _value.kennelMismanagementTeam
+          ? _self.kennelMismanagementTeam
           : kennelMismanagementTeam // ignore: cast_nullable_to_non_nullable
               as String?,
       distancePreference: freezed == distancePreference
-          ? _value.distancePreference
+          ? _self.distancePreference
           : distancePreference // ignore: cast_nullable_to_non_nullable
               as int?,
       updatedAt: freezed == updatedAt
-          ? _value.updatedAt
+          ? _self.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       removed: freezed == removed
-          ? _value.removed
+          ? _self.removed
           : removed // ignore: cast_nullable_to_non_nullable
               as int?,
     ));
@@ -833,8 +702,8 @@ class __$$KennelsModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$KennelsModelImpl implements _KennelsModel {
-  _$KennelsModelImpl(
+class _KennelsModel with DiagnosticableTreeMixin implements KennelsModel {
+  _KennelsModel(
       {required this.kennelId,
       required this.publicKennelId,
       required this.cityId,
@@ -843,6 +712,7 @@ class _$KennelsModelImpl implements _KennelsModel {
       required this.kennelName,
       this.kennelSearchTags,
       required this.kennelShortName,
+      required this.kennelUniqueShortName,
       this.kennelDescription,
       required this.kennelLogo,
       required this.kennelPinColor,
@@ -891,9 +761,8 @@ class _$KennelsModelImpl implements _KennelsModel {
       this.distancePreference,
       this.updatedAt,
       this.removed});
-
-  factory _$KennelsModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$KennelsModelImplFromJson(json);
+  factory _KennelsModel.fromJson(Map<String, dynamic> json) =>
+      _$KennelsModelFromJson(json);
 
   @override
   final String kennelId;
@@ -911,6 +780,8 @@ class _$KennelsModelImpl implements _KennelsModel {
   final String? kennelSearchTags;
   @override
   final String kennelShortName;
+  @override
+  final String kennelUniqueShortName;
   @override
   final String? kennelDescription;
   @override
@@ -1008,16 +879,105 @@ class _$KennelsModelImpl implements _KennelsModel {
   @override
   final int? removed;
 
+  /// Create a copy of KennelsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'KennelsModel(kennelId: $kennelId, publicKennelId: $publicKennelId, cityId: $cityId, regionId: $regionId, countryId: $countryId, kennelName: $kennelName, kennelSearchTags: $kennelSearchTags, kennelShortName: $kennelShortName, kennelDescription: $kennelDescription, kennelLogo: $kennelLogo, kennelPinColor: $kennelPinColor, disseminateAllowWebLinks: $disseminateAllowWebLinks, kennelCoverPhoto: $kennelCoverPhoto, kennelWebsiteUrl: $kennelWebsiteUrl, defaultEventCurrencyType: $defaultEventCurrencyType, integrationType: $integrationType, kennelInboundIntegrationId: $kennelInboundIntegrationId, kennelEventsUrl: $kennelEventsUrl, kennelStatus: $kennelStatus, canEditRunAttendence: $canEditRunAttendence, allowNegativeCredit: $allowNegativeCredit, allowSelfPayment: $allowSelfPayment, kennelLatitude: $kennelLatitude, kennelLongitude: $kennelLongitude, defaultPriceForMembers: $defaultPriceForMembers, defaultPriceForNonMembers: $defaultPriceForNonMembers, membershipDurationInMonths: $membershipDurationInMonths, defaultRunStartTime: $defaultRunStartTime, currencyCode: $currencyCode, primaryCultureCode: $primaryCultureCode, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, bankScheme: $bankScheme, bankAccountNumber: $bankAccountNumber, bankBic: $bankBic, bankBeneficiary: $bankBeneficiary, kennelPaymentScheme: $kennelPaymentScheme, kennelPaymentUrl: $kennelPaymentUrl, kennelPaymentUrlExpires: $kennelPaymentUrlExpires, kennelPaymentMemberSurcharge: $kennelPaymentMemberSurcharge, kennelPaymentNonMemberSurcharge: $kennelPaymentNonMemberSurcharge, kennelPaymentScheme2: $kennelPaymentScheme2, kennelPaymentUrl2: $kennelPaymentUrl2, kennelPaymentUrlExpires2: $kennelPaymentUrlExpires2, kennelPaymentMemberSurcharge2: $kennelPaymentMemberSurcharge2, kennelPaymentNonMemberSurcharge2: $kennelPaymentNonMemberSurcharge2, kennelPaymentScheme3: $kennelPaymentScheme3, kennelPaymentUrl3: $kennelPaymentUrl3, kennelPaymentUrlExpires3: $kennelPaymentUrlExpires3, kennelPaymentMemberSurcharge3: $kennelPaymentMemberSurcharge3, kennelPaymentNonMemberSurcharge3: $kennelPaymentNonMemberSurcharge3, runCountStartDate: $runCountStartDate, kennelMismanagementTeam: $kennelMismanagementTeam, distancePreference: $distancePreference, updatedAt: $updatedAt, removed: $removed)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$KennelsModelCopyWith<_KennelsModel> get copyWith =>
+      __$KennelsModelCopyWithImpl<_KennelsModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$KennelsModelToJson(
+      this,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'KennelsModel'))
+      ..add(DiagnosticsProperty('kennelId', kennelId))
+      ..add(DiagnosticsProperty('publicKennelId', publicKennelId))
+      ..add(DiagnosticsProperty('cityId', cityId))
+      ..add(DiagnosticsProperty('regionId', regionId))
+      ..add(DiagnosticsProperty('countryId', countryId))
+      ..add(DiagnosticsProperty('kennelName', kennelName))
+      ..add(DiagnosticsProperty('kennelSearchTags', kennelSearchTags))
+      ..add(DiagnosticsProperty('kennelShortName', kennelShortName))
+      ..add(DiagnosticsProperty('kennelUniqueShortName', kennelUniqueShortName))
+      ..add(DiagnosticsProperty('kennelDescription', kennelDescription))
+      ..add(DiagnosticsProperty('kennelLogo', kennelLogo))
+      ..add(DiagnosticsProperty('kennelPinColor', kennelPinColor))
+      ..add(DiagnosticsProperty(
+          'disseminateAllowWebLinks', disseminateAllowWebLinks))
+      ..add(DiagnosticsProperty('kennelCoverPhoto', kennelCoverPhoto))
+      ..add(DiagnosticsProperty('kennelWebsiteUrl', kennelWebsiteUrl))
+      ..add(DiagnosticsProperty(
+          'defaultEventCurrencyType', defaultEventCurrencyType))
+      ..add(DiagnosticsProperty('integrationType', integrationType))
+      ..add(DiagnosticsProperty(
+          'kennelInboundIntegrationId', kennelInboundIntegrationId))
+      ..add(DiagnosticsProperty('kennelEventsUrl', kennelEventsUrl))
+      ..add(DiagnosticsProperty('kennelStatus', kennelStatus))
+      ..add(DiagnosticsProperty('canEditRunAttendence', canEditRunAttendence))
+      ..add(DiagnosticsProperty('allowNegativeCredit', allowNegativeCredit))
+      ..add(DiagnosticsProperty('allowSelfPayment', allowSelfPayment))
+      ..add(DiagnosticsProperty('kennelLatitude', kennelLatitude))
+      ..add(DiagnosticsProperty('kennelLongitude', kennelLongitude))
+      ..add(
+          DiagnosticsProperty('defaultPriceForMembers', defaultPriceForMembers))
+      ..add(DiagnosticsProperty(
+          'defaultPriceForNonMembers', defaultPriceForNonMembers))
+      ..add(DiagnosticsProperty(
+          'membershipDurationInMonths', membershipDurationInMonths))
+      ..add(DiagnosticsProperty('defaultRunStartTime', defaultRunStartTime))
+      ..add(DiagnosticsProperty('currencyCode', currencyCode))
+      ..add(DiagnosticsProperty('primaryCultureCode', primaryCultureCode))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('bankScheme', bankScheme))
+      ..add(DiagnosticsProperty('bankAccountNumber', bankAccountNumber))
+      ..add(DiagnosticsProperty('bankBic', bankBic))
+      ..add(DiagnosticsProperty('bankBeneficiary', bankBeneficiary))
+      ..add(DiagnosticsProperty('kennelPaymentScheme', kennelPaymentScheme))
+      ..add(DiagnosticsProperty('kennelPaymentUrl', kennelPaymentUrl))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentUrlExpires', kennelPaymentUrlExpires))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentMemberSurcharge', kennelPaymentMemberSurcharge))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentNonMemberSurcharge', kennelPaymentNonMemberSurcharge))
+      ..add(DiagnosticsProperty('kennelPaymentScheme2', kennelPaymentScheme2))
+      ..add(DiagnosticsProperty('kennelPaymentUrl2', kennelPaymentUrl2))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentUrlExpires2', kennelPaymentUrlExpires2))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentMemberSurcharge2', kennelPaymentMemberSurcharge2))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentNonMemberSurcharge2', kennelPaymentNonMemberSurcharge2))
+      ..add(DiagnosticsProperty('kennelPaymentScheme3', kennelPaymentScheme3))
+      ..add(DiagnosticsProperty('kennelPaymentUrl3', kennelPaymentUrl3))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentUrlExpires3', kennelPaymentUrlExpires3))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentMemberSurcharge3', kennelPaymentMemberSurcharge3))
+      ..add(DiagnosticsProperty(
+          'kennelPaymentNonMemberSurcharge3', kennelPaymentNonMemberSurcharge3))
+      ..add(DiagnosticsProperty('runCountStartDate', runCountStartDate))
+      ..add(DiagnosticsProperty(
+          'kennelMismanagementTeam', kennelMismanagementTeam))
+      ..add(DiagnosticsProperty('distancePreference', distancePreference))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt))
+      ..add(DiagnosticsProperty('removed', removed));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$KennelsModelImpl &&
+            other is _KennelsModel &&
             (identical(other.kennelId, kennelId) ||
                 other.kennelId == kennelId) &&
             (identical(other.publicKennelId, publicKennelId) ||
@@ -1033,6 +993,8 @@ class _$KennelsModelImpl implements _KennelsModel {
                 other.kennelSearchTags == kennelSearchTags) &&
             (identical(other.kennelShortName, kennelShortName) ||
                 other.kennelShortName == kennelShortName) &&
+            (identical(other.kennelUniqueShortName, kennelUniqueShortName) ||
+                other.kennelUniqueShortName == kennelUniqueShortName) &&
             (identical(other.kennelDescription, kennelDescription) ||
                 other.kennelDescription == kennelDescription) &&
             (identical(other.kennelLogo, kennelLogo) ||
@@ -1119,6 +1081,7 @@ class _$KennelsModelImpl implements _KennelsModel {
         kennelName,
         kennelSearchTags,
         kennelShortName,
+        kennelUniqueShortName,
         kennelDescription,
         kennelLogo,
         kennelPinColor,
@@ -1169,201 +1132,385 @@ class _$KennelsModelImpl implements _KennelsModel {
         removed
       ]);
 
-  /// Create a copy of KennelsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$KennelsModelImplCopyWith<_$KennelsModelImpl> get copyWith =>
-      __$$KennelsModelImplCopyWithImpl<_$KennelsModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$KennelsModelImplToJson(
-      this,
-    );
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'KennelsModel(kennelId: $kennelId, publicKennelId: $publicKennelId, cityId: $cityId, regionId: $regionId, countryId: $countryId, kennelName: $kennelName, kennelSearchTags: $kennelSearchTags, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelDescription: $kennelDescription, kennelLogo: $kennelLogo, kennelPinColor: $kennelPinColor, disseminateAllowWebLinks: $disseminateAllowWebLinks, kennelCoverPhoto: $kennelCoverPhoto, kennelWebsiteUrl: $kennelWebsiteUrl, defaultEventCurrencyType: $defaultEventCurrencyType, integrationType: $integrationType, kennelInboundIntegrationId: $kennelInboundIntegrationId, kennelEventsUrl: $kennelEventsUrl, kennelStatus: $kennelStatus, canEditRunAttendence: $canEditRunAttendence, allowNegativeCredit: $allowNegativeCredit, allowSelfPayment: $allowSelfPayment, kennelLatitude: $kennelLatitude, kennelLongitude: $kennelLongitude, defaultPriceForMembers: $defaultPriceForMembers, defaultPriceForNonMembers: $defaultPriceForNonMembers, membershipDurationInMonths: $membershipDurationInMonths, defaultRunStartTime: $defaultRunStartTime, currencyCode: $currencyCode, primaryCultureCode: $primaryCultureCode, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, bankScheme: $bankScheme, bankAccountNumber: $bankAccountNumber, bankBic: $bankBic, bankBeneficiary: $bankBeneficiary, kennelPaymentScheme: $kennelPaymentScheme, kennelPaymentUrl: $kennelPaymentUrl, kennelPaymentUrlExpires: $kennelPaymentUrlExpires, kennelPaymentMemberSurcharge: $kennelPaymentMemberSurcharge, kennelPaymentNonMemberSurcharge: $kennelPaymentNonMemberSurcharge, kennelPaymentScheme2: $kennelPaymentScheme2, kennelPaymentUrl2: $kennelPaymentUrl2, kennelPaymentUrlExpires2: $kennelPaymentUrlExpires2, kennelPaymentMemberSurcharge2: $kennelPaymentMemberSurcharge2, kennelPaymentNonMemberSurcharge2: $kennelPaymentNonMemberSurcharge2, kennelPaymentScheme3: $kennelPaymentScheme3, kennelPaymentUrl3: $kennelPaymentUrl3, kennelPaymentUrlExpires3: $kennelPaymentUrlExpires3, kennelPaymentMemberSurcharge3: $kennelPaymentMemberSurcharge3, kennelPaymentNonMemberSurcharge3: $kennelPaymentNonMemberSurcharge3, runCountStartDate: $runCountStartDate, kennelMismanagementTeam: $kennelMismanagementTeam, distancePreference: $distancePreference, updatedAt: $updatedAt, removed: $removed)';
   }
 }
 
-abstract class _KennelsModel implements KennelsModel {
-  factory _KennelsModel(
-      {required final String kennelId,
-      required final String publicKennelId,
-      required final String cityId,
-      required final String regionId,
-      required final String countryId,
-      required final String kennelName,
-      final String? kennelSearchTags,
-      required final String kennelShortName,
-      final String? kennelDescription,
-      required final String kennelLogo,
-      required final int kennelPinColor,
-      required final int disseminateAllowWebLinks,
-      final String? kennelCoverPhoto,
-      final String? kennelWebsiteUrl,
-      final String? defaultEventCurrencyType,
-      final String? integrationType,
-      final int? kennelInboundIntegrationId,
-      final String? kennelEventsUrl,
-      required final int kennelStatus,
-      required final int canEditRunAttendence,
-      required final int allowNegativeCredit,
-      required final int allowSelfPayment,
-      final double? kennelLatitude,
-      final double? kennelLongitude,
-      required final double defaultPriceForMembers,
-      required final double defaultPriceForNonMembers,
-      required final int membershipDurationInMonths,
-      required final DateTime defaultRunStartTime,
-      final String? currencyCode,
-      final String? primaryCultureCode,
-      final String? currencySymbol,
-      final int? digitsAfterDecimal,
-      final String? bankScheme,
-      final String? bankAccountNumber,
-      final String? bankBic,
-      final String? bankBeneficiary,
-      final String? kennelPaymentScheme,
-      final String? kennelPaymentUrl,
-      final DateTime? kennelPaymentUrlExpires,
-      final double? kennelPaymentMemberSurcharge,
-      final double? kennelPaymentNonMemberSurcharge,
-      final String? kennelPaymentScheme2,
-      final String? kennelPaymentUrl2,
-      final DateTime? kennelPaymentUrlExpires2,
-      final double? kennelPaymentMemberSurcharge2,
-      final double? kennelPaymentNonMemberSurcharge2,
-      final String? kennelPaymentScheme3,
-      final String? kennelPaymentUrl3,
-      final DateTime? kennelPaymentUrlExpires3,
-      final double? kennelPaymentMemberSurcharge3,
-      final double? kennelPaymentNonMemberSurcharge3,
-      final DateTime? runCountStartDate,
-      final String? kennelMismanagementTeam,
-      final int? distancePreference,
-      final DateTime? updatedAt,
-      final int? removed}) = _$KennelsModelImpl;
+/// @nodoc
+abstract mixin class _$KennelsModelCopyWith<$Res>
+    implements $KennelsModelCopyWith<$Res> {
+  factory _$KennelsModelCopyWith(
+          _KennelsModel value, $Res Function(_KennelsModel) _then) =
+      __$KennelsModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String kennelId,
+      String publicKennelId,
+      String cityId,
+      String regionId,
+      String countryId,
+      String kennelName,
+      String? kennelSearchTags,
+      String kennelShortName,
+      String kennelUniqueShortName,
+      String? kennelDescription,
+      String kennelLogo,
+      int kennelPinColor,
+      int disseminateAllowWebLinks,
+      String? kennelCoverPhoto,
+      String? kennelWebsiteUrl,
+      String? defaultEventCurrencyType,
+      String? integrationType,
+      int? kennelInboundIntegrationId,
+      String? kennelEventsUrl,
+      int kennelStatus,
+      int canEditRunAttendence,
+      int allowNegativeCredit,
+      int allowSelfPayment,
+      double? kennelLatitude,
+      double? kennelLongitude,
+      double defaultPriceForMembers,
+      double defaultPriceForNonMembers,
+      int membershipDurationInMonths,
+      DateTime defaultRunStartTime,
+      String? currencyCode,
+      String? primaryCultureCode,
+      String? currencySymbol,
+      int? digitsAfterDecimal,
+      String? bankScheme,
+      String? bankAccountNumber,
+      String? bankBic,
+      String? bankBeneficiary,
+      String? kennelPaymentScheme,
+      String? kennelPaymentUrl,
+      DateTime? kennelPaymentUrlExpires,
+      double? kennelPaymentMemberSurcharge,
+      double? kennelPaymentNonMemberSurcharge,
+      String? kennelPaymentScheme2,
+      String? kennelPaymentUrl2,
+      DateTime? kennelPaymentUrlExpires2,
+      double? kennelPaymentMemberSurcharge2,
+      double? kennelPaymentNonMemberSurcharge2,
+      String? kennelPaymentScheme3,
+      String? kennelPaymentUrl3,
+      DateTime? kennelPaymentUrlExpires3,
+      double? kennelPaymentMemberSurcharge3,
+      double? kennelPaymentNonMemberSurcharge3,
+      DateTime? runCountStartDate,
+      String? kennelMismanagementTeam,
+      int? distancePreference,
+      DateTime? updatedAt,
+      int? removed});
+}
 
-  factory _KennelsModel.fromJson(Map<String, dynamic> json) =
-      _$KennelsModelImpl.fromJson;
+/// @nodoc
+class __$KennelsModelCopyWithImpl<$Res>
+    implements _$KennelsModelCopyWith<$Res> {
+  __$KennelsModelCopyWithImpl(this._self, this._then);
 
-  @override
-  String get kennelId;
-  @override
-  String get publicKennelId;
-  @override
-  String get cityId;
-  @override
-  String get regionId;
-  @override
-  String get countryId;
-  @override
-  String get kennelName;
-  @override
-  String? get kennelSearchTags;
-  @override
-  String get kennelShortName;
-  @override
-  String? get kennelDescription;
-  @override
-  String get kennelLogo;
-  @override
-  int get kennelPinColor;
-  @override
-  int get disseminateAllowWebLinks;
-  @override
-  String? get kennelCoverPhoto;
-  @override
-  String? get kennelWebsiteUrl;
-  @override
-  String? get defaultEventCurrencyType;
-  @override
-  String? get integrationType;
-  @override
-  int? get kennelInboundIntegrationId;
-  @override
-  String? get kennelEventsUrl;
-  @override
-  int get kennelStatus;
-  @override
-  int get canEditRunAttendence;
-  @override
-  int get allowNegativeCredit;
-  @override
-  int get allowSelfPayment;
-  @override
-  double? get kennelLatitude;
-  @override
-  double? get kennelLongitude;
-  @override
-  double get defaultPriceForMembers;
-  @override
-  double get defaultPriceForNonMembers;
-  @override
-  int get membershipDurationInMonths;
-  @override
-  DateTime get defaultRunStartTime;
-  @override
-  String? get currencyCode;
-  @override
-  String? get primaryCultureCode;
-  @override
-  String? get currencySymbol;
-  @override
-  int? get digitsAfterDecimal;
-  @override
-  String? get bankScheme;
-  @override
-  String? get bankAccountNumber;
-  @override
-  String? get bankBic;
-  @override
-  String? get bankBeneficiary;
-  @override
-  String? get kennelPaymentScheme;
-  @override
-  String? get kennelPaymentUrl;
-  @override
-  DateTime? get kennelPaymentUrlExpires;
-  @override
-  double? get kennelPaymentMemberSurcharge;
-  @override
-  double? get kennelPaymentNonMemberSurcharge;
-  @override
-  String? get kennelPaymentScheme2;
-  @override
-  String? get kennelPaymentUrl2;
-  @override
-  DateTime? get kennelPaymentUrlExpires2;
-  @override
-  double? get kennelPaymentMemberSurcharge2;
-  @override
-  double? get kennelPaymentNonMemberSurcharge2;
-  @override
-  String? get kennelPaymentScheme3;
-  @override
-  String? get kennelPaymentUrl3;
-  @override
-  DateTime? get kennelPaymentUrlExpires3;
-  @override
-  double? get kennelPaymentMemberSurcharge3;
-  @override
-  double? get kennelPaymentNonMemberSurcharge3;
-  @override
-  DateTime? get runCountStartDate;
-  @override
-  String? get kennelMismanagementTeam;
-  @override
-  int? get distancePreference;
-  @override
-  DateTime? get updatedAt;
-  @override
-  int? get removed;
+  final _KennelsModel _self;
+  final $Res Function(_KennelsModel) _then;
 
   /// Create a copy of KennelsModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$KennelsModelImplCopyWith<_$KennelsModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? kennelId = null,
+    Object? publicKennelId = null,
+    Object? cityId = null,
+    Object? regionId = null,
+    Object? countryId = null,
+    Object? kennelName = null,
+    Object? kennelSearchTags = freezed,
+    Object? kennelShortName = null,
+    Object? kennelUniqueShortName = null,
+    Object? kennelDescription = freezed,
+    Object? kennelLogo = null,
+    Object? kennelPinColor = null,
+    Object? disseminateAllowWebLinks = null,
+    Object? kennelCoverPhoto = freezed,
+    Object? kennelWebsiteUrl = freezed,
+    Object? defaultEventCurrencyType = freezed,
+    Object? integrationType = freezed,
+    Object? kennelInboundIntegrationId = freezed,
+    Object? kennelEventsUrl = freezed,
+    Object? kennelStatus = null,
+    Object? canEditRunAttendence = null,
+    Object? allowNegativeCredit = null,
+    Object? allowSelfPayment = null,
+    Object? kennelLatitude = freezed,
+    Object? kennelLongitude = freezed,
+    Object? defaultPriceForMembers = null,
+    Object? defaultPriceForNonMembers = null,
+    Object? membershipDurationInMonths = null,
+    Object? defaultRunStartTime = null,
+    Object? currencyCode = freezed,
+    Object? primaryCultureCode = freezed,
+    Object? currencySymbol = freezed,
+    Object? digitsAfterDecimal = freezed,
+    Object? bankScheme = freezed,
+    Object? bankAccountNumber = freezed,
+    Object? bankBic = freezed,
+    Object? bankBeneficiary = freezed,
+    Object? kennelPaymentScheme = freezed,
+    Object? kennelPaymentUrl = freezed,
+    Object? kennelPaymentUrlExpires = freezed,
+    Object? kennelPaymentMemberSurcharge = freezed,
+    Object? kennelPaymentNonMemberSurcharge = freezed,
+    Object? kennelPaymentScheme2 = freezed,
+    Object? kennelPaymentUrl2 = freezed,
+    Object? kennelPaymentUrlExpires2 = freezed,
+    Object? kennelPaymentMemberSurcharge2 = freezed,
+    Object? kennelPaymentNonMemberSurcharge2 = freezed,
+    Object? kennelPaymentScheme3 = freezed,
+    Object? kennelPaymentUrl3 = freezed,
+    Object? kennelPaymentUrlExpires3 = freezed,
+    Object? kennelPaymentMemberSurcharge3 = freezed,
+    Object? kennelPaymentNonMemberSurcharge3 = freezed,
+    Object? runCountStartDate = freezed,
+    Object? kennelMismanagementTeam = freezed,
+    Object? distancePreference = freezed,
+    Object? updatedAt = freezed,
+    Object? removed = freezed,
+  }) {
+    return _then(_KennelsModel(
+      kennelId: null == kennelId
+          ? _self.kennelId
+          : kennelId // ignore: cast_nullable_to_non_nullable
+              as String,
+      publicKennelId: null == publicKennelId
+          ? _self.publicKennelId
+          : publicKennelId // ignore: cast_nullable_to_non_nullable
+              as String,
+      cityId: null == cityId
+          ? _self.cityId
+          : cityId // ignore: cast_nullable_to_non_nullable
+              as String,
+      regionId: null == regionId
+          ? _self.regionId
+          : regionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      countryId: null == countryId
+          ? _self.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelName: null == kennelName
+          ? _self.kennelName
+          : kennelName // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelSearchTags: freezed == kennelSearchTags
+          ? _self.kennelSearchTags
+          : kennelSearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelShortName: null == kennelShortName
+          ? _self.kennelShortName
+          : kennelShortName // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelUniqueShortName: null == kennelUniqueShortName
+          ? _self.kennelUniqueShortName
+          : kennelUniqueShortName // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelDescription: freezed == kennelDescription
+          ? _self.kennelDescription
+          : kennelDescription // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelLogo: null == kennelLogo
+          ? _self.kennelLogo
+          : kennelLogo // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelPinColor: null == kennelPinColor
+          ? _self.kennelPinColor
+          : kennelPinColor // ignore: cast_nullable_to_non_nullable
+              as int,
+      disseminateAllowWebLinks: null == disseminateAllowWebLinks
+          ? _self.disseminateAllowWebLinks
+          : disseminateAllowWebLinks // ignore: cast_nullable_to_non_nullable
+              as int,
+      kennelCoverPhoto: freezed == kennelCoverPhoto
+          ? _self.kennelCoverPhoto
+          : kennelCoverPhoto // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelWebsiteUrl: freezed == kennelWebsiteUrl
+          ? _self.kennelWebsiteUrl
+          : kennelWebsiteUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      defaultEventCurrencyType: freezed == defaultEventCurrencyType
+          ? _self.defaultEventCurrencyType
+          : defaultEventCurrencyType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      integrationType: freezed == integrationType
+          ? _self.integrationType
+          : integrationType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelInboundIntegrationId: freezed == kennelInboundIntegrationId
+          ? _self.kennelInboundIntegrationId
+          : kennelInboundIntegrationId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      kennelEventsUrl: freezed == kennelEventsUrl
+          ? _self.kennelEventsUrl
+          : kennelEventsUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelStatus: null == kennelStatus
+          ? _self.kennelStatus
+          : kennelStatus // ignore: cast_nullable_to_non_nullable
+              as int,
+      canEditRunAttendence: null == canEditRunAttendence
+          ? _self.canEditRunAttendence
+          : canEditRunAttendence // ignore: cast_nullable_to_non_nullable
+              as int,
+      allowNegativeCredit: null == allowNegativeCredit
+          ? _self.allowNegativeCredit
+          : allowNegativeCredit // ignore: cast_nullable_to_non_nullable
+              as int,
+      allowSelfPayment: null == allowSelfPayment
+          ? _self.allowSelfPayment
+          : allowSelfPayment // ignore: cast_nullable_to_non_nullable
+              as int,
+      kennelLatitude: freezed == kennelLatitude
+          ? _self.kennelLatitude
+          : kennelLatitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      kennelLongitude: freezed == kennelLongitude
+          ? _self.kennelLongitude
+          : kennelLongitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      defaultPriceForMembers: null == defaultPriceForMembers
+          ? _self.defaultPriceForMembers
+          : defaultPriceForMembers // ignore: cast_nullable_to_non_nullable
+              as double,
+      defaultPriceForNonMembers: null == defaultPriceForNonMembers
+          ? _self.defaultPriceForNonMembers
+          : defaultPriceForNonMembers // ignore: cast_nullable_to_non_nullable
+              as double,
+      membershipDurationInMonths: null == membershipDurationInMonths
+          ? _self.membershipDurationInMonths
+          : membershipDurationInMonths // ignore: cast_nullable_to_non_nullable
+              as int,
+      defaultRunStartTime: null == defaultRunStartTime
+          ? _self.defaultRunStartTime
+          : defaultRunStartTime // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      currencyCode: freezed == currencyCode
+          ? _self.currencyCode
+          : currencyCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      primaryCultureCode: freezed == primaryCultureCode
+          ? _self.primaryCultureCode
+          : primaryCultureCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      currencySymbol: freezed == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String?,
+      digitsAfterDecimal: freezed == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int?,
+      bankScheme: freezed == bankScheme
+          ? _self.bankScheme
+          : bankScheme // ignore: cast_nullable_to_non_nullable
+              as String?,
+      bankAccountNumber: freezed == bankAccountNumber
+          ? _self.bankAccountNumber
+          : bankAccountNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      bankBic: freezed == bankBic
+          ? _self.bankBic
+          : bankBic // ignore: cast_nullable_to_non_nullable
+              as String?,
+      bankBeneficiary: freezed == bankBeneficiary
+          ? _self.bankBeneficiary
+          : bankBeneficiary // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelPaymentScheme: freezed == kennelPaymentScheme
+          ? _self.kennelPaymentScheme
+          : kennelPaymentScheme // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelPaymentUrl: freezed == kennelPaymentUrl
+          ? _self.kennelPaymentUrl
+          : kennelPaymentUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelPaymentUrlExpires: freezed == kennelPaymentUrlExpires
+          ? _self.kennelPaymentUrlExpires
+          : kennelPaymentUrlExpires // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      kennelPaymentMemberSurcharge: freezed == kennelPaymentMemberSurcharge
+          ? _self.kennelPaymentMemberSurcharge
+          : kennelPaymentMemberSurcharge // ignore: cast_nullable_to_non_nullable
+              as double?,
+      kennelPaymentNonMemberSurcharge: freezed ==
+              kennelPaymentNonMemberSurcharge
+          ? _self.kennelPaymentNonMemberSurcharge
+          : kennelPaymentNonMemberSurcharge // ignore: cast_nullable_to_non_nullable
+              as double?,
+      kennelPaymentScheme2: freezed == kennelPaymentScheme2
+          ? _self.kennelPaymentScheme2
+          : kennelPaymentScheme2 // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelPaymentUrl2: freezed == kennelPaymentUrl2
+          ? _self.kennelPaymentUrl2
+          : kennelPaymentUrl2 // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelPaymentUrlExpires2: freezed == kennelPaymentUrlExpires2
+          ? _self.kennelPaymentUrlExpires2
+          : kennelPaymentUrlExpires2 // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      kennelPaymentMemberSurcharge2: freezed == kennelPaymentMemberSurcharge2
+          ? _self.kennelPaymentMemberSurcharge2
+          : kennelPaymentMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
+              as double?,
+      kennelPaymentNonMemberSurcharge2: freezed ==
+              kennelPaymentNonMemberSurcharge2
+          ? _self.kennelPaymentNonMemberSurcharge2
+          : kennelPaymentNonMemberSurcharge2 // ignore: cast_nullable_to_non_nullable
+              as double?,
+      kennelPaymentScheme3: freezed == kennelPaymentScheme3
+          ? _self.kennelPaymentScheme3
+          : kennelPaymentScheme3 // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelPaymentUrl3: freezed == kennelPaymentUrl3
+          ? _self.kennelPaymentUrl3
+          : kennelPaymentUrl3 // ignore: cast_nullable_to_non_nullable
+              as String?,
+      kennelPaymentUrlExpires3: freezed == kennelPaymentUrlExpires3
+          ? _self.kennelPaymentUrlExpires3
+          : kennelPaymentUrlExpires3 // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      kennelPaymentMemberSurcharge3: freezed == kennelPaymentMemberSurcharge3
+          ? _self.kennelPaymentMemberSurcharge3
+          : kennelPaymentMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
+              as double?,
+      kennelPaymentNonMemberSurcharge3: freezed ==
+              kennelPaymentNonMemberSurcharge3
+          ? _self.kennelPaymentNonMemberSurcharge3
+          : kennelPaymentNonMemberSurcharge3 // ignore: cast_nullable_to_non_nullable
+              as double?,
+      runCountStartDate: freezed == runCountStartDate
+          ? _self.runCountStartDate
+          : runCountStartDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      kennelMismanagementTeam: freezed == kennelMismanagementTeam
+          ? _self.kennelMismanagementTeam
+          : kennelMismanagementTeam // ignore: cast_nullable_to_non_nullable
+              as String?,
+      distancePreference: freezed == distancePreference
+          ? _self.distancePreference
+          : distancePreference // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
+  }
 }
+
+// dart format on

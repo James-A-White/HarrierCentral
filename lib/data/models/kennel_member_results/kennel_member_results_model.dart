@@ -4,7 +4,9 @@ part 'kennel_member_results_model.freezed.dart';
 part 'kennel_member_results_model.g.dart';
 
 @freezed
-class KennelMemberResultsModel with _$KennelMemberResultsModel implements BaseModel {
+abstract class KennelMemberResultsModel
+    with _$KennelMemberResultsModel
+    implements BaseModel {
   factory KennelMemberResultsModel({
     required String hasherId,
     required String dispName,
@@ -26,10 +28,13 @@ class KennelMemberResultsModel with _$KennelMemberResultsModel implements BaseMo
     String? kennelShortName,
     @Default(0.0) double kennelCredit,
     @Default(0) int memberFollowingStatus,
-    @Default(false) @JsonKey(includeFromJson: false, includeToJson: false) bool memberInfoBeingUpdated,
+    @Default(false)
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    bool memberInfoBeingUpdated,
   }) = _KennelMemberResultsModel;
 
-  factory KennelMemberResultsModel.fromJson(Map<String, dynamic> json) => _$KennelMemberResultsModelFromJson(json);
+  factory KennelMemberResultsModel.fromJson(Map<String, dynamic> json) =>
+      _$KennelMemberResultsModelFromJson(json);
 
   @override
   factory KennelMemberResultsModel.fromMap(Map<String, dynamic> map) {

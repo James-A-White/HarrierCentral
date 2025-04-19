@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,591 +10,100 @@ part of 'hasher_event_map_model_ns.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
 
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) {
-  return _HasherEventMapModel.fromJson(json);
-}
-
 /// @nodoc
-mixin _$HasherEventMapModel {
-  String get hemId => throw _privateConstructorUsedError;
-  String get userId => throw _privateConstructorUsedError;
-  String get eventId => throw _privateConstructorUsedError;
-  String? get hasherOwnEventId => throw _privateConstructorUsedError;
-  String? get userStartEvent => throw _privateConstructorUsedError;
-  String? get userEndEvent => throw _privateConstructorUsedError;
-  int get rsvpState => throw _privateConstructorUsedError;
-  int get attendenceState => throw _privateConstructorUsedError;
-  int get isHare => throw _privateConstructorUsedError;
-  int? get eventNotificationPreference => throw _privateConstructorUsedError;
-  int? get eventEmailAlertPreference => throw _privateConstructorUsedError;
-  int? get totalHaring => throw _privateConstructorUsedError;
-  int? get totalHaringThisKennel => throw _privateConstructorUsedError;
-  int? get totalRuns => throw _privateConstructorUsedError;
-  int? get totalRunsThisKennel => throw _privateConstructorUsedError;
-  int? get eventCountOverride => throw _privateConstructorUsedError;
-  int get virginVisitorType => throw _privateConstructorUsedError;
-  String? get displayName => throw _privateConstructorUsedError;
-  String? get email => throw _privateConstructorUsedError;
-  String? get phoneNumber =>
-      throw _privateConstructorUsedError; // these fields are cached from the event itself. This enables us to keep run count information without
+mixin _$HasherEventMapModel implements DiagnosticableTreeMixin {
+  String get hemId;
+  String get userId;
+  String get eventId;
+  String? get hasherOwnEventId;
+  String? get userStartEvent;
+  String? get userEndEvent;
+  int get rsvpState;
+  int get attendenceState;
+  int get isHare;
+  int? get eventNotificationPreference;
+  int? get eventEmailAlertPreference;
+  int? get totalHaring;
+  int? get totalHaringThisKennel;
+  int? get totalRuns;
+  int? get totalRunsThisKennel;
+  int? get eventCountOverride;
+  int get virginVisitorType;
+  String? get displayName;
+  String? get email;
+  String?
+      get phoneNumber; // these fields are cached from the event itself. This enables us to keep run count information without
 // having to have the actual run cached on the phone
-  String? get hemEventName => throw _privateConstructorUsedError;
-  int? get hemEventNumber => throw _privateConstructorUsedError;
-  DateTime get hemEventStartDatetime => throw _privateConstructorUsedError;
-  int? get hemCanEditRunAttendence => throw _privateConstructorUsedError;
-  String? get hemEventKennelId => throw _privateConstructorUsedError;
-  int? get hemEventIsCountedAndVisible => throw _privateConstructorUsedError;
-  String? get hemKennelUserPhoto => throw _privateConstructorUsedError;
-  String? get hemKennelHashName => throw _privateConstructorUsedError;
-  int? get removed => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
-
-  /// Serializes this HasherEventMapModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get hemEventName;
+  int? get hemEventNumber;
+  DateTime get hemEventStartDatetime;
+  int? get hemCanEditRunAttendence;
+  String? get hemEventKennelId;
+  int? get hemEventIsCountedAndVisible;
+  String? get hemKennelUserPhoto;
+  String? get hemKennelHashName;
+  int? get removed;
+  DateTime? get updatedAt;
 
   /// Create a copy of HasherEventMapModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $HasherEventMapModelCopyWith<HasherEventMapModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$HasherEventMapModelCopyWithImpl<HasherEventMapModel>(
+          this as HasherEventMapModel, _$identity);
 
-/// @nodoc
-abstract class $HasherEventMapModelCopyWith<$Res> {
-  factory $HasherEventMapModelCopyWith(
-          HasherEventMapModel value, $Res Function(HasherEventMapModel) then) =
-      _$HasherEventMapModelCopyWithImpl<$Res, HasherEventMapModel>;
-  @useResult
-  $Res call(
-      {String hemId,
-      String userId,
-      String eventId,
-      String? hasherOwnEventId,
-      String? userStartEvent,
-      String? userEndEvent,
-      int rsvpState,
-      int attendenceState,
-      int isHare,
-      int? eventNotificationPreference,
-      int? eventEmailAlertPreference,
-      int? totalHaring,
-      int? totalHaringThisKennel,
-      int? totalRuns,
-      int? totalRunsThisKennel,
-      int? eventCountOverride,
-      int virginVisitorType,
-      String? displayName,
-      String? email,
-      String? phoneNumber,
-      String? hemEventName,
-      int? hemEventNumber,
-      DateTime hemEventStartDatetime,
-      int? hemCanEditRunAttendence,
-      String? hemEventKennelId,
-      int? hemEventIsCountedAndVisible,
-      String? hemKennelUserPhoto,
-      String? hemKennelHashName,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class _$HasherEventMapModelCopyWithImpl<$Res, $Val extends HasherEventMapModel>
-    implements $HasherEventMapModelCopyWith<$Res> {
-  _$HasherEventMapModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of HasherEventMapModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? hemId = null,
-    Object? userId = null,
-    Object? eventId = null,
-    Object? hasherOwnEventId = freezed,
-    Object? userStartEvent = freezed,
-    Object? userEndEvent = freezed,
-    Object? rsvpState = null,
-    Object? attendenceState = null,
-    Object? isHare = null,
-    Object? eventNotificationPreference = freezed,
-    Object? eventEmailAlertPreference = freezed,
-    Object? totalHaring = freezed,
-    Object? totalHaringThisKennel = freezed,
-    Object? totalRuns = freezed,
-    Object? totalRunsThisKennel = freezed,
-    Object? eventCountOverride = freezed,
-    Object? virginVisitorType = null,
-    Object? displayName = freezed,
-    Object? email = freezed,
-    Object? phoneNumber = freezed,
-    Object? hemEventName = freezed,
-    Object? hemEventNumber = freezed,
-    Object? hemEventStartDatetime = null,
-    Object? hemCanEditRunAttendence = freezed,
-    Object? hemEventKennelId = freezed,
-    Object? hemEventIsCountedAndVisible = freezed,
-    Object? hemKennelUserPhoto = freezed,
-    Object? hemKennelHashName = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      hemId: null == hemId
-          ? _value.hemId
-          : hemId // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventId: null == eventId
-          ? _value.eventId
-          : eventId // ignore: cast_nullable_to_non_nullable
-              as String,
-      hasherOwnEventId: freezed == hasherOwnEventId
-          ? _value.hasherOwnEventId
-          : hasherOwnEventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userStartEvent: freezed == userStartEvent
-          ? _value.userStartEvent
-          : userStartEvent // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userEndEvent: freezed == userEndEvent
-          ? _value.userEndEvent
-          : userEndEvent // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rsvpState: null == rsvpState
-          ? _value.rsvpState
-          : rsvpState // ignore: cast_nullable_to_non_nullable
-              as int,
-      attendenceState: null == attendenceState
-          ? _value.attendenceState
-          : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int,
-      isHare: null == isHare
-          ? _value.isHare
-          : isHare // ignore: cast_nullable_to_non_nullable
-              as int,
-      eventNotificationPreference: freezed == eventNotificationPreference
-          ? _value.eventNotificationPreference
-          : eventNotificationPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventEmailAlertPreference: freezed == eventEmailAlertPreference
-          ? _value.eventEmailAlertPreference
-          : eventEmailAlertPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalHaring: freezed == totalHaring
-          ? _value.totalHaring
-          : totalHaring // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalHaringThisKennel: freezed == totalHaringThisKennel
-          ? _value.totalHaringThisKennel
-          : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalRuns: freezed == totalRuns
-          ? _value.totalRuns
-          : totalRuns // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalRunsThisKennel: freezed == totalRunsThisKennel
-          ? _value.totalRunsThisKennel
-          : totalRunsThisKennel // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventCountOverride: freezed == eventCountOverride
-          ? _value.eventCountOverride
-          : eventCountOverride // ignore: cast_nullable_to_non_nullable
-              as int?,
-      virginVisitorType: null == virginVisitorType
-          ? _value.virginVisitorType
-          : virginVisitorType // ignore: cast_nullable_to_non_nullable
-              as int,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemEventName: freezed == hemEventName
-          ? _value.hemEventName
-          : hemEventName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemEventNumber: freezed == hemEventNumber
-          ? _value.hemEventNumber
-          : hemEventNumber // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hemEventStartDatetime: null == hemEventStartDatetime
-          ? _value.hemEventStartDatetime
-          : hemEventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      hemCanEditRunAttendence: freezed == hemCanEditRunAttendence
-          ? _value.hemCanEditRunAttendence
-          : hemCanEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hemEventKennelId: freezed == hemEventKennelId
-          ? _value.hemEventKennelId
-          : hemEventKennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemEventIsCountedAndVisible: freezed == hemEventIsCountedAndVisible
-          ? _value.hemEventIsCountedAndVisible
-          : hemEventIsCountedAndVisible // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hemKennelUserPhoto: freezed == hemKennelUserPhoto
-          ? _value.hemKennelUserPhoto
-          : hemKennelUserPhoto // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemKennelHashName: freezed == hemKennelHashName
-          ? _value.hemKennelHashName
-          : hemKennelHashName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$HasherEventMapModelImplCopyWith<$Res>
-    implements $HasherEventMapModelCopyWith<$Res> {
-  factory _$$HasherEventMapModelImplCopyWith(_$HasherEventMapModelImpl value,
-          $Res Function(_$HasherEventMapModelImpl) then) =
-      __$$HasherEventMapModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String hemId,
-      String userId,
-      String eventId,
-      String? hasherOwnEventId,
-      String? userStartEvent,
-      String? userEndEvent,
-      int rsvpState,
-      int attendenceState,
-      int isHare,
-      int? eventNotificationPreference,
-      int? eventEmailAlertPreference,
-      int? totalHaring,
-      int? totalHaringThisKennel,
-      int? totalRuns,
-      int? totalRunsThisKennel,
-      int? eventCountOverride,
-      int virginVisitorType,
-      String? displayName,
-      String? email,
-      String? phoneNumber,
-      String? hemEventName,
-      int? hemEventNumber,
-      DateTime hemEventStartDatetime,
-      int? hemCanEditRunAttendence,
-      String? hemEventKennelId,
-      int? hemEventIsCountedAndVisible,
-      String? hemKennelUserPhoto,
-      String? hemKennelHashName,
-      int? removed,
-      DateTime? updatedAt});
-}
-
-/// @nodoc
-class __$$HasherEventMapModelImplCopyWithImpl<$Res>
-    extends _$HasherEventMapModelCopyWithImpl<$Res, _$HasherEventMapModelImpl>
-    implements _$$HasherEventMapModelImplCopyWith<$Res> {
-  __$$HasherEventMapModelImplCopyWithImpl(_$HasherEventMapModelImpl _value,
-      $Res Function(_$HasherEventMapModelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of HasherEventMapModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? hemId = null,
-    Object? userId = null,
-    Object? eventId = null,
-    Object? hasherOwnEventId = freezed,
-    Object? userStartEvent = freezed,
-    Object? userEndEvent = freezed,
-    Object? rsvpState = null,
-    Object? attendenceState = null,
-    Object? isHare = null,
-    Object? eventNotificationPreference = freezed,
-    Object? eventEmailAlertPreference = freezed,
-    Object? totalHaring = freezed,
-    Object? totalHaringThisKennel = freezed,
-    Object? totalRuns = freezed,
-    Object? totalRunsThisKennel = freezed,
-    Object? eventCountOverride = freezed,
-    Object? virginVisitorType = null,
-    Object? displayName = freezed,
-    Object? email = freezed,
-    Object? phoneNumber = freezed,
-    Object? hemEventName = freezed,
-    Object? hemEventNumber = freezed,
-    Object? hemEventStartDatetime = null,
-    Object? hemCanEditRunAttendence = freezed,
-    Object? hemEventKennelId = freezed,
-    Object? hemEventIsCountedAndVisible = freezed,
-    Object? hemKennelUserPhoto = freezed,
-    Object? hemKennelHashName = freezed,
-    Object? removed = freezed,
-    Object? updatedAt = freezed,
-  }) {
-    return _then(_$HasherEventMapModelImpl(
-      hemId: null == hemId
-          ? _value.hemId
-          : hemId // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventId: null == eventId
-          ? _value.eventId
-          : eventId // ignore: cast_nullable_to_non_nullable
-              as String,
-      hasherOwnEventId: freezed == hasherOwnEventId
-          ? _value.hasherOwnEventId
-          : hasherOwnEventId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userStartEvent: freezed == userStartEvent
-          ? _value.userStartEvent
-          : userStartEvent // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userEndEvent: freezed == userEndEvent
-          ? _value.userEndEvent
-          : userEndEvent // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rsvpState: null == rsvpState
-          ? _value.rsvpState
-          : rsvpState // ignore: cast_nullable_to_non_nullable
-              as int,
-      attendenceState: null == attendenceState
-          ? _value.attendenceState
-          : attendenceState // ignore: cast_nullable_to_non_nullable
-              as int,
-      isHare: null == isHare
-          ? _value.isHare
-          : isHare // ignore: cast_nullable_to_non_nullable
-              as int,
-      eventNotificationPreference: freezed == eventNotificationPreference
-          ? _value.eventNotificationPreference
-          : eventNotificationPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventEmailAlertPreference: freezed == eventEmailAlertPreference
-          ? _value.eventEmailAlertPreference
-          : eventEmailAlertPreference // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalHaring: freezed == totalHaring
-          ? _value.totalHaring
-          : totalHaring // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalHaringThisKennel: freezed == totalHaringThisKennel
-          ? _value.totalHaringThisKennel
-          : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalRuns: freezed == totalRuns
-          ? _value.totalRuns
-          : totalRuns // ignore: cast_nullable_to_non_nullable
-              as int?,
-      totalRunsThisKennel: freezed == totalRunsThisKennel
-          ? _value.totalRunsThisKennel
-          : totalRunsThisKennel // ignore: cast_nullable_to_non_nullable
-              as int?,
-      eventCountOverride: freezed == eventCountOverride
-          ? _value.eventCountOverride
-          : eventCountOverride // ignore: cast_nullable_to_non_nullable
-              as int?,
-      virginVisitorType: null == virginVisitorType
-          ? _value.virginVisitorType
-          : virginVisitorType // ignore: cast_nullable_to_non_nullable
-              as int,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemEventName: freezed == hemEventName
-          ? _value.hemEventName
-          : hemEventName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemEventNumber: freezed == hemEventNumber
-          ? _value.hemEventNumber
-          : hemEventNumber // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hemEventStartDatetime: null == hemEventStartDatetime
-          ? _value.hemEventStartDatetime
-          : hemEventStartDatetime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      hemCanEditRunAttendence: freezed == hemCanEditRunAttendence
-          ? _value.hemCanEditRunAttendence
-          : hemCanEditRunAttendence // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hemEventKennelId: freezed == hemEventKennelId
-          ? _value.hemEventKennelId
-          : hemEventKennelId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemEventIsCountedAndVisible: freezed == hemEventIsCountedAndVisible
-          ? _value.hemEventIsCountedAndVisible
-          : hemEventIsCountedAndVisible // ignore: cast_nullable_to_non_nullable
-              as int?,
-      hemKennelUserPhoto: freezed == hemKennelUserPhoto
-          ? _value.hemKennelUserPhoto
-          : hemKennelUserPhoto // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hemKennelHashName: freezed == hemKennelHashName
-          ? _value.hemKennelHashName
-          : hemKennelHashName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      removed: freezed == removed
-          ? _value.removed
-          : removed // ignore: cast_nullable_to_non_nullable
-              as int?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$HasherEventMapModelImpl implements _HasherEventMapModel {
-  _$HasherEventMapModelImpl(
-      {required this.hemId,
-      required this.userId,
-      required this.eventId,
-      this.hasherOwnEventId,
-      this.userStartEvent,
-      this.userEndEvent,
-      required this.rsvpState,
-      required this.attendenceState,
-      required this.isHare,
-      this.eventNotificationPreference,
-      this.eventEmailAlertPreference,
-      this.totalHaring,
-      this.totalHaringThisKennel,
-      this.totalRuns,
-      this.totalRunsThisKennel,
-      this.eventCountOverride,
-      required this.virginVisitorType,
-      this.displayName,
-      this.email,
-      this.phoneNumber,
-      this.hemEventName,
-      this.hemEventNumber,
-      required this.hemEventStartDatetime,
-      this.hemCanEditRunAttendence,
-      this.hemEventKennelId,
-      this.hemEventIsCountedAndVisible,
-      this.hemKennelUserPhoto,
-      this.hemKennelHashName,
-      this.removed,
-      this.updatedAt});
-
-  factory _$HasherEventMapModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$HasherEventMapModelImplFromJson(json);
+  /// Serializes this HasherEventMapModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
-  final String hemId;
-  @override
-  final String userId;
-  @override
-  final String eventId;
-  @override
-  final String? hasherOwnEventId;
-  @override
-  final String? userStartEvent;
-  @override
-  final String? userEndEvent;
-  @override
-  final int rsvpState;
-  @override
-  final int attendenceState;
-  @override
-  final int isHare;
-  @override
-  final int? eventNotificationPreference;
-  @override
-  final int? eventEmailAlertPreference;
-  @override
-  final int? totalHaring;
-  @override
-  final int? totalHaringThisKennel;
-  @override
-  final int? totalRuns;
-  @override
-  final int? totalRunsThisKennel;
-  @override
-  final int? eventCountOverride;
-  @override
-  final int virginVisitorType;
-  @override
-  final String? displayName;
-  @override
-  final String? email;
-  @override
-  final String? phoneNumber;
-// these fields are cached from the event itself. This enables us to keep run count information without
-// having to have the actual run cached on the phone
-  @override
-  final String? hemEventName;
-  @override
-  final int? hemEventNumber;
-  @override
-  final DateTime hemEventStartDatetime;
-  @override
-  final int? hemCanEditRunAttendence;
-  @override
-  final String? hemEventKennelId;
-  @override
-  final int? hemEventIsCountedAndVisible;
-  @override
-  final String? hemKennelUserPhoto;
-  @override
-  final String? hemKennelHashName;
-  @override
-  final int? removed;
-  @override
-  final DateTime? updatedAt;
-
-  @override
-  String toString() {
-    return 'HasherEventMapModel(hemId: $hemId, userId: $userId, eventId: $eventId, hasherOwnEventId: $hasherOwnEventId, userStartEvent: $userStartEvent, userEndEvent: $userEndEvent, rsvpState: $rsvpState, attendenceState: $attendenceState, isHare: $isHare, eventNotificationPreference: $eventNotificationPreference, eventEmailAlertPreference: $eventEmailAlertPreference, totalHaring: $totalHaring, totalHaringThisKennel: $totalHaringThisKennel, totalRuns: $totalRuns, totalRunsThisKennel: $totalRunsThisKennel, eventCountOverride: $eventCountOverride, virginVisitorType: $virginVisitorType, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, hemEventName: $hemEventName, hemEventNumber: $hemEventNumber, hemEventStartDatetime: $hemEventStartDatetime, hemCanEditRunAttendence: $hemCanEditRunAttendence, hemEventKennelId: $hemEventKennelId, hemEventIsCountedAndVisible: $hemEventIsCountedAndVisible, hemKennelUserPhoto: $hemKennelUserPhoto, hemKennelHashName: $hemKennelHashName, removed: $removed, updatedAt: $updatedAt)';
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'HasherEventMapModel'))
+      ..add(DiagnosticsProperty('hemId', hemId))
+      ..add(DiagnosticsProperty('userId', userId))
+      ..add(DiagnosticsProperty('eventId', eventId))
+      ..add(DiagnosticsProperty('hasherOwnEventId', hasherOwnEventId))
+      ..add(DiagnosticsProperty('userStartEvent', userStartEvent))
+      ..add(DiagnosticsProperty('userEndEvent', userEndEvent))
+      ..add(DiagnosticsProperty('rsvpState', rsvpState))
+      ..add(DiagnosticsProperty('attendenceState', attendenceState))
+      ..add(DiagnosticsProperty('isHare', isHare))
+      ..add(DiagnosticsProperty(
+          'eventNotificationPreference', eventNotificationPreference))
+      ..add(DiagnosticsProperty(
+          'eventEmailAlertPreference', eventEmailAlertPreference))
+      ..add(DiagnosticsProperty('totalHaring', totalHaring))
+      ..add(DiagnosticsProperty('totalHaringThisKennel', totalHaringThisKennel))
+      ..add(DiagnosticsProperty('totalRuns', totalRuns))
+      ..add(DiagnosticsProperty('totalRunsThisKennel', totalRunsThisKennel))
+      ..add(DiagnosticsProperty('eventCountOverride', eventCountOverride))
+      ..add(DiagnosticsProperty('virginVisitorType', virginVisitorType))
+      ..add(DiagnosticsProperty('displayName', displayName))
+      ..add(DiagnosticsProperty('email', email))
+      ..add(DiagnosticsProperty('phoneNumber', phoneNumber))
+      ..add(DiagnosticsProperty('hemEventName', hemEventName))
+      ..add(DiagnosticsProperty('hemEventNumber', hemEventNumber))
+      ..add(DiagnosticsProperty('hemEventStartDatetime', hemEventStartDatetime))
+      ..add(DiagnosticsProperty(
+          'hemCanEditRunAttendence', hemCanEditRunAttendence))
+      ..add(DiagnosticsProperty('hemEventKennelId', hemEventKennelId))
+      ..add(DiagnosticsProperty(
+          'hemEventIsCountedAndVisible', hemEventIsCountedAndVisible))
+      ..add(DiagnosticsProperty('hemKennelUserPhoto', hemKennelUserPhoto))
+      ..add(DiagnosticsProperty('hemKennelHashName', hemKennelHashName))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$HasherEventMapModelImpl &&
+            other is HasherEventMapModel &&
             (identical(other.hemId, hemId) || other.hemId == hemId) &&
             (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.eventId, eventId) || other.eventId == eventId) &&
@@ -689,126 +199,692 @@ class _$HasherEventMapModelImpl implements _HasherEventMapModel {
         updatedAt
       ]);
 
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'HasherEventMapModel(hemId: $hemId, userId: $userId, eventId: $eventId, hasherOwnEventId: $hasherOwnEventId, userStartEvent: $userStartEvent, userEndEvent: $userEndEvent, rsvpState: $rsvpState, attendenceState: $attendenceState, isHare: $isHare, eventNotificationPreference: $eventNotificationPreference, eventEmailAlertPreference: $eventEmailAlertPreference, totalHaring: $totalHaring, totalHaringThisKennel: $totalHaringThisKennel, totalRuns: $totalRuns, totalRunsThisKennel: $totalRunsThisKennel, eventCountOverride: $eventCountOverride, virginVisitorType: $virginVisitorType, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, hemEventName: $hemEventName, hemEventNumber: $hemEventNumber, hemEventStartDatetime: $hemEventStartDatetime, hemCanEditRunAttendence: $hemCanEditRunAttendence, hemEventKennelId: $hemEventKennelId, hemEventIsCountedAndVisible: $hemEventIsCountedAndVisible, hemKennelUserPhoto: $hemKennelUserPhoto, hemKennelHashName: $hemKennelHashName, removed: $removed, updatedAt: $updatedAt)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $HasherEventMapModelCopyWith<$Res> {
+  factory $HasherEventMapModelCopyWith(
+          HasherEventMapModel value, $Res Function(HasherEventMapModel) _then) =
+      _$HasherEventMapModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String hemId,
+      String userId,
+      String eventId,
+      String? hasherOwnEventId,
+      String? userStartEvent,
+      String? userEndEvent,
+      int rsvpState,
+      int attendenceState,
+      int isHare,
+      int? eventNotificationPreference,
+      int? eventEmailAlertPreference,
+      int? totalHaring,
+      int? totalHaringThisKennel,
+      int? totalRuns,
+      int? totalRunsThisKennel,
+      int? eventCountOverride,
+      int virginVisitorType,
+      String? displayName,
+      String? email,
+      String? phoneNumber,
+      String? hemEventName,
+      int? hemEventNumber,
+      DateTime hemEventStartDatetime,
+      int? hemCanEditRunAttendence,
+      String? hemEventKennelId,
+      int? hemEventIsCountedAndVisible,
+      String? hemKennelUserPhoto,
+      String? hemKennelHashName,
+      int? removed,
+      DateTime? updatedAt});
+}
+
+/// @nodoc
+class _$HasherEventMapModelCopyWithImpl<$Res>
+    implements $HasherEventMapModelCopyWith<$Res> {
+  _$HasherEventMapModelCopyWithImpl(this._self, this._then);
+
+  final HasherEventMapModel _self;
+  final $Res Function(HasherEventMapModel) _then;
+
   /// Create a copy of HasherEventMapModel
   /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
   @pragma('vm:prefer-inline')
-  _$$HasherEventMapModelImplCopyWith<_$HasherEventMapModelImpl> get copyWith =>
-      __$$HasherEventMapModelImplCopyWithImpl<_$HasherEventMapModelImpl>(
+  @override
+  $Res call({
+    Object? hemId = null,
+    Object? userId = null,
+    Object? eventId = null,
+    Object? hasherOwnEventId = freezed,
+    Object? userStartEvent = freezed,
+    Object? userEndEvent = freezed,
+    Object? rsvpState = null,
+    Object? attendenceState = null,
+    Object? isHare = null,
+    Object? eventNotificationPreference = freezed,
+    Object? eventEmailAlertPreference = freezed,
+    Object? totalHaring = freezed,
+    Object? totalHaringThisKennel = freezed,
+    Object? totalRuns = freezed,
+    Object? totalRunsThisKennel = freezed,
+    Object? eventCountOverride = freezed,
+    Object? virginVisitorType = null,
+    Object? displayName = freezed,
+    Object? email = freezed,
+    Object? phoneNumber = freezed,
+    Object? hemEventName = freezed,
+    Object? hemEventNumber = freezed,
+    Object? hemEventStartDatetime = null,
+    Object? hemCanEditRunAttendence = freezed,
+    Object? hemEventKennelId = freezed,
+    Object? hemEventIsCountedAndVisible = freezed,
+    Object? hemKennelUserPhoto = freezed,
+    Object? hemKennelHashName = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_self.copyWith(
+      hemId: null == hemId
+          ? _self.hemId
+          : hemId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventId: null == eventId
+          ? _self.eventId
+          : eventId // ignore: cast_nullable_to_non_nullable
+              as String,
+      hasherOwnEventId: freezed == hasherOwnEventId
+          ? _self.hasherOwnEventId
+          : hasherOwnEventId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userStartEvent: freezed == userStartEvent
+          ? _self.userStartEvent
+          : userStartEvent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userEndEvent: freezed == userEndEvent
+          ? _self.userEndEvent
+          : userEndEvent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      rsvpState: null == rsvpState
+          ? _self.rsvpState
+          : rsvpState // ignore: cast_nullable_to_non_nullable
+              as int,
+      attendenceState: null == attendenceState
+          ? _self.attendenceState
+          : attendenceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      isHare: null == isHare
+          ? _self.isHare
+          : isHare // ignore: cast_nullable_to_non_nullable
+              as int,
+      eventNotificationPreference: freezed == eventNotificationPreference
+          ? _self.eventNotificationPreference
+          : eventNotificationPreference // ignore: cast_nullable_to_non_nullable
+              as int?,
+      eventEmailAlertPreference: freezed == eventEmailAlertPreference
+          ? _self.eventEmailAlertPreference
+          : eventEmailAlertPreference // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalHaring: freezed == totalHaring
+          ? _self.totalHaring
+          : totalHaring // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalHaringThisKennel: freezed == totalHaringThisKennel
+          ? _self.totalHaringThisKennel
+          : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalRuns: freezed == totalRuns
+          ? _self.totalRuns
+          : totalRuns // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalRunsThisKennel: freezed == totalRunsThisKennel
+          ? _self.totalRunsThisKennel
+          : totalRunsThisKennel // ignore: cast_nullable_to_non_nullable
+              as int?,
+      eventCountOverride: freezed == eventCountOverride
+          ? _self.eventCountOverride
+          : eventCountOverride // ignore: cast_nullable_to_non_nullable
+              as int?,
+      virginVisitorType: null == virginVisitorType
+          ? _self.virginVisitorType
+          : virginVisitorType // ignore: cast_nullable_to_non_nullable
+              as int,
+      displayName: freezed == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      email: freezed == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phoneNumber: freezed == phoneNumber
+          ? _self.phoneNumber
+          : phoneNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemEventName: freezed == hemEventName
+          ? _self.hemEventName
+          : hemEventName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemEventNumber: freezed == hemEventNumber
+          ? _self.hemEventNumber
+          : hemEventNumber // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hemEventStartDatetime: null == hemEventStartDatetime
+          ? _self.hemEventStartDatetime
+          : hemEventStartDatetime // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      hemCanEditRunAttendence: freezed == hemCanEditRunAttendence
+          ? _self.hemCanEditRunAttendence
+          : hemCanEditRunAttendence // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hemEventKennelId: freezed == hemEventKennelId
+          ? _self.hemEventKennelId
+          : hemEventKennelId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemEventIsCountedAndVisible: freezed == hemEventIsCountedAndVisible
+          ? _self.hemEventIsCountedAndVisible
+          : hemEventIsCountedAndVisible // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hemKennelUserPhoto: freezed == hemKennelUserPhoto
+          ? _self.hemKennelUserPhoto
+          : hemKennelUserPhoto // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemKennelHashName: freezed == hemKennelHashName
+          ? _self.hemKennelHashName
+          : hemKennelHashName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _HasherEventMapModel
+    with DiagnosticableTreeMixin
+    implements HasherEventMapModel {
+  _HasherEventMapModel(
+      {required this.hemId,
+      required this.userId,
+      required this.eventId,
+      this.hasherOwnEventId,
+      this.userStartEvent,
+      this.userEndEvent,
+      required this.rsvpState,
+      required this.attendenceState,
+      required this.isHare,
+      this.eventNotificationPreference,
+      this.eventEmailAlertPreference,
+      this.totalHaring,
+      this.totalHaringThisKennel,
+      this.totalRuns,
+      this.totalRunsThisKennel,
+      this.eventCountOverride,
+      required this.virginVisitorType,
+      this.displayName,
+      this.email,
+      this.phoneNumber,
+      this.hemEventName,
+      this.hemEventNumber,
+      required this.hemEventStartDatetime,
+      this.hemCanEditRunAttendence,
+      this.hemEventKennelId,
+      this.hemEventIsCountedAndVisible,
+      this.hemKennelUserPhoto,
+      this.hemKennelHashName,
+      this.removed,
+      this.updatedAt});
+  factory _HasherEventMapModel.fromJson(Map<String, dynamic> json) =>
+      _$HasherEventMapModelFromJson(json);
+
+  @override
+  final String hemId;
+  @override
+  final String userId;
+  @override
+  final String eventId;
+  @override
+  final String? hasherOwnEventId;
+  @override
+  final String? userStartEvent;
+  @override
+  final String? userEndEvent;
+  @override
+  final int rsvpState;
+  @override
+  final int attendenceState;
+  @override
+  final int isHare;
+  @override
+  final int? eventNotificationPreference;
+  @override
+  final int? eventEmailAlertPreference;
+  @override
+  final int? totalHaring;
+  @override
+  final int? totalHaringThisKennel;
+  @override
+  final int? totalRuns;
+  @override
+  final int? totalRunsThisKennel;
+  @override
+  final int? eventCountOverride;
+  @override
+  final int virginVisitorType;
+  @override
+  final String? displayName;
+  @override
+  final String? email;
+  @override
+  final String? phoneNumber;
+// these fields are cached from the event itself. This enables us to keep run count information without
+// having to have the actual run cached on the phone
+  @override
+  final String? hemEventName;
+  @override
+  final int? hemEventNumber;
+  @override
+  final DateTime hemEventStartDatetime;
+  @override
+  final int? hemCanEditRunAttendence;
+  @override
+  final String? hemEventKennelId;
+  @override
+  final int? hemEventIsCountedAndVisible;
+  @override
+  final String? hemKennelUserPhoto;
+  @override
+  final String? hemKennelHashName;
+  @override
+  final int? removed;
+  @override
+  final DateTime? updatedAt;
+
+  /// Create a copy of HasherEventMapModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$HasherEventMapModelCopyWith<_HasherEventMapModel> get copyWith =>
+      __$HasherEventMapModelCopyWithImpl<_HasherEventMapModel>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$HasherEventMapModelImplToJson(
+    return _$HasherEventMapModelToJson(
       this,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(DiagnosticsProperty('type', 'HasherEventMapModel'))
+      ..add(DiagnosticsProperty('hemId', hemId))
+      ..add(DiagnosticsProperty('userId', userId))
+      ..add(DiagnosticsProperty('eventId', eventId))
+      ..add(DiagnosticsProperty('hasherOwnEventId', hasherOwnEventId))
+      ..add(DiagnosticsProperty('userStartEvent', userStartEvent))
+      ..add(DiagnosticsProperty('userEndEvent', userEndEvent))
+      ..add(DiagnosticsProperty('rsvpState', rsvpState))
+      ..add(DiagnosticsProperty('attendenceState', attendenceState))
+      ..add(DiagnosticsProperty('isHare', isHare))
+      ..add(DiagnosticsProperty(
+          'eventNotificationPreference', eventNotificationPreference))
+      ..add(DiagnosticsProperty(
+          'eventEmailAlertPreference', eventEmailAlertPreference))
+      ..add(DiagnosticsProperty('totalHaring', totalHaring))
+      ..add(DiagnosticsProperty('totalHaringThisKennel', totalHaringThisKennel))
+      ..add(DiagnosticsProperty('totalRuns', totalRuns))
+      ..add(DiagnosticsProperty('totalRunsThisKennel', totalRunsThisKennel))
+      ..add(DiagnosticsProperty('eventCountOverride', eventCountOverride))
+      ..add(DiagnosticsProperty('virginVisitorType', virginVisitorType))
+      ..add(DiagnosticsProperty('displayName', displayName))
+      ..add(DiagnosticsProperty('email', email))
+      ..add(DiagnosticsProperty('phoneNumber', phoneNumber))
+      ..add(DiagnosticsProperty('hemEventName', hemEventName))
+      ..add(DiagnosticsProperty('hemEventNumber', hemEventNumber))
+      ..add(DiagnosticsProperty('hemEventStartDatetime', hemEventStartDatetime))
+      ..add(DiagnosticsProperty(
+          'hemCanEditRunAttendence', hemCanEditRunAttendence))
+      ..add(DiagnosticsProperty('hemEventKennelId', hemEventKennelId))
+      ..add(DiagnosticsProperty(
+          'hemEventIsCountedAndVisible', hemEventIsCountedAndVisible))
+      ..add(DiagnosticsProperty('hemKennelUserPhoto', hemKennelUserPhoto))
+      ..add(DiagnosticsProperty('hemKennelHashName', hemKennelHashName))
+      ..add(DiagnosticsProperty('removed', removed))
+      ..add(DiagnosticsProperty('updatedAt', updatedAt));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _HasherEventMapModel &&
+            (identical(other.hemId, hemId) || other.hemId == hemId) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.eventId, eventId) || other.eventId == eventId) &&
+            (identical(other.hasherOwnEventId, hasherOwnEventId) ||
+                other.hasherOwnEventId == hasherOwnEventId) &&
+            (identical(other.userStartEvent, userStartEvent) ||
+                other.userStartEvent == userStartEvent) &&
+            (identical(other.userEndEvent, userEndEvent) ||
+                other.userEndEvent == userEndEvent) &&
+            (identical(other.rsvpState, rsvpState) ||
+                other.rsvpState == rsvpState) &&
+            (identical(other.attendenceState, attendenceState) ||
+                other.attendenceState == attendenceState) &&
+            (identical(other.isHare, isHare) || other.isHare == isHare) &&
+            (identical(other.eventNotificationPreference, eventNotificationPreference) ||
+                other.eventNotificationPreference ==
+                    eventNotificationPreference) &&
+            (identical(other.eventEmailAlertPreference, eventEmailAlertPreference) ||
+                other.eventEmailAlertPreference == eventEmailAlertPreference) &&
+            (identical(other.totalHaring, totalHaring) ||
+                other.totalHaring == totalHaring) &&
+            (identical(other.totalHaringThisKennel, totalHaringThisKennel) ||
+                other.totalHaringThisKennel == totalHaringThisKennel) &&
+            (identical(other.totalRuns, totalRuns) ||
+                other.totalRuns == totalRuns) &&
+            (identical(other.totalRunsThisKennel, totalRunsThisKennel) ||
+                other.totalRunsThisKennel == totalRunsThisKennel) &&
+            (identical(other.eventCountOverride, eventCountOverride) ||
+                other.eventCountOverride == eventCountOverride) &&
+            (identical(other.virginVisitorType, virginVisitorType) ||
+                other.virginVisitorType == virginVisitorType) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.phoneNumber, phoneNumber) ||
+                other.phoneNumber == phoneNumber) &&
+            (identical(other.hemEventName, hemEventName) ||
+                other.hemEventName == hemEventName) &&
+            (identical(other.hemEventNumber, hemEventNumber) ||
+                other.hemEventNumber == hemEventNumber) &&
+            (identical(other.hemEventStartDatetime, hemEventStartDatetime) ||
+                other.hemEventStartDatetime == hemEventStartDatetime) &&
+            (identical(other.hemCanEditRunAttendence, hemCanEditRunAttendence) ||
+                other.hemCanEditRunAttendence == hemCanEditRunAttendence) &&
+            (identical(other.hemEventKennelId, hemEventKennelId) ||
+                other.hemEventKennelId == hemEventKennelId) &&
+            (identical(other.hemEventIsCountedAndVisible,
+                    hemEventIsCountedAndVisible) ||
+                other.hemEventIsCountedAndVisible ==
+                    hemEventIsCountedAndVisible) &&
+            (identical(other.hemKennelUserPhoto, hemKennelUserPhoto) ||
+                other.hemKennelUserPhoto == hemKennelUserPhoto) &&
+            (identical(other.hemKennelHashName, hemKennelHashName) ||
+                other.hemKennelHashName == hemKennelHashName) &&
+            (identical(other.removed, removed) || other.removed == removed) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        hemId,
+        userId,
+        eventId,
+        hasherOwnEventId,
+        userStartEvent,
+        userEndEvent,
+        rsvpState,
+        attendenceState,
+        isHare,
+        eventNotificationPreference,
+        eventEmailAlertPreference,
+        totalHaring,
+        totalHaringThisKennel,
+        totalRuns,
+        totalRunsThisKennel,
+        eventCountOverride,
+        virginVisitorType,
+        displayName,
+        email,
+        phoneNumber,
+        hemEventName,
+        hemEventNumber,
+        hemEventStartDatetime,
+        hemCanEditRunAttendence,
+        hemEventKennelId,
+        hemEventIsCountedAndVisible,
+        hemKennelUserPhoto,
+        hemKennelHashName,
+        removed,
+        updatedAt
+      ]);
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'HasherEventMapModel(hemId: $hemId, userId: $userId, eventId: $eventId, hasherOwnEventId: $hasherOwnEventId, userStartEvent: $userStartEvent, userEndEvent: $userEndEvent, rsvpState: $rsvpState, attendenceState: $attendenceState, isHare: $isHare, eventNotificationPreference: $eventNotificationPreference, eventEmailAlertPreference: $eventEmailAlertPreference, totalHaring: $totalHaring, totalHaringThisKennel: $totalHaringThisKennel, totalRuns: $totalRuns, totalRunsThisKennel: $totalRunsThisKennel, eventCountOverride: $eventCountOverride, virginVisitorType: $virginVisitorType, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, hemEventName: $hemEventName, hemEventNumber: $hemEventNumber, hemEventStartDatetime: $hemEventStartDatetime, hemCanEditRunAttendence: $hemCanEditRunAttendence, hemEventKennelId: $hemEventKennelId, hemEventIsCountedAndVisible: $hemEventIsCountedAndVisible, hemKennelUserPhoto: $hemKennelUserPhoto, hemKennelHashName: $hemKennelHashName, removed: $removed, updatedAt: $updatedAt)';
+  }
 }
 
-abstract class _HasherEventMapModel implements HasherEventMapModel {
-  factory _HasherEventMapModel(
-      {required final String hemId,
-      required final String userId,
-      required final String eventId,
-      final String? hasherOwnEventId,
-      final String? userStartEvent,
-      final String? userEndEvent,
-      required final int rsvpState,
-      required final int attendenceState,
-      required final int isHare,
-      final int? eventNotificationPreference,
-      final int? eventEmailAlertPreference,
-      final int? totalHaring,
-      final int? totalHaringThisKennel,
-      final int? totalRuns,
-      final int? totalRunsThisKennel,
-      final int? eventCountOverride,
-      required final int virginVisitorType,
-      final String? displayName,
-      final String? email,
-      final String? phoneNumber,
-      final String? hemEventName,
-      final int? hemEventNumber,
-      required final DateTime hemEventStartDatetime,
-      final int? hemCanEditRunAttendence,
-      final String? hemEventKennelId,
-      final int? hemEventIsCountedAndVisible,
-      final String? hemKennelUserPhoto,
-      final String? hemKennelHashName,
-      final int? removed,
-      final DateTime? updatedAt}) = _$HasherEventMapModelImpl;
+/// @nodoc
+abstract mixin class _$HasherEventMapModelCopyWith<$Res>
+    implements $HasherEventMapModelCopyWith<$Res> {
+  factory _$HasherEventMapModelCopyWith(_HasherEventMapModel value,
+          $Res Function(_HasherEventMapModel) _then) =
+      __$HasherEventMapModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String hemId,
+      String userId,
+      String eventId,
+      String? hasherOwnEventId,
+      String? userStartEvent,
+      String? userEndEvent,
+      int rsvpState,
+      int attendenceState,
+      int isHare,
+      int? eventNotificationPreference,
+      int? eventEmailAlertPreference,
+      int? totalHaring,
+      int? totalHaringThisKennel,
+      int? totalRuns,
+      int? totalRunsThisKennel,
+      int? eventCountOverride,
+      int virginVisitorType,
+      String? displayName,
+      String? email,
+      String? phoneNumber,
+      String? hemEventName,
+      int? hemEventNumber,
+      DateTime hemEventStartDatetime,
+      int? hemCanEditRunAttendence,
+      String? hemEventKennelId,
+      int? hemEventIsCountedAndVisible,
+      String? hemKennelUserPhoto,
+      String? hemKennelHashName,
+      int? removed,
+      DateTime? updatedAt});
+}
 
-  factory _HasherEventMapModel.fromJson(Map<String, dynamic> json) =
-      _$HasherEventMapModelImpl.fromJson;
+/// @nodoc
+class __$HasherEventMapModelCopyWithImpl<$Res>
+    implements _$HasherEventMapModelCopyWith<$Res> {
+  __$HasherEventMapModelCopyWithImpl(this._self, this._then);
 
-  @override
-  String get hemId;
-  @override
-  String get userId;
-  @override
-  String get eventId;
-  @override
-  String? get hasherOwnEventId;
-  @override
-  String? get userStartEvent;
-  @override
-  String? get userEndEvent;
-  @override
-  int get rsvpState;
-  @override
-  int get attendenceState;
-  @override
-  int get isHare;
-  @override
-  int? get eventNotificationPreference;
-  @override
-  int? get eventEmailAlertPreference;
-  @override
-  int? get totalHaring;
-  @override
-  int? get totalHaringThisKennel;
-  @override
-  int? get totalRuns;
-  @override
-  int? get totalRunsThisKennel;
-  @override
-  int? get eventCountOverride;
-  @override
-  int get virginVisitorType;
-  @override
-  String? get displayName;
-  @override
-  String? get email;
-  @override
-  String?
-      get phoneNumber; // these fields are cached from the event itself. This enables us to keep run count information without
-// having to have the actual run cached on the phone
-  @override
-  String? get hemEventName;
-  @override
-  int? get hemEventNumber;
-  @override
-  DateTime get hemEventStartDatetime;
-  @override
-  int? get hemCanEditRunAttendence;
-  @override
-  String? get hemEventKennelId;
-  @override
-  int? get hemEventIsCountedAndVisible;
-  @override
-  String? get hemKennelUserPhoto;
-  @override
-  String? get hemKennelHashName;
-  @override
-  int? get removed;
-  @override
-  DateTime? get updatedAt;
+  final _HasherEventMapModel _self;
+  final $Res Function(_HasherEventMapModel) _then;
 
   /// Create a copy of HasherEventMapModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$HasherEventMapModelImplCopyWith<_$HasherEventMapModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? hemId = null,
+    Object? userId = null,
+    Object? eventId = null,
+    Object? hasherOwnEventId = freezed,
+    Object? userStartEvent = freezed,
+    Object? userEndEvent = freezed,
+    Object? rsvpState = null,
+    Object? attendenceState = null,
+    Object? isHare = null,
+    Object? eventNotificationPreference = freezed,
+    Object? eventEmailAlertPreference = freezed,
+    Object? totalHaring = freezed,
+    Object? totalHaringThisKennel = freezed,
+    Object? totalRuns = freezed,
+    Object? totalRunsThisKennel = freezed,
+    Object? eventCountOverride = freezed,
+    Object? virginVisitorType = null,
+    Object? displayName = freezed,
+    Object? email = freezed,
+    Object? phoneNumber = freezed,
+    Object? hemEventName = freezed,
+    Object? hemEventNumber = freezed,
+    Object? hemEventStartDatetime = null,
+    Object? hemCanEditRunAttendence = freezed,
+    Object? hemEventKennelId = freezed,
+    Object? hemEventIsCountedAndVisible = freezed,
+    Object? hemKennelUserPhoto = freezed,
+    Object? hemKennelHashName = freezed,
+    Object? removed = freezed,
+    Object? updatedAt = freezed,
+  }) {
+    return _then(_HasherEventMapModel(
+      hemId: null == hemId
+          ? _self.hemId
+          : hemId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+      eventId: null == eventId
+          ? _self.eventId
+          : eventId // ignore: cast_nullable_to_non_nullable
+              as String,
+      hasherOwnEventId: freezed == hasherOwnEventId
+          ? _self.hasherOwnEventId
+          : hasherOwnEventId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userStartEvent: freezed == userStartEvent
+          ? _self.userStartEvent
+          : userStartEvent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userEndEvent: freezed == userEndEvent
+          ? _self.userEndEvent
+          : userEndEvent // ignore: cast_nullable_to_non_nullable
+              as String?,
+      rsvpState: null == rsvpState
+          ? _self.rsvpState
+          : rsvpState // ignore: cast_nullable_to_non_nullable
+              as int,
+      attendenceState: null == attendenceState
+          ? _self.attendenceState
+          : attendenceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      isHare: null == isHare
+          ? _self.isHare
+          : isHare // ignore: cast_nullable_to_non_nullable
+              as int,
+      eventNotificationPreference: freezed == eventNotificationPreference
+          ? _self.eventNotificationPreference
+          : eventNotificationPreference // ignore: cast_nullable_to_non_nullable
+              as int?,
+      eventEmailAlertPreference: freezed == eventEmailAlertPreference
+          ? _self.eventEmailAlertPreference
+          : eventEmailAlertPreference // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalHaring: freezed == totalHaring
+          ? _self.totalHaring
+          : totalHaring // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalHaringThisKennel: freezed == totalHaringThisKennel
+          ? _self.totalHaringThisKennel
+          : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalRuns: freezed == totalRuns
+          ? _self.totalRuns
+          : totalRuns // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalRunsThisKennel: freezed == totalRunsThisKennel
+          ? _self.totalRunsThisKennel
+          : totalRunsThisKennel // ignore: cast_nullable_to_non_nullable
+              as int?,
+      eventCountOverride: freezed == eventCountOverride
+          ? _self.eventCountOverride
+          : eventCountOverride // ignore: cast_nullable_to_non_nullable
+              as int?,
+      virginVisitorType: null == virginVisitorType
+          ? _self.virginVisitorType
+          : virginVisitorType // ignore: cast_nullable_to_non_nullable
+              as int,
+      displayName: freezed == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      email: freezed == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phoneNumber: freezed == phoneNumber
+          ? _self.phoneNumber
+          : phoneNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemEventName: freezed == hemEventName
+          ? _self.hemEventName
+          : hemEventName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemEventNumber: freezed == hemEventNumber
+          ? _self.hemEventNumber
+          : hemEventNumber // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hemEventStartDatetime: null == hemEventStartDatetime
+          ? _self.hemEventStartDatetime
+          : hemEventStartDatetime // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      hemCanEditRunAttendence: freezed == hemCanEditRunAttendence
+          ? _self.hemCanEditRunAttendence
+          : hemCanEditRunAttendence // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hemEventKennelId: freezed == hemEventKennelId
+          ? _self.hemEventKennelId
+          : hemEventKennelId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemEventIsCountedAndVisible: freezed == hemEventIsCountedAndVisible
+          ? _self.hemEventIsCountedAndVisible
+          : hemEventIsCountedAndVisible // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hemKennelUserPhoto: freezed == hemKennelUserPhoto
+          ? _self.hemKennelUserPhoto
+          : hemKennelUserPhoto // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemKennelHashName: freezed == hemKennelHashName
+          ? _self.hemKennelHashName
+          : hemKennelHashName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      removed: freezed == removed
+          ? _self.removed
+          : removed // ignore: cast_nullable_to_non_nullable
+              as int?,
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
 }
+
+// dart format on

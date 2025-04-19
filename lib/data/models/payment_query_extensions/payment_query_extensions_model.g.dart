@@ -6,9 +6,9 @@ part of 'payment_query_extensions_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PaymentQueryExtensionsModelImpl _$$PaymentQueryExtensionsModelImplFromJson(
+_PaymentQueryExtensionsModel _$PaymentQueryExtensionsModelFromJson(
         Map<String, dynamic> json) =>
-    _$PaymentQueryExtensionsModelImpl(
+    _PaymentQueryExtensionsModel(
       pkHemId: json['pkHemId'] as String,
       paidByName: json['paidByName'] as String,
       paidToName: json['paidToName'] as String,
@@ -31,8 +31,8 @@ _$PaymentQueryExtensionsModelImpl _$$PaymentQueryExtensionsModelImplFromJson(
       isHashCredit: json['isHashCredit'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$PaymentQueryExtensionsModelImplToJson(
-        _$PaymentQueryExtensionsModelImpl instance) =>
+Map<String, dynamic> _$PaymentQueryExtensionsModelToJson(
+        _PaymentQueryExtensionsModel instance) =>
     <String, dynamic>{
       'pkHemId': instance.pkHemId,
       'paidByName': instance.paidByName,

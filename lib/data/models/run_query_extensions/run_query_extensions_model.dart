@@ -6,7 +6,7 @@ part 'run_query_extensions_model.freezed.dart';
 part 'run_query_extensions_model.g.dart';
 
 @freezed
-class RunQueryExtensionsModel
+abstract class RunQueryExtensionsModel
     with _$RunQueryExtensionsModel
     implements BaseModel {
   factory RunQueryExtensionsModel({

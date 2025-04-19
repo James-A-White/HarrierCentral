@@ -6,9 +6,8 @@ part of 'approve_login_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ApproveLoginModelImpl _$$ApproveLoginModelImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ApproveLoginModelImpl(
+_ApproveLoginModel _$ApproveLoginModelFromJson(Map<String, dynamic> json) =>
+    _ApproveLoginModel(
       apiVersion: json['apiVersion'] as String?,
       approvalCode: (json['approvalCode'] as num?)?.toInt(),
       loginMessage: json['loginMessage'] as String?,
@@ -29,8 +28,7 @@ _$ApproveLoginModelImpl _$$ApproveLoginModelImplFromJson(
           : DateTime.parse(json['thirdPartyForceTokenRefresh'] as String),
     );
 
-Map<String, dynamic> _$$ApproveLoginModelImplToJson(
-        _$ApproveLoginModelImpl instance) =>
+Map<String, dynamic> _$ApproveLoginModelToJson(_ApproveLoginModel instance) =>
     <String, dynamic>{
       'apiVersion': instance.apiVersion,
       'approvalCode': instance.approvalCode,

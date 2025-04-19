@@ -4,7 +4,7 @@ part 'db_error_model.freezed.dart';
 part 'db_error_model.g.dart';
 
 @freezed
-class DbErrorModel with _$DbErrorModel implements BaseModel {
+abstract class DbErrorModel with _$DbErrorModel implements BaseModel {
   factory DbErrorModel({
     String? errorId,
     num? errorType,
@@ -14,7 +14,8 @@ class DbErrorModel with _$DbErrorModel implements BaseModel {
     String? errorProc,
   }) = _DbErrorModel;
 
-  factory DbErrorModel.fromJson(Map<String, dynamic> json) => _$DbErrorModelFromJson(json);
+  factory DbErrorModel.fromJson(Map<String, dynamic> json) =>
+      _$DbErrorModelFromJson(json);
 
   @override
   factory DbErrorModel.fromMap(Map<String, dynamic> map) {

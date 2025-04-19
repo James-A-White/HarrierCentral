@@ -6,8 +6,8 @@ part of 'kennels_model_ns.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$KennelsModelImpl _$$KennelsModelImplFromJson(Map<String, dynamic> json) =>
-    _$KennelsModelImpl(
+_KennelsModel _$KennelsModelFromJson(Map<String, dynamic> json) =>
+    _KennelsModel(
       kennelId: json['kennelId'] as String,
       publicKennelId: json['publicKennelId'] as String,
       cityId: json['cityId'] as String,
@@ -16,6 +16,7 @@ _$KennelsModelImpl _$$KennelsModelImplFromJson(Map<String, dynamic> json) =>
       kennelName: json['kennelName'] as String,
       kennelSearchTags: json['kennelSearchTags'] as String?,
       kennelShortName: json['kennelShortName'] as String,
+      kennelUniqueShortName: json['kennelUniqueShortName'] as String,
       kennelDescription: json['kennelDescription'] as String?,
       kennelLogo: json['kennelLogo'] as String,
       kennelPinColor: (json['kennelPinColor'] as num).toInt(),
@@ -88,7 +89,7 @@ _$KennelsModelImpl _$$KennelsModelImplFromJson(Map<String, dynamic> json) =>
       removed: (json['removed'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$$KennelsModelImplToJson(_$KennelsModelImpl instance) =>
+Map<String, dynamic> _$KennelsModelToJson(_KennelsModel instance) =>
     <String, dynamic>{
       'kennelId': instance.kennelId,
       'publicKennelId': instance.publicKennelId,
@@ -98,6 +99,7 @@ Map<String, dynamic> _$$KennelsModelImplToJson(_$KennelsModelImpl instance) =>
       'kennelName': instance.kennelName,
       'kennelSearchTags': instance.kennelSearchTags,
       'kennelShortName': instance.kennelShortName,
+      'kennelUniqueShortName': instance.kennelUniqueShortName,
       'kennelDescription': instance.kennelDescription,
       'kennelLogo': instance.kennelLogo,
       'kennelPinColor': instance.kennelPinColor,

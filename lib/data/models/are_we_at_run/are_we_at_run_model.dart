@@ -4,7 +4,7 @@ part 'are_we_at_run_model.freezed.dart';
 part 'are_we_at_run_model.g.dart';
 
 @freezed
-class AreWeAtRunModel with _$AreWeAtRunModel implements BaseModel {
+abstract class AreWeAtRunModel with _$AreWeAtRunModel implements BaseModel {
   factory AreWeAtRunModel({
     required String eventId,
     required String eventName,
@@ -29,7 +29,8 @@ class AreWeAtRunModel with _$AreWeAtRunModel implements BaseModel {
     String? extrasDescription,
   }) = _AreWeAtRunModel;
 
-  factory AreWeAtRunModel.fromJson(Map<String, dynamic> json) => _$AreWeAtRunModelFromJson(json);
+  factory AreWeAtRunModel.fromJson(Map<String, dynamic> json) =>
+      _$AreWeAtRunModelFromJson(json);
 
   @override
   factory AreWeAtRunModel.fromMap(Map<String, dynamic> map) {

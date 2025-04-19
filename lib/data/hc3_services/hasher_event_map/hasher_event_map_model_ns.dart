@@ -4,7 +4,9 @@ part 'hasher_event_map_model_ns.freezed.dart';
 part 'hasher_event_map_model_ns.g.dart';
 
 @freezed
-class HasherEventMapModel with _$HasherEventMapModel implements BaseModel {
+abstract class HasherEventMapModel
+    with _$HasherEventMapModel
+    implements BaseModel {
   factory HasherEventMapModel({
     required String hemId,
     required String userId,
@@ -41,5 +43,6 @@ class HasherEventMapModel with _$HasherEventMapModel implements BaseModel {
     DateTime? updatedAt,
   }) = _HasherEventMapModel;
 
-  factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);
+  factory HasherEventMapModel.fromJson(Map<String, dynamic> json) =>
+      _$HasherEventMapModelFromJson(json);
 }

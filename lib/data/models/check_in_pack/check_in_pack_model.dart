@@ -4,7 +4,7 @@ part 'check_in_pack_model.freezed.dart';
 part 'check_in_pack_model.g.dart';
 
 @freezed
-class CheckInPackModel with _$CheckInPackModel implements BaseModel {
+abstract class CheckInPackModel with _$CheckInPackModel implements BaseModel {
   factory CheckInPackModel({
     String? hasherId,
     String? hemId,

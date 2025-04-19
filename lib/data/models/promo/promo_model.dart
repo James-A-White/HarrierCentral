@@ -4,7 +4,7 @@ part 'promo_model.freezed.dart';
 part 'promo_model.g.dart';
 
 @freezed
-class PromoModel with _$PromoModel implements BaseModel {
+abstract class PromoModel with _$PromoModel implements BaseModel {
   factory PromoModel({
     required String promotionId,
     String? kennelId,
@@ -32,20 +32,14 @@ class PromoModel with _$PromoModel implements BaseModel {
     required int promoDisplayTimeInMs,
   }) = _PromoModel;
 
-  factory PromoModel.fromJson(Map<String, dynamic> json) => _$PromoModelFromJson(json);
+  factory PromoModel.fromJson(Map<String, dynamic> json) =>
+      _$PromoModelFromJson(json);
 
   @override
   factory PromoModel.fromMap(Map<String, dynamic> map) {
     return PromoModel.fromJson(map);
   }
 }
-
-
-
-
-
-
-  
 
 //   static List<PromoModel> itemsFromJson(String jsonResult) {
 //     final List<PromoModel> items = <PromoModel>[];
