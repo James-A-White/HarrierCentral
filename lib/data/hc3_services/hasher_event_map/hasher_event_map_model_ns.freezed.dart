@@ -38,6 +38,7 @@ mixin _$HasherEventMapModel implements DiagnosticableTreeMixin {
       get phoneNumber; // these fields are cached from the event itself. This enables us to keep run count information without
 // having to have the actual run cached on the phone
   String? get hemEventName;
+  String? get hemCountryId;
   int? get hemEventNumber;
   DateTime get hemEventStartDatetime;
   int? get hemCanEditRunAttendence;
@@ -86,6 +87,7 @@ mixin _$HasherEventMapModel implements DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('email', email))
       ..add(DiagnosticsProperty('phoneNumber', phoneNumber))
       ..add(DiagnosticsProperty('hemEventName', hemEventName))
+      ..add(DiagnosticsProperty('hemCountryId', hemCountryId))
       ..add(DiagnosticsProperty('hemEventNumber', hemEventNumber))
       ..add(DiagnosticsProperty('hemEventStartDatetime', hemEventStartDatetime))
       ..add(DiagnosticsProperty(
@@ -142,6 +144,8 @@ mixin _$HasherEventMapModel implements DiagnosticableTreeMixin {
                 other.phoneNumber == phoneNumber) &&
             (identical(other.hemEventName, hemEventName) ||
                 other.hemEventName == hemEventName) &&
+            (identical(other.hemCountryId, hemCountryId) ||
+                other.hemCountryId == hemCountryId) &&
             (identical(other.hemEventNumber, hemEventNumber) ||
                 other.hemEventNumber == hemEventNumber) &&
             (identical(other.hemEventStartDatetime, hemEventStartDatetime) ||
@@ -159,8 +163,7 @@ mixin _$HasherEventMapModel implements DiagnosticableTreeMixin {
             (identical(other.hemKennelHashName, hemKennelHashName) ||
                 other.hemKennelHashName == hemKennelHashName) &&
             (identical(other.removed, removed) || other.removed == removed) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+            (identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -188,6 +191,7 @@ mixin _$HasherEventMapModel implements DiagnosticableTreeMixin {
         email,
         phoneNumber,
         hemEventName,
+        hemCountryId,
         hemEventNumber,
         hemEventStartDatetime,
         hemCanEditRunAttendence,
@@ -201,7 +205,7 @@ mixin _$HasherEventMapModel implements DiagnosticableTreeMixin {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'HasherEventMapModel(hemId: $hemId, userId: $userId, eventId: $eventId, hasherOwnEventId: $hasherOwnEventId, userStartEvent: $userStartEvent, userEndEvent: $userEndEvent, rsvpState: $rsvpState, attendenceState: $attendenceState, isHare: $isHare, eventNotificationPreference: $eventNotificationPreference, eventEmailAlertPreference: $eventEmailAlertPreference, totalHaring: $totalHaring, totalHaringThisKennel: $totalHaringThisKennel, totalRuns: $totalRuns, totalRunsThisKennel: $totalRunsThisKennel, eventCountOverride: $eventCountOverride, virginVisitorType: $virginVisitorType, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, hemEventName: $hemEventName, hemEventNumber: $hemEventNumber, hemEventStartDatetime: $hemEventStartDatetime, hemCanEditRunAttendence: $hemCanEditRunAttendence, hemEventKennelId: $hemEventKennelId, hemEventIsCountedAndVisible: $hemEventIsCountedAndVisible, hemKennelUserPhoto: $hemKennelUserPhoto, hemKennelHashName: $hemKennelHashName, removed: $removed, updatedAt: $updatedAt)';
+    return 'HasherEventMapModel(hemId: $hemId, userId: $userId, eventId: $eventId, hasherOwnEventId: $hasherOwnEventId, userStartEvent: $userStartEvent, userEndEvent: $userEndEvent, rsvpState: $rsvpState, attendenceState: $attendenceState, isHare: $isHare, eventNotificationPreference: $eventNotificationPreference, eventEmailAlertPreference: $eventEmailAlertPreference, totalHaring: $totalHaring, totalHaringThisKennel: $totalHaringThisKennel, totalRuns: $totalRuns, totalRunsThisKennel: $totalRunsThisKennel, eventCountOverride: $eventCountOverride, virginVisitorType: $virginVisitorType, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, hemEventName: $hemEventName, hemCountryId: $hemCountryId, hemEventNumber: $hemEventNumber, hemEventStartDatetime: $hemEventStartDatetime, hemCanEditRunAttendence: $hemCanEditRunAttendence, hemEventKennelId: $hemEventKennelId, hemEventIsCountedAndVisible: $hemEventIsCountedAndVisible, hemKennelUserPhoto: $hemKennelUserPhoto, hemKennelHashName: $hemKennelHashName, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
@@ -233,6 +237,7 @@ abstract mixin class $HasherEventMapModelCopyWith<$Res> {
       String? email,
       String? phoneNumber,
       String? hemEventName,
+      String? hemCountryId,
       int? hemEventNumber,
       DateTime hemEventStartDatetime,
       int? hemCanEditRunAttendence,
@@ -278,6 +283,7 @@ class _$HasherEventMapModelCopyWithImpl<$Res>
     Object? email = freezed,
     Object? phoneNumber = freezed,
     Object? hemEventName = freezed,
+    Object? hemCountryId = freezed,
     Object? hemEventNumber = freezed,
     Object? hemEventStartDatetime = null,
     Object? hemCanEditRunAttendence = freezed,
@@ -373,6 +379,10 @@ class _$HasherEventMapModelCopyWithImpl<$Res>
           ? _self.hemEventName
           : hemEventName // ignore: cast_nullable_to_non_nullable
               as String?,
+      hemCountryId: freezed == hemCountryId
+          ? _self.hemCountryId
+          : hemCountryId // ignore: cast_nullable_to_non_nullable
+              as String?,
       hemEventNumber: freezed == hemEventNumber
           ? _self.hemEventNumber
           : hemEventNumber // ignore: cast_nullable_to_non_nullable
@@ -440,6 +450,7 @@ class _HasherEventMapModel
       this.email,
       this.phoneNumber,
       this.hemEventName,
+      this.hemCountryId,
       this.hemEventNumber,
       required this.hemEventStartDatetime,
       this.hemCanEditRunAttendence,
@@ -496,6 +507,8 @@ class _HasherEventMapModel
 // having to have the actual run cached on the phone
   @override
   final String? hemEventName;
+  @override
+  final String? hemCountryId;
   @override
   final int? hemEventNumber;
   @override
@@ -558,6 +571,7 @@ class _HasherEventMapModel
       ..add(DiagnosticsProperty('email', email))
       ..add(DiagnosticsProperty('phoneNumber', phoneNumber))
       ..add(DiagnosticsProperty('hemEventName', hemEventName))
+      ..add(DiagnosticsProperty('hemCountryId', hemCountryId))
       ..add(DiagnosticsProperty('hemEventNumber', hemEventNumber))
       ..add(DiagnosticsProperty('hemEventStartDatetime', hemEventStartDatetime))
       ..add(DiagnosticsProperty(
@@ -614,6 +628,8 @@ class _HasherEventMapModel
                 other.phoneNumber == phoneNumber) &&
             (identical(other.hemEventName, hemEventName) ||
                 other.hemEventName == hemEventName) &&
+            (identical(other.hemCountryId, hemCountryId) ||
+                other.hemCountryId == hemCountryId) &&
             (identical(other.hemEventNumber, hemEventNumber) ||
                 other.hemEventNumber == hemEventNumber) &&
             (identical(other.hemEventStartDatetime, hemEventStartDatetime) ||
@@ -631,8 +647,7 @@ class _HasherEventMapModel
             (identical(other.hemKennelHashName, hemKennelHashName) ||
                 other.hemKennelHashName == hemKennelHashName) &&
             (identical(other.removed, removed) || other.removed == removed) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+            (identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -660,6 +675,7 @@ class _HasherEventMapModel
         email,
         phoneNumber,
         hemEventName,
+        hemCountryId,
         hemEventNumber,
         hemEventStartDatetime,
         hemCanEditRunAttendence,
@@ -673,7 +689,7 @@ class _HasherEventMapModel
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'HasherEventMapModel(hemId: $hemId, userId: $userId, eventId: $eventId, hasherOwnEventId: $hasherOwnEventId, userStartEvent: $userStartEvent, userEndEvent: $userEndEvent, rsvpState: $rsvpState, attendenceState: $attendenceState, isHare: $isHare, eventNotificationPreference: $eventNotificationPreference, eventEmailAlertPreference: $eventEmailAlertPreference, totalHaring: $totalHaring, totalHaringThisKennel: $totalHaringThisKennel, totalRuns: $totalRuns, totalRunsThisKennel: $totalRunsThisKennel, eventCountOverride: $eventCountOverride, virginVisitorType: $virginVisitorType, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, hemEventName: $hemEventName, hemEventNumber: $hemEventNumber, hemEventStartDatetime: $hemEventStartDatetime, hemCanEditRunAttendence: $hemCanEditRunAttendence, hemEventKennelId: $hemEventKennelId, hemEventIsCountedAndVisible: $hemEventIsCountedAndVisible, hemKennelUserPhoto: $hemKennelUserPhoto, hemKennelHashName: $hemKennelHashName, removed: $removed, updatedAt: $updatedAt)';
+    return 'HasherEventMapModel(hemId: $hemId, userId: $userId, eventId: $eventId, hasherOwnEventId: $hasherOwnEventId, userStartEvent: $userStartEvent, userEndEvent: $userEndEvent, rsvpState: $rsvpState, attendenceState: $attendenceState, isHare: $isHare, eventNotificationPreference: $eventNotificationPreference, eventEmailAlertPreference: $eventEmailAlertPreference, totalHaring: $totalHaring, totalHaringThisKennel: $totalHaringThisKennel, totalRuns: $totalRuns, totalRunsThisKennel: $totalRunsThisKennel, eventCountOverride: $eventCountOverride, virginVisitorType: $virginVisitorType, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, hemEventName: $hemEventName, hemCountryId: $hemCountryId, hemEventNumber: $hemEventNumber, hemEventStartDatetime: $hemEventStartDatetime, hemCanEditRunAttendence: $hemCanEditRunAttendence, hemEventKennelId: $hemEventKennelId, hemEventIsCountedAndVisible: $hemEventIsCountedAndVisible, hemKennelUserPhoto: $hemKennelUserPhoto, hemKennelHashName: $hemKennelHashName, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
@@ -707,6 +723,7 @@ abstract mixin class _$HasherEventMapModelCopyWith<$Res>
       String? email,
       String? phoneNumber,
       String? hemEventName,
+      String? hemCountryId,
       int? hemEventNumber,
       DateTime hemEventStartDatetime,
       int? hemCanEditRunAttendence,
@@ -752,6 +769,7 @@ class __$HasherEventMapModelCopyWithImpl<$Res>
     Object? email = freezed,
     Object? phoneNumber = freezed,
     Object? hemEventName = freezed,
+    Object? hemCountryId = freezed,
     Object? hemEventNumber = freezed,
     Object? hemEventStartDatetime = null,
     Object? hemCanEditRunAttendence = freezed,
@@ -846,6 +864,10 @@ class __$HasherEventMapModelCopyWithImpl<$Res>
       hemEventName: freezed == hemEventName
           ? _self.hemEventName
           : hemEventName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hemCountryId: freezed == hemCountryId
+          ? _self.hemCountryId
+          : hemCountryId // ignore: cast_nullable_to_non_nullable
               as String?,
       hemEventNumber: freezed == hemEventNumber
           ? _self.hemEventNumber

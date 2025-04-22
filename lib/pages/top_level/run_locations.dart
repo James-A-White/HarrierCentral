@@ -409,8 +409,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       _runLocationMarkers = <Marker>[];
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
-          final double? lat = results[i]['lat'];
-          final double? lon = results[i]['lon'];
+          final double? lat = (results[i]['lat'] as num?)?.toDouble();
+          final double? lon = (results[i]['lon'] as num?)?.toDouble();
+
           if ((lat != null) && (lon != null)) {
             if ((lat <= 90.0) &&
                 (lat >= -90.0) &&

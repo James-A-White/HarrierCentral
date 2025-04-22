@@ -11,7 +11,8 @@ class CommonQueries {
           FROM $tableName
           ''';
 
-    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+    final List<Map<String, dynamic>> results =
+        await G0<Database>().rawQuery(query);
     return results[0]['Total'];
   }
 
@@ -22,7 +23,8 @@ class CommonQueries {
           WHERE removed != 0
           ''';
 
-    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+    final List<Map<String, dynamic>> results =
+        await G0<Database>().rawQuery(query);
     return results[0]['Total'];
   }
 
@@ -51,15 +53,22 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(sql);
 
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
-          if ((results[i]['deltaHours'] <= ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) && (results[i]['deltaHours'] >= -ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT)) {
+          if ((results[i]['deltaHours'] <=
+                  ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) &&
+              (results[i]['deltaHours'] >=
+                  -ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT)) {
             result = results[i]['eventId'];
             break;
-          } else if (results[i]['deltaHours'] > ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
-            result = (results[i]['deltaHours'] - ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT).toString();
+          } else if (results[i]['deltaHours'] >
+              ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
+            result = (results[i]['deltaHours'] -
+                    ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT)
+                .toString();
             break;
           }
         }
@@ -114,7 +123,8 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> queryResults = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> queryResults =
+          await G0<Database>().rawQuery(sql);
 
       if (queryResults.isNotEmpty) {
         int escape = 0;
@@ -123,8 +133,11 @@ class CommonQueries {
 
         // start a 6-minute loop where we look for an updated position
         while (escape < 120 && !hasValidPosition) {
-          final DateTime? lastLocationUpdate = getDatePref(DatePrefsEnum.lastLocationUpdate);
-          if ((lastLocationUpdate != null) && (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() < 15)) {
+          final DateTime? lastLocationUpdate =
+              getDatePref(DatePrefsEnum.lastLocationUpdate);
+          if ((lastLocationUpdate != null) &&
+              (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() <
+                  15)) {
             hasValidPosition = true;
             continue;
           }
@@ -135,21 +148,32 @@ class CommonQueries {
         if (hasValidPosition) {
           for (int i = 0; i < queryResults.length; i++) {
             double? dist;
-            if ((queryResults[i]['lat'] != null) && (G0<DeviceInfo>().deviceLon != null) && (G0<DeviceInfo>().deviceLon != null)) {
-              dist = Geolocator.distanceBetween(G0<DeviceInfo>().deviceLat!.toDouble(), G0<DeviceInfo>().deviceLon!.toDouble(), queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+            if ((queryResults[i]['lat'] != null) &&
+                (G0<DeviceInfo>().deviceLon != null) &&
+                (G0<DeviceInfo>().deviceLon != null)) {
+              dist = Geolocator.distanceBetween(
+                  G0<DeviceInfo>().deviceLat!.toDouble(),
+                  G0<DeviceInfo>().deviceLon!.toDouble(),
+                  queryResults[i]['lat'] + 0.0,
+                  queryResults[i]['lon'] + 0.0);
 
-              if (dist.abs() > GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
+              if (dist.abs() >
+                  GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
                 continue;
               }
 
-              if (queryResults[i]['attendenceState'] >= attendenceAtHash.value) {
+              if (queryResults[i]['attendenceState'] >=
+                  attendenceAtHash.value) {
                 continue;
               }
 
               String? eventImage = queryResults[i]['eventImage'];
 
-              if ((eventImage != null) && (eventImage.isNotEmpty) && (!eventImage.startsWith('http'))) {
-                final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+              if ((eventImage != null) &&
+                  (eventImage.isNotEmpty) &&
+                  (!eventImage.startsWith('http'))) {
+                final String s = getStringPref(StringPrefsEnum.imageRootUrl) ??
+                    BASE_HCWEB_UPLOAD_URL;
                 if (s.isNotEmpty) {
                   eventImage = s + eventImage;
                 }
@@ -174,7 +198,9 @@ class CommonQueries {
                 discountPercent: queryResults[i]['discountPercent'],
                 distanceInMeters: dist,
                 attendenceState: queryResults[i]['attendenceState'],
-                membershipExpirationDate: DateTime.tryParse(queryResults[i]['membershipExpirationDate']) ?? DateTime(2000, 1, 1),
+                membershipExpirationDate: DateTime.tryParse(
+                        queryResults[i]['membershipExpirationDate']) ??
+                    DateTime(2000, 1, 1),
                 currencySymbol: queryResults[i]['curSym'],
                 digitsAfterDecimal: queryResults[i]['digAfterDec'],
               );
@@ -209,7 +235,8 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(sql);
 
       if (results.isNotEmpty) {
         result = results[0]['hasherId'];
@@ -220,7 +247,8 @@ class CommonQueries {
     return result;
   }
 
-  static Future<RunAdminAggregate?> getNewEvent(String kennelId, String userId, DateTime eventStart) async {
+  static Future<RunAdminAggregate?> getNewEvent(
+      String kennelId, String userId, DateTime eventStart) async {
     RunAdminAggregate? runDetailAggregate;
     try {
       const String dollarSign = r'$^';
@@ -248,13 +276,17 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(sql);
 
       if (results.isNotEmpty) {
-        final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+        final KennelsModel kennel =
+            G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
 
-        eventStart = eventStart.add(Duration(hours: kennel.defaultRunStartTime.hour - 12));
-        eventStart = eventStart.add(Duration(minutes: kennel.defaultRunStartTime.minute));
+        eventStart = eventStart
+            .add(Duration(hours: kennel.defaultRunStartTime.hour - 12));
+        eventStart = eventStart
+            .add(Duration(minutes: kennel.defaultRunStartTime.minute));
 
         final EventModel eventItem = EventModel(
           eventStartDatetime: eventStart,
@@ -277,23 +309,28 @@ class CommonQueries {
           eventName: 'Placeholder',
           useFbImage: 0,
           publicEventId: GUID_EMPTY,
+          countryId: GUID_EMPTY,
           eventNumber: 0,
           eventInboundIntegrationId: 0,
           updatedAt: DateTime.now(),
         );
 
-        final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
+        final RunDetailQueryExtensions extensions =
+            RunDetailQueryExtensions.fromMap(results[0]);
 
         String paymentLinkUrl = '';
 
-        if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+        if (((kennel.kennelPaymentUrl ?? '') != '') &&
+            ((kennel.kennelPaymentUrlExpires == null) ||
+                (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
           paymentLinkUrl = kennel.kennelPaymentUrl!;
         }
 
         extensions.paymentUrl = paymentLinkUrl;
         extensions.distToEvent = 0;
 
-        runDetailAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+        runDetailAggregate = RunAdminAggregate(
+            event: eventItem, extensions: extensions, kennel: kennel);
       }
     } catch (e) {
       //print(e);
@@ -302,7 +339,8 @@ class CommonQueries {
     return runDetailAggregate;
   }
 
-  static Future<RunAdminAggregate?> getEventAdminInfoFromLocalCache(String eventId, String userId) async {
+  static Future<RunAdminAggregate?> getEventAdminInfoFromLocalCache(
+      String eventId, String userId) async {
     RunAdminAggregate? runAdminAggregate;
     try {
       const String dollarSign = r'$^';
@@ -332,26 +370,36 @@ class CommonQueries {
           ''';
 
       try {
-        final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+        final List<Map<String, dynamic>> results =
+            await G0<Database>().rawQuery(sql);
 
         //final Geolocator locator = Geolocator();
 
         if (results.isNotEmpty) {
-          final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
-          final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
-          final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+          final EventModel eventItem =
+              G0<TableModel>().eventsTableHelper.fromMap(results[0]);
+          final RunDetailQueryExtensions extensions =
+              RunDetailQueryExtensions.fromMap(results[0]);
+          final KennelsModel kennel =
+              G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
           String paymentLinkUrl = '';
 
           double? dist;
 
-          if ((extensions.latitude != null) && (extensions.longitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+          if ((extensions.latitude != null) &&
+              (extensions.longitude != null) &&
+              (G0<DeviceInfo>().deviceLat != null) &&
+              (G0<DeviceInfo>().deviceLon != null)) {
             dist = Geolocator.distanceBetween(
               G0<DeviceInfo>().deviceLat!,
               G0<DeviceInfo>().deviceLon!,
               extensions.latitude!,
               extensions.longitude!,
             );
-          } else if ((kennel.kennelLatitude != null) && (kennel.kennelLongitude != null) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) {
+          } else if ((kennel.kennelLatitude != null) &&
+              (kennel.kennelLongitude != null) &&
+              (G0<DeviceInfo>().deviceLat != null) &&
+              (G0<DeviceInfo>().deviceLon != null)) {
             dist = Geolocator.distanceBetween(
               G0<DeviceInfo>().deviceLat!,
               G0<DeviceInfo>().deviceLon!,
@@ -361,15 +409,21 @@ class CommonQueries {
           }
           extensions.distToEvent = dist;
 
-          if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires!.isAfter(DateTime.now())))) {
+          if (((eventItem.eventPaymentUrl ?? '') != '') &&
+              ((eventItem.eventPaymentUrlExpires == null) ||
+                  (eventItem.eventPaymentUrlExpires!
+                      .isAfter(DateTime.now())))) {
             paymentLinkUrl = eventItem.eventPaymentUrl!;
-          } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+          } else if (((kennel.kennelPaymentUrl ?? '') != '') &&
+              ((kennel.kennelPaymentUrlExpires == null) ||
+                  (kennel.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
             paymentLinkUrl = kennel.kennelPaymentUrl!;
           }
 
           extensions.paymentUrl = paymentLinkUrl;
 
-          runAdminAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+          runAdminAggregate = RunAdminAggregate(
+              event: eventItem, extensions: extensions, kennel: kennel);
         }
       } catch (e) {
         if (kDebugMode) {

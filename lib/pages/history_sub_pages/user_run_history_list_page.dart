@@ -411,20 +411,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
   //   //model.notifyListeners();
   // }
 
-  static TextStyle numberStyle = TextStyle(
-      color: Colors.black87,
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-      height: 1.0);
-
-  static TextStyle boldTitleStyle = TextStyle(
-      color: Colors.black87,
-      fontFamily: 'AvenirNextBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-      height: 1.0);
-
   int myRunCount = 0;
   int myHaringCount = 0;
 
@@ -503,7 +489,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 18.0,
                           maxLines: 1,
-                          style: boldTitleStyle,
+                          style: ts_boldTitleStyle,
                           textAlign: TextAlign.left,
                         ),
                         AutoSizeText(
@@ -513,7 +499,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 12.0,
                           maxLines: 1,
-                          style: numberStyle,
+                          style: ts_numberStyle,
                           textAlign: TextAlign.center,
                         ),
                         AutoSizeText(
@@ -523,7 +509,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 12.0,
                           maxLines: 1,
-                          style: numberStyle,
+                          style: ts_numberStyle,
                           textAlign: TextAlign.center,
                         ),
                         AutoSizeText(
@@ -533,7 +519,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 12.0,
                           maxLines: 1,
-                          style: numberStyle,
+                          style: ts_numberStyle,
                           textAlign: TextAlign.center,
                         ),
                         ((_kennelInfo ?? widget.kennelInfo)
@@ -547,7 +533,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                                 overflow: TextOverflow.ellipsis,
                                 minFontSize: 18.0,
                                 maxLines: 1,
-                                style: numberStyle,
+                                style: ts_numberStyle,
                                 textAlign: TextAlign.center,
                               ),
                         ((_kennelInfo ?? widget.kennelInfo)
@@ -561,7 +547,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                                 overflow: TextOverflow.ellipsis,
                                 minFontSize: 18.0,
                                 maxLines: 1,
-                                style: numberStyle,
+                                style: ts_numberStyle,
                                 textAlign: TextAlign.center,
                               ),
                       ],
@@ -603,7 +589,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           width: 120,
                           child: Text(
                             'My Runs',
-                            style: numberStyle.copyWith(
+                            style: ts_numberStyle.copyWith(
                                 color: _tabController.index == 0
                                     ? Colors.white
                                     : Colors.black),
@@ -616,7 +602,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           width: 120,
                           child: Text(
                             'All Runs',
-                            style: numberStyle.copyWith(
+                            style: ts_numberStyle.copyWith(
                                 color: _tabController.index == 1
                                     ? Colors.white
                                     : Colors.black),

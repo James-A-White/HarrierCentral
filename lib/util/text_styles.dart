@@ -33,6 +33,20 @@ ButtonStyle text_button_style = ButtonStyle(
 /// font: AvenirNext
 /// color: White
 
+TextStyle ts_numberStyle = TextStyle(
+    color: Colors.black87,
+    fontFamily: 'AvenirNextDemiBold',
+    fontStyle: FontStyle.normal,
+    fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+    height: 1.0);
+
+TextStyle ts_boldTitleStyle = TextStyle(
+    color: Colors.black87,
+    fontFamily: 'AvenirNextBold',
+    fontStyle: FontStyle.normal,
+    fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+    height: 1.0);
+
 // 1 file
 TextStyle ts_regular = const TextStyle(
   fontFamily: 'AvenirNext',

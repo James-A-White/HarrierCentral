@@ -31,6 +31,7 @@ _HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String?,
       phoneNumber: json['phoneNumber'] as String?,
       hemEventName: json['hemEventName'] as String?,
+      hemCountryId: json['hemCountryId'] as String?,
       hemEventNumber: (json['hemEventNumber'] as num?)?.toInt(),
       hemEventStartDatetime:
           DateTime.parse(json['hemEventStartDatetime'] as String),
@@ -71,6 +72,7 @@ Map<String, dynamic> _$HasherEventMapModelToJson(
       'email': instance.email,
       'phoneNumber': instance.phoneNumber,
       'hemEventName': instance.hemEventName,
+      'hemCountryId': instance.hemCountryId,
       'hemEventNumber': instance.hemEventNumber,
       'hemEventStartDatetime': instance.hemEventStartDatetime.toIso8601String(),
       'hemCanEditRunAttendence': instance.hemCanEditRunAttendence,

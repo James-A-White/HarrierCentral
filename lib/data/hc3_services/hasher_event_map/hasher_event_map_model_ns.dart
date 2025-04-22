@@ -32,6 +32,7 @@ abstract class HasherEventMapModel
     // these fields are cached from the event itself. This enables us to keep run count information without
     // having to have the actual run cached on the phone
     String? hemEventName,
+    String? hemCountryId,
     int? hemEventNumber,
     required DateTime hemEventStartDatetime,
     int? hemCanEditRunAttendence,

@@ -26,6 +26,7 @@ mixin _$EventModel implements DiagnosticableTreeMixin {
   int get eventInboundIntegrationId;
   int get eventNumber;
   String get eventName;
+  String get countryId;
   double? get hcLatitude;
   double? get hcLongitude;
   double? get fbLatitude;
@@ -90,6 +91,7 @@ mixin _$EventModel implements DiagnosticableTreeMixin {
           'eventInboundIntegrationId', eventInboundIntegrationId))
       ..add(DiagnosticsProperty('eventNumber', eventNumber))
       ..add(DiagnosticsProperty('eventName', eventName))
+      ..add(DiagnosticsProperty('countryId', countryId))
       ..add(DiagnosticsProperty('hcLatitude', hcLatitude))
       ..add(DiagnosticsProperty('hcLongitude', hcLongitude))
       ..add(DiagnosticsProperty('fbLatitude', fbLatitude))
@@ -159,6 +161,8 @@ mixin _$EventModel implements DiagnosticableTreeMixin {
                 other.eventNumber == eventNumber) &&
             (identical(other.eventName, eventName) ||
                 other.eventName == eventName) &&
+            (identical(other.countryId, countryId) ||
+                other.countryId == countryId) &&
             (identical(other.hcLatitude, hcLatitude) ||
                 other.hcLatitude == hcLatitude) &&
             (identical(other.hcLongitude, hcLongitude) ||
@@ -198,8 +202,7 @@ mixin _$EventModel implements DiagnosticableTreeMixin {
                 other.locationCountry == locationCountry) &&
             (identical(other.locationRegion, locationRegion) ||
                 other.locationRegion == locationRegion) &&
-            (identical(other.locationSubRegion, locationSubRegion) ||
-                other.locationSubRegion == locationSubRegion) &&
+            (identical(other.locationSubRegion, locationSubRegion) || other.locationSubRegion == locationSubRegion) &&
             (identical(other.hares, hares) || other.hares == hares) &&
             (identical(other.eventPaymentScheme, eventPaymentScheme) || other.eventPaymentScheme == eventPaymentScheme) &&
             (identical(other.eventPaymentUrl, eventPaymentUrl) || other.eventPaymentUrl == eventPaymentUrl) &&
@@ -234,6 +237,7 @@ mixin _$EventModel implements DiagnosticableTreeMixin {
         eventInboundIntegrationId,
         eventNumber,
         eventName,
+        countryId,
         hcLatitude,
         hcLongitude,
         fbLatitude,
@@ -275,7 +279,7 @@ mixin _$EventModel implements DiagnosticableTreeMixin {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'EventModel(eventId: $eventId, publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, kennelId: $kennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, isPromotedEvent: $isPromotedEvent, eventGeographicScope: $eventGeographicScope, eventInboundIntegrationId: $eventInboundIntegrationId, eventNumber: $eventNumber, eventName: $eventName, hcLatitude: $hcLatitude, hcLongitude: $hcLongitude, fbLatitude: $fbLatitude, fbLongitude: $fbLongitude, eventPriceForMembers: $eventPriceForMembers, eventPriceForNonMembers: $eventPriceForNonMembers, evtDisseminateAllowWebLinks: $evtDisseminateAllowWebLinks, eventFacebookId: $eventFacebookId, absoluteEventNumber: $absoluteEventNumber, canEditRunAttendence: $canEditRunAttendence, eventImage: $eventImage, eventDescription: $eventDescription, eventUrl: $eventUrl, locationOneLineDesc: $locationOneLineDesc, locationPostCode: $locationPostCode, locationCity: $locationCity, locationStreet: $locationStreet, locationCountry: $locationCountry, locationRegion: $locationRegion, locationSubRegion: $locationSubRegion, hares: $hares, eventPaymentScheme: $eventPaymentScheme, eventPaymentUrl: $eventPaymentUrl, eventPaymentUrlExpires: $eventPaymentUrlExpires, unconfirmedBankXferCount: $unconfirmedBankXferCount, eventPriceForExtras: $eventPriceForExtras, extrasDescription: $extrasDescription, doTrackHashCash: $doTrackHashCash, tags1: $tags1, tags2: $tags2, tags3: $tags3, useFbLocation: $useFbLocation, useFbLatLon: $useFbLatLon, useFbRunDetails: $useFbRunDetails, useFbImage: $useFbImage, removed: $removed, updatedAt: $updatedAt)';
+    return 'EventModel(eventId: $eventId, publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, kennelId: $kennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, isPromotedEvent: $isPromotedEvent, eventGeographicScope: $eventGeographicScope, eventInboundIntegrationId: $eventInboundIntegrationId, eventNumber: $eventNumber, eventName: $eventName, countryId: $countryId, hcLatitude: $hcLatitude, hcLongitude: $hcLongitude, fbLatitude: $fbLatitude, fbLongitude: $fbLongitude, eventPriceForMembers: $eventPriceForMembers, eventPriceForNonMembers: $eventPriceForNonMembers, evtDisseminateAllowWebLinks: $evtDisseminateAllowWebLinks, eventFacebookId: $eventFacebookId, absoluteEventNumber: $absoluteEventNumber, canEditRunAttendence: $canEditRunAttendence, eventImage: $eventImage, eventDescription: $eventDescription, eventUrl: $eventUrl, locationOneLineDesc: $locationOneLineDesc, locationPostCode: $locationPostCode, locationCity: $locationCity, locationStreet: $locationStreet, locationCountry: $locationCountry, locationRegion: $locationRegion, locationSubRegion: $locationSubRegion, hares: $hares, eventPaymentScheme: $eventPaymentScheme, eventPaymentUrl: $eventPaymentUrl, eventPaymentUrlExpires: $eventPaymentUrlExpires, unconfirmedBankXferCount: $unconfirmedBankXferCount, eventPriceForExtras: $eventPriceForExtras, extrasDescription: $extrasDescription, doTrackHashCash: $doTrackHashCash, tags1: $tags1, tags2: $tags2, tags3: $tags3, useFbLocation: $useFbLocation, useFbLatLon: $useFbLatLon, useFbRunDetails: $useFbRunDetails, useFbImage: $useFbImage, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
@@ -297,6 +301,7 @@ abstract mixin class $EventModelCopyWith<$Res> {
       int eventInboundIntegrationId,
       int eventNumber,
       String eventName,
+      String countryId,
       double? hcLatitude,
       double? hcLongitude,
       double? fbLatitude,
@@ -359,6 +364,7 @@ class _$EventModelCopyWithImpl<$Res> implements $EventModelCopyWith<$Res> {
     Object? eventInboundIntegrationId = null,
     Object? eventNumber = null,
     Object? eventName = null,
+    Object? countryId = null,
     Object? hcLatitude = freezed,
     Object? hcLongitude = freezed,
     Object? fbLatitude = freezed,
@@ -441,6 +447,10 @@ class _$EventModelCopyWithImpl<$Res> implements $EventModelCopyWith<$Res> {
       eventName: null == eventName
           ? _self.eventName
           : eventName // ignore: cast_nullable_to_non_nullable
+              as String,
+      countryId: null == countryId
+          ? _self.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
               as String,
       hcLatitude: freezed == hcLatitude
           ? _self.hcLatitude
@@ -609,6 +619,7 @@ class _EventModel with DiagnosticableTreeMixin implements EventModel {
       required this.eventInboundIntegrationId,
       required this.eventNumber,
       required this.eventName,
+      required this.countryId,
       this.hcLatitude,
       this.hcLongitude,
       this.fbLatitude,
@@ -671,6 +682,8 @@ class _EventModel with DiagnosticableTreeMixin implements EventModel {
   final int eventNumber;
   @override
   final String eventName;
+  @override
+  final String countryId;
   @override
   final double? hcLatitude;
   @override
@@ -777,6 +790,7 @@ class _EventModel with DiagnosticableTreeMixin implements EventModel {
           'eventInboundIntegrationId', eventInboundIntegrationId))
       ..add(DiagnosticsProperty('eventNumber', eventNumber))
       ..add(DiagnosticsProperty('eventName', eventName))
+      ..add(DiagnosticsProperty('countryId', countryId))
       ..add(DiagnosticsProperty('hcLatitude', hcLatitude))
       ..add(DiagnosticsProperty('hcLongitude', hcLongitude))
       ..add(DiagnosticsProperty('fbLatitude', fbLatitude))
@@ -846,6 +860,8 @@ class _EventModel with DiagnosticableTreeMixin implements EventModel {
                 other.eventNumber == eventNumber) &&
             (identical(other.eventName, eventName) ||
                 other.eventName == eventName) &&
+            (identical(other.countryId, countryId) ||
+                other.countryId == countryId) &&
             (identical(other.hcLatitude, hcLatitude) ||
                 other.hcLatitude == hcLatitude) &&
             (identical(other.hcLongitude, hcLongitude) ||
@@ -885,8 +901,7 @@ class _EventModel with DiagnosticableTreeMixin implements EventModel {
                 other.locationCountry == locationCountry) &&
             (identical(other.locationRegion, locationRegion) ||
                 other.locationRegion == locationRegion) &&
-            (identical(other.locationSubRegion, locationSubRegion) ||
-                other.locationSubRegion == locationSubRegion) &&
+            (identical(other.locationSubRegion, locationSubRegion) || other.locationSubRegion == locationSubRegion) &&
             (identical(other.hares, hares) || other.hares == hares) &&
             (identical(other.eventPaymentScheme, eventPaymentScheme) || other.eventPaymentScheme == eventPaymentScheme) &&
             (identical(other.eventPaymentUrl, eventPaymentUrl) || other.eventPaymentUrl == eventPaymentUrl) &&
@@ -921,6 +936,7 @@ class _EventModel with DiagnosticableTreeMixin implements EventModel {
         eventInboundIntegrationId,
         eventNumber,
         eventName,
+        countryId,
         hcLatitude,
         hcLongitude,
         fbLatitude,
@@ -962,7 +978,7 @@ class _EventModel with DiagnosticableTreeMixin implements EventModel {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'EventModel(eventId: $eventId, publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, kennelId: $kennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, isPromotedEvent: $isPromotedEvent, eventGeographicScope: $eventGeographicScope, eventInboundIntegrationId: $eventInboundIntegrationId, eventNumber: $eventNumber, eventName: $eventName, hcLatitude: $hcLatitude, hcLongitude: $hcLongitude, fbLatitude: $fbLatitude, fbLongitude: $fbLongitude, eventPriceForMembers: $eventPriceForMembers, eventPriceForNonMembers: $eventPriceForNonMembers, evtDisseminateAllowWebLinks: $evtDisseminateAllowWebLinks, eventFacebookId: $eventFacebookId, absoluteEventNumber: $absoluteEventNumber, canEditRunAttendence: $canEditRunAttendence, eventImage: $eventImage, eventDescription: $eventDescription, eventUrl: $eventUrl, locationOneLineDesc: $locationOneLineDesc, locationPostCode: $locationPostCode, locationCity: $locationCity, locationStreet: $locationStreet, locationCountry: $locationCountry, locationRegion: $locationRegion, locationSubRegion: $locationSubRegion, hares: $hares, eventPaymentScheme: $eventPaymentScheme, eventPaymentUrl: $eventPaymentUrl, eventPaymentUrlExpires: $eventPaymentUrlExpires, unconfirmedBankXferCount: $unconfirmedBankXferCount, eventPriceForExtras: $eventPriceForExtras, extrasDescription: $extrasDescription, doTrackHashCash: $doTrackHashCash, tags1: $tags1, tags2: $tags2, tags3: $tags3, useFbLocation: $useFbLocation, useFbLatLon: $useFbLatLon, useFbRunDetails: $useFbRunDetails, useFbImage: $useFbImage, removed: $removed, updatedAt: $updatedAt)';
+    return 'EventModel(eventId: $eventId, publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, kennelId: $kennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, isPromotedEvent: $isPromotedEvent, eventGeographicScope: $eventGeographicScope, eventInboundIntegrationId: $eventInboundIntegrationId, eventNumber: $eventNumber, eventName: $eventName, countryId: $countryId, hcLatitude: $hcLatitude, hcLongitude: $hcLongitude, fbLatitude: $fbLatitude, fbLongitude: $fbLongitude, eventPriceForMembers: $eventPriceForMembers, eventPriceForNonMembers: $eventPriceForNonMembers, evtDisseminateAllowWebLinks: $evtDisseminateAllowWebLinks, eventFacebookId: $eventFacebookId, absoluteEventNumber: $absoluteEventNumber, canEditRunAttendence: $canEditRunAttendence, eventImage: $eventImage, eventDescription: $eventDescription, eventUrl: $eventUrl, locationOneLineDesc: $locationOneLineDesc, locationPostCode: $locationPostCode, locationCity: $locationCity, locationStreet: $locationStreet, locationCountry: $locationCountry, locationRegion: $locationRegion, locationSubRegion: $locationSubRegion, hares: $hares, eventPaymentScheme: $eventPaymentScheme, eventPaymentUrl: $eventPaymentUrl, eventPaymentUrlExpires: $eventPaymentUrlExpires, unconfirmedBankXferCount: $unconfirmedBankXferCount, eventPriceForExtras: $eventPriceForExtras, extrasDescription: $extrasDescription, doTrackHashCash: $doTrackHashCash, tags1: $tags1, tags2: $tags2, tags3: $tags3, useFbLocation: $useFbLocation, useFbLatLon: $useFbLatLon, useFbRunDetails: $useFbRunDetails, useFbImage: $useFbImage, removed: $removed, updatedAt: $updatedAt)';
   }
 }
 
@@ -986,6 +1002,7 @@ abstract mixin class _$EventModelCopyWith<$Res>
       int eventInboundIntegrationId,
       int eventNumber,
       String eventName,
+      String countryId,
       double? hcLatitude,
       double? hcLongitude,
       double? fbLatitude,
@@ -1048,6 +1065,7 @@ class __$EventModelCopyWithImpl<$Res> implements _$EventModelCopyWith<$Res> {
     Object? eventInboundIntegrationId = null,
     Object? eventNumber = null,
     Object? eventName = null,
+    Object? countryId = null,
     Object? hcLatitude = freezed,
     Object? hcLongitude = freezed,
     Object? fbLatitude = freezed,
@@ -1130,6 +1148,10 @@ class __$EventModelCopyWithImpl<$Res> implements _$EventModelCopyWith<$Res> {
       eventName: null == eventName
           ? _self.eventName
           : eventName // ignore: cast_nullable_to_non_nullable
+              as String,
+      countryId: null == countryId
+          ? _self.countryId
+          : countryId // ignore: cast_nullable_to_non_nullable
               as String,
       hcLatitude: freezed == hcLatitude
           ? _self.hcLatitude

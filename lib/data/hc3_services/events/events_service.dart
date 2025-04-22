@@ -68,7 +68,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colTags1 = 'tags1';
   final String colTags2 = 'tags2';
   final String colTags3 = 'tags3';
-
+  final String colCountryId = 'countryId';
   final String colUseFbLocation = 'useFbLocation';
   final String colUseFbLatLon = 'useFbLatLon';
   final String colUseFbRunDetails = 'useFbRunDetails';
@@ -93,6 +93,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colEventInboundIntegrationId INT NOT NULL,
             $colEventNumber INT NOT NULL,
             $colEventName TEXT NOT NULL,
+            $colCountryId TEXT NOT NULL,
             $colHcLatitude NUM,
             $colHcLongitude NUM,
             $colFbLatitude NUM,

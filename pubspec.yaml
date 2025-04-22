@@ -142,25 +142,26 @@ flutter:
   uses-material-design: true
 
   assets:
-    - images/generic_logos/
     - assets/
     - assets/documents/privacy_policy.pdf
     - assets/sounds/camera.mp3
     - images/avatars/
     - images/backgrounds/
-    - images/logos/
+    - images/flags/
+    - images/generic_logos/
     - images/icons/
     - images/init/
     - images/init/intro/
-    - images/map_pins/yellow/
-    - images/map_pins/green/
-    - images/map_pins/teal/
+    - images/logos/
     - images/map_pins/baby_blue/
     - images/map_pins/blue/
-    - images/map_pins/purple/
-    - images/map_pins/pink/
+    - images/map_pins/green/
     - images/map_pins/orange/
+    - images/map_pins/pink/
+    - images/map_pins/purple/
     - images/map_pins/red/
+    - images/map_pins/teal/
+    - images/map_pins/yellow/
     - images/other/
     - images/run_count_icons/
     - images/tutorial/

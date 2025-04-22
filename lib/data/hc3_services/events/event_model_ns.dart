@@ -17,6 +17,7 @@ abstract class EventModel with _$EventModel implements BaseModel {
     required int eventInboundIntegrationId,
     required int eventNumber,
     required String eventName,
+    required String countryId,
     double? hcLatitude,
     double? hcLongitude,
     double? fbLatitude,
