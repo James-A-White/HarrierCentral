@@ -46,6 +46,7 @@ class ApproveLoginService {
     String responseBody;
 
     try {
+      //TODO (James): Make this timeout gracefullly.
       final String ipv4 = await Ipify.ipv4();
 
       final String uri = 'https://ipinfo.io/$ipv4?token=1c7e5ada20ad08';

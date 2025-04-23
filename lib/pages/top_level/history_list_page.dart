@@ -1,10 +1,10 @@
 import 'package:harrier_central/imports.dart';
 
 class CountryStats {
-  final int runCount;
-  final int hareCount;
-  final String countryName;
-  final String flagFile;
+  int runCount;
+  int hareCount;
+  String countryName;
+  String flagFile;
 
   CountryStats({
     required this.runCount,
@@ -48,7 +48,7 @@ class HistoryListPageState extends State<HistoryListPage>
 
   bool _isLoading = false;
   List<RunHistoryModel> _runCountsListByKennel = <RunHistoryModel>[];
-  List<CountryStats> _runCountsListByCountry = <CountryStats>[];
+  Map<String, CountryStats> _runCountsListByCountry = <String, CountryStats>{};
   late TabController _tabController;
   int _totalHaring = 0;
   int _totalRuns = 0;
@@ -63,7 +63,7 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Future<void> refreshStatsFromTable(bool forceRefresh) async {
-    final String query = '''
+    final String hcRunsQuery = '''
           SELECT
           COUNT(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= ${attendenceAtHash.value} then 1 else null end) as runCount,
           COUNT(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare} != 0 then 1 else null end) as hareCount,
@@ -71,6 +71,19 @@ class HistoryListPageState extends State<HistoryListPage>
           countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem
           INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} countries on hem.${G0<TableModel>().hasherEventMapTableHelper.colCountryId} = countries.${G0<TableModel>().countriesTableHelper.colCountryId}
+          GROUP BY countries.${G0<TableModel>().countriesTableHelper.colCountryName}, countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
+          ORDER BY runCount desc
+          ''';
+
+    final String historicalRunsQuery = '''
+          SELECT
+          SUM(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount}) as runCount,
+          SUM(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount})  as hareCount,
+          countries.${G0<TableModel>().countriesTableHelper.colCountryName},
+          countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
+          FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm
+          INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} countries on ken.${G0<TableModel>().kennelsTableHelper.colCountryId} = countries.${G0<TableModel>().countriesTableHelper.colCountryId}
           GROUP BY countries.${G0<TableModel>().countriesTableHelper.colCountryName}, countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';
@@ -86,21 +99,47 @@ class HistoryListPageState extends State<HistoryListPage>
     //       ORDER BY runCount desc
     //       ''';
 
-    _runCountsListByCountry = <CountryStats>[];
+    _runCountsListByCountry = <String, CountryStats>{};
     try {
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> hcResults =
+          await G0<Database>().rawQuery(hcRunsQuery);
 
-      for (int i = 0; i < results.length; i++) {
-        final CountryStats hlrItem = CountryStats.fromMap(results[i]);
-        if (hlrItem.runCount > 0) {
-          _runCountsListByCountry.add(hlrItem);
-        }
+      final List<Map<String, dynamic>> historicResults =
+          await G0<Database>().rawQuery(historicalRunsQuery);
 
-        if (forceRefresh && (i == results.length - 1)) {
-          setState(() {});
+      for (int i = 0; i < historicResults.length; i++) {
+        final CountryStats historicItem =
+            CountryStats.fromMap(historicResults[i]);
+        if (historicItem.runCount > 0) {
+          print(
+              'Historic - Country = ${historicItem.countryName} / Count = ${historicItem.runCount} / Hare = ${historicItem.hareCount}');
+
+          _runCountsListByCountry[historicItem.countryName] = (historicItem);
         }
       }
+
+      for (int i = 0; i < hcResults.length; i++) {
+        final CountryStats hcItem = CountryStats.fromMap(hcResults[i]);
+
+        if (hcItem.runCount > 0) {
+          print(
+              'HC - Country = ${hcItem.countryName} / Count = ${hcItem.runCount} / Hare = ${hcItem.hareCount}');
+
+          if (_runCountsListByCountry[hcItem.countryName] != null) {
+            _runCountsListByCountry[hcItem.countryName]!.hareCount +=
+                hcItem.hareCount;
+            _runCountsListByCountry[hcItem.countryName]!.runCount +=
+                hcItem.runCount;
+          } else {
+            _runCountsListByCountry[hcItem.countryName] = hcItem;
+          }
+        }
+      }
+
+      // if (forceRefresh && (i == results.length - 1)) {
+      //   setState(() {});
+      // }
+      //}
     } catch (e) {
       //print(e);
     }
@@ -182,36 +221,28 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Widget _buildCountryStatsList() {
+    final sortedEntries = _runCountsListByCountry.entries.toList()
+      ..sort((b, a) => a.value.runCount.compareTo(b.value.runCount));
+
     return Expanded(
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         //itemCount: runCountsList.length + 1,
-        itemCount: _runCountsListByCountry.length,
+        itemCount: sortedEntries.length,
         padding: const EdgeInsets.only(top: 20),
         itemExtent: 100.0,
         itemBuilder: (BuildContext context, int index) {
-          // if (index == 0) {
-          //   return KennelRunHistoryMyRunsItem(refreshCounters: () {
-          //       refreshRunHistoryFromTable(true);
-          //     },);
-          // } else {
+          //String countryNameKey = _runCountsListByCountry.keys.elementAt(index);
+
+          if (sortedEntries[index].value.runCount == 0) {
+            return Container();
+          }
 
           return CountryRunHistoryCountListItem(
-            countryName: _runCountsListByCountry[index].countryName,
-            flagFile: _runCountsListByCountry[index].flagFile,
-            runCount: _runCountsListByCountry[index].runCount,
-            hareCount: _runCountsListByCountry[index].hareCount,
-
-            // refreshCounters: (String kennelId) async {
-            //   await refreshRunHistoryFromTable(true);
-            //   if (kennelId.isNotEmpty) {
-            //     for (int i = 0; i < _runCountsListByKennel.length; i++) {
-            //       if (_runCountsListByKennel[i].kennelId == kennelId) {
-            //         return _runCountsListByKennel[i];
-            //       }
-            //     }
-            //   }
-            // },
+            countryName: sortedEntries[index].value.countryName,
+            flagFile: sortedEntries[index].value.flagFile,
+            runCount: sortedEntries[index].value.runCount,
+            hareCount: sortedEntries[index].value.hareCount,
           );
           //}
         },

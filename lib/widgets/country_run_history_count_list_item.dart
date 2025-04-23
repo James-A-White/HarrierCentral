@@ -80,7 +80,7 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
                             height: 20.0,
                             padding: const EdgeInsets.only(left: 48.0),
                             child: Text(
-                              '($hareCount} times hared)',
+                              '$hareCount times hared)',
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: ts_titleMediumCondensedBlack.copyWith(

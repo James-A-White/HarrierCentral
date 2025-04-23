@@ -306,7 +306,7 @@ class CommonQueries {
           tags3: 0,
           eventId: GUID_EMPTY,
           doTrackHashCash: 1,
-          eventName: 'Placeholder',
+          eventName: '',
           useFbImage: 0,
           publicEventId: GUID_EMPTY,
           countryId: GUID_EMPTY,

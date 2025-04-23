@@ -242,6 +242,12 @@ class Tables {
         -- we don't have any active users. Bumping to 450 will cause a reload for our testers
       ''',
         appliedAtInt: 0),
+    MigrationsModel(
+        dbVersion: 460,
+        migrationText: '''
+        -- Bump DB Version
+      ''',
+        appliedAtInt: 0),
   ];
 
   static Future<void> createTables(
