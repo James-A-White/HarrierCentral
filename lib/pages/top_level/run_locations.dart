@@ -864,7 +864,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                             backgroundColor: hc_blue,
                             onPressed: null,
                             heroTag: 'btn_$heroCounter',
-                            child: Text(markers.length.toString()),
+                            child: Text(
+                              markers.length.toString(),
+                              style: ts_button,
+                            ),
                           );
                         },
                       ),
@@ -889,7 +892,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                             backgroundColor: Colors.purple[600],
                             onPressed: null,
                             heroTag: 'btn_$heroCounter',
-                            child: Text(markers.length.toString()),
+                            child: Text(markers.length.toString(),
+                                style: ts_button),
                           );
                         },
                       ),

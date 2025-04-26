@@ -1,34 +1,34 @@
 import 'package:harrier_central/imports.dart';
 
-class UserRunHistoryListPage extends StatefulWidget {
-  const UserRunHistoryListPage(
+class UserCountryHistoryListPage extends StatefulWidget {
+  const UserCountryHistoryListPage(
       {super.key,
-      required this.kennelInfo,
-      required this.refreshKennelInfo,
+      required this.countryId,
+      required this.countryName,
       required this.appDomain,
       this.hasherId,
       this.hashName});
 
-  final RunHistoryModel kennelInfo;
-  final Function refreshKennelInfo;
+  final String countryId;
+  final String countryName;
   final AppDomainType appDomain;
   final String? hasherId;
   final String? hashName;
 
   @override
-  UserRunHistoryPageState createState() => UserRunHistoryPageState();
+  UserCountryHistoryPageState createState() => UserCountryHistoryPageState();
 }
 
-class UserRunHistoryPageState extends State<UserRunHistoryListPage>
+class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     with SingleTickerProviderStateMixin {
-  UserRunHistoryPageState();
+  UserCountryHistoryPageState();
   bool _isLoading = false;
 
   List<UserRunHistoryModel> _runCountsList = <UserRunHistoryModel>[];
-  int _countryCount = 1;
+
   late final String userId;
 
-  RunHistoryModel? _kennelInfo;
+  //RunHistoryModel? _kennelInfo;
 
   late TabController _tabController;
 
@@ -80,9 +80,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           n.${G0<TableModel>().countriesTableHelper.colFlagFile} as flagFile,
           k.${G0<TableModel>().kennelsTableHelper.colKennelName} as kennelName,
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
+          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
           e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
           e.${G0<TableModel>().eventsTableHelper.colExtrasDescription} as extrasDescription,
           e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras} as extrasPrice,
@@ -104,7 +104,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
           AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
-          AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
+          AND e.${G0<TableModel>().eventsTableHelper.colCountryId} = "${widget.countryId}" 
           AND coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
           AND DateTime(e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) <= DateTime('now')
         UNION
@@ -121,9 +121,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           n.${G0<TableModel>().countriesTableHelper.colFlagFile} as flagFile,
           k.${G0<TableModel>().kennelsTableHelper.colKennelName} as kennelName,
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
+          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
           null as extrasDescription,
           null as extrasPrice,
@@ -145,7 +145,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRemoved} = 0 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colCountryId} = "${widget.countryId}" 
           AND coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
           AND DateTime(hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime}) <= DateTime('now') 
           ORDER BY eventStartDatetime desc
@@ -159,13 +159,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
       for (int i = 0; i < results.length; i++) {
         final UserRunHistoryModel hlrItem =
             UserRunHistoryModel.fromMap(results[i]);
-        // hlrItem.totalHaringThisKennel = -1;
-        // hlrItem.totalRunsThisKennel = -1;
         _runCountsList.add(hlrItem);
 
+        // hlrItem.totalHaringThisKennel = -1;
+        // hlrItem.totalRunsThisKennel = -1;
+
         if (forceRefresh && (i == results.length - 1)) {
-          _countryCount =
-              _runCountsList.map((run) => run.flagFile).toSet().length;
           setState(() {
             _isLoading = false;
           });
@@ -202,8 +201,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                 size: 28.0,
               ),
               title: Text(
-                  widget.hashName ??
-                      'My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}',
+                  widget.hashName ?? 'My runs for ${widget.countryName}',
                   style: ts_appBarTitle),
             ),
             floatingActionButton: SpeedDial(
@@ -231,38 +229,38 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
               elevation: 8.0,
               shape: const CircleBorder(),
               children: <SpeedDialChild>[
-                SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.email,
-                      color: Colors.white),
-                  backgroundColor: Colors.teal[800],
-                  label: 'Email run counts\r\n(this kennel)',
-                  labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () {
-                    G0<TableModel>()
-                        .hasherEventMapService
-                        .sendRunCountReportByEmail(
-                            kennelId:
-                                (_kennelInfo ?? widget.kennelInfo).kennelId,
-                            kennelName:
-                                (_kennelInfo ?? widget.kennelInfo).kennelName)
-                        .then((Map<String, String> result) {
-                      ScaffoldMessenger.of(navigatorKey.currentContext!)
-                          .hideCurrentSnackBar();
-                      if ((result['result'] != null) &&
-                          (result['result']!
-                              .toLowerCase()
-                              .startsWith('success'))) {
-                        Utilities.showAlert(
-                            'E-mail successfully sent',
-                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                            'OK');
-                      }
-                    });
-                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey,
-                        'Run count report being processed...',
-                        durationInSeconds: 10);
-                  },
-                ),
+                // SpeedDialChild(
+                //   child: const Icon(MaterialCommunityIcons.email,
+                //       color: Colors.white),
+                //   backgroundColor: Colors.teal[800],
+                //   label: 'Email run counts\r\n(this kennel)',
+                //   labelStyle: const TextStyle(fontSize: 18.0),
+                //   onTap: () {
+                //     G0<TableModel>()
+                //         .hasherEventMapService
+                //         .sendRunCountReportByEmail(
+                //             kennelId:
+                //                 (_kennelInfo ?? widget.kennelInfo).kennelId,
+                //             kennelName:
+                //                 (_kennelInfo ?? widget.kennelInfo).kennelName)
+                //         .then((Map<String, String> result) {
+                //       ScaffoldMessenger.of(navigatorKey.currentContext!)
+                //           .hideCurrentSnackBar();
+                //       if ((result['result'] != null) &&
+                //           (result['result']!
+                //               .toLowerCase()
+                //               .startsWith('success'))) {
+                //         Utilities.showAlert(
+                //             'E-mail successfully sent',
+                //             'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                //             'OK');
+                //       }
+                //     });
+                //     IveCoreUtilities.showInSnackBar(context, _scaffoldKey,
+                //         'Run count report being processed...',
+                //         durationInSeconds: 10);
+                //   },
+                // ),
                 SpeedDialChild(
                   child: const Icon(MaterialCommunityIcons.email_plus,
                       color: Colors.white),
@@ -337,7 +335,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('User data synchronized $resultStr');
     await _refreshRunHistoryFromTable(true);
-    _kennelInfo = await widget.refreshKennelInfo();
+    //_kennelInfo = await widget.refreshKennelInfo();
     setState(() {
       _isLoading = false;
     });
@@ -470,116 +468,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               Container(
-                decoration: const BoxDecoration(
-                  // border: new Border.all(width: 1.0, color: Colors.black),
-                  //shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: Color.fromARGB(70, 0, 0, 0),
-                      offset: Offset(0.0, 6.0),
-                      blurRadius: 10.0,
-                    ),
-                  ],
-                ),
-                //color:Color.fromARGB(30, 0, 0, 0),
-                padding:
-                    const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
-
-                child: Row(children: <Widget>[
-                  Container(
-                    margin: const EdgeInsets.only(right: 12.0),
-                    height: 90,
-                    child: KennelLogo(
-                      kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId,
-                      kennelLogoUrl:
-                          (_kennelInfo ?? widget.kennelInfo).kennelLogo,
-                      kennelShortName:
-                          (_kennelInfo ?? widget.kennelInfo).kennelShortName,
-                      logoHeight:
-                          60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                      leftPadding: 5.0,
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        AutoSizeText(
-                          (_kennelInfo ?? widget.kennelInfo).kennelName,
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
-                          overflow: TextOverflow.ellipsis,
-                          minFontSize: 18.0,
-                          maxLines: 1,
-                          style: ts_boldTitleStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        AutoSizeText(
-                          'My verified run count: ${(_kennelInfo ?? widget.kennelInfo).hcRunsThisKennel}',
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
-                          overflow: TextOverflow.ellipsis,
-                          minFontSize: 12.0,
-                          maxLines: 1,
-                          style: ts_numberStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                        AutoSizeText(
-                          'My verified haring count: ${(_kennelInfo ?? widget.kennelInfo).hcHaringThisKennel}',
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
-                          overflow: TextOverflow.ellipsis,
-                          minFontSize: 12.0,
-                          maxLines: 1,
-                          style: ts_numberStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                        AutoSizeText(
-                          'Kennel credit: ${IveCoreUtilities.getFormattedMoney((_kennelInfo ?? widget.kennelInfo).kennelCredit, widget.kennelInfo.digitsAfterDecimal, widget.kennelInfo.currencySymbol)}',
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
-                          overflow: TextOverflow.ellipsis,
-                          minFontSize: 12.0,
-                          maxLines: 1,
-                          style: ts_numberStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                        ((_kennelInfo ?? widget.kennelInfo)
-                                    .historicalTotalRunCount) ==
-                                0
-                            ? Container()
-                            : AutoSizeText(
-                                'Historical run count: ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: ts_numberStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                        ((_kennelInfo ?? widget.kennelInfo)
-                                    .historicalTotalRunCount) ==
-                                0
-                            ? Container()
-                            : AutoSizeText(
-                                'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: ts_numberStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                      ],
-                    ),
-                  ),
-                ]),
-              ),
-              Container(
                 // color: Colors.red,
                 width: 100,
                 padding: const EdgeInsets.only(
@@ -706,7 +594,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                                   );
                                 }
 
-                                _kennelInfo = await widget.refreshKennelInfo();
+                                //_kennelInfo = await widget.refreshKennelInfo();
 
                                 // await historyListPageKey.currentState.refreshRunHistoryFromTable(true);
 
@@ -864,14 +752,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                               },
                               child: UserEventListItem(
                                 item: item,
-                                historicalHaringCount:
-                                    (_kennelInfo ?? widget.kennelInfo)
-                                        .historicalHaringCount,
-                                historicalTotalRunCount:
-                                    (_kennelInfo ?? widget.kennelInfo)
-                                        .historicalTotalRunCount,
-                                showCountry: _countryCount > 1,
-                                showKennel: false,
+                                historicalHaringCount: 0,
+                                historicalTotalRunCount: 0,
+                                showCountry: false,
+                                showKennel: true,
                                 setAttendenceStateCallback:
                                     (EnumAttendenceState<int> attendenceState,
                                         EnumIsHare<int> isHare) async {

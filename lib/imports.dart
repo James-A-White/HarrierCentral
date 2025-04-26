@@ -92,6 +92,7 @@ export 'package:harrier_central/pages/detail_pages/chat/chat_ui.dart';
 export 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 export 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 export 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
+export 'package:harrier_central/pages/history_sub_pages/user_country_history_list_page.dart';
 export 'package:harrier_central/pages/init/app_entry_page.dart';
 export 'package:harrier_central/pages/init/avatar_icons_page.dart';
 export 'package:harrier_central/pages/init/choose_profile_image.dart';

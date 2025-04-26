@@ -5,12 +5,14 @@ class CountryStats {
   int hareCount;
   String countryName;
   String flagFile;
+  String countryId;
 
   CountryStats({
     required this.runCount,
     required this.hareCount,
     required this.countryName,
     required this.flagFile,
+    required this.countryId,
   });
 
   factory CountryStats.fromMap(Map<String, dynamic> map) {
@@ -19,6 +21,7 @@ class CountryStats {
       hareCount: map['hareCount'] ?? 0,
       countryName: map['countryName'] ?? '',
       flagFile: map['flagFile'] ?? '',
+      countryId: map['countryId'] ?? '',
     );
   }
 
@@ -66,11 +69,16 @@ class HistoryListPageState extends State<HistoryListPage>
     final String hcRunsQuery = '''
           SELECT
           COUNT(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= ${attendenceAtHash.value} then 1 else null end) as runCount,
-          COUNT(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare} != 0 then 1 else null end) as hareCount,
+          COUNT(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare} != 0 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= ${attendenceAtHash.value} then 1 else null end) as hareCount,
           countries.${G0<TableModel>().countriesTableHelper.colCountryName},
+          countries.${G0<TableModel>().countriesTableHelper.colCountryId},
           countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem
           INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} countries on hem.${G0<TableModel>().hasherEventMapTableHelper.colCountryId} = countries.${G0<TableModel>().countriesTableHelper.colCountryId}
+          INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = evt.${G0<TableModel>().eventsTableHelper.colEventId}
+          WHERE evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0 
+          AND evt.${G0<TableModel>().eventsTableHelper.colIsCountedRun} != 0
+          AND evt.${G0<TableModel>().eventsTableHelper.colIsVisible} != 0
           GROUP BY countries.${G0<TableModel>().countriesTableHelper.colCountryName}, countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';
@@ -80,6 +88,7 @@ class HistoryListPageState extends State<HistoryListPage>
           SUM(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount}) as runCount,
           SUM(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount})  as hareCount,
           countries.${G0<TableModel>().countriesTableHelper.colCountryName},
+          countries.${G0<TableModel>().countriesTableHelper.colCountryId},
           countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
           FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
@@ -239,6 +248,7 @@ class HistoryListPageState extends State<HistoryListPage>
           }
 
           return CountryRunHistoryCountListItem(
+            countryId: sortedEntries[index].value.countryId,
             countryName: sortedEntries[index].value.countryName,
             flagFile: sortedEntries[index].value.flagFile,
             runCount: sortedEntries[index].value.runCount,

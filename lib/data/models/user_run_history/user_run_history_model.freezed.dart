@@ -18,6 +18,13 @@ mixin _$UserRunHistoryModel implements DiagnosticableTreeMixin {
   String get eventId;
   String get eventName;
   int get eventNumber;
+  String get kennelName;
+  String get kennelShortName;
+  String get currencySymbol;
+  int get digitsAfterDecimal;
+  String get kennelLogo;
+  String get countryName;
+  String get flagFile;
   DateTime get eventStartDatetime;
   int get canEditRunAttendence;
   String? get hemId;
@@ -53,6 +60,13 @@ mixin _$UserRunHistoryModel implements DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('eventId', eventId))
       ..add(DiagnosticsProperty('eventName', eventName))
       ..add(DiagnosticsProperty('eventNumber', eventNumber))
+      ..add(DiagnosticsProperty('kennelName', kennelName))
+      ..add(DiagnosticsProperty('kennelShortName', kennelShortName))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('kennelLogo', kennelLogo))
+      ..add(DiagnosticsProperty('countryName', countryName))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
       ..add(DiagnosticsProperty('eventStartDatetime', eventStartDatetime))
       ..add(DiagnosticsProperty('canEditRunAttendence', canEditRunAttendence))
       ..add(DiagnosticsProperty('hemId', hemId))
@@ -80,6 +94,20 @@ mixin _$UserRunHistoryModel implements DiagnosticableTreeMixin {
                 other.eventName == eventName) &&
             (identical(other.eventNumber, eventNumber) ||
                 other.eventNumber == eventNumber) &&
+            (identical(other.kennelName, kennelName) ||
+                other.kennelName == kennelName) &&
+            (identical(other.kennelShortName, kennelShortName) ||
+                other.kennelShortName == kennelShortName) &&
+            (identical(other.currencySymbol, currencySymbol) ||
+                other.currencySymbol == currencySymbol) &&
+            (identical(other.digitsAfterDecimal, digitsAfterDecimal) ||
+                other.digitsAfterDecimal == digitsAfterDecimal) &&
+            (identical(other.kennelLogo, kennelLogo) ||
+                other.kennelLogo == kennelLogo) &&
+            (identical(other.countryName, countryName) ||
+                other.countryName == countryName) &&
+            (identical(other.flagFile, flagFile) ||
+                other.flagFile == flagFile) &&
             (identical(other.eventStartDatetime, eventStartDatetime) ||
                 other.eventStartDatetime == eventStartDatetime) &&
             (identical(other.canEditRunAttendence, canEditRunAttendence) ||
@@ -112,30 +140,38 @@ mixin _$UserRunHistoryModel implements DiagnosticableTreeMixin {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      eventId,
-      eventName,
-      eventNumber,
-      eventStartDatetime,
-      canEditRunAttendence,
-      hemId,
-      attendenceState,
-      isHare,
-      creditAmount,
-      debitAmount,
-      creditAvailable,
-      paymentType,
-      extrasDescription,
-      extrasPrice,
-      doPayForExtras,
-      totalRunsThisKennel,
-      totalHaringThisKennel,
-      isUpdating);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        eventId,
+        eventName,
+        eventNumber,
+        kennelName,
+        kennelShortName,
+        currencySymbol,
+        digitsAfterDecimal,
+        kennelLogo,
+        countryName,
+        flagFile,
+        eventStartDatetime,
+        canEditRunAttendence,
+        hemId,
+        attendenceState,
+        isHare,
+        creditAmount,
+        debitAmount,
+        creditAvailable,
+        paymentType,
+        extrasDescription,
+        extrasPrice,
+        doPayForExtras,
+        totalRunsThisKennel,
+        totalHaringThisKennel,
+        isUpdating
+      ]);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'UserRunHistoryModel(eventId: $eventId, eventName: $eventName, eventNumber: $eventNumber, eventStartDatetime: $eventStartDatetime, canEditRunAttendence: $canEditRunAttendence, hemId: $hemId, attendenceState: $attendenceState, isHare: $isHare, creditAmount: $creditAmount, debitAmount: $debitAmount, creditAvailable: $creditAvailable, paymentType: $paymentType, extrasDescription: $extrasDescription, extrasPrice: $extrasPrice, doPayForExtras: $doPayForExtras, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, isUpdating: $isUpdating)';
+    return 'UserRunHistoryModel(eventId: $eventId, eventName: $eventName, eventNumber: $eventNumber, kennelName: $kennelName, kennelShortName: $kennelShortName, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, kennelLogo: $kennelLogo, countryName: $countryName, flagFile: $flagFile, eventStartDatetime: $eventStartDatetime, canEditRunAttendence: $canEditRunAttendence, hemId: $hemId, attendenceState: $attendenceState, isHare: $isHare, creditAmount: $creditAmount, debitAmount: $debitAmount, creditAvailable: $creditAvailable, paymentType: $paymentType, extrasDescription: $extrasDescription, extrasPrice: $extrasPrice, doPayForExtras: $doPayForExtras, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, isUpdating: $isUpdating)';
   }
 }
 
@@ -149,6 +185,13 @@ abstract mixin class $UserRunHistoryModelCopyWith<$Res> {
       {String eventId,
       String eventName,
       int eventNumber,
+      String kennelName,
+      String kennelShortName,
+      String currencySymbol,
+      int digitsAfterDecimal,
+      String kennelLogo,
+      String countryName,
+      String flagFile,
       DateTime eventStartDatetime,
       int canEditRunAttendence,
       String? hemId,
@@ -182,6 +225,13 @@ class _$UserRunHistoryModelCopyWithImpl<$Res>
     Object? eventId = null,
     Object? eventName = null,
     Object? eventNumber = null,
+    Object? kennelName = null,
+    Object? kennelShortName = null,
+    Object? currencySymbol = null,
+    Object? digitsAfterDecimal = null,
+    Object? kennelLogo = null,
+    Object? countryName = null,
+    Object? flagFile = null,
     Object? eventStartDatetime = null,
     Object? canEditRunAttendence = null,
     Object? hemId = freezed,
@@ -211,6 +261,34 @@ class _$UserRunHistoryModelCopyWithImpl<$Res>
           ? _self.eventNumber
           : eventNumber // ignore: cast_nullable_to_non_nullable
               as int,
+      kennelName: null == kennelName
+          ? _self.kennelName
+          : kennelName // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelShortName: null == kennelShortName
+          ? _self.kennelShortName
+          : kennelShortName // ignore: cast_nullable_to_non_nullable
+              as String,
+      currencySymbol: null == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String,
+      digitsAfterDecimal: null == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int,
+      kennelLogo: null == kennelLogo
+          ? _self.kennelLogo
+          : kennelLogo // ignore: cast_nullable_to_non_nullable
+              as String,
+      countryName: null == countryName
+          ? _self.countryName
+          : countryName // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: null == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String,
       eventStartDatetime: null == eventStartDatetime
           ? _self.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable
@@ -284,6 +362,13 @@ class _UserRunHistoryModel
       {required this.eventId,
       required this.eventName,
       required this.eventNumber,
+      required this.kennelName,
+      required this.kennelShortName,
+      required this.currencySymbol,
+      required this.digitsAfterDecimal,
+      required this.kennelLogo,
+      required this.countryName,
+      required this.flagFile,
       required this.eventStartDatetime,
       this.canEditRunAttendence = 0,
       this.hemId,
@@ -309,6 +394,20 @@ class _UserRunHistoryModel
   final String eventName;
   @override
   final int eventNumber;
+  @override
+  final String kennelName;
+  @override
+  final String kennelShortName;
+  @override
+  final String currencySymbol;
+  @override
+  final int digitsAfterDecimal;
+  @override
+  final String kennelLogo;
+  @override
+  final String countryName;
+  @override
+  final String flagFile;
   @override
   final DateTime eventStartDatetime;
   @override
@@ -367,6 +466,13 @@ class _UserRunHistoryModel
       ..add(DiagnosticsProperty('eventId', eventId))
       ..add(DiagnosticsProperty('eventName', eventName))
       ..add(DiagnosticsProperty('eventNumber', eventNumber))
+      ..add(DiagnosticsProperty('kennelName', kennelName))
+      ..add(DiagnosticsProperty('kennelShortName', kennelShortName))
+      ..add(DiagnosticsProperty('currencySymbol', currencySymbol))
+      ..add(DiagnosticsProperty('digitsAfterDecimal', digitsAfterDecimal))
+      ..add(DiagnosticsProperty('kennelLogo', kennelLogo))
+      ..add(DiagnosticsProperty('countryName', countryName))
+      ..add(DiagnosticsProperty('flagFile', flagFile))
       ..add(DiagnosticsProperty('eventStartDatetime', eventStartDatetime))
       ..add(DiagnosticsProperty('canEditRunAttendence', canEditRunAttendence))
       ..add(DiagnosticsProperty('hemId', hemId))
@@ -394,6 +500,20 @@ class _UserRunHistoryModel
                 other.eventName == eventName) &&
             (identical(other.eventNumber, eventNumber) ||
                 other.eventNumber == eventNumber) &&
+            (identical(other.kennelName, kennelName) ||
+                other.kennelName == kennelName) &&
+            (identical(other.kennelShortName, kennelShortName) ||
+                other.kennelShortName == kennelShortName) &&
+            (identical(other.currencySymbol, currencySymbol) ||
+                other.currencySymbol == currencySymbol) &&
+            (identical(other.digitsAfterDecimal, digitsAfterDecimal) ||
+                other.digitsAfterDecimal == digitsAfterDecimal) &&
+            (identical(other.kennelLogo, kennelLogo) ||
+                other.kennelLogo == kennelLogo) &&
+            (identical(other.countryName, countryName) ||
+                other.countryName == countryName) &&
+            (identical(other.flagFile, flagFile) ||
+                other.flagFile == flagFile) &&
             (identical(other.eventStartDatetime, eventStartDatetime) ||
                 other.eventStartDatetime == eventStartDatetime) &&
             (identical(other.canEditRunAttendence, canEditRunAttendence) ||
@@ -426,30 +546,38 @@ class _UserRunHistoryModel
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      eventId,
-      eventName,
-      eventNumber,
-      eventStartDatetime,
-      canEditRunAttendence,
-      hemId,
-      attendenceState,
-      isHare,
-      creditAmount,
-      debitAmount,
-      creditAvailable,
-      paymentType,
-      extrasDescription,
-      extrasPrice,
-      doPayForExtras,
-      totalRunsThisKennel,
-      totalHaringThisKennel,
-      isUpdating);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        eventId,
+        eventName,
+        eventNumber,
+        kennelName,
+        kennelShortName,
+        currencySymbol,
+        digitsAfterDecimal,
+        kennelLogo,
+        countryName,
+        flagFile,
+        eventStartDatetime,
+        canEditRunAttendence,
+        hemId,
+        attendenceState,
+        isHare,
+        creditAmount,
+        debitAmount,
+        creditAvailable,
+        paymentType,
+        extrasDescription,
+        extrasPrice,
+        doPayForExtras,
+        totalRunsThisKennel,
+        totalHaringThisKennel,
+        isUpdating
+      ]);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'UserRunHistoryModel(eventId: $eventId, eventName: $eventName, eventNumber: $eventNumber, eventStartDatetime: $eventStartDatetime, canEditRunAttendence: $canEditRunAttendence, hemId: $hemId, attendenceState: $attendenceState, isHare: $isHare, creditAmount: $creditAmount, debitAmount: $debitAmount, creditAvailable: $creditAvailable, paymentType: $paymentType, extrasDescription: $extrasDescription, extrasPrice: $extrasPrice, doPayForExtras: $doPayForExtras, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, isUpdating: $isUpdating)';
+    return 'UserRunHistoryModel(eventId: $eventId, eventName: $eventName, eventNumber: $eventNumber, kennelName: $kennelName, kennelShortName: $kennelShortName, currencySymbol: $currencySymbol, digitsAfterDecimal: $digitsAfterDecimal, kennelLogo: $kennelLogo, countryName: $countryName, flagFile: $flagFile, eventStartDatetime: $eventStartDatetime, canEditRunAttendence: $canEditRunAttendence, hemId: $hemId, attendenceState: $attendenceState, isHare: $isHare, creditAmount: $creditAmount, debitAmount: $debitAmount, creditAvailable: $creditAvailable, paymentType: $paymentType, extrasDescription: $extrasDescription, extrasPrice: $extrasPrice, doPayForExtras: $doPayForExtras, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, isUpdating: $isUpdating)';
   }
 }
 
@@ -465,6 +593,13 @@ abstract mixin class _$UserRunHistoryModelCopyWith<$Res>
       {String eventId,
       String eventName,
       int eventNumber,
+      String kennelName,
+      String kennelShortName,
+      String currencySymbol,
+      int digitsAfterDecimal,
+      String kennelLogo,
+      String countryName,
+      String flagFile,
       DateTime eventStartDatetime,
       int canEditRunAttendence,
       String? hemId,
@@ -498,6 +633,13 @@ class __$UserRunHistoryModelCopyWithImpl<$Res>
     Object? eventId = null,
     Object? eventName = null,
     Object? eventNumber = null,
+    Object? kennelName = null,
+    Object? kennelShortName = null,
+    Object? currencySymbol = null,
+    Object? digitsAfterDecimal = null,
+    Object? kennelLogo = null,
+    Object? countryName = null,
+    Object? flagFile = null,
     Object? eventStartDatetime = null,
     Object? canEditRunAttendence = null,
     Object? hemId = freezed,
@@ -527,6 +669,34 @@ class __$UserRunHistoryModelCopyWithImpl<$Res>
           ? _self.eventNumber
           : eventNumber // ignore: cast_nullable_to_non_nullable
               as int,
+      kennelName: null == kennelName
+          ? _self.kennelName
+          : kennelName // ignore: cast_nullable_to_non_nullable
+              as String,
+      kennelShortName: null == kennelShortName
+          ? _self.kennelShortName
+          : kennelShortName // ignore: cast_nullable_to_non_nullable
+              as String,
+      currencySymbol: null == currencySymbol
+          ? _self.currencySymbol
+          : currencySymbol // ignore: cast_nullable_to_non_nullable
+              as String,
+      digitsAfterDecimal: null == digitsAfterDecimal
+          ? _self.digitsAfterDecimal
+          : digitsAfterDecimal // ignore: cast_nullable_to_non_nullable
+              as int,
+      kennelLogo: null == kennelLogo
+          ? _self.kennelLogo
+          : kennelLogo // ignore: cast_nullable_to_non_nullable
+              as String,
+      countryName: null == countryName
+          ? _self.countryName
+          : countryName // ignore: cast_nullable_to_non_nullable
+              as String,
+      flagFile: null == flagFile
+          ? _self.flagFile
+          : flagFile // ignore: cast_nullable_to_non_nullable
+              as String,
       eventStartDatetime: null == eventStartDatetime
           ? _self.eventStartDatetime
           : eventStartDatetime // ignore: cast_nullable_to_non_nullable

@@ -3,12 +3,14 @@ import 'package:harrier_central/imports.dart';
 class CountryRunHistoryCountListItem extends StatelessWidget {
   const CountryRunHistoryCountListItem({
     super.key,
+    required this.countryId,
     required this.countryName,
     required this.flagFile,
     required this.runCount,
     required this.hareCount,
   });
 
+  final String countryId;
   final String countryName;
   final String flagFile;
   final int runCount;
@@ -23,20 +25,23 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () {
-            // Navigator.of(context).push<dynamic>(
-            //   MaterialPageRoute<dynamic>(
-            //     builder: (BuildContext context) {
-            //       return UserRunHistoryListPage(
-            //           appDomain: AppDomainType.user,
-            //           kennelInfo: kennelInfo,
-            //           refreshKennelInfo: () {
-            //             return refreshCounters(kennelInfo.kennelId);
-            //           });
-            //     },
-            //   ),
-            // ).then((void _) {
-            //  // refreshCounters(kennelInfo.kennelId);
-            // });
+            Navigator.of(context).push<dynamic>(
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) {
+                  return UserCountryHistoryListPage(
+                    appDomain: AppDomainType.user,
+                    countryId: countryId,
+                    countryName: countryName,
+                  );
+
+                  // refreshKennelInfo: () {
+                  //  // return refreshCounters(kennelInfo.kennelId);
+                  // });
+                },
+              ),
+            ).then((void _) {
+              // refreshCounters(kennelInfo.kennelId);
+            });
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -80,7 +85,7 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
                             height: 20.0,
                             padding: const EdgeInsets.only(left: 48.0),
                             child: Text(
-                              '$hareCount times hared)',
+                              '($hareCount times hared)',
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: ts_titleMediumCondensedBlack.copyWith(
