@@ -248,6 +248,12 @@ class Tables {
         -- Bump DB Version
       ''',
         appliedAtInt: 0),
+    MigrationsModel(
+        dbVersion: 470,
+        migrationText: '''
+        -- Bump DB Version
+      ''',
+        appliedAtInt: 0),
   ];
 
   static Future<void> createTables(

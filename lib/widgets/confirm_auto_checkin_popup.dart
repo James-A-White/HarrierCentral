@@ -22,15 +22,19 @@ class ConfirmAutoCheckinPopup extends StatefulWidget {
 
 class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController followKennelAmountTextController = TextEditingController();
+  TextEditingController followKennelAmountTextController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     double eventPrice = 0.0 +
-        (widget.areWeAtRunData.membershipExpirationDate.isAfter(DateTime.now()) ? widget.areWeAtRunData.memberPrice : widget.areWeAtRunData.nonMemberPrice) -
+        (widget.areWeAtRunData.membershipExpirationDate.isAfter(DateTime.now())
+            ? widget.areWeAtRunData.memberPrice
+            : widget.areWeAtRunData.nonMemberPrice) -
         widget.areWeAtRunData.discountAmount;
 
-    eventPrice = eventPrice * (1.0 - widget.areWeAtRunData.discountPercent);
+    eventPrice =
+        eventPrice * (1.0 - (widget.areWeAtRunData.discountPercent / 100.0));
 
     return AlertDialog(
       //title: Text(widget.title),
@@ -38,7 +42,8 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
         CachedNetworkImage(
           height: 120.0,
-          imageUrl: widget.areWeAtRunData.eventImage ?? widget.areWeAtRunData.kennelLogo,
+          imageUrl: widget.areWeAtRunData.eventImage ??
+              widget.areWeAtRunData.kennelLogo,
           // errorWidget:
           //     (BuildContext context, String url, Exception error) =>
           //         const  Icon(Icons.error),
@@ -59,16 +64,22 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
         ),
 
         // pay for run only buttons
-        if ((eventPrice <= widget.areWeAtRunData.kennelCredit) || ((widget.areWeAtRunData.allowSelfPayment & selfPaymentShowBankButtonOnAutoCheckinDialog) != 0)) ...<Widget>[
+        if ((eventPrice <= widget.areWeAtRunData.kennelCredit) ||
+            ((widget.areWeAtRunData.allowSelfPayment &
+                    selfPaymentShowBankButtonOnAutoCheckinDialog) !=
+                0)) ...<Widget>[
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Column(
               children: <Widget>[
-                if (eventPrice <= widget.areWeAtRunData.kennelCredit) ...<Widget>[
+                if (eventPrice <=
+                    widget.areWeAtRunData.kennelCredit) ...<Widget>[
                   Text(
                       'You have ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.kennelCredit, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} of Hash Credit remaining.'),
                   TextButton(
-                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(
+                        shape: button_shape,
+                        backgroundColor: Colors.green.shade700),
                     child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
                         child: Text(
@@ -76,13 +87,18 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                           style: ts_button,
                         )),
                     onPressed: () {
-                      Navigator.of(context).pop(enumCheckInOption_YesAndPayByCredit);
+                      Navigator.of(context)
+                          .pop(enumCheckInOption_YesAndPayByCredit);
                     },
                   ),
                 ],
-                if ((widget.areWeAtRunData.allowSelfPayment & selfPaymentShowBankButtonOnAutoCheckinDialog) != 0) ...<Widget>[
+                if ((widget.areWeAtRunData.allowSelfPayment &
+                        selfPaymentShowBankButtonOnAutoCheckinDialog) !=
+                    0) ...<Widget>[
                   TextButton(
-                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(
+                        shape: button_shape,
+                        backgroundColor: Colors.green.shade700),
                     child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
                         child: Text(
@@ -90,7 +106,8 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                           style: ts_button,
                         )),
                     onPressed: () {
-                      Navigator.of(context).pop(enumCheckInOption_YesAndPayByBankXfer);
+                      Navigator.of(context)
+                          .pop(enumCheckInOption_YesAndPayByBankXfer);
                     },
                   ),
                 ],
@@ -100,37 +117,51 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
         ],
 
         // pay for extras buttons
-        if (((widget.areWeAtRunData.extrasCost > 0) && ((eventPrice + widget.areWeAtRunData.extrasCost) <= widget.areWeAtRunData.kennelCredit)) ||
-            ((widget.areWeAtRunData.allowSelfPayment & selfPaymentShowBankButtonOnAutoCheckinDialog) != 0)) ...<Widget>[
+        if (((widget.areWeAtRunData.extrasCost > 0) &&
+                ((eventPrice + widget.areWeAtRunData.extrasCost) <=
+                    widget.areWeAtRunData.kennelCredit)) ||
+            ((widget.areWeAtRunData.allowSelfPayment &
+                    selfPaymentShowBankButtonOnAutoCheckinDialog) !=
+                0)) ...<Widget>[
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Column(
               children: <Widget>[
                 Text(
                     'You can also pay an additional ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.extrasCost, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} for ${widget.areWeAtRunData.extrasDescription}'),
-                if ((widget.areWeAtRunData.extrasCost > 0) && ((eventPrice + widget.areWeAtRunData.extrasCost) <= widget.areWeAtRunData.kennelCredit)) ...<Widget>[
+                if ((widget.areWeAtRunData.extrasCost > 0) &&
+                    ((eventPrice + widget.areWeAtRunData.extrasCost) <=
+                        widget.areWeAtRunData.kennelCredit)) ...<Widget>[
                   TextButton(
-                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(
+                        shape: button_shape,
+                        backgroundColor: Colors.green.shade700),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Text(
                           'Pay ${IveCoreUtilities.getFormattedMoney((eventPrice + widget.areWeAtRunData.extrasCost), widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit'),
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop(enumCheckInOption_YesAndPayPlusExtrasByCredit);
+                      Navigator.of(context)
+                          .pop(enumCheckInOption_YesAndPayPlusExtrasByCredit);
                     },
                   ),
                 ],
-                if ((widget.areWeAtRunData.allowSelfPayment & selfPaymentShowBankButtonOnAutoCheckinDialog) != 0) ...<Widget>[
+                if ((widget.areWeAtRunData.allowSelfPayment &
+                        selfPaymentShowBankButtonOnAutoCheckinDialog) !=
+                    0) ...<Widget>[
                   TextButton(
-                    style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
+                    style: TextButton.styleFrom(
+                        shape: button_shape,
+                        backgroundColor: Colors.green.shade700),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Text(
                           'Paid ${IveCoreUtilities.getFormattedMoney((eventPrice + widget.areWeAtRunData.extrasCost), widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} by Bank Transfer'),
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop(enumCheckInOption_YesAndPayPlusExtrasByBankXfer);
+                      Navigator.of(context)
+                          .pop(enumCheckInOption_YesAndPayPlusExtrasByBankXfer);
                     },
                   ),
                 ],
@@ -151,14 +182,17 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               TextButton(
-                style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
+                style: TextButton.styleFrom(
+                    shape: button_shape, backgroundColor: hc_red),
                 child: Text(widget.cancelButtonTitle),
                 onPressed: () {
                   Navigator.of(context).pop(enumCheckInOption_Cancel);
                 },
               ),
               TextButton(
-                style: TextButton.styleFrom(shape: button_shape, backgroundColor: Colors.green.shade700),
+                style: TextButton.styleFrom(
+                    shape: button_shape,
+                    backgroundColor: Colors.green.shade700),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: Text(widget.okButtonTitle),

@@ -24,7 +24,8 @@ final GlobalKey<RunAndKennelMapPageState> _runAndKennelMapPageKey =
 final GlobalKey<KennelsListPageState> _kennelLocationsPageKey =
     GlobalKey<KennelsListPageState>();
 
-class MainNavigationPageState extends State<MainNavigationPage> {
+class MainNavigationPageState extends State<MainNavigationPage>
+    with WidgetsBindingObserver {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
   //final List<Widget> _tabs = <Widget>[];
@@ -105,10 +106,13 @@ class MainNavigationPageState extends State<MainNavigationPage> {
 
   Image? _promoImage;
 
+  bool _hasLocation = false;
+
   @override
   void initState() {
-    //_tabTitles.add('Scanner');
-    // _tabTitles.add('Friends');
+    super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
 
     _appBarText = _tabTitles[0];
 
@@ -156,9 +160,9 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       setState(() {});
 
       // print('******* > Init 6');
-      final bool hasLoc = await _checkLocationPermissions();
+      _hasLocation = await _checkLocationPermissions();
       // print('******* > Init 7');
-      if (hasLoc) {
+      if (_hasLocation) {
         // print('******* > Init 8');
         // ignore: unawaited_futures
         _checkAreWeAtRunStart();
@@ -208,8 +212,18 @@ class MainNavigationPageState extends State<MainNavigationPage> {
         .then((void _) {
       FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
     });
+  }
 
-    super.initState();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // print('******* > Init 7');
+      if (_hasLocation) {
+        // print('******* > Init 8');
+        // ignore: unawaited_futures
+        _checkAreWeAtRunStart();
+      }
+    }
   }
 
   Future<void> _checkAreWeAtRunStart() async {

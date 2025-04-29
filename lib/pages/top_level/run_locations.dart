@@ -848,35 +848,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     MarkerClusterLayerWidget(
                       options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 60,
+                        maxClusterRadius: 90,
                         size: const Size(40, 40),
-                        // fitBoundsOptions: const FitBoundsOptions(
-                        //   padding: EdgeInsets.all(50),
-                        // ),
-                        markers: _runLocationMarkers,
-                        polygonOptions: const PolygonOptions(
-                            borderColor: Colors.blueAccent,
-                            color: Colors.black12,
-                            borderStrokeWidth: 3),
-                        builder: (BuildContext context, List<Marker> markers) {
-                          heroCounter++;
-                          return FloatingActionButton(
-                            backgroundColor: hc_blue,
-                            onPressed: null,
-                            heroTag: 'btn_$heroCounter',
-                            child: Text(
-                              markers.length.toString(),
-                              style: ts_button,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    MarkerClusterLayerWidget(
-                      options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 20,
-                        size: const Size(50, 50),
                         // fitBoundsOptions: const FitBoundsOptions(
                         //   padding: EdgeInsets.all(50),
                         // ),
@@ -892,8 +865,35 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                             backgroundColor: Colors.purple[600],
                             onPressed: null,
                             heroTag: 'btn_$heroCounter',
-                            child: Text(markers.length.toString(),
-                                style: ts_button),
+                            child: AutoSizeText(markers.length.toString(),
+                                maxLines: 1, style: ts_button),
+                          );
+                        },
+                      ),
+                    ),
+                    MarkerClusterLayerWidget(
+                      options: MarkerClusterLayerOptions(
+                        maxClusterRadius: 90,
+                        size: const Size(30, 30),
+                        // fitBoundsOptions: const FitBoundsOptions(
+                        //   padding: EdgeInsets.all(50),
+                        // ),
+                        markers: _runLocationMarkers,
+                        polygonOptions: const PolygonOptions(
+                            borderColor: Colors.blueAccent,
+                            color: Colors.black12,
+                            borderStrokeWidth: 3),
+                        builder: (BuildContext context, List<Marker> markers) {
+                          heroCounter++;
+                          return FloatingActionButton(
+                            backgroundColor: hc_blue,
+                            onPressed: null,
+                            heroTag: 'btn_$heroCounter',
+                            child: AutoSizeText(
+                              markers.length.toString(),
+                              maxLines: 1,
+                              style: ts_button,
+                            ),
                           );
                         },
                       ),
