@@ -523,7 +523,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     try {
       _kennelMarkers = <Marker>[];
 
-      final String? homeKennelId = getStringPref(StringPrefsEnum.homeKennelId);
+      final String? homeKennelId =
+          getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase();
       if (_filteredKennels.isNotEmpty) {
         for (int i = 0; i < _filteredKennels.length; i++) {
           final double? lat = _filteredKennels[i]['lat'];
@@ -610,7 +611,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   Widget _buildKennelMarker(
       String kennelLogo, String kennelShortName, String kennelId) {
     bool isHomeKennel = false;
-    if (kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+    if (kennelId.toLowerCase() ==
+        getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase()) {
       isHomeKennel = true;
     }
     return GestureDetector(

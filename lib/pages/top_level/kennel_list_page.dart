@@ -1,7 +1,8 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
-final GlobalKey<KennelsListPageState> kennelListPageKey = GlobalKey<KennelsListPageState>();
+final GlobalKey<KennelsListPageState> kennelListPageKey =
+    GlobalKey<KennelsListPageState>();
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({
@@ -12,7 +13,13 @@ class KennelsListPage extends StatefulWidget {
   KennelsListPageState createState() => KennelsListPageState();
 }
 
-enum EnumSortKennelListBy { distance, kennelName, cityName, countryRegionName, following }
+enum EnumSortKennelListBy {
+  distance,
+  kennelName,
+  cityName,
+  countryRegionName,
+  following
+}
 
 class KennelsListPageState extends State<KennelsListPage> {
   KennelsListPageState();
@@ -20,7 +27,8 @@ class KennelsListPageState extends State<KennelsListPage> {
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   String _searchKennelsText = '';
-  final ScrollController _scrollController = ScrollController(initialScrollOffset: 0);
+  final ScrollController _scrollController =
+      ScrollController(initialScrollOffset: 0);
 
   List<KennelListAggregate> _filteredList = <KennelListAggregate>[];
 
@@ -175,8 +183,12 @@ class KennelsListPageState extends State<KennelsListPage> {
           SizedBox(
             width: 40,
             child: TextButton(
-              style: TextButton.styleFrom(shape: button_shape, textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
-              child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
+              style: TextButton.styleFrom(
+                  shape: button_shape,
+                  textStyle: TextStyle(color: Colors.grey.shade700),
+                  backgroundColor: Colors.white),
+              child: Text('X',
+                  style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
               onPressed: () {
                 _searchController.text = '';
                 _searchKennelsText = '';
@@ -192,7 +204,9 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   Future<void> _refreshFromTable(bool forceRefresh) async {
-    if (forceRefresh || (G0<TableModel>().globalKennelMainPageList == null) || (G0<TableModel>().globalKennelMainPageList!.isEmpty)) {
+    if (forceRefresh ||
+        (G0<TableModel>().globalKennelMainPageList == null) ||
+        (G0<TableModel>().globalKennelMainPageList!.isEmpty)) {
       //final Geolocator locator = Geolocator();
       if (G0<TableModel>().globalKennelMainPageList != null) {
         G0<TableModel>().globalKennelMainPageList!.clear();
@@ -202,23 +216,35 @@ class KennelsListPageState extends State<KennelsListPage> {
 
       G0<TableModel>().globalKennelMainPageList = <KennelListAggregate>[];
       try {
-        final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user, hasherId: hasherId);
+        final List<Map<String, dynamic>> results =
+            await QueryKennels.queryKennels(
+                EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user,
+                hasherId: hasherId);
 
         double? dist;
 
         for (int i = 0; i < results.length; i++) {
           try {
-            final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+            final KennelsModel kennelItem =
+                G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
 
-            final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
+            final KennelListQueryExtenstions extensionsItem =
+                KennelListQueryExtenstions.fromMap(results[i]);
 
             HasherKennelMapModel? hkmItem;
 
-            if (results[i][G0<TableModel>().hasherKennelMapTableHelper.colHkmId] != null) {
-              hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);
+            if (results[i]
+                    [G0<TableModel>().hasherKennelMapTableHelper.colHkmId] !=
+                null) {
+              hkmItem = G0<TableModel>()
+                  .hasherKennelMapTableHelper
+                  .fromMap(results[i]);
             }
 
-            if ((G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null) && (extensionsItem.cityLat != null) && (extensionsItem.cityLon != null)) {
+            if ((G0<DeviceInfo>().deviceLat != null) &&
+                (G0<DeviceInfo>().deviceLon != null) &&
+                (extensionsItem.cityLat != null) &&
+                (extensionsItem.cityLon != null)) {
               dist = Geolocator.distanceBetween(
                 G0<DeviceInfo>().deviceLat!,
                 G0<DeviceInfo>().deviceLon!,
@@ -233,7 +259,8 @@ class KennelsListPageState extends State<KennelsListPage> {
             extensionsItem.emailAlertRequested = -1;
 
             bool isHomeKennel = false;
-            if (kennelItem.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+            if (kennelItem.kennelId.toLowerCase() ==
+                getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase()) {
               isHomeKennel = true;
             }
 
@@ -272,44 +299,61 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   void _filterResults() {
-    if ((G0<TableModel>().globalKennelMainPageList != null) && (G0<TableModel>().globalKennelMainPageList!.isNotEmpty)) {
+    if ((G0<TableModel>().globalKennelMainPageList != null) &&
+        (G0<TableModel>().globalKennelMainPageList!.isNotEmpty)) {
       if (_searchController.text.isEmpty) {
         _filteredList = <KennelListAggregate>[];
         _filteredList.addAll(G0<TableModel>().globalKennelMainPageList!);
       } else {
-        _filteredList = QueryKennels.doFilter(_searchKennelsText, G0<TableModel>().globalKennelMainPageList!);
+        _filteredList = QueryKennels.doFilter(
+            _searchKennelsText, G0<TableModel>().globalKennelMainPageList!);
       }
 
-      if ((G0<AppModel>().hasLocationPermissions) && (_sortByType == EnumSortKennelListBy.distance)) {
+      if ((G0<AppModel>().hasLocationPermissions) &&
+          (_sortByType == EnumSortKennelListBy.distance)) {
         _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
-          return (a.isHomeKennel ? 0.0 : a.extensions.distToKennel ?? 0).compareTo(
+          return (a.isHomeKennel ? 0.0 : a.extensions.distToKennel ?? 0)
+              .compareTo(
             b.isHomeKennel ? 0.0 : b.extensions.distToKennel ?? 0,
           );
         });
-      } else if ((!G0<AppModel>().hasLocationPermissions) && (_sortByType == EnumSortKennelListBy.distance)) {
+      } else if ((!G0<AppModel>().hasLocationPermissions) &&
+          (_sortByType == EnumSortKennelListBy.distance)) {
         // if no location permissions given, but search by distance selected
         // sort by kennelName
         _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
-          return (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim()).compareTo(b.isHomeKennel ? ' ' : b.kennel.kennelName.trim());
+          return (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim())
+              .compareTo(b.isHomeKennel ? ' ' : b.kennel.kennelName.trim());
         });
       } else if (_sortByType == EnumSortKennelListBy.kennelName) {
         _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
-          return (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim()).compareTo(b.isHomeKennel ? ' ' : b.kennel.kennelName.trim());
+          return (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim())
+              .compareTo(b.isHomeKennel ? ' ' : b.kennel.kennelName.trim());
         });
       } else if (_sortByType == EnumSortKennelListBy.cityName) {
         _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
-          return (a.isHomeKennel ? ' ' : (a.extensions.cityName ?? '').trim()).compareTo(b.isHomeKennel ? ' ' : (b.extensions.cityName ?? '').trim());
+          return (a.isHomeKennel ? ' ' : (a.extensions.cityName ?? '').trim())
+              .compareTo(
+                  b.isHomeKennel ? ' ' : (b.extensions.cityName ?? '').trim());
         });
       } else if (_sortByType == EnumSortKennelListBy.countryRegionName) {
         _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
-          int result = (a.isHomeKennel ? ' ' : (a.extensions.countryName ?? '').trim()).compareTo(b.isHomeKennel ? ' ' : (b.extensions.countryName ?? '').trim());
+          int result =
+              (a.isHomeKennel ? ' ' : (a.extensions.countryName ?? '').trim())
+                  .compareTo(b.isHomeKennel
+                      ? ' '
+                      : (b.extensions.countryName ?? '').trim());
 
           if (result == 0) {
-            result = (a.extensions.regionName ?? '').trim().compareTo((b.extensions.regionName ?? '').trim());
+            result = (a.extensions.regionName ?? '')
+                .trim()
+                .compareTo((b.extensions.regionName ?? '').trim());
           }
 
           if (result == 0) {
-            result = (a.extensions.cityName ?? '').trim().compareTo((b.extensions.cityName ?? '').trim());
+            result = (a.extensions.cityName ?? '')
+                .trim()
+                .compareTo((b.extensions.cityName ?? '').trim());
           }
 
           return result;
@@ -340,9 +384,12 @@ class KennelsListPageState extends State<KennelsListPage> {
 
           if (result == 0) {
             if (G0<AppModel>().hasLocationPermissions) {
-              result = (a.extensions.distToKennel ?? 0.0).compareTo(b.extensions.distToKennel ?? 0.0);
+              result = (a.extensions.distToKennel ?? 0.0)
+                  .compareTo(b.extensions.distToKennel ?? 0.0);
             } else {
-              result = a.kennel.kennelName.trim().compareTo(b.kennel.kennelName.trim());
+              result = a.kennel.kennelName
+                  .trim()
+                  .compareTo(b.kennel.kennelName.trim());
             }
           }
 
@@ -350,7 +397,9 @@ class KennelsListPageState extends State<KennelsListPage> {
         });
       } else {
         // this should never be reached, but if we do get here use the default sort
-        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) => (a.extensions.distToKennel ?? 0.0).compareTo(b.extensions.distToKennel ?? 0.0));
+        _filteredList.sort((KennelListAggregate a, KennelListAggregate b) =>
+            (a.extensions.distToKennel ?? 0.0)
+                .compareTo(b.extensions.distToKennel ?? 0.0));
       }
 
       //G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.isHomeKennel ? 1 : 0).compareTo(a.isHomeKennel ? 1 : 0));
@@ -369,14 +418,18 @@ class KennelsListPageState extends State<KennelsListPage> {
           : Container(
               decoration: Backgrounds.defaultHcBackground(),
               padding: const EdgeInsets.only(top: 0.0),
-              child: ((G0<TableModel>().globalKennelMainPageList == null) || (G0<TableModel>().globalKennelMainPageList!.isEmpty))
-                  ? Center(child: Text('Loading Kennels.', style: ts_headingLarge))
+              child: ((G0<TableModel>().globalKennelMainPageList == null) ||
+                      (G0<TableModel>().globalKennelMainPageList!.isEmpty))
+                  ? Center(
+                      child: Text('Loading Kennels.', style: ts_headingLarge))
                   : NestedScrollView(
                       controller: _scrollController,
-                      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                      headerSliverBuilder:
+                          (BuildContext context, bool innerBoxIsScrolled) {
                         return <Widget>[
                           SliverList(
-                            delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
+                            delegate:
+                                SliverChildListDelegate(<Widget>[_searchBar()]),
                           ),
                         ];
                       },
@@ -389,68 +442,110 @@ class KennelsListPageState extends State<KennelsListPage> {
                             return _filteredList.length == index
                                 ? Container(height: 100.0)
                                 : Padding(
-                                    padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                                    padding: const EdgeInsets.only(
+                                        left: 10.0, right: 10.0),
                                     child: KennelListItem(
                                       kennelItem: _filteredList[index],
-                                      kennelEmailAndNotificationPrefsUpdated: (int? notificationStatus, int? emailAlertStatus) async {
+                                      kennelEmailAndNotificationPrefsUpdated:
+                                          (int? notificationStatus,
+                                              int? emailAlertStatus) async {
                                         setState(() {
-                                          _filteredList[index].extensions.notificationsRequested = -1;
-                                          _filteredList[index].extensions.emailAlertRequested = -1;
+                                          _filteredList[index]
+                                              .extensions
+                                              .notificationsRequested = -1;
+                                          _filteredList[index]
+                                              .extensions
+                                              .emailAlertRequested = -1;
                                           if (notificationStatus != null) {
                                             // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
 
-                                            KennelListAggregate a = _filteredList[index];
+                                            KennelListAggregate a =
+                                                _filteredList[index];
 
-                                            _filteredList[index] = KennelListAggregate(
+                                            _filteredList[index] =
+                                                KennelListAggregate(
                                               kennel: a.kennel,
                                               extensions: a.extensions,
                                               isHomeKennel: a.isHomeKennel,
-                                              hkm: a.hkm?.copyWith(kennelNotificationPreference: notificationStatus),
+                                              hkm: a.hkm?.copyWith(
+                                                  kennelNotificationPreference:
+                                                      notificationStatus),
                                             );
                                           }
 
                                           if (emailAlertStatus != null) {
-                                            KennelListAggregate a = _filteredList[index];
+                                            KennelListAggregate a =
+                                                _filteredList[index];
 
-                                            _filteredList[index] = KennelListAggregate(
+                                            _filteredList[index] =
+                                                KennelListAggregate(
                                               kennel: a.kennel,
                                               extensions: a.extensions,
                                               isHomeKennel: a.isHomeKennel,
-                                              hkm: a.hkm?.copyWith(kennelEmailAlertPreference: emailAlertStatus),
+                                              hkm: a.hkm?.copyWith(
+                                                  kennelEmailAlertPreference:
+                                                      emailAlertStatus),
                                             );
 
                                             // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
                                           }
                                         });
                                       },
-                                      kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) async {
-                                        _filteredList[index].extensions.followingRequested = -1;
-                                        _filteredList[index].extensions.notificationsRequested = -1;
-                                        _filteredList[index].extensions.emailAlertRequested = -1;
+                                      kennelFollowingUpdated: (int following,
+                                          int notificationStatus,
+                                          int emailAlertStatus,
+                                          int isHomeKennel) async {
+                                        _filteredList[index]
+                                            .extensions
+                                            .followingRequested = -1;
+                                        _filteredList[index]
+                                            .extensions
+                                            .notificationsRequested = -1;
+                                        _filteredList[index]
+                                            .extensions
+                                            .emailAlertRequested = -1;
 
-                                        KennelListAggregate a = _filteredList[index];
+                                        KennelListAggregate a =
+                                            _filteredList[index];
 
-                                        _filteredList[index] = KennelListAggregate(
-                                            kennel: a.kennel,
-                                            isHomeKennel: a.isHomeKennel,
-                                            extensions: a.extensions,
-                                            hkm: a.hkm?.copyWith(following: following, kennelNotificationPreference: notificationStatus, kennelEmailAlertPreference: emailAlertStatus));
+                                        _filteredList[index] =
+                                            KennelListAggregate(
+                                                kennel: a.kennel,
+                                                isHomeKennel: a.isHomeKennel,
+                                                extensions: a.extensions,
+                                                hkm: a.hkm?.copyWith(
+                                                    following: following,
+                                                    kennelNotificationPreference:
+                                                        notificationStatus,
+                                                    kennelEmailAlertPreference:
+                                                        emailAlertStatus));
 
                                         // _filteredList[index].hkm.following = following;
                                         // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
                                         // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
 
-                                        if (_filteredList[index].kennel.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+                                        if (_filteredList[index]
+                                                .kennel
+                                                .kennelId
+                                                .toLowerCase() ==
+                                            getStringPref(StringPrefsEnum
+                                                    .homeKennelId)
+                                                ?.toLowerCase()) {
                                           // if this kennel has been set as the home kennel, clear the home kennel
                                           // flag on the rest of the kennels
 
-                                          for (int i = 0; i < _filteredList.length; i++) {
-                                            _filteredList[i].isHomeKennel = false;
+                                          for (int i = 0;
+                                              i < _filteredList.length;
+                                              i++) {
+                                            _filteredList[i].isHomeKennel =
+                                                false;
                                           }
 
-                                          _filteredList[index].isHomeKennel = true;
+                                          _filteredList[index].isHomeKennel =
+                                              true;
                                         } else {
-                                          _filteredList[index].isHomeKennel = false;
+                                          _filteredList[index].isHomeKennel =
+                                              false;
                                         }
 
                                         // delete all of the events for a kennel being followed (or unfollowed) before
@@ -465,34 +560,55 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
                                         // we have either all of the events for the kennel (if it is being followed) or only the
                                         // events from the normal time period for unfollowed kennels (currently one year in the past)
-                                        await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                              SyncUserDataService.flagNarrowEventsTable,
+                                        await G0<TableModel>()
+                                            .syncUserDataService
+                                            .updateFromBackend(
+                                              SyncUserDataService
+                                                  .flagNarrowEventsTable,
                                               true,
-                                              forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId,
-                                              debugText: 'kennel_list_page: Events following delete (clear cache in App)',
+                                              forceReplicateAllRunsForKennel:
+                                                  _filteredList[index]
+                                                      .kennel
+                                                      .kennelId,
+                                              debugText:
+                                                  'kennel_list_page: Events following delete (clear cache in App)',
                                             );
 
                                         setState(() {});
                                       },
                                       kennelSelected: () {
-                                        final KennelListAggregate kennel = _filteredList[index];
+                                        final KennelListAggregate kennel =
+                                            _filteredList[index];
                                         // // this is a bit of a hack where we clear the list before navigating to the
                                         // // next page. When state changes occurred in child pages further down the
                                         // // route tree, the list would get refreshed, which I think was causing
                                         // // a bug where the selected Kennel itself would occasioinall change.
                                         // // By deleting the list, I'm hoping that this bug will be fixed.
-                                        G0<TableModel>().globalKennelMainPageList!.clear();
+                                        G0<TableModel>()
+                                            .globalKennelMainPageList!
+                                            .clear();
                                         Navigator.of(context)
                                             .push<dynamic>(
                                           MaterialPageRoute<dynamic>(
-                                            builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+                                            builder: (BuildContext context) =>
+                                                KennelAdminMainPage(
+                                                    kennelAggregateItem:
+                                                        kennel),
                                           ),
                                         )
                                             .then((void _) async {
-                                          await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                                SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagHasherKennelMapTable | SyncUserDataService.flagKennelsTable,
+                                          await G0<TableModel>()
+                                              .syncUserDataService
+                                              .updateFromBackend(
+                                                SyncUserDataService
+                                                        .flagHasherEventMapTable |
+                                                    SyncUserDataService
+                                                        .flagHasherKennelMapTable |
+                                                    SyncUserDataService
+                                                        .flagKennelsTable,
                                                 true,
-                                                debugText: 'kennel_list_page: HEM, HKM, Kennels',
+                                                debugText:
+                                                    'kennel_list_page: HEM, HKM, Kennels',
                                               );
                                           //final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                           //print('Pack member data synchronized $resultStr');
@@ -514,14 +630,16 @@ class KennelsListPageState extends State<KennelsListPage> {
       G0<TableModel>().globalKennelMainPageList = null;
     });
 
-    String query = 'DELETE FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)}';
+    String query =
+        'DELETE FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)}';
     try {
       await G0<Database>().rawQuery(query);
     } catch (e) {
       //print(e);
     }
 
-    query = 'DELETE FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)}';
+    query =
+        'DELETE FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)}';
     try {
       await G0<Database>().rawQuery(query);
     } catch (e) {
@@ -529,7 +647,8 @@ class KennelsListPageState extends State<KennelsListPage> {
     }
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable,
+          SyncUserDataService.flagKennelsTable |
+              SyncUserDataService.flagHasherKennelMapTable,
           true,
           debugText: 'kennel_list_page: Kennels, HKM',
         );

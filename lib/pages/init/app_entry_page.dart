@@ -88,8 +88,8 @@ class AppEntryPageState extends State<AppEntryPage>
       await setIntPref(
           IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
       await setStringPref(StringPrefsEnum.email, loginResult.email);
-      await setStringPref(
-          StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
+      await setStringPref(StringPrefsEnum.homeKennelId,
+          loginResult.homeKennelId?.toLowerCase() ?? '');
     }
 
     if ((loginResult == null) &&

@@ -76,7 +76,10 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -138,11 +141,16 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Future<void> createIndexes(
-      Database db, int version, dynamic appDomainType) async {
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
     await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+      'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);',
+    );
     await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+      'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);',
+    );
   }
 
   // @override
@@ -236,7 +244,7 @@ class EventsService extends BaseService {
     final String accessToken = Utilities.generateToken(
       userId,
       'hcapp_addEditEvent',
-      paramString: deviceSecret.toUpperCase(),
+      paramString: deviceSecret,
     );
 
     final int eventsLastUpdated = await getLastUpdatedTime(
@@ -247,8 +255,9 @@ class EventsService extends BaseService {
     );
     // final DateTime eventUpdatedAfter = eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
 
-    final DateTime eventUpdatedAfter =
-        DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
+    final DateTime eventUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      eventsLastUpdated + 1,
+    );
 
     final Map<String, String> bodyMap = <String, String>{
       'queryType': 'addEditEvent',
@@ -262,24 +271,26 @@ class EventsService extends BaseService {
     }
 
     if (isCountedRun != null) {
-      bodyMap
-          .addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
+      bodyMap.addAll(<String, String>{
+        'isCountedRun': isCountedRun ? '1' : '0',
+      });
     }
 
     if (isPromotedEvent != null) {
-      bodyMap.addAll(
-          <String, String>{'isPromotedEvent': isPromotedEvent ? '1' : '0'});
+      bodyMap.addAll(<String, String>{
+        'isPromotedEvent': isPromotedEvent ? '1' : '0',
+      });
     }
 
     if (eventGeographicScope != null) {
       bodyMap.addAll(<String, String>{
-        'eventGeographicScope': eventGeographicScope.toString()
+        'eventGeographicScope': eventGeographicScope.toString(),
       });
     }
 
     if (usersCanEditRunAttendence != null) {
       bodyMap.addAll(<String, String>{
-        'usersCanEditRunAttendence': usersCanEditRunAttendence.toString()
+        'usersCanEditRunAttendence': usersCanEditRunAttendence.toString(),
       });
     }
 
@@ -289,7 +300,7 @@ class EventsService extends BaseService {
 
     if (absoluteEventNumber != null) {
       bodyMap.addAll(<String, String>{
-        'absoluteEventNumber': absoluteEventNumber.toString()
+        'absoluteEventNumber': absoluteEventNumber.toString(),
       });
     }
 
@@ -306,8 +317,9 @@ class EventsService extends BaseService {
     }
 
     if (eventStartDatetime != null) {
-      bodyMap.addAll(
-          <String, String>{'startDatetime': eventStartDatetime.toString()});
+      bodyMap.addAll(<String, String>{
+        'startDatetime': eventStartDatetime.toString(),
+      });
     }
 
     if (lat != null) {
@@ -323,8 +335,9 @@ class EventsService extends BaseService {
     }
 
     if (useFbRunDetails != null) {
-      bodyMap.addAll(
-          <String, String>{'useFbRunDetails': useFbRunDetails.toString()});
+      bodyMap.addAll(<String, String>{
+        'useFbRunDetails': useFbRunDetails.toString(),
+      });
     }
 
     if (useFbImage != null) {
@@ -332,8 +345,9 @@ class EventsService extends BaseService {
     }
 
     if (useFbLocation != null) {
-      bodyMap
-          .addAll(<String, String>{'useFbLocation': useFbLocation.toString()});
+      bodyMap.addAll(<String, String>{
+        'useFbLocation': useFbLocation.toString(),
+      });
     }
 
     if (eventDescription != null) {
@@ -345,25 +359,26 @@ class EventsService extends BaseService {
     }
 
     if (locationOneLineDesc != null) {
-      bodyMap
-          .addAll(<String, String>{'locationOneLineDesc': locationOneLineDesc});
+      bodyMap.addAll(<String, String>{
+        'locationOneLineDesc': locationOneLineDesc,
+      });
     }
 
     if (eventPriceForMembers != null) {
       bodyMap.addAll(<String, String>{
-        'eventPriceForMembers': eventPriceForMembers.toString()
+        'eventPriceForMembers': eventPriceForMembers.toString(),
       });
     }
 
     if (eventPriceForNonMembers != null) {
       bodyMap.addAll(<String, String>{
-        'eventPriceForNonMembers': eventPriceForNonMembers.toString()
+        'eventPriceForNonMembers': eventPriceForNonMembers.toString(),
       });
     }
 
     if (eventPriceForExtras != null) {
       bodyMap.addAll(<String, String>{
-        'eventPriceForExtras': eventPriceForExtras.toString()
+        'eventPriceForExtras': eventPriceForExtras.toString(),
       });
     }
 
@@ -376,8 +391,7 @@ class EventsService extends BaseService {
     final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await G0<TableModel>()
-          .syncUserDataService
+      await G0<TableModel>().syncUserDataService
           .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
 
       final dynamic responseJson = jsonDecode(responseBody);
@@ -398,30 +412,29 @@ class EventsService extends BaseService {
   }) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
     final String accessToken = Utilities.generateToken(
-        userId, 'rptApi_emailRunDetails',
-        paramString: eventId);
+      userId,
+      'rptApi_emailRunDetails',
+      paramString: eventId,
+    );
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
-      'emailBody': emailBody
+      'emailBody': emailBody,
     });
 
     //print(body);
 
     final Response response = await post(
-            Uri.parse(EMAIL_RUN_DETAILS_TO_PACK_API_URL),
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
-            // Send authorization headers to your backend
-            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-            )
-        .catchError(
-      (dynamic error) {
-        return Future<Response>.value(Response('', 500));
-      },
-    );
+      Uri.parse(EMAIL_RUN_DETAILS_TO_PACK_API_URL),
+      headers: <String, String>{'content-type': 'application/json'},
+      body: body,
+      // Send authorization headers to your backend
+      //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+    ).catchError((dynamic error) {
+      return Future<Response>.value(Response('', 500));
+    });
 
     return <String, String>{'result': response.body};
   }
@@ -431,8 +444,10 @@ class EventsService extends BaseService {
     RunDetailsAggregate? item;
 
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
-        EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin,
-        eventId: eventId);
+      EnumRunQueryType.singleRun,
+      EnumRunQueryContext.kennelAdmin,
+      eventId: eventId,
+    );
     if (results.isNotEmpty) {
       double? dist;
       if ((G0<DeviceInfo>().deviceLat != null) &&
@@ -444,16 +459,17 @@ class EventsService extends BaseService {
           results[0]['evtLon'],
         );
       }
-      final EventModel eventItem =
-          G0<TableModel>().eventsTableHelper.fromMap(results[0]);
-      final KennelsModel kennelItem =
-          G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(
+        results[0],
+      );
+      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper
+          .fromMap(results[0]);
       final RunQueryExtensionsModel extensionsItem =
           RunQueryExtensionsModel.fromJsonWithDateSearchText(
-        results[0],
-        eventItem.eventStartDatetime,
-        dist,
-      );
+            results[0],
+            eventItem.eventStartDatetime,
+            dist,
+          );
 
       String paymentLinkUrl = '';
 
@@ -468,10 +484,11 @@ class EventsService extends BaseService {
       }
 
       item = RunDetailsAggregate(
-          event: eventItem,
-          kennel: kennelItem,
-          extensions: extensionsItem,
-          paymentUrl: paymentLinkUrl);
+        event: eventItem,
+        kennel: kennelItem,
+        extensions: extensionsItem,
+        paymentUrl: paymentLinkUrl,
+      );
     }
     return item;
   }

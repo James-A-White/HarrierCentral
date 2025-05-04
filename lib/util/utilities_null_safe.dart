@@ -15,8 +15,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 // }
 
 class Utilities {
-//   // this is an unused variable to suppress a LINT warning
-//   int suppressWarning = 0;
+  //   // this is an unused variable to suppress a LINT warning
+  //   int suppressWarning = 0;
 
   static const int qrScanTypeFlag_user = 0x00000001;
   static const int qrScanTypeFlag_userSecretCode = 0x00000002;
@@ -27,7 +27,7 @@ class Utilities {
   static const int qrScanTypeFlag_resetCode = 0x00000040;
   static const int qrScanTypeFlag_authenticateWebPortal = 0x00000080;
 
-//   static int logCounter = 0;
+  //   static int logCounter = 0;
 
   static String generateToken(
     String userId,
@@ -36,23 +36,27 @@ class Utilities {
     int? timeWindow,
   }) {
     timeWindow ??= getIntPref(IntPrefsEnum.timeWindow) ?? 30;
-    final Duration difference =
-        DateTime.now().toUtc().difference(DateTime.utc(1993, 7, 25, 15, 0, 0));
+    final Duration difference = DateTime.now().toUtc().difference(
+      DateTime.utc(1993, 7, 25, 15, 0, 0),
+    );
     //final int timeBlocks = (difference.inSeconds / 5760).toInt();
     final int timeBlocks = difference.inSeconds ~/ timeWindow;
     if (paramString.isNotEmpty) {
       paramString = '#${paramString.toUpperCase()}';
     }
     final String accessString =
-        '${userId.toUpperCase()}#$procName#${timeBlocks.toString()}$paramString';
-    final List<int> bytes =
-        utf8.encode(accessString.toUpperCase()); // data being hashed
+        '${userId}#$procName#${timeBlocks.toString()}$paramString';
+    final List<int> bytes = utf8.encode(
+      accessString.toUpperCase(),
+    ); // data being hashed
     final Digest digest = sha256.convert(bytes);
     return '$digest'.toUpperCase();
   }
 
   static Map<String, String> validateScan(
-      String scanText, int allowedScanTypes) {
+    String scanText,
+    int allowedScanTypes,
+  ) {
     Map<String, String> result;
 
     if (scanText.contains(BASE_HCWEB_MOBILE_URL)) {
@@ -76,7 +80,7 @@ class Utilities {
       result = <String, String>{
         'validScan': false.toString(),
         'prefix': '',
-        'content': ''
+        'content': '',
       };
     } else {
       int scanType = 0;
@@ -118,7 +122,7 @@ class Utilities {
         'validScan': scanAllowed.toString(),
         'prefix': prefix,
         'content': content,
-        'validHcQr': validHcQr.toString()
+        'validHcQr': validHcQr.toString(),
       };
     }
 
@@ -151,11 +155,10 @@ class Utilities {
                   const Padding(
                     padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
                     child: Center(
-                      child: Text('Select map provider',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 24.0,
-                          )),
+                      child: Text(
+                        'Select map provider',
+                        style: TextStyle(color: Colors.black, fontSize: 24.0),
+                      ),
                     ),
                   ),
                   const Divider(height: 1.0, color: Colors.black87),
@@ -169,26 +172,32 @@ class Utilities {
                               onTap: () async {
                                 if (saveUserMapPreference.value) {
                                   await setStringPref(
-                                      StringPrefsEnum.mapPreference,
-                                      map.mapName);
+                                    StringPrefsEnum.mapPreference,
+                                    map.mapName,
+                                  );
                                 }
-                                Navigator.of(navigatorKey.currentContext!)
-                                    .pop();
+                                Navigator.of(
+                                  navigatorKey.currentContext!,
+                                ).pop();
 
                                 await Future<void>.delayed(
-                                    const Duration(milliseconds: 200));
+                                  const Duration(milliseconds: 200),
+                                );
 
                                 // BUG in plugin - doesn't work when sending a title with Google maps
                                 await map.showMarker(
                                   coords: coords,
-                                  title: map.mapName.contains('Google')
-                                      ? ''
-                                      : title,
+                                  title:
+                                      map.mapName.contains('Google')
+                                          ? ''
+                                          : title,
                                   description: address,
                                 );
                               },
-                              title:
-                                  Text(map.mapName, style: ts_titleLargeBlack),
+                              title: Text(
+                                map.mapName,
+                                style: ts_titleLargeBlack,
+                              ),
                               leading: SvgPicture.asset(
                                 map.icon,
                                 height: 60.0,
@@ -209,11 +218,8 @@ class Utilities {
                       //   });
                       // }),
                       MapSnackbar(saveUserMapPreference),
-                      Text(
-                        'Always use this option',
-                        style: ts_titleBlack,
-                      ),
-                      const SizedBox(width: 20.0)
+                      Text('Always use this option', style: ts_titleBlack),
+                      const SizedBox(width: 20.0),
                     ],
                   ),
                 ],
@@ -338,16 +344,22 @@ class Utilities {
         getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
 
     IveCoreUtilities.logTiming(
-        'Geostatus query start', G0<AppModel>().appStartTime);
+      'Geostatus query start',
+      G0<AppModel>().appStartTime,
+    );
     final LocationPermission permission = await Geolocator.checkPermission();
 
     IveCoreUtilities.logTiming(
-        'Geolocation query start', G0<AppModel>().appStartTime);
+      'Geolocation query start',
+      G0<AppModel>().appStartTime,
+    );
     if ((permission == LocationPermission.always) ||
         (permission == LocationPermission.whileInUse)) {
       G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
-            accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50),
+          accuracy: BASE_APP_LOCATION_ACCURACY,
+          distanceFilter: 50,
+        ),
       ).listen((Position position) {
         G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
         G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
@@ -363,9 +375,10 @@ class Utilities {
 
       // ignore: unawaited_futures
       Geolocator.getCurrentPosition(
-              locationSettings:
-                  const LocationSettings(accuracy: LocationAccuracy.lowest))
-          .then((Position position) {
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.lowest,
+        ),
+      ).then((Position position) {
         G0<DeviceInfo>().deviceLat = position.latitude;
         G0<DeviceInfo>().deviceLon = position.longitude;
         setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
@@ -400,10 +413,12 @@ class Utilities {
       if (regex.hasMatch(searchText)) {
         for (RegExpMatch match in regex.allMatches(searchText)) {
           if (match[0] != null) {
-            results.add(match[0]!
-                .replaceFirst(token.replaceFirst(r'\', ''), '')
-                .trim()
-                .toLowerCase());
+            results.add(
+              match[0]!
+                  .replaceFirst(token.replaceFirst(r'\', ''), '')
+                  .trim()
+                  .toLowerCase(),
+            );
           }
         }
       }
@@ -424,7 +439,7 @@ class Utilities {
           if (strs.length == 2) {
             return <double?>[
               double.tryParse(strs[0]),
-              double.tryParse(strs[1])
+              double.tryParse(strs[1]),
             ];
           }
         }
@@ -522,64 +537,70 @@ class Utilities {
     String pageTitle,
   ) {
     return GestureDetector(
-        onTap: () {
-          Navigator.push<void>(
-            context,
-            MaterialPageRoute<void>(
-              builder: (BuildContext context) => ZoomableImagePage2(
+      onTap: () {
+        Navigator.push<void>(
+          context,
+          MaterialPageRoute<void>(
+            builder:
+                (BuildContext context) => ZoomableImagePage2(
                   key: const Key('511203069'),
                   pageTitle: pageTitle,
                   imageUrl: image.startsWith('http') ? image : null,
-                  assetImage: image.contains('bundle://')
-                      ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg'
-                      : null,
+                  assetImage:
+                      image.contains('bundle://')
+                          ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg'
+                          : null,
                   appBarBackgroundColor: themeAppBarBackground,
                   background: Backgrounds.defaultHcBackground(),
-                  margin: 20.0),
-            ),
-          );
-        },
-        child: image.startsWith('http')
-            ? CachedNetworkImage(
+                  margin: 20.0,
+                ),
+          ),
+        );
+      },
+      child:
+          image.startsWith('http')
+              ? CachedNetworkImage(
                 imageUrl: image,
-                placeholder: (BuildContext context, String url) => SizedBox(
-                    height: height,
-                    width: width,
-                    child: const Center(
-                      child: SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: HcCircularProgressIndicator(
-                          key: Key('1396562'),
+                placeholder:
+                    (BuildContext context, String url) => SizedBox(
+                      height: height,
+                      width: width,
+                      child: const Center(
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: HcCircularProgressIndicator(
+                            key: Key('1396562'),
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                 errorWidget:
-                    (BuildContext context, String url, dynamic error) => Icon(
-                          Icons.error,
-                          size: height,
-                          color: hc_red,
-                        ),
+                    (BuildContext context, String url, dynamic error) =>
+                        Icon(Icons.error, size: height, color: hc_red),
                 //fadeOutDuration:  Duration(seconds: 1),
                 fadeInDuration: const Duration(milliseconds: 0),
                 width: width,
                 height: height,
-                fit: BoxFit.fill)
-            : image.startsWith('bundle')
-                ? Image(
-                    width: width,
-                    height: height,
-                    fit: BoxFit.fill,
-                    image: AssetImage(
-                        ('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                            .toLowerCase()),
-                  )
-                : Image(
-                    width: width,
-                    height: height,
-                    fit: BoxFit.fill,
-                    image: const AssetImage('images/avatars/avatar-2.jpg'),
-                  ));
+                fit: BoxFit.fill,
+              )
+              : image.startsWith('bundle')
+              ? Image(
+                width: width,
+                height: height,
+                fit: BoxFit.fill,
+                image: AssetImage(
+                  ('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                      .toLowerCase(),
+                ),
+              )
+              : Image(
+                width: width,
+                height: height,
+                fit: BoxFit.fill,
+                image: const AssetImage('images/avatars/avatar-2.jpg'),
+              ),
+    );
   }
 
   static int checkSpecialRun(int runCount) {
@@ -633,18 +654,11 @@ class Utilities {
   }) async {
     return Get.dialog<bool?>(
       AlertDialog(
-        title: Text(
-          title,
-          style: ts_alertDialogTitle,
-        ),
+        title: Text(title, style: ts_alertDialogTitle),
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text(
-                body,
-                textAlign: textAlign,
-                style: ts_alertDialogBody,
-              )
+              Text(body, textAlign: textAlign, style: ts_alertDialogBody),
             ],
           ),
         ),
@@ -652,10 +666,7 @@ class Utilities {
           if (showCancelButton)
             TextButton(
               style: text_button_style,
-              child: Text(
-                cancelButtonText,
-                style: ts_button,
-              ),
+              child: Text(cancelButtonText, style: ts_button),
               onPressed: () {
                 Get.back(result: false, canPop: true);
               },
@@ -664,10 +675,7 @@ class Utilities {
             Container(),
           TextButton(
             style: text_button_style,
-            child: Text(
-              buttonText,
-              style: ts_button,
-            ),
+            child: Text(buttonText, style: ts_button),
             onPressed: () {
               Get.back(result: true, canPop: true);
             },
@@ -687,10 +695,7 @@ class Utilities {
   }) async {
     return Get.dialog<bool?>(
       AlertDialog(
-        title: Text(
-          title,
-          style: ts_alertDialogTitle,
-        ),
+        title: Text(title, style: ts_alertDialogTitle),
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
@@ -698,29 +703,23 @@ class Utilities {
                 body,
                 textAlign: TextAlign.justify,
                 style: ts_alertDialogBody,
-              )
+              ),
             ],
           ),
         ),
         actions: <Widget>[
           showCancelButton == true
               ? TextButton(
-                  style: text_button_style,
-                  child: Text(
-                    cancelButtonText,
-                    style: ts_button,
-                  ),
-                  onPressed: () {
-                    Get.back<bool?>(result: false, canPop: true);
-                  },
-                )
+                style: text_button_style,
+                child: Text(cancelButtonText, style: ts_button),
+                onPressed: () {
+                  Get.back<bool?>(result: false, canPop: true);
+                },
+              )
               : Container(),
           TextButton(
             style: text_button_style,
-            child: Text(
-              buttonText,
-              style: ts_button,
-            ),
+            child: Text(buttonText, style: ts_button),
             onPressed: () {
               Get.back<bool?>(result: true, canPop: true);
             },

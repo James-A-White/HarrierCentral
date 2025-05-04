@@ -44,7 +44,10 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -72,11 +75,16 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Future<void> createIndexes(
-      Database db, int version, dynamic appDomainType) async {
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
     await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+      'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);',
+    );
     await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+      'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);',
+    );
   }
 
   @override
@@ -89,8 +97,12 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
     return ReceiptsModel.fromJson(map);
   }
 
-  String toQueryBody(String deviceId, String accessToken, ReceiptsModel item,
-      String receiptsUploadedAfter) {
+  String toQueryBody(
+    String deviceId,
+    String accessToken,
+    ReceiptsModel item,
+    String receiptsUploadedAfter,
+  ) {
     final String map = jsonEncode(<String, Object?>{
       'queryType': 'addEditReceipt',
       'deviceId': deviceId,
@@ -106,7 +118,7 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
       colReimbursedNotes: item.reimbursedNotes,
       colImageUrl: item.imageUrl,
       'receiptsUpdatedAfter': receiptsUploadedAfter,
-      colRemoved: item.removed
+      colRemoved: item.removed,
     });
     return map;
   }
@@ -122,27 +134,28 @@ class ReceiptsService {
     final String accessToken = Utilities.generateToken(
       userId,
       'hcapp_addEditReceipt',
-      paramString: deviceSecret.toUpperCase(),
+      paramString: deviceSecret,
     );
 
-    final int receiptsLastUpdated =
-        await G0<TableModel>().baseService.getLastUpdatedTime(
-              G0<Database>(),
-              G0<TableModel>().receiptsTableHelper,
-              G0<TableModel>()
-                  .receiptsTableHelper
-                  .getTableName(AppDomainType.event),
-              G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
-            );
-    final DateTime receiptsUpdatedAfter =
-        DateTime.fromMicrosecondsSinceEpoch(receiptsLastUpdated + 1);
+    final int receiptsLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().receiptsTableHelper,
+          G0<TableModel>().receiptsTableHelper.getTableName(
+            AppDomainType.event,
+          ),
+          G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
+        );
+    final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      receiptsLastUpdated + 1,
+    );
 
     final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(
-          deviceId,
-          accessToken,
-          item,
-          receiptsUpdatedAfter.toString(),
-        );
+      deviceId,
+      accessToken,
+      item,
+      receiptsUpdatedAfter.toString(),
+    );
 
     final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 

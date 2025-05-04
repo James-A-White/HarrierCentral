@@ -180,7 +180,8 @@ class QueryKennels {
 
   static Future<KennelListAggregate?> getSingleKennel(String kennelId) async {
     bool isHomeKennel = false;
-    if (kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+    if (kennelId.toLowerCase() ==
+        getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase()) {
       isHomeKennel = true;
     }
 

@@ -3,10 +3,7 @@ import 'package:harrier_central/imports.dart';
 import 'package:get/get.dart';
 
 class ChatSheetController extends GetxController {
-  ChatSheetController({
-    required this.eventId,
-    required this.publicEventId,
-  }) {
+  ChatSheetController({required this.eventId, required this.publicEventId}) {
     // Initialize controllers with initial data if available
   }
   String eventId;
@@ -25,8 +22,9 @@ class ChatSheetController extends GetxController {
   void onInit() {
     super.onInit();
 
-    _fcmSubscription =
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
       // EventId = eventId,
       // Title = title,
       // UserId = userId,
@@ -51,9 +49,11 @@ class ChatSheetController extends GetxController {
           text: message.data['Message'],
         );
 
-        final index = messages.indexWhere((element) =>
-            element.id.toUpperCase() ==
-            message.data['MessageId'].toString().toUpperCase());
+        final index = messages.indexWhere(
+          (element) =>
+              element.id.toUpperCase() ==
+              message.data['MessageId'].toString().toUpperCase(),
+        );
 
         if (index == -1) {
           addMessage(textMessage);
@@ -72,7 +72,8 @@ class ChatSheetController extends GetxController {
         getStringPref(StringPrefsEnum.publicHasherId)!;
 
     //final String publicHasherId = getStringPref(StringPrefsEnum.pu)!;
-    final String hashName = getStringPref(StringPrefsEnum.displayName) ??
+    final String hashName =
+        getStringPref(StringPrefsEnum.displayName) ??
         getStringPref(StringPrefsEnum.firstName) ??
         '';
     final String photo = getStringPref(StringPrefsEnum.profilePhotoUrl)!;
@@ -95,12 +96,12 @@ class ChatSheetController extends GetxController {
   }
 
   Future<String?> _getEventMessages(String eventId) async {
-    final String hasherId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final accessToken = Utilities.generateToken(
-      hasherId,
+      userId,
       'hcapp_getEventMessages',
       paramString: deviceSecret + eventId,
     );
@@ -247,12 +248,11 @@ class ChatSheetController extends GetxController {
 
       if (message.uri.startsWith('http')) {
         try {
-          final index =
-              messages.indexWhere((element) => element.id == message.id);
-          final updatedMessage =
-              (messages[index] as types.FileMessage).copyWith(
-            isLoading: true,
+          final index = messages.indexWhere(
+            (element) => element.id == message.id,
           );
+          final updatedMessage = (messages[index] as types.FileMessage)
+              .copyWith(isLoading: true);
 
           messages[index] = updatedMessage;
 
@@ -267,12 +267,13 @@ class ChatSheetController extends GetxController {
           //   await file.writeAsBytes(bytes);
           // }
         } finally {
-          final index =
-              messages.indexWhere((element) => element.id == message.id);
-          final updatedMessage =
-              (messages[index] as types.FileMessage).copyWith(
-                  //isLoading: null,
-                  );
+          final index = messages.indexWhere(
+            (element) => element.id == message.id,
+          );
+          final updatedMessage = (messages[index] as types.FileMessage)
+              .copyWith(
+                //isLoading: null,
+              );
 
           messages[index] = updatedMessage;
         }
@@ -308,12 +309,12 @@ class ChatSheetController extends GetxController {
     addMessage(textMessage);
 
     //final hasherId = await box!.get(HIVE_HASHER_ID) as String;
-    final hasherId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final accessToken = Utilities.generateToken(
-      hasherId,
+      userId,
       'hcapp_sendEventMessage',
       paramString: deviceSecret + eventId,
     );

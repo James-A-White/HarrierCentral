@@ -14,14 +14,16 @@ class AuthenticateWebPortalService {
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final String accessToken = Utilities.generateToken(
-        userId, 'hcapp_authenticateWebPortal',
-        paramString: deviceSecret + scan);
+      userId,
+      'hcapp_authenticateWebPortal',
+      paramString: deviceSecret + scan,
+    );
 
     final String body = jsonEncode(<String, String>{
       'queryType': 'authenticateWebPortal',
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'scanData': scan
+      'scanData': scan,
     });
 
     final String responseBody = await ServiceCommon.sendHttpPostV2(body);
@@ -29,11 +31,9 @@ class AuthenticateWebPortalService {
     SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      json.decode(responseBody).forEach(
-        (dynamic item) {
-          result = SingleResultModel(result: item[0]['result']);
-        },
-      );
+      json.decode(responseBody).forEach((dynamic item) {
+        result = SingleResultModel(result: item[0]['result']);
+      });
     }
 
     return result;

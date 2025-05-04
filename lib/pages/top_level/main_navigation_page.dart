@@ -215,13 +215,34 @@ class MainNavigationPageState extends State<MainNavigationPage>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
+      Duration d = DateTime.now().difference(
+          getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate) ??
+              DateTime.now());
+
+      // int xxx = d.inSeconds;
+      // print('Seconds since last refresh = $xxx');
+
+      if (d.inMinutes > 2) {
+        await G0<TableModel>().syncUserDataService.updateFromBackend(
+              SyncUserDataService.flagHasherEventMapTable |
+                  SyncUserDataService.flagNarrowEventsTable |
+                  SyncUserDataService.flagKennelsTable |
+                  SyncUserDataService.flagPaymentsTable,
+              false,
+              debugText: 'future_run_list_page: HEM, Events, Kennels',
+            );
+
+        final controller = Get.find<FutureRunListPageController>();
+        await controller.refreshFromTable(true);
+      }
+
       // print('******* > Init 7');
       if (_hasLocation) {
         // print('******* > Init 8');
         // ignore: unawaited_futures
-        _checkAreWeAtRunStart();
+        await _checkAreWeAtRunStart();
       }
     }
   }
@@ -253,6 +274,8 @@ class MainNavigationPageState extends State<MainNavigationPage>
 
         if (retVal == enumCheckInOption_Yes) {
           await _checkInAtEvent(result.eventId, userId);
+          final controller = Get.find<FutureRunListPageController>();
+          await controller.refreshFromTable(true);
         } else if ((retVal == enumCheckInOption_YesAndPayByCredit) ||
             (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
           final PaymentsService paySrv = PaymentsService();

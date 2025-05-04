@@ -12,8 +12,10 @@ class EmailReportsService {
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
     if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
-      final String accessToken =
-          Utilities.generateToken(userId!, 'rptKennelRunStats');
+      final String accessToken = Utilities.generateToken(
+        userId!,
+        'rptKennelRunStats',
+      );
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
@@ -23,24 +25,22 @@ class EmailReportsService {
         'userName': userName,
         'emailAddress': emailAddress!,
         'digitsAfterDecimal': digitsAfterDecimal.toString(),
-        'currencySymbol': currencySymbol
+        'currencySymbol': currencySymbol,
       });
 
       final Response response = await post(
-              Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL),
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body)
-          .catchError(
-        (dynamic error) {
-          return Future<Response>.value(Response('error', 500));
-        },
-      );
+        Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL),
+        headers: <String, String>{'content-type': 'application/json'},
+        body: body,
+      ).catchError((dynamic error) {
+        return Future<Response>.value(Response('error', 500));
+      });
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
     return <String, String>{
       'result': 'No valid email address found',
-      'email': ''
+      'email': '',
     };
   }
 
@@ -55,8 +55,10 @@ class EmailReportsService {
 
     if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
       final String accessToken = Utilities.generateToken(
-          userId!, 'rptApi_emailKennelInviteCodes',
-          paramString: kennelId);
+        userId!,
+        'rptApi_emailKennelInviteCodes',
+        paramString: kennelId,
+      );
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
@@ -69,20 +71,18 @@ class EmailReportsService {
       });
 
       final Response response = await post(
-              Uri.parse(EMAIL_KENNEL_INVITE_CODES_API_URL),
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body)
-          .catchError(
-        (dynamic error) {
-          return Future<Response>.value(Response('error', 500));
-        },
-      );
+        Uri.parse(EMAIL_KENNEL_INVITE_CODES_API_URL),
+        headers: <String, String>{'content-type': 'application/json'},
+        body: body,
+      ).catchError((dynamic error) {
+        return Future<Response>.value(Response('error', 500));
+      });
 
       return <String, String>{'result': response.body};
     }
     return <String, String>{
       'result': 'No valid email address found',
-      'email': ''
+      'email': '',
     };
   }
 }

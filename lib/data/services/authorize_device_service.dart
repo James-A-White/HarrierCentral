@@ -105,8 +105,8 @@ class AuthorizeDeviceService {
           await setStringPref(StringPrefsEnum.userId, items['hasherId']);
           await setStringPref(
               StringPrefsEnum.publicHasherId, items['publicHasherId']);
-          await setStringPref(
-              StringPrefsEnum.homeKennelId, items['homeKennelId']);
+          await setStringPref(StringPrefsEnum.homeKennelId,
+              items['homeKennelId']?.toLowerCase());
           await setIntPref(IntPrefsEnum.isBetaTester, items['isBetaTester']);
           final int preferences = items['preferences'] ?? 0;
           await setIntPref(IntPrefsEnum.hasherPreferences, preferences);

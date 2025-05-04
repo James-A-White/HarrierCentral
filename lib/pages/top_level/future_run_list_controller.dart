@@ -30,8 +30,9 @@ class FutureRunListPageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    fcmSubscription =
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    fcmSubscription = FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
       final publicEventId = message.data['PublicEventId'] as String?;
 
       // get the total amount of chats for this event from the message
@@ -44,12 +45,10 @@ class FutureRunListPageController extends GetxController {
     showOnlyEventsWithMessages.listen((bool value) async {
       showChatBubbleLoading.value = true;
       update(['main_nav_page']);
-      Future<void>.delayed(const Duration(seconds: 1)).then(
-        (value) {
-          showChatBubbleLoading.value = false;
-          update(['main_nav_page']);
-        },
-      );
+      Future<void>.delayed(const Duration(seconds: 1)).then((value) {
+        showChatBubbleLoading.value = false;
+        update(['main_nav_page']);
+      });
       // for some reason,we need to put this little delay in otherwise the
       // update to the main_nav_page does not get fired before the filterRuns
       // starts executing.
@@ -92,9 +91,10 @@ class FutureRunListPageController extends GetxController {
       if (run is! int) {
         String? publicEventId = run.event?.publicEventId as String?;
         if (publicEventId != null) {
-          total += (thisEventUnseenChats[publicEventId]?.value ??
-              chatSummaryMap[publicEventId]?.eventChatMessageCount ??
-              0);
+          total +=
+              (thisEventUnseenChats[publicEventId]?.value ??
+                  chatSummaryMap[publicEventId]?.eventChatMessageCount ??
+                  0);
         }
       }
     }
@@ -114,16 +114,16 @@ class FutureRunListPageController extends GetxController {
     if (msg != null) {
       String? eventId = msg.data['EventId']?.toString().toUpperCase();
       if ((eventId != null) && (allRuns != null)) {
-        dynamic runs = allRuns!
-            .where((dynamic a) => a.event?.eventId?.toUpperCase() == eventId)
-            .toList();
+        dynamic runs =
+            allRuns!
+                .where(
+                  (dynamic a) => a.event?.eventId?.toUpperCase() == eventId,
+                )
+                .toList();
 
         if ((runs != null) && (runs.length > 0)) {
           var run = runs[0];
-          openRun(
-            run,
-            openToChatTab: true,
-          );
+          openRun(run, openToChatTab: true);
         }
       }
     }
@@ -216,12 +216,12 @@ class FutureRunListPageController extends GetxController {
   }
 
   Future<Map<String, EventChatSummary>> getEventChatMessageCounts() async {
-    final hasherId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final accessToken = Utilities.generateToken(
-      hasherId,
+      userId,
       'hcapp_getEventMessageCounts',
       paramString: deviceSecret,
     );
@@ -238,10 +238,12 @@ class FutureRunListPageController extends GetxController {
       final decoded = json.decode(responseBody) as List;
       List<EventChatSummary> chatSummary =
           decoded.map<List<EventChatSummary>>((innerList) {
-        return (innerList as List)
-            .map<EventChatSummary>((item) => EventChatSummary.fromJson(item))
-            .toList();
-      }).toList()[0];
+            return (innerList as List)
+                .map<EventChatSummary>(
+                  (item) => EventChatSummary.fromJson(item),
+                )
+                .toList();
+          }).toList()[0];
 
       final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
 
@@ -250,7 +252,8 @@ class FutureRunListPageController extends GetxController {
         result[summary.publicEventId] = EventChatSummary(
           id: summary.id,
           publicEventId: summary.publicEventId,
-          eventChatMessageCount: summary.eventChatMessageCount -
+          eventChatMessageCount:
+              summary.eventChatMessageCount -
               (chatsCounts[summary.publicEventId] ?? 0),
         );
       }
@@ -272,29 +275,35 @@ class FutureRunListPageController extends GetxController {
   ///
   void filterRuns() {
     showRsvpInstructions = true;
-    filteredRuns.value =
-        QueryRuns.doRunsFilter(searchRunsText, allRuns ?? <dynamic>[]);
+    filteredRuns.value = QueryRuns.doRunsFilter(
+      searchRunsText,
+      allRuns ?? <dynamic>[],
+    );
 
     filteredRuns.sort((dynamic a, dynamic b) {
       // start by sorting by run classification, closest runs should be listed first, then runs
       // from Kennels the user is following, then the rest
-      int result = a.extensions.runClassification
-          .compareTo(b.extensions.runClassification);
+      int result = a.extensions.runClassification.compareTo(
+        b.extensions.runClassification,
+      );
 
       if (result == 0) {
-        result = _toDateOnly(a.event.eventStartDatetime)
-            .compareTo(_toDateOnly(b.event.eventStartDatetime));
+        result = _toDateOnly(
+          a.event.eventStartDatetime,
+        ).compareTo(_toDateOnly(b.event.eventStartDatetime));
         // if the runs are on the same day then try to sort by distance
         // if there are no distances because location services are off, then sort by Kennel name
         if (result == 0) {
           if ((a.extensions.distToEvent != null) &&
               (b.extensions.distToEvent != null)) {
-            final num distA = a.extensions.latitude == null
-                ? 99999999
-                : a.extensions.distToEvent;
-            final num distB = b.extensions.latitude == null
-                ? 99999999
-                : b.extensions.distToEvent;
+            final num distA =
+                a.extensions.latitude == null
+                    ? 99999999
+                    : a.extensions.distToEvent;
+            final num distB =
+                b.extensions.latitude == null
+                    ? 99999999
+                    : b.extensions.distToEvent;
             result = distA.compareTo(distB);
           } else {
             result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
@@ -320,9 +329,11 @@ class FutureRunListPageController extends GetxController {
       }
 
       if (currentClassification != lastInsertedClassification) {
-        for (int j = lastInsertedClassification - currentClassification - 1;
-            j >= 0;
-            j--) {
+        for (
+          int j = lastInsertedClassification - currentClassification - 1;
+          j >= 0;
+          j--
+        ) {
           filteredRuns.insert(i, currentClassification + j + 1);
         }
 
@@ -367,13 +378,13 @@ class FutureRunListPageController extends GetxController {
     }
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable |
-              SyncUserDataService.flagNarrowEventsTable |
-              SyncUserDataService.flagKennelsTable |
-              SyncUserDataService.flagPaymentsTable,
-          false,
-          debugText: 'future_run_list_page: HEM, Events, Kennels',
-        );
+      SyncUserDataService.flagHasherEventMapTable |
+          SyncUserDataService.flagNarrowEventsTable |
+          SyncUserDataService.flagKennelsTable |
+          SyncUserDataService.flagPaymentsTable,
+      false,
+      debugText: 'future_run_list_page: HEM, Events, Kennels',
+    );
 
     await refreshFromTable(true);
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';

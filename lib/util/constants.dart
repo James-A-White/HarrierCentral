@@ -56,8 +56,8 @@ const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
 const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/#/';
 
-const String BASE_URL = 'harrier.azurewebsites.net';
-const String BASE_API_URL = 'https://$BASE_URL/api/';
+// const String BASE_URL = 'harrier.azurewebsites.net';
+// const String BASE_API_URL = 'https://$BASE_URL/api/';
 
 const String BASE_AF_URL = 'harriercentralpublicapi.azurewebsites.net';
 const String BASE_AF_API_URL = 'https://$BASE_AF_URL/api/AppApi';
@@ -161,9 +161,7 @@ const int selfPaymentAutoPayAfterBankTransfer = 0x00000001;
 const int selfPaymentShowBankButtonOnAutoCheckinDialog = 0x00000002;
 
 class AppAccess {
-  AppAccess(
-    this.appAccessFlags,
-  );
+  AppAccess(this.appAccessFlags);
 
   int? appAccessFlags;
 
@@ -270,9 +268,7 @@ const int specialRun1000 = 1000;
 const int specialRunPalindrome = 969;
 
 class Mismanagement {
-  Mismanagement(
-    this.mismanagementFlags,
-  );
+  Mismanagement(this.mismanagementFlags);
 
   int? mismanagementFlags;
 

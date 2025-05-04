@@ -415,7 +415,7 @@ class KennelListItemState extends State<KennelListItem> {
         await setStringPref(
             StringPrefsEnum.homeKennelId,
             queryResults[0]['isHomeKennel'] == 1
-                ? widget.kennelItem.kennel.kennelId
+                ? widget.kennelItem.kennel.kennelId.toLowerCase()
                 : '');
 
         widget.kennelFollowingUpdated(

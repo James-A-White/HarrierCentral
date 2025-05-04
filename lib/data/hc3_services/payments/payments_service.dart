@@ -66,7 +66,10 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -106,11 +109,16 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Future<void> createIndexes(
-      Database db, int version, dynamic appDomainType) async {
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
     await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+      'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);',
+    );
     await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+      'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);',
+    );
   }
 
   @override
@@ -166,42 +174,45 @@ class PaymentsService {
         '$deviceSecret${hasherEventMapId!.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
 
     final String accessToken = Utilities.generateToken(
-        userId, 'hcapp_processPayment',
-        paramString: tokenParameterString);
+      userId,
+      'hcapp_processPayment',
+      paramString: tokenParameterString,
+    );
 
-    final int hasherEventMapLastUpdated =
-        await G0<TableModel>().baseService.getLastUpdatedTime(
-              G0<Database>(),
-              G0<TableModel>().hasherEventMapTableHelper,
-              G0<TableModel>()
-                  .hasherEventMapTableHelper
-                  .getTableName(appDomainType),
-              G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
-            );
+    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(
+            appDomainType,
+          ),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
     final DateTime hasherEventMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
 
-    final int hasherKennelMapLastUpdated =
-        await G0<TableModel>().baseService.getLastUpdatedTime(
-              G0<Database>(),
-              G0<TableModel>().hasherKennelMapTableHelper,
-              G0<TableModel>()
-                  .hasherKennelMapTableHelper
-                  .getTableName(appDomainType),
-              G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
-            );
+    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+            appDomainType,
+          ),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
     final DateTime hasherKennelMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
-    final int paymentsLastUpdated =
-        await G0<TableModel>().baseService.getLastUpdatedTime(
-              G0<Database>(),
-              G0<TableModel>().paymentsTableHelper,
-              G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
-              G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
-            );
-    final DateTime paymentsUpdatedAfter =
-        DateTime.fromMicrosecondsSinceEpoch(paymentsLastUpdated + 1);
+    final int paymentsLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().paymentsTableHelper,
+          G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+        );
+    final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      paymentsLastUpdated + 1,
+    );
 
     final String appDomainStr = appDomainType.toString();
 
@@ -243,12 +254,10 @@ class PaymentsService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
-        results = await G0<TableModel>()
-            .syncEventAdminService
+        results = await G0<TableModel>().syncEventAdminService
             .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else {
-        results = await G0<TableModel>()
-            .syncUserDataService
+        results = await G0<TableModel>().syncUserDataService
             .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       }
     }
@@ -264,8 +273,10 @@ class PaymentsService {
         getStringPref(StringPrefsEnum.displayName) ?? '<no name>';
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
-    final String accessToken =
-        Utilities.generateToken(userId, 'getPaymentReport');
+    final String accessToken = Utilities.generateToken(
+      userId,
+      'getPaymentReport',
+    );
 
     if ((emailAddress ?? '').isNotEmpty) {
       final String body = jsonEncode(<String, String?>{
@@ -275,26 +286,24 @@ class PaymentsService {
         'eventId': eventId,
         'eventName': eventName,
         'userName': userName,
-        'emailAddress': emailAddress
+        'emailAddress': emailAddress,
       });
 
-      final Response response = await post(Uri.parse(EMAIL_PAYMENT_API_URL),
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body
-              // Send authorization headers to your backend
-              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-              )
-          .catchError(
-        (dynamic error) {
-          return Future<Response>.value(Response('', 500));
-        },
-      );
+      final Response response = await post(
+        Uri.parse(EMAIL_PAYMENT_API_URL),
+        headers: <String, String>{'content-type': 'application/json'},
+        body: body,
+        // Send authorization headers to your backend
+        //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+      ).catchError((dynamic error) {
+        return Future<Response>.value(Response('', 500));
+      });
 
       return <String, String?>{'result': response.body, 'email': emailAddress};
     }
     return <String, String>{
       'result': 'No valid email address found',
-      'email': ''
+      'email': '',
     };
   }
 }
