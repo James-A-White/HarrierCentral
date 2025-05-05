@@ -9,7 +9,7 @@ enum EnumAppPages {
   runCounts,
   qrCodePage,
   friends,
-  fab
+  fab,
 }
 
 enum StringPrefsEnum {
@@ -84,9 +84,7 @@ enum DatePrefsEnum {
   lastLeaderboardUpdate,
 }
 
-enum MapPrefsEnum {
-  chatCounts;
-}
+enum MapPrefsEnum { chatCounts }
 
 enum ThirdPartyLoginType { apple, facebook, none }
 
@@ -123,22 +121,41 @@ const EnumVirginVisitor<int> enumKnownVisitor = EnumVirginVisitor<int>(3);
 
 //////////////////////////
 ///
-class EnumNotificationState<int> extends HcEnum<int> {
-  const EnumNotificationState(super.val);
-}
+// class EnumNotificationState<int> extends HcEnum<int> {
+//   const EnumNotificationState(super.val);
+//}
 
-const EnumNotificationState<int> notificationsUnchanged =
-    EnumNotificationState<int>(-1);
-const EnumNotificationState<int> notificationsAuto =
-    EnumNotificationState<int>(0);
-const EnumNotificationState<int> notificationsOn =
-    EnumNotificationState<int>(1);
-const EnumNotificationState<int> notificationsIgnore =
-    EnumNotificationState<int>(2);
-const EnumNotificationState<int> notificationsMute =
-    EnumNotificationState<int>(3);
-const EnumNotificationState<int> notificationsOnBeforeRun =
-    EnumNotificationState<int>(4);
+// const EnumNotificationState<int> NotificationState.unchanged =
+//     EnumNotificationState<int>(-1);
+// const EnumNotificationState<int> NotificationState.auto =
+//     EnumNotificationState<int>(0);
+// const EnumNotificationState<int> NotificationState.on =
+//     EnumNotificationState<int>(1);
+// const EnumNotificationState<int> NotificationState.ignore =
+//     EnumNotificationState<int>(2);
+// const EnumNotificationState<int> NotificationState.mute =
+//     EnumNotificationState<int>(3);
+// const EnumNotificationState<int> NotificationState.onBeforeRun =
+//     EnumNotificationState<int>(4);
+
+enum NotificationState {
+  unchanged(-1),
+  auto(0),
+  on(1),
+  ignore(2),
+  mute(3),
+  onBeforeRun(4);
+
+  final int value;
+
+  const NotificationState(this.value);
+
+  static final Map<int, NotificationState> _valueMap = {
+    for (var state in NotificationState.values) state.value: state,
+  };
+
+  static NotificationState? fromInt(int value) => _valueMap[value];
+}
 
 //////////////////////////
 ///
@@ -146,8 +163,9 @@ class EnumEmailAlertState<int> extends HcEnum<int> {
   const EnumEmailAlertState(super.val);
 }
 
-const EnumEmailAlertState<int> emailAlertsUnchanged =
-    EnumEmailAlertState<int>(-1);
+const EnumEmailAlertState<int> emailAlertsUnchanged = EnumEmailAlertState<int>(
+  -1,
+);
 const EnumEmailAlertState<int> emailAlertsAuto = EnumEmailAlertState<int>(0);
 const EnumEmailAlertState<int> emailAlertsOn = EnumEmailAlertState<int>(1);
 const EnumEmailAlertState<int> emailAlertsOff = EnumEmailAlertState<int>(2);
@@ -184,8 +202,9 @@ class EnumCheckinOptions<int> extends HcEnum<int> {
 const EnumCheckinOptions<int> enumCheckInOption_Cancel =
     EnumCheckinOptions<int>(-1);
 const EnumCheckinOptions<int> enumCheckInOption_No = EnumCheckinOptions<int>(0);
-const EnumCheckinOptions<int> enumCheckInOption_Yes =
-    EnumCheckinOptions<int>(1);
+const EnumCheckinOptions<int> enumCheckInOption_Yes = EnumCheckinOptions<int>(
+  1,
+);
 const EnumCheckinOptions<int> enumCheckInOption_YesAndPayByCredit =
     EnumCheckinOptions<int>(2);
 const EnumCheckinOptions<int> enumCheckInOption_YesAndPayPlusExtrasByCredit =
@@ -211,10 +230,12 @@ class EnumAttendenceState<int> extends HcEnum<int> {
   const EnumAttendenceState(super.val);
 }
 
-const EnumAttendenceState<int> attendenceUpdating =
-    EnumAttendenceState<int>(-2);
-const EnumAttendenceState<int> attendenceNoChange =
-    EnumAttendenceState<int>(-1);
+const EnumAttendenceState<int> attendenceUpdating = EnumAttendenceState<int>(
+  -2,
+);
+const EnumAttendenceState<int> attendenceNoChange = EnumAttendenceState<int>(
+  -1,
+);
 const EnumAttendenceState<int> attendenceUnknown = EnumAttendenceState<int>(0);
 const EnumAttendenceState<int> attendenceNo = EnumAttendenceState<int>(10);
 const EnumAttendenceState<int> attendenceAtHash = EnumAttendenceState<int>(20);
@@ -247,10 +268,12 @@ const EnumPaymentType<int> paymentCashOtherAmount = EnumPaymentType<int>(5);
 const EnumPaymentType<int> paymentHashCredit = EnumPaymentType<int>(6);
 const EnumPaymentType<int> paymentBankTransferOtherAmount =
     EnumPaymentType<int>(7);
-const EnumPaymentType<int> paymentHashCreditOtherAmount =
-    EnumPaymentType<int>(8);
-const EnumPaymentType<int> paymentConfirmBankTransfer =
-    EnumPaymentType<int>(100);
+const EnumPaymentType<int> paymentHashCreditOtherAmount = EnumPaymentType<int>(
+  8,
+);
+const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(
+  100,
+);
 
 //////////////////////////
 

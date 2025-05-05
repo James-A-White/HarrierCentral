@@ -24,7 +24,8 @@ class KennelListItemState extends State<KennelListItem> {
 
   @override
   void initState() {
-    _distancePreference = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
+    _distancePreference =
+        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
         hasherPref_distanceMeasuredIn;
     // kilometers = 2, miles = 3, auto = 0
     if (_distancePreference == 0) {
@@ -39,21 +40,26 @@ class KennelListItemState extends State<KennelListItem> {
   @override
   Widget build(BuildContext context) {
     String path = 'images/icons/bell_silver_strike_out_50px.png';
-    switch (widget.kennelItem.hkm?.kennelNotificationPreference ?? 0) {
-      case 0:
+    switch (NotificationState.fromInt(
+      widget.kennelItem.hkm?.kennelNotificationPreference ?? 0,
+    )) {
+      case NotificationState.auto:
         path = 'images/icons/bell_silver_50px.png';
         break;
-      case 1:
+      case NotificationState.on:
         path = 'images/icons/bell_gold_50px.png';
         break;
-      case 2:
+      case NotificationState.ignore:
         path = 'images/icons/bell_silver_strike_out_50px.png';
         break;
-      case 3:
+      case NotificationState.mute:
         path = 'images/icons/bell_silver_50px.png';
         break;
-      case 4:
+      case NotificationState.onBeforeRun:
         path = 'images/icons/bell_time_50px.png';
+        break;
+      default: // this should never be reached
+        path = 'images/icons/bell_silver_50px.png';
         break;
     }
 
@@ -70,55 +76,65 @@ class KennelListItemState extends State<KennelListItem> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               InkWell(
-                  onTap: () {
-                    // NOTE: leave this comment in for now. Ideally we would navigate
-                    // from here to the next page, but there was an intermittent bug
-                    // where the selected Kennel would change unexpectedly. This "hack" of
-                    // navigating from the parent is my attempt to fix it
-                    //
-                    // Navigator.of(context).push<dynamic>(
-                    //   MaterialPageRoute<dynamic>(
-                    //     builder: (BuildContext context)
-                    //       => KennelAdminMainPage(kennel: widget.kennel)
-                    //     ,
-                    //   ),
-                    // );
-                    widget.kennelSelected();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        _showFollowingPopup();
-                      },
-                      child: Column(
-                        children: <Widget>[
-                          if (widget.kennelItem.extensions.followingRequested !=
-                              -1)
-                            Image.asset(delayIconAsset, width: 24, height: 24)
-                          else if (widget.kennelItem.hkm?.following == 1)
-                            Image.asset('images/icons/checkbox_yes.png',
-                                width: 24, height: 24)
-                          else if (widget.kennelItem.hkm?.following == 2)
-                            Image.asset('images/icons/checkbox_no.png',
-                                width: 24, height: 24)
-                          else
-                            Image.asset('images/icons/checkbox_empty.png',
-                                width: 24, height: 24),
-                        ],
-                      ),
+                onTap: () {
+                  // NOTE: leave this comment in for now. Ideally we would navigate
+                  // from here to the next page, but there was an intermittent bug
+                  // where the selected Kennel would change unexpectedly. This "hack" of
+                  // navigating from the parent is my attempt to fix it
+                  //
+                  // Navigator.of(context).push<dynamic>(
+                  //   MaterialPageRoute<dynamic>(
+                  //     builder: (BuildContext context)
+                  //       => KennelAdminMainPage(kennel: widget.kennel)
+                  //     ,
+                  //   ),
+                  // );
+                  widget.kennelSelected();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      _showFollowingPopup();
+                    },
+                    child: Column(
+                      children: <Widget>[
+                        if (widget.kennelItem.extensions.followingRequested !=
+                            -1)
+                          Image.asset(delayIconAsset, width: 24, height: 24)
+                        else if (widget.kennelItem.hkm?.following == 1)
+                          Image.asset(
+                            'images/icons/checkbox_yes.png',
+                            width: 24,
+                            height: 24,
+                          )
+                        else if (widget.kennelItem.hkm?.following == 2)
+                          Image.asset(
+                            'images/icons/checkbox_no.png',
+                            width: 24,
+                            height: 24,
+                          )
+                        else
+                          Image.asset(
+                            'images/icons/checkbox_empty.png',
+                            width: 24,
+                            height: 24,
+                          ),
+                      ],
                     ),
-                  )),
+                  ),
+                ),
+              ),
               !widget.kennelItem.isHomeKennel
                   ? Container()
                   : Container(
-                      alignment: Alignment.topLeft,
-                      padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
-                      child:
-                          widget.kennelItem.extensions.followingRequested != -1
-                              ? Icon(delayIcon, size: 35, color: hc_blue)
-                              : Icon(FontAwesome.home, size: 35, color: hc_red),
-                    ),
+                    alignment: Alignment.topLeft,
+                    padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
+                    child:
+                        widget.kennelItem.extensions.followingRequested != -1
+                            ? Icon(delayIcon, size: 35, color: hc_blue)
+                            : Icon(FontAwesome.home, size: 35, color: hc_red),
+                  ),
               Expanded(
                 child: InkWell(
                   onTap: () {
@@ -139,7 +155,11 @@ class KennelListItemState extends State<KennelListItem> {
                   child: Container(
                     width: MediaQuery.of(context).size.width - 70,
                     padding: const EdgeInsets.only(
-                        top: 7.0, left: 5.0, bottom: 2.0, right: 5.0),
+                      top: 7.0,
+                      left: 5.0,
+                      bottom: 2.0,
+                      right: 5.0,
+                    ),
                     child: AutoSizeText(
                       widget.kennelItem.kennel.kennelName,
                       //'An extremely long kennel name for testing purposes',
@@ -158,20 +178,26 @@ class KennelListItemState extends State<KennelListItem> {
                   onTap: () {
                     _showEmailPopup(context);
                   },
-                  child: widget.kennelItem.extensions.emailAlertRequested != -1
-                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
-                      : Image(
-                          width: 24.0,
-                          height: 24.0,
-                          fit: BoxFit.fill,
-                          image: widget
-                                      .kennelItem.hkm?.kennelEmailAlertPreference ==
-                                  1
-                              ? const AssetImage(
-                                  'images/icons/envelope_gold_50px.png')
-                              : const AssetImage(
-                                  'images/icons/envelope_silver_strike_out_50px.png'),
-                        ),
+                  child:
+                      widget.kennelItem.extensions.emailAlertRequested != -1
+                          ? Icon(delayIcon, color: hc_blue, size: 24.0)
+                          : Image(
+                            width: 24.0,
+                            height: 24.0,
+                            fit: BoxFit.fill,
+                            image:
+                                widget
+                                            .kennelItem
+                                            .hkm
+                                            ?.kennelEmailAlertPreference ==
+                                        1
+                                    ? const AssetImage(
+                                      'images/icons/envelope_gold_50px.png',
+                                    )
+                                    : const AssetImage(
+                                      'images/icons/envelope_silver_strike_out_50px.png',
+                                    ),
+                          ),
                 ),
               ),
               Container(
@@ -184,11 +210,11 @@ class KennelListItemState extends State<KennelListItem> {
                       widget.kennelItem.extensions.notificationsRequested != -1
                           ? Icon(delayIcon, color: hc_blue, size: 24.0)
                           : Image(
-                              width: 24.0,
-                              height: 24.0,
-                              fit: BoxFit.fill,
-                              image: AssetImage(path),
-                            ),
+                            width: 24.0,
+                            height: 24.0,
+                            fit: BoxFit.fill,
+                            image: AssetImage(path),
+                          ),
                 ),
               ),
             ],
@@ -201,187 +227,205 @@ class KennelListItemState extends State<KennelListItem> {
             color: Colors.grey[300],
           ),
           InkWell(
-              onTap: () {
-                // NOTE: leave this comment in for now. Ideally we would navigate
-                // from here to the next page, but there was an intermittent bug
-                // where the selected Kennel would change unexpectedly. This "hack" of
-                // navigating from the parent is my attempt to fix it
-                //
-                // Navigator.of(context).push<dynamic>(
-                //   MaterialPageRoute<dynamic>(
-                //     builder: (BuildContext context)
-                //       => KennelAdminMainPage(kennel: widget.kennel)
-                //     ,
-                //   ),
-                // );
-                widget.kennelSelected();
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  const SizedBox(width: 5.0, height: 85.0),
-                  KennelLogo(
-                      kennelId: widget.kennelItem.kennel.kennelId,
-                      kennelLogoUrl: widget.kennelItem.kennel.kennelLogo,
-                      kennelShortName: widget.kennelItem.kennel.kennelShortName,
-                      logoHeight: 70.0,
-                      leftPadding: 0.0,
-                      rightPadding: 10.0),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
-                      child: Column(
-                        //mainAxisSize: MainAxisSize.max,
-                        //mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const SizedBox(width: 10.0, height: 10.0),
-                          if (widget.kennelItem.extensions.location !=
-                              null) ...<Widget>[
-                            Text(
-                              widget.kennelItem.extensions.location!,
-                              style: ts_regularMediumBlack,
-                            ),
-                          ],
-                          if ((G0<AppModel>().hasLocationPermissions) &&
-                              (widget.kennelItem.extensions.distToKennel !=
-                                  null)) ...<Widget>[
-                            Text(
-                              '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
-                              style: ts_regularMediumBlack,
-                            )
-                          ],
-                          if ((widget.kennelItem.hkm != null) &&
-                              (widget.kennelItem.hkm!.hcTotalRunCount !=
-                                  0)) ...<Widget>[
-                            Text(
-                              'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
-                              style: ts_titleMedium.copyWith(color: hc_blue),
-                            ),
-                          ],
-                          if (widget.kennelItem.hkm?.dateOfLastRun !=
-                              null) ...<Widget>[
-                            Text(
-                              'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
-                              style: ts_titleMedium.copyWith(color: hc_blue),
-                            ),
-                          ],
-                          if ((widget.kennelItem.hkm != null) &&
-                              (widget.kennelItem.hkm!.kennelCredit !=
-                                  0)) ...<Widget>[
-                            Text(
-                              (widget.kennelItem.hkm!.kennelCredit >= 0
-                                      ? 'Credit available: '
-                                      : 'Funds owed: ') +
-                                  IveCoreUtilities.getFormattedMoney(
-                                      widget.kennelItem.hkm!.kennelCredit.abs(),
-                                      widget.kennelItem.kennel
-                                              .digitsAfterDecimal ??
-                                          2,
-                                      widget.kennelItem.kennel.currencySymbol ??
-                                          r'$^'),
-                              style: TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 16.0,
-                                  height: 1.0,
-                                  color:
-                                      widget.kennelItem.hkm!.kennelCredit >= 0
-                                          ? Colors.green.shade900
-                                          : hc_red),
-                            ),
-                          ],
+            onTap: () {
+              // NOTE: leave this comment in for now. Ideally we would navigate
+              // from here to the next page, but there was an intermittent bug
+              // where the selected Kennel would change unexpectedly. This "hack" of
+              // navigating from the parent is my attempt to fix it
+              //
+              // Navigator.of(context).push<dynamic>(
+              //   MaterialPageRoute<dynamic>(
+              //     builder: (BuildContext context)
+              //       => KennelAdminMainPage(kennel: widget.kennel)
+              //     ,
+              //   ),
+              // );
+              widget.kennelSelected();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(width: 5.0, height: 85.0),
+                KennelLogo(
+                  kennelId: widget.kennelItem.kennel.kennelId,
+                  kennelLogoUrl: widget.kennelItem.kennel.kennelLogo,
+                  kennelShortName: widget.kennelItem.kennel.kennelShortName,
+                  logoHeight: 70.0,
+                  leftPadding: 0.0,
+                  rightPadding: 10.0,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10.0),
+                    child: Column(
+                      //mainAxisSize: MainAxisSize.max,
+                      //mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const SizedBox(width: 10.0, height: 10.0),
+                        if (widget.kennelItem.extensions.location !=
+                            null) ...<Widget>[
+                          Text(
+                            widget.kennelItem.extensions.location!,
+                            style: ts_regularMediumBlack,
+                          ),
                         ],
-                      ),
+                        if ((G0<AppModel>().hasLocationPermissions) &&
+                            (widget.kennelItem.extensions.distToKennel !=
+                                null)) ...<Widget>[
+                          Text(
+                            '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
+                            style: ts_regularMediumBlack,
+                          ),
+                        ],
+                        if ((widget.kennelItem.hkm != null) &&
+                            (widget.kennelItem.hkm!.hcTotalRunCount !=
+                                0)) ...<Widget>[
+                          Text(
+                            'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
+                            style: ts_titleMedium.copyWith(color: hc_blue),
+                          ),
+                        ],
+                        if (widget.kennelItem.hkm?.dateOfLastRun !=
+                            null) ...<Widget>[
+                          Text(
+                            'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
+                            style: ts_titleMedium.copyWith(color: hc_blue),
+                          ),
+                        ],
+                        if ((widget.kennelItem.hkm != null) &&
+                            (widget.kennelItem.hkm!.kennelCredit !=
+                                0)) ...<Widget>[
+                          Text(
+                            (widget.kennelItem.hkm!.kennelCredit >= 0
+                                    ? 'Credit available: '
+                                    : 'Funds owed: ') +
+                                IveCoreUtilities.getFormattedMoney(
+                                  widget.kennelItem.hkm!.kennelCredit.abs(),
+                                  widget.kennelItem.kennel.digitsAfterDecimal ??
+                                      2,
+                                  widget.kennelItem.kennel.currencySymbol ??
+                                      r'$^',
+                                ),
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 16.0,
+                              height: 1.0,
+                              color:
+                                  widget.kennelItem.hkm!.kennelCredit >= 0
+                                      ? Colors.green.shade900
+                                      : hc_red,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  if (G0<AppModel>().connectionStatus ==
-                      EnumConnectionStatus2.connected) ...<Widget>[
-                    IconButton(
-                      icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                      iconSize: Theme.of(context).iconTheme.size,
-                      color: Colors.black54,
-                      splashColor: Theme.of(context).highlightColor,
-                      onPressed: () async {
-                        await _showFollowingPopup();
-                      },
-                    ),
-                  ],
+                ),
+                if (G0<AppModel>().connectionStatus ==
+                    EnumConnectionStatus2.connected) ...<Widget>[
+                  IconButton(
+                    icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                    iconSize: Theme.of(context).iconTheme.size,
+                    color: Colors.black54,
+                    splashColor: Theme.of(context).highlightColor,
+                    onPressed: () async {
+                      await _showFollowingPopup();
+                    },
+                  ),
                 ],
-              )),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
   Future<void> _showFollowingPopup() async {
-    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus,
-        message:
-            'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+    if (Connection2.checkForConnection(
+      G0<AppModel>().connectionStatus,
+      message:
+          'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.',
+    )) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'Always show runs',
           'icon': <Widget>[
             Image.asset('images/icons/checkbox_yes.png', width: 30, height: 30),
             Container(
-                height: 30,
-                width: 30,
-                decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    shape: BoxShape.rectangle,
-                    border: Border.all(color: Colors.white, width: 3.0))),
+              height: 30,
+              width: 30,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                shape: BoxShape.rectangle,
+                border: Border.all(color: Colors.white, width: 3.0),
+              ),
+            ),
           ],
-          'returnValue': followTypeFollow
+          'returnValue': followTypeFollow,
         },
         <String, dynamic>{
           'title': 'Never show runs',
           'icon': <Widget>[
             Image.asset('images/icons/checkbox_no.png', width: 30, height: 30),
             Container(
-                height: 30,
-                width: 30,
-                decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    shape: BoxShape.rectangle,
-                    border: Border.all(color: Colors.white, width: 3.0))),
+              height: 30,
+              width: 30,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                shape: BoxShape.rectangle,
+                border: Border.all(color: Colors.white, width: 3.0),
+              ),
+            ),
           ],
-          'returnValue': followTypeIgnore
+          'returnValue': followTypeIgnore,
         },
         <String, dynamic>{
           'title': 'Show runs within ${getDistanceString()}',
           'icon': <Widget>[
-            Image.asset('images/icons/checkbox_empty.png',
-                width: 30, height: 30),
+            Image.asset(
+              'images/icons/checkbox_empty.png',
+              width: 30,
+              height: 30,
+            ),
             //Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.rectangle, border: Border.all(color: Colors.white, width: 3.0))),
           ],
-          'returnValue': followTypeAuto
+          'returnValue': followTypeAuto,
         },
         !widget.kennelItem.isHomeKennel
             ? <String, dynamic>{
-                'title': 'Set home kennel',
-                'icon': <Widget>[
-                  Container(
-                      height: 30,
-                      width: 30,
-                      decoration: const BoxDecoration(
-                          color: Colors.green, shape: BoxShape.circle)),
-                  const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                ],
-                'returnValue': followTypeToggleHomeKennel
-              }
+              'title': 'Set home kennel',
+              'icon': <Widget>[
+                Container(
+                  height: 30,
+                  width: 30,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const Icon(FontAwesome.home, color: Colors.white, size: 23),
+              ],
+              'returnValue': followTypeToggleHomeKennel,
+            }
             : <String, dynamic>{
-                'title': 'Clear home kennel',
-                'icon': <Widget>[
-                  Container(
-                      height: 30,
-                      width: 30,
-                      decoration:
-                          BoxDecoration(color: hc_red, shape: BoxShape.circle)),
-                  const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                ],
-                'returnValue': followTypeToggleHomeKennel
-              },
+              'title': 'Clear home kennel',
+              'icon': <Widget>[
+                Container(
+                  height: 30,
+                  width: 30,
+                  decoration: BoxDecoration(
+                    color: hc_red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const Icon(FontAwesome.home, color: Colors.white, size: 23),
+              ],
+              'returnValue': followTypeToggleHomeKennel,
+            },
       ];
 
       final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
@@ -393,11 +437,12 @@ class KennelListItemState extends State<KennelListItem> {
       );
 
       final dynamic retVal = await showDialog<dynamic>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return popup;
-          });
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        },
+      );
 
       if (retVal.value != -1) {
         final HasherKennelMapService srv = HasherKennelMapService();
@@ -409,20 +454,25 @@ class KennelListItemState extends State<KennelListItem> {
         }
 
         final List<dynamic> queryResults = await srv.updateHasherKennelStatus(
-            widget.kennelItem.kennel.kennelId, AppDomainType.user,
-            followingState: retVal.value, isHomeKennel: isHomeKennel);
+          widget.kennelItem.kennel.kennelId,
+          AppDomainType.user,
+          followingState: retVal.value,
+          isHomeKennel: isHomeKennel,
+        );
 
         await setStringPref(
-            StringPrefsEnum.homeKennelId,
-            queryResults[0]['isHomeKennel'] == 1
-                ? widget.kennelItem.kennel.kennelId.toLowerCase()
-                : '');
+          StringPrefsEnum.homeKennelId,
+          queryResults[0]['isHomeKennel'] == 1
+              ? widget.kennelItem.kennel.kennelId.toLowerCase()
+              : '',
+        );
 
         widget.kennelFollowingUpdated(
-            queryResults[0]['following'],
-            queryResults[0]['kennelNotificationPreference'],
-            queryResults[0]['kennelEmailAlertPreference'],
-            queryResults[0]['isHomeKennel']);
+          queryResults[0]['following'],
+          queryResults[0]['kennelNotificationPreference'],
+          queryResults[0]['kennelEmailAlertPreference'],
+          queryResults[0]['isHomeKennel'],
+        );
 
         setState(() {});
       }
@@ -435,10 +485,13 @@ class KennelListItemState extends State<KennelListItem> {
         'title': 'Always on',
         'icon': <Widget>[
           Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -448,18 +501,21 @@ class KennelListItemState extends State<KennelListItem> {
               fit: BoxFit.fill,
               image: AssetImage('images/icons/bell_gold_50px.png'),
             ),
-          )
+          ),
         ],
-        'returnValue': notificationsOn,
+        'returnValue': NotificationState.on,
       },
       <String, dynamic>{
         'title': 'On 6 hours before run',
         'icon': <Widget>[
           Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -469,18 +525,21 @@ class KennelListItemState extends State<KennelListItem> {
               fit: BoxFit.fill,
               image: AssetImage('images/icons/bell_time_50px.png'),
             ),
-          )
+          ),
         ],
-        'returnValue': notificationsOnBeforeRun,
+        'returnValue': NotificationState.onBeforeRun,
       },
       <String, dynamic>{
         'title': 'On but muted',
         'icon': <Widget>[
           Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -490,18 +549,21 @@ class KennelListItemState extends State<KennelListItem> {
               fit: BoxFit.fill,
               image: AssetImage('images/icons/bell_silver_50px.png'),
             ),
-          )
+          ),
         ],
-        'returnValue': notificationsMute,
+        'returnValue': NotificationState.mute,
       },
       <String, dynamic>{
         'title': 'Off',
         'icon': <Widget>[
           Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -511,9 +573,9 @@ class KennelListItemState extends State<KennelListItem> {
               fit: BoxFit.fill,
               image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
             ),
-          )
+          ),
         ],
-        'returnValue': notificationsIgnore,
+        'returnValue': NotificationState.ignore,
       },
     ];
 
@@ -526,13 +588,14 @@ class KennelListItemState extends State<KennelListItem> {
     );
 
     final dynamic retVal = await showDialog<dynamic>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
-        });
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return popup;
+      },
+    );
 
-    //if ((retVal == notificationsOn) || (retVal == notificationsIgnore)) {
+    //if ((retVal == NotificationState.on) || (retVal == NotificationState.ignore)) {
 
     if (!mounted) return;
     if (Connection2.checkForConnection(
@@ -544,8 +607,7 @@ class KennelListItemState extends State<KennelListItem> {
       setState(() {});
 
       final String userId = getStringPref(StringPrefsEnum.userId)!;
-      await G0<TableModel>()
-          .hasherKennelMapService
+      await G0<TableModel>().hasherKennelMapService
           .setEmailAndNotificationPreferences(
             widget.kennelItem.kennel.kennelId,
             userId,
@@ -554,11 +616,13 @@ class KennelListItemState extends State<KennelListItem> {
             emailAlertsUnchanged,
           )
           .then((List<dynamic> results) {
-        setState(() {
-          widget.kennelEmailAndNotificationPrefsUpdated(
-              results[0]['notificationPreference'], null);
-        });
-      });
+            setState(() {
+              widget.kennelEmailAndNotificationPrefsUpdated(
+                results[0]['notificationPreference'],
+                null,
+              );
+            });
+          });
 
       // final NotificationSupport notifications = NotificationSupport();
       // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
@@ -620,10 +684,13 @@ class KennelListItemState extends State<KennelListItem> {
         'title': 'Turn email alerts on',
         'icon': <Widget>[
           Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -633,7 +700,7 @@ class KennelListItemState extends State<KennelListItem> {
               fit: BoxFit.fill,
               image: AssetImage('images/icons/envelope_gold_50px.png'),
             ),
-          )
+          ),
         ],
         'returnValue': emailAlertsOn,
       },
@@ -641,10 +708,13 @@ class KennelListItemState extends State<KennelListItem> {
         'title': 'Turn email alerts off',
         'icon': <Widget>[
           Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -653,16 +723,17 @@ class KennelListItemState extends State<KennelListItem> {
               height: 25.0,
               fit: BoxFit.fill,
               image: AssetImage(
-                  'images/icons/envelope_silver_strike_out_50px.png'),
+                'images/icons/envelope_silver_strike_out_50px.png',
+              ),
             ),
-          )
+          ),
         ],
         'returnValue': emailAlertsOff,
       },
       // <String, dynamic>{
       //   'title': 'Set notifications to auto',
       //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: hc_red))],
-      //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
+      //   'returnValue': EnumNotificationPopupActions.NotificationState.auto,
       // },
     ];
 
@@ -675,11 +746,12 @@ class KennelListItemState extends State<KennelListItem> {
     );
 
     showDialog<dynamic>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
-        }).then((dynamic retVal) async {
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return popup;
+      },
+    ).then((dynamic retVal) async {
       if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
         if (Connection2.checkForConnection(
           G0<AppModel>().connectionStatus,
@@ -690,21 +762,22 @@ class KennelListItemState extends State<KennelListItem> {
           setState(() {});
 
           final String userId = getStringPref(StringPrefsEnum.userId)!;
-          await G0<TableModel>()
-              .hasherKennelMapService
+          await G0<TableModel>().hasherKennelMapService
               .setEmailAndNotificationPreferences(
                 widget.kennelItem.kennel.kennelId,
                 userId,
                 AppDomainType.user,
-                notificationsUnchanged,
+                NotificationState.unchanged,
                 retVal,
               )
               .then((List<dynamic> results) {
-            setState(() {
-              widget.kennelEmailAndNotificationPrefsUpdated(
-                  null, results[0]['emailAlertPreference']);
-            });
-          });
+                setState(() {
+                  widget.kennelEmailAndNotificationPrefsUpdated(
+                    null,
+                    results[0]['emailAlertPreference'],
+                  );
+                });
+              });
         }
       }
     });

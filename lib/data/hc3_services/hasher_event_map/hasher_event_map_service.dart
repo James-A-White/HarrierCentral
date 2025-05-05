@@ -190,7 +190,7 @@ class HasherEventMapService {
     String eventId,
     String hasherId,
     AppDomainType appDomainType,
-    EnumNotificationState<int> notificationPreference,
+    NotificationState notificationPreference,
     EnumEmailAlertState<int> emailPreference,
   ) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
