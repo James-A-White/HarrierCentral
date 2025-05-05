@@ -14,8 +14,10 @@ class ApproveLoginService {
 
     String userId = uid!;
 
-    final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '<no version>';
+    final PackageInfo p = await PackageInfo.fromPlatform();
+
+    final String version = p.version;
+    final String buildNumber = p.buildNumber;
 
     //String deviceInfoDeviceId = 'unknown';
     String deviceType = 'unknown';
@@ -110,7 +112,8 @@ class ApproveLoginService {
       'longitude':
           position?.longitude.toString() ??
           (G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE).toString(),
-      'hcVersion': hcVersion,
+      'hcVersion': version,
+      'buildNumber': buildNumber,
       'fbToken': facebookAccessToken,
       'usesLocSvcs': (G0<AppModel>().hasLocationPermissions) ? '1' : '0',
       'screenWidth': (G0<DeviceInfo>().deviceWidth).toInt().toString(),
