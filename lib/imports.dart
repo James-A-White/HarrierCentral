@@ -204,6 +204,7 @@ export 'package:permission_handler/permission_handler.dart';
 export 'package:progress_stepper/progress_stepper.dart';
 export 'package:qr_code_scanner/qr_code_scanner.dart';
 export 'package:qr_flutter/qr_flutter.dart';
+export 'package:screen_state/screen_state.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:sqflite/sqflite.dart';
 export 'package:step_progress_indicator/step_progress_indicator.dart';

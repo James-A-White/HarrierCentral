@@ -82,6 +82,7 @@ enum DatePrefsEnum {
   thirdPartyTokenExpires,
   lastLocationUpdate,
   lastLeaderboardUpdate,
+  lastRunStartCheck,
 }
 
 enum MapPrefsEnum { chatCounts }

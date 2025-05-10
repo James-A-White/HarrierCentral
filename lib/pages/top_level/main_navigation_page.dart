@@ -40,7 +40,7 @@ class MainNavigationPageState extends State<MainNavigationPage>
     _tutorialUpcomingRuns,
     _tutorialKennelsView,
     _tutorialRunLocations,
-    _tutorialRunCounts
+    _tutorialRunCounts,
   ];
 
   // ignore: prefer_final_fields
@@ -108,6 +108,36 @@ class MainNavigationPageState extends State<MainNavigationPage>
 
   bool _hasLocation = false;
 
+  Screen? _screen;
+  StreamSubscription<ScreenStateEvent>? _screenWatcherSubscription;
+
+  void onData(ScreenStateEvent event) {
+    print(event);
+    if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
+      if (_hasLocation) {
+        // print('******* > Init 8');
+        // ignore: unawaited_futures
+        _checkAreWeAtRunStart();
+      }
+    }
+  }
+
+  void _startScreenListening() {
+    _screen = Screen();
+    try {
+      _screenWatcherSubscription = _screen?.screenStateStream.listen(onData);
+    } on Exception catch (exception) {
+      print(exception);
+    }
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _screenWatcherSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -124,8 +154,10 @@ class MainNavigationPageState extends State<MainNavigationPage>
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) =>
-        a.dbVersion.compareTo(b.dbVersion));
+    Tables.migrationList.sort(
+      (MigrationsModel a, MigrationsModel b) =>
+          a.dbVersion.compareTo(b.dbVersion),
+    );
 
     // make sure the DB_VERSION is equal to the maximum migration in the list
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
@@ -167,6 +199,10 @@ class MainNavigationPageState extends State<MainNavigationPage>
         // ignore: unawaited_futures
         _checkAreWeAtRunStart();
       }
+
+      // spin up listener to watch for screen on / screen unlocked events
+      _startScreenListening();
+
       // print('******* > Init 9');
 
       setState(() {});
@@ -177,12 +213,14 @@ class MainNavigationPageState extends State<MainNavigationPage>
         });
         _timeRemaining = widget.promos[0].promoDisplayTimeInMs;
         _steps = widget.promos[0].promoDisplayTimingDotsToDisplay;
-        _promoDisplayDuration =
-            Duration(milliseconds: _timeRemaining! ~/ _steps);
+        _promoDisplayDuration = Duration(
+          milliseconds: _timeRemaining! ~/ _steps,
+        );
 
         if (widget.promos.isNotEmpty) {
           _promoTimer = PausableTimer(_promoDisplayDuration, () {
-            _timeRemaining = _timeRemaining! -
+            _timeRemaining =
+                _timeRemaining! -
                 widget.promos[0].promoDisplayTimeInMs ~/ _steps;
             if (_timeRemaining! < 0) {
               _promoTimer!.cancel();
@@ -196,8 +234,7 @@ class MainNavigationPageState extends State<MainNavigationPage>
               }
             }
             setState(() {});
-          })
-            ..start();
+          })..start();
         }
       } else {
         setState(() {
@@ -208,8 +245,9 @@ class MainNavigationPageState extends State<MainNavigationPage>
       return true;
     });
 
-    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground)
-        .then((void _) {
+    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((
+      void _,
+    ) {
       FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
     });
   }
@@ -218,21 +256,22 @@ class MainNavigationPageState extends State<MainNavigationPage>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
       Duration d = DateTime.now().difference(
-          getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate) ??
-              DateTime.now());
+        getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate) ??
+            DateTime.now(),
+      );
 
       // int xxx = d.inSeconds;
       // print('Seconds since last refresh = $xxx');
 
       if (d.inMinutes > 2) {
         await G0<TableModel>().syncUserDataService.updateFromBackend(
-              SyncUserDataService.flagHasherEventMapTable |
-                  SyncUserDataService.flagNarrowEventsTable |
-                  SyncUserDataService.flagKennelsTable |
-                  SyncUserDataService.flagPaymentsTable,
-              false,
-              debugText: 'future_run_list_page: HEM, Events, Kennels',
-            );
+          SyncUserDataService.flagHasherEventMapTable |
+              SyncUserDataService.flagNarrowEventsTable |
+              SyncUserDataService.flagKennelsTable |
+              SyncUserDataService.flagPaymentsTable,
+          false,
+          debugText: 'future_run_list_page: HEM, Events, Kennels',
+        );
 
         final controller = Get.find<FutureRunListPageController>();
         await controller.refreshFromTable(true);
@@ -249,6 +288,19 @@ class MainNavigationPageState extends State<MainNavigationPage>
 
   Future<void> _checkAreWeAtRunStart() async {
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
+
+    var lastRunStartCheck = getDatePref(DatePrefsEnum.lastRunStartCheck);
+    if (lastRunStartCheck == null) {
+      await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime(2000));
+      lastRunStartCheck = DateTime(2000);
+    }
+
+    if (DateTime.now().difference(lastRunStartCheck).inMinutes < 2) {
+      return;
+    }
+
+    await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
+
     final List<AreWeAtRunModel> resultList =
         await CommonQueries.areWeAtRunStart();
     final String userId = getStringPref(StringPrefsEnum.userId)!;
@@ -266,11 +318,12 @@ class MainNavigationPageState extends State<MainNavigationPage>
 
         final EnumCheckinOptions<int>? retVal =
             await showDialog<EnumCheckinOptions<int>>(
-                context: navigatorKey.currentContext!,
-                barrierDismissible: false, // user must tap button!
-                builder: (BuildContext context) {
-                  return popup;
-                });
+              context: navigatorKey.currentContext!,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return popup;
+              },
+            );
 
         if (retVal == enumCheckInOption_Yes) {
           await _checkInAtEvent(result.eventId, userId);
@@ -297,19 +350,20 @@ class MainNavigationPageState extends State<MainNavigationPage>
             (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
           final PaymentsService paySrv = PaymentsService();
           await paySrv.payForEvent(
-              result.eventId,
-              userId,
-              GUID_EMPTY,
-              retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit
-                  ? paymentHashCredit.value
-                  : paymentBankTransfer.value,
-              result.extrasCost +
-                  (result.membershipExpirationDate.isAfter(DateTime.now())
-                      ? result.memberPrice
-                      : result.nonMemberPrice),
-              attendenceAtHash.value,
-              payForRunAndExtras,
-              AppDomainType.user);
+            result.eventId,
+            userId,
+            GUID_EMPTY,
+            retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit
+                ? paymentHashCredit.value
+                : paymentBankTransfer.value,
+            result.extrasCost +
+                (result.membershipExpirationDate.isAfter(DateTime.now())
+                    ? result.memberPrice
+                    : result.nonMemberPrice),
+            attendenceAtHash.value,
+            payForRunAndExtras,
+            AppDomainType.user,
+          );
         }
       }
     } else if (resultList.length > 1) {
@@ -333,8 +387,9 @@ class MainNavigationPageState extends State<MainNavigationPage>
         final dynamic doCheckIn = await Navigator.push<dynamic>(
           context,
           MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) =>
-                SelectRunPage(runList: resultList, selected: selectedRuns),
+            builder:
+                (BuildContext context) =>
+                    SelectRunPage(runList: resultList, selected: selectedRuns),
           ),
         );
         if ((doCheckIn as bool) == true) {
@@ -351,11 +406,11 @@ class MainNavigationPageState extends State<MainNavigationPage>
 
   Future<void> _checkInAtEvent(String eventId, String userId) async {
     await G0<TableModel>().hasherEventMapService.setEventAttendence(
-          eventId,
-          userId,
-          AppDomainType.user,
-          attendenceAtHash.value,
-        );
+      eventId,
+      userId,
+      AppDomainType.user,
+      attendenceAtHash.value,
+    );
 
     // if (futureRunsListPageKey.currentState != null) {
     //   await futureRunsListPageKey.currentState!.forceRefreshFromTableExternal();
@@ -439,98 +494,121 @@ class MainNavigationPageState extends State<MainNavigationPage>
           child: Scaffold(
             key: _scaffoldKey,
             backgroundColor: Colors.white,
-            appBar: (!_showMainScreen)
-                ? null
-                : AppBar(
-                    leadingWidth: 90,
-                    leading: GetBuilder<FutureRunListPageController>(
+            appBar:
+                (!_showMainScreen)
+                    ? null
+                    : AppBar(
+                      leadingWidth: 90,
+                      leading: GetBuilder<FutureRunListPageController>(
                         id: 'main_nav_page',
                         builder: (controller) {
                           return Padding(
                             padding: const EdgeInsets.only(
-                                left: 8.0), // Optional spacing
+                              left: 8.0,
+                            ), // Optional spacing
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Builder(
-                                  builder: (context) => IconButton(
-                                    icon: Icon(Icons.menu),
-                                    onPressed: () =>
-                                        Scaffold.of(context).openDrawer(),
-                                  ),
+                                  builder:
+                                      (context) => IconButton(
+                                        icon: Icon(Icons.menu),
+                                        onPressed:
+                                            () =>
+                                                Scaffold.of(
+                                                  context,
+                                                ).openDrawer(),
+                                      ),
                                 ),
                                 Builder(
-                                  builder: (context) => GestureDetector(
-                                    onTap: () {
-                                      // if (controller.totalNotifications.value >
-                                      //     0) {
-                                      controller.showOnlyEventsWithMessages
-                                              .value =
-                                          !controller
-                                              .showOnlyEventsWithMessages.value;
-                                      //}
-                                    },
-                                    child: badges.Badge(
-                                        position: badges.BadgePosition.topEnd(
-                                            top: -10, end: -17),
-                                        badgeContent: Container(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 2),
-                                          width: 30,
-                                          height: 13,
-                                          child: AutoSizeText(
-                                            controller.totalNotifications.value
-                                                .toString(),
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            minFontSize: 10,
-                                            maxFontSize: 13,
-                                            style: ts_badge,
+                                  builder:
+                                      (context) => GestureDetector(
+                                        onTap: () {
+                                          // if (controller.totalNotifications.value >
+                                          //     0) {
+                                          controller
+                                              .showOnlyEventsWithMessages
+                                              .value = !controller
+                                                  .showOnlyEventsWithMessages
+                                                  .value;
+                                          //}
+                                        },
+                                        child: badges.Badge(
+                                          position: badges.BadgePosition.topEnd(
+                                            top: -10,
+                                            end: -17,
                                           ),
+                                          badgeContent: Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 2,
+                                            ),
+                                            width: 30,
+                                            height: 13,
+                                            child: AutoSizeText(
+                                              controller
+                                                  .totalNotifications
+                                                  .value
+                                                  .toString(),
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              minFontSize: 10,
+                                              maxFontSize: 13,
+                                              style: ts_badge,
+                                            ),
+                                          ),
+                                          showBadge:
+                                              controller
+                                                  .totalNotifications
+                                                  .value !=
+                                              0,
+                                          child:
+                                              controller
+                                                      .showChatBubbleLoading
+                                                      .value
+                                                  ? Icon(
+                                                    Fontisto.spinner_refresh,
+                                                  )
+                                                  : Icon(
+                                                    Icons.chat_bubble_outline,
+                                                  ),
                                         ),
-                                        showBadge: controller
-                                                .totalNotifications.value !=
-                                            0,
-                                        child: controller
-                                                .showChatBubbleLoading.value
-                                            ? Icon(Fontisto.spinner_refresh)
-                                            : Icon(Icons.chat_bubble_outline)),
-                                  ),
+                                      ),
                                 ),
                               ],
                             ),
                           );
-                        }),
-                    elevation: 3.0,
-                    backgroundColor: themeAppBarBackground,
-                    iconTheme: const IconThemeData(
-                      color: Colors.white,
-                      size: 28.0,
-                    ),
-                    title: AutoSizeText(
-                      _appBarText,
-                      style: ts_appBarTitle,
-                      maxLines: 1,
-                      // textScaler:
-                      //     TextScaler.linear(G0<DeviceInfo>().textClamp00),
-                      //textScaleFactor: G0<DeviceInfo>().textClamp00,
-                    ),
-                    centerTitle: true,
-                    actions: <IconButton>[
-                      IconButton(
-                          icon: const Icon(
-                            Icons.qr_code_scanner_sharp,
-                          ),
+                        },
+                      ),
+                      elevation: 3.0,
+                      backgroundColor: themeAppBarBackground,
+                      iconTheme: const IconThemeData(
+                        color: Colors.white,
+                        size: 28.0,
+                      ),
+                      title: AutoSizeText(
+                        _appBarText,
+                        style: ts_appBarTitle,
+                        maxLines: 1,
+                        // textScaler:
+                        //     TextScaler.linear(G0<DeviceInfo>().textClamp00),
+                        //textScaleFactor: G0<DeviceInfo>().textClamp00,
+                      ),
+                      centerTitle: true,
+                      actions: <IconButton>[
+                        IconButton(
+                          icon: const Icon(Icons.qr_code_scanner_sharp),
                           onPressed: () {
                             Navigator.push<dynamic>(
                               context,
                               MaterialPageRoute<dynamic>(
-                                builder: (BuildContext context) =>
-                                    const UserQrCodePage(),
+                                builder:
+                                    (BuildContext context) =>
+                                        const UserQrCodePage(),
                               ),
                             );
-                          }),
-                      IconButton(
+                          },
+                        ),
+                        IconButton(
                           icon: Icon(
                             _isFlipped ? Icons.undo : Icons.info_outline,
                           ),
@@ -538,100 +616,114 @@ class MainNavigationPageState extends State<MainNavigationPage>
                             setState(() {
                               _isFlipped = !_isFlipped;
                             });
-                          }),
-                    ],
-                  ),
+                          },
+                        ),
+                      ],
+                    ),
             floatingActionButton: _getFab(),
-            body: (!_showMainScreen)
-                ? (widget.promos.isNotEmpty)
-                    ? _getPromoScreen()
-                    : _getGenericLoadingScreen()
-                : Container(
-                    decoration: const BoxDecoration(color: Colors.white),
-                    child: FlippableBox(
-                      key: const Key('66193020'),
-                      front: _front(),
-                      // ignore: avoid_unnecessary_containers
-                      back: Container(
-                        child: Swiper(
-                          pagination: SwiperCustomPagination(
-                            builder: (BuildContext context,
-                                SwiperPluginConfig config) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  Expanded(child: Container()),
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: Align(
-                                          alignment: Alignment.bottomCenter,
-                                          child: DotSwiperPaginationBuilder(
-                                            color: Colors.grey,
-                                            activeColor: hc_blue,
-                                            size: 10.0,
-                                            activeSize: 20.0,
-                                          ).build(context, config),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20.0)
-                                ],
-                              );
-                            },
-                          ),
-                          itemCount: _tutorials[_currentPage].length,
-                          control: SwiperControl(
-                            color: hc_red,
-                            disableColor: hc_blue,
-                          ),
-                          itemBuilder: (BuildContext context, int index) {
-                            // this configuration of LayoutBuilder is used to center images that do not
-                            // overflow the height of the available render area, but align images
-                            // to the top of the render space if they will overflow the available space.
-                            return LayoutBuilder(builder: (BuildContext context,
-                                BoxConstraints constraints) {
-                              return Stack(
-                                clipBehavior: Clip.hardEdge,
-                                fit: StackFit.passthrough,
-                                alignment: AlignmentDirectional.topCenter,
-                                children: <Widget>[
-                                  Positioned(
-                                    top: 15.0,
-                                    left: 0.0,
-                                    right: 0.0,
-                                    child: Column(
+            body:
+                (!_showMainScreen)
+                    ? (widget.promos.isNotEmpty)
+                        ? _getPromoScreen()
+                        : _getGenericLoadingScreen()
+                    : Container(
+                      decoration: const BoxDecoration(color: Colors.white),
+                      child: FlippableBox(
+                        key: const Key('66193020'),
+                        front: _front(),
+                        // ignore: avoid_unnecessary_containers
+                        back: Container(
+                          child: Swiper(
+                            pagination: SwiperCustomPagination(
+                              builder: (
+                                BuildContext context,
+                                SwiperPluginConfig config,
+                              ) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: <Widget>[
+                                    Expanded(child: Container()),
+                                    Row(
                                       children: <Widget>[
-                                        ConstrainedBox(
-                                          constraints: BoxConstraints(
-                                              minHeight: constraints.maxHeight >
-                                                      60
-                                                  ? constraints.maxHeight - 60
-                                                  : constraints.maxHeight),
-                                          child: Image.asset(
-                                            _tutorials[_currentPage][index],
-                                            fit: BoxFit.fitWidth,
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.bottomCenter,
+                                            child: DotSwiperPaginationBuilder(
+                                              color: Colors.grey,
+                                              activeColor: hc_blue,
+                                              size: 10.0,
+                                              activeSize: 20.0,
+                                            ).build(context, config),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  Positioned(
-                                      bottom: 0.0,
-                                      left: 0.0,
-                                      right: 0.0,
-                                      child: Container(
-                                          height: 60.0, color: Colors.white))
-                                ],
+                                    const SizedBox(height: 20.0),
+                                  ],
+                                );
+                              },
+                            ),
+                            itemCount: _tutorials[_currentPage].length,
+                            control: SwiperControl(
+                              color: hc_red,
+                              disableColor: hc_blue,
+                            ),
+                            itemBuilder: (BuildContext context, int index) {
+                              // this configuration of LayoutBuilder is used to center images that do not
+                              // overflow the height of the available render area, but align images
+                              // to the top of the render space if they will overflow the available space.
+                              return LayoutBuilder(
+                                builder: (
+                                  BuildContext context,
+                                  BoxConstraints constraints,
+                                ) {
+                                  return Stack(
+                                    clipBehavior: Clip.hardEdge,
+                                    fit: StackFit.passthrough,
+                                    alignment: AlignmentDirectional.topCenter,
+                                    children: <Widget>[
+                                      Positioned(
+                                        top: 15.0,
+                                        left: 0.0,
+                                        right: 0.0,
+                                        child: Column(
+                                          children: <Widget>[
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                minHeight:
+                                                    constraints.maxHeight > 60
+                                                        ? constraints
+                                                                .maxHeight -
+                                                            60
+                                                        : constraints.maxHeight,
+                                              ),
+                                              child: Image.asset(
+                                                _tutorials[_currentPage][index],
+                                                fit: BoxFit.fitWidth,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 0.0,
+                                        left: 0.0,
+                                        right: 0.0,
+                                        child: Container(
+                                          height: 60.0,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               );
-                            });
-                          },
+                            },
+                          ),
                         ),
+                        isFlipped: _isFlipped,
                       ),
-                      isFlipped: _isFlipped,
                     ),
-                  ),
 
             // } else {
             //   if ((widget.promos != null) && (widget.promos.isNotEmpty)) {
@@ -640,61 +732,62 @@ class MainNavigationPageState extends State<MainNavigationPage>
             //     return _getGenericLoadingScreen();
             //   }
             // }
-            bottomNavigationBar: (!_showMainScreen)
-                ? null
-                : FlippableBox(
-                    key: const Key('667701326'),
-                    // ignore: avoid_unnecessary_containers
-                    front: Container(
-                      child: TextScaleFactorClamper(
-                        textScaleFactor: G0<DeviceInfo>().textClamp00,
-                        child: FancyBottomNavigation(
-                          circleColor: themeButtonColors,
-                          inactiveIconColor: themeBackgroundColor,
-                          barBackgroundColor: themeNavBarBackground,
-                          tabs: <TabData>[
-                            TabData(
-                              iconData: MaterialCommunityIcons.run_fast,
-                              title: 'Runs',
-                            ),
-                            TabData(
-                              iconData: FontAwesome.home,
-                              title: 'Kennels',
-                            ),
-                            TabData(
-                              iconData: FontAwesome.map,
-                              title: 'Explore',
-                            ),
-                            TabData(
-                              iconData: FontAwesome.list_ul,
-                              title: 'History',
-                            ),
-                          ],
-                          initialSelection: 0,
-                          key: bottomNavigationKey,
-                          onTabChangedListener: (int position) {
-                            setState(() {
-                              _appBarText = _tabTitles[position];
-                              _currentPage = position;
+            bottomNavigationBar:
+                (!_showMainScreen)
+                    ? null
+                    : FlippableBox(
+                      key: const Key('667701326'),
+                      // ignore: avoid_unnecessary_containers
+                      front: Container(
+                        child: TextScaleFactorClamper(
+                          textScaleFactor: G0<DeviceInfo>().textClamp00,
+                          child: FancyBottomNavigation(
+                            circleColor: themeButtonColors,
+                            inactiveIconColor: themeBackgroundColor,
+                            barBackgroundColor: themeNavBarBackground,
+                            tabs: <TabData>[
+                              TabData(
+                                iconData: MaterialCommunityIcons.run_fast,
+                                title: 'Runs',
+                              ),
+                              TabData(
+                                iconData: FontAwesome.home,
+                                title: 'Kennels',
+                              ),
+                              TabData(
+                                iconData: FontAwesome.map,
+                                title: 'Explore',
+                              ),
+                              TabData(
+                                iconData: FontAwesome.list_ul,
+                                title: 'History',
+                              ),
+                            ],
+                            initialSelection: 0,
+                            key: bottomNavigationKey,
+                            onTabChangedListener: (int position) {
+                              setState(() {
+                                _appBarText = _tabTitles[position];
+                                _currentPage = position;
 
-                              // this extra setState is here to ensure that the FAB
-                              // displays properly when the map page is showing
-                              if ((!_isFlipped) && (_currentPage == 2)) {
-                                Future<void>.delayed(
-                                        const Duration(milliseconds: 250))
-                                    .then((void _) {
-                                  setState(() {});
-                                });
-                              }
-                            });
-                          },
+                                // this extra setState is here to ensure that the FAB
+                                // displays properly when the map page is showing
+                                if ((!_isFlipped) && (_currentPage == 2)) {
+                                  Future<void>.delayed(
+                                    const Duration(milliseconds: 250),
+                                  ).then((void _) {
+                                    setState(() {});
+                                  });
+                                }
+                              });
+                            },
+                          ),
                         ),
                       ),
+                      // ignore: sized_box_for_whitespace
+                      back: Container(height: 0, width: 0),
+                      isFlipped: _isFlipped,
                     ),
-                    // ignore: sized_box_for_whitespace
-                    back: Container(height: 0, width: 0),
-                    isFlipped: _isFlipped,
-                  ),
             drawer: DrawerMenu(
               scaffoldKey: _scaffoldKey,
               //futureRunsListKey: futureRunsListPageKey,
@@ -702,7 +795,8 @@ class MainNavigationPageState extends State<MainNavigationPage>
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus ==
+          showRibbon:
+              G0<AppModel>().connectionStatus ==
               EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
@@ -720,49 +814,51 @@ class MainNavigationPageState extends State<MainNavigationPage>
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
       child: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              'Filling your Harrier Central mug',
-              style: ts_headingLarge,
-              textAlign: TextAlign.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                'Filling your Harrier Central mug',
+                style: ts_headingLarge,
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Image.asset(
-              'images/other/beer_pour.gif',
-              // height: 250,
-              // width: 250,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset(
+                'images/other/beer_pour.gif',
+                // height: 250,
+                // width: 250,
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              _initializationMessage,
-              style: ts_headingLarge,
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                _initializationMessage,
+                style: ts_headingLarge,
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-        ],
-      )),
+          ],
+        ),
+      ),
     );
   }
 
   final List<Widget> _overlays = <Widget>[];
 
   Widget _getPromoScreen() {
-    final List<String> overlaysToDisplay =
-        widget.promos[0].promoOverlayTiming.split(',');
+    final List<String> overlaysToDisplay = widget.promos[0].promoOverlayTiming
+        .split(',');
 
     int currentStep = 0;
 
     if (_timeRemaining != null) {
-      currentStep = _steps -
+      currentStep =
+          _steps -
           ((_timeRemaining ?? 0) ~/
               (widget.promos[0].promoDisplayTimeInMs / _steps));
 
@@ -780,7 +876,8 @@ class MainNavigationPageState extends State<MainNavigationPage>
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
               child: Image.network(
-                  '${widget.promos[0].promoImage}_$currentStep${widget.promos[0].promoImageExtension}'),
+                '${widget.promos[0].promoImage}_$currentStep${widget.promos[0].promoImageExtension}',
+              ),
             ),
           ),
         );
@@ -838,45 +935,54 @@ class MainNavigationPageState extends State<MainNavigationPage>
                     //   Colors.transparent,
                     //   BlendMode.difference,
                     // ),
-                    colorFilter: widget.promos[0].promoImageIsDark == 0
-                        ? const ColorFilter.matrix(<double>[
-                            1, 0, 0, 0, 0, //
-                            0, 1, 0, 0, 0, //
-                            0, 0, 1, 0, 0, //
-                            0, 0, 0, 1, 0, //
-                          ])
-                        : const ColorFilter.matrix(<double>[
-                            -1, 0, 0, 0, 255, //
-                            0, -1, 0, 0, 255, //
-                            0, 0, -1, 0, 255, //
-                            0, 0, 0, 1, 0, //
-                          ]),
+                    colorFilter:
+                        widget.promos[0].promoImageIsDark == 0
+                            ? const ColorFilter.matrix(<double>[
+                              1, 0, 0, 0, 0, //
+                              0, 1, 0, 0, 0, //
+                              0, 0, 1, 0, 0, //
+                              0, 0, 0, 1, 0, //
+                            ])
+                            : const ColorFilter.matrix(<double>[
+                              -1, 0, 0, 0, 255, //
+                              0, -1, 0, 0, 255, //
+                              0, 0, -1, 0, 255, //
+                              0, 0, 0, 1, 0, //
+                            ]),
                     child: Column(
                       children: <Widget>[
                         if (widget.promos[0].promoExternalUrl != null &&
                             widget.promos[0].promoExternalUrlButtonText !=
                                 null &&
                             Utilities.isValidUrl(
-                                widget.promos[0].promoExternalUrl)) ...<Widget>[
+                              widget.promos[0].promoExternalUrl,
+                            )) ...<Widget>[
                           Padding(
                             padding: const EdgeInsets.only(bottom: 15.0),
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
-                                    width: 2.0, color: Colors.black),
+                                  width: 2.0,
+                                  color: Colors.black,
+                                ),
                                 foregroundColor: Colors.black,
                                 backgroundColor: Colors.white38,
                                 shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(100))),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(100),
+                                  ),
+                                ),
                               ),
                               onPressed: () async {
                                 if (Utilities.isValidUrl(
-                                    widget.promos[0].promoExternalUrl)) {
+                                  widget.promos[0].promoExternalUrl,
+                                )) {
                                   await launchUrl(
-                                      Uri.parse(
-                                          widget.promos[0].promoExternalUrl!),
-                                      mode: LaunchMode.externalApplication);
+                                    Uri.parse(
+                                      widget.promos[0].promoExternalUrl!,
+                                    ),
+                                    mode: LaunchMode.externalApplication,
+                                  );
                                 } else {
                                   await Utilities.showAlert(
                                     'Unable to open link',
@@ -887,11 +993,13 @@ class MainNavigationPageState extends State<MainNavigationPage>
                               },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0, vertical: 8.0),
+                                  horizontal: 10.0,
+                                  vertical: 8.0,
+                                ),
                                 child: Text(
-                                    widget
-                                        .promos[0].promoExternalUrlButtonText!,
-                                    style: const TextStyle(fontSize: 20.0)),
+                                  widget.promos[0].promoExternalUrlButtonText!,
+                                  style: const TextStyle(fontSize: 20.0),
+                                ),
                               ),
                             ),
                           ),
@@ -910,24 +1018,27 @@ class MainNavigationPageState extends State<MainNavigationPage>
                                   setState(() {});
                                 }
                               },
-                              child: (_promoTimer?.isPaused ?? false)
-                                  ? Image.asset(
-                                      'images/icons/promo_play_icon.png',
-                                      width: 40.0,
-                                      height: 40.0,
-                                    )
-                                  : Image.asset(
-                                      'images/icons/promo_pause_icon.png',
-                                      width: 40.0,
-                                      height: 40.0,
-                                    ),
+                              child:
+                                  (_promoTimer?.isPaused ?? false)
+                                      ? Image.asset(
+                                        'images/icons/promo_play_icon.png',
+                                        width: 40.0,
+                                        height: 40.0,
+                                      )
+                                      : Image.asset(
+                                        'images/icons/promo_pause_icon.png',
+                                        width: 40.0,
+                                        height: 40.0,
+                                      ),
                             ),
                             GestureDetector(
                               onTap: () async {
                                 final SnoozePromotionService svc =
                                     SnoozePromotionService();
                                 await svc.snoozePromotion(
-                                    widget.promos[0].promotionId, true);
+                                  widget.promos[0].promotionId,
+                                  true,
+                                );
                                 if (_promoTimer != null) {
                                   _promoTimer!.cancel();
                                   _promoTimer = null;
@@ -946,7 +1057,9 @@ class MainNavigationPageState extends State<MainNavigationPage>
                                 final SnoozePromotionService svc =
                                     SnoozePromotionService();
                                 await svc.snoozePromotion(
-                                    widget.promos[0].promotionId, false);
+                                  widget.promos[0].promotionId,
+                                  false,
+                                );
                                 if (_promoTimer != null) {
                                   _promoTimer!.cancel();
                                   _promoTimer = null;
@@ -986,12 +1099,13 @@ class MainNavigationPageState extends State<MainNavigationPage>
                     padding: const EdgeInsets.symmetric(horizontal: 30.0),
                     child: StepProgressIndicator(
                       totalSteps: _steps,
-                      currentStep: _timeRemaining == null
-                          ? 0
-                          : _steps -
-                              ((_timeRemaining ?? 0) ~/
-                                  (widget.promos[0].promoDisplayTimeInMs /
-                                      _steps)),
+                      currentStep:
+                          _timeRemaining == null
+                              ? 0
+                              : _steps -
+                                  ((_timeRemaining ?? 0) ~/
+                                      (widget.promos[0].promoDisplayTimeInMs /
+                                          _steps)),
                       //size: 10.0,
                       padding: 0.0,
                       // selectedSize: widget.promos[0].promoDisplayTimingDotsSize + 0.0,
@@ -1000,51 +1114,67 @@ class MainNavigationPageState extends State<MainNavigationPage>
                         return widget.promos[0].promoDisplayTimingDotsSize +
                             0.0;
                       },
-                      selectedColor: widget.promos[0].promoImageIsDark == 0
-                          ? Colors.black
-                          : Colors.white,
-                      unselectedColor: widget.promos[0].promoImageIsDark == 0
-                          ? Colors.black26
-                          : Colors.white30,
-                      customStep: (int index, Color color, _) => Container(
-                        color: Colors.transparent,
-                        height: 10.0,
-                        child: widget.promos[0].promoDisplayTimingDotsShape ==
-                                'circle'
-                            ? Icon(
-                                FontAwesome.circle,
-                                color: color,
-                                size: widget
-                                        .promos[0].promoDisplayTimingDotsSize +
-                                    0.0,
-                              )
-                            : widget.promos[0].promoDisplayTimingDotsShape ==
-                                    'square'
-                                ? Icon(
-                                    FontAwesome.square,
-                                    color: color,
-                                    size: widget.promos[0]
-                                            .promoDisplayTimingDotsSize +
-                                        0.0,
-                                  )
-                                : ImageIcon(
-                                    AssetImage(widget.promos[0]
-                                                .promoDisplayTimingDotsShape ==
-                                            'chevron long'
-                                        ? 'images/icons/chevron_long.png'
-                                        : widget.promos[0]
+                      selectedColor:
+                          widget.promos[0].promoImageIsDark == 0
+                              ? Colors.black
+                              : Colors.white,
+                      unselectedColor:
+                          widget.promos[0].promoImageIsDark == 0
+                              ? Colors.black26
+                              : Colors.white30,
+                      customStep:
+                          (int index, Color color, _) => Container(
+                            color: Colors.transparent,
+                            height: 10.0,
+                            child:
+                                widget.promos[0].promoDisplayTimingDotsShape ==
+                                        'circle'
+                                    ? Icon(
+                                      FontAwesome.circle,
+                                      color: color,
+                                      size:
+                                          widget
+                                              .promos[0]
+                                              .promoDisplayTimingDotsSize +
+                                          0.0,
+                                    )
+                                    : widget
+                                            .promos[0]
+                                            .promoDisplayTimingDotsShape ==
+                                        'square'
+                                    ? Icon(
+                                      FontAwesome.square,
+                                      color: color,
+                                      size:
+                                          widget
+                                              .promos[0]
+                                              .promoDisplayTimingDotsSize +
+                                          0.0,
+                                    )
+                                    : ImageIcon(
+                                      AssetImage(
+                                        widget
+                                                    .promos[0]
+                                                    .promoDisplayTimingDotsShape ==
+                                                'chevron long'
+                                            ? 'images/icons/chevron_long.png'
+                                            : widget
+                                                    .promos[0]
                                                     .promoDisplayTimingDotsShape ==
                                                 'chevron medium'
                                             ? 'images/icons/chevron_medium.png'
-                                            : 'images/icons/chevron_short.png'),
-                                    color: color,
-                                    size: widget.promos[0]
-                                            .promoDisplayTimingDotsSize +
-                                        0.0,
-                                  ),
-                      ),
+                                            : 'images/icons/chevron_short.png',
+                                      ),
+                                      color: color,
+                                      size:
+                                          widget
+                                              .promos[0]
+                                              .promoDisplayTimingDotsSize +
+                                          0.0,
+                                    ),
+                          ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -1056,10 +1186,6 @@ class MainNavigationPageState extends State<MainNavigationPage>
 
   Container _front() {
     // ignore: avoid_unnecessary_containers
-    return Container(
-      child: Center(
-        child: _getPage(_currentPage),
-      ),
-    );
+    return Container(child: Center(child: _getPage(_currentPage)));
   }
 }
