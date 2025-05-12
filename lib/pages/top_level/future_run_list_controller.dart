@@ -209,8 +209,6 @@ class FutureRunListPageController extends GetxController {
     if (forceRefresh || (allRuns == null) || (allRuns!.isEmpty)) {
       allRuns = await QueryRuns.getRunDetailsAggregates(true);
       filterRuns();
-
-      //setState(() {});
     }
     return;
   }

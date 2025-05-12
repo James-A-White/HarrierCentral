@@ -440,6 +440,10 @@ class MainNavigationPageState extends State<MainNavigationPage>
 
     switch (pageIndex) {
       case 0:
+        // make sure any changes that have happened in the local database
+        // are properly presented in the UI
+        final controller = Get.find<FutureRunListPageController>();
+        controller.refreshFromTable(true);
         w = _futureRunsListPage;
         break;
       case 1:

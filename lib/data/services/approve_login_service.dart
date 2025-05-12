@@ -87,7 +87,7 @@ class ApproveLoginService {
     //final String userId = getStringPref(StringPrefsEnum.userId)!;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
-        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '<none>';
 
     final String accessToken = Utilities.generateToken(
       userId,
@@ -95,7 +95,11 @@ class ApproveLoginService {
       paramString: deviceSecret,
     );
 
-    var position = await getLastKnownLocation();
+    Position? position;
+
+    if (deviceId != '') {
+      position = await getLastKnownLocation();
+    }
 
     final String body = jsonEncode(<String, String?>{
       'queryType': 'approveLogin',
