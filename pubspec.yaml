@@ -62,7 +62,7 @@ dependencies:
   ive_flutter_core:
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core.git
-      ref: f8f4b492944fff4142c9cae15b97f273c6543607 # Version 1.2.8b
+      ref: 7f0379133f114642179a3ef74cd342dad4494884 # Version 1.2.9
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
