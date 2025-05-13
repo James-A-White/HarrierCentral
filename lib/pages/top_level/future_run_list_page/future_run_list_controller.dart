@@ -60,7 +60,10 @@ class FutureRunListPageController extends GetxController {
     searchController.text = '';
     searchRunsText = '';
 
-    _onInitAsync();
+    _onInitAsync().then((_) {
+      _updateTotalNotificationCounter();
+      update(['runList', 'main_nav_page']);
+    });
   }
 
   void _updateChatCountBadges(String? publicEventId, int chatCount) {
@@ -127,10 +130,6 @@ class FutureRunListPageController extends GetxController {
         }
       }
     }
-
-    _updateTotalNotificationCounter();
-
-    update(['runList', 'main_nav_page']);
   }
 
   @override

@@ -34,49 +34,69 @@ class MainNavigationPage extends StatelessWidget {
               controller.showMainScreen.value ? kToolbarHeight : 0,
             ),
             child: Obx(() {
-              if (!controller.showMainScreen.value) return SizedBox.shrink();
+              if (!controller.showMainScreen.value) {
+                return SizedBox.shrink();
+              }
               return AppBar(
                 elevation: 3.0,
                 backgroundColor: themeAppBarBackground,
                 iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
                 leadingWidth: 90,
-                leading: GetBuilder<FutureRunListPageController>(
-                  id: 'main_nav_page',
-                  builder: (badgeController) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.menu),
-                          onPressed:
-                              () =>
-                                  controller.scaffoldKey.currentState
-                                      ?.openDrawer(),
-                        ),
-                        GestureDetector(
-                          onTap:
-                              () =>
-                                  badgeController
-                                      .showOnlyEventsWithMessages
-                                      .value = !(badgeController
+                leading: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.menu),
+                      onPressed:
+                          () =>
+                              controller.scaffoldKey.currentState?.openDrawer(),
+                    ),
+                    controller.mainScreenReady.value
+                        ? GetBuilder<FutureRunListPageController>(
+                          id: 'main_nav_page',
+                          builder: (badgeController) {
+                            return GestureDetector(
+                              onTap:
+                                  () =>
+                                      badgeController
                                           .showOnlyEventsWithMessages
-                                          .value),
-                          child: badges.Badge(
-                            badgeContent: Text(
-                              badgeController.totalNotifications.value
-                                  .toString(),
-                            ),
-                            showBadge:
-                                badgeController.totalNotifications.value != 0,
-                            child:
-                                badgeController.showChatBubbleLoading.value
-                                    ? const Icon(Icons.refresh)
-                                    : const Icon(Icons.chat_bubble_outline),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+                                          .value = !(badgeController
+                                              .showOnlyEventsWithMessages
+                                              .value),
+                              child: badges.Badge(
+                                position: badges.BadgePosition.topEnd(
+                                  top: -10,
+                                  end: -17,
+                                ),
+
+                                badgeContent: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 2),
+                                  width: 30,
+                                  height: 13,
+                                  child: AutoSizeText(
+                                    badgeController.totalNotifications.value
+                                        .toString(),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    minFontSize: 10,
+                                    maxFontSize: 13,
+                                    style: ts_badge,
+                                  ),
+                                ),
+
+                                showBadge:
+                                    badgeController.totalNotifications.value !=
+                                    0,
+                                child:
+                                    badgeController.showChatBubbleLoading.value
+                                        ? const Icon(Icons.refresh)
+                                        : const Icon(Icons.chat_bubble_outline),
+                              ),
+                            );
+                          },
+                        )
+                        : SizedBox(),
+                  ],
                 ),
                 title: AutoSizeText(
                   controller.appBarText.value,
@@ -108,23 +128,26 @@ class MainNavigationPage extends StatelessWidget {
             }),
           ),
           floatingActionButton: controller.currentFab,
-          body: Obx(
-            () =>
-                controller.showMainScreen.value
-                    ? Container(
-                      color: Colors.white,
-                      child: FlippableBox(
+          body: Container(
+            decoration: Backgrounds.defaultHcBackground(),
+            child: Obx(
+              () =>
+                  controller.showMainScreen.value
+                      ? FlippableBox(
                         key: Key('22342342'),
                         front: Center(
-                          child: IndexedStack(
-                            index: controller.currentPage.value,
-                            children: [
-                              controller.futureRunsListPage,
-                              controller.kennelsListPage,
-                              controller.runAndKennelMapPage,
-                              controller.historyListPage,
-                            ],
-                          ),
+                          child:
+                              controller.mainScreenReady.value
+                                  ? IndexedStack(
+                                    index: controller.currentPage.value,
+                                    children: [
+                                      controller.futureRunsListPage,
+                                      controller.kennelsListPage,
+                                      controller.runAndKennelMapPage,
+                                      controller.historyListPage,
+                                    ],
+                                  )
+                                  : SizedBox(),
                         ),
 
                         back: Swiper(
@@ -220,13 +243,13 @@ class MainNavigationPage extends StatelessWidget {
                         ),
 
                         isFlipped: controller.isFlipped.value,
-                      ),
-                    )
-                    : (promos.isNotEmpty
-                        ? // Promo screen builder using controller fields
-                        Container()
-                        : // generic loading screen
-                        Container()),
+                      )
+                      : (promos.isNotEmpty
+                          ? // Promo screen builder using controller fields
+                          Container()
+                          : // generic loading screen
+                          Container()),
+            ),
           ),
           bottomNavigationBar: Obx(() {
             return controller.showMainScreen.value

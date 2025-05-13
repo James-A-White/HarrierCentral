@@ -65,6 +65,7 @@ class MainNavigationController extends GetxController
   final appBarText = tabTitles[0].obs;
   final initializationMessage = ''.obs;
   final isFlipped = false.obs;
+  final mainScreenReady = false.obs;
   final showMainScreen = true.obs;
   final showPromoTools = false.obs;
   final steps = 10.obs;
@@ -103,6 +104,11 @@ class MainNavigationController extends GetxController
   }
 
   Future<void> initialize() async {
+    // Status bar color
+    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((_) {
+      FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
+    });
+
     appBarText.value = tabTitles[0];
 
     // Force DB instantiation
@@ -136,10 +142,7 @@ class MainNavigationController extends GetxController
       showMainScreen.value = true;
     }
 
-    // Status bar color
-    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((_) {
-      FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
-    });
+    mainScreenReady.value = true;
   }
 
   void _startPromoTimer(PromoModel promo) {
