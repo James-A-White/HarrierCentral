@@ -66,7 +66,7 @@ class MainNavigationController extends GetxController
   final initializationMessage = ''.obs;
   final isFlipped = false.obs;
   final mainScreenReady = false.obs;
-  final showMainScreen = true.obs;
+  final showMainScreen = false.obs;
   final showPromoTools = false.obs;
   final steps = 10.obs;
   final timeRemaining = RxnInt();
@@ -141,6 +141,8 @@ class MainNavigationController extends GetxController
     } else {
       showMainScreen.value = true;
     }
+
+    update(['scaffold']);
 
     mainScreenReady.value = true;
   }
