@@ -87,8 +87,8 @@ export 'package:harrier_central/database/query_runs.dart';
 export 'package:harrier_central/database/tables.dart';
 export 'package:harrier_central/localization.dart';
 export 'package:harrier_central/main.dart';
-export 'package:harrier_central/controllers/chat_controller.dart';
-export 'package:harrier_central/pages/detail_pages/chat_ui.dart';
+export 'package:harrier_central/pages/detail_pages/chat/chat_page_controller.dart';
+export 'package:harrier_central/pages/detail_pages/chat/chat_page.dart';
 export 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 export 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 export 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
@@ -141,6 +141,7 @@ export 'package:harrier_central/pages/top_level/main_navigation_page/main_naviga
 export 'package:harrier_central/pages/top_level/main_navigation_page/main_navigation_page_controller.dart';
 export 'package:harrier_central/pages/top_level/run_locations.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+export 'package:harrier_central/types/typedefs.dart';
 export 'package:harrier_central/util/bank_transfer_qr.dart';
 export 'package:harrier_central/util/connection2.dart';
 export 'package:harrier_central/util/constants.dart';

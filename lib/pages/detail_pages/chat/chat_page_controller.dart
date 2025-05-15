@@ -2,8 +2,8 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:harrier_central/imports.dart';
 import 'package:get/get.dart';
 
-class ChatSheetController extends GetxController {
-  ChatSheetController({required this.eventId, required this.publicEventId}) {
+class ChatPageController extends GetxController {
+  ChatPageController({required this.eventId, required this.publicEventId}) {
     // Initialize controllers with initial data if available
   }
   String eventId;
@@ -255,17 +255,6 @@ class ChatSheetController extends GetxController {
               .copyWith(isLoading: true);
 
           messages[index] = updatedMessage;
-
-          // final client = http.Client();
-          // final request = await client.get(Uri.parse(message.uri));
-          // final bytes = request.bodyBytes;
-          //final documentsDir = (await getApplicationDocumentsDirectory()).path;
-          //localPath = '$documentsDir/${message.name}';
-
-          // if (!File(localPath).existsSync()) {
-          //   final file = File(localPath);
-          //   await file.writeAsBytes(bytes);
-          // }
         } finally {
           final index = messages.indexWhere(
             (element) => element.id == message.id,

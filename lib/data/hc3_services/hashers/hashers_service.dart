@@ -125,7 +125,7 @@ class HashersService extends BaseService {
     bool newUserForThisDevice = false;
 
     final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersion) ??
+        getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<unknown version>';
     String? userId = getStringPref(StringPrefsEnum.userId);
     if ((userId == null) || (userId.isEmpty)) {
@@ -322,7 +322,7 @@ class HashersService extends BaseService {
     }
 
     final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersion) ??
+        getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<unknown version>';
     String userId = getStringPref(StringPrefsEnum.userId)!;
     if (userId.isEmpty) {
@@ -382,7 +382,7 @@ class HashersService extends BaseService {
     bool newUserForThisDevice = false;
 
     final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersion) ??
+        getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<unknown version>';
     String userId = getStringPref(StringPrefsEnum.userId)!;
 

@@ -34,10 +34,14 @@ class MainNavigationPage extends StatelessWidget {
               backgroundColor: Colors.white,
               appBar: PreferredSize(
                 preferredSize: Size.fromHeight(
-                  controller.showMainScreen.value ? kToolbarHeight : 0,
+                  (controller.mainScreenContent.value ==
+                          MainPageContent.appContent)
+                      ? kToolbarHeight
+                      : 0,
                 ),
                 child: Obx(() {
-                  if (!controller.showMainScreen.value) {
+                  if (controller.mainScreenContent.value ==
+                      MainPageContent.help) {
                     return SizedBox.shrink();
                   }
                   return AppBar(
@@ -147,7 +151,44 @@ class MainNavigationPage extends StatelessWidget {
                 decoration: Backgrounds.defaultHcBackground(),
                 child: Obx(
                   () =>
-                      !controller.showMainScreen.value
+                      (controller.mainScreenContent.value ==
+                              MainPageContent.newVersion)
+                          ? SizedBox(
+                            //color: Colors.amber,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              alignment: AlignmentDirectional.center,
+                              children: [
+                                Image.network(
+                                  'https://harriercentral.blob.core.windows.net/version-images/version_${controller.hcCurrentVersion}.webp',
+                                  fit: BoxFit.fill,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    Future.delayed(
+                                      const Duration(milliseconds: 1),
+                                    ).then((value) {
+                                      controller.resetNewVersionPromoScreen();
+                                    });
+
+                                    return Container();
+                                  },
+                                ),
+                                Positioned(
+                                  bottom: 10,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: hc_red,
+                                    ),
+                                    onPressed: () {
+                                      controller.resetNewVersionPromoScreen();
+                                    },
+                                    child: Text('OK', style: ts_button),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          : (controller.mainScreenContent.value !=
+                              MainPageContent.appContent)
                           ? (promos.isEmpty
                               ? // Promo screen builder using controller fields
                               _getGenericLoadingScreen(controller)
@@ -270,7 +311,10 @@ class MainNavigationPage extends StatelessWidget {
                 ),
               ),
               bottomNavigationBar: Obx(() {
-                return controller.showMainScreen.value
+                return ((controller.mainScreenContent.value !=
+                            MainPageContent.help) &&
+                        (controller.mainScreenContent.value !=
+                            MainPageContent.newVersion))
                     ? FancyBottomNavigation(
                       circleColor: themeButtonColors,
                       inactiveIconColor: themeBackgroundColor,

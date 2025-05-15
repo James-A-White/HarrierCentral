@@ -299,7 +299,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     //('run tabs disposedd');
 
-    Get.delete<ChatSheetController>();
+    Get.delete<ChatPageController>();
 
     super.dispose();
   }
@@ -1202,7 +1202,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Widget _buildChatView() {
-    return ChatUi(
+    return ChatPage(
       eventId: widget.futureRun.event.eventId,
       publicEventId: widget.futureRun.event.publicEventId,
     );

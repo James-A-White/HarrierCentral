@@ -1,9 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class AppEntryPage extends StatefulWidget {
-  const AppEntryPage({
-    super.key,
-  });
+  const AppEntryPage({super.key});
 
   @override
   AppEntryPageState createState() => AppEntryPageState();
@@ -16,9 +14,15 @@ class AppEntryPageState extends State<AppEntryPage>
 
   Future<void> _handleStartup(BuildContext context) async {
     final PackageInfo p = await PackageInfo.fromPlatform();
-    final String hcVersion = 'HC Ver: ${p.version}, Bld: ${p.buildNumber}';
+    final String hcVersionAndBuild =
+        'HC Ver: ${p.version}, Bld: ${p.buildNumber}';
 
-    await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
+    await setStringPref(
+      StringPrefsEnum.harrierCentralVersionAndBuild,
+      hcVersionAndBuild,
+    );
+
+    await setStringPref(StringPrefsEnum.harrierCentralVersion, p.version);
 
     await setupLocalServices(
       MediaQuery.of(navigatorKey.currentContext!).size.width,
@@ -34,16 +38,18 @@ class AppEntryPageState extends State<AppEntryPage>
 
     G0<DeviceInfo>().deviceWidthScaleFactor =
         MediaQuery.of(navigatorKey.currentContext!).size.width /
-            BASE_DEVICE_WIDTH;
+        BASE_DEVICE_WIDTH;
     G0<DeviceInfo>().deviceHeightScaleFactor =
         MediaQuery.of(navigatorKey.currentContext!).size.height /
-            BASE_DEVICE_HEIGHT;
+        BASE_DEVICE_HEIGHT;
     G0<DeviceInfo>().deviceMaxScaleFactor = max(
-        G0<DeviceInfo>().deviceWidthScaleFactor,
-        G0<DeviceInfo>().deviceHeightScaleFactor);
+      G0<DeviceInfo>().deviceWidthScaleFactor,
+      G0<DeviceInfo>().deviceHeightScaleFactor,
+    );
     G0<DeviceInfo>().deviceMinScaleFactor = min(
-        G0<DeviceInfo>().deviceWidthScaleFactor,
-        G0<DeviceInfo>().deviceHeightScaleFactor);
+      G0<DeviceInfo>().deviceWidthScaleFactor,
+      G0<DeviceInfo>().deviceHeightScaleFactor,
+    );
 
     G0<DeviceInfo>().deviceWidth =
         MediaQuery.of(navigatorKey.currentContext!).size.width;
@@ -64,8 +70,10 @@ class AppEntryPageState extends State<AppEntryPage>
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
       //facebookAccessToken = await _checkFacebookLogin();
 
-      final String responseBody =
-          await svc.approveLogin(navigatorKey.currentContext!, null);
+      final String responseBody = await svc.approveLogin(
+        navigatorKey.currentContext!,
+        null,
+      );
 
       if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
         exit(0);
@@ -80,16 +88,26 @@ class AppEntryPageState extends State<AppEntryPage>
 
     if (loginResult != null) {
       await setStringPref(
-          StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
+        StringPrefsEnum.iosDownloadLink,
+        loginResult.iosDownloadLink,
+      );
       await setStringPref(
-          StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+        StringPrefsEnum.androidDownloadLink,
+        loginResult.androidDownloadLink,
+      );
       await setStringPref(
-          StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
+        StringPrefsEnum.imageRootUrl,
+        loginResult.imageRootUrl,
+      );
       await setIntPref(
-          IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
+        IntPrefsEnum.isBetaTester,
+        loginResult.isBetaTester ?? 0,
+      );
       await setStringPref(StringPrefsEnum.email, loginResult.email);
-      await setStringPref(StringPrefsEnum.homeKennelId,
-          loginResult.homeKennelId?.toLowerCase() ?? '');
+      await setStringPref(
+        StringPrefsEnum.homeKennelId,
+        loginResult.homeKennelId?.toLowerCase() ?? '',
+      );
     }
 
     if ((loginResult == null) &&
@@ -98,21 +116,25 @@ class AppEntryPageState extends State<AppEntryPage>
       // we can't operate in offline mode because there is no data in the cache
 
       await Utilities.showAlert(
-          'Network Error',
-          'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.',
-          'Quit');
+        'Network Error',
+        'The first time you run Harrier Central, you must be connected to the network\r\n\r\nPlease check your network connection and re-run Harrier Central when the network is connected.',
+        'Quit',
+      );
       exit(0);
     } else if (loginResult == null) {
       // open app in offline mode
       G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
 
       await Navigator.pushReplacement<dynamic, dynamic>(
-          navigatorKey.currentContext!,
-          MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) => MainNavigationPage(
-                    promos: <PromoModel>[],
-                    firstPromoImage: null,
-                  )));
+        navigatorKey.currentContext!,
+        MaterialPageRoute<dynamic>(
+          builder:
+              (BuildContext context) => MainNavigationPage(
+                promos: <PromoModel>[],
+                firstPromoImage: null,
+              ),
+        ),
+      );
 
       return;
     } else {
@@ -122,9 +144,10 @@ class AppEntryPageState extends State<AppEntryPage>
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
         if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
           await _displayAlert(
-              navigatorKey.currentContext!,
-              loginResult.loginMessage ?? 'Harrier Central status is normal',
-              loginResult.loginMessageTitle ?? 'Harrier Central Status');
+            navigatorKey.currentContext!,
+            loginResult.loginMessage ?? 'Harrier Central status is normal',
+            loginResult.loginMessageTitle ?? 'Harrier Central Status',
+          );
         }
       }
 
@@ -138,8 +161,9 @@ class AppEntryPageState extends State<AppEntryPage>
                 (userId == GUID_EMPTY))) {
               // first time the app has run
               if (!mounted) return;
-              await Navigator.of(navigatorKey.currentContext!)
-                  .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+              await Navigator.of(
+                navigatorKey.currentContext!,
+              ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
               // app has been run before... let's check the DB version.
               final int installedDbVersion =
@@ -164,31 +188,36 @@ class AppEntryPageState extends State<AppEntryPage>
 
                   if (!mounted) return;
                   final Map<String, String> result = await srv.authorizeDevice(
-                      navigatorKey.currentContext!, resetCode.toUpperCase());
+                    navigatorKey.currentContext!,
+                    resetCode.toUpperCase(),
+                  );
 
                   setState(() {
                     //isLoading = false;
                   });
 
                   if (result['result'] != 'failed') {
-                    userName = getStringPref(StringPrefsEnum.displayName) ??
+                    userName =
+                        getStringPref(StringPrefsEnum.displayName) ??
                         '<no user name>';
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
                     await Utilities.showAlert(
-                            'Profile Load Successful',
-                            'The app has been successfully updated for $userName.',
-                            'OK')
-                        .then((void _) {
+                      'Profile Load Successful',
+                      'The app has been successfully updated for $userName.',
+                      'OK',
+                    ).then((void _) {
                       Navigator.pushReplacement<dynamic, dynamic>(
-                          navigatorKey.currentContext!,
-                          MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) =>
-                                  MainNavigationPage(
-                                    promos: <PromoModel>[],
-                                    firstPromoImage: null,
-                                  )));
+                        navigatorKey.currentContext!,
+                        MaterialPageRoute<dynamic>(
+                          builder:
+                              (BuildContext context) => MainNavigationPage(
+                                promos: <PromoModel>[],
+                                firstPromoImage: null,
+                              ),
+                        ),
+                      );
                     });
                   } else {
                     // TODO(James): Do something here if the auth device fails
@@ -203,48 +232,65 @@ class AppEntryPageState extends State<AppEntryPage>
                       promoResult[0].promoImage +
                           promoResult[0].promoImageExtension,
                       fit: BoxFit.fitWidth,
-                      errorBuilder: (BuildContext context, Object exception,
-                          StackTrace? stackTrace) {
+                      errorBuilder: (
+                        BuildContext context,
+                        Object exception,
+                        StackTrace? stackTrace,
+                      ) {
                         // Appropriate logging or analytics, e.g.
                         // myAnalytics.recordError(
                         //   'An error occurred loading "https://example.does.not.exist/image.jpg"',
                         //   exception,
                         //   stackTrace,
                         // );
-                        return Image.asset('images/other/white_square.jpg',
-                            width: 1, height: 1, fit: BoxFit.fitHeight);
+                        return Image.asset(
+                          'images/other/white_square.jpg',
+                          width: 1,
+                          height: 1,
+                          fit: BoxFit.fitHeight,
+                        );
                       },
                     );
                   } catch (error) {
-                    promoImage = Image.asset('images/other/white_square.jpg',
-                        width: 1, height: 1, fit: BoxFit.fitHeight);
+                    promoImage = Image.asset(
+                      'images/other/white_square.jpg',
+                      width: 1,
+                      height: 1,
+                      fit: BoxFit.fitHeight,
+                    );
                   }
 
                   promoImage.image
                       .resolve(const ImageConfiguration())
                       .addListener(
-                    ImageStreamListener(
-                      (ImageInfo info, bool syncCall) async {
-                        await Navigator.pushReplacement<dynamic, dynamic>(
+                        ImageStreamListener((
+                          ImageInfo info,
+                          bool syncCall,
+                        ) async {
+                          await Navigator.pushReplacement<dynamic, dynamic>(
                             context,
                             MaterialPageRoute<dynamic>(
-                                builder: (BuildContext context) =>
-                                    MainNavigationPage(
-                                      promos: promoResult!,
-                                      firstPromoImage: promoImage,
-                                    )));
-                      },
-                    ),
-                  );
+                              builder:
+                                  (BuildContext context) => MainNavigationPage(
+                                    promos: promoResult!,
+                                    firstPromoImage: promoImage,
+                                  ),
+                            ),
+                          );
+                        }),
+                      );
                 } else {
                   if (!mounted) return;
                   await Navigator.pushReplacement<dynamic, dynamic>(
-                      navigatorKey.currentContext!,
-                      MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => MainNavigationPage(
-                                promos: <PromoModel>[],
-                                firstPromoImage: null,
-                              )));
+                    navigatorKey.currentContext!,
+                    MaterialPageRoute<dynamic>(
+                      builder:
+                          (BuildContext context) => MainNavigationPage(
+                            promos: <PromoModel>[],
+                            firstPromoImage: null,
+                          ),
+                    ),
+                  );
                 }
               }
             }
@@ -296,16 +342,16 @@ class AppEntryPageState extends State<AppEntryPage>
   // }
 
   Future<bool?> _displayAlert(
-      BuildContext context, String alertText, String alertTitle) async {
+    BuildContext context,
+    String alertText,
+    String alertTitle,
+  ) async {
     return showDialog<bool?>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            alertTitle,
-            style: ts_alertDialogTitle,
-          ),
+          title: Text(alertTitle, style: ts_alertDialogTitle),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -313,7 +359,7 @@ class AppEntryPageState extends State<AppEntryPage>
                   alertText,
                   textAlign: TextAlign.justify,
                   style: ts_alertDialogBody,
-                )
+                ),
               ],
             ),
           ),
@@ -340,7 +386,8 @@ class AppEntryPageState extends State<AppEntryPage>
   Future<void> _startTimeout() async {
     await initPrefs();
     await Future<dynamic>.delayed(
-        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
+      const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME),
+    );
 
     if (!mounted) return;
     await _handleStartup(context);
@@ -350,9 +397,13 @@ class AppEntryPageState extends State<AppEntryPage>
   @override
   void initState() {
     _iconAnimationController = AnimationController(
-        duration: const Duration(milliseconds: 3000), vsync: this);
-    _iconAnimation =
-        CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
+      duration: const Duration(milliseconds: 3000),
+      vsync: this,
+    );
+    _iconAnimation = CurvedAnimation(
+      parent: _iconAnimationController,
+      curve: Curves.easeIn,
+    );
     _iconAnimation.addListener(() => setState(() {}));
     _iconAnimationController.forward();
 

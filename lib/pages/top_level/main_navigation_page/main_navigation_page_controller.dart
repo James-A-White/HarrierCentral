@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
+enum MainPageContent { newVersion, promo, appContent, help }
+
 class MainNavigationController extends GetxController
     with WidgetsBindingObserver {
   MainNavigationController({required this.promos, this.firstPromoImage});
@@ -66,7 +68,7 @@ class MainNavigationController extends GetxController
   final initializationMessage = ''.obs;
   final isFlipped = false.obs;
   final mainScreenReady = false.obs;
-  final showMainScreen = false.obs;
+  final mainScreenContent = MainPageContent.appContent.obs;
   final showPromoTools = false.obs;
   final steps = 10.obs;
   final timeRemaining = RxnInt();
@@ -103,11 +105,21 @@ class MainNavigationController extends GetxController
     WidgetsBinding.instance.addObserver(this);
   }
 
+  String hcCurrentVersion = '';
+  String hcPreviousVersion = '';
+
   Future<void> initialize() async {
     // Status bar color
     FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((_) {
       FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
     });
+
+    hcCurrentVersion = _trimToMinor(
+      getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
+    );
+    hcPreviousVersion = _trimToMinor(
+      getStringPref(StringPrefsEnum.harrierCentralPreviousVersion) ?? '',
+    );
 
     appBarText.value = tabTitles[0];
 
@@ -128,8 +140,10 @@ class MainNavigationController extends GetxController
     if (hasLoc) _checkAreWeAtRunStart();
     _startScreenListening();
 
-    if (promos.isNotEmpty) {
-      showMainScreen.value = false;
+    if (hcCurrentVersion != hcPreviousVersion) {
+      mainScreenContent.value = MainPageContent.newVersion;
+    } else if (promos.isNotEmpty) {
+      mainScreenContent.value = MainPageContent.promo;
       showPromoTools.value = true;
       final first = promos.first;
       timeRemaining.value = first.promoDisplayTimeInMs;
@@ -139,12 +153,21 @@ class MainNavigationController extends GetxController
       );
       _startPromoTimer(first);
     } else {
-      showMainScreen.value = true;
+      mainScreenContent.value = MainPageContent.appContent;
     }
 
     update(['scaffold']);
 
     mainScreenReady.value = true;
+  }
+
+  String _trimToMinor(String version) {
+    final parts = version.split('.');
+    if (parts.length >= 2) {
+      return '${parts[0]}.${parts[1]}';
+    }
+    // fallback if it doesn’t have two dots
+    return version;
   }
 
   void _startPromoTimer(PromoModel promo) {
@@ -153,7 +176,7 @@ class MainNavigationController extends GetxController
           timeRemaining.value! - (promo.promoDisplayTimeInMs ~/ steps.value);
       if (timeRemaining.value! < 0) {
         _promoTimer?.cancel();
-        showMainScreen.value = true;
+        mainScreenContent.value = MainPageContent.appContent;
       } else {
         _promoTimer
           ?..reset()
@@ -184,20 +207,20 @@ class MainNavigationController extends GetxController
     }
   }
 
-  Widget get currentPageWidget {
-    switch (currentPage.value) {
-      case 0:
-        return futureRunsListPage;
-      case 1:
-        return kennelsListPage;
-      case 2:
-        return runAndKennelMapPage;
-      case 3:
-        return historyListPage;
-      default:
-        return futureRunsListPage;
-    }
-  }
+  // Widget get currentPageWidget {
+  //   switch (currentPage.value) {
+  //     case 0:
+  //       return futureRunsListPage;
+  //     case 1:
+  //       return kennelsListPage;
+  //     case 2:
+  //       return runAndKennelMapPage;
+  //     case 3:
+  //       return historyListPage;
+  //     default:
+  //       return futureRunsListPage;
+  //   }
+  // }
 
   Widget? get currentFab {
     if (!isFlipped.value) {
@@ -214,6 +237,17 @@ class MainNavigationController extends GetxController
   Future<bool> _checkLocationPermissions() async {
     G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
     return G0<AppModel>().hasLocationPermissions;
+  }
+
+  void resetNewVersionPromoScreen() {
+    setStringPref(
+      StringPrefsEnum.harrierCentralPreviousVersion,
+      getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
+    );
+
+    mainScreenContent.value = MainPageContent.appContent;
+    // make sure app bar is drawn
+    update(['scaffold']);
   }
 
   void _startScreenListening() {

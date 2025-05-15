@@ -2,8 +2,10 @@ import 'package:harrier_central/imports.dart';
 
 class AuthorizeDeviceService {
   Future<Map<String, String>> authorizeDevice(
-      BuildContext context, String scanText,
-      {num includeInGlobalHashDirectory = -1}) async {
+    BuildContext context,
+    String scanText, {
+    num includeInGlobalHashDirectory = -1,
+  }) async {
     String deviceDataJson = '{"error":"device data error"}';
 
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -24,14 +26,17 @@ class AuthorizeDeviceService {
     );
 
     final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersion) ??
-            '<no HC version>';
+        getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
+        '<no HC version>';
     if (hcVersion.isEmpty) {
       final PackageInfo p = await PackageInfo.fromPlatform();
       final String hcVersion =
           'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
 
-      await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
+      await setStringPref(
+        StringPrefsEnum.harrierCentralVersionAndBuild,
+        hcVersion,
+      );
     }
 
     var deviceIdUuid = Uuid();
@@ -41,7 +46,8 @@ class AuthorizeDeviceService {
       'queryType': 'authorizeDevice',
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'hcVersion': getStringPref(StringPrefsEnum.harrierCentralVersion) ??
+      'hcVersion':
+          getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
           '<no HC version>',
       'scanText': scanText,
       'deviceData': deviceDataJson,
@@ -73,7 +79,7 @@ class AuthorizeDeviceService {
         if ((result.isEmpty) || (result[0].isEmpty) || (result[0][0].isEmpty)) {
           resultMap = <String, String>{
             'result': 'failed',
-            'message': 'Could not download profile. Check your QR code'
+            'message': 'Could not download profile. Check your QR code',
           };
         } else {
           Map<String, dynamic> items = result[0][0];
@@ -81,16 +87,18 @@ class AuthorizeDeviceService {
           //await clearAllPrefs();
           await setStringPref(StringPrefsEnum.deviceId, deviceId);
           await setStringPref(
-              StringPrefsEnum.deviceSecret,
-              items[
-                  'iconDataBase64']); // a bit of security through obscurity here
+            StringPrefsEnum.deviceSecret,
+            items['iconDataBase64'],
+          ); // a bit of security through obscurity here
           await setIntPref(
-              IntPrefsEnum.timeWindow,
-              items[
-                  'colorPaletteIndex']); // a bit of security through obscurity here
+            IntPrefsEnum.timeWindow,
+            items['colorPaletteIndex'],
+          ); // a bit of security through obscurity here
           await setStringPref(StringPrefsEnum.profilePhotoUrl, items['photo']);
           await setStringPref(
-              StringPrefsEnum.displayName, items['displayName']);
+            StringPrefsEnum.displayName,
+            items['displayName'],
+          );
           await setStringPref(StringPrefsEnum.email, items['email']);
           //await setStringPref(StringPrefsEnum.facebookId, items['facebookId']);
           await setStringPref(StringPrefsEnum.firstName, items['firstName']);
@@ -98,49 +106,71 @@ class AuthorizeDeviceService {
           await setStringPref(StringPrefsEnum.lastName, items['lastName']);
           await setStringPref(StringPrefsEnum.qrCode, items['qrCode']);
           await setStringPref(
-              StringPrefsEnum.supportCode, items['supportCode']);
+            StringPrefsEnum.supportCode,
+            items['supportCode'],
+          );
           await setStringPref(StringPrefsEnum.resetCode, items['resetCode']);
           await setStringPref(
-              StringPrefsEnum.qrSecretCode, items['qrSecretCode']);
+            StringPrefsEnum.qrSecretCode,
+            items['qrSecretCode'],
+          );
           await setStringPref(StringPrefsEnum.userId, items['hasherId']);
           await setStringPref(
-              StringPrefsEnum.publicHasherId, items['publicHasherId']);
-          await setStringPref(StringPrefsEnum.homeKennelId,
-              items['homeKennelId']?.toLowerCase());
+            StringPrefsEnum.publicHasherId,
+            items['publicHasherId'],
+          );
+          await setStringPref(
+            StringPrefsEnum.homeKennelId,
+            items['homeKennelId']?.toLowerCase(),
+          );
           await setIntPref(IntPrefsEnum.isBetaTester, items['isBetaTester']);
           final int preferences = items['preferences'] ?? 0;
           await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
 
-          await setStringPref(StringPrefsEnum.thirdPartyAccessToken,
-              items['thirdPartyAccessToken']);
-          await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
-              items['thirdPartyAuthorizationCode']);
           await setStringPref(
-              StringPrefsEnum.thirdPartyEmail, items['thirdPartyEmail']);
+            StringPrefsEnum.thirdPartyAccessToken,
+            items['thirdPartyAccessToken'],
+          );
           await setStringPref(
-              StringPrefsEnum.thirdPartyLoginEmail, items['thirdPartyEmail']);
-          await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh,
-              items['thirdPartyForceTokenRefresh']);
-          await setStringPref(StringPrefsEnum.thirdPartyLoginType,
-              items['thirdPartyLoginType']);
+            StringPrefsEnum.thirdPartyAuthorizationCode,
+            items['thirdPartyAuthorizationCode'],
+          );
           await setStringPref(
-              StringPrefsEnum.thirdPartyUserId, items['thirdPartyUserId']);
+            StringPrefsEnum.thirdPartyEmail,
+            items['thirdPartyEmail'],
+          );
+          await setStringPref(
+            StringPrefsEnum.thirdPartyLoginEmail,
+            items['thirdPartyEmail'],
+          );
+          await setStringPref(
+            StringPrefsEnum.thirdPartyForceTokenRefresh,
+            items['thirdPartyForceTokenRefresh'],
+          );
+          await setStringPref(
+            StringPrefsEnum.thirdPartyLoginType,
+            items['thirdPartyLoginType'],
+          );
+          await setStringPref(
+            StringPrefsEnum.thirdPartyUserId,
+            items['thirdPartyUserId'],
+          );
 
           resultMap = <String, String>{
             'result': 'success',
-            'message': 'Successfully loaded profile'
+            'message': 'Successfully loaded profile',
           };
         }
       } else {
         return <String, String>{
           'result': 'failed',
-          'message': 'Error calling authorize device'
+          'message': 'Error calling authorize device',
         };
       }
     } catch (e) {
       resultMap = <String, String>{
         'result': 'failed',
-        'message': 'Error reading server data. Check your QR code'
+        'message': 'Error reading server data. Check your QR code',
       };
     }
 
