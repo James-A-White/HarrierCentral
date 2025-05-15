@@ -408,7 +408,7 @@ class FutureRunsListPage extends StatelessWidget {
                       onItemTapped: () {
                         listController.openRun(
                           listController.filteredRuns[index],
-                          openToChatTab: false,
+                          openToTab: RunTab.details,
                         );
                       },
                     );

@@ -85,6 +85,26 @@ enum DatePrefsEnum {
   lastRunStartCheck,
 }
 
+/// Chat tabs with their corresponding integer IDs.
+enum MessageType {
+  chat(0),
+  checkinReminder(1),
+  rsvpReminder(2);
+
+  /// The integer ID associated with this tab.
+  final int id;
+
+  const MessageType(this.id);
+
+  /// Lookup a MessageType by its [id]. Throws if not found.
+  factory MessageType.fromId(int id) {
+    return MessageType.values.firstWhere(
+      (tab) => tab.id == id,
+      orElse: () => throw ArgumentError('No ChatTab with id $id'),
+    );
+  }
+}
+
 enum MapPrefsEnum { chatCounts }
 
 enum ThirdPartyLoginType { apple, facebook, none }

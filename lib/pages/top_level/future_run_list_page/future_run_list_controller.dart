@@ -116,6 +116,9 @@ class FutureRunListPageController extends GetxController {
 
     if (msg != null) {
       String? eventId = msg.data['EventId']?.toString().toUpperCase();
+      MessageType messageType = MessageType.fromId(
+        int.tryParse(msg.data['MessageType']) ?? 0,
+      );
       if ((eventId != null) && (allRuns != null)) {
         dynamic runs =
             allRuns!
@@ -126,7 +129,22 @@ class FutureRunListPageController extends GetxController {
 
         if ((runs != null) && (runs.length > 0)) {
           var run = runs[0];
-          openRun(run, openToChatTab: true);
+
+          RunTab? openToTab;
+
+          switch (messageType) {
+            case MessageType.chat:
+              openToTab = RunTab.chat;
+              break;
+            case MessageType.checkinReminder:
+              openToTab = RunTab.details;
+              break;
+            case MessageType.rsvpReminder:
+              openToTab = RunTab.rsvp;
+              break;
+          }
+
+          openRun(run, openToTab: openToTab);
         }
       }
     }
@@ -140,24 +158,23 @@ class FutureRunListPageController extends GetxController {
     super.onClose();
   }
 
-  Future<void> openRun(
-    RunDetailsAggregate run, {
-    required bool openToChatTab,
-  }) async {
-    await Get.to(
-      () => RunDetailsPage(
-        futureRun: run,
-        openToChatTab: openToChatTab,
-        refreshPage: () async {
-          // WARNING!!!!  We need to return the filtered run based
-          // on it's ID and not the index
-          // await controller.refreshFromBackend(
-          //     clearLocalTables: true);
-          await refreshFromTable(true);
-          return run;
-        },
-      ),
-    );
+  Future<void> openRun(RunDetailsAggregate run, {RunTab? openToTab}) async {
+    if (openToTab != null) {
+      await Get.to(
+        () => RunDetailsPage(
+          futureRun: run,
+          openToTab: openToTab,
+          refreshPage: () async {
+            // WARNING!!!!  We need to return the filtered run based
+            // on it's ID and not the index
+            // await controller.refreshFromBackend(
+            //     clearLocalTables: true);
+            await refreshFromTable(true);
+            return run;
+          },
+        ),
+      );
+    }
 
     await refreshFromBackend(clearLocalTables: false);
 
