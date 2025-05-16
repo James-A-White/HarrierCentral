@@ -155,45 +155,32 @@ class MainNavigationPage extends StatelessWidget {
                               MainPageContent.newVersion)
                           ? SizedBox(
                             //color: Colors.amber,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              alignment: AlignmentDirectional.center,
-                              children: [
-                                Image.network(
-                                  'https://harriercentral.blob.core.windows.net/version-images/version_${controller.hcCurrentVersion}.webp',
-                                  fit: BoxFit.fill,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    Future.delayed(
-                                      const Duration(milliseconds: 1),
-                                    ).then((value) {
-                                      controller.resetNewVersionPromoScreen();
-                                    });
-
-                                    return Container();
-                                  },
-                                ),
-                                Positioned(
-                                  bottom: 10,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: hc_red,
-                                    ),
-                                    onPressed: () {
+                            child: Obx(() {
+                              return controller.isLoadingImages.value
+                                  ? Center(child: CircularProgressIndicator())
+                                  : IntroSlider(
+                                    isShowSkipBtn: false,
+                                    isShowPrevBtn: true,
+                                    // wrap each Image in a full-screen box, with BoxFit.cover
+                                    listCustomTabs:
+                                        controller.newVersionImages.map((img) {
+                                          return SizedBox.expand(
+                                            child: FittedBox(
+                                              fit: BoxFit.cover,
+                                              child:
+                                                  img, // your pre-cached Image widget
+                                            ),
+                                          );
+                                        }).toList(),
+                                    onDonePress: () {
                                       controller.resetNewVersionPromoScreen();
                                     },
-                                    child: Text('OK', style: ts_button),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                  );
+                            }),
                           )
-                          : (controller.mainScreenContent.value !=
-                              MainPageContent.appContent)
-                          ? (promos.isEmpty
-                              ? // Promo screen builder using controller fields
-                              _getGenericLoadingScreen(controller)
-                              : // generic loading screen
-                              Container())
+                          : (controller.mainScreenContent.value ==
+                              MainPageContent.loading)
+                          ? _getGenericLoadingScreen(controller)
                           : FlippableBox(
                             key: Key('22342342'),
                             front: Center(
@@ -311,10 +298,8 @@ class MainNavigationPage extends StatelessWidget {
                 ),
               ),
               bottomNavigationBar: Obx(() {
-                return ((controller.mainScreenContent.value !=
-                            MainPageContent.help) &&
-                        (controller.mainScreenContent.value !=
-                            MainPageContent.newVersion))
+                return (controller.mainScreenContent.value ==
+                        MainPageContent.appContent)
                     ? FancyBottomNavigation(
                       circleColor: themeButtonColors,
                       inactiveIconColor: themeBackgroundColor,

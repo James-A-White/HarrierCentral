@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
-enum MainPageContent { newVersion, promo, appContent, help }
+enum MainPageContent { loading, newVersion, promo, appContent, help }
 
 class MainNavigationController extends GetxController
     with WidgetsBindingObserver {
@@ -68,7 +68,7 @@ class MainNavigationController extends GetxController
   final initializationMessage = ''.obs;
   final isFlipped = false.obs;
   final mainScreenReady = false.obs;
-  final mainScreenContent = MainPageContent.appContent.obs;
+  final mainScreenContent = MainPageContent.loading.obs;
   final showPromoTools = false.obs;
   final steps = 10.obs;
   final timeRemaining = RxnInt();
@@ -105,8 +105,11 @@ class MainNavigationController extends GetxController
     WidgetsBinding.instance.addObserver(this);
   }
 
-  String hcCurrentVersion = '';
-  String hcPreviousVersion = '';
+  var hcCurrentVersion = '';
+  var hcPreviousVersion = '';
+
+  var newVersionImages = <Image>[];
+  var isLoadingImages = false.obs;
 
   Future<void> initialize() async {
     // Status bar color
@@ -114,12 +117,16 @@ class MainNavigationController extends GetxController
       FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
     });
 
-    hcCurrentVersion = _trimToMinor(
+    hcCurrentVersion = _trimToMinorVersionString(
       getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
     );
-    hcPreviousVersion = _trimToMinor(
+    hcPreviousVersion = _trimToMinorVersionString(
       getStringPref(StringPrefsEnum.harrierCentralPreviousVersion) ?? '',
     );
+
+    if (hcCurrentVersion != hcPreviousVersion) {
+      await _preloadImages();
+    }
 
     appBarText.value = tabTitles[0];
 
@@ -161,7 +168,7 @@ class MainNavigationController extends GetxController
     mainScreenReady.value = true;
   }
 
-  String _trimToMinor(String version) {
+  String _trimToMinorVersionString(String version) {
     final parts = version.split('.');
     if (parts.length >= 2) {
       return '${parts[0]}.${parts[1]}';
@@ -183,6 +190,48 @@ class MainNavigationController extends GetxController
           ..start();
       }
     })..start();
+  }
+
+  Future<void> _preloadImages() async {
+    isLoadingImages.value = true;
+    int maxImages = 20;
+    for (var i = 1; i <= maxImages; i++) {
+      final url =
+          '${BASE_NEW_VERSION_IMAGES_URL}version_${hcCurrentVersion}_$i.avif';
+      final provider = NetworkImage(url);
+      final config = const ImageConfiguration(); // no context needed
+      final stream = provider.resolve(config);
+
+      final completer = Completer<void>();
+      late final ImageStreamListener listener;
+
+      listener = ImageStreamListener(
+        (info, _) {
+          // success: add the widget
+          newVersionImages.add(Image(image: provider));
+          completer.complete();
+        },
+        onError: (error, stack) {
+          // stop on first failure (e.g. 404)
+          completer.completeError(error);
+        },
+      );
+
+      stream.addListener(listener);
+
+      try {
+        await completer.future;
+      } catch (_) {
+        // stop loading further images
+        stream.removeListener(listener);
+        break;
+      }
+
+      // clean up the listener after success
+      stream.removeListener(listener);
+    }
+
+    isLoadingImages.value = false;
   }
 
   void informUser(String message) {

@@ -70,6 +70,8 @@ const String BASE_EVENT_IMAGE_URL =
     'https://harriercentral.blob.core.windows.net/event-images/';
 const String BASE_RECEIPTS_URL =
     'https://harriercentral.blob.core.windows.net/receipts/';
+const String BASE_NEW_VERSION_IMAGES_URL =
+    'https://harriercentral.blob.core.windows.net/version-images/';
 
 const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
     'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
