@@ -101,6 +101,7 @@ class MainNavigationController extends GetxController
   @override
   void onInit() {
     super.onInit();
+
     initialize();
     WidgetsBinding.instance.addObserver(this);
   }
@@ -110,8 +111,11 @@ class MainNavigationController extends GetxController
 
   var newVersionImages = <Image>[];
   var isLoadingImages = false.obs;
+  var isLoadingData = true;
 
   Future<void> initialize() async {
+    final stopwatch = Stopwatch()..start();
+
     // Status bar color
     FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((_) {
       FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
@@ -126,6 +130,7 @@ class MainNavigationController extends GetxController
 
     if (hcCurrentVersion != hcPreviousVersion) {
       await _preloadImages();
+      mainScreenContent.value = MainPageContent.newVersion;
     }
 
     appBarText.value = tabTitles[0];
@@ -143,13 +148,19 @@ class MainNavigationController extends GetxController
     historyListPage = HistoryListPage();
     runAndKennelMapPage = RunAndKennelMapPage(key: runAndKennelMapPageKey);
 
+    isLoadingData = false;
+
     final hasLoc = await _checkLocationPermissions();
     if (hasLoc) _checkAreWeAtRunStart();
     _startScreenListening();
 
-    if (hcCurrentVersion != hcPreviousVersion) {
-      mainScreenContent.value = MainPageContent.newVersion;
-    } else if (promos.isNotEmpty) {
+    // Calculate remaining time to reach 1500ms
+    final remaining = 1500 - stopwatch.elapsedMilliseconds;
+    if (remaining > 0) {
+      await Future.delayed(Duration(milliseconds: remaining));
+    }
+
+    if (promos.isNotEmpty) {
       mainScreenContent.value = MainPageContent.promo;
       showPromoTools.value = true;
       final first = promos.first;
@@ -160,7 +171,9 @@ class MainNavigationController extends GetxController
       );
       _startPromoTimer(first);
     } else {
-      mainScreenContent.value = MainPageContent.appContent;
+      if (mainScreenContent.value != MainPageContent.newVersion) {
+        mainScreenContent.value = MainPageContent.appContent;
+      }
     }
 
     update(['scaffold']);
@@ -294,9 +307,34 @@ class MainNavigationController extends GetxController
       getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
     );
 
-    mainScreenContent.value = MainPageContent.appContent;
+    if (isLoadingData) {
+      mainScreenContent.value = MainPageContent.loading;
+    } else {
+      mainScreenContent.value = MainPageContent.appContent;
+    }
     // make sure app bar is drawn
     update(['scaffold']);
+
+    // it's OK to not await this async call
+    requestNotificationPermission();
+  }
+
+  Future<void> requestNotificationPermission() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    await messaging.requestPermission(alert: true, badge: true, sound: true);
+
+    // NotificationSettings settings = await messaging.requestPermission(
+    //   alert: true,
+    //   badge: true,
+    //   sound: true,
+    // );
+
+    // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    //   print('User granted permission');
+    // } else {
+    //   print('User declined or has not accepted permission');
+    // }
   }
 
   void _startScreenListening() {

@@ -351,10 +351,11 @@ class MainNavigationPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            Image.asset('images/init/on_on_in_a_sec.avif', height: 140),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Text(
-                'Filling your Harrier Central mug',
+                'Filling Your Mug',
                 style: ts_headingLarge,
                 textAlign: TextAlign.center,
               ),

@@ -103,29 +103,31 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       switch (widget.dataContext) {
         case EnumDataContext.event:
           await G0<TableModel>().syncEventAdminService.updateFromBackend(
-              SyncEventAdminService.flagHashersTable |
-                  SyncEventAdminService.flagHasherKennelMapTable |
-                  SyncEventAdminService.flagHasherEventMapTable,
-              true,
-              widget.eventId);
+            SyncEventAdminService.flagHashersTable |
+                SyncEventAdminService.flagHasherKennelMapTable |
+                SyncEventAdminService.flagHasherEventMapTable,
+            true,
+            widget.eventId,
+          );
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.user:
           await G0<TableModel>().syncUserDataService.updateFromBackend(
-                SyncUserDataService.flagHashersTable,
-                true,
-                debugText: 'hasher_profile_page: Hashers',
-              );
+            SyncUserDataService.flagHashersTable,
+            true,
+            debugText: 'hasher_profile_page: Hashers',
+          );
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
           await G0<TableModel>().syncKennelAdminService.updateFromBackend(
-              SyncKennelAdminService.flagHashersTable |
-                  SyncKennelAdminService.flagHasherKennelMapTable,
-              true,
-              widget.kennelId);
+            SyncKennelAdminService.flagHashersTable |
+                SyncKennelAdminService.flagHasherKennelMapTable,
+            true,
+            widget.kennelId,
+          );
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
@@ -149,8 +151,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       setState(() {
         _isLoading = true;
       });
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        query,
+      );
       if (results.isNotEmpty) {
         _hasher = HashersModel.fromJson(results[0]);
 
@@ -169,7 +172,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             ''; // we don't reveal e-mail in the app for users other than the user of the app
         _hashNameController.text = _hasher.hashName ?? '';
         _nameDisplayPreference = _hasher.dispPref;
-        _newPhoto = _hasher.photo ??
+        _newPhoto =
+            _hasher.photo ??
             _newPhoto; // if we have returned from the photo chooser, don't overwrite
         _previousRunCountController.text =
             (_historicalTotalRunCount ?? 0).toString();
@@ -235,15 +239,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text(
-          widget.pageType == EnumMyProfilePageType.myProfile
-              ? 'My Profile'
-              : 'Hasher Profile',
-          style: ts_appBarTitle),
+        widget.pageType == EnumMyProfilePageType.myProfile
+            ? 'My Profile'
+            : 'Hasher Profile',
+        style: ts_appBarTitle,
+      ),
     );
 
     _firstNameController.addListener(() {
@@ -336,18 +338,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   Widget _buildCircularProgressIndicator() {
     return Center(
       child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Loading / Updating User Profile',
-              style: ts_headingLarge,
-              textAlign: TextAlign.center,
-            ),
-            Container(height: 30),
-            const HcCircularProgressIndicator(
-              key: Key('887262'),
-            ),
-          ]),
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            'Loading / Updating User Profile',
+            style: ts_headingLarge,
+            textAlign: TextAlign.center,
+          ),
+          Container(height: 30),
+          const HcCircularProgressIndicator(key: Key('887262')),
+        ],
+      ),
     );
   }
 
@@ -355,7 +356,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   Future<void> _updateProfile() async {
     if (_profileFormKey.currentState!.validate()) {
-//    If all data are correct then save data to out variables
+      //    If all data are correct then save data to out variables
       _profileFormKey.currentState!.save();
 
       // write the value of the email address to local preferences
@@ -386,9 +387,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           await setStringPref(
-              StringPrefsEnum.email.name, _emailController.text);
-          await setIntPref(IntPrefsEnum.hasherPreferences,
-              _distancePreference + _autoRunPreference);
+            StringPrefsEnum.email.name,
+            _emailController.text,
+          );
+          await setIntPref(
+            IntPrefsEnum.hasherPreferences,
+            _distancePreference + _autoRunPreference,
+          );
           _hasherPreferences = _distancePreference + _autoRunPreference;
         }
 
@@ -439,8 +444,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           if (!mounted) return;
           Navigator.of(context).pop(h);
         } else {
-          await Utilities.showAlert('Profile Updated',
-              'Your profile was updated successfully.', 'OK');
+          await Utilities.showAlert(
+            'Profile Updated',
+            'Your profile was updated successfully.',
+            'OK',
+          );
         }
       } else {
         await Utilities.showAlert(
@@ -450,7 +458,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         );
       }
     } else {
-//    If all data are not valid then start auto validation.
+      //    If all data are not valid then start auto validation.
       setState(() {
         _autoValidate = true;
       });
@@ -464,8 +472,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           controller: _firstNameController,
           //initialValue: hasher.firstName,
-          decoration:
-              const InputDecoration(labelText: 'First name (or initial)'),
+          decoration: const InputDecoration(
+            labelText: 'First name (or initial)',
+          ),
           keyboardType: TextInputType.text,
           validator: (String? arg) {
             if ((arg ?? '').isEmpty) {
@@ -483,8 +492,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           //initialValue: hasher.lastName,
           controller: _lastNameController,
-          decoration:
-              const InputDecoration(labelText: 'Last Name (or initial)'),
+          decoration: const InputDecoration(
+            labelText: 'Last Name (or initial)',
+          ),
           keyboardType: TextInputType.text,
           validator: (String? arg) {
             if ((arg ?? '').isEmpty) {
@@ -524,9 +534,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           },
           keyboardType: TextInputType.text,
         ),
-        const SizedBox(
-          height: 10.0,
-        ),
+        const SizedBox(height: 10.0),
       ],
     );
   }
@@ -547,17 +555,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         TextFormField(
           autocorrect: false,
           controller: _previousHaringCountController,
-          decoration:
-              const InputDecoration(labelText: 'Historical haring count'),
+          decoration: const InputDecoration(
+            labelText: 'Historical haring count',
+          ),
           keyboardType: TextInputType.number,
           onSaved: (String? val) {
             _hasher = _hasher.copyWith(firstName: val ?? '');
             //_hasher.firstName = val;
           },
         ),
-        const SizedBox(
-          height: 15.0,
-        ),
+        const SizedBox(height: 15.0),
         Row(
           children: <Widget>[
             Container(
@@ -582,9 +589,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             ),
           ],
         ),
-        const SizedBox(
-          height: 10.0,
-        ),
+        const SizedBox(height: 10.0),
       ],
     );
   }
@@ -621,8 +626,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     return Stack(
       children: <Widget>[
         SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+        ),
         Positioned(
           top: 0,
           left: 0,
@@ -631,229 +637,266 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           child: Scaffold(
             key: scaffoldKey,
             appBar: appBar,
-            body: _isLoading
-                ? Container(
-                    height: MediaQuery.of(context).size.height -
-                        (appBar?.preferredSize.height ?? 0),
-                    decoration: Backgrounds.defaultHcBackground(),
-                    child: _buildCircularProgressIndicator())
-                : Container(
-                    decoration: Backgrounds.defaultHcBackground(),
-                    height: MediaQuery.of(context).size.height -
-                        (appBar?.preferredSize.height ?? 0),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onPanDown: (_) {
-                        FocusScope.of(context).requestFocus(FocusNode());
-                      },
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              top: 30, left: 20, right: 20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  children: <Widget>[
-                                    Text(
-                                      widget.pageType ==
-                                              EnumMyProfilePageType.myProfile
-                                          ? 'My Profile Information'
-                                          : 'Hasher Profile Information',
-                                      style: ts_headingLarge,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.only(
+            body:
+                _isLoading
+                    ? Container(
+                      height:
+                          MediaQuery.of(context).size.height -
+                          (appBar?.preferredSize.height ?? 0),
+                      decoration: Backgrounds.defaultHcBackground(),
+                      child: _buildCircularProgressIndicator(),
+                    )
+                    : Container(
+                      decoration: Backgrounds.defaultHcBackground(),
+                      height:
+                          MediaQuery.of(context).size.height -
+                          (appBar?.preferredSize.height ?? 0),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onPanDown: (_) {
+                          FocusScope.of(context).requestFocus(FocusNode());
+                        },
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              top: 30,
+                              left: 20,
+                              right: 20,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Column(
+                                    children: <Widget>[
+                                      Text(
+                                        widget.pageType ==
+                                                EnumMyProfilePageType.myProfile
+                                            ? 'My Profile Information'
+                                            : 'Hasher Profile Information',
+                                        style: ts_headingLarge,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(
                                           top: 30.0,
-                                          left: (G0<DeviceInfo>()
+                                          left:
+                                              (G0<DeviceInfo>()
                                                       .deviceWidthScaleFactor -
                                                   1) *
                                               30,
-                                          right: (G0<DeviceInfo>()
+                                          right:
+                                              (G0<DeviceInfo>()
                                                       .deviceWidthScaleFactor -
                                                   1) *
-                                              30),
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              margin: const EdgeInsets.only(
-                                                  bottom: 30),
-                                              decoration: BoxDecoration(
-                                                color: Colors.yellow[100],
-                                                borderRadius:
-                                                    BorderRadius.circular(5.0),
-                                              ),
-                                              child: Form(
-                                                key: _profileFormKey,
-                                                autovalidateMode: _autoValidate
-                                                    ? AutovalidateMode.always
-                                                    : AutovalidateMode.disabled,
-                                                child: profileFormUi(),
-                                              ),
-                                            ),
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.yellow[100],
-                                                borderRadius:
-                                                    BorderRadius.circular(5.0),
-                                              ),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  const SizedBox(
-                                                    height: 10,
-                                                    width: 10,
-                                                  ),
-                                                  Text(
-                                                    'Name Preference',
-                                                    style: ts_headingBlack,
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                    width: 10,
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Radio<int>(
-                                                        value: 1,
-                                                        groupValue:
-                                                            _nameDisplayPreference,
-                                                        onChanged:
-                                                            _handleRadioValueChange0,
+                                              30,
+                                        ),
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  10.0,
+                                                ),
+                                                margin: const EdgeInsets.only(
+                                                  bottom: 30,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow[100],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        5.0,
                                                       ),
-                                                      const Text(
-                                                        'Use Hash name',
-                                                        style: TextStyle(
-                                                            fontSize: 16.0),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Radio<int>(
-                                                        value: 2,
-                                                        groupValue:
-                                                            _nameDisplayPreference,
-                                                        onChanged:
-                                                            _handleRadioValueChange0,
-                                                      ),
-                                                      const Text(
-                                                        'Use mortal name',
-                                                        style: TextStyle(
-                                                            fontSize: 16.0),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
+                                                ),
+                                                child: Form(
+                                                  key: _profileFormKey,
+                                                  autovalidateMode:
+                                                      _autoValidate
+                                                          ? AutovalidateMode
+                                                              .always
+                                                          : AutovalidateMode
+                                                              .disabled,
+                                                  child: profileFormUi(),
+                                                ),
                                               ),
-                                            ),
-                                            const FancyDivider(
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow[100],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        5.0,
+                                                      ),
+                                                ),
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    const SizedBox(
+                                                      height: 10,
+                                                      width: 10,
+                                                    ),
+                                                    Text(
+                                                      'Name Preference',
+                                                      style: ts_headingBlack,
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 10,
+                                                      width: 10,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Radio<int>(
+                                                          value: 1,
+                                                          groupValue:
+                                                              _nameDisplayPreference,
+                                                          onChanged:
+                                                              _handleRadioValueChange0,
+                                                        ),
+                                                        const Text(
+                                                          'Use Hash name',
+                                                          style: TextStyle(
+                                                            fontSize: 16.0,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Radio<int>(
+                                                          value: 2,
+                                                          groupValue:
+                                                              _nameDisplayPreference,
+                                                          onChanged:
+                                                              _handleRadioValueChange0,
+                                                        ),
+                                                        const Text(
+                                                          'Use mortal name',
+                                                          style: TextStyle(
+                                                            fontSize: 16.0,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const FancyDivider(
                                                 key: Key('11203961'),
                                                 innerColor: Colors.white,
                                                 topMargin: 45.0,
-                                                bottomMargin: 5.0),
-                                            Container(
-                                              height: 220,
-                                              color: Colors.white,
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              margin: const EdgeInsets.only(
-                                                  top: 20, bottom: 30),
-                                              child: _newPhoto.isEmpty
-                                                  ? Image.asset(
-                                                      'images/icons/create_profile_photo.png',
-                                                    )
-                                                  : Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 0,
-                                                              right: 0),
-                                                      child: AspectRatio(
-                                                        aspectRatio: 1.0,
-                                                        child: ProfilePhoto(
-                                                          profilePhotoUrl:
-                                                              _newPhoto,
-                                                          photoHeight: 200.0,
-                                                          //leftPadding: 0.0,
-                                                        ),
+                                                bottomMargin: 5.0,
+                                              ),
+                                              Container(
+                                                height: 220,
+                                                color: Colors.white,
+                                                padding: const EdgeInsets.all(
+                                                  10.0,
+                                                ),
+                                                margin: const EdgeInsets.only(
+                                                  top: 20,
+                                                  bottom: 30,
+                                                ),
+                                                child:
+                                                    _newPhoto.isEmpty
+                                                        ? Image.asset(
+                                                          'images/icons/create_profile_photo.png',
+                                                        )
+                                                        : Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                left: 0,
+                                                                right: 0,
+                                                              ),
+                                                          child: AspectRatio(
+                                                            aspectRatio: 1.0,
+                                                            child: ProfilePhoto(
+                                                              profilePhotoUrl:
+                                                                  _newPhoto,
+                                                              photoHeight:
+                                                                  200.0,
+                                                              //leftPadding: 0.0,
+                                                            ),
 
-                                                        // Container(
-                                                        //   decoration: BoxDecoration(
-                                                        //     shape: BoxShape.rectangle,
-                                                        //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                                                        //     image: DecorationImage(
-                                                        //       fit: BoxFit.fill,
-                                                        //       image: NetworkImage(
-                                                        //         newPhoto,
-                                                        //       ),
-                                                        //     ),
-                                                        //   ),
-                                                        // ),
-                                                      ),
-                                                    ),
-                                            ),
-                                            Connection2.styleForConnected(
-                                              G0<AppModel>().connectionStatus,
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  padding:
-                                                      const EdgeInsets.only(
+                                                            // Container(
+                                                            //   decoration: BoxDecoration(
+                                                            //     shape: BoxShape.rectangle,
+                                                            //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                                                            //     image: DecorationImage(
+                                                            //       fit: BoxFit.fill,
+                                                            //       image: NetworkImage(
+                                                            //         newPhoto,
+                                                            //       ),
+                                                            //     ),
+                                                            //   ),
+                                                            // ),
+                                                          ),
+                                                        ),
+                                              ),
+                                              Connection2.styleForConnected(
+                                                G0<AppModel>().connectionStatus,
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding:
+                                                        const EdgeInsets.only(
                                                           top: 8,
                                                           bottom: 8,
                                                           left: 20,
-                                                          right: 20),
-                                                ),
-                                                onPressed: () {
-                                                  if (Connection2
-                                                      .checkForConnection(G0<
-                                                              AppModel>()
-                                                          .connectionStatus)) {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute<String>(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            ChooseProfileImage(
-                                                          isForThisDevice: widget
-                                                                  .pageType ==
-                                                              EnumMyProfilePageType
-                                                                  .myProfile,
-                                                          fileNamePrefix:
-                                                              _photoPrefix,
-                                                          currentProfileImage:
-                                                              _hasher.photo ??
-                                                                  _newPhoto,
+                                                          right: 20,
                                                         ),
-                                                      ),
-                                                    ).then<void>((result) {
-                                                      if ((result != null) &&
-                                                          (result.isNotEmpty)) {
-                                                        _newPhoto = result;
-                                                        _checkDirty();
-                                                      }
-                                                    });
-                                                  }
-                                                },
-                                                child: Text(
+                                                  ),
+                                                  onPressed: () {
+                                                    if (Connection2.checkForConnection(
+                                                      G0<AppModel>()
+                                                          .connectionStatus,
+                                                    )) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute<
+                                                          String
+                                                        >(
+                                                          builder:
+                                                              (
+                                                                BuildContext
+                                                                context,
+                                                              ) => ChooseProfileImage(
+                                                                isForThisDevice:
+                                                                    widget
+                                                                        .pageType ==
+                                                                    EnumMyProfilePageType
+                                                                        .myProfile,
+                                                                fileNamePrefix:
+                                                                    _photoPrefix,
+                                                                currentProfileImage:
+                                                                    _hasher
+                                                                        .photo ??
+                                                                    _newPhoto,
+                                                              ),
+                                                        ),
+                                                      ).then<void>((result) {
+                                                        if ((result != null) &&
+                                                            (result
+                                                                .isNotEmpty)) {
+                                                          _newPhoto = result;
+                                                          _checkDirty();
+                                                        }
+                                                      });
+                                                    }
+                                                  },
+                                                  child: Text(
                                                     'Update Profile Image',
-                                                    style: ts_button),
+                                                    style: ts_button,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 15),
-                                            (widget.uiElementsToDisplay &
-                                                        HasherProfilePage
-                                                            .flagUiElement_distancePref ==
-                                                    0)
-                                                ? Container()
-                                                : Column(
+                                              const SizedBox(height: 15),
+                                              (widget.uiElementsToDisplay &
+                                                          HasherProfilePage
+                                                              .flagUiElement_distancePref ==
+                                                      0)
+                                                  ? Container()
+                                                  : Column(
                                                     children: <Widget>[
                                                       const FancyDivider(
                                                         key: Key('422030201'),
@@ -863,14 +906,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         bottomMargin: 20.0,
                                                       ),
                                                       Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors
-                                                              .yellow[100],
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              Colors
+                                                                  .yellow[100],
                                                           borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      5.0),
+                                                              BorderRadius.circular(
+                                                                5.0,
+                                                              ),
                                                         ),
                                                         child: Column(
                                                           children: <Widget>[
@@ -888,7 +931,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               width: 10,
                                                             ),
                                                             Row(
-                                                              children: <Widget>[
+                                                              children: <
+                                                                Widget
+                                                              >[
                                                                 Radio<int>(
                                                                   value: 0,
                                                                   groupValue:
@@ -898,14 +943,18 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 ),
                                                                 const Text(
                                                                   'Auto',
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          16.0),
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                 ),
                                                               ],
                                                             ),
                                                             Row(
-                                                              children: <Widget>[
+                                                              children: <
+                                                                Widget
+                                                              >[
                                                                 Radio<int>(
                                                                   value: 2,
                                                                   groupValue:
@@ -915,14 +964,18 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 ),
                                                                 const Text(
                                                                   'Kilometers',
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          16.0),
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                 ),
                                                               ],
                                                             ),
                                                             Row(
-                                                              children: <Widget>[
+                                                              children: <
+                                                                Widget
+                                                              >[
                                                                 Radio<int>(
                                                                   value: 3,
                                                                   groupValue:
@@ -932,9 +985,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 ),
                                                                 const Text(
                                                                   'Miles',
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          16.0),
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                 ),
                                                               ],
                                                             ),
@@ -943,12 +998,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                     ],
                                                   ),
-                                            (widget.uiElementsToDisplay &
-                                                        HasherProfilePage
-                                                            .flagUiElement_autoDisplayRunsDistance ==
-                                                    0)
-                                                ? Container()
-                                                : Column(
+                                              (widget.uiElementsToDisplay &
+                                                          HasherProfilePage
+                                                              .flagUiElement_autoDisplayRunsDistance ==
+                                                      0)
+                                                  ? Container()
+                                                  : Column(
                                                     children: <Widget>[
                                                       const FancyDivider(
                                                         key: Key('51344451'),
@@ -960,14 +1015,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       if (G0<AppModel>()
                                                           .hasLocationPermissions)
                                                         Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors
-                                                                .yellow[100],
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                                Colors
+                                                                    .yellow[100],
                                                             borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5.0),
+                                                                BorderRadius.circular(
+                                                                  5.0,
+                                                                ),
                                                           ),
                                                           child: Column(
                                                             children: <Widget>[
@@ -976,7 +1031,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 width: 10,
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value: 0,
                                                                     groupValue:
@@ -987,8 +1044,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   const Text(
                                                                     'Do not auto show runs',
                                                                     style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
@@ -1005,7 +1063,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 width: 10,
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_10,
@@ -1017,13 +1077,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '10 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_25,
@@ -1035,13 +1098,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '25 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_50,
@@ -1053,13 +1119,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '50 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_75,
@@ -1071,13 +1140,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '75 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_100,
@@ -1089,13 +1161,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '100 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_150,
@@ -1107,13 +1182,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '150 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_250,
@@ -1125,13 +1203,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '250 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <Widget>[
+                                                                children: <
+                                                                  Widget
+                                                                >[
                                                                   Radio<int>(
                                                                     value:
                                                                         hasherPref_500,
@@ -1143,8 +1224,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   Text(
                                                                     '500 ${getDistancePreferenceAsString(_distancePreference)}',
                                                                     style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
@@ -1152,76 +1234,78 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           ),
                                                         ),
                                                       if (!G0<AppModel>()
-                                                          .hasLocationPermissions) ...<Widget>[
+                                                          .hasLocationPermissions) ...<
+                                                        Widget
+                                                      >[
                                                         Padding(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
+                                                              const EdgeInsets.all(
+                                                                8.0,
+                                                              ),
                                                           child: Text(
                                                             'Distance to Runs',
                                                             style:
                                                                 ts_headingLarge,
-                                                            textAlign: TextAlign
-                                                                .center,
+                                                            textAlign:
+                                                                TextAlign
+                                                                    .center,
                                                           ),
                                                         ),
                                                         Padding(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
+                                                              const EdgeInsets.all(
+                                                                8.0,
+                                                              ),
                                                           child: Text(
                                                             'Harrier Central can help you find runs that are nearby. In order to do this, the app needs to have access to the phone\'s current location, but currently location is disabled for this app.\r\n\r\nTo start using the distance features of Harrier Central please press the "Use Location" button below and follow the prompts.',
                                                             style: ts_body,
-                                                            textAlign: TextAlign
-                                                                .center,
+                                                            textAlign:
+                                                                TextAlign
+                                                                    .center,
                                                           ),
                                                         ),
                                                         Padding(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 22.0,
-                                                                  bottom: 0.0),
+                                                              const EdgeInsets.only(
+                                                                top: 22.0,
+                                                                bottom: 0.0,
+                                                              ),
                                                           child: ElevatedButton(
-                                                            style:
-                                                                ElevatedButton
-                                                                    .styleFrom(
+                                                            style: ElevatedButton.styleFrom(
                                                               padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      top: 8,
-                                                                      bottom: 8,
-                                                                      left: 20,
-                                                                      right:
-                                                                          20),
+                                                                  const EdgeInsets.only(
+                                                                    top: 8,
+                                                                    bottom: 8,
+                                                                    left: 20,
+                                                                    right: 20,
+                                                                  ),
                                                             ),
-                                                            onPressed:
-                                                                () async {
+                                                            onPressed: () async {
                                                               await _enableLocationServices();
                                                             },
                                                             child: Text(
-                                                                'Use Location',
-                                                                style:
-                                                                    ts_button),
+                                                              'Use Location',
+                                                              style: ts_button,
+                                                            ),
                                                           ),
                                                         ),
                                                       ],
                                                     ],
                                                   ),
-                                            const SizedBox(
-                                              height: 20,
-                                              width: 40,
-                                            )
-                                          ],
+                                              const SizedBox(
+                                                height: 20,
+                                                width: 40,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    (widget.uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_followKennel ==
-                                            0)
-                                        ? Container()
-                                        : Column(
+                                      (widget.uiElementsToDisplay &
+                                                  HasherProfilePage
+                                                      .flagUiElement_followKennel ==
+                                              0)
+                                          ? Container()
+                                          : Column(
                                             children: <Widget>[
                                               const FancyDivider(
                                                 key: Key('882552302'),
@@ -1229,30 +1313,35 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 bottomMargin: 20.0,
                                               ),
                                               Container(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
+                                                padding: const EdgeInsets.all(
+                                                  10.0,
+                                                ),
                                                 margin: const EdgeInsets.only(
-                                                    bottom: 45),
+                                                  bottom: 45,
+                                                ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                          5.0),
+                                                        5.0,
+                                                      ),
                                                 ),
                                                 child: Row(
                                                   children: <Widget>[
                                                     Container(
                                                       margin:
                                                           const EdgeInsets.only(
-                                                              right: 10),
+                                                            right: 10,
+                                                          ),
                                                       height: 25,
                                                       width: 25,
                                                       color: Colors.yellow[100],
                                                       child: Checkbox(
                                                         value:
                                                             _addAsKennelFollower,
-                                                        onChanged:
-                                                            (bool? value) {
+                                                        onChanged: (
+                                                          bool? value,
+                                                        ) {
                                                           setState(() {
                                                             _addAsKennelFollower =
                                                                 value ?? false;
@@ -1271,12 +1360,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_previousRunCount ==
-                                            0)
-                                        ? Container()
-                                        : Column(
+                                      (widget.uiElementsToDisplay &
+                                                  HasherProfilePage
+                                                      .flagUiElement_previousRunCount ==
+                                              0)
+                                          ? Container()
+                                          : Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: <Widget>[
@@ -1296,17 +1385,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 textAlign: TextAlign.center,
                                               ),
                                               Container(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
+                                                padding: const EdgeInsets.all(
+                                                  10.0,
+                                                ),
                                                 margin: const EdgeInsets.only(
-                                                    top: 20, bottom: 40),
+                                                  top: 20,
+                                                  bottom: 40,
+                                                ),
                                                 // width: 100,
                                                 // height: 50,
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                          5.0),
+                                                        5.0,
+                                                      ),
                                                 ),
                                                 child: Form(
                                                   key: _runCountFormKey,
@@ -1321,12 +1414,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_getInviteCodeButton ==
-                                            0)
-                                        ? Container()
-                                        : Column(
+                                      (widget.uiElementsToDisplay &
+                                                  HasherProfilePage
+                                                      .flagUiElement_getInviteCodeButton ==
+                                              0)
+                                          ? Container()
+                                          : Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: <Widget>[
@@ -1338,68 +1431,75 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                               Padding(
                                                 padding: const EdgeInsets.only(
-                                                    top: 15, bottom: 40),
+                                                  top: 15,
+                                                  bottom: 40,
+                                                ),
                                                 child: Row(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceAround,
                                                   children: <Widget>[
-                                                    Connection2
-                                                        .styleForConnected(
+                                                    Connection2.styleForConnected(
                                                       G0<AppModel>()
                                                           .connectionStatus,
                                                       ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
+                                                        style: ElevatedButton.styleFrom(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 8,
-                                                                  bottom: 8,
-                                                                  left: 20,
-                                                                  right: 20),
+                                                              const EdgeInsets.only(
+                                                                top: 8,
+                                                                bottom: 8,
+                                                                left: 20,
+                                                                right: 20,
+                                                              ),
                                                         ),
                                                         onPressed: () async {
                                                           final GetInviteCodeService
-                                                              svc =
+                                                          svc =
                                                               GetInviteCodeService();
                                                           final SingleResultModel?
-                                                              result = await svc
-                                                                  .getInviteCode(
-                                                                      widget
-                                                                          .hasherId);
+                                                          result = await svc
+                                                              .getInviteCode(
+                                                                widget.hasherId,
+                                                              );
 
                                                           if ((result?.result ??
                                                                   '')
                                                               .startsWith(
-                                                                  QR_PREFIX_USER_RESET_CODE)) {
-                                                            final QrPopup pp =
-                                                                QrPopup(
+                                                                QR_PREFIX_USER_RESET_CODE,
+                                                              )) {
+                                                            final QrPopup
+                                                            pp = QrPopup(
                                                               key: const Key(
-                                                                  '43930293'),
+                                                                '43930293',
+                                                              ),
                                                               dialogTitle:
                                                                   'The invite code for ${_hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
-                                                              qrText: result
-                                                                  .result!,
+                                                              qrText:
+                                                                  result
+                                                                      .result!,
                                                             );
 
                                                             await showDialog<
-                                                                    void>(
-                                                                context:
-                                                                    navigatorKey
-                                                                        .currentContext!,
-                                                                barrierDismissible:
-                                                                    false, // user must tap button!
-                                                                builder:
-                                                                    (BuildContext
-                                                                        context) {
-                                                                  return pp;
-                                                                });
+                                                              void
+                                                            >(
+                                                              context:
+                                                                  navigatorKey
+                                                                      .currentContext!,
+                                                              barrierDismissible:
+                                                                  false, // user must tap button!
+                                                              builder: (
+                                                                BuildContext
+                                                                context,
+                                                              ) {
+                                                                return pp;
+                                                              },
+                                                            );
                                                           } else {
                                                             await Utilities.showAlert(
-                                                                'Code Not Available',
-                                                                'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
-                                                                'OK');
+                                                              'Code Not Available',
+                                                              'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
+                                                              'OK',
+                                                            );
                                                           }
                                                         },
                                                         child: Text(
@@ -1413,12 +1513,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_getUserRunHistory ==
-                                            0)
-                                        ? Container()
-                                        : Column(
+                                      (widget.uiElementsToDisplay &
+                                                  HasherProfilePage
+                                                      .flagUiElement_getUserRunHistory ==
+                                              0)
+                                          ? Container()
+                                          : Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: <Widget>[
@@ -1430,35 +1530,33 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                               Padding(
                                                 padding: const EdgeInsets.only(
-                                                    top: 15, bottom: 40),
+                                                  top: 15,
+                                                  bottom: 40,
+                                                ),
                                                 child: Row(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceAround,
                                                   children: <Widget>[
-                                                    Connection2
-                                                        .styleForConnected(
+                                                    Connection2.styleForConnected(
                                                       G0<AppModel>()
                                                           .connectionStatus,
                                                       ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
+                                                        style: ElevatedButton.styleFrom(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 8,
-                                                                  bottom: 8,
-                                                                  left: 20,
-                                                                  right: 20),
+                                                              const EdgeInsets.only(
+                                                                top: 8,
+                                                                bottom: 8,
+                                                                left: 20,
+                                                                right: 20,
+                                                              ),
                                                         ),
                                                         onPressed: () async {
                                                           final runHistory =
-                                                              await RunHistoryQueries
-                                                                  .getRunHistory(
-                                                                      widget
-                                                                          .hasherId,
-                                                                      widget
-                                                                          .kennelId);
+                                                              await RunHistoryQueries.getRunHistory(
+                                                                widget.hasherId,
+                                                                widget.kennelId,
+                                                              );
 
                                                           await G0<TableModel>()
                                                               .syncKennelAdminService
@@ -1480,31 +1578,34 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
                                                           if (context.mounted) {
                                                             Navigator.of(
-                                                                    context)
+                                                                  context,
+                                                                )
                                                                 .push<dynamic>(
-                                                              MaterialPageRoute<
-                                                                  dynamic>(
-                                                                builder:
-                                                                    (BuildContext
-                                                                        context) {
-                                                                  return UserRunHistoryListPage(
-                                                                      appDomain:
-                                                                          AppDomainType
-                                                                              .kennel,
-                                                                      hashName:
-                                                                          widget
-                                                                              .hashNameFromSearch,
-                                                                      hasherId:
-                                                                          widget
-                                                                              .hasherId,
-                                                                      kennelInfo:
-                                                                          runHistory[
-                                                                              0],
-                                                                      refreshKennelInfo:
-                                                                          () {});
-                                                                },
-                                                              ),
-                                                            ).then((void _) {});
+                                                                  MaterialPageRoute<
+                                                                    dynamic
+                                                                  >(
+                                                                    builder: (
+                                                                      BuildContext
+                                                                      context,
+                                                                    ) {
+                                                                      return UserRunHistoryListPage(
+                                                                        appDomain:
+                                                                            AppDomainType.kennel,
+                                                                        hashName:
+                                                                            widget.hashNameFromSearch,
+                                                                        hasherId:
+                                                                            widget.hasherId,
+                                                                        kennelInfo:
+                                                                            runHistory[0],
+                                                                        refreshKennelInfo:
+                                                                            () {},
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                )
+                                                                .then(
+                                                                  (void _) {},
+                                                                );
                                                           }
                                                           //                                              Navigator.of(context).push<dynamic>(
                                                           //   MaterialPageRoute<dynamic>(
@@ -1531,498 +1632,562 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    if (_externalMapProvider !=
-                                        null) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('8552133039'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Clear Map Preference',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
+                                      if (_externalMapProvider !=
+                                          null) ...<Widget>[
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: <Widget>[
+                                            const FancyDivider(
+                                              key: Key('8552133039'),
+                                              innerColor: Colors.white,
+                                              topMargin: 30.0,
+                                              bottomMargin: 20.0,
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'You have set your map preference to $_externalMapProvider. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'Clear Map Preference',
+                                                style: ts_headingLarge,
+                                                textAlign: TextAlign.center,
+                                              ),
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 15.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 8.0,
-                                                        horizontal: 15.0),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'You have set your map preference to $_externalMapProvider. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
+                                                style: ts_body,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 15.0,
                                                   ),
-                                                  onPressed: () async {
-                                                    await Utilities.showAlert(
-                                                      'Map preferences cleared',
-                                                      'Your map preference has been cleared. Next time you access an external map application, you will be prompted again to select a map preference.',
-                                                      'OK',
-                                                      showCancelButton: false,
-                                                    );
-
-                                                    await removePref(
-                                                        StringPrefsEnum
-                                                            .mapPreference);
-
-                                                    setState(() {
-                                                      _externalMapProvider =
-                                                          null;
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    'Clear map preference',
-                                                    style: ts_button,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (widget.uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_logOutAndRefreshButton !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('8552133039'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Reload Data',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 15),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  G0<AppModel>()
-                                                      .connectionStatus,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: <Widget>[
                                                   ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
+                                                    style: ElevatedButton.styleFrom(
                                                       padding:
-                                                          const EdgeInsets.only(
-                                                              top: 8,
-                                                              bottom: 8,
-                                                              left: 20,
-                                                              right: 20),
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 8.0,
+                                                            horizontal: 15.0,
+                                                          ),
                                                     ),
                                                     onPressed: () async {
                                                       await Utilities.showAlert(
-                                                              'Reload Data',
-                                                              'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
-                                                              'Reload data',
-                                                              showCancelButton:
-                                                                  true,
-                                                              cancelButtonText:
-                                                                  'Cancel')
-                                                          .then((bool?
-                                                              result) async {
-                                                        if (result ?? false) {
-                                                          await _reloadData();
-                                                        }
-                                                      });
-                                                    },
-                                                    child: Text(
-                                                      'Reload Data',
-                                                      style: ts_button,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (widget.uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_logOutButton !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('655522013'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Log out of Harrier Central',
-                                              style: ts_heading,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 15, bottom: 15),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  G0<AppModel>()
-                                                      .connectionStatus,
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              top: 8,
-                                                              bottom: 8,
-                                                              left: 20,
-                                                              right: 20),
-                                                    ),
-                                                    onPressed: () async {
-                                                      await IveCoreUtilities.showAlert(
-                                                              context,
-                                                              'Log out?',
-                                                              'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                                              'Log out',
-                                                              showCancelButton:
-                                                                  true,
-                                                              cancelButtonText:
-                                                                  'Stay logged in')
-                                                          .then((bool?
-                                                              result) async {
-                                                        if (result ?? false) {
-                                                          await clearPrefs();
-
-                                                          await DBProvider
-                                                              .deleteDb(
-                                                                  DB_NAME);
-
-                                                          await G0.reset();
-
-                                                          await GetIt.I.reset(
-                                                              dispose: true);
-
-                                                          setupDependencies();
-                                                          await GetIt.I
-                                                              .allReady();
-                                                          Get.offAll(() =>
-                                                              AppEntryPage());
-                                                        }
-                                                      });
-                                                    },
-                                                    child: Text(
-                                                      'Log out of Harrier Central',
-                                                      style: ts_button,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (widget.uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_refresh3rdPartyLogin !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('655522013'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Third Party Login',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 15, bottom: 15),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  G0<AppModel>()
-                                                      .connectionStatus,
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              top: 8,
-                                                              bottom: 8,
-                                                              left: 20,
-                                                              right: 20),
-                                                    ),
-                                                    onPressed: () async {
-                                                      await Navigator.push<
-                                                          dynamic>(
-                                                        context,
-                                                        MaterialPageRoute<
-                                                                dynamic>(
-                                                            builder: (BuildContext
-                                                                    context) =>
-                                                                const ThirdPartyLogin(
-                                                                    false)),
+                                                        'Map preferences cleared',
+                                                        'Your map preference has been cleared. Next time you access an external map application, you will be prompted again to select a map preference.',
+                                                        'OK',
+                                                        showCancelButton: false,
                                                       );
+
+                                                      await removePref(
+                                                        StringPrefsEnum
+                                                            .mapPreference,
+                                                      );
+
+                                                      setState(() {
+                                                        _externalMapProvider =
+                                                            null;
+                                                      });
                                                     },
                                                     child: Text(
-                                                      'Login with 3rd Party',
+                                                      'Clear map preference',
                                                       style: ts_button,
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (widget.uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_gdprDeleteAccount !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('655522013'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Delete Account',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
+                                          ],
+                                        ),
+                                      ],
+                                      if (widget.uiElementsToDisplay &
+                                              HasherProfilePage
+                                                  .flagUiElement_logOutAndRefreshButton !=
+                                          0) ...<Widget>[
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: <Widget>[
+                                            const FancyDivider(
+                                              key: Key('8552133039'),
+                                              innerColor: Colors.white,
+                                              topMargin: 30.0,
+                                              bottomMargin: 20.0,
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.\r\n\r\nPerhaps instead you would like to keep your app and run counts but wish to anonymize your personal information? If so, scroll upwards and change your name and email address to anything you desire, understanding that your Kennel will not be able to email you through the app if you provide a fake email address. Click on Save Changes when you are done.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'Reload Data',
+                                                style: ts_headingLarge,
+                                                textAlign: TextAlign.center,
+                                              ),
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 15, bottom: 15),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  G0<AppModel>()
-                                                      .connectionStatus,
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      padding:
-                                                          const EdgeInsets.only(
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
+                                                style: ts_body,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 15,
+                                                  ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: <Widget>[
+                                                  Connection2.styleForConnected(
+                                                    G0<AppModel>()
+                                                        .connectionStatus,
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        padding:
+                                                            const EdgeInsets.only(
                                                               top: 8,
                                                               bottom: 8,
                                                               left: 20,
-                                                              right: 20),
+                                                              right: 20,
+                                                            ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        await Utilities.showAlert(
+                                                          'Reload Data',
+                                                          'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
+                                                          'Reload data',
+                                                          showCancelButton:
+                                                              true,
+                                                          cancelButtonText:
+                                                              'Cancel',
+                                                        ).then((
+                                                          bool? result,
+                                                        ) async {
+                                                          if (result ?? false) {
+                                                            await _reloadData();
+                                                          }
+                                                        });
+                                                      },
+                                                      child: Text(
+                                                        'Reload Data',
+                                                        style: ts_button,
+                                                      ),
                                                     ),
-                                                    onPressed: () async {
-                                                      bool? result =
-                                                          await Utilities.showAlert(
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                      if (widget.uiElementsToDisplay &
+                                              HasherProfilePage
+                                                  .flagUiElement_logOutButton !=
+                                          0) ...<Widget>[
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: <Widget>[
+                                            const FancyDivider(
+                                              key: Key('655522013'),
+                                              innerColor: Colors.white,
+                                              topMargin: 30.0,
+                                              bottomMargin: 20.0,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'Log out of Harrier Central',
+                                                style: ts_heading,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
+                                                style: ts_body,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 15,
+                                                bottom: 15,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: <Widget>[
+                                                  Connection2.styleForConnected(
+                                                    G0<AppModel>()
+                                                        .connectionStatus,
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20,
+                                                            ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        await IveCoreUtilities.showAlert(
+                                                          context,
+                                                          'Log out?',
+                                                          'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                          'Log out',
+                                                          showCancelButton:
+                                                              true,
+                                                          cancelButtonText:
+                                                              'Stay logged in',
+                                                        ).then((
+                                                          bool? result,
+                                                        ) async {
+                                                          if (result ?? false) {
+                                                            await clearPrefs();
+
+                                                            await DBProvider.deleteDb(
+                                                              DB_NAME,
+                                                            );
+
+                                                            await G0.reset();
+
+                                                            await GetIt.I.reset(
+                                                              dispose: true,
+                                                            );
+
+                                                            setupDependencies();
+                                                            await GetIt.I
+                                                                .allReady();
+                                                            Get.offAll(
+                                                              () =>
+                                                                  AppEntryPage(),
+                                                            );
+                                                          }
+                                                        });
+                                                      },
+                                                      child: Text(
+                                                        'Log out of Harrier Central',
+                                                        style: ts_button,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                      if (widget.uiElementsToDisplay &
+                                              HasherProfilePage
+                                                  .flagUiElement_refresh3rdPartyLogin !=
+                                          0) ...<Widget>[
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: <Widget>[
+                                            const FancyDivider(
+                                              key: Key('655522013'),
+                                              innerColor: Colors.white,
+                                              topMargin: 30.0,
+                                              bottomMargin: 20.0,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'Third Party Login',
+                                                style: ts_headingLarge,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
+                                                style: ts_body,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 15,
+                                                bottom: 15,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: <Widget>[
+                                                  Connection2.styleForConnected(
+                                                    G0<AppModel>()
+                                                        .connectionStatus,
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20,
+                                                            ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        await Navigator.push<
+                                                          dynamic
+                                                        >(
+                                                          context,
+                                                          MaterialPageRoute<
+                                                            dynamic
+                                                          >(
+                                                            builder:
+                                                                (
+                                                                  BuildContext
+                                                                  context,
+                                                                ) =>
+                                                                    const ThirdPartyLogin(
+                                                                      false,
+                                                                    ),
+                                                          ),
+                                                        );
+                                                      },
+                                                      child: Text(
+                                                        'Login with 3rd Party',
+                                                        style: ts_button,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                      if (widget.uiElementsToDisplay &
+                                              HasherProfilePage
+                                                  .flagUiElement_gdprDeleteAccount !=
+                                          0) ...<Widget>[
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: <Widget>[
+                                            const FancyDivider(
+                                              key: Key('655522013'),
+                                              innerColor: Colors.white,
+                                              topMargin: 30.0,
+                                              bottomMargin: 20.0,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'Delete Account',
+                                                style: ts_headingLarge,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.\r\n\r\nPerhaps instead you would like to keep your app and run counts but wish to anonymize your personal information? If so, scroll upwards and change your name and email address to anything you desire, understanding that your Kennel will not be able to email you through the app if you provide a fake email address. Click on Save Changes when you are done.',
+                                                style: ts_body,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 15,
+                                                bottom: 15,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: <Widget>[
+                                                  Connection2.styleForConnected(
+                                                    G0<AppModel>()
+                                                        .connectionStatus,
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20,
+                                                            ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        bool? result =
+                                                            await Utilities.showAlert(
                                                               'Delete Account',
                                                               'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
                                                               'Delete Account',
                                                               showCancelButton:
                                                                   true,
                                                               cancelButtonText:
-                                                                  'Keep Account');
+                                                                  'Keep Account',
+                                                            );
 
-                                                      if (result ?? false) {
-                                                        await Future<
-                                                                void>.delayed(
+                                                        if (result ?? false) {
+                                                          await Future<
+                                                            void
+                                                          >.delayed(
                                                             const Duration(
-                                                                milliseconds:
-                                                                    1500));
+                                                              milliseconds:
+                                                                  1500,
+                                                            ),
+                                                          );
 
-                                                        bool? result2 = await Utilities.showAlert(
+                                                          bool?
+                                                          result2 = await Utilities.showAlert(
                                                             'Delete Account',
                                                             'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?',
                                                             'Delete Account',
                                                             showCancelButton:
                                                                 true,
                                                             cancelButtonText:
-                                                                'Keep Account');
+                                                                'Keep Account',
+                                                          );
 
-                                                        if (result2 ?? false) {
-                                                          // String? tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
-                                                          // if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
-                                                          //   await FacebookAuth.instance.logOut();
-                                                          // }
+                                                          if (result2 ??
+                                                              false) {
+                                                            // String? tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+                                                            // if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
+                                                            //   await FacebookAuth.instance.logOut();
+                                                            // }
 
-                                                          final GdprDeleteService
-                                                              svc =
-                                                              GdprDeleteService();
-                                                          final SingleResultModel?
-                                                              result = await svc
-                                                                  .gdprDelete();
+                                                            final GdprDeleteService
+                                                            svc =
+                                                                GdprDeleteService();
+                                                            final SingleResultModel?
+                                                            result =
+                                                                await svc
+                                                                    .gdprDelete();
 
-                                                          if ((result?.result ??
-                                                                  '') ==
-                                                              'success') {
-                                                            await Utilities
-                                                                .showAlert(
-                                                              'Successful',
-                                                              'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
-                                                              'OK',
+                                                            if ((result?.result ??
+                                                                    '') ==
+                                                                'success') {
+                                                              await Utilities.showAlert(
+                                                                'Successful',
+                                                                'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
+                                                                'OK',
+                                                              );
+                                                            } else {
+                                                              await Utilities.showAlert(
+                                                                'Contact us',
+                                                                'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
+                                                                'OK',
+                                                              );
+                                                            }
+
+                                                            await clearPrefs();
+                                                            await DBProvider.deleteDb(
+                                                              DB_NAME,
                                                             );
-                                                          } else {
-                                                            await Utilities
-                                                                .showAlert(
-                                                              'Contact us',
-                                                              'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
-                                                              'OK',
+                                                            await G0.reset();
+
+                                                            await G0.reset();
+                                                            Get.offAll(
+                                                              () =>
+                                                                  AppEntryPage(),
                                                             );
                                                           }
-
-                                                          await clearPrefs();
-                                                          await DBProvider
-                                                              .deleteDb(
-                                                                  DB_NAME);
-                                                          await G0.reset();
-
-                                                          await G0.reset();
-                                                          Get.offAll(() =>
-                                                              AppEntryPage());
                                                         }
-                                                      }
-                                                    },
-                                                    child: Text(
-                                                      'Delete Account',
-                                                      style: ts_button,
+                                                      },
+                                                      child: Text(
+                                                        'Delete Account',
+                                                        style: ts_button,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
+                                          ],
+                                        ),
+                                      ],
                                     ],
-                                  ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 70, height: 70),
-                            ],
+                                const SizedBox(width: 70, height: 70),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
           ),
         ),
         Positioned(
-            bottom: 0,
-            child: Container(
-                padding: const EdgeInsets.only(
-                    top: 10, right: 20, bottom: 10, left: 20),
-                height: 60,
-                width: MediaQuery.of(context).size.width,
-                color: Colors.yellow[100],
-                child: Connection2.styleForConnected(
-                  G0<AppModel>().connectionStatus,
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isDirty ? hc_red : Colors.grey,
-                    ),
-                    onPressed: () {
-                      if (Connection2.checkForConnection(
-                              G0<AppModel>().connectionStatus) &&
-                          _isDirty) {
-                        _updateProfile();
-                      }
-                    },
-                    child: Text(
-                        widget.pageType ==
-                                EnumMyProfilePageType.newHasherProfile
-                            ? 'Add Hasher'
-                            : 'Save Changes',
-                        style: ts_button),
-                  ),
-                ))),
+          bottom: 0,
+          child: Container(
+            padding: const EdgeInsets.only(
+              top: 10,
+              right: 20,
+              bottom: 10,
+              left: 20,
+            ),
+            height: 60,
+            width: MediaQuery.of(context).size.width,
+            color: Colors.yellow[100],
+            child: Connection2.styleForConnected(
+              G0<AppModel>().connectionStatus,
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isDirty ? hc_red : Colors.grey,
+                ),
+                onPressed: () {
+                  if (Connection2.checkForConnection(
+                        G0<AppModel>().connectionStatus,
+                      ) &&
+                      _isDirty) {
+                    _updateProfile();
+                  }
+                },
+                child: Text(
+                  widget.pageType == EnumMyProfilePageType.newHasherProfile
+                      ? 'Add Hasher'
+                      : 'Save Changes',
+                  style: ts_button,
+                ),
+              ),
+            ),
+          ),
+        ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus ==
+          showRibbon:
+              G0<AppModel>().connectionStatus ==
               EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
@@ -2041,55 +2206,85 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   Future<void> _reloadData() async {
     final String? userId = getStringPref(StringPrefsEnum.userId);
+    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
     final String? resetCode = getStringPref(StringPrefsEnum.resetCode);
+    final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
+    final int? timeWindow = getIntPref(IntPrefsEnum.timeWindow);
 
-    final String? thirdPartyAccessToken =
-        getStringPref(StringPrefsEnum.thirdPartyAccessToken);
-    final String? thirdPartyAuthorizationCode =
-        getStringPref(StringPrefsEnum.thirdPartyAuthorizationCode);
-    final String? thirdPartyEmail =
-        getStringPref(StringPrefsEnum.thirdPartyEmail);
-    final String? thirdPartyForceTokenRefresh =
-        getStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh);
-    final String? thirdPartyLoginEmail =
-        getStringPref(StringPrefsEnum.thirdPartyLoginEmail);
-    final String? thirdPartyLoginType =
-        getStringPref(StringPrefsEnum.thirdPartyLoginType);
-    final String? thirdPartyUserId =
-        getStringPref(StringPrefsEnum.thirdPartyUserId);
+    final String? thirdPartyAccessToken = getStringPref(
+      StringPrefsEnum.thirdPartyAccessToken,
+    );
+    final String? thirdPartyAuthorizationCode = getStringPref(
+      StringPrefsEnum.thirdPartyAuthorizationCode,
+    );
+    final String? thirdPartyEmail = getStringPref(
+      StringPrefsEnum.thirdPartyEmail,
+    );
+    final String? thirdPartyForceTokenRefresh = getStringPref(
+      StringPrefsEnum.thirdPartyForceTokenRefresh,
+    );
+    final String? thirdPartyLoginEmail = getStringPref(
+      StringPrefsEnum.thirdPartyLoginEmail,
+    );
+    final String? thirdPartyLoginType = getStringPref(
+      StringPrefsEnum.thirdPartyLoginType,
+    );
+    final String? thirdPartyUserId = getStringPref(
+      StringPrefsEnum.thirdPartyUserId,
+    );
 
-    final DateTime? thirdPartyTokenLastUpdated =
-        getDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated);
-    final DateTime? thirdPartyTokenExpires =
-        getDatePref(DatePrefsEnum.thirdPartyTokenExpires);
+    final DateTime? thirdPartyTokenLastUpdated = getDatePref(
+      DatePrefsEnum.thirdPartyTokenLastUpdated,
+    );
+    final DateTime? thirdPartyTokenExpires = getDatePref(
+      DatePrefsEnum.thirdPartyTokenExpires,
+    );
 
     await clearPrefs();
 
     await setStringPref(StringPrefsEnum.userId, userId);
     await setStringPref(StringPrefsEnum.resetCode, resetCode);
+    await setStringPref(StringPrefsEnum.deviceId, deviceId);
+    await setStringPref(StringPrefsEnum.deviceSecret, deviceSecret);
+    await setIntPref(IntPrefsEnum.timeWindow, timeWindow);
 
     await setStringPref(
-        StringPrefsEnum.thirdPartyAccessToken, thirdPartyAccessToken);
-    await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
-        thirdPartyAuthorizationCode);
+      StringPrefsEnum.thirdPartyAccessToken,
+      thirdPartyAccessToken,
+    );
+    await setStringPref(
+      StringPrefsEnum.thirdPartyAuthorizationCode,
+      thirdPartyAuthorizationCode,
+    );
     await setStringPref(StringPrefsEnum.thirdPartyEmail, thirdPartyEmail);
-    await setStringPref(StringPrefsEnum.thirdPartyForceTokenRefresh,
-        thirdPartyForceTokenRefresh);
     await setStringPref(
-        StringPrefsEnum.thirdPartyLoginEmail, thirdPartyLoginEmail);
+      StringPrefsEnum.thirdPartyForceTokenRefresh,
+      thirdPartyForceTokenRefresh,
+    );
     await setStringPref(
-        StringPrefsEnum.thirdPartyLoginType, thirdPartyLoginType);
+      StringPrefsEnum.thirdPartyLoginEmail,
+      thirdPartyLoginEmail,
+    );
+    await setStringPref(
+      StringPrefsEnum.thirdPartyLoginType,
+      thirdPartyLoginType,
+    );
     await setStringPref(StringPrefsEnum.thirdPartyUserId, thirdPartyUserId);
 
     await setDatePref(
-        DatePrefsEnum.thirdPartyTokenExpires, thirdPartyTokenExpires);
+      DatePrefsEnum.thirdPartyTokenExpires,
+      thirdPartyTokenExpires,
+    );
 
     await setDatePref(
-        DatePrefsEnum.thirdPartyTokenLastUpdated, thirdPartyTokenLastUpdated);
+      DatePrefsEnum.thirdPartyTokenLastUpdated,
+      thirdPartyTokenLastUpdated,
+    );
 
     await DBProvider.deleteDb(DB_NAME);
 
-    await G0.reset();
+    Get.deleteAll(force: true);
+    await GetIt.instance.reset();
 
     Get.offAll(() => AppEntryPage());
   }
@@ -2101,21 +2296,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       if (ps.isPermanentlyDenied) {
         final bool? openSettings = await Utilities.showAlert(
-            'Phone Settings',
-            'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
-            'Open Settings',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel');
+          'Phone Settings',
+          'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+          'Open Settings',
+          showCancelButton: true,
+          cancelButtonText: 'Cancel',
+        );
 
         if (openSettings ?? false) {
           await openAppSettings();
 
-          success = await Utilities.showAlert(
-                  'Success?',
-                  'Were you able to change the settings to enable location services?',
-                  'Yes',
-                  showCancelButton: true,
-                  cancelButtonText: 'No') ??
+          success =
+              await Utilities.showAlert(
+                'Success?',
+                'Were you able to change the settings to enable location services?',
+                'Yes',
+                showCancelButton: true,
+                cancelButtonText: 'No',
+              ) ??
               false;
         }
       }
@@ -2133,19 +2331,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         }
       } else {
         await Utilities.showAlert(
-            'Location Services problem',
-            'Harrier Central was unable to confirm that Location Services have been enabled.\r\n\r\nPlease use the Settings panel to enable Location Services for Harrier Centra. Once you have done this, please close and restart Harrier Central.',
-            'Open Settings',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel');
+          'Location Services problem',
+          'Harrier Central was unable to confirm that Location Services have been enabled.\r\n\r\nPlease use the Settings panel to enable Location Services for Harrier Centra. Once you have done this, please close and restart Harrier Central.',
+          'Open Settings',
+          showCancelButton: true,
+          cancelButtonText: 'Cancel',
+        );
 
         await openAppSettings();
       }
     }
 
     await Utilities.showAlert(
-        'Location preferences updated',
-        'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
-        'OK');
+      'Location preferences updated',
+      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
+      'OK',
+    );
   }
 }

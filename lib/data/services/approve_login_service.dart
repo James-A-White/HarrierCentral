@@ -89,11 +89,23 @@ class ApproveLoginService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '<none>';
 
-    final String accessToken = Utilities.generateToken(
+    String accessToken = '';
+
+    //if (deviceSecret.isNotEmpty) {
+    accessToken = Utilities.generateToken(
       userId,
       'hcapp_approveLogin',
       paramString: deviceSecret,
     );
+    // } else {
+    //   // this will be the case when the 2.0 compatible app is being
+    //   // run after upgrading from a 1.x version app. In this case
+    //   // there will be no device secret
+
+    //   xxx
+
+    //   accessToken = Utilities.generateToken(userId, 'hcapp_approveLogin');
+    // }
 
     Position? position;
 

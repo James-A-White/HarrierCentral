@@ -396,6 +396,15 @@ class AppEntryPageState extends State<AppEntryPage>
 
   @override
   void initState() {
+    // precache the background image so it does not give a white flash
+    // on the first load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      precacheImage(
+        const AssetImage('images/backgrounds/hash_foot_background.avif'),
+        navigatorKey.currentState!.context,
+      );
+    });
+
     _iconAnimationController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
