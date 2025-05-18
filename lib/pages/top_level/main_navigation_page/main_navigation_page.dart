@@ -161,6 +161,35 @@ class MainNavigationPage extends StatelessWidget {
                             : IntroSlider(
                               isShowSkipBtn: false,
                               isShowPrevBtn: true,
+
+                              indicatorConfig: IndicatorConfig(
+                                sizeIndicator: 10,
+                                indicatorWidget: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    color: const Color.fromARGB(
+                                      255,
+                                      120,
+                                      72,
+                                      0,
+                                    ),
+                                  ),
+                                ),
+                                activeIndicatorWidget: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                spaceBetweenIndicator: 10,
+                                typeIndicatorAnimation:
+                                    TypeIndicatorAnimation.sliding,
+                              ),
+
                               // wrap each Image in a full-screen box, with BoxFit.cover
                               listCustomTabs:
                                   controller.newVersionImages.map((img) {
