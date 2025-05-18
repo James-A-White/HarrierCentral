@@ -123,7 +123,7 @@ class RunDetails extends StatelessWidget {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.5), // shadow color
+                          color: Colors.black.withAlpha(128), // shadow color
                           spreadRadius: 2, // how much the shadow spreads
                           blurRadius: 8, // softening the shadow
                           offset: Offset(4, 4), // direction of the shadow

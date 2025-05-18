@@ -61,6 +61,7 @@ const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/#/';
 
 const String BASE_AF_URL = 'harriercentralpublicapi.azurewebsites.net';
 const String BASE_AF_API_URL = 'https://$BASE_AF_URL/api/AppApi';
+const String BASE_AF_CONNECTION_TEST_URL = 'https://$BASE_AF_URL/api/TestApi';
 
 const String BASE_KENNEL_LOGOS_URL =
     'https://harriercentral.blob.core.windows.net/harrier/';

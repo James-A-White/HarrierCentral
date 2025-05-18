@@ -45,7 +45,7 @@ class Utilities {
       paramString = '#${paramString.toUpperCase()}';
     }
     final String accessString =
-        '${userId}#$procName#${timeBlocks.toString()}$paramString';
+        '$userId#$procName#${timeBlocks.toString()}$paramString';
     final List<int> bytes = utf8.encode(
       accessString.toUpperCase(),
     ); // data being hashed
@@ -731,45 +731,59 @@ class Utilities {
   }
 
   static Future<void> checkForInternetConnection(bool reconnectAttempt) async {
+    final backendChecker = InternetConnection.createInstance(
+      customCheckOptions: [
+        InternetCheckOption(uri: Uri.parse(BASE_AF_CONNECTION_TEST_URL)),
+      ],
+    );
+
+    bool backendAvailable = await backendChecker.hasInternetAccess;
+
+    // Retry logic if Harrier Central server is unavailable
+    while (!backendAvailable) {
+      final fallbackChecker = InternetConnection.createInstance(
+        customCheckOptions: [
+          InternetCheckOption(
+            uri: Uri.parse('https://www.google.com/generate_204'),
+          ),
+          InternetCheckOption(
+            uri: Uri.parse('https://www.msftconnecttest.com/connecttest.txt'),
+          ),
+        ],
+      );
+
+      final internetAvailable = await fallbackChecker.hasInternetAccess;
+
+      if (internetAvailable) {
+        // Internet is up but our backend is down
+        await Utilities.showAlert(
+          'Server Offline',
+          'The Harrier Central App is able to access the network but is unable to connect to our backend server.\n\nThis can happen if there is a problem with the network or our service is down for maintenance.\n\nYou can use the app offline or close the app and try again later.',
+          'OK',
+        );
+        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+        return;
+      } else {
+        // No internet at all — retry dialog
+        final bool? useOffline = await Utilities.showAlert(
+          'Check Network',
+          'Harrier Central is unable to detect a network connection.\n\nPlease check the network connection on your phone and try again, or you can continue to use the app in Offline Mode.',
+          'Use Offline',
+          showCancelButton: true,
+          cancelButtonText: 'Try again',
+        );
+        if (useOffline ?? true) {
+          G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+          return;
+        }
+
+        await Future<void>.delayed(const Duration(seconds: 2));
+        backendAvailable = await backendChecker.hasInternetAccess;
+      }
+    }
+
+    // If we get here, everything is good
     G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
-
-    // final InternetConnectionChecker checker = InternetConnectionChecker();
-
-    // while (!await checker.hasConnection) {
-    //   final bool? useOffline = await Utilities.showAlert(
-    //       'Check Network',
-    //       'Harrier Central is unable to detect a network connection.\r\n\r\nPlease check the network connection on your phone and try again, or you can continue to use the app in Offline Mode.',
-    //       'Use Offline',
-    //       showCancelButton: true,
-    //       cancelButtonText: 'Try again');
-    //   if (useOffline ?? true) {
-    //     break;
-    //   }
-
-    //   await Future<void>.delayed(const Duration(seconds: 2));
-    // }
-
-    // if (await checker.hasConnection) {
-    //   G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
-
-    //   final customChecker = InternetConnectionChecker.createInstance(
-    //     customCheckOptions: [
-    //       AddressCheckOption(uri: Uri.parse(BASE_URL)),
-    //     ],
-    //     useDefaultOptions: false,
-    //   );
-
-    //   if (!await customChecker.hasConnection) {
-    //     await Utilities.showAlert(
-    //         'Server Offline',
-    //         'The Harrier Central App is able to access the network but is unable to connect to our backend server.\r\n\r\nThis can happen if there is a problem with the network or our service is down for maintenance.\r\n\r\nYou can use the app offline or close the app and try again later.',
-    //         'OK');
-
-    //     G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
-    //   }
-    // } else {
-    //   G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
-    // }
   }
 
   static String getFullLatLong(EventModel evt) {

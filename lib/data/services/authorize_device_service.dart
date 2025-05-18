@@ -1,10 +1,9 @@
 import 'package:harrier_central/imports.dart';
 
 class AuthorizeDeviceService {
-  Future<Map<String, String>> authorizeDevice(
-    BuildContext context,
-    String scanText, {
-    num includeInGlobalHashDirectory = -1,
+  Future<Map<String, String>> authorizeDevice({
+    String? scanText,
+    String? userId,
   }) async {
     String deviceDataJson = '{"error":"device data error"}';
 
@@ -49,9 +48,16 @@ class AuthorizeDeviceService {
       'hcVersion':
           getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
           '<no HC version>',
-      'scanText': scanText,
       'deviceData': deviceDataJson,
     });
+
+    if (scanText != null) {
+      params['scanText'] = scanText;
+    }
+
+    if (userId != null) {
+      params['userId'] = userId;
+    }
 
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     // Ensure APNs token is set

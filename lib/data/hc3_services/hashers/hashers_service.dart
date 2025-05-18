@@ -135,11 +135,12 @@ class HashersService extends BaseService {
 
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    String paramString = deviceSecret + targetUserId;
 
     final String accessToken = Utilities.generateToken(
       userId,
       'hcapp_addEditUser',
-      paramString: deviceSecret + targetUserId,
+      paramString: paramString,
     );
 
     DateTime hashersUpdatedAfter;
@@ -198,6 +199,7 @@ class HashersService extends BaseService {
     final String body = jsonEncode(<String, String?>{
       'queryType': 'addEditUser',
       'deviceId': deviceId,
+      'userId': userId,
       'accessToken': accessToken,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),

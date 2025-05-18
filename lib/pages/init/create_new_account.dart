@@ -3,9 +3,7 @@ import 'package:harrier_central/imports.dart';
 class CreateNewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const CreateNewAccountPage({
-    super.key,
-  });
+  const CreateNewAccountPage({super.key});
 
   @override
   CreateNewAccountPageState createState() => CreateNewAccountPageState();
@@ -16,7 +14,10 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+        ),
         Positioned(
           top: 0,
           left: 0,
@@ -26,10 +27,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
-              iconTheme: const IconThemeData(
-                color: Colors.white,
-                size: 28.0,
-              ),
+              iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
               title: Text('Create New Account', style: ts_appBarTitle),
             ),
             body: Container(
@@ -41,7 +39,9 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+          showRibbon:
+              G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -54,15 +54,15 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
 }
 
 class CreateNewAccountPageContent extends StatefulWidget {
-  const CreateNewAccountPageContent({
-    super.key,
-  });
+  const CreateNewAccountPageContent({super.key});
 
   @override
-  CreateNewAccountPageContentState createState() => CreateNewAccountPageContentState();
+  CreateNewAccountPageContentState createState() =>
+      CreateNewAccountPageContentState();
 }
 
-class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent> {
+class CreateNewAccountPageContentState
+    extends State<CreateNewAccountPageContent> {
   // TextEditingController _inviteCodeTextController;
   // InputDecoration _inviteCodeDecoration;
   final FocusNode inviteCodeFocusNode = FocusNode();
@@ -79,202 +79,319 @@ class CreateNewAccountPageContentState extends State<CreateNewAccountPageContent
     _userDetailsUi = UserDetailsUi(key: _myDetailsUiStateKey);
   }
 
-  final GlobalKey<UserDetailsUiState> _myDetailsUiStateKey = GlobalKey<UserDetailsUiState>();
+  final GlobalKey<UserDetailsUiState> _myDetailsUiStateKey =
+      GlobalKey<UserDetailsUiState>();
 
   late final UserDetailsUi _userDetailsUi;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final double newFontSize = (ts_headingLarge.fontSize ?? 24.0) * G0<DeviceInfo>().deviceWidthScaleFactor;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints viewportConstraints) {
+        final double newFontSize =
+            (ts_headingLarge.fontSize ?? 24.0) *
+            G0<DeviceInfo>().deviceWidthScaleFactor;
 
-      final TextStyle localHeadingStyle = ts_headingLarge.copyWith(fontSize: newFontSize, height: 1.2);
+        final TextStyle localHeadingStyle = ts_headingLarge.copyWith(
+          fontSize: newFontSize,
+          height: 1.2,
+        );
 
-      return SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  //SizedBox(width: 46,height: 10,),
-                  Text(
-                    'Please enter your\r\nuser details',
-                    style: localHeadingStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     await Utilities.showAlert(
-                  //         context,
-                  //         'What is an "Invite Code"?',
-                  //         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
-                  //         'OK');
-                  //   },
-                  //   child: Container(
-                  //     padding: const EdgeInsets.only(left: 20),
-                  //     height: 26,
-                  //     child: Image.asset('images/icons/more_info_button.png'),
-                  //   ),
-                  // ),
-                ],
-              ),
-              const SizedBox(
-                height: 30,
-                width: 30,
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 15, right: 15),
-                padding: const EdgeInsets.all(10),
-                color: Colors.yellow[100],
-                child: Column(
+        return SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _userDetailsUi,
-                    const SizedBox(
-                      height: 30,
-                      width: 30,
+                    //SizedBox(width: 46,height: 10,),
+                    Text(
+                      'Please enter your\r\nuser details',
+                      style: localHeadingStyle,
+                      textAlign: TextAlign.center,
                     ),
-                    // Row(
-                    //   children: <Widget>[
-                    //     Container(
-                    //       margin: const EdgeInsets.only(right: 10),
-                    //       height: 25,
-                    //       width: 25,
-                    //       color: Colors.yellow[100],
-                    //       child: Checkbox(
-                    //         value: includeInGlobalHashDirectory,
-                    //         onChanged: (bool value) {
-                    //           setState(() {
-                    //             includeInGlobalHashDirectory = value;
-                    //           });
-                    //         },
-                    //       ),
-                    //     ),
-                    //     const Expanded(
-                    //       child: Text(
-                    //         'Include me in Global Hash Directory',
-                    //         //style: headingStyle,
-                    //         textAlign: TextAlign.center,
-                    //         maxLines: 2,
-                    //       ),
-                    //     ),
-                    //     GestureDetector(
-                    //       onTap: () async {
-                    //         await Utilities.showAlert(
-                    //             context,
-                    //             'What is the Global Hash Directory?',
-                    //             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
-                    //             'OK');
-                    //       },
-                    //       child: Container(
-                    //         padding: const EdgeInsets.only(left: 20),
-                    //         height: 26,
-                    //         child: Image.asset('images/icons/more_info_button.png'),
-                    //       ),
-                    //     ),
-                    //   ],
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     await Utilities.showAlert(
+                    //         context,
+                    //         'What is an "Invite Code"?',
+                    //         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
+                    //         'OK');
+                    //   },
+                    //   child: Container(
+                    //     padding: const EdgeInsets.only(left: 20),
+                    //     height: 26,
+                    //     child: Image.asset('images/icons/more_info_button.png'),
+                    //   ),
                     // ),
-                    const SizedBox(height: 8, width: 10),
                   ],
                 ),
-              ),
-              const SizedBox(height: 35, width: 10),
-              if (!isLoading) ...<Widget>[
-                TextButton(
-                  style: text_button_style,
-                  child: Text('Get Started!', style: ts_button),
-                  onPressed: () async {
-                    if (_myDetailsUiStateKey.currentState!.validateForm()) {
-                      // If the form is valid, display a snackbar. In the real world,
-                      // you'd often call a server or save the information in a database.
-                      setState(() {
-                        isLoading = true;
-                      });
+                const SizedBox(height: 30, width: 30),
+                Container(
+                  margin: const EdgeInsets.only(left: 15, right: 15),
+                  padding: const EdgeInsets.all(10),
+                  color: Colors.yellow[100],
+                  child: Column(
+                    children: <Widget>[
+                      _userDetailsUi,
+                      const SizedBox(height: 30, width: 30),
+                      // Row(
+                      //   children: <Widget>[
+                      //     Container(
+                      //       margin: const EdgeInsets.only(right: 10),
+                      //       height: 25,
+                      //       width: 25,
+                      //       color: Colors.yellow[100],
+                      //       child: Checkbox(
+                      //         value: includeInGlobalHashDirectory,
+                      //         onChanged: (bool value) {
+                      //           setState(() {
+                      //             includeInGlobalHashDirectory = value;
+                      //           });
+                      //         },
+                      //       ),
+                      //     ),
+                      //     const Expanded(
+                      //       child: Text(
+                      //         'Include me in Global Hash Directory',
+                      //         //style: headingStyle,
+                      //         textAlign: TextAlign.center,
+                      //         maxLines: 2,
+                      //       ),
+                      //     ),
+                      //     GestureDetector(
+                      //       onTap: () async {
+                      //         await Utilities.showAlert(
+                      //             context,
+                      //             'What is the Global Hash Directory?',
+                      //             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
+                      //             'OK');
+                      //       },
+                      //       child: Container(
+                      //         padding: const EdgeInsets.only(left: 20),
+                      //         height: 26,
+                      //         child: Image.asset('images/icons/more_info_button.png'),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      const SizedBox(height: 8, width: 10),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 35, width: 10),
+                if (!isLoading) ...<Widget>[
+                  TextButton(
+                    style: text_button_style,
+                    child: Text('Get Started!', style: ts_button),
+                    onPressed: () async {
+                      if (_myDetailsUiStateKey.currentState!.validateForm()) {
+                        // If the form is valid, display a snackbar. In the real world,
+                        // you'd often call a server or save the information in a database.
+                        setState(() {
+                          isLoading = true;
+                        });
 
-                      await setStringPref(StringPrefsEnum.firstName, _userDetailsUi.firstName);
-                      await setStringPref(StringPrefsEnum.lastName, _userDetailsUi.lastName);
-                      await setStringPref(StringPrefsEnum.email, _userDetailsUi.email);
-                      await setStringPref(StringPrefsEnum.hashName, _userDetailsUi.hashName);
+                        await setStringPref(
+                          StringPrefsEnum.firstName,
+                          _myDetailsUiStateKey
+                              .currentState!
+                              .signupFirstNameController
+                              .value
+                              .text,
+                        );
+                        await setStringPref(
+                          StringPrefsEnum.lastName,
+                          _myDetailsUiStateKey
+                              .currentState!
+                              .signupLastNameController
+                              .value
+                              .text,
+                        );
+                        await setStringPref(
+                          StringPrefsEnum.email,
+                          _myDetailsUiStateKey
+                              .currentState!
+                              .signupEmailController
+                              .value
+                              .text,
+                        );
+                        await setStringPref(
+                          StringPrefsEnum.hashName,
+                          _myDetailsUiStateKey
+                              .currentState!
+                              .signupHashNameController
+                              .value
+                              .text,
+                        );
 
-                      final HashersService srv = HashersService();
+                        final HashersService srv = HashersService();
 
-                      final String profilePhotoUrl = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+                        final String profilePhotoUrl =
+                            'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
-                      final String responseBody = await srv.addEditUser(
+                        final String responseBody = await srv.addEditUser(
                           targetUserId: GUID_EMPTY,
-                          firstName: _userDetailsUi.firstName,
-                          lastName: _userDetailsUi.lastName,
-                          email: _userDetailsUi.email,
-                          hashName: _userDetailsUi.hashName,
+                          firstName:
+                              _myDetailsUiStateKey
+                                  .currentState!
+                                  .signupFirstNameController
+                                  .value
+                                  .text,
+                          lastName:
+                              _myDetailsUiStateKey
+                                  .currentState!
+                                  .signupLastNameController
+                                  .value
+                                  .text,
+                          email:
+                              _myDetailsUiStateKey
+                                  .currentState!
+                                  .signupEmailController
+                                  .value
+                                  .text,
+                          hashName:
+                              _myDetailsUiStateKey
+                                  .currentState!
+                                  .signupHashNameController
+                                  .value
+                                  .text,
                           photo: profilePhotoUrl,
                           // includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
-                          includeInGlobalHashDirectory: 0);
+                          includeInGlobalHashDirectory: 0,
+                        );
 
-                      bool isSuccessfulLoad = false;
+                        bool isSuccessfulLoad = false;
 
-                      if (responseBody == ERROR_INVITE_CODE_SENT) {
-                        isSuccessfulLoad = true;
+                        if (responseBody == ERROR_INVITE_CODE_SENT) {
+                          isSuccessfulLoad = true;
 
-                        if (!mounted) return;
-                        await Navigator.push<dynamic>(navigatorKey.currentContext!, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
-                      } else if (!responseBody.startsWith(ERROR_PREFIX)) {
-                        final List<dynamic> jsonResultSets = json.decode(responseBody);
-                        if (jsonResultSets.isNotEmpty) {
-                          final List<dynamic> subSet = jsonResultSets[0];
-                          if (subSet.isNotEmpty) {
-                            final Map<String, dynamic> result = subSet[0];
-                            if (result.isNotEmpty) {
-                              await setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
-                              await setStringPref(StringPrefsEnum.displayName, result['displayName']);
-                              //setStringPref(StringPrefsEnum.email, result['email']);
-                              // await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
-                              await setStringPref(StringPrefsEnum.firstName, result['firstName']);
-                              await setStringPref(StringPrefsEnum.hashName, result['hashName']);
-                              await setStringPref(StringPrefsEnum.lastName, result['lastName']);
-                              await setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
-                              await setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
-                              await setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
-                              await setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
-                              await setStringPref(StringPrefsEnum.userId, result['hasherId']);
-                              final int preferences = int.tryParse(result['preferences'] ?? '14') ?? 14;
-                              await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
-                              isSuccessfulLoad = true;
+                          if (!mounted) return;
+                          await Navigator.push<dynamic>(
+                            navigatorKey.currentContext!,
+                            MaterialPageRoute<dynamic>(
+                              builder:
+                                  (BuildContext context) =>
+                                      const UseInviteCodePage(),
+                            ),
+                          );
+                        } else if (!responseBody.startsWith(ERROR_PREFIX)) {
+                          final List<dynamic> jsonResultSets = json.decode(
+                            responseBody,
+                          );
+                          if (jsonResultSets.isNotEmpty) {
+                            final List<dynamic> subSet = jsonResultSets[0];
+                            if (subSet.isNotEmpty) {
+                              final Map<String, dynamic> result = subSet[0];
+                              if (result.isNotEmpty) {
+                                await setStringPref(
+                                  StringPrefsEnum.profilePhotoUrl,
+                                  result['photo'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.displayName,
+                                  result['displayName'],
+                                );
+                                //setStringPref(StringPrefsEnum.email, result['email']);
+                                // await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
+                                await setStringPref(
+                                  StringPrefsEnum.firstName,
+                                  result['firstName'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.hashName,
+                                  result['hashName'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.lastName,
+                                  result['lastName'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.qrCode,
+                                  result['qrCode'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.supportCode,
+                                  result['supportCode'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.resetCode,
+                                  result['resetCode'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.qrSecretCode,
+                                  result['qrSecretCode'],
+                                );
+                                await setStringPref(
+                                  StringPrefsEnum.userId,
+                                  result['hasherId'],
+                                );
+                                final int preferences =
+                                    int.tryParse(
+                                      result['preferences'] ?? '14',
+                                    ) ??
+                                    14;
+                                await setIntPref(
+                                  IntPrefsEnum.hasherPreferences,
+                                  preferences,
+                                );
+                                isSuccessfulLoad = true;
 
-                              //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                              final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode)!;
-                              //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                                //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                                final String fileNamePrefix =
+                                    getStringPref(StringPrefsEnum.supportCode)!;
+                                //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                              if (!mounted) return;
-                              await Navigator.pushReplacement<dynamic, dynamic>(
+                                // call Authorize device to get the device secret and device ID. NOTE This
+                                // has to be done after the user is created.
+                                final String userId =
+                                    getStringPref(StringPrefsEnum.userId)!;
+                                final AuthorizeDeviceService srv =
+                                    AuthorizeDeviceService();
+                                await srv.authorizeDevice(userId: userId);
+
+                                if (!mounted) return;
+                                await Navigator.pushReplacement<
+                                  dynamic,
+                                  dynamic
+                                >(
                                   navigatorKey.currentContext!,
                                   MaterialPageRoute<dynamic>(
-                                    builder: (BuildContext context) => ChooseProfileImage(
-                                      isForThisDevice: true,
-                                      fileNamePrefix: fileNamePrefix,
-                                      currentProfileImage: null,
-                                      popToCaller: false,
-                                    ),
-                                  ));
+                                    builder:
+                                        (BuildContext context) =>
+                                            ChooseProfileImage(
+                                              isForThisDevice: true,
+                                              fileNamePrefix: fileNamePrefix,
+                                              currentProfileImage: null,
+                                              popToCaller: false,
+                                            ),
+                                  ),
+                                );
+                              }
                             }
                           }
                         }
-                      }
 
-                      if (!isSuccessfulLoad) {
-                        await Utilities.showAlert('Account not created', 'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
+                        if (!isSuccessfulLoad) {
+                          await Utilities.showAlert(
+                            'Account not created',
+                            'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
+                            'OK',
+                          );
+                        }
                       }
-                    }
-                  },
-                ),
+                    },
+                  ),
+                ],
+                const SizedBox(height: 50, width: 10),
               ],
-              const SizedBox(height: 50, width: 10),
-            ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }

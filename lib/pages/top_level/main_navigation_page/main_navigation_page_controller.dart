@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
-enum MainPageContent { loading, newVersion, promo, appContent, help }
+enum MainPageContent { initial, loading, newVersion, promo, appContent, help }
 
 class MainNavigationController extends GetxController
     with WidgetsBindingObserver {
@@ -68,7 +68,7 @@ class MainNavigationController extends GetxController
   final initializationMessage = ''.obs;
   final isFlipped = false.obs;
   final mainScreenReady = false.obs;
-  final mainScreenContent = MainPageContent.loading.obs;
+  final mainScreenContent = MainPageContent.initial.obs;
   final showPromoTools = false.obs;
   final steps = 10.obs;
   final timeRemaining = RxnInt();
@@ -131,6 +131,8 @@ class MainNavigationController extends GetxController
     if (hcCurrentVersion != hcPreviousVersion) {
       await _preloadImages();
       mainScreenContent.value = MainPageContent.newVersion;
+    } else {
+      mainScreenContent.value = MainPageContent.loading;
     }
 
     appBarText.value = tabTitles[0];

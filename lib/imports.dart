@@ -183,7 +183,7 @@ export 'package:harrier_central/widgets/zoomable_image.dart';
 export 'package:http/http.dart';
 export 'package:image_cropper/image_cropper.dart';
 export 'package:image_picker/image_picker.dart';
-export 'package:internet_connection_checker/internet_connection_checker.dart';
+export 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 export 'package:intro_slider/intro_slider.dart';
 export 'package:ive_flutter_core_mobile/database/base_service.dart';
 export 'package:ive_flutter_core_mobile/database/database.dart';

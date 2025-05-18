@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:get/get.dart';
 
 class AppEntryPage extends StatefulWidget {
   const AppEntryPage({super.key});
@@ -13,6 +14,47 @@ class AppEntryPageState extends State<AppEntryPage>
   late CurvedAnimation _iconAnimation;
 
   Future<void> _handleStartup(BuildContext context) async {
+    await G0.allReady();
+    G0.registerSingleton<AppModel>(AppModel());
+
+    final String? userId = getStringPref(StringPrefsEnum.userId);
+    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+
+    await Utilities.checkForInternetConnection(false);
+
+    if ((userId != null) && (deviceId == null)) {
+      // we hit this case when people are migrating from a 1.xx release to the 2.xx
+      // release. In 1.xx we didn't have the concept of a DeviceId. In 2.xx we use
+      // the DeviceId so that we can maintain separate FCN tokens on the server, and
+      // so we can implement a deviceSecret for increased security
+
+      // call Authorize device first to get the device secret and device ID
+      final AuthorizeDeviceService srv = AuthorizeDeviceService();
+      await srv.authorizeDevice(userId: userId);
+
+      // now tear down the database GetIt instance and Get data
+      await DBProvider.deleteDb(DB_NAME);
+      await Get.deleteAll(force: true);
+      await GetIt.instance.reset();
+
+      // and re-run the app.
+      await Future.microtask(() {
+        Get.offAll(() => AppEntryPage());
+      });
+
+      // stop it from falling through and continuing to run.
+      // this shouldn't be needed, but I'll put it in for now for testing
+      await Future.delayed(const Duration(seconds: 5));
+
+      // if (result.isNotEmpty) {
+      //   await Utilities.showAlert(
+      //     'Upgraded to 2.0',
+      //     'Congratulations! Your app has been successfully upgraded to Harrier Central 2.0.',
+      //     'OK',
+      //   );
+      // }
+    }
+
     final PackageInfo p = await PackageInfo.fromPlatform();
     final String hcVersionAndBuild =
         'HC Ver: ${p.version}, Bld: ${p.buildNumber}';
@@ -29,8 +71,6 @@ class AppEntryPageState extends State<AppEntryPage>
       MediaQuery.of(navigatorKey.currentContext!).size.height,
       MediaQuery.of(navigatorKey.currentContext!).textScaler.scale(1.0),
     );
-
-    await G0.allReady();
 
     G0<AppModel>().appStartTime = DateTime.now();
 
@@ -56,10 +96,6 @@ class AppEntryPageState extends State<AppEntryPage>
     G0<DeviceInfo>().deviceHeight =
         MediaQuery.of(navigatorKey.currentContext!).size.height;
 
-    final String? userId = getStringPref(StringPrefsEnum.userId);
-
-    await Utilities.checkForInternetConnection(false);
-
     ApproveLoginModel? loginResult;
     List<PromoModel>? promoResult;
     //String? facebookAccessToken;
@@ -68,8 +104,6 @@ class AppEntryPageState extends State<AppEntryPage>
     await Utilities.subscribeToGeoLocationStream();
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
-      //facebookAccessToken = await _checkFacebookLogin();
-
       final String responseBody = await svc.approveLogin(
         navigatorKey.currentContext!,
         null,
@@ -188,8 +222,7 @@ class AppEntryPageState extends State<AppEntryPage>
 
                   if (!mounted) return;
                   final Map<String, String> result = await srv.authorizeDevice(
-                    navigatorKey.currentContext!,
-                    resetCode.toUpperCase(),
+                    scanText: resetCode.toUpperCase(),
                   );
 
                   setState(() {

@@ -1,9 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class GetResetCodePopup extends StatefulWidget {
-  const GetResetCodePopup({
-    super.key,
-  });
+  const GetResetCodePopup({super.key});
 
   @override
   GetResetCodePopupState createState() => GetResetCodePopupState();
@@ -16,10 +14,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        'Get Invite Code',
-        style: ts_alertDialogTitle,
-      ),
+      title: Text('Get Invite Code', style: ts_alertDialogTitle),
       content: TextField(
         onChanged: (String x) {
           setState(() {});
@@ -31,10 +26,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
         style: ts_alertDialogBody,
         decoration: InputDecoration(
           border: InputBorder.none,
-          icon: const Icon(
-            FontAwesome.money,
-            color: Colors.white,
-          ),
+          icon: const Icon(FontAwesome.money, color: Colors.white),
           hintText: 'Support Code',
           hintStyle: ts_hint,
         ),
@@ -60,85 +52,99 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
         // Container(
         //   width: 60.0,
         //child:
+        TextButton(
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_blue,
+          ),
+          child: const Text('Reset'),
+          onPressed: () {
+            clearPrefs();
+          },
+        ),
 
         TextButton(
-            style: TextButton.styleFrom(
-              shape: button_shape,
-              backgroundColor: hc_blue,
-            ),
-            child: const Text(
-              'Reset',
-            ),
-            onPressed: () {
-              clearPrefs();
-            }),
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_blue,
+          ),
+          child: Text('Done', style: ts_button),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
 
-        TextButton(
-            style: TextButton.styleFrom(
-              shape: button_shape,
-              backgroundColor: hc_blue,
-            ),
-            child: Text(
-              'Done',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-            }),
         // ),
         // Container(
         //   width: 60.0,
         //child:
-
         TextButton(
-            style: TextButton.styleFrom(
-              shape: button_shape,
-              backgroundColor: hc_blue,
-            ),
-            child: Text(
-              'Get code',
-              style: ts_button,
-            ),
-            onPressed: () {
-              final GetResetCodeService svc = GetResetCodeService();
-              svc.getResetCode(QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text).then((SingleResultModel? result) {
-                setState(() {
-                  getResetCodeTextController.text = result!.result ?? '';
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_blue,
+          ),
+          child: Text('Get code', style: ts_button),
+          onPressed: () {
+            final GetResetCodeService svc = GetResetCodeService();
+            svc
+                .getResetCode(
+                  QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text,
+                )
+                .then((SingleResultModel? result) {
+                  setState(() {
+                    getResetCodeTextController.text = result!.result ?? '';
+                  });
                 });
-              });
 
-              // Navigator.of(context).pop(<String, String>{
-              //   'type': paymentBankTransferOther.value.toString(),
-              //   'amount': getResetCodeTextController.text
-              // });
-            }),
+            // Navigator.of(context).pop(<String, String>{
+            //   'type': paymentBankTransferOther.value.toString(),
+            //   'amount': getResetCodeTextController.text
+            // });
+          },
+        ),
 
-        ((!getResetCodeTextController.text.startsWith(QR_PREFIX_USER_RESET_CODE)) || (getResetCodeTextController.text.length != 9))
+        ((!getResetCodeTextController.text.startsWith(
+                  QR_PREFIX_USER_RESET_CODE,
+                )) ||
+                (getResetCodeTextController.text.length != 9))
             ? Container()
             : TextButton(
-                style: TextButton.styleFrom(
-                  shape: button_shape,
-                  backgroundColor: hc_blue,
-                ),
-                child: Text('Reset device', style: ts_button),
-                onPressed: () async {
-                  if (getResetCodeTextController.text.toUpperCase() == '${QR_PREFIX_USER_RESET_CODE}CLEAR') {
-                    await clearPrefs();
-                    await DBProvider.deleteDb(DB_NAME);
-
-                    await Utilities.showAlert('App Cleared Successful', 'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
-                  } else {
-                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                    final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, getResetCodeTextController.text.toUpperCase());
-                    final Map<String, String> result = await apiCall;
-                    if (result.isNotEmpty) {
-                      getResetCodeTextController.text = getStringPref(StringPrefsEnum.displayName) ?? '';
-
-                      await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                    }
-                  }
-                },
+              style: TextButton.styleFrom(
+                shape: button_shape,
+                backgroundColor: hc_blue,
               ),
+              child: Text('Reset device', style: ts_button),
+              onPressed: () async {
+                if (getResetCodeTextController.text.toUpperCase() ==
+                    '${QR_PREFIX_USER_RESET_CODE}CLEAR') {
+                  await clearPrefs();
+                  await DBProvider.deleteDb(DB_NAME);
+
+                  await Utilities.showAlert(
+                    'App Cleared Successful',
+                    'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
+                    'OK',
+                  );
+                } else {
+                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                  final Future<Map<String, String>> apiCall = srv
+                      .authorizeDevice(
+                        scanText: getResetCodeTextController.text.toUpperCase(),
+                      );
+                  final Map<String, String> result = await apiCall;
+                  if (result.isNotEmpty) {
+                    getResetCodeTextController.text =
+                        getStringPref(StringPrefsEnum.displayName) ?? '';
+
+                    await Utilities.showAlert(
+                      'App Reset Successful',
+                      'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
+                      'OK',
+                    );
+                  }
+                }
+              },
+            ),
 
         // ),
       ],

@@ -2282,11 +2282,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
 
     await DBProvider.deleteDb(DB_NAME);
-
-    Get.deleteAll(force: true);
+    await Get.deleteAll(force: true);
     await GetIt.instance.reset();
 
-    Get.offAll(() => AppEntryPage());
+    // and re-run the app.
+    await Future.microtask(() {
+      Get.offAll(() => AppEntryPage());
+    });
   }
 
   Future<void> _enableLocationServices() async {

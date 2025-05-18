@@ -10,8 +10,11 @@ final GetIt G0 = GetIt.instance;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-Future<void> setupLocalServices(num deviceWidth, num deviceHeight, double textScaleFactor) async {
-  G0.registerSingleton<AppModel>(AppModel());
+Future<void> setupLocalServices(
+  num deviceWidth,
+  num deviceHeight,
+  double textScaleFactor,
+) async {
   G0.registerSingletonAsync<DeviceInfo>(() async {
     final DeviceInfo deviceInfo = DeviceInfo();
     await deviceInfo.init(deviceWidth, deviceHeight, textScaleFactor);
@@ -39,13 +42,16 @@ void _initTables() {
     G0<TableModel>().kennelsTableHelper,
     G0<TableModel>().eventsTableHelper,
     G0<TableModel>().hasherEventMapTableHelper,
-    G0<TableModel>().hasherKennelMapTableHelper
+    G0<TableModel>().hasherKennelMapTableHelper,
   ];
 }
 
 bool _createIndexes = false;
 
-Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) async {
+Future<bool> setupDatabase(
+  Function informUser,
+  String clientAppIdentifier,
+) async {
   // bool initialLoad = false;
   // if (getIntPref(IntPrefsEnum.databaseVersion) != DB_VERSION) {
   //   initialLoad = true;
@@ -78,73 +84,87 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
 
   try {
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagCitiesTable | SyncUserDataService.flagRegionsTable | SyncUserDataService.flagCountriesTable,
-          false,
-          informUser: informUser,
-          debugText: 'Globals: Cities, Regions, Countries on launch',
-          batchText: 'Batch #',
-          client: client,
-          usePaging: false,
-        );
+      SyncUserDataService.flagCitiesTable |
+          SyncUserDataService.flagRegionsTable |
+          SyncUserDataService.flagCountriesTable,
+      false,
+      informUser: informUser,
+      debugText: 'Globals: Cities, Regions, Countries on launch',
+      batchText: 'Batch #',
+      client: client,
+      usePaging: false,
+    );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagPaymentsTable,
-          false,
-          informUser: informUser,
-          debugText: 'Globals: HEM on launch',
-          batchText: 'Batch #',
-          client: client,
-          usePaging: false,
-        );
+      SyncUserDataService.flagHasherEventMapTable |
+          SyncUserDataService.flagPaymentsTable,
+      false,
+      informUser: informUser,
+      debugText: 'Globals: HEM on launch',
+      batchText: 'Batch #',
+      client: client,
+      usePaging: false,
+    );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherKennelMapTable,
-          false,
-          informUser: informUser,
-          debugText: 'Globals: HKM on launch',
-          batchText: 'Batch #',
-          client: client,
-          usePaging: false,
-        );
+      SyncUserDataService.flagHasherKennelMapTable,
+      false,
+      informUser: informUser,
+      debugText: 'Globals: HKM on launch',
+      batchText: 'Batch #',
+      client: client,
+      usePaging: false,
+    );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagKennelsTable,
-          false,
-          informUser: informUser,
-          debugText: 'Globals: Kennels on launch',
-          batchText: 'Batch #',
-          client: client,
-          usePaging: true,
-        );
+      SyncUserDataService.flagKennelsTable,
+      false,
+      informUser: informUser,
+      debugText: 'Globals: Kennels on launch',
+      batchText: 'Batch #',
+      client: client,
+      usePaging: true,
+    );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagNarrowEventsTable,
-          false,
-          informUser: informUser,
-          debugText: 'Globals: Events on launch',
-          batchText: 'Batch #',
-          client: client,
-          usePaging: true,
-        );
+      SyncUserDataService.flagNarrowEventsTable,
+      false,
+      informUser: informUser,
+      debugText: 'Globals: Events on launch',
+      batchText: 'Batch #',
+      client: client,
+      usePaging: true,
+    );
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHashersTable,
-          false,
-          informUser: informUser,
-          debugText: 'Globals: Hashers on launch',
-          batchText: 'Batch #',
-          client: client,
-          usePaging: true,
-        );
+      SyncUserDataService.flagHashersTable,
+      false,
+      informUser: informUser,
+      debugText: 'Globals: Hashers on launch',
+      batchText: 'Batch #',
+      client: client,
+      usePaging: true,
+    );
 
-    await CommonQueries.deleteRemovedRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user));
-    await CommonQueries.deleteRemovedRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
-    await CommonQueries.deleteRemovedRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.kennel));
+    await CommonQueries.deleteRemovedRecords(
+      G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
+    );
+    await CommonQueries.deleteRemovedRecords(
+      G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
+    );
+    await CommonQueries.deleteRemovedRecords(
+      G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.kennel),
+    );
 
     // print('******* > DB Setup step 10');
 
     if (_createIndexes) {
-      await Tables.createIndexes(G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);
+      await Tables.createIndexes(
+        G0<Database>(),
+        DB_VERSION,
+        informUser,
+        clientAppIdentifier,
+      );
       // print('******* > DB Setup step 10.1');
       await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
       // print('******* > DB Setup step 10.2');
@@ -153,27 +173,46 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
     client.close();
   }
 
-  String message = (await CommonQueries.countRecords(G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))).toString();
+  String message =
+      (await CommonQueries.countRecords(
+        G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
+      )).toString();
   if (kDebugMode) {
     print('Hashers count = $message');
   }
 
-  message = (await CommonQueries.countRecords(G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user))).toString();
+  message =
+      (await CommonQueries.countRecords(
+        G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
+      )).toString();
   if (kDebugMode) {
     print('Events count = $message');
   }
 
-  message = (await CommonQueries.countRecords(G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user))).toString();
+  message =
+      (await CommonQueries.countRecords(
+        G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user),
+      )).toString();
   if (kDebugMode) {
     print('Kennels count = $message');
   }
 
-  message = (await CommonQueries.countRecords(G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user))).toString();
+  message =
+      (await CommonQueries.countRecords(
+        G0<TableModel>().hasherEventMapTableHelper.getTableName(
+          AppDomainType.user,
+        ),
+      )).toString();
   if (kDebugMode) {
     print('Hasher event map count = $message');
   }
 
-  message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user))).toString();
+  message =
+      (await CommonQueries.countRecords(
+        G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+          AppDomainType.user,
+        ),
+      )).toString();
   if (kDebugMode) {
     print('Hasher kennel map count = $message');
   }
@@ -190,20 +229,25 @@ Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) asyn
   return true;
 }
 
-Future<void> _openDb(dynamic db, Function informUser, String clientAppIdentifier) async {}
+Future<void> _openDb(
+  dynamic db,
+  Function informUser,
+  String clientAppIdentifier,
+) async {}
 
-Future<void> _createTables(dynamic db, int version, Function informUser, String clientAppIdentifier) async {
+Future<void> _createTables(
+  dynamic db,
+  int version,
+  Function informUser,
+  String clientAppIdentifier,
+) async {
   // print('******* > DB Setup step 4');
   await Tables.createTables(db, version, informUser);
   // print('******* > DB Setup step 5');
   _createIndexes = true;
 }
 
-enum EdbStatus {
-  uninitialized,
-  opening,
-  opened,
-}
+enum EdbStatus { uninitialized, opening, opened }
 
 class AppModel {
   AppModel();
@@ -313,7 +357,11 @@ class DeviceInfo {
   bool isPhysicalDevice = true;
   bool get supportsCamera => Platform.isAndroid || isPhysicalDevice;
 
-  Future<void> init(num deviceWidth, num deviceHeight, double textScaleFactor) async {
+  Future<void> init(
+    num deviceWidth,
+    num deviceHeight,
+    double textScaleFactor,
+  ) async {
     deviceWidth = deviceWidth;
     deviceHeight = deviceHeight;
     deviceWidthScaleFactor = deviceWidth / BASE_DEVICE_WIDTH;
@@ -334,12 +382,14 @@ class DeviceInfo {
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
-      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
+      systemVersion =
+          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
       manufacturer = androidInfo.brand;
       isPhysicalDevice = androidInfo.isPhysicalDevice;
     } else if (Platform.isIOS) {
       iosInfo = await deviceInfo.iosInfo;
-      deviceId = (iosInfo.identifierForVendor ?? '<no device ID>').toUpperCase();
+      deviceId =
+          (iosInfo.identifierForVendor ?? '<no device ID>').toUpperCase();
       deviceType = iosInfo.model;
       deviceName = iosInfo.name;
       systemName = iosInfo.systemName;
