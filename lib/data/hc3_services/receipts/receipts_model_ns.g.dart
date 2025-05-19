@@ -13,9 +13,10 @@ _ReceiptsModel _$ReceiptsModelFromJson(Map<String, dynamic> json) =>
       userId: json['userId'] as String,
       receiptAmount: (json['receiptAmount'] as num?)?.toDouble() ?? 0.0,
       costCategory: (json['costCategory'] as num?)?.toInt() ?? 0,
-      dateUploaded: json['dateUploaded'] == null
-          ? null
-          : DateTime.parse(json['dateUploaded'] as String),
+      dateUploaded:
+          json['dateUploaded'] == null
+              ? null
+              : DateTime.parse(json['dateUploaded'] as String),
       imageUrl: json['imageUrl'] as String?,
       receiptShortDesc: json['receiptShortDesc'] as String?,
       notes: json['notes'] as String?,
@@ -24,9 +25,10 @@ _ReceiptsModel _$ReceiptsModelFromJson(Map<String, dynamic> json) =>
       reimbursedAmount: (json['reimbursedAmount'] as num?)?.toDouble(),
       reimbursedNotes: json['reimbursedNotes'] as String?,
       removed: (json['removed'] as num?)?.toInt(),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      updatedAt:
+          json['updatedAt'] == null
+              ? null
+              : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$ReceiptsModelToJson(_ReceiptsModel instance) =>

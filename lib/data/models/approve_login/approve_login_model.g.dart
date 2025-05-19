@@ -13,9 +13,10 @@ _ApproveLoginModel _$ApproveLoginModelFromJson(Map<String, dynamic> json) =>
       loginMessage: json['loginMessage'] as String?,
       loginMessageTitle: json['loginMessageTitle'] as String?,
       serverStatusCode: (json['serverStatusCode'] as num?)?.toInt(),
-      messageEndDate: json['messageEndDate'] == null
-          ? null
-          : DateTime.parse(json['messageEndDate'] as String),
+      messageEndDate:
+          json['messageEndDate'] == null
+              ? null
+              : DateTime.parse(json['messageEndDate'] as String),
       messageDisplayType: (json['messageDisplayType'] as num?)?.toInt(),
       iosDownloadLink: json['iosDownloadLink'] as String?,
       androidDownloadLink: json['androidDownloadLink'] as String?,
@@ -23,9 +24,11 @@ _ApproveLoginModel _$ApproveLoginModelFromJson(Map<String, dynamic> json) =>
       isBetaTester: (json['isBetaTester'] as num?)?.toInt(),
       email: json['email'] as String?,
       homeKennelId: json['homeKennelId'] as String?,
-      thirdPartyForceTokenRefresh: json['thirdPartyForceTokenRefresh'] == null
-          ? null
-          : DateTime.parse(json['thirdPartyForceTokenRefresh'] as String),
+      thirdPartyForceTokenRefresh:
+          json['thirdPartyForceTokenRefresh'] == null
+              ? null
+              : DateTime.parse(json['thirdPartyForceTokenRefresh'] as String),
+      splashSequenceRootName: json['splashSequenceRootName'] as String?,
     );
 
 Map<String, dynamic> _$ApproveLoginModelToJson(_ApproveLoginModel instance) =>
@@ -45,4 +48,5 @@ Map<String, dynamic> _$ApproveLoginModelToJson(_ApproveLoginModel instance) =>
       'homeKennelId': instance.homeKennelId,
       'thirdPartyForceTokenRefresh':
           instance.thirdPartyForceTokenRefresh?.toIso8601String(),
+      'splashSequenceRootName': instance.splashSequenceRootName,
     };

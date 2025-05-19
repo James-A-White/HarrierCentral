@@ -7,19 +7,20 @@ part of 'cities_model_ns.dart';
 // **************************************************************************
 
 _CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) => _CitiesModel(
-      cityId: json['cityId'] as String,
-      cityName: json['cityName'] as String,
-      citySearchTags: json['citySearchTags'] as String?,
-      regionId: json['regionId'] as String,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      cityAscii: json['cityAscii'] as String,
-      flagFile: json['flagFile'] as String?,
-      removed: (json['removed'] as num?)?.toInt(),
-      updatedAt: json['updatedAt'] == null
+  cityId: json['cityId'] as String,
+  cityName: json['cityName'] as String,
+  citySearchTags: json['citySearchTags'] as String?,
+  regionId: json['regionId'] as String,
+  latitude: (json['latitude'] as num).toDouble(),
+  longitude: (json['longitude'] as num).toDouble(),
+  cityAscii: json['cityAscii'] as String,
+  flagFile: json['flagFile'] as String?,
+  removed: (json['removed'] as num?)?.toInt(),
+  updatedAt:
+      json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
-    );
+);
 
 Map<String, dynamic> _$CitiesModelToJson(_CitiesModel instance) =>
     <String, dynamic>{

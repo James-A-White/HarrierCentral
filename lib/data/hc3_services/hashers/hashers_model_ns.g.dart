@@ -18,9 +18,10 @@ _HashersModel _$HashersModelFromJson(Map<String, dynamic> json) =>
       includeInGlobalHashDirectory:
           (json['includeInGlobalHashDirectory'] as num).toInt(),
       removed: (json['removed'] as num?)?.toInt(),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      updatedAt:
+          json['updatedAt'] == null
+              ? null
+              : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$HashersModelToJson(_HashersModel instance) =>

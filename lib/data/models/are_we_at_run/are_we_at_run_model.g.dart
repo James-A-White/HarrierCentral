@@ -27,8 +27,9 @@ _AreWeAtRunModel _$AreWeAtRunModelFromJson(Map<String, dynamic> json) =>
       digitsAfterDecimal: (json['digitsAfterDecimal'] as num?)?.toInt() ?? 2,
       allowSelfPayment: (json['allowSelfPayment'] as num?)?.toInt() ?? 0,
       currencySymbol: json['currencySymbol'] as String? ?? r'$^',
-      membershipExpirationDate:
-          DateTime.parse(json['membershipExpirationDate'] as String),
+      membershipExpirationDate: DateTime.parse(
+        json['membershipExpirationDate'] as String,
+      ),
       extrasDescription: json['extrasDescription'] as String?,
     );
 

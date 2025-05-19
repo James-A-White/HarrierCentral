@@ -23,9 +23,10 @@ _CountriesModel _$CountriesModelFromJson(Map<String, dynamic> json) =>
       digitsAfterDecimal: (json['digitsAfterDecimal'] as num?)?.toInt(),
       distancePreference: (json['distancePreference'] as num?)?.toInt(),
       removed: (json['removed'] as num?)?.toInt(),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      updatedAt:
+          json['updatedAt'] == null
+              ? null
+              : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$CountriesModelToJson(_CountriesModel instance) =>

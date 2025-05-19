@@ -20,6 +20,7 @@ abstract class ApproveLoginModel with _$ApproveLoginModel implements BaseModel {
     String? email,
     String? homeKennelId,
     DateTime? thirdPartyForceTokenRefresh,
+    String? splashSequenceRootName,
   }) = _ApproveLoginModel;
 
   factory ApproveLoginModel.fromJson(Map<String, dynamic> json) =>

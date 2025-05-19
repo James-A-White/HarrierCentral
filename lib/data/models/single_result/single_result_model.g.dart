@@ -7,11 +7,7 @@ part of 'single_result_model.dart';
 // **************************************************************************
 
 _SingleResultModel _$SingleResultModelFromJson(Map<String, dynamic> json) =>
-    _SingleResultModel(
-      result: json['result'] as String?,
-    );
+    _SingleResultModel(result: json['result'] as String?);
 
 Map<String, dynamic> _$SingleResultModelToJson(_SingleResultModel instance) =>
-    <String, dynamic>{
-      'result': instance.result,
-    };
+    <String, dynamic>{'result': instance.result};
