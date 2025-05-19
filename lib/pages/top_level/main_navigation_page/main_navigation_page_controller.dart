@@ -2,14 +2,11 @@ import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
-enum MainPageContent { initial, loading, newVersion, promo, appContent, help }
+enum MainPageContent { initial, loading, splashSequence, appContent, help }
 
 class MainNavigationController extends GetxController
     with WidgetsBindingObserver {
-  MainNavigationController({required this.promos, this.firstPromoImage});
-
-  final List<PromoModel> promos;
-  final Image? firstPromoImage;
+  MainNavigationController();
 
   // Tab titles
   static const List<String> tabTitles = <String>[
@@ -90,10 +87,6 @@ class MainNavigationController extends GetxController
   Widget historyListPage = Container();
   Widget runAndKennelMapPage = Container();
 
-  // Promo timer
-  PausableTimer? _promoTimer;
-  Duration promoDisplayDuration = const Duration(seconds: 3);
-
   // Screen unlock listener
   Screen? _screen;
   StreamSubscription<ScreenStateEvent>? _screenWatcherSub;
@@ -128,9 +121,16 @@ class MainNavigationController extends GetxController
       getStringPref(StringPrefsEnum.harrierCentralPreviousVersion) ?? '',
     );
 
+    String? splashSequenceRootName = getStringPref(
+      StringPrefsEnum.splashSequenceRootName,
+    );
+
     if (hcCurrentVersion != hcPreviousVersion) {
-      await _preloadImages();
-      mainScreenContent.value = MainPageContent.newVersion;
+      await _preloadImages('version_$hcCurrentVersion');
+      mainScreenContent.value = MainPageContent.splashSequence;
+    } else if (splashSequenceRootName != null) {
+      await _preloadImages(splashSequenceRootName);
+      mainScreenContent.value = MainPageContent.splashSequence;
     } else {
       mainScreenContent.value = MainPageContent.loading;
     }
@@ -162,20 +162,8 @@ class MainNavigationController extends GetxController
       await Future.delayed(Duration(milliseconds: remaining));
     }
 
-    if (promos.isNotEmpty) {
-      mainScreenContent.value = MainPageContent.promo;
-      showPromoTools.value = true;
-      final first = promos.first;
-      timeRemaining.value = first.promoDisplayTimeInMs;
-      steps.value = first.promoDisplayTimingDotsToDisplay;
-      promoDisplayDuration = Duration(
-        milliseconds: first.promoDisplayTimeInMs ~/ steps.value,
-      );
-      _startPromoTimer(first);
-    } else {
-      if (mainScreenContent.value != MainPageContent.newVersion) {
-        mainScreenContent.value = MainPageContent.appContent;
-      }
+    if (mainScreenContent.value != MainPageContent.splashSequence) {
+      mainScreenContent.value = MainPageContent.appContent;
     }
 
     update(['scaffold']);
@@ -192,27 +180,12 @@ class MainNavigationController extends GetxController
     return version;
   }
 
-  void _startPromoTimer(PromoModel promo) {
-    _promoTimer = PausableTimer(promoDisplayDuration, () {
-      timeRemaining.value =
-          timeRemaining.value! - (promo.promoDisplayTimeInMs ~/ steps.value);
-      if (timeRemaining.value! < 0) {
-        _promoTimer?.cancel();
-        mainScreenContent.value = MainPageContent.appContent;
-      } else {
-        _promoTimer
-          ?..reset()
-          ..start();
-      }
-    })..start();
-  }
-
-  Future<void> _preloadImages() async {
+  Future<void> _preloadImages(String splashSequenceRootName) async {
     isLoadingImages.value = true;
     int maxImages = 20;
     for (var i = 1; i <= maxImages; i++) {
       final url =
-          '${BASE_NEW_VERSION_IMAGES_URL}version_${hcCurrentVersion}_$i.avif';
+          '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif';
       final provider = NetworkImage(url);
       final config = const ImageConfiguration(); // no context needed
       final stream = provider.resolve(config);

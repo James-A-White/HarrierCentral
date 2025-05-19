@@ -25,7 +25,7 @@ enum SelectedImageTypeEnum {
   fromCamera,
   fromGallery,
   fromFacebook,
-  fromNetwork
+  fromNetwork,
 }
 
 class ChooseProfileImageState extends State<ChooseProfileImage> {
@@ -38,8 +38,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   final double _thumbnailSize = 50.0;
   final double _uploadingImageSize = 180.0;
 
-  final String? _facebookProfileUrl =
-      getStringPref(StringPrefsEnum.facebookProfilePhoto);
+  final String? _facebookProfileUrl = getStringPref(
+    StringPrefsEnum.facebookProfilePhoto,
+  );
 
   int _selectedAvatarIcon = 1;
 
@@ -62,27 +63,28 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         widget.isForThisDevice &&
         ((_facebookProfileUrl ?? '').isNotEmpty)) {
       _facebookProfileImage = CachedNetworkImage(
-          imageUrl: _facebookProfileUrl!,
-          //placeholder: HcCircularProgressIndicator(key: Key('yyyyyyy')),
-          //errorWidget: const  Icon(Icons.error),
-          // placeholder: (BuildContext context, String url) =>
-          //     HcCircularProgressIndicator(key: Key('yyyyyyy')),
-          // errorWidget: (BuildContext context, String url, Exception error) =>
-          //     const  Icon(Icons.error),
-          //fadeOutDuration:  Duration(seconds: 1),
-          fadeInDuration: const Duration(milliseconds: 0),
-          width: _thumbnailSize,
-          height: _thumbnailSize,
-          fit: BoxFit.fill);
+        imageUrl: _facebookProfileUrl!,
+        //placeholder: HcCircularProgressIndicator(key: Key('yyyyyyy')),
+        //errorWidget: const  Icon(Icons.error),
+        // placeholder: (BuildContext context, String url) =>
+        //     HcCircularProgressIndicator(key: Key('yyyyyyy')),
+        // errorWidget: (BuildContext context, String url, Exception error) =>
+        //     const  Icon(Icons.error),
+        //fadeOutDuration:  Duration(seconds: 1),
+        fadeInDuration: const Duration(milliseconds: 0),
+        width: _thumbnailSize,
+        height: _thumbnailSize,
+        fit: BoxFit.fill,
+      );
 
       _imageTypeSelection = SelectedImageTypeEnum.fromFacebook;
     }
 
     if (widget.currentProfileImage == null) {
       _imageTypeSelection = SelectedImageTypeEnum.none;
-    } else if (widget.currentProfileImage!
-        .toLowerCase()
-        .startsWith('bundle://')) {
+    } else if (widget.currentProfileImage!.toLowerCase().startsWith(
+      'bundle://',
+    )) {
       _imageTypeSelection = SelectedImageTypeEnum.avatar;
     } else if (widget.currentProfileImage!.toLowerCase().startsWith('http')) {
       _imageTypeSelection = SelectedImageTypeEnum.fromNetwork;
@@ -133,8 +135,10 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                   groupValue: _selectedRadioValue,
                   onChanged: (_) {
                     if (!disabled) {
-                      _handleRadioValueChange(selectedImageType,
-                          forceOpen: false);
+                      _handleRadioValueChange(
+                        selectedImageType,
+                        forceOpen: false,
+                      );
                     }
                   },
                 ),
@@ -181,10 +185,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 28.0,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('Choose Profile Image', style: ts_appBarTitle),
       ),
       body: Container(
@@ -192,88 +193,97 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         width: MediaQuery.of(context).size.width,
         decoration: Backgrounds.defaultHcBackground(),
         child: Container(
-          child: _showCircularProgressIndicator
-              ? _buildProgressIndicator()
-              : Stack(
-                  fit: StackFit.expand,
-                  //overflow: Overflow.visible,
-                  alignment: AlignmentDirectional.center,
-                  children: <Widget>[
-                    SizedBox(
+          child:
+              _showCircularProgressIndicator
+                  ? _buildProgressIndicator()
+                  : Stack(
+                    fit: StackFit.expand,
+                    //overflow: Overflow.visible,
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      SizedBox(
                         width: G0<DeviceInfo>().deviceWidth,
-                        height: G0<DeviceInfo>().deviceHeight),
-                    Positioned(
-                      top: 25.0,
-                      child: Text(
-                        'Choose an image source',
-                        textAlign: TextAlign.center,
-                        style: ts_headingLarge,
+                        height: G0<DeviceInfo>().deviceHeight,
                       ),
-                    ),
-
-                    Positioned(
-                      top: 60.0,
-                      child: Container(
-                        padding: const EdgeInsets.only(top: 10, bottom: 30),
-                        height: 260,
-                        width: 260,
-                        child: Stack(
-                          alignment: AlignmentDirectional.center,
-                          children: <Widget>[
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              child: getImageSourceButton(
-                                label: 'Camera',
-                                iosIcon: 'images/icons/ios_camera.png',
-                                androidIcon: 'images/icons/android_camera.png',
-                                selectedImageType:
-                                    SelectedImageTypeEnum.fromCamera,
-                              ),
-                            ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: getImageSourceButton(
-                                label: 'Gallery',
-                                iosIcon: 'images/icons/ios_gallery.png',
-                                androidIcon: 'images/icons/android_gallery.png',
-                                selectedImageType:
-                                    SelectedImageTypeEnum.fromGallery,
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              left: 0,
-                              child: getImageSourceButton(
-                                label: 'Avatar',
-                                iosIcon: 'images/icons/avatar.png',
-                                androidIcon: 'images/icons/avatar.png',
-                                selectedImageType: SelectedImageTypeEnum.avatar,
-                              ),
-                            ),
-                          ],
+                      Positioned(
+                        top: 25.0,
+                        child: Text(
+                          'Choose an image source',
+                          textAlign: TextAlign.center,
+                          style: ts_headingLarge,
                         ),
                       ),
-                    ),
 
-                    Positioned(
-                      top: 315,
-                      bottom: 90,
-                      left: 30,
-                      right: 30,
-                      child: Stack(
-                        fit: StackFit.loose,
-                        //clipBehavior: Clip.hardEdge,
-                        alignment: AlignmentDirectional.center,
-                        children: <Widget>[
-                          Container(
-                            margin: const EdgeInsets.all(0.0),
-                            child: Image.asset('images/other/white_square.jpg',
-                                width: 400, height: 400, fit: BoxFit.fitHeight),
+                      Positioned(
+                        top: 60.0,
+                        child: Container(
+                          padding: const EdgeInsets.only(top: 10, bottom: 30),
+                          height: 260,
+                          width: 260,
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: <Widget>[
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                child: getImageSourceButton(
+                                  label: 'Camera',
+                                  iosIcon: 'images/icons/ios_camera.png',
+                                  androidIcon:
+                                      'images/icons/android_camera.png',
+                                  selectedImageType:
+                                      SelectedImageTypeEnum.fromCamera,
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: getImageSourceButton(
+                                  label: 'Gallery',
+                                  iosIcon: 'images/icons/ios_gallery.png',
+                                  androidIcon:
+                                      'images/icons/android_gallery.png',
+                                  selectedImageType:
+                                      SelectedImageTypeEnum.fromGallery,
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                child: getImageSourceButton(
+                                  label: 'Avatar',
+                                  iosIcon: 'images/icons/avatar.png',
+                                  androidIcon: 'images/icons/avatar.png',
+                                  selectedImageType:
+                                      SelectedImageTypeEnum.avatar,
+                                ),
+                              ),
+                            ],
                           ),
-                          (_imageTypeSelection == SelectedImageTypeEnum.none)
-                              ? Container(
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 315,
+                        bottom: 90,
+                        left: 30,
+                        right: 30,
+                        child: Stack(
+                          fit: StackFit.loose,
+                          //clipBehavior: Clip.hardEdge,
+                          alignment: AlignmentDirectional.center,
+                          children: <Widget>[
+                            Container(
+                              margin: const EdgeInsets.all(0.0),
+                              child: Image.asset(
+                                'images/other/white_square.jpg',
+                                width: 400,
+                                height: 400,
+                                fit: BoxFit.fitHeight,
+                              ),
+                            ),
+                            (_imageTypeSelection == SelectedImageTypeEnum.none)
+                                ? Container(
                                   margin: const EdgeInsets.all(6.0),
                                   // Positioned(
                                   // left: 30,
@@ -283,9 +293,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                                     'images/icons/create_profile_photo.png',
                                   ),
                                 )
-                              //,
-                              // )
-                              : Container(
+                                //,
+                                // )
+                                : Container(
                                   margin: const EdgeInsets.all(6.0),
                                   // height: 400,
                                   // width: 400,
@@ -295,33 +305,35 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                                   // child:
                                   child: _getPreviewImage(),
                                 ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    Positioned(
-                      bottom: 20.0,
-                      child: TextButton(
-                        style: TextButton.styleFrom(
+                      Positioned(
+                        bottom: 20.0,
+                        child: TextButton(
+                          style: TextButton.styleFrom(
                             shape: button_shape,
-                            backgroundColor: _imageTypeSelection ==
-                                    SelectedImageTypeEnum.none
-                                ? Colors.grey
-                                : hc_red),
-                        //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
-                        child: Text('Next', style: ts_button),
-                        onPressed: () {
-                          if (_imageTypeSelection !=
-                              SelectedImageTypeEnum.none) {
-                            _processAndContinue();
-                          }
-                        },
+                            backgroundColor:
+                                _imageTypeSelection ==
+                                        SelectedImageTypeEnum.none
+                                    ? Colors.grey
+                                    : hc_red,
+                          ),
+                          //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
+                          child: Text('Next', style: ts_button),
+                          onPressed: () {
+                            if (_imageTypeSelection !=
+                                SelectedImageTypeEnum.none) {
+                              _processAndContinue();
+                            }
+                          },
+                        ),
                       ),
-                    ),
 
-                    //),
-                  ],
-                ),
+                      //),
+                    ],
+                  ),
         ),
       ),
     );
@@ -350,15 +362,8 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           padding: const EdgeInsets.all(6.0),
           child: _getPreviewImage(),
         ),
-        const SizedBox(
-          height: 20,
-          width: 20,
-        ),
-        const Center(
-          child: HcCircularProgressIndicator(
-            key: Key('1387562'),
-          ),
-        )
+        const SizedBox(height: 20, width: 20),
+        const Center(child: HcCircularProgressIndicator(key: Key('1387562'))),
       ],
     );
   }
@@ -434,38 +439,40 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       final HashersService srv = HashersService();
 
       final bool updateWasSuccessful = await srv.changeProfilePicture(
-          targetUserId: userId, photo: profileImageUrl);
+        targetUserId: userId,
+        photo: profileImageUrl,
+      );
 
       if (updateWasSuccessful) {
         await setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
       } else {
         await Utilities.showAlert(
-            'Profile photo not updated.',
-            'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!',
-            'OK');
+          'Profile photo not updated.',
+          'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!',
+          'OK',
+        );
       }
       if (!mounted) return;
       await Navigator.pushReplacement<dynamic, dynamic>(
-          context,
-          MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) => const MainNavigationPage(
-              promos: <PromoModel>[],
-              firstPromoImage: null,
-            ),
-          ));
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (BuildContext context) => const MainNavigationPage(),
+        ),
+      );
     }
   }
 
   String _upload(File? imageFile, String fileName) {
     if (imageFile != null) {
       final Uri uri = Uri.parse(
-          'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
+        'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D',
+      );
 
       final Request request = Request('PUT', uri);
 
       final Map<String, String> headers = <String, String>{
         'content-type': 'image/jpeg',
-        'x-ms-blob-type': 'BlockBlob'
+        'x-ms-blob-type': 'BlockBlob',
       };
 
       request.headers.addAll(headers);
@@ -482,15 +489,14 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Widget _getPreviewImage() {
-    Widget returnWidget = Image.asset(
-      'images/icons/create_profile_photo.png',
-    );
+    Widget returnWidget = Image.asset('images/icons/create_profile_photo.png');
 
     switch (_imageTypeSelection) {
       case SelectedImageTypeEnum.avatar:
         returnWidget = Image.asset(
-            'images/avatars/avatar-$_selectedAvatarIcon.jpg',
-            fit: BoxFit.fill);
+          'images/avatars/avatar-$_selectedAvatarIcon.jpg',
+          fit: BoxFit.fill,
+        );
         // if (_selectedAvatarIcon != null) {
         //   returnWidget = Image.asset('images/avatars/avatar-$_selectedAvatarIcon.jpg', fit: BoxFit.fill);
         // } else if ((widget.currentProfileImage != null) && (widget.currentProfileImage.startsWith('bundle://'))) {
@@ -522,25 +528,29 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Widget getProfilePhoto(String url) {
     return (url.isEmpty)
-        ? Image.asset(
-            'images/icons/create_profile_photo.png',
-          )
+        ? Image.asset('images/icons/create_profile_photo.png')
         : url.contains('bundle://')
-            ? Stack(alignment: Alignment.center, children: <Widget>[
-                Image.asset(
-                    ('images/avatars/${url.replaceAll('bundle://', '')}.jpg')
-                        .toLowerCase()),
-              ])
-            : CachedNetworkImage(
-                imageUrl: url,
-                //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
-                //errorWidget:  const  Icon(Icons.error),
-                fadeInDuration: const Duration(milliseconds: 0),
-              );
+        ? Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            Image.asset(
+              ('images/avatars/${url.replaceAll('bundle://', '')}.jpg')
+                  .toLowerCase(),
+            ),
+          ],
+        )
+        : CachedNetworkImage(
+          imageUrl: url,
+          //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
+          //errorWidget:  const  Icon(Icons.error),
+          fadeInDuration: const Duration(milliseconds: 0),
+        );
   }
 
-  void _handleRadioValueChange(SelectedImageTypeEnum value,
-      {bool forceOpen = false}) {
+  void _handleRadioValueChange(
+    SelectedImageTypeEnum value, {
+    bool forceOpen = false,
+  }) {
     setState(() {
       _previouslySelectedRadioValue = _selectedRadioValue;
       _selectedRadioValue = value.index;
@@ -554,8 +564,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           Navigator.push<dynamic>(
             context,
             MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) =>
-                  AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
+              builder:
+                  (BuildContext context) =>
+                      AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
             ),
           ).then((dynamic onValue) {
             if (onValue != null) {
@@ -599,12 +610,13 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     } else {
       final ImageCropper ic = ImageCropper();
       final CroppedFile? croppedFile = await ic.cropImage(
-          sourcePath: image.path,
-          aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-          maxWidth: 300,
-          maxHeight: 300,
-          compressFormat: ImageCompressFormat.jpg,
-          compressQuality: 50);
+        sourcePath: image.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+        maxWidth: 300,
+        maxHeight: 300,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 50,
+      );
 
       // final Uint8List bytes = await croppedFile.readAsBytes();
       // final File file = File.fromRawPath(bytes);
@@ -654,27 +666,29 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Widget _previewImage() {
     return FutureBuilder<File>(
-        future: (_imageTypeSelection == SelectedImageTypeEnum.fromCamera)
-            ? _imageFromCamera
-            : (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook)
-                ? _imageFromFacebook
-                : _imageFromGallery,
-        builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.data != null) {
-            return Image.file(snapshot.data!, fit: BoxFit.fitHeight);
-          } else if (snapshot.error != null) {
-            return const Text(
-              'Error picking image.',
-              textAlign: TextAlign.center,
-            );
-          } else {
-            return Image.asset(
-              'images/icons/create_profile_photo.png',
-              // height: 100,
-              // width: 100,
-            );
-          }
-        });
+      future:
+          (_imageTypeSelection == SelectedImageTypeEnum.fromCamera)
+              ? _imageFromCamera
+              : (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook)
+              ? _imageFromFacebook
+              : _imageFromGallery,
+      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.data != null) {
+          return Image.file(snapshot.data!, fit: BoxFit.fitHeight);
+        } else if (snapshot.error != null) {
+          return const Text(
+            'Error picking image.',
+            textAlign: TextAlign.center,
+          );
+        } else {
+          return Image.asset(
+            'images/icons/create_profile_photo.png',
+            // height: 100,
+            // width: 100,
+          );
+        }
+      },
+    );
   }
 }

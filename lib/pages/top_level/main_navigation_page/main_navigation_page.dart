@@ -5,24 +5,12 @@ import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 
 class MainNavigationPage extends StatelessWidget {
-  const MainNavigationPage({
-    super.key,
-    required this.promos,
-    this.firstPromoImage,
-  });
-
-  final List<PromoModel> promos;
-  final Image? firstPromoImage;
+  const MainNavigationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     // Instantiate and bind controller
-    final controller = Get.put(
-      MainNavigationController(
-        promos: promos,
-        firstPromoImage: firstPromoImage,
-      ),
-    );
+    final controller = Get.put(MainNavigationController());
 
     return GetBuilder<MainNavigationController>(
       id: 'scaffold',
@@ -154,7 +142,7 @@ class MainNavigationPage extends StatelessWidget {
                     case MainPageContent.initial:
                       return const SizedBox.expand();
 
-                    case MainPageContent.newVersion:
+                    case MainPageContent.splashSequence:
                       return Obx(() {
                         return controller.isLoadingImages.value
                             ? Center(child: CircularProgressIndicator())

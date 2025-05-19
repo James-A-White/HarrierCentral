@@ -97,8 +97,7 @@ class AppEntryPageState extends State<AppEntryPage>
         MediaQuery.of(navigatorKey.currentContext!).size.height;
 
     ApproveLoginModel? loginResult;
-    List<PromoModel>? promoResult;
-    //String? facebookAccessToken;
+
     final ApproveLoginService svc = ApproveLoginService();
 
     await Utilities.subscribeToGeoLocationStream();
@@ -115,12 +114,17 @@ class AppEntryPageState extends State<AppEntryPage>
         List<dynamic> responseJson = jsonDecode(responseBody);
 
         loginResult = ApproveLoginModel.fromJson(responseJson[0][0]);
-        // NULLSAFETEST - Test promos to break this line
-        promoResult = List<PromoModel>.from(responseJson[1]);
       }
     }
 
     if (loginResult != null) {
+      await setStringPref(
+        StringPrefsEnum.splashSequenceRootName,
+        loginResult.splashSequenceRootName,
+      );
+
+      await setDatePref(DatePrefsEnum.splashSequenceViewed, null);
+
       await setStringPref(
         StringPrefsEnum.iosDownloadLink,
         loginResult.iosDownloadLink,
@@ -162,11 +166,7 @@ class AppEntryPageState extends State<AppEntryPage>
       await Navigator.pushReplacement<dynamic, dynamic>(
         navigatorKey.currentContext!,
         MaterialPageRoute<dynamic>(
-          builder:
-              (BuildContext context) => MainNavigationPage(
-                promos: <PromoModel>[],
-                firstPromoImage: null,
-              ),
+          builder: (BuildContext context) => MainNavigationPage(),
         ),
       );
 
@@ -245,10 +245,7 @@ class AppEntryPageState extends State<AppEntryPage>
                         navigatorKey.currentContext!,
                         MaterialPageRoute<dynamic>(
                           builder:
-                              (BuildContext context) => MainNavigationPage(
-                                promos: <PromoModel>[],
-                                firstPromoImage: null,
-                              ),
+                              (BuildContext context) => MainNavigationPage(),
                         ),
                       );
                     });
@@ -257,74 +254,13 @@ class AppEntryPageState extends State<AppEntryPage>
                   }
                 }
               } else {
-                if ((promoResult != null) && (promoResult.isNotEmpty)) {
-                  Image promoImage;
-
-                  try {
-                    promoImage = Image.network(
-                      promoResult[0].promoImage +
-                          promoResult[0].promoImageExtension,
-                      fit: BoxFit.fitWidth,
-                      errorBuilder: (
-                        BuildContext context,
-                        Object exception,
-                        StackTrace? stackTrace,
-                      ) {
-                        // Appropriate logging or analytics, e.g.
-                        // myAnalytics.recordError(
-                        //   'An error occurred loading "https://example.does.not.exist/image.jpg"',
-                        //   exception,
-                        //   stackTrace,
-                        // );
-                        return Image.asset(
-                          'images/other/white_square.jpg',
-                          width: 1,
-                          height: 1,
-                          fit: BoxFit.fitHeight,
-                        );
-                      },
-                    );
-                  } catch (error) {
-                    promoImage = Image.asset(
-                      'images/other/white_square.jpg',
-                      width: 1,
-                      height: 1,
-                      fit: BoxFit.fitHeight,
-                    );
-                  }
-
-                  promoImage.image
-                      .resolve(const ImageConfiguration())
-                      .addListener(
-                        ImageStreamListener((
-                          ImageInfo info,
-                          bool syncCall,
-                        ) async {
-                          await Navigator.pushReplacement<dynamic, dynamic>(
-                            context,
-                            MaterialPageRoute<dynamic>(
-                              builder:
-                                  (BuildContext context) => MainNavigationPage(
-                                    promos: promoResult!,
-                                    firstPromoImage: promoImage,
-                                  ),
-                            ),
-                          );
-                        }),
-                      );
-                } else {
-                  if (!mounted) return;
-                  await Navigator.pushReplacement<dynamic, dynamic>(
-                    navigatorKey.currentContext!,
-                    MaterialPageRoute<dynamic>(
-                      builder:
-                          (BuildContext context) => MainNavigationPage(
-                            promos: <PromoModel>[],
-                            firstPromoImage: null,
-                          ),
-                    ),
-                  );
-                }
+                if (!mounted) return;
+                await Navigator.pushReplacement<dynamic, dynamic>(
+                  navigatorKey.currentContext!,
+                  MaterialPageRoute<dynamic>(
+                    builder: (BuildContext context) => MainNavigationPage(),
+                  ),
+                );
               }
             }
           } else {

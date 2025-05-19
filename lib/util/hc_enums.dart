@@ -31,6 +31,7 @@ enum StringPrefsEnum {
   homeKennelId,
   imageRootUrl,
   iosDownloadLink,
+  splashSequenceRootName,
   lastName,
   leaderboardJson,
   mapPreference,
@@ -85,6 +86,7 @@ enum DatePrefsEnum {
   lastLocationUpdate,
   lastLeaderboardUpdate,
   lastRunStartCheck,
+  splashSequenceViewed,
 }
 
 /// Chat tabs with their corresponding integer IDs.
