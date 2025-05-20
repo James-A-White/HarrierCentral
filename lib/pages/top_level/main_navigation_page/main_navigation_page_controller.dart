@@ -193,7 +193,6 @@ class MainNavigationController extends GetxController
     isLoadingImages.value = true;
     int maxImages = 20;
     for (var i = 0; i <= maxImages; i++) {
-      print('Splash = $i');
       var url = '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif';
 
       if (i == 0) {
