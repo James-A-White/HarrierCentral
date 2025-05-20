@@ -113,7 +113,7 @@ class ApproveLoginService {
       position = await getLastKnownLocation();
     }
 
-    final String body = jsonEncode(<String, String?>{
+    final Map body = <String, String?>{
       'queryType': 'approveLogin',
       'deviceId': deviceId,
       'accessToken': accessToken,
@@ -135,14 +135,28 @@ class ApproveLoginService {
       'screenWidth': (G0<DeviceInfo>().deviceWidth).toInt().toString(),
       'screenHeight': (G0<DeviceInfo>().deviceHeight).toInt().toString(),
       'ipInfo': responseBody,
-    });
+    };
+
+    // in the previous run, did we show a splash sequence?
+    // if so, report this so we can ensure we don't show the same
+    // sequence again to the same user regardless of which device they
+    // are on
+    DateTime? splashSequenceViewed = getDatePref(
+      DatePrefsEnum.splashSequenceViewed,
+    );
+    if (splashSequenceViewed != null) {
+      body['splashSequenceViewed'] = splashSequenceViewed.toString();
+      body['splashSequenceRootName'] = getStringPref(
+        StringPrefsEnum.splashSequenceRootNameViewed,
+      );
+    }
 
     Future<Response> futureResponse;
 
     futureResponse = post(
       Uri.parse(BASE_AF_API_URL),
       headers: <String, String>{'content-type': 'application/json'},
-      body: body,
+      body: jsonEncode(body),
       // Send authorization headers to your backend
       //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
     ).catchError((dynamic error) {

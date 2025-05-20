@@ -102,9 +102,12 @@ class MainNavigationController extends GetxController
   var hcCurrentVersion = '';
   var hcPreviousVersion = '';
 
-  var newVersionImages = <Image>[];
+  Image? splashBackground;
+  var splashImages = <Image>[];
   var isLoadingImages = false.obs;
   var isLoadingData = true;
+
+  var reportSplashSequenceViewed = false;
 
   Future<void> initialize() async {
     final stopwatch = Stopwatch()..start();
@@ -131,6 +134,12 @@ class MainNavigationController extends GetxController
     } else if (splashSequenceRootName != null) {
       await _preloadImages(splashSequenceRootName);
       mainScreenContent.value = MainPageContent.splashSequence;
+      await removePref(StringPrefsEnum.splashSequenceRootName);
+      await setStringPref(
+        StringPrefsEnum.splashSequenceRootNameViewed,
+        splashSequenceRootName,
+      );
+      await setDatePref(DatePrefsEnum.splashSequenceViewed, DateTime.now());
     } else {
       mainScreenContent.value = MainPageContent.loading;
     }
@@ -183,9 +192,15 @@ class MainNavigationController extends GetxController
   Future<void> _preloadImages(String splashSequenceRootName) async {
     isLoadingImages.value = true;
     int maxImages = 20;
-    for (var i = 1; i <= maxImages; i++) {
-      final url =
-          '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif';
+    for (var i = 0; i <= maxImages; i++) {
+      print('Splash = $i');
+      var url = '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif';
+
+      if (i == 0) {
+        url =
+            '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_background.avif';
+      }
+
       final provider = NetworkImage(url);
       final config = const ImageConfiguration(); // no context needed
       final stream = provider.resolve(config);
@@ -196,12 +211,21 @@ class MainNavigationController extends GetxController
       listener = ImageStreamListener(
         (info, _) {
           // success: add the widget
-          newVersionImages.add(Image(image: provider));
+          if (i == 0) {
+            splashBackground = Image(image: provider);
+          } else {
+            splashImages.add(Image(image: provider));
+          }
+
           completer.complete();
         },
         onError: (error, stack) {
           // stop on first failure (e.g. 404)
-          completer.completeError(error);
+          if (i != 0) {
+            completer.completeError(error);
+          } else {
+            completer.complete();
+          }
         },
       );
 
@@ -211,8 +235,10 @@ class MainNavigationController extends GetxController
         await completer.future;
       } catch (_) {
         // stop loading further images
-        stream.removeListener(listener);
-        break;
+        if (i != 0) {
+          stream.removeListener(listener);
+          break;
+        }
       }
 
       // clean up the listener after success

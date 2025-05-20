@@ -180,13 +180,19 @@ class MainNavigationPage extends StatelessWidget {
 
                               // wrap each Image in a full-screen box, with BoxFit.cover
                               listCustomTabs:
-                                  controller.newVersionImages.map((img) {
-                                    return SizedBox.expand(
-                                      child: FittedBox(
-                                        fit: BoxFit.cover,
-                                        child:
-                                            img, // your pre-cached Image widget
-                                      ),
+                                  controller.splashImages.map((img) {
+                                    return Stack(
+                                      children: [
+                                        controller.splashBackground ??
+                                            SizedBox(),
+                                        SizedBox.expand(
+                                          child: FittedBox(
+                                            fit: BoxFit.cover,
+                                            child:
+                                                img, // your pre-cached Image widget
+                                          ),
+                                        ),
+                                      ],
                                     );
                                   }).toList(),
                               onDonePress: () {

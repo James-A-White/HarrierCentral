@@ -118,12 +118,17 @@ class AppEntryPageState extends State<AppEntryPage>
     }
 
     if (loginResult != null) {
+      // flag up this splash sequence for viewing
+      // it will be viewed as long as there is not another
+      // higher priority sequence, such as a Harrier Central
+      // version upgrade. If the value is null, no splash screen
+      // will be displayed
       await setStringPref(
         StringPrefsEnum.splashSequenceRootName,
         loginResult.splashSequenceRootName,
       );
 
-      await setDatePref(DatePrefsEnum.splashSequenceViewed, null);
+      await removePref(DatePrefsEnum.splashSequenceViewed);
 
       await setStringPref(
         StringPrefsEnum.iosDownloadLink,
