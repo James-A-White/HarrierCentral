@@ -74,6 +74,7 @@ enum IntPrefsEnum {
   mapShowKennels,
   isBetaTester,
   isResettingCache,
+  splashSequenceType,
   //isLoggingOutOfFacebook,
   //usePlatformNativeMapApp,
 }
@@ -87,7 +88,7 @@ enum DatePrefsEnum {
   lastLocationUpdate,
   lastLeaderboardUpdate,
   lastRunStartCheck,
-  splashSequenceViewed,
+  splashSequenceViewedAt,
 }
 
 /// Chat tabs with their corresponding integer IDs.

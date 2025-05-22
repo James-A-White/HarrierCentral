@@ -29,6 +29,7 @@ _ApproveLoginModel _$ApproveLoginModelFromJson(Map<String, dynamic> json) =>
               ? null
               : DateTime.parse(json['thirdPartyForceTokenRefresh'] as String),
       splashSequenceRootName: json['splashSequenceRootName'] as String?,
+      splashSequenceType: (json['splashSequenceType'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$ApproveLoginModelToJson(_ApproveLoginModel instance) =>
@@ -49,4 +50,5 @@ Map<String, dynamic> _$ApproveLoginModelToJson(_ApproveLoginModel instance) =>
       'thirdPartyForceTokenRefresh':
           instance.thirdPartyForceTokenRefresh?.toIso8601String(),
       'splashSequenceRootName': instance.splashSequenceRootName,
+      'splashSequenceType': instance.splashSequenceType,
     };

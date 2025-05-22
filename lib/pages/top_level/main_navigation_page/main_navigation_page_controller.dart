@@ -129,17 +129,23 @@ class MainNavigationController extends GetxController
     );
 
     if (hcCurrentVersion != hcPreviousVersion) {
-      await _preloadImages('version_$hcCurrentVersion');
-      mainScreenContent.value = MainPageContent.splashSequence;
+      if (await _preloadImages('version_$hcCurrentVersion') > 0) {
+        mainScreenContent.value = MainPageContent.splashSequence;
+      } else {
+        mainScreenContent.value = MainPageContent.appContent;
+      }
     } else if (splashSequenceRootName != null) {
-      await _preloadImages(splashSequenceRootName);
-      mainScreenContent.value = MainPageContent.splashSequence;
+      if (await _preloadImages(splashSequenceRootName) > 0) {
+        mainScreenContent.value = MainPageContent.splashSequence;
+      } else {
+        mainScreenContent.value = MainPageContent.appContent;
+      }
       await removePref(StringPrefsEnum.splashSequenceRootName);
       await setStringPref(
         StringPrefsEnum.splashSequenceRootNameViewed,
         splashSequenceRootName,
       );
-      await setDatePref(DatePrefsEnum.splashSequenceViewed, DateTime.now());
+      await setDatePref(DatePrefsEnum.splashSequenceViewedAt, DateTime.now());
     } else {
       mainScreenContent.value = MainPageContent.loading;
     }
@@ -189,7 +195,7 @@ class MainNavigationController extends GetxController
     return version;
   }
 
-  Future<void> _preloadImages(String splashSequenceRootName) async {
+  Future<int> _preloadImages(String splashSequenceRootName) async {
     isLoadingImages.value = true;
     int maxImages = 20;
     for (var i = 0; i <= maxImages; i++) {
@@ -245,6 +251,7 @@ class MainNavigationController extends GetxController
     }
 
     isLoadingImages.value = false;
+    return splashImages.length;
   }
 
   void informUser(String message) {

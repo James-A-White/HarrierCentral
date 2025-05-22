@@ -142,7 +142,7 @@ class ApproveLoginService {
     // sequence again to the same user regardless of which device they
     // are on
     DateTime? splashSequenceViewed = getDatePref(
-      DatePrefsEnum.splashSequenceViewed,
+      DatePrefsEnum.splashSequenceViewedAt,
     );
     if (splashSequenceViewed != null) {
       body['splashSequenceViewed'] = splashSequenceViewed.toString();

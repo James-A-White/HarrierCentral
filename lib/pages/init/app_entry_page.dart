@@ -128,7 +128,12 @@ class AppEntryPageState extends State<AppEntryPage>
         loginResult.splashSequenceRootName,
       );
 
-      await removePref(DatePrefsEnum.splashSequenceViewed);
+      await setIntPref(
+        IntPrefsEnum.splashSequenceType,
+        loginResult.splashSequenceType,
+      );
+
+      await removePref(DatePrefsEnum.splashSequenceViewedAt);
 
       await setStringPref(
         StringPrefsEnum.iosDownloadLink,
