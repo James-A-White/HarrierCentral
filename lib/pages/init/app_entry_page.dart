@@ -17,8 +17,17 @@ class AppEntryPageState extends State<AppEntryPage>
     await G0.allReady();
     G0.registerSingleton<AppModel>(AppModel());
 
-    final String? userId = getStringPref(StringPrefsEnum.userId);
+    String? userId = getStringPref(StringPrefsEnum.userId);
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+
+    if ((userId == null) && (deviceId == null)) {
+      // this will occur when migrating from 1.x to 2.x software because
+      // I've changed getStringPref from SharedPreferences to GetStorage.
+      // So, let's check to see if the userId exists using the
+      // old SharedPreferences.
+
+      userId = await getStringPrefLegacy(StringPrefsEnum.userId);
+    }
 
     await Utilities.checkForInternetConnection(false);
 

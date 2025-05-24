@@ -112,3 +112,10 @@ Map<String, int> getMapIntPref(dynamic key) {
 Future<void> removePref(dynamic key) async {
   return _box.remove(key.toString());
 }
+
+// Legacy code here for 1.x to 2.x migration
+
+Future<String?> getStringPrefLegacy(dynamic key) async {
+  var sharedPreferences = await SharedPreferences.getInstance();
+  return sharedPreferences.getString(key.toString());
+}

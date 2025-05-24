@@ -27,6 +27,7 @@ class AuthorizeDeviceService {
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<no HC version>';
+        
     if (hcVersion.isEmpty) {
       final PackageInfo p = await PackageInfo.fromPlatform();
       final String hcVersion =
