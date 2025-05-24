@@ -88,8 +88,11 @@ enum DatePrefsEnum {
   lastLocationUpdate,
   lastLeaderboardUpdate,
   lastRunStartCheck,
-  splashSequenceViewedAt,
+  splashSequenceViewedAt, // this value gets erased once it is reported to the server
+  lastSplashSequenceDisplayed, // this value is retained over time and can be used to calculate splash delay intervals
 }
+
+enum MapPrefsEnum { chatCounts }
 
 /// Chat tabs with their corresponding integer IDs.
 enum MessageType {
@@ -111,7 +114,34 @@ enum MessageType {
   }
 }
 
-enum MapPrefsEnum { chatCounts }
+/// Splash screen types with their corresponding integer IDs.
+
+enum SplashSequenceType {
+  unknown(0, 0),
+  urgentAnnouncement(100, 0),
+  kennelPromotion(200, 0),
+  trainingContent(300, 36);
+
+  /// The integer ID associated with this tab.
+  final int id;
+
+  /// This indicates how many hours must pass since the last splash
+  /// screen was displayed before this splash screen will be displayed.
+  /// This is important for splash screen types such as training, where
+  /// we don't want to bother the user with a new splash screen every time
+  /// they open the app
+  final int delayInHours;
+
+  const SplashSequenceType(this.id, this.delayInHours);
+
+  /// Lookup a SplashSequenceType by its [id]. Throws if not found.
+  factory SplashSequenceType.fromId(int id) {
+    return SplashSequenceType.values.firstWhere(
+      (tab) => tab.id == id,
+      orElse: () => throw ArgumentError('No SplashSequenceType with id $id'),
+    );
+  }
+}
 
 enum ThirdPartyLoginType { apple, facebook, none }
 

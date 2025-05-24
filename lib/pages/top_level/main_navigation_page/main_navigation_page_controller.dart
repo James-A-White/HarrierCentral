@@ -128,24 +128,47 @@ class MainNavigationController extends GetxController
       StringPrefsEnum.splashSequenceRootName,
     );
 
+    var splashType = SplashSequenceType.fromId(
+      getIntPref(IntPrefsEnum.splashSequenceType) ??
+          SplashSequenceType.unknown.id,
+    );
+
+    // always display version change splash sequences if they exist on the server
     if (hcCurrentVersion != hcPreviousVersion) {
-      if (await _preloadImages('version_$hcCurrentVersion') > 0) {
-        mainScreenContent.value = MainPageContent.splashSequence;
-      } else {
+      if (await _preloadImages('version_$hcCurrentVersion') == 0) {
+        // don't show any splah images if none have been loaded
         mainScreenContent.value = MainPageContent.appContent;
+      } else {
+        mainScreenContent.value = MainPageContent.splashSequence;
       }
     } else if (splashSequenceRootName != null) {
-      if (await _preloadImages(splashSequenceRootName) > 0) {
-        mainScreenContent.value = MainPageContent.splashSequence;
-      } else {
-        mainScreenContent.value = MainPageContent.appContent;
-      }
-      await removePref(StringPrefsEnum.splashSequenceRootName);
-      await setStringPref(
-        StringPrefsEnum.splashSequenceRootNameViewed,
-        splashSequenceRootName,
+      var timeSinceLastView = DateTime.now().difference(
+        getDatePref(DatePrefsEnum.lastSplashSequenceDisplayed) ??
+            DateTime(2000),
       );
-      await setDatePref(DatePrefsEnum.splashSequenceViewedAt, DateTime.now());
+
+      // only show a splash screen if enough time has elapsed
+      // since the last time a splash screen was displayed
+      if (timeSinceLastView.inHours > splashType.delayInHours) {
+        if (await _preloadImages(splashSequenceRootName) == 0) {
+          // don't show any splah images if none have been loaded
+          mainScreenContent.value = MainPageContent.appContent;
+        } else {
+          mainScreenContent.value = MainPageContent.splashSequence;
+        }
+        await removePref(StringPrefsEnum.splashSequenceRootName);
+        await setStringPref(
+          StringPrefsEnum.splashSequenceRootNameViewed,
+          splashSequenceRootName,
+        );
+        await setDatePref(DatePrefsEnum.splashSequenceViewedAt, DateTime.now());
+        await setDatePref(
+          DatePrefsEnum.lastSplashSequenceDisplayed,
+          DateTime.now(),
+        );
+      } else {
+        mainScreenContent.value = MainPageContent.loading;
+      }
     } else {
       mainScreenContent.value = MainPageContent.loading;
     }

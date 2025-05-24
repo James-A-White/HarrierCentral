@@ -87,6 +87,30 @@ class FutureRunListPageController extends GetxController {
     update(['runList', 'chatTab', 'main_nav_page']);
   }
 
+  void resetNotificationCounters() async {
+    chatSummaryMap = await getEventChatMessageCounts();
+    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+
+    for (var run in filteredRuns) {
+      if (run is! int) {
+        String? publicEventId = run.event?.publicEventId as String?;
+        if (publicEventId != null) {
+          if (chatSummaryMap[publicEventId] != null) {
+            chatsCounts[publicEventId] =
+                chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0;
+          }
+          thisEventUnseenChats[publicEventId]?.value = 0;
+        }
+      }
+    }
+
+    setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
+
+    _updateTotalNotificationCounter();
+
+    update(['runList', 'chatTab', 'main_nav_page']);
+  }
+
   void _updateTotalNotificationCounter() {
     int total = 0;
 
