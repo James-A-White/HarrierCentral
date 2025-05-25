@@ -9,10 +9,10 @@ OutlinedBorder button_shape = RoundedRectangleBorder(
 
 WidgetStatePropertyAll<OutlinedBorder?> button_shape_property =
     WidgetStatePropertyAll(
-  RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(10), // Set the radius here
-  ),
-);
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10), // Set the radius here
+      ),
+    );
 
 ButtonStyle text_button_style = ButtonStyle(
   backgroundColor: WidgetStatePropertyAll(hc_red),
@@ -34,18 +34,20 @@ ButtonStyle text_button_style = ButtonStyle(
 /// color: White
 
 TextStyle ts_numberStyle = TextStyle(
-    color: Colors.black87,
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-    height: 1.0);
+  color: Colors.black87,
+  fontFamily: 'AvenirNextDemiBold',
+  fontStyle: FontStyle.normal,
+  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+  height: 1.0,
+);
 
 TextStyle ts_boldTitleStyle = TextStyle(
-    color: Colors.black87,
-    fontFamily: 'AvenirNextBold',
-    fontStyle: FontStyle.normal,
-    fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-    height: 1.0);
+  color: Colors.black87,
+  fontFamily: 'AvenirNextBold',
+  fontStyle: FontStyle.normal,
+  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+  height: 1.0,
+);
 
 // 1 file
 TextStyle ts_regular = const TextStyle(
@@ -660,6 +662,14 @@ TextStyle ts_tileText = const TextStyle(
   fontFamily: 'AvenirNextCondensedDemiBold',
   fontStyle: FontStyle.normal,
   fontSize: 20.0,
+  height: 1.0,
+);
+
+TextStyle ts_tileTextLarge = const TextStyle(
+  color: Colors.black,
+  fontFamily: 'AvenirNextCondensedDemiBold',
+  fontStyle: FontStyle.normal,
+  fontSize: 24.0,
   height: 1.0,
 );
 

@@ -374,6 +374,33 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             return Center(
               child: Column(
                 children: <Widget>[
+                  Container(
+                    //height: 50,
+                    padding: EdgeInsets.only(top: 15, left: 20, bottom: 30),
+                    child: Row(
+                      children: [
+                        KennelLogo(
+                          kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
+                          kennelShortName:
+                              widget.futureRun.kennel.kennelShortName,
+                          logoHeight: 70,
+                        ),
+                        SizedBox(width: 30),
+                        Expanded(
+                          child: AutoSizeText(
+                            widget.futureRun.event.eventName,
+                            maxLines: 3,
+                            style: ts_tileTextLarge.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                      ],
+                    ),
+                  ),
+                  FancyDivider(key: Key('3234234'), innerColor: Colors.white),
+
                   Padding(
                     padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
                     child: Row(

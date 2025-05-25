@@ -184,10 +184,18 @@ class CommonQueries {
               queryResults[i]['lon'] + 0.0,
             );
 
+            print('${queryResults[i]['eventName']} - $dist');
+
             if (dist.abs() >
                 GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
               continue;
             }
+          }
+
+          // if there is not a specific event identified and there's no distance -
+          // meaning that the lat / long of the run is null, ignore the run
+          if ((eventId == null) && (dist == null)) {
+            continue;
           }
 
           if (queryResults[i]['attendenceState'] >= attendenceAtHash.value) {

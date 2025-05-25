@@ -140,17 +140,21 @@ class RunDetails extends StatelessWidget {
                   ),
                 ),
               )
-              : Container(),
-          ((event.eventImage ?? '').isNotEmpty &&
-                  event.eventImage!.startsWith('http'))
-              ? const Padding(
-                padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
-                child: FancyDivider(
-                  key: Key('666177323'),
-                  innerColor: Colors.white,
+              : Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: KennelLogo(
+                  kennelLogoUrl: kennel.kennelLogo,
+                  kennelShortName: kennel.kennelShortName,
+                  logoHeight: 200,
                 ),
-              )
-              : Container(),
+              ),
+          const Padding(
+            padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
+            child: FancyDivider(
+              key: Key('666177323'),
+              innerColor: Colors.white,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(
               top: 25,
