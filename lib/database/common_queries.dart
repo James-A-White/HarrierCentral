@@ -11,8 +11,9 @@ class CommonQueries {
           FROM $tableName
           ''';
 
-    final List<Map<String, dynamic>> results =
-        await G0<Database>().rawQuery(query);
+    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+      query,
+    );
     return results[0]['Total'];
   }
 
@@ -23,8 +24,9 @@ class CommonQueries {
           WHERE removed != 0
           ''';
 
-    final List<Map<String, dynamic>> results =
-        await G0<Database>().rawQuery(query);
+    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+      query,
+    );
     return results[0]['Total'];
   }
 
@@ -53,8 +55,9 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        sql,
+      );
 
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
@@ -66,9 +69,10 @@ class CommonQueries {
             break;
           } else if (results[i]['deltaHours'] >
               ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
-            result = (results[i]['deltaHours'] -
-                    ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT)
-                .toString();
+            result =
+                (results[i]['deltaHours'] -
+                        ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT)
+                    .toString();
             break;
           }
         }
@@ -79,14 +83,16 @@ class CommonQueries {
     return result;
   }
 
-  static Future<List<AreWeAtRunModel>> areWeAtRunStart() async {
+  static Future<List<AreWeAtRunModel>> areWeAtRunStart({
+    String? eventId,
+  }) async {
     final List<AreWeAtRunModel> resultList = <AreWeAtRunModel>[];
 
     try {
       final String? userId = getStringPref(StringPrefsEnum.userId);
       const String dollarSign = r'$^';
 
-      final String sql = '''
+      String sql = '''
           SELECT e.${G0<TableModel>().eventsTableHelper.colEventId},
           e.${G0<TableModel>().eventsTableHelper.colEventName},
           case when e.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then e.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(e.${G0<TableModel>().eventsTableHelper.colFbLatitude},e.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as lat,
@@ -119,22 +125,35 @@ class CommonQueries {
           AND ((julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
           AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
           AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
-          ORDER BY abs(julianday('now','localtime') - julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) ASC
-          
           ''';
 
-      final List<Map<String, dynamic>> queryResults =
-          await G0<Database>().rawQuery(sql);
+      if (eventId != null) {
+        sql += '''
+          AND e.${G0<TableModel>().eventsTableHelper.colEventId} = '${eventId.toLowerCase()}'
+        ''';
+      }
+
+      sql += '''
+          ORDER BY abs(julianday('now','localtime') - julianday(${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) ASC
+        ''';
+
+      final List<Map<String, dynamic>> queryResults = await G0<Database>()
+          .rawQuery(sql);
 
       if (queryResults.isNotEmpty) {
         int escape = 0;
 
         bool hasValidPosition = false;
 
-        // start a 6-minute loop where we look for an updated position
-        while (escape < 120 && !hasValidPosition) {
-          final DateTime? lastLocationUpdate =
-              getDatePref(DatePrefsEnum.lastLocationUpdate);
+        // start a 6-minute loop where we look for an updated position,
+        // but only if we don't have an eventId. EventId will
+        // be populated when the user clicks on a notification.
+        // In this case, we want to always allow checkin regardless
+        // of where they are located.
+        while ((escape < 120) && !hasValidPosition && (eventId == null)) {
+          final DateTime? lastLocationUpdate = getDatePref(
+            DatePrefsEnum.lastLocationUpdate,
+          );
           if ((lastLocationUpdate != null) &&
               (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() <
                   15)) {
@@ -145,74 +164,83 @@ class CommonQueries {
           await Future<dynamic>.delayed(const Duration(seconds: 3));
         }
 
-        if (hasValidPosition) {
-          for (int i = 0; i < queryResults.length; i++) {
-            double? dist;
-            if ((queryResults[i]['lat'] != null) &&
-                (G0<DeviceInfo>().deviceLon != null) &&
-                (G0<DeviceInfo>().deviceLon != null)) {
-              dist = Geolocator.distanceBetween(
-                  G0<DeviceInfo>().deviceLat!.toDouble(),
-                  G0<DeviceInfo>().deviceLon!.toDouble(),
-                  queryResults[i]['lat'] + 0.0,
-                  queryResults[i]['lon'] + 0.0);
+        for (int i = 0; i < queryResults.length; i++) {
+          double? dist;
 
-              if (dist.abs() >
-                  GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
-                continue;
-              }
+          // if an eventId has not been provided,
+          // check the distance and see if the user
+          // is close to the run. If an eventId has
+          // been provided because the user clicked
+          // on a notification, ignore the distance
+          if (hasValidPosition &&
+              (eventId == null) &&
+              (queryResults[i]['lat'] != null) &&
+              (G0<DeviceInfo>().deviceLon != null) &&
+              (G0<DeviceInfo>().deviceLon != null)) {
+            dist = Geolocator.distanceBetween(
+              G0<DeviceInfo>().deviceLat!.toDouble(),
+              G0<DeviceInfo>().deviceLon!.toDouble(),
+              queryResults[i]['lat'] + 0.0,
+              queryResults[i]['lon'] + 0.0,
+            );
 
-              if (queryResults[i]['attendenceState'] >=
-                  attendenceAtHash.value) {
-                continue;
-              }
-
-              String? eventImage = queryResults[i]['eventImage'];
-
-              if ((eventImage != null) &&
-                  (eventImage.isNotEmpty) &&
-                  (!eventImage.startsWith('http'))) {
-                final String s = getStringPref(StringPrefsEnum.imageRootUrl) ??
-                    BASE_HCWEB_UPLOAD_URL;
-                if (s.isNotEmpty) {
-                  eventImage = s + eventImage;
-                }
-              }
-
-              final AreWeAtRunModel result = AreWeAtRunModel(
-                eventId: queryResults[i]['eventId'],
-                eventName: queryResults[i]['eventName'],
-                eventImage: eventImage,
-                kennelId: queryResults[i]['kennelId'],
-                kennelLogo: queryResults[i]['kennelLogo'],
-                eventNumber: queryResults[i]['eventNumber'],
-                deltaHours: queryResults[i]['deltaHours'].toDouble(),
-                kennelCredit: queryResults[i]['kennelCredit'].toDouble(),
-                memberPrice: queryResults[i]['memberPrice'].toDouble(),
-                nonMemberPrice: queryResults[i]['nonMemberPrice'].toDouble(),
-                extrasCost: queryResults[i]['extrasCost'].toDouble(),
-                extrasDescription: queryResults[i]['extrasDescription'],
-                kennelShortName: queryResults[i]['kennelShortName'],
-                allowSelfPayment: queryResults[i]['allowSelfPayment'],
-                discountAmount: queryResults[i]['discountAmount'].toDouble(),
-                discountPercent: queryResults[i]['discountPercent'].toDouble(),
-                distanceInMeters: dist.toDouble(),
-                attendenceState: queryResults[i]['attendenceState'],
-                membershipExpirationDate: DateTime.tryParse(
-                        queryResults[i]['membershipExpirationDate']) ??
-                    DateTime(2000, 1, 1),
-                currencySymbol: queryResults[i]['curSym'],
-                digitsAfterDecimal: queryResults[i]['digAfterDec'],
-              );
-
-              // NOTE: Event images can either be full URLs or they can be partial URLs in the case
-              // when events have been uploaded directly to the DB using the HcWeb application.
-              // For partial URLs we need to append the root URL. The Root URL is stored in the
-              // Server settings table and copied into the string prefs on app startup.
-
-              resultList.add(result);
+            if (dist.abs() >
+                GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
+              continue;
             }
           }
+
+          if (queryResults[i]['attendenceState'] >= attendenceAtHash.value) {
+            continue;
+          }
+
+          String? eventImage = queryResults[i]['eventImage'];
+
+          if ((eventImage != null) &&
+              (eventImage.isNotEmpty) &&
+              (!eventImage.startsWith('http'))) {
+            final String s =
+                getStringPref(StringPrefsEnum.imageRootUrl) ??
+                BASE_HCWEB_UPLOAD_URL;
+            if (s.isNotEmpty) {
+              eventImage = s + eventImage;
+            }
+          }
+
+          final AreWeAtRunModel result = AreWeAtRunModel(
+            eventId: queryResults[i]['eventId'],
+            eventName: queryResults[i]['eventName'],
+            eventImage: eventImage,
+            kennelId: queryResults[i]['kennelId'],
+            kennelLogo: queryResults[i]['kennelLogo'],
+            eventNumber: queryResults[i]['eventNumber'],
+            deltaHours: queryResults[i]['deltaHours'].toDouble(),
+            kennelCredit: queryResults[i]['kennelCredit'].toDouble(),
+            memberPrice: queryResults[i]['memberPrice'].toDouble(),
+            nonMemberPrice: queryResults[i]['nonMemberPrice'].toDouble(),
+            extrasCost: queryResults[i]['extrasCost'].toDouble(),
+            extrasDescription: queryResults[i]['extrasDescription'],
+            kennelShortName: queryResults[i]['kennelShortName'],
+            allowSelfPayment: queryResults[i]['allowSelfPayment'],
+            discountAmount: queryResults[i]['discountAmount'].toDouble(),
+            discountPercent: queryResults[i]['discountPercent'].toDouble(),
+            distanceInMeters: dist?.toDouble() ?? 0.0,
+            attendenceState: queryResults[i]['attendenceState'],
+            membershipExpirationDate:
+                DateTime.tryParse(
+                  queryResults[i]['membershipExpirationDate'],
+                ) ??
+                DateTime(2000, 1, 1),
+            currencySymbol: queryResults[i]['curSym'],
+            digitsAfterDecimal: queryResults[i]['digAfterDec'],
+          );
+
+          // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+          // when events have been uploaded directly to the DB using the HcWeb application.
+          // For partial URLs we need to append the root URL. The Root URL is stored in the
+          // Server settings table and copied into the string prefs on app startup.
+
+          resultList.add(result);
         }
       }
     } catch (e) {
@@ -235,8 +263,9 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        sql,
+      );
 
       if (results.isNotEmpty) {
         result = results[0]['hasherId'];
@@ -248,7 +277,10 @@ class CommonQueries {
   }
 
   static Future<RunAdminAggregate?> getNewEvent(
-      String kennelId, String userId, DateTime eventStart) async {
+    String kennelId,
+    String userId,
+    DateTime eventStart,
+  ) async {
     RunAdminAggregate? runDetailAggregate;
     try {
       const String dollarSign = r'$^';
@@ -276,17 +308,21 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        sql,
+      );
 
       if (results.isNotEmpty) {
-        final KennelsModel kennel =
-            G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+        final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(
+          results[0],
+        );
 
-        eventStart = eventStart
-            .add(Duration(hours: kennel.defaultRunStartTime.hour - 12));
-        eventStart = eventStart
-            .add(Duration(minutes: kennel.defaultRunStartTime.minute));
+        eventStart = eventStart.add(
+          Duration(hours: kennel.defaultRunStartTime.hour - 12),
+        );
+        eventStart = eventStart.add(
+          Duration(minutes: kennel.defaultRunStartTime.minute),
+        );
 
         final EventModel eventItem = EventModel(
           eventStartDatetime: eventStart,
@@ -330,7 +366,10 @@ class CommonQueries {
         extensions.distToEvent = 0;
 
         runDetailAggregate = RunAdminAggregate(
-            event: eventItem, extensions: extensions, kennel: kennel);
+          event: eventItem,
+          extensions: extensions,
+          kennel: kennel,
+        );
       }
     } catch (e) {
       //print(e);
@@ -340,7 +379,9 @@ class CommonQueries {
   }
 
   static Future<RunAdminAggregate?> getEventAdminInfoFromLocalCache(
-      String eventId, String userId) async {
+    String eventId,
+    String userId,
+  ) async {
     RunAdminAggregate? runAdminAggregate;
     try {
       const String dollarSign = r'$^';
@@ -370,18 +411,18 @@ class CommonQueries {
           ''';
 
       try {
-        final List<Map<String, dynamic>> results =
-            await G0<Database>().rawQuery(sql);
+        final List<Map<String, dynamic>> results = await G0<Database>()
+            .rawQuery(sql);
 
         //final Geolocator locator = Geolocator();
 
         if (results.isNotEmpty) {
-          final EventModel eventItem =
-              G0<TableModel>().eventsTableHelper.fromMap(results[0]);
+          final EventModel eventItem = G0<TableModel>().eventsTableHelper
+              .fromMap(results[0]);
           final RunDetailQueryExtensions extensions =
               RunDetailQueryExtensions.fromMap(results[0]);
-          final KennelsModel kennel =
-              G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+          final KennelsModel kennel = G0<TableModel>().kennelsTableHelper
+              .fromMap(results[0]);
           String paymentLinkUrl = '';
 
           double? dist;
@@ -411,8 +452,9 @@ class CommonQueries {
 
           if (((eventItem.eventPaymentUrl ?? '') != '') &&
               ((eventItem.eventPaymentUrlExpires == null) ||
-                  (eventItem.eventPaymentUrlExpires!
-                      .isAfter(DateTime.now())))) {
+                  (eventItem.eventPaymentUrlExpires!.isAfter(
+                    DateTime.now(),
+                  )))) {
             paymentLinkUrl = eventItem.eventPaymentUrl!;
           } else if (((kennel.kennelPaymentUrl ?? '') != '') &&
               ((kennel.kennelPaymentUrlExpires == null) ||
@@ -423,7 +465,10 @@ class CommonQueries {
           extensions.paymentUrl = paymentLinkUrl;
 
           runAdminAggregate = RunAdminAggregate(
-              event: eventItem, extensions: extensions, kennel: kennel);
+            event: eventItem,
+            extensions: extensions,
+            kennel: kennel,
+          );
         }
       } catch (e) {
         if (kDebugMode) {

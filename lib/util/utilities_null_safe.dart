@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 
 import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:harrier_central/pages/top_level/select_run_page.dart';
 
 // class LatLon {
 //   num latitude;
@@ -337,57 +338,111 @@ class Utilities {
     return isOpeeOrTuna;
   }
 
+  // static Future<void> subscribeToGeoLocationStream() async {
+  //   G0<DeviceInfo>().deviceLat =
+  //       getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
+  //   G0<DeviceInfo>().deviceLon =
+  //       getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
+
+  //   IveCoreUtilities.logTiming(
+  //     'Geostatus query start',
+  //     G0<AppModel>().appStartTime,
+  //   );
+  //   final LocationPermission permission = await Geolocator.checkPermission();
+
+  //   IveCoreUtilities.logTiming(
+  //     'Geolocation query start',
+  //     G0<AppModel>().appStartTime,
+  //   );
+  //   if ((permission == LocationPermission.always) ||
+  //       (permission == LocationPermission.whileInUse)) {
+  //     G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
+  //       locationSettings: const LocationSettings(
+  //         accuracy: BASE_APP_LOCATION_ACCURACY,
+  //         distanceFilter: 50,
+  //       ),
+  //     ).listen((Position position) {
+  //       G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
+  //       G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
+  //       setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
+  //       setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
+  //       setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+  //       // var xxx = 0
+
+  //       //print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+  //     });
+
+  //     // don't wait for the position to resolve to return from
+  //     // this function because we want the app to start quickly.
+
+  //     // ignore: unawaited_futures
+  //     Geolocator.getCurrentPosition(
+  //       locationSettings: const LocationSettings(
+  //         accuracy: LocationAccuracy.lowest,
+  //       ),
+  //     ).then((Position position) {
+  //       G0<DeviceInfo>().deviceLat = position.latitude;
+  //       G0<DeviceInfo>().deviceLon = position.longitude;
+  //       setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
+  //       setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
+  //       setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+
+  //       //print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+  //     });
+  //   }
+  // }
+
   static Future<void> subscribeToGeoLocationStream() async {
-    G0<DeviceInfo>().deviceLat =
-        getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
-    G0<DeviceInfo>().deviceLon =
-        getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
+    // Load saved location as fallback
+    final storedLat =
+        (getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE)
+            .toDouble();
+    final storedLon =
+        (getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE)
+            .toDouble();
+    final appModel = G0<AppModel>();
+    final deviceInfo = G0<DeviceInfo>();
 
-    IveCoreUtilities.logTiming(
-      'Geostatus query start',
-      G0<AppModel>().appStartTime,
-    );
-    final LocationPermission permission = await Geolocator.checkPermission();
+    deviceInfo.deviceLat = storedLat;
+    deviceInfo.deviceLon = storedLon;
 
-    IveCoreUtilities.logTiming(
-      'Geolocation query start',
-      G0<AppModel>().appStartTime,
-    );
-    if ((permission == LocationPermission.always) ||
-        (permission == LocationPermission.whileInUse)) {
-      G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
+    //IveCoreUtilities.logTiming('Geostatus query start', appModel.appStartTime);
+
+    final permission = await Geolocator.checkPermission();
+    //IveCoreUtilities.logTiming('Geolocation query start', appModel.appStartTime);
+
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      // Start streaming location updates
+      appModel.geoLocationStream = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
           accuracy: BASE_APP_LOCATION_ACCURACY,
           distanceFilter: 50,
         ),
-      ).listen((Position position) {
-        G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
-        G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
-        setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
-        setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
-        setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+      ).listen(_updateDeviceLocation);
 
-        //print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
-      });
-
-      // don't wait for the position to resolve to return from
-      // this function because we want the app to start quickly.
-
-      // ignore: unawaited_futures
+      // One-time location fetch (low priority, non-blocking)
       Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.lowest,
         ),
-      ).then((Position position) {
-        G0<DeviceInfo>().deviceLat = position.latitude;
-        G0<DeviceInfo>().deviceLon = position.longitude;
-        setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
-        setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
-        setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
-
-        //print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
-      });
+      ).then(_updateDeviceLocation);
     }
+  }
+
+  static void _updateDeviceLocation(Position position) {
+    final deviceInfo = G0<DeviceInfo>();
+    final lat = position.latitude.toDouble();
+    final lon = position.longitude.toDouble();
+
+    deviceInfo.deviceLat = lat;
+    deviceInfo.deviceLon = lon;
+
+    print('lat = $lat, lon = $lon');
+
+    setNumPref(NumPrefsEnum.currentDeviceLat, lat);
+    setNumPref(NumPrefsEnum.currentDeviceLon, lon);
+    setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
   }
 
   static String? validateEmail(String? value) {
@@ -859,5 +914,132 @@ class Utilities {
     }
 
     return s;
+  }
+
+  static Future<void> checkAreWeAtRunStart({String? eventId}) async {
+    //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
+
+    var lastRunStartCheck = getDatePref(DatePrefsEnum.lastRunStartCheck);
+    if (lastRunStartCheck == null) {
+      await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime(2000));
+      lastRunStartCheck = DateTime(2000);
+    }
+
+    ////// TODO: Re-enable this before next release
+    if (DateTime.now().difference(lastRunStartCheck).inMinutes < 2) {
+      return;
+    }
+
+    await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
+
+    final List<AreWeAtRunModel> resultList =
+        await CommonQueries.areWeAtRunStart(eventId: eventId);
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
+
+    if (resultList.length == 1) {
+      final AreWeAtRunModel result = resultList[0];
+
+      if (result.eventId != EMPTY_RESULT) {
+        final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+          title: 'Check-in to Run',
+          areWeAtRunData: result,
+          okButtonTitle: 'Yes',
+          cancelButtonTitle: 'No',
+        );
+
+        final EnumCheckinOptions<int>? retVal =
+            await showDialog<EnumCheckinOptions<int>>(
+              context: navigatorKey.currentContext!,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return popup;
+              },
+            );
+
+        if (retVal == enumCheckInOption_Yes) {
+          await G0<TableModel>().hasherEventMapService.setEventAttendence(
+            result.eventId,
+            userId,
+            AppDomainType.user,
+            attendenceAtHash.value,
+          );
+
+          final controller = Get.find<FutureRunListPageController>();
+          await controller.refreshFromTable(true);
+        } else if ((retVal == enumCheckInOption_YesAndPayByCredit) ||
+            (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
+          final PaymentsService paySrv = PaymentsService();
+          await paySrv.payForEvent(
+            result.eventId,
+            userId,
+            GUID_EMPTY,
+            retVal == enumCheckInOption_YesAndPayByCredit
+                ? paymentHashCredit.value
+                : paymentBankTransfer.value,
+            result.membershipExpirationDate.isAfter(DateTime.now())
+                ? result.memberPrice
+                : result.nonMemberPrice,
+            attendenceAtHash.value,
+            payForRunOnly,
+            AppDomainType.user,
+          );
+        } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) ||
+            (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
+          final PaymentsService paySrv = PaymentsService();
+          await paySrv.payForEvent(
+            result.eventId,
+            userId,
+            GUID_EMPTY,
+            retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit
+                ? paymentHashCredit.value
+                : paymentBankTransfer.value,
+            result.extrasCost +
+                (result.membershipExpirationDate.isAfter(DateTime.now())
+                    ? result.memberPrice
+                    : result.nonMemberPrice),
+            attendenceAtHash.value,
+            payForRunAndExtras,
+            AppDomainType.user,
+          );
+        }
+      }
+    } else if (resultList.length > 1) {
+      // look through the list of runs and determine if this hasher is
+      // at any of the runs on the list. If so, don't show the
+      // selection view
+      bool showRunList = true;
+      final Map<String, bool> selectedRuns = <String, bool>{};
+
+      for (AreWeAtRunModel result in resultList) {
+        selectedRuns[result.eventId] =
+            false; //prepare the selection result list
+        if (result.attendenceState >= attendenceAtHash.value) {
+          showRunList = false;
+          break;
+        }
+      }
+
+      if (showRunList) {
+        var doCheckIn =
+            await Get.to<bool?>(
+              SelectRunPage(runList: resultList, selected: selectedRuns),
+            ) ??
+            false;
+
+        if (doCheckIn) {
+          for (AreWeAtRunModel result in resultList) {
+            if ((selectedRuns.containsKey(result.eventId)) &&
+                (selectedRuns[result.eventId] == true)) {
+              await G0<TableModel>().hasherEventMapService.setEventAttendence(
+                result.eventId,
+                userId,
+                AppDomainType.user,
+                attendenceAtHash.value,
+              );
+            }
+          }
+        }
+      }
+    }
   }
 }

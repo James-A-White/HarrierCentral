@@ -1,9 +1,42 @@
 import 'package:harrier_central/imports.dart';
 import 'package:get/get.dart';
 
-// Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-//   print("Handling background message: ${message.messageId}");
-// }
+// this prevents exceptions being thrown on iOS when
+// the app is in the background and location services
+// is not set to Always Allow.
+class AppLifecycleController extends SuperController<void> {
+  @override
+  void onPaused() {
+    _cancelGeoStream('onPaused');
+  }
+
+  @override
+  void onDetached() {
+    _cancelGeoStream('onDetached');
+  }
+
+  @override
+  void onInactive() {
+    _cancelGeoStream('onInactive');
+  }
+
+  @override
+  void onResumed() {
+    Utilities.subscribeToGeoLocationStream(); // re-subscribe
+    print('GeoLocation Stream resumed');
+  }
+
+  @override
+  void onHidden() {
+    _cancelGeoStream('onHidden');
+  }
+
+  void _cancelGeoStream(String source) {
+    G0<AppModel>().geoLocationStream?.cancel();
+    G0<AppModel>().geoLocationStream = null;
+    print('GeoLocation Stream cancelled ($source)');
+  }
+}
 
 void setupFirebaseListeners() {
   // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -17,29 +50,17 @@ void setupFirebaseListeners() {
 }
 
 void _handleNotificationClick(RemoteMessage message) {
-  // final data = message.data;
-  // print(data);
-  // final screen = data['screen'];
-
-  // if (screen == 'chat' && data['chatId'] != null) {
-  //   Get.to(() => ChatPage(chatId: data['chatId']));
-  // } else if (screen == 'profile') {
-  //   Get.to(() => ProfilePage(userId: data['userId']));
-  // } else {
-  //   // Default fallback
-  //   Get.to(() => HomePage());
-  // }
+  final controller = Get.find<FutureRunListPageController>();
+  controller.processNotificationClickOnResume(message);
 }
-
-// Future<String?> getToken() async {
-//   String? token = await FirebaseMessaging.instance.getToken();
-//   print('FCM Token: $token');
-//   return token;
-// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //debugPaintSizeEnabled=true;
+
+  await initPrefs();
+
+  Get.put(AppLifecycleController()); // register lifecycle-aware controller
 
   await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
@@ -78,44 +99,47 @@ void main() async {
       home: AppEntryPage(),
       routes: routes,
       theme: ThemeData(
-          appBarTheme: AppBarTheme(
-            systemOverlayStyle: SystemUiOverlayStyle(
-              // Status bar color
-              statusBarColor: hc_red,
+        appBarTheme: AppBarTheme(
+          systemOverlayStyle: SystemUiOverlayStyle(
+            // Status bar color
+            statusBarColor: hc_red,
 
-              // Status bar brightness (optional)
-              statusBarIconBrightness:
-                  Brightness.dark, // For Android (dark icons)
-              statusBarBrightness: Brightness.dark, // For iOS (dark icons)
+            // Status bar brightness (optional)
+            statusBarIconBrightness:
+                Brightness.dark, // For Android (dark icons)
+            statusBarBrightness: Brightness.dark, // For iOS (dark icons)
+          ),
+        ),
+        primaryColor: Colors.grey.shade700,
+        primaryColorDark: Colors.grey.shade900,
+        primaryColorLight: Colors.grey.shade400,
+        bottomAppBarTheme: BottomAppBarTheme(color: Colors.grey.shade700),
+        highlightColor: Colors.yellow,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: hc_red,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
             ),
+            textStyle: const TextStyle(color: Colors.white),
+            shadowColor: Colors.transparent,
+            elevation: 0,
           ),
-          primaryColor: Colors.grey.shade700,
-          primaryColorDark: Colors.grey.shade900,
-          primaryColorLight: Colors.grey.shade400,
-          bottomAppBarTheme: BottomAppBarTheme(color: Colors.grey.shade700),
-          highlightColor: Colors.yellow,
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: hc_red,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)),
-                textStyle: const TextStyle(color: Colors.white),
-                shadowColor: Colors.transparent,
-                elevation: 0),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          //     style: TextButton.styleFrom(
+          //   backgroundColor: hc_red,
+          //   primary
+          //   textStyle: const TextStyle(color: Colors.white),
+          // )
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all<Color>(hc_red),
+            foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
           ),
-          textButtonTheme: TextButtonThemeData(
-            //     style: TextButton.styleFrom(
-            //   backgroundColor: hc_red,
-            //   primary
-            //   textStyle: const TextStyle(color: Colors.white),
-            // )
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all<Color>(hc_red),
-              foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
-            ),
-          ),
-          iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
-          scaffoldBackgroundColor: Colors.brown.shade50),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
+        scaffoldBackgroundColor: Colors.brown.shade50,
+      ),
     ),
   );
 }

@@ -372,7 +372,6 @@ class AppEntryPageState extends State<AppEntryPage>
   }
 
   Future<void> _startTimeout() async {
-    await initPrefs();
     await Future<dynamic>.delayed(
       const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME),
     );

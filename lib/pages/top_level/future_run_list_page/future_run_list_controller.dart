@@ -108,6 +108,8 @@ class FutureRunListPageController extends GetxController {
 
     _updateTotalNotificationCounter();
 
+    showOnlyEventsWithMessages.value = false;
+
     update(['runList', 'chatTab', 'main_nav_page']);
   }
 
@@ -137,37 +139,48 @@ class FutureRunListPageController extends GetxController {
     chatSummaryMap = await getEventChatMessageCounts();
 
     final msg = await FirebaseMessaging.instance.getInitialMessage();
-
     if (msg != null) {
-      String? eventId = msg.data['EventId']?.toString().toUpperCase();
-      MessageType messageType = MessageType.fromId(
-        int.tryParse(msg.data['MessageType']) ?? 0,
-      );
-      if ((eventId != null) && (allRuns != null)) {
-        dynamic runs =
-            allRuns!
-                .where(
-                  (dynamic a) => a.event?.eventId?.toUpperCase() == eventId,
-                )
-                .toList();
+      await _processMessage(msg.data);
+    }
+  }
 
-        if ((runs != null) && (runs.length > 0)) {
-          var run = runs[0];
+  Future<void> processNotificationClickOnResume(RemoteMessage message) async {
+    // if there was no initial message, check to see if there was
+    // data from a message tap when the app was already opened but
+    // in the background
 
-          RunTab? openToTab;
+    await _processMessage(message.data);
+  }
 
-          switch (messageType) {
-            case MessageType.chat:
-              openToTab = RunTab.chat;
-              break;
-            case MessageType.checkinReminder:
-              openToTab = RunTab.details;
-              break;
-            case MessageType.rsvpReminder:
-              openToTab = RunTab.rsvp;
-              break;
-          }
+  Future<void> _processMessage(Map<String, dynamic> data) async {
+    String? eventId = data['EventId']?.toString().toUpperCase();
+    MessageType messageType = MessageType.fromId(
+      int.tryParse(data['MessageType']) ?? 0,
+    );
+    if ((eventId != null) && (allRuns != null)) {
+      dynamic runs =
+          allRuns!
+              .where((dynamic a) => a.event?.eventId?.toUpperCase() == eventId)
+              .toList();
 
+      if ((runs != null) && (runs.length > 0)) {
+        var run = runs[0];
+
+        RunTab? openToTab;
+
+        switch (messageType) {
+          case MessageType.chat:
+            openToTab = RunTab.chat;
+            break;
+          case MessageType.checkinReminder:
+            await Utilities.checkAreWeAtRunStart(eventId: eventId);
+            break;
+          case MessageType.rsvpReminder:
+            openToTab = RunTab.rsvp;
+            break;
+        }
+
+        if (openToTab != null) {
           openRun(run, openToTab: openToTab);
         }
       }

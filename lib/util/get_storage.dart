@@ -109,6 +109,29 @@ Map<String, int> getMapIntPref(dynamic key) {
   return {}; // Return an empty map if nothing found
 }
 
+Future<void> setMapDynamicPref(dynamic key, Map<String, dynamic>? value) async {
+  if (key == null) {
+    return;
+  }
+
+  if (value == null) {
+    return await _box.remove(key.toString());
+  }
+
+  final jsonString = jsonEncode(value);
+
+  return await _box.write(key.toString(), jsonString);
+}
+
+Map<String, dynamic>? getMapDynamicPref(dynamic key) {
+  final jsonString = _box.read(key.toString());
+  if (jsonString != null) {
+    final Map<String, dynamic> decoded = jsonDecode(jsonString);
+    return decoded;
+  }
+  return null; // Return an empty map if nothing found
+}
+
 Future<void> removePref(dynamic key) async {
   return _box.remove(key.toString());
 }
