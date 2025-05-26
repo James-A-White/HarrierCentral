@@ -182,12 +182,14 @@ class AppEntryPageState extends State<AppEntryPage>
       // open app in offline mode
       G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
 
-      await Navigator.pushReplacement<dynamic, dynamic>(
-        navigatorKey.currentContext!,
-        MaterialPageRoute<dynamic>(
-          builder: (BuildContext context) => MainNavigationPage(),
-        ),
-      );
+      Get.off(() => MainNavigationPage(), routeName: '/main');
+
+      // await Navigator.pushReplacement<dynamic, dynamic>(
+      //   navigatorKey.currentContext!,
+      //   MaterialPageRoute<dynamic>(
+      //     builder: (BuildContext context) => MainNavigationPage(),
+      //   ),
+      // );
 
       return;
     } else {
@@ -260,26 +262,30 @@ class AppEntryPageState extends State<AppEntryPage>
                       'The app has been successfully updated for $userName.',
                       'OK',
                     ).then((void _) {
-                      Navigator.pushReplacement<dynamic, dynamic>(
-                        navigatorKey.currentContext!,
-                        MaterialPageRoute<dynamic>(
-                          builder:
-                              (BuildContext context) => MainNavigationPage(),
-                        ),
-                      );
+                      Get.off(() => MainNavigationPage(), routeName: '/main');
+
+                      // Navigator.pushReplacement<dynamic, dynamic>(
+                      //   navigatorKey.currentContext!,
+                      //   MaterialPageRoute<dynamic>(
+                      //     builder:
+                      //         (BuildContext context) => MainNavigationPage(),
+                      //   ),
+                      // );
                     });
                   } else {
                     // TODO(James): Do something here if the auth device fails
                   }
                 }
               } else {
-                if (!mounted) return;
-                await Navigator.pushReplacement<dynamic, dynamic>(
-                  navigatorKey.currentContext!,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => MainNavigationPage(),
-                  ),
-                );
+                Get.off(() => MainNavigationPage(), routeName: '/main');
+
+                // if (!mounted) return;
+                // await Navigator.pushReplacement<dynamic, dynamic>(
+                //   navigatorKey.currentContext!,
+                //   MaterialPageRoute<dynamic>(
+                //     builder: (BuildContext context) => MainNavigationPage(),
+                //   ),
+                // );
               }
             }
           } else {

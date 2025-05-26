@@ -134,7 +134,22 @@ class MainNavigationPage extends StatelessWidget {
                   );
                 }),
               ),
-              floatingActionButton: controller.currentFab,
+              floatingActionButton: Obx(() {
+                if (!controller.isFlipped.value) {
+                  if (controller.currentPage.value == 2) {
+                    return controller.runAndKennelMapPageKey.currentState
+                            ?.getMapFab() ??
+                        SizedBox();
+                  }
+                  if (controller.currentPage.value == 1) {
+                    return controller.kennelLocationsPageKey.currentState
+                            ?.getKennelFab() ??
+                        SizedBox();
+                  }
+                }
+                return SizedBox();
+              }),
+
               body: Container(
                 decoration: Backgrounds.defaultHcBackground(),
                 child: Obx(() {

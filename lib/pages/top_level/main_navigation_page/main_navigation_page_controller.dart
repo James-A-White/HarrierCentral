@@ -313,17 +313,17 @@ class MainNavigationController extends GetxController
   //   }
   // }
 
-  Widget? get currentFab {
-    if (!isFlipped.value) {
-      if (currentPage.value == 2) {
-        return runAndKennelMapPageKey.currentState?.getMapFab();
-      }
-      if (currentPage.value == 1) {
-        return kennelLocationsPageKey.currentState?.getKennelFab();
-      }
-    }
-    return null;
-  }
+  // Widget? get currentFab {
+  //   if (!isFlipped.value) {
+  //     if (currentPage.value == 2) {
+  //       return runAndKennelMapPageKey.currentState?.getMapFab();
+  //     }
+  //     if (currentPage.value == 1) {
+  //       return kennelLocationsPageKey.currentState?.getKennelFab();
+  //     }
+  //   }
+  //   return null;
+  // }
 
   Future<bool> _checkLocationPermissions() async {
     G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;

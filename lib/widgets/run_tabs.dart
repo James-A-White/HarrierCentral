@@ -218,8 +218,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   //int _currentTabIndex = -1;
 
+  bool _showTopWidget = true;
+  bool _slideTopWidget = false;
+
+  static int DISPLAY_LOGO_IN_RSVP_DURATION = 5;
+
   @override
   void initState() {
+    super.initState();
     _tabController = TabController(vsync: this, length: _tabs.length);
     _gridListTabController = TabController(vsync: this, length: 2);
 
@@ -267,12 +273,38 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
       if (_fabIsVisible != (_tabs[_tabController.index].text == LABEL_RSVP)) {
         _fabIsVisible = _tabs[_tabController.index].text == LABEL_RSVP;
-        if (_tabs[_tabController.index].text == LABEL_RSVP) {
-          //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-          _refreshHemTableFromBackend(false).then((value) {
-            setState(() {});
+      }
+
+      if (_tabs[_tabController.index].text == LABEL_RSVP) {
+        setState(() {
+          _showTopWidget = true;
+          _slideTopWidget = false;
+        });
+
+        Future.delayed(Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION)).then((
+          value,
+        ) {
+          setState(() {
+            _showTopWidget = false;
           });
-        }
+        });
+        //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+        _refreshHemTableFromBackend(false).then((value) {
+          setState(() {});
+        });
+      }
+      if (_tabs[_tabController.index].text == LABEL_CHAT) {
+        setState(() {
+          _showTopWidget = true;
+          _slideTopWidget = false;
+        });
+        Future.delayed(Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION)).then((
+          value,
+        ) {
+          setState(() {
+            _showTopWidget = false;
+          });
+        });
       }
 
       if (_tabController.previousIndex == 4) {
@@ -288,7 +320,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       setState(() {});
     });
 
-    super.initState();
+    // Future.delayed(const Duration(seconds: 7)).then((value) {
+    //   setState(() {
+    //     _showTopWidget = false;
+    //   });
+    // });
   }
 
   @override
@@ -373,33 +409,69 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           } else {
             return Center(
               child: Column(
+                //mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Container(
-                    //height: 50,
-                    padding: EdgeInsets.only(top: 15, left: 20, bottom: 30),
-                    child: Row(
-                      children: [
-                        KennelLogo(
-                          kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
-                          kennelShortName:
-                              widget.futureRun.kennel.kennelShortName,
-                          logoHeight: 70,
-                        ),
-                        SizedBox(width: 30),
-                        Expanded(
-                          child: AutoSizeText(
-                            widget.futureRun.event.eventName,
-                            maxLines: 3,
-                            style: ts_tileTextLarge.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                      ],
-                    ),
-                  ),
-                  FancyDivider(key: Key('3234234'), innerColor: Colors.white),
+                  AnimatedSize(
+                    duration: Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.topCenter,
+                    child:
+                        !_slideTopWidget
+                            ? AnimatedOpacity(
+                              opacity: _showTopWidget ? 1.0 : 0.0,
+                              duration: Duration(milliseconds: 400),
+                              onEnd: () {
+                                setState(() {
+                                  _slideTopWidget = true;
+                                });
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  top: 15,
+                                  left: 20,
+                                  bottom: 0,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        KennelLogo(
+                                          kennelLogoUrl:
+                                              widget
+                                                  .futureRun
+                                                  .kennel
+                                                  .kennelLogo,
+                                          kennelShortName:
+                                              widget
+                                                  .futureRun
+                                                  .kennel
+                                                  .kennelShortName,
+                                          logoHeight: 70,
+                                        ),
+                                        SizedBox(width: 30),
+                                        Expanded(
+                                          child: AutoSizeText(
+                                            widget.futureRun.event.eventName,
+                                            maxLines: 3,
+                                            style: ts_tileTextLarge.copyWith(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 20),
+                                      ],
+                                    ),
+                                    SizedBox(height: 25),
+                                    FancyDivider(
+                                      key: ValueKey('divider2342'),
+                                      innerColor: Colors.white,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            : SizedBox(),
+                  ), // Collapses cleanly
 
                   Padding(
                     padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
@@ -729,7 +801,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 ),
                                 if (_thisUserIndex == -1) ..._getRsvpButtons(),
                                 if (_thisUserIndex == -1) ...<Widget>[
-                                  const SizedBox(height: 10),
+                                  const Expanded(flex: 40, child: SizedBox()),
                                 ],
                               ],
                             )
@@ -862,23 +934,32 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 Container(
                                   padding: const EdgeInsets.all(8.0),
                                   width: 140.0,
+
                                   child: TabBar(
                                     onTap: (void _) {
                                       setState(() {});
                                     },
-                                    labelStyle: ts_tabSelected,
-                                    unselectedLabelStyle: ts_tabUnselected,
+
+                                    // overlayColor: WidgetStatePropertyAll(
+                                    //   Colors.red,
+                                    // ),
+                                    // labelStyle: ts_tabSelected,
+                                    // unselectedLabelStyle: ts_tabUnselected,
                                     isScrollable: false,
                                     unselectedLabelColor: Colors.white,
                                     labelColor: Colors.white,
                                     //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
                                     indicatorSize: TabBarIndicatorSize.label,
+
+                                    // indicatorColor: Colors.transparent,
+                                    // indicatorWeight: 0.0,
                                     indicator: BubbleTabIndicator(
                                       indicatorHeight: 40.0,
                                       indicatorColor: hc_red,
                                       tabBarIndicatorSize:
                                           TabBarIndicatorSize.label,
                                       indicatorRadius: 20.0,
+                                      //padding: EdgeInsets.all(10),
                                     ),
                                     tabs: const <Tab>[
                                       Tab(
@@ -1229,9 +1310,71 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Widget _buildChatView() {
-    return ChatPage(
-      eventId: widget.futureRun.event.eventId,
-      publicEventId: widget.futureRun.event.publicEventId,
+    return ColoredBox(
+      color: Colors.yellow.shade100,
+      child: Column(
+        children: [
+          AnimatedSize(
+            duration: Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child:
+                !_slideTopWidget
+                    ? AnimatedOpacity(
+                      opacity: _showTopWidget ? 1.0 : 0.0,
+                      duration: Duration(milliseconds: 400),
+                      onEnd: () {
+                        setState(() {
+                          _slideTopWidget = true;
+                        });
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 15, left: 20, bottom: 15),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                KennelLogo(
+                                  kennelLogoUrl:
+                                      widget.futureRun.kennel.kennelLogo,
+                                  kennelShortName:
+                                      widget.futureRun.kennel.kennelShortName,
+                                  logoHeight: 70,
+                                ),
+                                SizedBox(width: 30),
+                                Expanded(
+                                  child: AutoSizeText(
+                                    widget.futureRun.event.eventName,
+                                    maxLines: 3,
+                                    style: ts_tileTextLarge.copyWith(
+                                      color: themeAppBarBackground,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 20),
+                              ],
+                            ),
+                            // SizedBox(height: 20),
+                            // FancyDivider(
+                            //   key: ValueKey('divider2342'),
+                            //   innerColor: Colors.black,
+                            // ),
+                          ],
+                        ),
+                      ),
+                    )
+                    : SizedBox(),
+            //: SizedBox.expand(child: ColoredBox(color: Colors.white)),
+          ), // Collapses cleanly
+
+          Expanded(
+            child: ChatPage(
+              eventId: widget.futureRun.event.eventId,
+              publicEventId: widget.futureRun.event.publicEventId,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -23,7 +23,10 @@ class AppLifecycleController extends SuperController<void> {
   @override
   void onResumed() {
     Utilities.subscribeToGeoLocationStream(); // re-subscribe
-    print('GeoLocation Stream resumed');
+    if (Get.isRegistered<ChatPageController>()) {
+      final chatPageController = Get.find<ChatPageController>();
+      chatPageController.onAppResumed(); // Call your method safely
+    }
   }
 
   @override
@@ -49,7 +52,11 @@ void setupFirebaseListeners() {
   });
 }
 
-void _handleNotificationClick(RemoteMessage message) {
+void _handleNotificationClick(RemoteMessage message) async {
+  //await Get.offAll(() => MainNavigationPage());
+
+  Get.until((route) => route.settings.name == '/main');
+
   final controller = Get.find<FutureRunListPageController>();
   controller.processNotificationClickOnResume(message);
 }
@@ -97,6 +104,11 @@ void main() async {
         // ... other locales the app supports
       ],
       home: AppEntryPage(),
+
+      getPages: [
+        GetPage(name: '/main', page: () => MainNavigationPage()),
+        // Other routes...
+      ],
       routes: routes,
       theme: ThemeData(
         appBarTheme: AppBarTheme(

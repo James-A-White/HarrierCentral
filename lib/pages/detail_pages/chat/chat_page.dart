@@ -17,6 +17,7 @@ class ChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final messages = chatSheetController.messages;
     return GetBuilder<ChatPageController>(
+      id: 'chatMessages',
       builder: (controller) {
         return VisibilityDetector(
           key: Key('my-widget-key'),

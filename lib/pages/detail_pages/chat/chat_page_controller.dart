@@ -16,7 +16,7 @@ class ChatPageController extends GetxController {
 
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
-  RxList<types.Message> messages = <types.Message>[].obs;
+  List<types.Message> messages = <types.Message>[];
 
   @override
   void onInit() {
@@ -25,46 +25,7 @@ class ChatPageController extends GetxController {
     _fcmSubscription = FirebaseMessaging.onMessage.listen((
       RemoteMessage message,
     ) {
-      // EventId = eventId,
-      // Title = title,
-      // UserId = userId,
-      // UserDisplayName = userDisplayName,
-      // UserPhoto = userPhoto,
-      // Message = messageContent,
-      // MessageId = messageId,
-      // MessageRelesabilityFlags = messageRelesabilityFlags
-
-      if (eventId.toUpperCase() ==
-          message.data['EventId'].toString().toUpperCase()) {
-        final msgUser = types.User(
-          id: message.data['UserId'].toString().toUpperCase(),
-          firstName: message.data['UserDisplayName'],
-          imageUrl: message.data['UserPhoto'],
-        );
-
-        final textMessage = types.TextMessage(
-          author: msgUser,
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          id: message.data['MessageId'].toString().toUpperCase(),
-          text: message.data['Message'],
-        );
-
-        final index = messages.indexWhere(
-          (element) =>
-              element.id.toUpperCase() ==
-              message.data['MessageId'].toString().toUpperCase(),
-        );
-
-        if (index == -1) {
-          addMessage(textMessage);
-        } else {
-          final updatedMessage = (messages[index] as types.TextMessage)
-              .copyWith(status: types.Status.sent);
-
-          messages[index] = updatedMessage;
-          update();
-        }
-      }
+      _updateMessages(message);
     });
 
     //final String hasherId = getStringPref(StringPrefsEnum.userId)!;
@@ -84,21 +45,72 @@ class ChatPageController extends GetxController {
       imageUrl: photo,
     );
 
-    _getEventMessages(eventId).then<void>((String? result) {
-      if (result != null) {
-        final outerItem = jsonDecode(result) as List<dynamic>;
-        messages.value = loadMessages(outerItem[0] as List<dynamic>);
-        update();
-      }
-    });
+    // it's safe to call this async method synchronously here
+    onAppResumed();
+  }
 
-    //_startSendingMessages();
+  void _updateMessages(RemoteMessage message) {
+    // EventId = eventId,
+    // Title = title,
+    // UserId = userId,
+    // UserDisplayName = userDisplayName,
+    // UserPhoto = userPhoto,
+    // Message = messageContent,
+    // MessageId = messageId,
+    // MessageRelesabilityFlags = messageRelesabilityFlags
+
+    if (eventId.toUpperCase() ==
+        message.data['EventId'].toString().toUpperCase()) {
+      final msgUser = types.User(
+        id: message.data['UserId'].toString().toUpperCase(),
+        firstName: message.data['UserDisplayName'],
+        imageUrl: message.data['UserPhoto'],
+      );
+
+      final textMessage = types.TextMessage(
+        author: msgUser,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+        id: message.data['MessageId'].toString().toUpperCase(),
+        text: message.data['Message'],
+      );
+
+      final index = messages.indexWhere(
+        (element) =>
+            element.id.toUpperCase() ==
+            message.data['MessageId'].toString().toUpperCase(),
+      );
+
+      if (index == -1) {
+        final updatedMessage = textMessage.copyWith(status: types.Status.sent);
+        addMessage(updatedMessage);
+      } else {
+        final updatedMessage = (messages[index] as types.TextMessage).copyWith(
+          status: types.Status.sent,
+        );
+
+        messages[index] = updatedMessage;
+        update(['chatMessages']);
+      }
+    }
+  }
+
+  Future<void> onAppResumed() async {
+    var result = await _getEventMessages(eventId);
+
+    if (result != null) {
+      final outerItem = jsonDecode(result) as List<dynamic>;
+      //messages.value = loadMessages(outerItem[0] as List<dynamic>);
+      messages = loadMessages(outerItem[0] as List<dynamic>);
+      update(['chatMessages']);
+    }
   }
 
   Future<String?> _getEventMessages(String eventId) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    print('Get Event Messages called at ${DateTime.now().toIso8601String()}');
 
     final accessToken = Utilities.generateToken(
       userId,
@@ -148,7 +160,7 @@ class ChatPageController extends GetxController {
       setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
     }
 
-    update();
+    update(['chatMessages']);
   }
 
   void handleAttachmentPressed() {
