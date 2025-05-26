@@ -14,7 +14,7 @@ class ChatPageController extends GetxController {
 
   double visibility = 0.0;
 
-  StreamSubscription<RemoteMessage>? _fcmSubscription;
+  RxBool messagesLoading = true.obs;
 
   List<types.Message> messages = <types.Message>[];
 
@@ -22,11 +22,13 @@ class ChatPageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    _fcmSubscription = FirebaseMessaging.onMessage.listen((
-      RemoteMessage message,
-    ) {
-      _updateMessages(message);
-    });
+    // _fcmSubscription = FirebaseMessaging.onMessage.listen((
+    //   RemoteMessage message,
+    // ) {
+    //   _updateMessages(message);
+    // });
+
+    _ensureFcmListener();
 
     //final String hasherId = getStringPref(StringPrefsEnum.userId)!;
     final String publicHasherId =
@@ -94,15 +96,37 @@ class ChatPageController extends GetxController {
     }
   }
 
-  Future<void> onAppResumed() async {
-    var result = await _getEventMessages(eventId);
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
 
+  void _ensureFcmListener() {
+    // Cancel existing listener if it somehow still exists
+    _fcmSubscription?.cancel();
+
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
+      //print('FCM (foreground) message: ${message.data}');
+      // Handle the message
+
+      _updateMessages(message);
+    });
+  }
+
+  Future<void> onAppResumed() async {
+    messagesLoading.value = true;
+    var result = await _getEventMessages(eventId);
     if (result != null) {
       final outerItem = jsonDecode(result) as List<dynamic>;
-      //messages.value = loadMessages(outerItem[0] as List<dynamic>);
       messages = loadMessages(outerItem[0] as List<dynamic>);
+      messagesLoading.value = false;
       update(['chatMessages']);
     }
+
+    _ensureFcmListener(); // Always safe
+
+    // NOTE: Only do this if we then send the token back to the server
+    // final token = await FirebaseMessaging.instance.getToken();
+    // print('Current FCM token: $token');
   }
 
   Future<String?> _getEventMessages(String eventId) async {
@@ -126,6 +150,7 @@ class ChatPageController extends GetxController {
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+
     return jsonResult;
   }
 

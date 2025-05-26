@@ -27,24 +27,38 @@ class ChatPage extends StatelessWidget {
               'Widget ${visibilityInfo.key} is ${controller.visibility * 100}% visible',
             );
           },
-          child: Column(
-            children: [
-              Expanded(
-                child: Chat(
-                  messages: messages, // Convert RxList to List
-                  onAttachmentPressed:
-                      chatSheetController.handleAttachmentPressed,
-                  onMessageTap: chatSheetController.handleMessageTap,
-                  onPreviewDataFetched:
-                      chatSheetController.handlePreviewDataFetched,
-                  onSendPressed: chatSheetController.handleSendPressed,
-                  showUserAvatars: true,
-                  showUserNames: true,
-                  user: chatSheetController.user,
-                ),
-              ),
-            ],
-          ),
+          child: Obx(() {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                controller.messagesLoading.value
+                    ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        HcCircularProgressIndicator(
+                          key: ValueKey('1313515234'),
+                        ),
+                      ],
+                    )
+                    : Expanded(
+                      child: Chat(
+                        messages: messages, // Convert RxList to List
+                        onAttachmentPressed:
+                            chatSheetController.handleAttachmentPressed,
+                        onMessageTap: chatSheetController.handleMessageTap,
+                        onPreviewDataFetched:
+                            chatSheetController.handlePreviewDataFetched,
+                        onSendPressed: chatSheetController.handleSendPressed,
+                        showUserAvatars: true,
+                        showUserNames: true,
+                        user: chatSheetController.user,
+                      ),
+                    ),
+              ],
+            );
+          }),
         );
       },
     );
