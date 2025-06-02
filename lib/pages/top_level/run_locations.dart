@@ -13,10 +13,7 @@ import 'package:latlong2/latlong.dart' as latlng;
 enum RunLocationsViewMode { all, past, recent, myRuns }
 
 class RunAndKennelMapPage extends StatefulWidget {
-  const RunAndKennelMapPage({
-    super.key,
-    this.kennel,
-  });
+  const RunAndKennelMapPage({super.key, this.kennel});
 
   final KennelsModel? kennel;
 
@@ -63,7 +60,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     _showKennels =
         (getIntPref(IntPrefsEnum.mapShowKennels) ?? 1) == 0 ? false : true;
 
-    _mapCenterOption = getIntPref(IntPrefsEnum.mapCenterOption) ??
+    _mapCenterOption =
+        getIntPref(IntPrefsEnum.mapCenterOption) ??
         centerOnCurrentLocation.value;
 
     if (getIntPref(IntPrefsEnum.mapCenterOption) == null) {
@@ -121,12 +119,16 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     width: 40,
                     child: TextButton(
                       style: TextButton.styleFrom(
-                          shape: button_shape,
-                          textStyle: TextStyle(color: Colors.grey.shade700),
-                          backgroundColor: Colors.white),
-                      child: Text('X',
-                          style: ts_headingBlack.copyWith(
-                              color: Colors.grey.shade700)),
+                        shape: button_shape,
+                        textStyle: TextStyle(color: Colors.grey.shade700),
+                        backgroundColor: Colors.white,
+                      ),
+                      child: Text(
+                        'X',
+                        style: ts_headingBlack.copyWith(
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                       onPressed: () {
                         _searchController.text = '';
                         _searchRunsAndKennelsText = '';
@@ -157,8 +159,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     if (_allKennels.isNotEmpty) {
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if (searchKennelsText.isNotEmpty) {
-        final List<String> searchItems =
-            searchKennelsText.trim().toLowerCase().split(',');
+        final List<String> searchItems = searchKennelsText
+            .trim()
+            .toLowerCase()
+            .split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -172,20 +176,22 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
           ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-          _filteredKennels = _filteredKennels.where((Map<String, dynamic> a) {
-            for (String orItem in orItems) {
-              if (orItem.trim().isEmpty) {
-                continue;
-              }
-              orItem = ' ${orItem.trim().toLowerCase()}';
-              if ((a['searchKennelsText'].toLowerCase().contains(orItem)) ||
-                  (removeDiacritics(a['searchKennelsText'].toLowerCase())
-                      .contains(orItem))) {
-                return !negate;
-              }
-            }
-            return negate;
-          }).toList();
+          _filteredKennels =
+              _filteredKennels.where((Map<String, dynamic> a) {
+                for (String orItem in orItems) {
+                  if (orItem.trim().isEmpty) {
+                    continue;
+                  }
+                  orItem = ' ${orItem.trim().toLowerCase()}';
+                  if ((a['searchKennelsText'].toLowerCase().contains(orItem)) ||
+                      (removeDiacritics(
+                        a['searchKennelsText'].toLowerCase(),
+                      ).contains(orItem))) {
+                    return !negate;
+                  }
+                }
+                return negate;
+              }).toList();
         }
       } else {
         _filteredKennels.addAll(_allKennels);
@@ -203,104 +209,108 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   Widget getMapFab() {
     return ConnectedWidget(
       child: SpeedDial(
-          // marginEnd: 18,
-          // marginBottom: 10,
-          animatedIcon: AnimatedIcons.menu_close,
-          animatedIconTheme: const IconThemeData(size: 22.0),
-          // this is ignored if animatedIcon is non null
-          // child:const  Icon(Icons.add),
-          visible: true,
-          curve: Curves.bounceIn,
-          overlayColor: Colors.black,
-          overlayOpacity: 0.5,
-          onOpen: () {
-            // ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            // searchFocusNode.unfocus();
-          },
-          //onClose: () => //print('DIAL CLOSED'),
-          tooltip: 'Speed Dial',
-          heroTag: 'speed-dial-hero-tag',
-          backgroundColor: hc_red,
-          foregroundColor: Colors.white,
-          elevation: 8.0,
-          shape: const CircleBorder(),
-          children: <SpeedDialChild>[
-            SpeedDialChild(
-              child: const Icon(Ionicons.ios_globe),
-              backgroundColor: Colors.green[700],
-              label: 'Show all runs',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _textDescription = 'Showing all runs';
-                _viewMode = RunLocationsViewMode.all;
-                _loadEvents().then((void _) {
-                  setState(() {});
-                });
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(Entypo.time_slot),
-              backgroundColor: hc_blue,
-              label: 'Show recent+future runs',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _textDescription = 'Showing runs in last 90 days';
-                _viewMode = RunLocationsViewMode.recent;
-                _loadEvents().then((void _) {
-                  setState(() {});
-                });
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(Entypo.ccw),
-              backgroundColor: hc_blue,
-              label: 'Show all past runs',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _textDescription = 'Showing all past runs';
-                _viewMode = RunLocationsViewMode.past;
-                _loadEvents().then((void _) {
-                  setState(() {});
-                });
-              },
-            ),
-            SpeedDialChild(
-              child:
-                  const Icon(MaterialCommunityIcons.run, color: Colors.black),
-              backgroundColor: Colors.orange[400],
-              label: 'Show my runs',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _textDescription = 'Showing runs you\'ve been at';
-                _viewMode = RunLocationsViewMode.myRuns;
-                _loadEvents().then((void _) {
-                  setState(() {});
-                });
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.target),
-              backgroundColor: Colors.purple[700],
-              label: 'Change map center',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                if (_mapCenterOption == centerOnCurrentLocation.value) {
-                  _mapCenterOption = centerOnHomeKennel.value;
-                  setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
+        // marginEnd: 18,
+        // marginBottom: 10,
+        animatedIcon: AnimatedIcons.menu_close,
+        animatedIconTheme: const IconThemeData(size: 22.0),
+        // this is ignored if animatedIcon is non null
+        // child:const  Icon(Icons.add),
+        visible: true,
+        curve: Curves.bounceIn,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        onOpen: () {
+          // ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          // searchFocusNode.unfocus();
+        },
+        //onClose: () => //print('DIAL CLOSED'),
+        tooltip: 'Speed Dial',
+        heroTag: 'speed-dial-hero-tag-7753253',
+        backgroundColor: hc_red,
+        foregroundColor: Colors.white,
+        elevation: 8.0,
+        shape: const CircleBorder(),
+        children: <SpeedDialChild>[
+          SpeedDialChild(
+            child: const Icon(Ionicons.ios_globe),
+            backgroundColor: Colors.green[700],
+            label: 'Show all runs',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _textDescription = 'Showing all runs';
+              _viewMode = RunLocationsViewMode.all;
+              _loadEvents().then((void _) {
+                setState(() {});
+              });
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Entypo.time_slot),
+            backgroundColor: hc_blue,
+            label: 'Show recent+future runs',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _textDescription = 'Showing runs in last 90 days';
+              _viewMode = RunLocationsViewMode.recent;
+              _loadEvents().then((void _) {
+                setState(() {});
+              });
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Entypo.ccw),
+            backgroundColor: hc_blue,
+            label: 'Show all past runs',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _textDescription = 'Showing all past runs';
+              _viewMode = RunLocationsViewMode.past;
+              _loadEvents().then((void _) {
+                setState(() {});
+              });
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.run, color: Colors.black),
+            backgroundColor: Colors.orange[400],
+            label: 'Show my runs',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _textDescription = 'Showing runs you\'ve been at';
+              _viewMode = RunLocationsViewMode.myRuns;
+              _loadEvents().then((void _) {
+                setState(() {});
+              });
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.target),
+            backgroundColor: Colors.purple[700],
+            label: 'Change map center',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              if (_mapCenterOption == centerOnCurrentLocation.value) {
+                _mapCenterOption = centerOnHomeKennel.value;
+                setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
 
-                  if ((_homeKennelLat != null) && (_homeKennelLon != null)) {
-                    _mapController.move(
-                        latlng.LatLng(_homeKennelLat!, _homeKennelLon!),
-                        _mapController.camera.zoom);
-                  } else if ((G0<DeviceInfo>().deviceLat != null) &&
-                      (G0<DeviceInfo>().deviceLon != null)) {
-                    _mapController.move(
-                        latlng.LatLng(G0<DeviceInfo>().deviceLat!,
-                            G0<DeviceInfo>().deviceLon!),
-                        _mapController.camera.zoom);
-                  }
+                if ((_homeKennelLat != null) && (_homeKennelLon != null)) {
+                  _mapController.move(
+                    latlng.LatLng(_homeKennelLat!, _homeKennelLon!),
+                    _mapController.camera.zoom,
+                  );
+                } else if ((G0<DeviceInfo>().deviceLat != null) &&
+                    (G0<DeviceInfo>().deviceLon != null)) {
+                  _mapController.move(
+                    latlng.LatLng(
+                      G0<DeviceInfo>().deviceLat!,
+                      G0<DeviceInfo>().deviceLon!,
+                    ),
+                    _mapController.camera.zoom,
+                  );
+                }
 
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
                     content: Text(
                       'Map will center on home kennel\r\n\r\n',
                       style: ts_title,
@@ -308,20 +318,25 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     backgroundColor: hc_blue,
                     elevation: 200.0,
-                  ));
-                } else {
-                  _mapCenterOption = centerOnCurrentLocation.value;
-                  setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
+                  ),
+                );
+              } else {
+                _mapCenterOption = centerOnCurrentLocation.value;
+                setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
 
-                  if ((G0<DeviceInfo>().deviceLat != null) &&
-                      (G0<DeviceInfo>().deviceLon != null)) {
-                    _mapController.move(
-                        latlng.LatLng(G0<DeviceInfo>().deviceLat!,
-                            G0<DeviceInfo>().deviceLon!),
-                        _mapController.camera.zoom);
-                  }
+                if ((G0<DeviceInfo>().deviceLat != null) &&
+                    (G0<DeviceInfo>().deviceLon != null)) {
+                  _mapController.move(
+                    latlng.LatLng(
+                      G0<DeviceInfo>().deviceLat!,
+                      G0<DeviceInfo>().deviceLon!,
+                    ),
+                    _mapController.camera.zoom,
+                  );
+                }
 
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
                     content: Text(
                       'Map will center on current location\r\n\r\n',
                       style: ts_title,
@@ -329,40 +344,48 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     backgroundColor: hc_blue,
                     elevation: 200.0,
-                  ));
-                }
-              },
+                  ),
+                );
+              }
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(
+              MaterialCommunityIcons.map_search_outline,
+              color: Colors.white,
             ),
-            SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.map_search_outline,
-                  color: Colors.white),
-              backgroundColor: Colors.purple[700],
-              label: 'Show / hide search bar',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _showFilters = !_showFilters;
-                if (!_showFilters) {
-                  _searchController.text = '';
-                  _searchRunsAndKennelsText = '';
-                }
-                setIntPref(IntPrefsEnum.mapShowSearchBar,
-                    _showFilters == false ? 0 : 1);
-                setState(() {});
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(FontAwesome.home, color: Colors.white),
-              backgroundColor: Colors.purple[700],
-              label: 'Show / hide kennels',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _showKennels = !_showKennels;
-                setIntPref(
-                    IntPrefsEnum.mapShowKennels, _showKennels == false ? 0 : 1);
-                setState(() {});
-              },
-            ),
-          ]),
+            backgroundColor: Colors.purple[700],
+            label: 'Show / hide search bar',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _showFilters = !_showFilters;
+              if (!_showFilters) {
+                _searchController.text = '';
+                _searchRunsAndKennelsText = '';
+              }
+              setIntPref(
+                IntPrefsEnum.mapShowSearchBar,
+                _showFilters == false ? 0 : 1,
+              );
+              setState(() {});
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(FontAwesome.home, color: Colors.white),
+            backgroundColor: Colors.purple[700],
+            label: 'Show / hide kennels',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _showKennels = !_showKennels;
+              setIntPref(
+                IntPrefsEnum.mapShowKennels,
+                _showKennels == false ? 0 : 1,
+              );
+              setState(() {});
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -402,8 +425,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     ''';
 
     try {
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        query,
+      );
       _allRuns = <dynamic>[];
 
       _runLocationMarkers = <Marker>[];
@@ -419,22 +443,25 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 (lon >= -180.0)) {
               EventModel em = EventModel.fromJson(results[i]);
               final DateTime dt = DateTime.parse(
-                  results[i]['eventStartDatetime'].substring(0, 19));
+                results[i]['eventStartDatetime'].substring(0, 19),
+              );
               final RunDetailsAggregate item = RunDetailsAggregate(
-                  event: em,
-                  extensions: RunQueryExtensionsModel(
-                      latitude: lat,
-                      longitude: lon,
-                      evtLat: lat,
-                      evtLon: lon,
-                      isMapAndDistanceValid: results[i]
-                          ['isMapAndDistanceValid'],
-                      rsvpState: results[i]['rsvpState'],
-                      attendenceState: results[i]['attendenceState'],
-                      isHare: results[i]['isHare'],
-                      searchRunsText: results[i]['searchRunsText'] +
-                          RunQueryExtensionsModel.getSearchDateString(dt)),
-                  kennel: KennelsModel.fromJson(results[i]));
+                event: em,
+                extensions: RunQueryExtensionsModel(
+                  latitude: lat,
+                  longitude: lon,
+                  evtLat: lat,
+                  evtLon: lon,
+                  isMapAndDistanceValid: results[i]['isMapAndDistanceValid'],
+                  rsvpState: results[i]['rsvpState'],
+                  attendenceState: results[i]['attendenceState'],
+                  isHare: results[i]['isHare'],
+                  searchRunsText:
+                      results[i]['searchRunsText'] +
+                      RunQueryExtensionsModel.getSearchDateString(dt),
+                ),
+                kennel: KennelsModel.fromJson(results[i]),
+              );
               _allRuns.add(item);
             }
           }
@@ -464,24 +491,30 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       final DateTime dt = run.event.eventStartDatetime;
 
       final Marker marker = Marker(
-          width: 45.0,
-          height: 55.0,
-          //anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
-          point: ll,
-          child: _buildRunMarker(run.event.eventId, dt, run.event.eventName,
-              rsvpState: run.extensions.rsvpState,
-              attendenceState: run.extensions.attendenceState,
-              isHare: run.extensions.isHare,
-              kennelPinColor: run.kennel.kennelPinColor,
-              eventScope: run.event.eventGeographicScope,
-              isCountedRun: run.event.isCountedRun));
+        width: 45.0,
+        height: 55.0,
+        //anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
+        point: ll,
+        child: _buildRunMarker(
+          run.event.eventId,
+          dt,
+          run.event.eventName,
+          rsvpState: run.extensions.rsvpState,
+          attendenceState: run.extensions.attendenceState,
+          isHare: run.extensions.isHare,
+          kennelPinColor: run.kennel.kennelPinColor,
+          eventScope: run.event.eventGeographicScope,
+          isCountedRun: run.event.isCountedRun,
+        ),
+      );
 
       if ((_viewMode == RunLocationsViewMode.all) ||
           ((_viewMode == RunLocationsViewMode.past) &&
               (dt.isBefore(DateTime.now()))) ||
           ((_viewMode == RunLocationsViewMode.recent) &&
               (dt.isAfter(
-                  DateTime.now().subtract(const Duration(days: 90))))) ||
+                DateTime.now().subtract(const Duration(days: 90)),
+              ))) ||
           ((_viewMode == RunLocationsViewMode.myRuns) &&
               ((run.extensions.attendenceState) >= attendenceAtHash.value))) {
         _runLocationMarkers.add(marker);
@@ -542,8 +575,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   (_homeKennelLat != null) &&
                   (_homeKennelLon != null)) {
                 _mapController.move(
-                    latlng.LatLng(_homeKennelLat!, _homeKennelLon!),
-                    _mapController.camera.zoom);
+                  latlng.LatLng(_homeKennelLat!, _homeKennelLon!),
+                  _mapController.camera.zoom,
+                );
               }
             }
 
@@ -553,15 +587,16 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 (lon >= -180.0)) {
               final latlng.LatLng ll = latlng.LatLng(lat, lon);
               final Marker marker = Marker(
-                  width: KENNEL_PIN_SIZE,
-                  height: KENNEL_PIN_SIZE,
-                  //anchorPos: AnchorPos.exactly(Anchor(KENNEL_PIN_SIZE / 2.0, 0.0)),
-                  point: ll,
-                  child: _buildKennelMarker(
-                    _filteredKennels[i]['logo'],
-                    _filteredKennels[i]['shortName'],
-                    _filteredKennels[i]['kennelId'],
-                  ));
+                width: KENNEL_PIN_SIZE,
+                height: KENNEL_PIN_SIZE,
+                //anchorPos: AnchorPos.exactly(Anchor(KENNEL_PIN_SIZE / 2.0, 0.0)),
+                point: ll,
+                child: _buildKennelMarker(
+                  _filteredKennels[i]['logo'],
+                  _filteredKennels[i]['shortName'],
+                  _filteredKennels[i]['kennelId'],
+                ),
+              );
 
               _kennelMarkers.add(marker);
             }
@@ -576,17 +611,20 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   }
 
   Widget _buildRunMarker(
-      String eventId, DateTime? eventStartDatetime, String eventName,
-      {int? attendenceState,
-      int? rsvpState,
-      int? isHare,
-      required int kennelPinColor,
-      int? eventScope,
-      int? isCountedRun}) {
+    String eventId,
+    DateTime? eventStartDatetime,
+    String eventName, {
+    int? attendenceState,
+    int? rsvpState,
+    int? isHare,
+    required int kennelPinColor,
+    int? eventScope,
+    int? isCountedRun,
+  }) {
     return GestureDetector(
       onTap: () async {
-        final RunDetailsAggregate? run =
-            await G0<TableModel>().eventsService.getSingleRun(eventId);
+        final RunDetailsAggregate? run = await G0<TableModel>().eventsService
+            .getSingleRun(eventId);
 
         if ((!mounted) || (run == null)) return;
         await Navigator.push<dynamic>(
@@ -596,20 +634,25 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           ),
         );
       },
-      child: Image.asset(_getPin(
-        eventStartDatetime ?? DateTime.now(),
-        rsvpState,
-        attendenceState,
-        isHare,
-        kennelPinColor,
-        eventScope,
-        isCountedRun,
-      )),
+      child: Image.asset(
+        _getPin(
+          eventStartDatetime ?? DateTime.now(),
+          rsvpState,
+          attendenceState,
+          isHare,
+          kennelPinColor,
+          eventScope,
+          isCountedRun,
+        ),
+      ),
     );
   }
 
   Widget _buildKennelMarker(
-      String kennelLogo, String kennelShortName, String kennelId) {
+    String kennelLogo,
+    String kennelShortName,
+    String kennelId,
+  ) {
     bool isHomeKennel = false;
     if (kennelId.toLowerCase() ==
         getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase()) {
@@ -622,8 +665,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         final String hasherId = getStringPref(StringPrefsEnum.userId)!;
         final List<Map<String, dynamic>> results =
             await QueryKennels.queryKennels(
-                EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user,
-                hasherId: hasherId, kennelId: kennelId);
+              EnumKennelQueryType.singleKennel,
+              EnumKennelQueryContext.user,
+              hasherId: hasherId,
+              kennelId: kennelId,
+            );
 
         if (results.isNotEmpty) {
           double? dist;
@@ -631,16 +677,18 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           if ((G0<DeviceInfo>().deviceLat != null) &&
               (G0<DeviceInfo>().deviceLon != null)) {
             dist = Geolocator.distanceBetween(
-                G0<DeviceInfo>().deviceLat!,
-                G0<DeviceInfo>().deviceLon!,
-                results[0]['cityLat'],
-                results[0]['cityLon']);
+              G0<DeviceInfo>().deviceLat!,
+              G0<DeviceInfo>().deviceLon!,
+              results[0]['cityLat'],
+              results[0]['cityLon'],
+            );
           }
 
-          final KennelsModel kennelItem =
-              G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-          final HasherKennelMapModel hkmItem =
-              G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+          final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper
+              .fromMap(results[0]);
+          final HasherKennelMapModel hkmItem = G0<TableModel>()
+              .hasherKennelMapTableHelper
+              .fromMap(results[0]);
           final KennelListQueryExtenstions extensionsItem =
               KennelListQueryExtenstions.fromMap(results[0]);
           extensionsItem.distToKennel = dist;
@@ -649,35 +697,39 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           extensionsItem.emailAlertRequested = -1;
 
           final KennelListAggregate kennel = KennelListAggregate(
-              kennel: kennelItem,
-              extensions: extensionsItem,
-              hkm: hkmItem,
-              isHomeKennel: isHomeKennel);
+            kennel: kennelItem,
+            extensions: extensionsItem,
+            hkm: hkmItem,
+            isHomeKennel: isHomeKennel,
+          );
 
           if (!mounted) return;
           await Navigator.of(context).push<dynamic>(
             MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) =>
-                  KennelAdminMainPage(kennelAggregateItem: kennel),
+              builder:
+                  (BuildContext context) =>
+                      KennelAdminMainPage(kennelAggregateItem: kennel),
             ),
           );
         }
       },
-      child:
-          Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
-        Image.asset('images/icons/grey_square_pin.png'),
-        Positioned(
-          top: KENNEL_PIN_SIZE / 13.3333333,
-          child: KennelLogo(
-            kennelId: kennelId,
-            kennelLogoUrl: kennelLogo,
-            kennelShortName: kennelShortName,
-            logoHeight: KENNEL_PIN_SIZE / 2.0,
-            leftPadding: 0.0,
-            zoomGesture: KennelLogoZoomGesture.none,
+      child: Stack(
+        alignment: AlignmentDirectional.topCenter,
+        children: <Widget>[
+          Image.asset('images/icons/grey_square_pin.png'),
+          Positioned(
+            top: KENNEL_PIN_SIZE / 13.3333333,
+            child: KennelLogo(
+              kennelId: kennelId,
+              kennelLogoUrl: kennelLogo,
+              kennelShortName: kennelShortName,
+              logoHeight: KENNEL_PIN_SIZE / 2.0,
+              leftPadding: 0.0,
+              zoomGesture: KennelLogoZoomGesture.none,
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -691,7 +743,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     'baby_blue',
     'blue',
     'purple',
-    'pink'
+    'pink',
   ];
 
   String _getPin(
@@ -765,46 +817,51 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             disconnectedChild: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Center(
-                  child: Text(
-                'Map functions require a connection to the Internet',
-                style: ts_headingLarge,
-                textAlign: TextAlign.center,
-              )),
+                child: Text(
+                  'Map functions require a connection to the Internet',
+                  style: ts_headingLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
             child:
-                //decoration: Backgrounds.defaultHcBackground(),
-
-                Stack(
+            //decoration: Backgrounds.defaultHcBackground(),
+            Stack(
               children: <Widget>[
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
                     interactionOptions: InteractionOptions(
-                        flags: (_trueNorthLock
-                            ? InteractiveFlag.pinchZoom | InteractiveFlag.drag
-                            : InteractiveFlag.pinchZoom |
-                                InteractiveFlag.drag |
-                                InteractiveFlag.rotate)),
-                    initialCenter: ((_mapCenterOption ==
-                                centerOnCurrentLocation.value) &&
-                            (G0<DeviceInfo>().deviceLat != null) &&
-                            (G0<DeviceInfo>().deviceLon != null))
-                        ? latlng.LatLng(G0<DeviceInfo>().deviceLat!,
-                            G0<DeviceInfo>().deviceLon!)
-                        : ((_mapCenterOption == centerOnHomeKennel.value) &&
+                      flags:
+                          (_trueNorthLock
+                              ? InteractiveFlag.pinchZoom | InteractiveFlag.drag
+                              : InteractiveFlag.pinchZoom |
+                                  InteractiveFlag.drag |
+                                  InteractiveFlag.rotate),
+                    ),
+                    initialCenter:
+                        ((_mapCenterOption == centerOnCurrentLocation.value) &&
+                                (G0<DeviceInfo>().deviceLat != null) &&
+                                (G0<DeviceInfo>().deviceLon != null))
+                            ? latlng.LatLng(
+                              G0<DeviceInfo>().deviceLat!,
+                              G0<DeviceInfo>().deviceLon!,
+                            )
+                            : ((_mapCenterOption == centerOnHomeKennel.value) &&
                                 (_homeKennelLat != null) &&
                                 (_homeKennelLat != null))
                             ? latlng.LatLng(_homeKennelLat!, _homeKennelLon!)
                             : ((widget.kennel != null) &&
-                                    (widget.kennel!.kennelLatitude != null) &&
-                                    (widget.kennel!.kennelLongitude != null))
-                                ? latlng.LatLng(widget.kennel!.kennelLatitude!,
-                                    widget.kennel!.kennelLongitude!)
-                                : latlng.LatLng(
-                                    G0<DeviceInfo>().deviceLat ??
-                                        DEFAULT_LATITUDE,
-                                    G0<DeviceInfo>().deviceLon ??
-                                        DEFAULT_LONGITUDE),
+                                (widget.kennel!.kennelLatitude != null) &&
+                                (widget.kennel!.kennelLongitude != null))
+                            ? latlng.LatLng(
+                              widget.kennel!.kennelLatitude!,
+                              widget.kennel!.kennelLongitude!,
+                            )
+                            : latlng.LatLng(
+                              G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE,
+                              G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE,
+                            ),
 
                     initialZoom: 10.0,
                     minZoom: 1.0,
@@ -829,8 +886,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                           Marker(
                             height: 50.0,
                             width: 50.0,
-                            point: latlng.LatLng(G0<DeviceInfo>().deviceLat!,
-                                G0<DeviceInfo>().deviceLon!),
+                            point: latlng.LatLng(
+                              G0<DeviceInfo>().deviceLat!,
+                              G0<DeviceInfo>().deviceLon!,
+                            ),
                             child: Container(
                               padding: const EdgeInsets.all(1.0),
                               height: 50.0,
@@ -858,17 +917,21 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         markers:
                             _showKennels == true ? _kennelMarkers : <Marker>[],
                         polygonOptions: const PolygonOptions(
-                            borderColor: Colors.blueAccent,
-                            color: Colors.black12,
-                            borderStrokeWidth: 3),
+                          borderColor: Colors.blueAccent,
+                          color: Colors.black12,
+                          borderStrokeWidth: 3,
+                        ),
                         builder: (BuildContext context, List<Marker> markers) {
                           heroCounter++;
                           return FloatingActionButton(
                             backgroundColor: Colors.purple[600],
                             onPressed: null,
                             heroTag: 'btn_$heroCounter',
-                            child: AutoSizeText(markers.length.toString(),
-                                maxLines: 1, style: ts_button),
+                            child: AutoSizeText(
+                              markers.length.toString(),
+                              maxLines: 1,
+                              style: ts_button,
+                            ),
                           );
                         },
                       ),
@@ -882,9 +945,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         // ),
                         markers: _runLocationMarkers,
                         polygonOptions: const PolygonOptions(
-                            borderColor: Colors.blueAccent,
-                            color: Colors.black12,
-                            borderStrokeWidth: 3),
+                          borderColor: Colors.blueAccent,
+                          color: Colors.black12,
+                          borderStrokeWidth: 3,
+                        ),
                         builder: (BuildContext context, List<Marker> markers) {
                           heroCounter++;
                           return FloatingActionButton(
@@ -916,8 +980,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       onTap: () {
                         setState(() {
                           _mapController.move(
-                            latlng.LatLng(G0<DeviceInfo>().deviceLat!,
-                                G0<DeviceInfo>().deviceLon!),
+                            latlng.LatLng(
+                              G0<DeviceInfo>().deviceLat!,
+                              G0<DeviceInfo>().deviceLon!,
+                            ),
                             13.0,
                           );
                         });
@@ -926,7 +992,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         height: 50.0,
                         width: 50.0,
                         child: Image.asset(
-                            'images/other/set_map_to_current_location.png'),
+                          'images/other/set_map_to_current_location.png',
+                        ),
                       ),
                     ),
                   ),
@@ -946,27 +1013,34 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     child: SizedBox(
                       height: 50.0,
                       width: 50.0,
-                      child: Image.asset(_trueNorthLock
-                          ? 'images/other/set_map_to_true_north_lock.png'
-                          : 'images/other/set_map_rotation_enabled.png'),
+                      child: Image.asset(
+                        _trueNorthLock
+                            ? 'images/other/set_map_to_true_north_lock.png'
+                            : 'images/other/set_map_rotation_enabled.png',
+                      ),
                     ),
                   ),
                 ),
                 Positioned(
-                    left: 10.0,
-                    right: 10.0,
-                    top: 10.0,
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow[100],
-                        border: Border.all(width: 2.0),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10.0)),
+                  left: 10.0,
+                  right: 10.0,
+                  top: 10.0,
+                  child: Container(
+                    padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow[100],
+                      border: Border.all(width: 2.0),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10.0),
                       ),
-                      child: Text(_textDescription,
-                          textAlign: TextAlign.center, style: ts_headingBlack),
-                    )),
+                    ),
+                    child: Text(
+                      _textDescription,
+                      textAlign: TextAlign.center,
+                      style: ts_headingBlack,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -980,27 +1054,30 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     return Stack(
       children: <Widget>[
         SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+        ),
         Positioned(
           top: 0,
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: widget.kennel == null
-              ? _runLocationsBody()
-              : Scaffold(
-                  floatingActionButton: getMapFab(),
-                  appBar: AppBar(
-                    centerTitle: true,
-                    backgroundColor: themeAppBarBackground,
-                    iconTheme: const IconThemeData(
-                      color: Colors.white,
-                      size: 28.0,
+          child:
+              widget.kennel == null
+                  ? _runLocationsBody()
+                  : Scaffold(
+                    floatingActionButton: getMapFab(),
+                    appBar: AppBar(
+                      centerTitle: true,
+                      backgroundColor: themeAppBarBackground,
+                      iconTheme: const IconThemeData(
+                        color: Colors.white,
+                        size: 28.0,
+                      ),
+                      title: Text('Explore Runs', style: ts_appBarTitle),
                     ),
-                    title: Text('Explore Runs', style: ts_appBarTitle),
+                    body: _runLocationsBody(),
                   ),
-                  body: _runLocationsBody()),
         ),
         // OfflineModeRibbon(
         //   showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,

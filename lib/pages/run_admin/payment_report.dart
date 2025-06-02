@@ -316,7 +316,7 @@ SELECT
           },
           //onClose: () => //print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
-          heroTag: 'speed-dial-hero-tag',
+          heroTag: 'speed-dial-hero-tag-62345',
           backgroundColor: hc_red,
           foregroundColor: Colors.white,
           elevation: 8.0,

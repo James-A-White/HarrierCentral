@@ -3,10 +3,7 @@
 import 'package:harrier_central/imports.dart';
 
 class DrinksList extends StatefulWidget {
-  const DrinksList({
-    super.key,
-    required this.eventAggregate,
-  });
+  const DrinksList({super.key, required this.eventAggregate});
 
   final RunAdminAggregate eventAggregate;
 
@@ -24,6 +21,7 @@ class DrinksResults {
     required this.totalHaringThisKennel,
     this.specialRunCount = 0,
     this.specialHaringCount = 0,
+    this.isHare = 0,
   });
 
   final String hasherId;
@@ -34,6 +32,7 @@ class DrinksResults {
   final int totalHaringThisKennel;
   int specialRunCount;
   int specialHaringCount;
+  int isHare;
 
   static DrinksResults fromMap(Map<String, dynamic> map) {
     final DrinksResults item = DrinksResults(
@@ -43,6 +42,7 @@ class DrinksResults {
       photo: map['photo'],
       totalRunsThisKennel: map['totalRunsThisKennel'],
       totalHaringThisKennel: map['totalHaringThisKennel'],
+      isHare: map['isHare'],
       specialHaringCount: 0,
       specialRunCount: 0,
     );
@@ -59,7 +59,8 @@ class DrinksResults {
 // }
 //}
 
-class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMixin {
+class DrinksListState extends State<DrinksList>
+    with SingleTickerProviderStateMixin {
   DrinksListState();
 
   bool _isLoading = false;
@@ -80,9 +81,13 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
       }
 
       await G0<TableModel>().syncEventAdminService.updateFromBackend(
-          SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable,
-          true,
-          widget.eventAggregate.event.eventId);
+        SyncEventAdminService.flagHashersTable |
+            SyncEventAdminService.flagPaymentsTable |
+            SyncEventAdminService.flagHasherEventMapTable |
+            SyncEventAdminService.flagHasherKennelMapTable,
+        true,
+        widget.eventAggregate.event.eventId,
+      );
       //final String resultStr = result ? 'successfully' : 'unsuccessfully';
       //print('Payments data synchronized $resultStr');
 
@@ -99,10 +104,7 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
     appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text('Drink chug-a-lug', style: ts_appBarTitle),
     );
 
@@ -127,7 +129,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
           as totalHaringThisKennel,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) 
           + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},0)
-          as totalRunsThisKennel
+          as totalRunsThisKennel,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare}
           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}  
           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
@@ -141,15 +144,24 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
     try {
       _awards.clear();
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        query,
+      );
       for (int i = 0; i < results.length; i++) {
         final DrinksResults hlrItem = DrinksResults.fromMap(results[i]);
 
-        hlrItem.specialRunCount = Utilities.checkSpecialRun(hlrItem.totalRunsThisKennel);
+        hlrItem.specialRunCount = Utilities.checkSpecialRun(
+          hlrItem.totalRunsThisKennel,
+        );
 
-        hlrItem.specialHaringCount = Utilities.checkSpecialHaring(hlrItem.totalHaringThisKennel);
+        if (hlrItem.isHare == 1) {
+          hlrItem.specialHaringCount = Utilities.checkSpecialHaring(
+            hlrItem.totalHaringThisKennel,
+          );
+        }
 
-        if ((hlrItem.specialRunCount != specialRunNo) || (hlrItem.specialHaringCount != specialRunNo)) {
+        if ((hlrItem.specialRunCount != specialRunNo) ||
+            (hlrItem.specialHaringCount != specialRunNo)) {
           _awards.add(hlrItem);
         }
       }
@@ -172,40 +184,50 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
       body: SafeArea(
         child: Container(
           decoration: Backgrounds.defaultHcBackgroundLight(),
-          child: _isLoading
-              ? const HcCircularProgressIndicator(key: Key('52039320'))
-              : _awards.isEmpty
+          child:
+              _isLoading
+                  ? const HcCircularProgressIndicator(key: Key('52039320'))
+                  : _awards.isEmpty
                   ? Center(
-                      child: Padding(
+                    child: Padding(
                       padding: const EdgeInsets.all(30.0),
-                      child: Text('No awards yet for this Hash', textAlign: TextAlign.center, style: ts_headingVeryLarge.copyWith(color: themeBackgroundColor)),
-                    ))
-                  : ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: _awards.length,
-                      separatorBuilder: (BuildContext context, int index) => const Divider(
-                        height: 1.0,
-                        color: Colors.black45,
+                      child: Text(
+                        'No awards yet for this Hash',
+                        textAlign: TextAlign.center,
+                        style: ts_headingVeryLarge.copyWith(
+                          color: themeBackgroundColor,
+                        ),
                       ),
-                      //padding: const EdgeInsets.only(top: 5),
-                      // separatorBuilder: (BuildContext context, int index) => const Divider(
-                      //   height: 1.0,
-                      //   color: Colors.black45,
-                      // ),
+                    ),
+                  )
+                  : ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: _awards.length,
+                    separatorBuilder:
+                        (BuildContext context, int index) =>
+                            const Divider(height: 1.0, color: Colors.black45),
+                    //padding: const EdgeInsets.only(top: 5),
+                    // separatorBuilder: (BuildContext context, int index) => const Divider(
+                    //   height: 1.0,
+                    //   color: Colors.black45,
+                    // ),
 
-                      //itemExtent: 58.0,
-                      //shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            SizedBox(
-                              height: LIST_ITEM_HEIGHT,
-                              width: 10.0,
-                            ),
-                            Utilities.getProfilePic(_awards[index].photo, LIST_ITEM_ELEMENT_HEIGHT, LIST_ITEM_ELEMENT_HEIGHT, context, _awards[index].dispName),
-                            Expanded(
-                                child: Column(
+                    //itemExtent: 58.0,
+                    //shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(height: LIST_ITEM_HEIGHT, width: 10.0),
+                          Utilities.getProfilePic(
+                            _awards[index].photo,
+                            LIST_ITEM_ELEMENT_HEIGHT,
+                            LIST_ITEM_ELEMENT_HEIGHT,
+                            context,
+                            _awards[index].dispName,
+                          ),
+                          Expanded(
+                            child: Column(
                               children: <Widget>[
                                 FittedBox(
                                   child: Text(
@@ -213,7 +235,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                     style: ts_titleLargeCondensedBlack,
                                   ),
                                 ),
-                                if (_awards[index].specialRunCount == 1) ...<Widget>[
+                                if (_awards[index].specialRunCount ==
+                                    1) ...<Widget>[
                                   FittedBox(
                                     child: Text(
                                       '1 run',
@@ -221,7 +244,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                     ),
                                   ),
                                 ],
-                                if (_awards[index].specialRunCount > 1) ...<Widget>[
+                                if (_awards[index].specialRunCount >
+                                    1) ...<Widget>[
                                   FittedBox(
                                     child: Text(
                                       '${_awards[index].totalRunsThisKennel.toString()} runs',
@@ -229,7 +253,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                     ),
                                   ),
                                 ],
-                                if (_awards[index].specialHaringCount == 1) ...<Widget>[
+                                if (_awards[index].specialHaringCount ==
+                                    1) ...<Widget>[
                                   FittedBox(
                                     child: Text(
                                       'First time haring',
@@ -237,7 +262,8 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                     ),
                                   ),
                                 ],
-                                if (_awards[index].specialHaringCount > 1) ...<Widget>[
+                                if (_awards[index].specialHaringCount >
+                                    1) ...<Widget>[
                                   FittedBox(
                                     child: Text(
                                       '${_awards[index].totalHaringThisKennel.toString()} hared runs',
@@ -246,36 +272,38 @@ class DrinksListState extends State<DrinksList> with SingleTickerProviderStateMi
                                   ),
                                 ],
                               ],
-                            )),
-                            if (_awards[index].specialRunCount > 0) ...<Widget>[
-                              Image.asset(
-                                'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
-                                height: LIST_ITEM_ELEMENT_HEIGHT,
-                                width: LIST_ITEM_ELEMENT_HEIGHT,
-                              ),
-                            ],
-                            if (_awards[index].specialHaringCount > 0) ...<Widget>[
-                              Image.asset(
-                                'images/run_count_icons/rabbit_with_beer.png',
-                                height: LIST_ITEM_ELEMENT_HEIGHT,
-                                width: LIST_ITEM_ELEMENT_HEIGHT,
-                              ),
-                            ],
-                            const Divider()
+                            ),
+                          ),
+                          if (_awards[index].specialRunCount > 0) ...<Widget>[
+                            Image.asset(
+                              'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
+                              height: LIST_ITEM_ELEMENT_HEIGHT,
+                              width: LIST_ITEM_ELEMENT_HEIGHT,
+                            ),
                           ],
-                        );
+                          if (_awards[index].specialHaringCount >
+                              0) ...<Widget>[
+                            Image.asset(
+                              'images/run_count_icons/rabbit_with_beer.png',
+                              height: LIST_ITEM_ELEMENT_HEIGHT,
+                              width: LIST_ITEM_ELEMENT_HEIGHT,
+                            ),
+                          ],
+                          const Divider(),
+                        ],
+                      );
 
-                        // return Container(
-                        //   height: 120.0,
-                        //   child: ListTile(
-                        //     dense: false,
-                        //     visualDensity: VisualDensity(vertical: 4), // to expand
-                        //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
-                        //     title: Text(_awards[index].dispName),
-                        //   ),
-                        // );
-                      },
-                    ),
+                      // return Container(
+                      //   height: 120.0,
+                      //   child: ListTile(
+                      //     dense: false,
+                      //     visualDensity: VisualDensity(vertical: 4), // to expand
+                      //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
+                      //     title: Text(_awards[index].dispName),
+                      //   ),
+                      // );
+                    },
+                  ),
         ),
       ),
     );

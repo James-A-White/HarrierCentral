@@ -1,13 +1,14 @@
 import 'package:harrier_central/imports.dart';
 
 class UserCountryHistoryListPage extends StatefulWidget {
-  const UserCountryHistoryListPage(
-      {super.key,
-      required this.countryId,
-      required this.countryName,
-      required this.appDomain,
-      this.hasherId,
-      this.hashName});
+  const UserCountryHistoryListPage({
+    super.key,
+    required this.countryId,
+    required this.countryName,
+    required this.appDomain,
+    this.hasherId,
+    this.hashName,
+  });
 
   final String countryId;
   final String countryName;
@@ -153,12 +154,14 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
     _runCountsList = <UserRunHistoryModel>[];
     try {
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        query,
+      );
 
       for (int i = 0; i < results.length; i++) {
-        final UserRunHistoryModel hlrItem =
-            UserRunHistoryModel.fromMap(results[i]);
+        final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(
+          results[i],
+        );
         _runCountsList.add(hlrItem);
 
         // hlrItem.totalHaringThisKennel = -1;
@@ -184,8 +187,9 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     return Stack(
       children: <Widget>[
         SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+        ),
         Positioned(
           top: 0,
           left: 0,
@@ -196,13 +200,11 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
-              iconTheme: const IconThemeData(
-                color: Colors.white,
-                size: 28.0,
-              ),
+              iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
               title: Text(
-                  widget.hashName ?? 'My runs for ${widget.countryName}',
-                  style: ts_appBarTitle),
+                widget.hashName ?? 'My runs for ${widget.countryName}',
+                style: ts_appBarTitle,
+              ),
             ),
             floatingActionButton: SpeedDial(
               // both default to 16
@@ -222,7 +224,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
               },
               //onClose: () => //print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
-              heroTag: 'speed-dial-hero-tag',
+              heroTag: 'speed-dial-hero-tag-234234',
               backgroundColor:
                   Theme.of(context).buttonTheme.colorScheme?.primary ?? hc_red,
               foregroundColor: Colors.white,
@@ -262,44 +264,53 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                 //   },
                 // ),
                 SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.email_plus,
-                      color: Colors.white),
+                  child: const Icon(
+                    MaterialCommunityIcons.email_plus,
+                    color: Colors.white,
+                  ),
                   backgroundColor: hc_blue,
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    G0<TableModel>()
-                        .hasherEventMapService
+                    G0<TableModel>().hasherEventMapService
                         .sendRunCountReportByEmail(
-                            kennelId: GUID_EMPTY,
-                            kennelName: 'All of your Hash Kennels')
+                          kennelId: GUID_EMPTY,
+                          kennelName: 'All of your Hash Kennels',
+                        )
                         .then((Map<String, String> result) {
-                      ScaffoldMessenger.of(navigatorKey.currentContext!)
-                          .hideCurrentSnackBar();
-                      if ((result['result'] != null) &&
-                          (result['result']!
-                              .toLowerCase()
-                              .startsWith('success'))) {
-                        Utilities.showAlert(
-                            'E-mail successfully sent',
-                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                            'OK');
-                      }
-                    });
-                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey,
-                        'Run count report being processed...',
-                        durationInSeconds: 10);
+                          ScaffoldMessenger.of(
+                            navigatorKey.currentContext!,
+                          ).hideCurrentSnackBar();
+                          if ((result['result'] != null) &&
+                              (result['result']!.toLowerCase().startsWith(
+                                'success',
+                              ))) {
+                            Utilities.showAlert(
+                              'E-mail successfully sent',
+                              'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                              'OK',
+                            );
+                          }
+                        });
+                    IveCoreUtilities.showInSnackBar(
+                      context,
+                      _scaffoldKey,
+                      'Run count report being processed...',
+                      durationInSeconds: 10,
+                    );
                   },
                 ),
               ],
             ),
-            body: _isLoading
-                ? _buildCircularProgressIndicator()
-                : _buildListView(widget.appDomain),
+            body:
+                _isLoading
+                    ? _buildCircularProgressIndicator()
+                    : _buildListView(widget.appDomain),
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus ==
+          showRibbon:
+              G0<AppModel>().connectionStatus ==
               EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
@@ -324,14 +335,14 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
     //final bool result = await G0<TableModel>()
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable |
-              SyncUserDataService.flagNarrowEventsTable |
-              SyncUserDataService.flagKennelsTable |
-              SyncUserDataService.flagPaymentsTable |
-              SyncUserDataService.flagHasherKennelMapTable,
-          true,
-          debugText: 'user_run_history_list_page: HEM, Events, Kennels',
-        );
+      SyncUserDataService.flagHasherEventMapTable |
+          SyncUserDataService.flagNarrowEventsTable |
+          SyncUserDataService.flagKennelsTable |
+          SyncUserDataService.flagPaymentsTable |
+          SyncUserDataService.flagHasherKennelMapTable,
+      true,
+      debugText: 'user_run_history_list_page: HEM, Events, Kennels',
+    );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('User data synchronized $resultStr');
     await _refreshRunHistoryFromTable(true);
@@ -461,84 +472,87 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
       child: RefreshIndicator(
-          onRefresh: _handleRefresh,
-          displacement: 130.0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Container(
-                // color: Colors.red,
-                width: 100,
-                padding: const EdgeInsets.only(
-                  left: 60,
-                  right: 60,
-                  top: 10.0,
-                ),
-                child: DefaultTabController(
-                  length: 2,
-                  child: TabBar(
-                    onTap: (void _) {
-                      setState(() {});
-                    },
-                    labelStyle: ts_tabSelected,
-                    unselectedLabelStyle: ts_tabUnselected,
-                    isScrollable: false,
-                    unselectedLabelColor: Colors.white,
-                    labelColor: Colors.white,
-                    //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                    indicatorSize: TabBarIndicatorSize.label,
-                    indicator: BubbleTabIndicator(
-                        indicatorHeight: 30.0,
-                        indicatorColor: hc_red,
-                        tabBarIndicatorSize: TabBarIndicatorSize.label,
-                        indicatorRadius: 15.0,
-                        padding: EdgeInsets.only(top: 5)),
-                    tabs: <Tab>[
-                      Tab(
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 120,
-                          child: Text(
-                            'My Runs',
-                            style: ts_numberStyle.copyWith(
-                                color: _tabController.index == 0
-                                    ? Colors.white
-                                    : Colors.black),
-                          ),
-                        ),
-                      ),
-                      Tab(
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 120,
-                          child: Text(
-                            'All Runs',
-                            style: ts_numberStyle.copyWith(
-                                color: _tabController.index == 1
-                                    ? Colors.white
-                                    : Colors.black),
-                          ),
-                        ),
-                      ),
-                    ],
-                    controller: _tabController,
+        onRefresh: _handleRefresh,
+        displacement: 130.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Container(
+              // color: Colors.red,
+              width: 100,
+              padding: const EdgeInsets.only(left: 60, right: 60, top: 10.0),
+              child: DefaultTabController(
+                length: 2,
+                child: TabBar(
+                  onTap: (void _) {
+                    setState(() {});
+                  },
+                  labelStyle: ts_tabSelected,
+                  unselectedLabelStyle: ts_tabUnselected,
+                  isScrollable: false,
+                  unselectedLabelColor: Colors.white,
+                  labelColor: Colors.white,
+                  //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                  indicatorSize: TabBarIndicatorSize.label,
+                  indicator: BubbleTabIndicator(
+                    indicatorHeight: 30.0,
+                    indicatorColor: hc_red,
+                    tabBarIndicatorSize: TabBarIndicatorSize.label,
+                    indicatorRadius: 15.0,
+                    padding: EdgeInsets.only(top: 5),
                   ),
+                  tabs: <Tab>[
+                    Tab(
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 120,
+                        child: Text(
+                          'My Runs',
+                          style: ts_numberStyle.copyWith(
+                            color:
+                                _tabController.index == 0
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 120,
+                        child: Text(
+                          'All Runs',
+                          style: ts_numberStyle.copyWith(
+                            color:
+                                _tabController.index == 1
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  controller: _tabController,
                 ),
               ),
-              Expanded(
-                child: _runCountsList.isEmpty
-                    ? Center(
-                        child: Text('No runs logged yet.', style: ts_regular))
-                    : ListView.separated(
+            ),
+            Expanded(
+              child:
+                  _runCountsList.isEmpty
+                      ? Center(
+                        child: Text('No runs logged yet.', style: ts_regular),
+                      )
+                      : ListView.separated(
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: _runCountsList.length,
                         padding: const EdgeInsets.only(top: 5),
-                        separatorBuilder: (BuildContext context, int index) =>
-                            const Divider(
-                          height: 1.0,
-                          color: Colors.black45,
-                        ),
+                        separatorBuilder:
+                            (BuildContext context, int index) => const Divider(
+                              height: 1.0,
+                              color: Colors.black45,
+                            ),
                         //itemExtent: 58.0,
                         //shrinkWrap: true,
                         itemBuilder: (BuildContext context, int index) {
@@ -558,8 +572,9 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                                   if (item.attendenceState <
                                       attendenceAtHash.value) {
                                     _runCountsList[index] =
-                                        _runCountsList[index]
-                                            .copyWith(isUpdating: true);
+                                        _runCountsList[index].copyWith(
+                                          isUpdating: true,
+                                        );
                                     item = _runCountsList[index];
                                     await _setAttendenceState(
                                       item,
@@ -570,8 +585,9 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                                     );
                                   } else {
                                     _runCountsList[index] =
-                                        _runCountsList[index]
-                                            .copyWith(isUpdating: true);
+                                        _runCountsList[index].copyWith(
+                                          isUpdating: true,
+                                        );
                                     item = _runCountsList[index];
                                     await _setAttendenceState(
                                       item,
@@ -602,127 +618,167 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                               }
                               return Future<bool>.value(false);
                             },
-                            background: item.canEditRunAttendence == 0
-                                ? Container(
-                                    color: Colors.grey,
-                                    child: Row(children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 10.0),
-                                        child: Icon(FontAwesome.lock,
-                                            color: Colors.white, size: 35.0),
+                            background:
+                                item.canEditRunAttendence == 0
+                                    ? Container(
+                                      color: Colors.grey,
+                                      child: Row(
+                                        children: <Widget>[
+                                          const Padding(
+                                            padding: EdgeInsets.only(
+                                              left: 10.0,
+                                            ),
+                                            child: Icon(
+                                              FontAwesome.lock,
+                                              color: Colors.white,
+                                              size: 35.0,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 15.0,
+                                            ),
+                                            child: Text(
+                                              // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                              'Run locked',
+                                              style: ts_titleMedium,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 15.0),
-                                          child: Text(
-                                            // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                            'Run locked',
-                                            style: ts_titleMedium,
-                                          ))
-                                    ]))
-                                : Container(
-                                    color: hc_red,
-                                    child: Row(children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 10.0),
-                                        child: Icon(FontAwesome.times_circle,
-                                            color: Colors.white, size: 35.0),
+                                    )
+                                    : Container(
+                                      color: hc_red,
+                                      child: Row(
+                                        children: <Widget>[
+                                          const Padding(
+                                            padding: EdgeInsets.only(
+                                              left: 10.0,
+                                            ),
+                                            child: Icon(
+                                              FontAwesome.times_circle,
+                                              color: Colors.white,
+                                              size: 35.0,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 15.0,
+                                            ),
+                                            child: Text(
+                                              // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                              'I was not\r\nat the Hash',
+                                              maxLines: 2,
+                                              style: ts_titleMedium,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 15.0),
-                                          child: Text(
-                                            // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                            'I was not\r\nat the Hash',
-                                            maxLines: 2,
-                                            style: ts_titleMedium,
-                                          ))
-                                    ])),
-                            secondaryBackground: item.canEditRunAttendence == 0
-                                ? Container(
-                                    color: Colors.grey,
-                                    child: Row(
+                                    ),
+                            secondaryBackground:
+                                item.canEditRunAttendence == 0
+                                    ? Container(
+                                      color: Colors.grey,
+                                      child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
                                         children: <Widget>[
                                           const Padding(
-                                            padding:
-                                                EdgeInsets.only(right: 15.0),
-                                            child: Icon(FontAwesome.lock,
-                                                color: Colors.white,
-                                                size: 35.0),
+                                            padding: EdgeInsets.only(
+                                              right: 15.0,
+                                            ),
+                                            child: Icon(
+                                              FontAwesome.lock,
+                                              color: Colors.white,
+                                              size: 35.0,
+                                            ),
                                           ),
                                           Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 15.0),
-                                              child: Text(
-                                                //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                                'Run locked',
-                                                style: ts_titleMedium,
-                                              ))
-                                        ]))
-                                : (item.attendenceState <
+                                            padding: const EdgeInsets.only(
+                                              right: 15.0,
+                                            ),
+                                            child: Text(
+                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                              'Run locked',
+                                              style: ts_titleMedium,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                    : (item.attendenceState <
                                             attendenceAtHash.value) ||
                                         ((item.attendenceState >=
                                                 attendenceAtHash.value) &&
                                             (item.isHare == isHareYes.value))
                                     ? Container(
-                                        color: Colors.green,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: <Widget>[
-                                            const Padding(
-                                              padding:
-                                                  EdgeInsets.only(right: 15.0),
-                                              child: Icon(
-                                                  FontAwesome.check_circle,
-                                                  color: Colors.white,
-                                                  size: 35.0),
+                                      color: Colors.green,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: <Widget>[
+                                          const Padding(
+                                            padding: EdgeInsets.only(
+                                              right: 15.0,
                                             ),
-                                            Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 15.0),
-                                                child: Text(
-                                                  //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                                  'I was at\r\nthe Hash',
-                                                  maxLines: 2,
-                                                  textAlign: TextAlign.right,
-                                                  style: ts_titleMedium,
-                                                ))
-                                          ],
-                                        ),
-                                      )
+                                            child: Icon(
+                                              FontAwesome.check_circle,
+                                              color: Colors.white,
+                                              size: 35.0,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 15.0,
+                                            ),
+                                            child: Text(
+                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                              'I was at\r\nthe Hash',
+                                              maxLines: 2,
+                                              textAlign: TextAlign.right,
+                                              style: ts_titleMedium,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
                                     : Container(
-                                        color: Colors.purple,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: <Widget>[
-                                            const Padding(
-                                              padding:
-                                                  EdgeInsets.only(right: 15.0),
-                                              child: Padding(
-                                                padding: EdgeInsets.only(
-                                                    left: 2.5, right: 2.5),
-                                                child: ImageIcon(
-                                                    AssetImage(
-                                                        'images/icons/hare_icon.png'),
-                                                    color: Colors.white,
-                                                    size: 30.0),
+                                      color: Colors.purple,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: <Widget>[
+                                          const Padding(
+                                            padding: EdgeInsets.only(
+                                              right: 15.0,
+                                            ),
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                left: 2.5,
+                                                right: 2.5,
+                                              ),
+                                              child: ImageIcon(
+                                                AssetImage(
+                                                  'images/icons/hare_icon.png',
+                                                ),
+                                                color: Colors.white,
+                                                size: 30.0,
                                               ),
                                             ),
-                                            Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 15.0),
-                                                child: Text(
-                                                  //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                                  'I was a Hare',
-                                                  style: ts_titleMedium,
-                                                ))
-                                          ],
-                                        ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 15.0,
+                                            ),
+                                            child: Text(
+                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                              'I was a Hare',
+                                              style: ts_titleMedium,
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                    ),
                             onDismissed: (DismissDirection direction) {
                               //print(direction.toString() + ' NOTE: We should never reach this point');
                             },
@@ -730,10 +786,10 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                               onTapUp: (TapUpDetails details) async {
                                 final List<dynamic> run =
                                     await QueryRuns.getRunDetailsAggregates(
-                                  true,
-                                  eventId: item.eventId,
-                                  queryType: EnumRunQueryType.singleRun,
-                                );
+                                      true,
+                                      eventId: item.eventId,
+                                      queryType: EnumRunQueryType.singleRun,
+                                    );
 
                                 if (run.isNotEmpty) {
                                   if (!mounted) return;
@@ -756,13 +812,15 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                                 historicalTotalRunCount: 0,
                                 showCountry: false,
                                 showKennel: true,
-                                setAttendenceStateCallback:
-                                    (EnumAttendenceState<int> attendenceState,
-                                        EnumIsHare<int> isHare) async {
+                                setAttendenceStateCallback: (
+                                  EnumAttendenceState<int> attendenceState,
+                                  EnumIsHare<int> isHare,
+                                ) async {
                                   setState(() {
                                     _runCountsList[index] =
-                                        _runCountsList[index]
-                                            .copyWith(isUpdating: true);
+                                        _runCountsList[index].copyWith(
+                                          isUpdating: true,
+                                        );
                                     item = _runCountsList[index];
                                   });
 
@@ -796,8 +854,9 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
                                   setState(() {
                                     _runCountsList[index] =
-                                        _runCountsList[index]
-                                            .copyWith(isUpdating: false);
+                                        _runCountsList[index].copyWith(
+                                          isUpdating: false,
+                                        );
                                   });
                                 },
                               ),
@@ -816,9 +875,10 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                           // );
                         },
                       ),
-              ),
-            ],
-          )),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -830,13 +890,13 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     AppDomainType appDomain,
   ) async {
     await G0<TableModel>().hasherEventMapService.setEventAttendence(
-          item.eventId,
-          userId,
-          appDomain,
-          attendenceState.value,
-          isHare: isHare.value,
-          hemId: item.hemId,
-        );
+      item.eventId,
+      userId,
+      appDomain,
+      attendenceState.value,
+      isHare: isHare.value,
+      hemId: item.hemId,
+    );
 
     await _refreshRunHistoryFromTable(true);
     setState(() {

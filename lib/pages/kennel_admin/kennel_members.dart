@@ -3,10 +3,7 @@
 import 'package:harrier_central/imports.dart';
 
 class KennelMembersList extends StatefulWidget {
-  const KennelMembersList({
-    super.key,
-    required this.kennelListAggregate,
-  });
+  const KennelMembersList({super.key, required this.kennelListAggregate});
 
   final KennelListAggregate kennelListAggregate;
 
@@ -14,15 +11,23 @@ class KennelMembersList extends StatefulWidget {
   KennelMemberListState createState() => KennelMemberListState();
 }
 
-enum EnumSortByType { sortByName, sortByLastRunDate, sortByMembershipExpirationDate }
+enum EnumSortByType {
+  sortByName,
+  sortByLastRunDate,
+  sortByMembershipExpirationDate,
+}
 
-class KennelMemberListState extends State<KennelMembersList> with SingleTickerProviderStateMixin {
+class KennelMemberListState extends State<KennelMembersList>
+    with SingleTickerProviderStateMixin {
   KennelMemberListState();
 
   EnumSortByType _sortBy = EnumSortByType.sortByName;
 
-  Future<List<dynamic>> _kennelMemberListFuture = Future<List<dynamic>>.value(<dynamic>[]);
-  Future<List<dynamic>> _filteredKennelMemberListFuture = Future<List<dynamic>>.value(<dynamic>[]);
+  Future<List<dynamic>> _kennelMemberListFuture = Future<List<dynamic>>.value(
+    <dynamic>[],
+  );
+  Future<List<dynamic>> _filteredKennelMemberListFuture =
+      Future<List<dynamic>>.value(<dynamic>[]);
 
   final GlobalKey _packListBoxKey = GlobalKey();
 
@@ -54,15 +59,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     _appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text(
         '${widget.kennelListAggregate.kennel.kennelShortName} Members',
-        style: const TextStyle(
-          color: Colors.white,
-        ),
+        style: const TextStyle(color: Colors.white),
       ),
     );
     _refreshKennelMembersFromTable(true).then((void _) {
@@ -72,35 +72,54 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     setSortBySpeedDial();
     super.initState();
 
-    _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
 
-    _filterPanelAnimation = Tween<Offset>(begin: const Offset(0, -.35), end: const Offset(0, .71)).animate(_animationController);
+    _filterPanelAnimation = Tween<Offset>(
+      begin: const Offset(0, -.35),
+      end: const Offset(0, .71),
+    ).animate(_animationController);
 
-    _hasherListAnimation = RelativeRectTween(begin: const RelativeRect.fromLTRB(0, 86, 0, 0), end: const RelativeRect.fromLTRB(0, 204, 0, 0)).animate(_animationController);
+    _hasherListAnimation = RelativeRectTween(
+      begin: const RelativeRect.fromLTRB(0, 86, 0, 0),
+      end: const RelativeRect.fromLTRB(0, 204, 0, 0),
+    ).animate(_animationController);
 
-    _buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
-      ..addListener(() {
-        setState(() {});
-      });
+    _buttonAnimation = Tween<double>(
+      begin: 0,
+      end: 90.0 / 360.0,
+    ).animate(_animationController)..addListener(() {
+      setState(() {});
+    });
   }
 
   Future<void> _refreshKennelMembersFromTable(bool forceRefresh) async {
-    String orderBy = 'lower(h.${G0<TableModel>().hashersTableHelper.colDispName})';
+    String orderBy =
+        'lower(h.${G0<TableModel>().hashersTableHelper.colDispName})';
 
     switch (_sortBy) {
       case EnumSortByType.sortByName:
         orderBy = 'lower(h.${G0<TableModel>().hashersTableHelper.colDispName})';
         break;
       case EnumSortByType.sortByLastRunDate:
-        orderBy = 'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun}';
+        orderBy =
+            'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun}';
         break;
       case EnumSortByType.sortByMembershipExpirationDate:
-        orderBy = 'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} asc';
+        orderBy =
+            'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} asc';
         break;
     }
 
     if (kDebugMode) {
-      final String message = (await CommonQueries.countRecords(G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel))).toString();
+      final String message =
+          (await CommonQueries.countRecords(
+            G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+              AppDomainType.kennel,
+            ),
+          )).toString();
       print('HKM count = $message');
     }
 
@@ -142,15 +161,20 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           
           ''';
 
-    _kennelMemberListFuture = Future<List<dynamic>>.value(<KennelMemberResultsModel>[]);
+    _kennelMemberListFuture = Future<List<dynamic>>.value(
+      <KennelMemberResultsModel>[],
+    );
 
     final List<dynamic> kList = <dynamic>[];
     int lastMemberType = 0;
 
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        query,
+      );
       for (int i = 0; i < results.length; i++) {
-        final KennelMemberResultsModel hlrItem = KennelMemberResultsModel.fromMap(results[i]);
+        final KennelMemberResultsModel hlrItem =
+            KennelMemberResultsModel.fromMap(results[i]);
 
         if (hlrItem.memberFollowingStatus != lastMemberType) {
           lastMemberType = hlrItem.memberFollowingStatus;
@@ -212,7 +236,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        sql,
+      );
       if (results.isNotEmpty) {
         countIsMember = results[0]['isMember'];
         countIsFollowing = results[0]['isFollowing'];
@@ -248,84 +274,107 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         },
         //onClose: () => //print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
-        heroTag: 'speed-dial-hero-tag',
+        heroTag: 'speed-dial-hero-tag-422345',
         backgroundColor: hc_red,
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: const CircleBorder(),
         children: <SpeedDialChild>[
           SpeedDialChild(
-              child: Icon(_sortBySpeedDialIcon),
-              backgroundColor: Colors.deepOrange,
-              label: _sortBySpeedDialLabel,
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                _sortBy = _sortBySpeedDialType;
+            child: Icon(_sortBySpeedDialIcon),
+            backgroundColor: Colors.deepOrange,
+            label: _sortBySpeedDialLabel,
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              _sortBy = _sortBySpeedDialType;
+              _refreshKennelMembersFromTable(true).then((void _) {
+                _refreshCounters(true);
+              });
+              setSortBySpeedDial();
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.account_search),
+            backgroundColor: hc_blue,
+            label: 'Find Hasher and add',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              Navigator.push<Map<String, dynamic>>(
+                context,
+                MaterialPageRoute<Map<String, dynamic>>(
+                  settings: const RouteSettings(),
+                  builder: (BuildContext context) {
+                    return FindHasherPage(
+                      FindHasherPageType.addMember,
+                      kennelId: widget.kennelListAggregate.kennel.kennelId,
+                    );
+                  },
+                ),
+              ).then<dynamic>(
+                (Map<String, dynamic> result) {
+                      setState(() {
+                        //_isLoading = true;
+                      });
+                      if ((result['hasher']?.hasherId != null)) {
+                        final HasherKennelMapService srv =
+                            HasherKennelMapService();
+                        widget
+                            .kennelListAggregate
+                            .extensions
+                            .followingRequested = -1;
+                        setState(() {});
+                        srv
+                            .updateHasherKennelStatus(
+                              widget.kennelListAggregate.kennel.kennelId,
+                              AppDomainType.kennel,
+                              monthsToAddToMembership:
+                                  widget
+                                      .kennelListAggregate
+                                      .kennel
+                                      .membershipDurationInMonths,
+                              targetUserId: result['hasher'].hasherId,
+                            )
+                            .then((void _) {
+                              _refreshKennelMembersFromTable(true).then((
+                                void _,
+                              ) {
+                                _refreshCounters(true);
+                              });
+                            });
+                      }
+                    }
+                    as FutureOr Function(Map<String, dynamic>? value),
+              );
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.person_add),
+            backgroundColor: Colors.green,
+            label: 'Add new Hasher\r\nto Harrier Central',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              Navigator.push<HashersModel>(
+                context,
+                MaterialPageRoute<HashersModel>(
+                  builder:
+                      (BuildContext context) => HasherProfilePage(
+                        dataContext: EnumDataContext.kennel,
+                        pageType: EnumMyProfilePageType.newHasherProfile,
+                        kennelId: widget.kennelListAggregate.kennel.kennelId,
+                        uiElementsToDisplay:
+                            HasherProfilePage.flagUiElement_followKennel,
+                        kennelShortName:
+                            widget.kennelListAggregate.kennel.kennelShortName,
+                      ),
+                ),
+              ).then<HashersModel?>((HashersModel? result) {
                 _refreshKennelMembersFromTable(true).then((void _) {
                   _refreshCounters(true);
                 });
-                setSortBySpeedDial();
-              }),
-          SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.account_search),
-              backgroundColor: hc_blue,
-              label: 'Find Hasher and add',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                Navigator.push<Map<String, dynamic>>(
-                  context,
-                  MaterialPageRoute<Map<String, dynamic>>(
-                    settings: const RouteSettings(),
-                    builder: (BuildContext context) {
-                      return FindHasherPage(
-                        FindHasherPageType.addMember,
-                        kennelId: widget.kennelListAggregate.kennel.kennelId,
-                      );
-                    },
-                  ),
-                ).then<dynamic>((Map<String, dynamic> result) {
-                  setState(() {
-                    //_isLoading = true;
-                  });
-                  if ((result['hasher']?.hasherId != null)) {
-                    final HasherKennelMapService srv = HasherKennelMapService();
-                    widget.kennelListAggregate.extensions.followingRequested = -1;
-                    setState(() {});
-                    srv
-                        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
-                            monthsToAddToMembership: widget.kennelListAggregate.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId)
-                        .then((void _) {
-                      _refreshKennelMembersFromTable(true).then((void _) {
-                        _refreshCounters(true);
-                      });
-                    });
-                  }
-                } as FutureOr Function(Map<String, dynamic>? value));
-              }),
-          SpeedDialChild(
-              child: const Icon(Icons.person_add),
-              backgroundColor: Colors.green,
-              label: 'Add new Hasher\r\nto Harrier Central',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
-                Navigator.push<HashersModel>(
-                  context,
-                  MaterialPageRoute<HashersModel>(
-                    builder: (BuildContext context) => HasherProfilePage(
-                      dataContext: EnumDataContext.kennel,
-                      pageType: EnumMyProfilePageType.newHasherProfile,
-                      kennelId: widget.kennelListAggregate.kennel.kennelId,
-                      uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-                      kennelShortName: widget.kennelListAggregate.kennel.kennelShortName,
-                    ),
-                  ),
-                ).then<HashersModel?>((HashersModel? result) {
-                  _refreshKennelMembersFromTable(true).then((void _) {
-                    _refreshCounters(true);
-                  });
-                  return null;
-                });
-              }),
+                return null;
+              });
+            },
+          ),
         ],
       ),
       body: Stack(
@@ -333,26 +382,32 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         alignment: AlignmentDirectional.topStart,
         children: <Widget>[
           SizedBox(height: MediaQuery.of(context).size.height, width: 10),
+
           // (snapshot?.data == null || snapshot.data.isEmpty)
 
           //     //? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
           //     ? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: Container(color:Colors.red))
           //     :
-
           PositionedTransition(
             rect: _hasherListAnimation,
             child: SizedBox(
               key: _packListBoxKey,
               height: 300,
               child: FutureBuilder<List<dynamic>>(
-                  future: _filteredKennelMemberListFuture,
-                  builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                    if (snapshot.data == null) {
-                      return const HcCircularProgressIndicator(key: Key('75223930'));
-                    } else {
-                      return _getKennelMemberList(snapshot);
-                    }
-                  }),
+                future: _filteredKennelMemberListFuture,
+                builder: (
+                  BuildContext context,
+                  AsyncSnapshot<List<dynamic>> snapshot,
+                ) {
+                  if (snapshot.data == null) {
+                    return const HcCircularProgressIndicator(
+                      key: Key('75223930'),
+                    );
+                  } else {
+                    return _getKennelMemberList(snapshot);
+                  }
+                },
+              ),
             ),
           ),
           SlideTransition(position: _filterPanelAnimation, child: filterBar()),
@@ -369,128 +424,166 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(top: 0.0),
-            child: ((snapshot.data == null) || (snapshot.data!.isEmpty))
-                ? Center(
-                    child: Text(
-                    'No members found.',
-                    style: ts_regular,
-                  ))
-                : RefreshIndicator(
-                    onRefresh: _handleRefresh,
-                    displacement: 40.0,
-                    child: ListView.separated(
-                      separatorBuilder: (BuildContext context, int index) => const Divider(
-                        height: 1.0,
-                        color: Colors.black45,
-                      ),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: snapshot.data!.length + 1,
-                      itemBuilder: (BuildContext context, int index) {
-                        if (index == snapshot.data!.length) {
-                          return const SizedBox(height: 100.0);
-                        } else {
-                          if (snapshot.data![index] is int) {
-                            String memberType = '';
-                            if (snapshot.data![index] == 1) {
-                              memberType = 'Kennel Members';
-                            } else if (snapshot.data![index] == 2) {
-                              memberType = 'Recent runs with this Kennel';
-                            } else if (snapshot.data![index] == 3) {
-                              memberType = 'Has runs with this Kennel';
-                            } else if (snapshot.data![index] == 4) {
-                              memberType = 'Follows this Kennel';
-                            } else {
-                              memberType = 'Others';
-                            }
-
-                            return Container(
-                              padding: const EdgeInsets.only(top: 7.0),
-                              height: 40.0,
-                              color: themeBackgroundColor,
-                              child: Text(
-                                memberType,
-                                style: ts_titleLarge,
-                                textAlign: TextAlign.center,
-                              ),
-                            );
+            child:
+                ((snapshot.data == null) || (snapshot.data!.isEmpty))
+                    ? Center(
+                      child: Text('No members found.', style: ts_regular),
+                    )
+                    : RefreshIndicator(
+                      onRefresh: _handleRefresh,
+                      displacement: 40.0,
+                      child: ListView.separated(
+                        separatorBuilder:
+                            (BuildContext context, int index) => const Divider(
+                              height: 1.0,
+                              color: Colors.black45,
+                            ),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: snapshot.data!.length + 1,
+                        itemBuilder: (BuildContext context, int index) {
+                          if (index == snapshot.data!.length) {
+                            return const SizedBox(height: 100.0);
                           } else {
-                            final KennelMemberResultsModel item = snapshot.data![index];
-                            return Dismissible(
-                              key: Key(item.hasherId),
-                              confirmDismiss: (DismissDirection direction) {
-                                setState(() {
-                                  // swipe from right to left to indicate that
-                                  // the hasher either attended the run as a pack
-                                  // member or as a hare
-                                  if (direction == DismissDirection.endToStart) {
-                                    _modifyMembership(snapshot, index, item.membershipDurationInMonths);
-                                  } else {
-                                    _modifyMembership(snapshot, index, -9999);
-                                  }
-                                });
+                            if (snapshot.data![index] is int) {
+                              String memberType = '';
+                              if (snapshot.data![index] == 1) {
+                                memberType = 'Kennel Members';
+                              } else if (snapshot.data![index] == 2) {
+                                memberType = 'Recent runs with this Kennel';
+                              } else if (snapshot.data![index] == 3) {
+                                memberType = 'Has runs with this Kennel';
+                              } else if (snapshot.data![index] == 4) {
+                                memberType = 'Follows this Kennel';
+                              } else {
+                                memberType = 'Others';
+                              }
 
-                                return Future<bool>.value(false);
-                              },
-                              background: Container(
+                              return Container(
+                                padding: const EdgeInsets.only(top: 7.0),
+                                height: 40.0,
+                                color: themeBackgroundColor,
+                                child: Text(
+                                  memberType,
+                                  style: ts_titleLarge,
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            } else {
+                              final KennelMemberResultsModel item =
+                                  snapshot.data![index];
+                              return Dismissible(
+                                key: Key(item.hasherId),
+                                confirmDismiss: (DismissDirection direction) {
+                                  setState(() {
+                                    // swipe from right to left to indicate that
+                                    // the hasher either attended the run as a pack
+                                    // member or as a hare
+                                    if (direction ==
+                                        DismissDirection.endToStart) {
+                                      _modifyMembership(
+                                        snapshot,
+                                        index,
+                                        item.membershipDurationInMonths,
+                                      );
+                                    } else {
+                                      _modifyMembership(snapshot, index, -9999);
+                                    }
+                                  });
+
+                                  return Future<bool>.value(false);
+                                },
+                                background: Container(
                                   color: hc_red,
-                                  child: Row(children: <Widget>[
-                                    const Padding(
-                                      padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 15.0),
-                                      child: Text(
+                                  child: Row(
+                                    children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 10.0),
+                                        child: Icon(
+                                          FontAwesome.times_circle,
+                                          color: Colors.white,
+                                          size: 35.0,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 15.0,
+                                        ),
+                                        child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Cancel\r\nmembership',
                                           maxLines: 2,
-                                          style: ts_titleMedium),
-                                    )
-                                  ])),
-                              secondaryBackground: Container(
-                                color: Colors.green,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    const Padding(
-                                      padding: EdgeInsets.only(right: 15.0),
-                                      child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 15.0),
-                                      child: Text(
+                                          style: ts_titleMedium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                secondaryBackground: Container(
+                                  color: Colors.green,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 15.0),
+                                        child: Icon(
+                                          FontAwesome.plus_circle,
+                                          color: Colors.white,
+                                          size: 35.0,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 15.0,
+                                        ),
+                                        child: Text(
                                           //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                           'Add ${item.membershipDurationInMonths} months\r\nto membership',
-                                          style: ts_titleMedium),
-                                    )
-                                  ],
+                                          style: ts_titleMedium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              onDismissed: (DismissDirection direction) {
-                                //print(direction.toString() + ' NOTE: We should never reach this point');
-                              },
-                              child: KennelMemberListItem(
-                                  kennelListAggregate: widget.kennelListAggregate,
+                                onDismissed: (DismissDirection direction) {
+                                  //print(direction.toString() + ' NOTE: We should never reach this point');
+                                },
+                                child: KennelMemberListItem(
+                                  kennelListAggregate:
+                                      widget.kennelListAggregate,
                                   kennelMember: snapshot.data![index],
-                                  refreshRunCountsCallback: (bool refreshThisUserData, String dispName, String photo) async {
+                                  refreshRunCountsCallback: (
+                                    bool refreshThisUserData,
+                                    String dispName,
+                                    String photo,
+                                  ) async {
                                     // if the user of this device is changing their own run
                                     // counts, make sure to also refresh the HKM users
                                     // table so the run history page is accurate
                                     if (refreshThisUserData) {
-                                      await G0<TableModel>().syncUserDataService.updateFromBackend(
-                                            SyncUserDataService.flagHasherKennelMapTable,
+                                      await G0<TableModel>().syncUserDataService
+                                          .updateFromBackend(
+                                            SyncUserDataService
+                                                .flagHasherKennelMapTable,
                                             true,
                                             debugText: 'kennel_members: HKM',
                                           );
                                     }
 
-                                    snapshot.data![index] = (snapshot.data![index] as KennelMemberResultsModel).copyWith(dispName: dispName, photo: photo);
+                                    snapshot.data![index] = (snapshot
+                                                .data![index]
+                                            as KennelMemberResultsModel)
+                                        .copyWith(
+                                          dispName: dispName,
+                                          photo: photo,
+                                        );
 
                                     await _refreshKennelMembersFromTable(true);
                                     await _refreshCounters(true);
                                     setState(() {});
                                   },
-                                  modifyMembershipCallback: (EnumMemberPopupActions retVal) {
+                                  modifyMembershipCallback: (
+                                    EnumMemberPopupActions retVal,
+                                  ) {
                                     switch (retVal) {
                                       case EnumMemberPopupActions.addOneMonth:
                                         _modifyMembership(snapshot, index, 1);
@@ -501,16 +594,36 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                       case EnumMemberPopupActions.addOneYear:
                                         _modifyMembership(snapshot, index, 12);
                                         break;
-                                      case EnumMemberPopupActions.permanentMembership:
-                                        _modifyMembership(snapshot, index, 9999);
+                                      case EnumMemberPopupActions
+                                          .permanentMembership:
+                                        _modifyMembership(
+                                          snapshot,
+                                          index,
+                                          9999,
+                                        );
                                         break;
-                                      case EnumMemberPopupActions.cancelMembership:
-                                        _modifyMembership(snapshot, index, -9999);
+                                      case EnumMemberPopupActions
+                                          .cancelMembership:
+                                        _modifyMembership(
+                                          snapshot,
+                                          index,
+                                          -9999,
+                                        );
                                         break;
-                                      case EnumMemberPopupActions.editKennelAdmin:
+                                      case EnumMemberPopupActions
+                                          .editKennelAdmin:
                                         Navigator.push<int>(
                                           context,
-                                          MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data![index].appAccessFlags)),
+                                          MaterialPageRoute<int>(
+                                            builder:
+                                                (BuildContext context) =>
+                                                    AppAccessPage(
+                                                      appAccess:
+                                                          snapshot
+                                                              .data![index]
+                                                              .appAccessFlags,
+                                                    ),
+                                          ),
                                         ).then((int? result) {
                                           if (result != null) {
                                             _setUserProperties(
@@ -521,10 +634,21 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                           }
                                         });
                                         break;
-                                      case EnumMemberPopupActions.editMismanagementRole:
+                                      case EnumMemberPopupActions
+                                          .editMismanagementRole:
                                         Navigator.push<int>(
                                           context,
-                                          MaterialPageRoute<int>(builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data![index].mismanagementRoles)),
+                                          MaterialPageRoute<int>(
+                                            builder:
+                                                (
+                                                  BuildContext context,
+                                                ) => MismanagementRolesPage(
+                                                  mismanagementRoles:
+                                                      snapshot
+                                                          .data![index]
+                                                          .mismanagementRoles,
+                                                ),
+                                          ),
                                         ).then((int? result) {
                                           if (result != null) {
                                             _setUserProperties(
@@ -544,32 +668,54 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                     }
                                   },
                                   toggleEmailPreferenceCallback: () {
-                                    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus,
-                                        message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
-                                      final HasherKennelMapService srv = HasherKennelMapService();
-                                      final int emailAlertStatus = snapshot.data![index].kennelEmailAlertPreference != 1 ? 1 : 2;
-                                      snapshot.data![index].kennelEmailAlertPreference = -1;
+                                    if (Connection2.checkForConnection(
+                                      G0<AppModel>().connectionStatus,
+                                      message:
+                                          'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
+                                    )) {
+                                      final HasherKennelMapService srv =
+                                          HasherKennelMapService();
+                                      final int emailAlertStatus =
+                                          snapshot
+                                                      .data![index]
+                                                      .kennelEmailAlertPreference !=
+                                                  1
+                                              ? 1
+                                              : 2;
+                                      snapshot
+                                          .data![index]
+                                          .kennelEmailAlertPreference = -1;
                                       setState(() {});
                                       srv
-                                          .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
-                                              emailAlertState: emailAlertStatus, targetUserId: snapshot.data![index].hasherId)
-                                          .then((
-                                        List<dynamic> queryResults,
-                                      ) {
-                                        setState(() {
-                                          if (queryResults.isNotEmpty) {
-                                            snapshot.data![index].kennelEmailAlertPreference = queryResults[0]['kennelEmailAlertPreference'];
-                                          }
-                                        });
-                                      });
+                                          .updateHasherKennelStatus(
+                                            widget
+                                                .kennelListAggregate
+                                                .kennel
+                                                .kennelId,
+                                            AppDomainType.kennel,
+                                            emailAlertState: emailAlertStatus,
+                                            targetUserId:
+                                                snapshot.data![index].hasherId,
+                                          )
+                                          .then((List<dynamic> queryResults) {
+                                            setState(() {
+                                              if (queryResults.isNotEmpty) {
+                                                snapshot
+                                                        .data![index]
+                                                        .kennelEmailAlertPreference =
+                                                    queryResults[0]['kennelEmailAlertPreference'];
+                                              }
+                                            });
+                                          });
                                     }
-                                  }),
-                            );
+                                  },
+                                ),
+                              );
+                            }
                           }
-                        }
-                      },
+                        },
+                      ),
                     ),
-                  ),
           ),
         ),
       ],
@@ -616,7 +762,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                       setState(() {});
                     });
                   },
-                  icon: Icon(FontAwesome5Solid.arrow_alt_circle_right, size: 35, color: _showFilter ? Colors.green : Colors.grey),
+                  icon: Icon(
+                    FontAwesome5Solid.arrow_alt_circle_right,
+                    size: 35,
+                    color: _showFilter ? Colors.green : Colors.grey,
+                  ),
                 ),
               ),
               Container(
@@ -660,10 +810,17 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                 width: 40,
                 child: TextButton(
                   style: text_button_style.copyWith(
-                    textStyle: WidgetStatePropertyAll(TextStyle(color: Colors.grey.shade700)),
+                    textStyle: WidgetStatePropertyAll(
+                      TextStyle(color: Colors.grey.shade700),
+                    ),
                     backgroundColor: const WidgetStatePropertyAll(Colors.white),
                   ),
-                  child: Text('X', style: ts_headingBlack.copyWith(color: Colors.grey.shade700)),
+                  child: Text(
+                    'X',
+                    style: ts_headingBlack.copyWith(
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
                   onPressed: () {
                     _searchController.text = '';
                     _searchText = '';
@@ -683,24 +840,47 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     List<dynamic> filteredList = <dynamic>[];
 
     if (_showFilter) {
-      filteredList = fullList
-          .where(
-            (dynamic a) =>
-                a is int ||
-                (((_filterValues[FILTER_IS_MEMBER] == 0) ||
-                        (_filterValues[FILTER_IS_MEMBER] == -1 && ((a.membershipExpirationDate ?? DateTime.parse('19900101')).isBefore(DateTime.now())) ||
-                            (_filterValues[FILTER_IS_MEMBER] == 1 && (a.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())))) &&
-                    ((_filterValues[FILTER_IS_FOLLOWING] == 0) ||
-                        (_filterValues[FILTER_IS_FOLLOWING] == -1 && ((a.following ?? 0) == 0)) ||
-                        (_filterValues[FILTER_IS_FOLLOWING] == 1 && (a.following ?? 0) == 1)) &&
-                    // ((filterValues[FILTER_IS_HOME_KENNEL] == 0) ||
-                    //     (filterValues[FILTER_IS_HOME_KENNEL] == -1 && ((a.homeKennelId == null) || ((a.homeKennelId) != (a.kennelId)))) ||
-                    //     (filterValues[FILTER_IS_HOME_KENNEL] == 1 && (a.homeKennelId != null) && (a.homeKennelId) == (a.kennelId))) &&
-                    ((_filterValues[FILTER_RUNS_IN_LAST_YEAR] == 0) ||
-                        (_filterValues[FILTER_RUNS_IN_LAST_YEAR] == -1 && ((a.dateOfLastRun ?? DateTime.parse('19900101')).isBefore(DateTime.now().add(const Duration(days: -365)))) ||
-                            (_filterValues[FILTER_RUNS_IN_LAST_YEAR] == 1 && (a.dateOfLastRun ?? DateTime.parse('19900101')).isAfter(DateTime.now().add(const Duration(days: -365))))))),
-          )
-          .toList();
+      filteredList =
+          fullList
+              .where(
+                (dynamic a) =>
+                    a is int ||
+                    (((_filterValues[FILTER_IS_MEMBER] == 0) ||
+                            (_filterValues[FILTER_IS_MEMBER] == -1 &&
+                                    ((a.membershipExpirationDate ??
+                                            DateTime.parse('19900101'))
+                                        .isBefore(DateTime.now())) ||
+                                (_filterValues[FILTER_IS_MEMBER] == 1 &&
+                                    (a.membershipExpirationDate ??
+                                            DateTime.parse('19900101'))
+                                        .isAfter(DateTime.now())))) &&
+                        ((_filterValues[FILTER_IS_FOLLOWING] == 0) ||
+                            (_filterValues[FILTER_IS_FOLLOWING] == -1 &&
+                                ((a.following ?? 0) == 0)) ||
+                            (_filterValues[FILTER_IS_FOLLOWING] == 1 &&
+                                (a.following ?? 0) == 1)) &&
+                        // ((filterValues[FILTER_IS_HOME_KENNEL] == 0) ||
+                        //     (filterValues[FILTER_IS_HOME_KENNEL] == -1 && ((a.homeKennelId == null) || ((a.homeKennelId) != (a.kennelId)))) ||
+                        //     (filterValues[FILTER_IS_HOME_KENNEL] == 1 && (a.homeKennelId != null) && (a.homeKennelId) == (a.kennelId))) &&
+                        ((_filterValues[FILTER_RUNS_IN_LAST_YEAR] == 0) ||
+                            (_filterValues[FILTER_RUNS_IN_LAST_YEAR] == -1 &&
+                                    ((a.dateOfLastRun ??
+                                            DateTime.parse('19900101'))
+                                        .isBefore(
+                                          DateTime.now().add(
+                                            const Duration(days: -365),
+                                          ),
+                                        )) ||
+                                (_filterValues[FILTER_RUNS_IN_LAST_YEAR] == 1 &&
+                                    (a.dateOfLastRun ??
+                                            DateTime.parse('19900101'))
+                                        .isAfter(
+                                          DateTime.now().add(
+                                            const Duration(days: -365),
+                                          ),
+                                        ))))),
+              )
+              .toList();
     }
 
     if (filteredList.isEmpty) {
@@ -708,7 +888,16 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     }
 
     if (_searchText.isNotEmpty) {
-      filteredList = filteredList.where((dynamic a) => a is int || (a.nameForSort.toLowerCase().contains(_searchText.toLowerCase()))).toList();
+      filteredList =
+          filteredList
+              .where(
+                (dynamic a) =>
+                    a is int ||
+                    (a.nameForSort.toLowerCase().contains(
+                      _searchText.toLowerCase(),
+                    )),
+              )
+              .toList();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -825,7 +1014,12 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     });
 
     await G0<TableModel>().syncKennelAdminService.updateFromBackend(
-        SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelListAggregate.kennel.kennelId);
+      SyncKennelAdminService.flagKennelTable |
+          SyncKennelAdminService.flagHashersTable |
+          SyncKennelAdminService.flagHasherKennelMapTable,
+      true,
+      widget.kennelListAggregate.kennel.kennelId,
+    );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Kennel member data synchronized $resultStr');
     await _refreshKennelMembersFromTable(true);
@@ -842,23 +1036,27 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     widget.kennelListAggregate.extensions.followingRequested = -1;
 
     setState(() {
-      snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: true);
+      snapshot.data![index] = snapshot.data![index].copyWith(
+        memberInfoBeingUpdated: true,
+      );
     });
     srv
         .updateHasherKennelStatus(
-      widget.kennelListAggregate.kennel.kennelId,
-      AppDomainType.kennel,
-      monthsToAddToMembership: monthsToAddToMembership,
-      targetUserId: snapshot.data![index].hasherId,
-    )
+          widget.kennelListAggregate.kennel.kennelId,
+          AppDomainType.kennel,
+          monthsToAddToMembership: monthsToAddToMembership,
+          targetUserId: snapshot.data![index].hasherId,
+        )
         .then((void _) {
-      _refreshKennelMembersFromTable(true).then((void _) {
-        setState(() {
-          snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: false);
-          _refreshCounters(true);
+          _refreshKennelMembersFromTable(true).then((void _) {
+            setState(() {
+              snapshot.data![index] = snapshot.data![index].copyWith(
+                memberInfoBeingUpdated: false,
+              );
+              _refreshCounters(true);
+            });
+          });
         });
-      });
-    });
   }
 
   void _setUserProperties(
@@ -870,20 +1068,29 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
     setState(() {
-      snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: true);
+      snapshot.data![index] = snapshot.data![index].copyWith(
+        memberInfoBeingUpdated: true,
+      );
     });
 
     srv
-        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
-            targetUserId: snapshot.data![index].hasherId, appAccessFlags: appAccessFlags, mismanagementRoles: mismanagementRoles)
+        .updateHasherKennelStatus(
+          widget.kennelListAggregate.kennel.kennelId,
+          AppDomainType.kennel,
+          targetUserId: snapshot.data![index].hasherId,
+          appAccessFlags: appAccessFlags,
+          mismanagementRoles: mismanagementRoles,
+        )
         .then((void _) {
-      _refreshKennelMembersFromTable(true).then((void _) {
-        setState(() {
-          snapshot.data![index] = snapshot.data![index].copyWith(memberInfoBeingUpdated: false);
-          _refreshCounters(true);
+          _refreshKennelMembersFromTable(true).then((void _) {
+            setState(() {
+              snapshot.data![index] = snapshot.data![index].copyWith(
+                memberInfoBeingUpdated: false,
+              );
+              _refreshCounters(true);
+            });
+          });
         });
-      });
-    });
   }
 
   // void setAsHomeKennel(KennelMemberResultsModel item, int isHomeKennel) {
