@@ -1,6 +1,31 @@
+import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 
-class SelectRunPage extends StatefulWidget {
+class SelectRunController extends GetxController {
+  SelectRunController({required this.runList, required this.initialSelected}) {
+    // Convert incoming Map<String, bool> to Map<String, RxBool>
+    selected = Map.fromEntries(
+      initialSelected.entries.map((e) => MapEntry(e.key, e.value.obs)),
+    );
+  }
+
+  final List<AreWeAtRunModel> runList;
+  late final Map<String, RxBool> selected;
+  final Map<String, bool> initialSelected;
+
+  final RxBool showCheckinButton = false.obs;
+
+  void toggleSelection(AreWeAtRunModel item, bool isSelected) {
+    // set the state for the UI
+    selected[item.eventId]?.value = isSelected;
+    // set the state that will be passed back to the caller
+    initialSelected[item.eventId] = isSelected;
+
+    showCheckinButton.value = selected.values.any((value) => value.value);
+  }
+}
+
+class SelectRunPage extends StatelessWidget {
   const SelectRunPage({
     super.key,
     required this.runList,
@@ -11,171 +36,127 @@ class SelectRunPage extends StatefulWidget {
   final Map<String, bool> selected;
 
   @override
-  SelectRunPageState createState() => SelectRunPageState();
-}
-
-class SelectRunPageState extends State<SelectRunPage> {
-  SelectRunPageState();
-
-  List<Map<String, dynamic>> atRunList = <Map<String, dynamic>>[];
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(
+      SelectRunController(runList: runList, initialSelected: selected),
+    );
+
     return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: themeAppBarBackground,
-          iconTheme: const IconThemeData(
-            color: Colors.white,
-            size: 28.0,
-          ),
-          title: Text('Select run', style: ts_appBarTitle),
-        ),
-        body: _buildListView());
-  }
-
-  bool _showCheckinButton = false;
-
-  Widget _buildListView() {
-    return Container(
-      decoration: Backgrounds.defaultHcBackgroundLight(),
-      padding: const EdgeInsets.only(top: 0.0),
-      child: Column(
-        children: <Widget>[
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-            child: Text(
-              'Would you like to check in to any of the below runs?',
-              style: ts_titleLargeBlack.copyWith(height: 1.2),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Container(
-            //color: Colors.white,
-            decoration: const BoxDecoration(
-              // border: new Border.all(width: 1.0, color: Colors.black),
-              //shape: BoxShape.circle,
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: themeAppBarBackground,
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+        title: Text('Select run', style: ts_appBarTitle),
+      ),
+      body: Container(
+        decoration: Backgrounds.defaultHcBackgroundLight(),
+        child: Column(
+          children: <Widget>[
+            Container(
               color: Colors.white,
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                  color: Color.fromARGB(70, 0, 0, 0),
-                  offset: Offset(0.0, 10.0),
-                  blurRadius: 10.0,
-                ),
-              ],
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 20.0,
+              ),
+              child: Text(
+                'Would you like to check in to any of the below runs?',
+                style: ts_titleLargeBlack.copyWith(height: 1.2),
+                textAlign: TextAlign.center,
+              ),
             ),
-            padding: const EdgeInsets.only(bottom: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextButton(
-                  style: TextButton.styleFrom(shape: button_shape, textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: hc_red),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Text('Don\'t check in', style: ts_button),
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Color.fromARGB(70, 0, 0, 0),
+                    offset: Offset(0.0, 10.0),
+                    blurRadius: 10.0,
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                ),
-                const SizedBox(width: 30.0),
-                TextButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                      (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.disabled)) {
-                          return Colors.grey.shade700;
-                        }
-                        return Colors.green.shade800; // Use the component's default.
-                      },
+                ],
+              ),
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      shape: button_shape,
+                      textStyle: TextStyle(color: Colors.grey.shade700),
+                      backgroundColor: hc_red,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text('Don\'t check in', style: ts_button),
                     ),
                   ),
-                  onPressed: _showCheckinButton
-                      ? () {
-                          Navigator.of(context).pop(true);
-                        }
-                      : null,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Text('Check in', style: ts_button),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
-              physics: const AlwaysScrollableScrollPhysics(),
-              //padding: const EdgeInsets.only( bottom: 40.0),
-              itemCount: widget.runList.length,
-              //itemCount: 100,
-              itemBuilder: (BuildContext context, int index) {
-                //index = 0;
-                return Padding(
-                  padding: const EdgeInsets.only(top: 12.0),
-                  child: RunListItem(
-                      item: widget.runList[index],
-                      selected: widget.selected[widget.runList[index].eventId] ?? false,
-                      callback: (AreWeAtRunModel item) {
-                        setState(() {
-                          _showCheckinButton = false;
-                          for (AreWeAtRunModel r in widget.runList) {
-                            if (widget.selected.containsKey(r.eventId)) {
-                              _showCheckinButton = true;
-                              break;
+                  const SizedBox(width: 30.0),
+                  Obx(
+                    () => TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.disabled)) {
+                              return Colors.grey.shade700;
                             }
-                          }
-                        });
-                      }),
-                );
-              },
+                            return Colors.green.shade800;
+                          },
+                        ),
+                      ),
+                      onPressed:
+                          controller.showCheckinButton.value
+                              ? () => Navigator.of(context).pop(true)
+                              : null,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Text('Check in', style: ts_button),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 50),
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: runList.length,
+                itemBuilder: (context, index) {
+                  final run = runList[index];
+                  //final isSelected = selected[run.eventId] ?? false;
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: Row(
+                      children: <Widget>[
+                        KennelLogo(
+                          kennelId: run.kennelId,
+                          kennelLogoUrl: run.kennelLogo,
+                          kennelShortName: run.kennelShortName,
+                          logoHeight: 45.0,
+                        ),
+                        Expanded(
+                          child: Obx(
+                            () => CheckboxListTile(
+                              value:
+                                  controller.selected[run.eventId]?.value ??
+                                  false,
+                              title: Text(run.eventName),
+                              onChanged: (bool? value) {
+                                controller.toggleSelection(run, value ?? false);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
-  }
-}
-
-class RunListItem extends StatelessWidget {
-  const RunListItem({
-    super.key,
-    required this.item,
-    required this.callback,
-    required this.selected,
-  });
-
-  final AreWeAtRunModel item;
-  final Function callback;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(children: <Widget>[
-      KennelLogo(
-        kennelId: item.kennelId,
-        kennelLogoUrl: item.kennelLogo,
-        kennelShortName: item.kennelShortName,
-        logoHeight: 45.0,
-      ),
-      Expanded(
-        child: CheckboxListTile(
-            value: selected,
-            title: Text(item.eventName),
-            onChanged: (bool? value) {
-              callback(item, value ?? false);
-            }),
-      ),
-    ]);
   }
 }
