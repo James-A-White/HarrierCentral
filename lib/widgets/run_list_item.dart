@@ -216,11 +216,14 @@ class RunListItem extends StatelessWidget {
                     ),
                   );
                 },
-                child: CachedNetworkImage(
-                  imageUrl: futureRun.event.eventImage!,
-                  // errorWidget:
-                  //     (BuildContext context, String url, Exception error) =>
-                  //         const  Icon(Icons.error),
+                child: Hero(
+                  tag: 'EventImage-${futureRun.event.eventId}',
+                  child: CachedNetworkImage(
+                    imageUrl: futureRun.event.eventImage!,
+                    // errorWidget:
+                    //     (BuildContext context, String url, Exception error) =>
+                    //         const  Icon(Icons.error),
+                  ),
                 ),
               ),
               Container(height: 1.0, color: Colors.grey[300]),
@@ -241,13 +244,17 @@ class RunListItem extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
-                            KennelLogo(
-                              kennelId: futureRun.kennel.kennelId,
-                              kennelLogoUrl: futureRun.kennel.kennelLogo,
-                              kennelShortName: futureRun.kennel.kennelShortName,
-                              logoHeight: 70.0,
-                              leftPadding: 7.0,
-                              rightPadding: 7.0,
+                            Hero(
+                              tag: 'KennelLogo-${futureRun.event.eventId}',
+                              child: KennelLogo(
+                                kennelId: futureRun.kennel.kennelId,
+                                kennelLogoUrl: futureRun.kennel.kennelLogo,
+                                kennelShortName:
+                                    futureRun.kennel.kennelShortName,
+                                logoHeight: 70.0,
+                                leftPadding: 7.0,
+                                rightPadding: 7.0,
+                              ),
                             ),
                             Expanded(
                               child: Padding(

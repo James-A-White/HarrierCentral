@@ -2,10 +2,7 @@ import 'package:harrier_central/imports.dart';
 
 /// The ValueListenableBuilder rebuilds whenever [snackMsg] changes.
 class MapSnackbar extends StatelessWidget {
-  const MapSnackbar(
-    this.snackState, {
-    super.key,
-  });
+  const MapSnackbar(this.snackState, {super.key});
 
   final ValueNotifier<bool> snackState;
 
@@ -17,22 +14,21 @@ class MapSnackbar extends StatelessWidget {
     /// We don't use the other builder args for this example so they are
     /// set to _ & __ just for readability.
     return ValueListenableBuilder<bool>(
-        valueListenable: snackState,
-        builder: (_, bool msg, __) {
-          return Checkbox(
-              value: msg,
-              onChanged: (bool? x) {
-                snackState.value = x ?? false;
-              });
-        });
+      valueListenable: snackState,
+      builder: (_, bool msg, _) {
+        return Checkbox(
+          value: msg,
+          onChanged: (bool? x) {
+            snackState.value = x ?? false;
+          },
+        );
+      },
+    );
   }
 }
 
 class RectClipper extends CustomClipper<Rect> {
-  RectClipper({
-    required this.width,
-    required this.height,
-  });
+  RectClipper({required this.width, required this.height});
 
   double width;
   double height;

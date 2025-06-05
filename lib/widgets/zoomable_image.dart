@@ -31,10 +31,7 @@ class ZoomableImagePage2 extends StatelessWidget {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: appBarBackgroundColor,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text(pageTitle, style: ts_appBarTitle),
     );
 
@@ -53,61 +50,65 @@ class ZoomableImagePage2 extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(15.0),
-                child: file != null
-                    ? PhotoView(
-                        imageProvider: FileImage(file!),
-                        minScale: 0.1,
-                        maxScale: 100.0,
-                        backgroundDecoration: background,
-                        // backgroundColor: Colors.transparent,
-                      )
-                    : imageUrl != null
+                child:
+                    file != null
                         ? PhotoView(
-                            imageProvider: CachedNetworkImageProvider(imageUrl!),
+                          imageProvider: FileImage(file!),
+                          minScale: 0.1,
+                          maxScale: 100.0,
+                          backgroundDecoration: background,
+                          // backgroundColor: Colors.transparent,
+                        )
+                        : imageUrl != null
+                        ? PhotoView(
+                          imageProvider: CachedNetworkImageProvider(imageUrl!),
 
-                            // NetworkImage(
-                            //   imageUrl,
-                            // ),
-                            minScale: 0.1,
-                            maxScale: 100.0,
-                            backgroundDecoration: background,
-                            // backgroundColor: Colors.transparent,
-                          )
+                          // NetworkImage(
+                          //   imageUrl,
+                          // ),
+                          minScale: 0.1,
+                          maxScale: 100.0,
+                          backgroundDecoration: background,
+                          // backgroundColor: Colors.transparent,
+                        )
                         : assetImage != null
-                            ? Stack(
-                                alignment: Alignment.center,
-                                children: <Widget>[
-                                  PhotoView(
-                                    imageProvider: AssetImage(
-                                      assetImage!,
-                                    ),
-                                    minScale: 0.1,
-                                    maxScale: 100.0,
-                                    backgroundDecoration: background,
-                                    // backgroundColor: Colors.transparent,
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: G0<DeviceInfo>().deviceWidth / 6, right: G0<DeviceInfo>().deviceWidth / 6),
-                                    child: AutoSizeText(
-                                      (assetImageText ?? '').toLowerCase().contains('my runs')
-                                          ? ''
-                                          : // TODO(James): find a more elegant way of doing this
-                                          '${assetImageText ?? ''}'
-                                              '',
-                                      style: const TextStyle(
-                                        fontFamily: 'AvenirNextCondensedBold',
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 400.0,
-                                        color: Colors.black,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      minFontSize: 1.0,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Container(),
+                        ? Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            PhotoView(
+                              imageProvider: AssetImage(assetImage!),
+                              minScale: 0.1,
+                              maxScale: 100.0,
+                              backgroundDecoration: background,
+                              // backgroundColor: Colors.transparent,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: G0<DeviceInfo>().deviceWidth / 6,
+                                right: G0<DeviceInfo>().deviceWidth / 6,
+                              ),
+                              child: AutoSizeText(
+                                (assetImageText ?? '').toLowerCase().contains(
+                                      'my runs',
+                                    )
+                                    ? ''
+                                    : // TODO(James): find a more elegant way of doing this
+                                    '${assetImageText ?? ''}'
+                                        '',
+                                style: const TextStyle(
+                                  fontFamily: 'AvenirNextCondensedBold',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 400.0,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                minFontSize: 1.0,
+                              ),
+                            ),
+                          ],
+                        )
+                        : Container(),
               ),
             ),
             if (kennelId != null) ...<Widget>[
@@ -116,12 +117,18 @@ class ZoomableImagePage2 extends StatelessWidget {
                 child: ElevatedButton(
                   child: Text('View Kennel', style: ts_button),
                   onPressed: () async {
-                    final KennelListAggregate? kennel = await QueryKennels.getSingleKennel(kennelId!);
+                    final KennelListAggregate? kennel =
+                        await QueryKennels.getSingleKennel(kennelId!);
 
                     if (kennel != null) {
-                      await Navigator.of(navigatorKey.currentContext!).push<dynamic>(
+                      await Navigator.of(
+                        navigatorKey.currentContext!,
+                      ).push<dynamic>(
                         MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+                          builder:
+                              (BuildContext context) => KennelAdminMainPage(
+                                kennelAggregateItem: kennel,
+                              ),
                         ),
                       );
                     }

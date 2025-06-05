@@ -130,11 +130,14 @@ class RunDetails extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: CachedNetworkImage(
-                      imageUrl: event.eventImage!,
-                      // errorWidget:
-                      //     (BuildContext context, String url, Exception error) =>
-                      //         const  Icon(Icons.error),
+                    child: Hero(
+                      tag: 'EventImage-${event.eventId}',
+                      child: CachedNetworkImage(
+                        imageUrl: event.eventImage!,
+                        // errorWidget:
+                        //     (BuildContext context, String url, Exception error) =>
+                        //         const  Icon(Icons.error),
+                      ),
                     ),
                     //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
                   ),
@@ -142,10 +145,13 @@ class RunDetails extends StatelessWidget {
               )
               : Padding(
                 padding: const EdgeInsets.only(top: 20),
-                child: KennelLogo(
-                  kennelLogoUrl: kennel.kennelLogo,
-                  kennelShortName: kennel.kennelShortName,
-                  logoHeight: 200,
+                child: Hero(
+                  tag: 'KennelLogo-${event.eventId}',
+                  child: KennelLogo(
+                    kennelLogoUrl: kennel.kennelLogo,
+                    kennelShortName: kennel.kennelShortName,
+                    logoHeight: 200,
+                  ),
                 ),
               ),
           const Padding(
