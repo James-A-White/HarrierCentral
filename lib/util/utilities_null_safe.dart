@@ -661,7 +661,7 @@ class Utilities {
   static int checkSpecialRun(int runCount) {
     int result = specialRunNo;
 
-    if (((runCount == 0) || (runCount == 1))) {
+    if ((runCount == 1)) {
       result = specialRunFirstRun;
     } else if (runCount == 5) {
       result = specialRunFifthRun;

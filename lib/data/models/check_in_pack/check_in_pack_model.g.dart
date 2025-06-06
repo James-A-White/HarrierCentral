@@ -13,7 +13,7 @@ _CheckInPackModel _$CheckInPackModelFromJson(
   hemId: json['hemId'] as String?,
   isMember: (json['isMember'] as num?)?.toInt() ?? 0,
   isHare: (json['isHare'] as num?)?.toInt() ?? 0,
-  isPaid: (json['isPaid'] as num?)?.toInt() ?? 0,
+  isPaid: (json['isPaid'] as num?)?.toInt(),
   nameForDisplay: json['nameForDisplay'] as String? ?? '',
   nameForSort: json['nameForSort'] as String? ?? '',
   paymentType: (json['paymentType'] as num?)?.toInt() ?? 0,

@@ -10,7 +10,7 @@ abstract class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     String? hemId,
     @Default(0) int isMember,
     @Default(0) int isHare,
-    @Default(0) int isPaid,
+    int? isPaid,
     @Default('') String nameForDisplay,
     @Default('') String nameForSort,
     @Default(0) int paymentType,
@@ -32,12 +32,6 @@ abstract class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     String? payUpdatedAt,
     @Default(0.0) double credit,
     @Default(0) int isFollowing,
-    @JsonKey(includeFromJson: false, includeToJson: false)
-    Future<int>? rsvpStateIndicator,
-    @JsonKey(includeFromJson: false, includeToJson: false)
-    Future<int>? attendenceStateIndicator,
-    @JsonKey(includeFromJson: false, includeToJson: false)
-    Future<int>? paidStateIndicator,
   }) = _CheckInPackModel;
 
   factory CheckInPackModel.fromJson(Map<String, dynamic> json) =>
