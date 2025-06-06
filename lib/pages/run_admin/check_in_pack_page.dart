@@ -1289,6 +1289,18 @@ class CheckInPackPageState extends State<CheckInPackPage>
             ),
             onTap: () => _copyRsvpsFromLastRun(context),
           ),
+          SpeedDialChild(
+            child: const Icon(
+              MaterialCommunityIcons.gesture_tap_button,
+              color: Colors.white,
+            ),
+            backgroundColor: Colors.deepOrange,
+            label: 'Enable multi-selection',
+            labelStyle: TextStyle(
+              fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+            ),
+            onTap: () => _copyRsvpsFromLastRun(context),
+          ),
           // SpeedDialChild(
           //     child: const Icon(MaterialCommunityIcons.message_video),
           //     backgroundColor: Colors.deepOrange,
@@ -1304,38 +1316,38 @@ class CheckInPackPageState extends State<CheckInPackPage>
           //                     videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
           //                   )),
           //         )),
-          if ((widget.eventAggregate.kennel.bankScheme != null) &&
-              (widget.eventAggregate.kennel.bankScheme !=
-                  '')) ...<SpeedDialChild>[
-            SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.bank),
-              backgroundColor: Colors.purple,
-              label: 'Bank Transfer\r\n(Member)',
-              labelStyle: TextStyle(
-                fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
-              ),
-              onTap:
-                  () => BankTransferQr.showBankTransferQrCode(
-                    context,
-                    widget.eventAggregate,
-                    true,
-                  ),
-            ),
-            SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.bank),
-              backgroundColor: Colors.purple,
-              label: 'Bank Transfer\r\n(Non-Member)',
-              labelStyle: TextStyle(
-                fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
-              ),
-              onTap:
-                  () => BankTransferQr.showBankTransferQrCode(
-                    context,
-                    widget.eventAggregate,
-                    false,
-                  ),
-            ),
-          ],
+          // if ((widget.eventAggregate.kennel.bankScheme != null) &&
+          //     (widget.eventAggregate.kennel.bankScheme !=
+          //         '')) ...<SpeedDialChild>[
+          //   SpeedDialChild(
+          //     child: const Icon(MaterialCommunityIcons.bank),
+          //     backgroundColor: Colors.purple,
+          //     label: 'Bank Transfer\r\n(Member)',
+          //     labelStyle: TextStyle(
+          //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+          //     ),
+          //     onTap:
+          //         () => BankTransferQr.showBankTransferQrCode(
+          //           context,
+          //           widget.eventAggregate,
+          //           true,
+          //         ),
+          //   ),
+          //   SpeedDialChild(
+          //     child: const Icon(MaterialCommunityIcons.bank),
+          //     backgroundColor: Colors.purple,
+          //     label: 'Bank Transfer\r\n(Non-Member)',
+          //     labelStyle: TextStyle(
+          //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+          //     ),
+          //     onTap:
+          //         () => BankTransferQr.showBankTransferQrCode(
+          //           context,
+          //           widget.eventAggregate,
+          //           false,
+          //         ),
+          //   ),
+          // ],
         ],
       ),
       appBar: _getAppBar(
