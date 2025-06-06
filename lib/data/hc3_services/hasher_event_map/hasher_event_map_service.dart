@@ -514,4 +514,63 @@ class HasherEventMapService {
     }
     return adHocData;
   }
+
+  Future<List<dynamic>> copyEventRsvps(
+    String fromEventId,
+    String toEventId,
+  ) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+      return <dynamic>[];
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String accessToken = Utilities.generateToken(
+      userId,
+      'hcapp_copyEventRsvps',
+      paramString: deviceSecret,
+    );
+
+    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(
+            AppDomainType.event,
+          ),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+
+    final DateTime hasherEventMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+
+    // final DateTime hasherEventMapUpdatedAfter = DateTime.now().subtract(
+    //   const Duration(days: 999),
+    // );
+
+    final Map<String, Object?> bodyMap = <String, Object?>{
+      'queryType': 'copyEventRsvps',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'fromEvent': fromEventId,
+      'toEvent': toEventId,
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+    };
+
+    final String body = jsonEncode(bodyMap);
+
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+
+    List<dynamic> adHocData = <dynamic>[];
+
+    adHocData = await G0<TableModel>().syncEventAdminService
+        .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+
+    return adHocData;
+  }
 }

@@ -634,6 +634,41 @@ class CheckInPackPageState extends State<CheckInPackPage>
     }
   }
 
+  void _copyRsvpsFromLastRun(BuildContext parentContext) async {
+    var result = await QueryRuns.queryPreviousRun(
+      widget.eventAggregate.kennel.kennelId,
+      widget.eventAggregate.event.eventStartDatetime,
+    );
+
+    String lastRunName = result[0]['eventName'].toString();
+    String fromEventId = result[0]['eventId'].toString();
+
+    bool doCopyRsvps =
+        await Utilities.showAlert(
+          'Copy RSVPs',
+          'Are you sure you want to copy all RSVPs from\r\n\r\n$lastRunName\r\n\r\nto this run?',
+          'Yes',
+          showCancelButton: true,
+          cancelButtonText: 'No',
+        ) ??
+        false;
+
+    if (doCopyRsvps) {
+      final List<dynamic> adHocData = await G0<TableModel>()
+          .hasherEventMapService
+          .copyEventRsvps(fromEventId, widget.eventAggregate.event.eventId);
+
+      final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+
+      if (serverMessage.isNotEmpty) {
+        await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
+      }
+
+      await _refreshPackListFromTables(false);
+      await _refreshCounters(true);
+    }
+  }
+
   void _showVirginVisitorPopup(BuildContext parentContext) {
     int? scrollIndex = -1;
 
@@ -1222,7 +1257,7 @@ class CheckInPackPageState extends State<CheckInPackPage>
           //       });
           //     }),
           SpeedDialChild(
-            child: const Icon(FontAwesome.heart),
+            child: const Icon(FontAwesome.heart, color: Colors.white),
             backgroundColor: hc_blue,
             label: 'Add Virgin / Visitor',
             labelStyle: TextStyle(
@@ -1231,13 +1266,28 @@ class CheckInPackPageState extends State<CheckInPackPage>
             onTap: () => _showVirginVisitorPopup(context),
           ),
           SpeedDialChild(
-            child: const Icon(MaterialCommunityIcons.account_search),
+            child: const Icon(
+              MaterialCommunityIcons.account_search,
+              color: Colors.white,
+            ),
             backgroundColor: hc_blue,
             label: 'Find Hasher and add',
             labelStyle: TextStyle(
               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
             ),
             onTap: () async => await _findHasher(),
+          ),
+          SpeedDialChild(
+            child: const Icon(
+              MaterialCommunityIcons.transfer_right,
+              color: Colors.white,
+            ),
+            backgroundColor: hc_blue,
+            label: 'Copy RSVPs from Previous run',
+            labelStyle: TextStyle(
+              fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+            ),
+            onTap: () => _copyRsvpsFromLastRun(context),
           ),
           // SpeedDialChild(
           //     child: const Icon(MaterialCommunityIcons.message_video),

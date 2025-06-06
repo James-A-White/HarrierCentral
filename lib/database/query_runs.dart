@@ -152,14 +152,18 @@ class QueryRuns {
           ''';
 
   static List<dynamic> doRunsFilter(
-      String searchRunsText, List<dynamic> allRuns) {
+    String searchRunsText,
+    List<dynamic> allRuns,
+  ) {
     List<dynamic> filteredRuns = <dynamic>[];
 
     // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
     if (searchRunsText.isNotEmpty) {
       // searchRunsText = '$searchRunsText , ${removeDiacritics(searchRunsText)}';
-      final List<String> searchItems =
-          searchRunsText.trim().toLowerCase().split(',');
+      final List<String> searchItems = searchRunsText
+          .trim()
+          .toLowerCase()
+          .split(',');
       for (String st in searchItems) {
         if (st.trim().isEmpty) {
           continue;
@@ -173,20 +177,25 @@ class QueryRuns {
 
         ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-        filteredRuns.addAll(allRuns.where((dynamic a) {
-          for (String orItem in orItems) {
-            if (orItem.trim().isEmpty) {
-              continue;
+        filteredRuns.addAll(
+          allRuns.where((dynamic a) {
+            for (String orItem in orItems) {
+              if (orItem.trim().isEmpty) {
+                continue;
+              }
+              orItem = ' ${orItem.trim().toLowerCase()}';
+              if ((a.extensions.searchRunsText.toLowerCase().contains(
+                    orItem,
+                  )) ||
+                  (removeDiacritics(
+                    a.extensions.searchRunsText.toLowerCase(),
+                  ).contains(orItem))) {
+                return !negate;
+              }
             }
-            orItem = ' ${orItem.trim().toLowerCase()}';
-            if ((a.extensions.searchRunsText.toLowerCase().contains(orItem)) ||
-                (removeDiacritics(a.extensions.searchRunsText.toLowerCase())
-                    .contains(orItem))) {
-              return !negate;
-            }
-          }
-          return negate;
-        }).toList());
+            return negate;
+          }).toList(),
+        );
       }
     } else {
       filteredRuns.addAll(allRuns);
@@ -218,12 +227,14 @@ class QueryRuns {
     IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
 
     for (int i = 0; i < results.length; i++) {
-      final EventModel eventItem =
-          G0<TableModel>().eventsTableHelper.fromMap(results[i]);
-      final KennelsModel kennelItem =
-          G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
-      final CitiesModel cityItem =
-          G0<TableModel>().citiesTableHelper.fromMap(results[i]);
+      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(
+        results[i],
+      );
+      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper
+          .fromMap(results[i]);
+      final CitiesModel cityItem = G0<TableModel>().citiesTableHelper.fromMap(
+        results[i],
+      );
 
       double? dist;
       if ((results[i]['evtLat'] != null) &&
@@ -259,7 +270,7 @@ class QueryRuns {
       double meters = 0;
       final int userDistPrefs =
           (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
-              hasherPref_distanceForAutoDisplay;
+          hasherPref_distanceForAutoDisplay;
 
       switch (userDistPrefs) {
         case hasherPref_0:
@@ -294,13 +305,18 @@ class QueryRuns {
           break;
       }
 
-      String userFriendlyLocation =
-          Utilities.getUserFriendlyLocation(eventItem);
+      String userFriendlyLocation = Utilities.getUserFriendlyLocation(
+        eventItem,
+      );
 
       final RunQueryExtensionsModel extensionsItem =
           RunQueryExtensionsModel.fromJsonWithDateSearchText(
-              results[i], eventItem.eventStartDatetime, dist,
-              meters: meters, userFriendlyLocation: userFriendlyLocation);
+            results[i],
+            eventItem.eventStartDatetime,
+            dist,
+            meters: meters,
+            userFriendlyLocation: userFriendlyLocation,
+          );
 
       String paymentLinkUrl = '';
 
@@ -319,10 +335,11 @@ class QueryRuns {
           ((extensionsItem.following == 0) &&
               ((dist ?? 999999999.0) < meters))) {
         final RunDetailsAggregate item = RunDetailsAggregate(
-            event: eventItem,
-            kennel: kennelItem,
-            extensions: extensionsItem,
-            paymentUrl: paymentLinkUrl);
+          event: eventItem,
+          kennel: kennelItem,
+          extensions: extensionsItem,
+          paymentUrl: paymentLinkUrl,
+        );
         runs.add(item);
       }
     }
@@ -342,35 +359,35 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.user);
-        hemTable = G0<TableModel>()
-            .hasherEventMapTableHelper
-            .getTableName(AppDomainType.user);
-        paymentsTable = G0<TableModel>()
-            .paymentsTableHelper
-            .getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+          AppDomainType.user,
+        );
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(
+          AppDomainType.user,
+        );
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(
+          AppDomainType.user,
+        );
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.kennel);
-        hemTable = G0<TableModel>()
-            .hasherEventMapTableHelper
-            .getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+          AppDomainType.kennel,
+        );
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(
+          AppDomainType.user,
+        );
         //paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.event);
-        hemTable = G0<TableModel>()
-            .hasherEventMapTableHelper
-            .getTableName(AppDomainType.event);
-        paymentsTable = G0<TableModel>()
-            .paymentsTableHelper
-            .getTableName(AppDomainType.event);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+          AppDomainType.event,
+        );
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(
+          AppDomainType.event,
+        );
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(
+          AppDomainType.event,
+        );
         break;
     }
 
@@ -466,9 +483,10 @@ class QueryRuns {
             ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
           ''';
 
-    final String whereClauseForKennelDetailsPage = kennelId == null
-        ? ''
-        : '''
+    final String whereClauseForKennelDetailsPage =
+        kennelId == null
+            ? ''
+            : '''
             WHERE datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
@@ -476,9 +494,10 @@ class QueryRuns {
             LIMIT 10
           ''';
 
-    final String whereClauseForSingleRun = eventId == null
-        ? ''
-        : '''
+    final String whereClauseForSingleRun =
+        eventId == null
+            ? ''
+            : '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventId} = "$eventId"
             AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
           ''';
@@ -493,6 +512,25 @@ class QueryRuns {
     } else {
       assert(false);
     }
+
+    return G0<Database>().rawQuery(query);
+  }
+
+  static Future<List<Map<String, dynamic>>> queryPreviousRun(
+    String? kennelId,
+    DateTime eventStartDateTime,
+  ) async {
+    String query = '''
+        SELECT  
+          evt.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
+          evt.${G0<TableModel>().eventsTableHelper.colEventId} as eventId
+          FROM narrowEvents evt
+          WHERE evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
+          AND datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) < datetime('$eventStartDateTime') 
+          AND evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+          ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} DESC
+          LIMIT 1
+          ''';
 
     return G0<Database>().rawQuery(query);
   }
