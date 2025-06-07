@@ -11,6 +11,8 @@ class CheckInPackPage extends StatelessWidget {
 
   // ignore: constant_identifier_names
   static const double LIST_ITEM_HEIGHT = 84.0;
+
+  // ignore: constant_identifier_names
   static const double LIST_ITEM_LEFT_MARGIN = 88.0;
 
   @override
@@ -207,16 +209,28 @@ class CheckInPackPage extends StatelessWidget {
                         height: 120,
                         color: Colors.white,
                         alignment: Alignment.center,
-                        child: Text('TODO: Filter Bar'),
+                        child: _filterBar(context, controller),
                       ),
                     ),
                     Positioned(
                       top: 0,
                       child: Container(
+                        decoration: const BoxDecoration(
+                          // border: new Border.all(width: 1.0, color: Colors.black),
+                          //shape: BoxShape.circle,
+                          color: Colors.white,
+                          boxShadow: <BoxShadow>[
+                            BoxShadow(
+                              color: Color.fromARGB(70, 0, 0, 0),
+                              offset: Offset(0.0, 6.0),
+                              blurRadius: 10.0,
+                            ),
+                          ],
+                        ),
                         height: 85,
                         padding: const EdgeInsets.only(top: 10),
                         width: MediaQuery.of(context).size.width,
-                        color: Colors.white,
+                        //color: Colors.white,
                         child: Row(
                           children: [
                             RotationTransition(
@@ -293,13 +307,13 @@ class CheckInPackPage extends StatelessWidget {
                                   shape: button_shape,
                                   backgroundColor: Colors.white,
                                 ),
+                                onPressed: controller.clearSearch,
                                 child: Text(
                                   'X',
                                   style: ts_headingBlack.copyWith(
                                     color: Colors.grey.shade700,
                                   ),
                                 ),
-                                onPressed: controller.clearSearch,
                               ),
                             ),
                           ],
@@ -308,6 +322,93 @@ class CheckInPackPage extends StatelessWidget {
                     ),
                   ],
                 ),
+      ),
+    );
+  }
+
+  Widget _filterBar(BuildContext context, CheckInPackController controller) {
+    return TextScaleFactorClamper(
+      textScaleFactor: G0<DeviceInfo>().textClamp25,
+      child: Container(
+        decoration: const BoxDecoration(
+          // border: new Border.all(width: 1.0, color: Colors.black),
+          //shape: BoxShape.circle,
+          color: Colors.white,
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Color.fromARGB(70, 0, 0, 0),
+              offset: Offset(0.0, 6.0),
+              blurRadius: 10.0,
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.only(top: 10),
+        width: MediaQuery.of(context).size.width,
+        height: 120,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            CheckinFiltersCell(
+              counter: controller.memberCount.value,
+              label: 'Member',
+              index: 5,
+              onTap: () {
+                controller.refreshPackListFromTables(true);
+              },
+              filterValues: controller.filterValues,
+            ),
+
+            CheckinFiltersCell(
+              counter: controller.countComing.value,
+              label: 'Coming',
+              index: 1,
+              useTriState: false,
+              onTap: () {
+                controller.refreshPackListFromTables(true);
+              },
+              filterValues: controller.filterValues,
+            ),
+
+            CheckinFiltersCell(
+              counter: controller.countAtHash.value,
+              index: 2,
+              label: 'At Hash',
+              onTap: () {
+                controller.refreshPackListFromTables(true);
+              },
+              filterValues: controller.filterValues,
+            ),
+            CheckinFiltersCell(
+              counter: controller.countPaid.value,
+              index: 3,
+              label: 'Paid',
+              onTap: () {
+                controller.refreshPackListFromTables(true);
+              },
+              filterValues: controller.filterValues,
+            ),
+            CheckinFiltersCell(
+              counter: controller.countOnIn.value,
+              index: 4,
+              label: 'On In',
+              onTap: () {
+                controller.refreshPackListFromTables(true);
+              },
+              filterValues: controller.filterValues,
+            ),
+            CheckinFiltersCell(
+              counter: controller.drinkCount.value,
+              index: 6,
+              useTriState: false,
+              label: 'Drink!',
+              onTap: () {
+                controller.refreshPackListFromTables(true);
+              },
+              filterValues: controller.filterValues,
+            ),
+          ],
+        ),
       ),
     );
   }

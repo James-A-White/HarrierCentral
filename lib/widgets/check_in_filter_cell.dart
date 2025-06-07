@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:get/get.dart';
 
 class CheckinFiltersCell extends StatelessWidget {
   const CheckinFiltersCell({
@@ -20,7 +21,7 @@ class CheckinFiltersCell extends StatelessWidget {
   final String label;
   final int index;
   final bool useTriState;
-  final List<int> filterValues;
+  final List<RxInt> filterValues;
 
   @override
   Widget build(BuildContext context) {
@@ -34,29 +35,33 @@ class CheckinFiltersCell extends StatelessWidget {
             counter < 0 ? '' : (counter).toString(),
             style: ts_titleLargeCondensedBlack,
           ),
-          IconButton(
-            padding: const EdgeInsets.all(0),
-            onPressed: () {
-              if (index >= 0) {
-                filterValues[index]++;
-                if (filterValues[index] > 1) {
-                  filterValues[index] = useTriState ? -1 : 0;
+          Obx(
+            () => IconButton(
+              padding: const EdgeInsets.all(0),
+              onPressed: () {
+                if (index >= 0) {
+                  filterValues[index].value++;
+                  if (filterValues[index].value > 1) {
+                    filterValues[index].value = useTriState ? -1 : 0;
+                  }
                 }
-              }
-              onTap();
-            },
-            icon: Icon(
-                (icon ?? filterValues[index]) == -1
+                onTap();
+              },
+              icon: Icon(
+                (icon ?? filterValues[index].value) == -1
                     ? FontAwesome.times_circle
-                    : filterValues[index] == 0
-                        ? FontAwesome.circle_thin
-                        : FontAwesome.check_circle,
+                    : filterValues[index].value == 0
+                    ? FontAwesome.circle_thin
+                    : FontAwesome.check_circle,
                 size: 35,
-                color: (color ?? filterValues[index]) == -1
-                    ? hc_red
-                    : filterValues[index] == 0
+                color:
+                    (color ?? filterValues[index].value) == -1
+                        ? hc_red
+                        : filterValues[index].value == 0
                         ? Colors.grey[350]
-                        : Colors.green),
+                        : Colors.green,
+              ),
+            ),
           ),
           SizedBox(
             height: 20,

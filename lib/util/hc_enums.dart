@@ -94,6 +94,8 @@ enum DatePrefsEnum {
 
 enum MapPrefsEnum { chatCounts }
 
+enum TriStateFilter { neutral, include, exclude }
+
 /// Chat tabs with their corresponding integer IDs.
 enum MessageType {
   chat(0),

@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 
+enum CheckInFilter { member, coming, atHash, paid, onIn, drink }
+
 class CheckInPackController extends GetxController
     with GetTickerProviderStateMixin {
   final RunAdminAggregate eventAggregate;
@@ -44,7 +46,7 @@ class CheckInPackController extends GetxController
   static const String searchKennel = 'Searching Kennel members and RSVPs';
   static const String searchAllHashers = 'Searching all Hashers';
 
-  final RxList<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0].obs;
+  final List<RxInt> filterValues = List.generate(7, (_) => 0.obs);
 
   @override
   void onInit() {
@@ -418,28 +420,29 @@ class CheckInPackController extends GetxController
     if (applyFilters) {
       results =
           results.where((a) {
-            return ((filterValues[0] == 0) ||
-                    (filterValues[0] == -1 && a.rsvpState <= 1) ||
-                    (filterValues[0] == 1 && a.rsvpState >= 2)) &&
-                ((filterValues[1] == 0) ||
-                    (filterValues[1] == 1 &&
+            return ((filterValues[0].value == 0) ||
+                    (filterValues[0].value == -1 && a.rsvpState <= 1) ||
+                    (filterValues[0].value == 1 && a.rsvpState >= 2)) &&
+                ((filterValues[1].value == 0) ||
+                    (filterValues[1].value == 1 &&
                         a.attendenceState < 20 &&
                         a.rsvpState >= 2)) &&
-                ((filterValues[2] == 0) ||
-                    (filterValues[2] == -1 && a.attendenceState < 20) ||
-                    (filterValues[2] == 1 && a.attendenceState >= 20)) &&
-                ((filterValues[3] == 0) ||
-                    (filterValues[3] == -1 && a.isPaid == 0) ||
-                    (filterValues[3] == 1 && a.isPaid == 1)) &&
-                ((filterValues[4] == 0) ||
-                    (filterValues[4] == -1 && a.attendenceState < 30) ||
-                    (filterValues[4] == 1 && a.attendenceState >= 30)) &&
-                ((filterValues[5] == 0) ||
-                    (filterValues[5] == -1 && a.isMember == 0) ||
-                    (filterValues[5] == 1 && a.isMember == 1)) &&
-                ((filterValues[6] == 0) ||
-                    (filterValues[6] == -1) ||
-                    (filterValues[6] == 1 &&
+                ((filterValues[2].value == 0) ||
+                    (filterValues[2].value == -1 && a.attendenceState < 20) ||
+                    (filterValues[2].value == 1 && a.attendenceState >= 20)) &&
+                ((filterValues[3].value == 0) ||
+                    (filterValues[3].value == -1 &&
+                        (a.isPaid == 0 || a.isPaid == null)) ||
+                    (filterValues[3].value == 1 && a.isPaid == 1)) &&
+                ((filterValues[4].value == 0) ||
+                    (filterValues[4].value == -1 && a.attendenceState < 30) ||
+                    (filterValues[4].value == 1 && a.attendenceState >= 30)) &&
+                ((filterValues[5].value == 0) ||
+                    (filterValues[5].value == -1 && a.isMember == 0) ||
+                    (filterValues[5].value == 1 && a.isMember == 1)) &&
+                ((filterValues[6].value == 0) ||
+                    (filterValues[6].value == -1) ||
+                    (filterValues[6].value == 1 &&
                         a.attendenceState >= attendenceAtHash.value &&
                         (Utilities.checkSpecialRun(
                                   a.totalRunsThisKennel +

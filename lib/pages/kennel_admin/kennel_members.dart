@@ -927,7 +927,7 @@ class KennelMemberListState extends State<KennelMembersList>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-          CheckinFiltersCell(
+          KennelFilterCell(
             counter: countIsMember,
             label: 'Member',
             index: 0,
@@ -939,7 +939,7 @@ class KennelMemberListState extends State<KennelMembersList>
             },
             filterValues: _filterValues,
           ),
-          CheckinFiltersCell(
+          KennelFilterCell(
             counter: countIsFollowing,
             label: 'Follow',
             index: 1,
@@ -951,7 +951,7 @@ class KennelMemberListState extends State<KennelMembersList>
             },
             filterValues: _filterValues,
           ),
-          // CheckinFiltersCell(
+          // KennelFilterCell(
           //   counter: countIsHomeKennel,
           //   label: 'Home',
           //   index: 2,
@@ -964,7 +964,7 @@ class KennelMemberListState extends State<KennelMembersList>
           //   },
           //   filterValues: filterValues,
           // ),
-          CheckinFiltersCell(
+          KennelFilterCell(
             counter: countHasRecentRuns,
             label: 'Have runs',
             index: 3,
@@ -977,7 +977,7 @@ class KennelMemberListState extends State<KennelMembersList>
             },
             filterValues: _filterValues,
           ),
-          // CheckinFiltersCell(
+          // KennelFilterCell(
           //   counter: countAtHash,
           //   index: 2,
           //   label: 'At Hash',
@@ -986,7 +986,7 @@ class KennelMemberListState extends State<KennelMembersList>
           //   },
           //   filterValues: filterValues,
           // ),
-          // CheckinFiltersCell(
+          // KennelFilterCell(
           //   counter: countPaid,
           //   index: 3,
           //   label: 'Paid',
@@ -994,7 +994,7 @@ class KennelMemberListState extends State<KennelMembersList>
           //     _refreshPackListFromTables(true);
           //   },
           // ),
-          // CheckinFiltersCell(
+          // KennelFilterCell(
           //   counter: countOnIn,
           //   index: 4,
           //   label: 'On In',
