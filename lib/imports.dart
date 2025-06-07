@@ -120,6 +120,7 @@ export 'package:harrier_central/pages/menu_pages/video_tutorial_page.dart';
 export 'package:harrier_central/pages/misc_pages/generic_widget_page.dart';
 export 'package:harrier_central/pages/misc_pages/hash_run_art_gallery_page.dart';
 export 'package:harrier_central/pages/run_admin/check_in_pack_page/check_in_pack_page.dart';
+export 'package:harrier_central/pages/run_admin/check_in_pack_page/check_in_pack_page_controller.dart';
 export 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 export 'package:harrier_central/pages/run_admin/create_new_event_popup.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list.dart';

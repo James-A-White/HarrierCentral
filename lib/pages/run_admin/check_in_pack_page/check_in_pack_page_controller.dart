@@ -11,7 +11,7 @@ class CheckInPackController extends GetxController
   final GlobalKey packListBoxKey = GlobalKey();
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final RxBool isLoading = true.obs;
+  bool isLoading = true;
   final RxList<CheckInPackModel> packList = <CheckInPackModel>[].obs;
   final RxList<CheckInPackModel> filteredList = <CheckInPackModel>[].obs;
   final RxList<CheckInPackModel> allHashers = <CheckInPackModel>[].obs;
@@ -135,7 +135,8 @@ class CheckInPackController extends GetxController
       return;
 
     if (showLoadingIndicator) {
-      isLoading.value = true;
+      isLoading = true;
+      update(['scaffold']);
     }
 
     await G0<TableModel>().syncEventAdminService.updateFromBackend(
@@ -202,7 +203,8 @@ class CheckInPackController extends GetxController
       drinkCount.value = specialRunNumbers.length;
 
       if (forceRefresh) {
-        isLoading.value = false;
+        isLoading = false;
+        update(['scaffold']);
       }
     } catch (e) {
       debugPrint('Error in _refreshCounters: $e');
@@ -401,7 +403,8 @@ class CheckInPackController extends GetxController
       }
 
       if (forceRefresh) {
-        isLoading.value = false;
+        isLoading = false;
+        update(['scaffold']);
       }
 
       filterPackListResults();
@@ -569,11 +572,9 @@ class CheckInPackController extends GetxController
             specialRunPriceReason: userInput?.specialPriceReason,
             useSpecialPriceAsDefault: userInput?.useSpecialPriceAsDefault,
           );
-          paymentIndexUpdating.value = null;
-          rsvpIndexUpdating.value = null;
-          attendanceIndexUpdating.value = null;
-          await refreshPackListFromTables(false);
-          await _refreshCounters(forceRefresh: true);
+
+          // await refreshPackListFromTables(false);
+          // await _refreshCounters(forceRefresh: true);
         },
       );
 
@@ -674,6 +675,10 @@ class CheckInPackController extends GetxController
         );
       }
     }
+
+    paymentIndexUpdating.value = null;
+    rsvpIndexUpdating.value = null;
+    attendanceIndexUpdating.value = null;
     await refreshPackListFromTables(false);
     await _refreshCounters(forceRefresh: true);
   }
@@ -898,7 +903,7 @@ class CheckInPackController extends GetxController
                 ((attendanceState == null) ||
                         (attendanceState == attendenceUnknown.value) ||
                         (rsvpState == rsvpNo.value))
-                    ? attendanceIndexUpdating.value == null
+                    ? attendanceIndexUpdating.value != index
                         ? Colors.grey[350]
                         : Colors.white
                     : Colors.white,
@@ -956,8 +961,8 @@ class CheckInPackController extends GetxController
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
             backgroundColor:
-                ((paymentIndexUpdating.value != null) ||
-                        (attendanceIndexUpdating.value != null))
+                ((paymentIndexUpdating.value == index) ||
+                        (attendanceIndexUpdating.value == index))
                     ? Colors.white
                     : ((isPaid == null))
                     ? Colors.grey[350]
