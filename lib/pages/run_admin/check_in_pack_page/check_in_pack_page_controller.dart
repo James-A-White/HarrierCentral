@@ -488,7 +488,7 @@ class CheckInPackController extends GetxController
       filteredList.assignAll(results);
     }
 
-    // Optional: update indicators if needed here
+    update(['hasherList']);
   }
 
   void toggleFilterPanel() {
