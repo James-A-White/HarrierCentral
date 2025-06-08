@@ -3,6 +3,16 @@ import 'package:harrier_central/imports.dart';
 
 enum CheckInFilter { member, coming, atHash, paid, onIn, drink }
 
+enum FilterOptions {
+  hashersNotHereYet,
+  hashersStillOnTrail,
+  hashersNotPaid,
+  visitors,
+  virgins,
+  clearAllFilters,
+  cancel,
+}
+
 class CheckInPackController extends GetxController
     with GetTickerProviderStateMixin {
   final RunAdminAggregate eventAggregate;
@@ -46,7 +56,7 @@ class CheckInPackController extends GetxController
   static const String searchKennel = 'Searching Kennel members and RSVPs';
   static const String searchAllHashers = 'Searching all Hashers';
 
-  final List<RxInt> filterValues = List.generate(7, (_) => 0.obs);
+  List<RxInt> filterValues = List.generate(7, (_) => 0.obs);
 
   @override
   void onInit() {
@@ -95,6 +105,8 @@ class CheckInPackController extends GetxController
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
           coalesce(h.dispName, h.hashName, coalesce(h.firstName, '') || ' ' || coalesce(h.lastName, ''))
         ) as nameForDisplay,
+        coalesce(h.firstName,'') as firstName,
+        coalesce(h.lastName,'') as lastName,
         lower(
           coalesce(
             ' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ',
@@ -131,8 +143,9 @@ class CheckInPackController extends GetxController
   }
 
   Future<void> refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (G0<AppModel>().connectionStatus != EnumConnectionStatus2.connected)
+    if (G0<AppModel>().connectionStatus != EnumConnectionStatus2.connected) {
       return;
+    }
 
     if (showLoadingIndicator) {
       isLoading = true;
@@ -234,6 +247,9 @@ class CheckInPackController extends GetxController
                   h.${G0<TableModel>().hashersTableHelper.colHashName}, 
                   COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
                   COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
+         COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') as firstName,
+         COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, '') as lastName,
+         
           LOWER(COALESCE(' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ', 
               ' ' || COALESCE(h.${G0<TableModel>().hashersTableHelper.colHashName}, '') || ' ' || 
               COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, '') || ' ' || 
@@ -290,6 +306,8 @@ class CheckInPackController extends GetxController
           COALESCE(hem2.displayName, 
               CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || 
               CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END AS nameForDisplay,
+          COALESCE(h2.firstName, '') as firstName,
+          COALESCE(h2.lastName, '') as lastName,
           LOWER(COALESCE(hem2.displayName, 
               CASE WHEN hem2.virginVisitorType = 3 THEN ' ' || COALESCE(h2.dispName, h2.hashName, COALESCE(h2.firstName, '') || ' ' || COALESCE(h2.lastName, '')) || ' ' 
               ELSE "<no name>" END) || 
@@ -338,6 +356,9 @@ class CheckInPackController extends GetxController
           COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
               COALESCE(h3.dispName, h3.hashName, COALESCE(h3.firstName, '') || ' ' || 
               COALESCE(h3.lastName, ''))) AS nameForDisplay,
+          COALESCE(h3.firstName, '') as firstName,
+          COALESCE(h3.lastName, '') as lastName,
+    
           LOWER(COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
               COALESCE(h3.dispName, h3.hashName, '') || ' ' || 
               COALESCE(h3.lastName, '') || ' ' || 
@@ -1038,5 +1059,432 @@ class CheckInPackController extends GetxController
         ],
       ),
     );
+  }
+
+  Future<void> showVirginVisitorPopup(BuildContext parentContext) async {
+    //int? scrollIndex = -1;
+
+    const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
+
+    final Map<String, String>? x = await showDialog<Map<String, String>>(
+      context: parentContext,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return addVirginVisitorPopup;
+      },
+    );
+
+    if (x != null) {
+      final String name = x['name'] ?? '';
+      final String type = x['type'] ?? '';
+      final String email = x['email'] ?? '';
+      final String phoneNumber = x['phone'] ?? '';
+
+      EnumVirginVisitor<int> evv = enumVirgin;
+      if (type == enumAnonymousVisitor.value.toString()) {
+        evv = enumAnonymousVisitor;
+      }
+
+      if (type != 'cancel') {
+        // setState(() {
+        //   _isLoading = true;
+        // });
+        await G0<TableModel>()
+            //final List<dynamic> adHocData = await G0<TableModel>()
+            .hasherEventMapService
+            .joinEventAsVisitor(
+              eventAggregate.event.eventId,
+              name,
+              evv.value,
+              attendenceUnknown.value,
+              email,
+              phoneNumber,
+              AppDomainType.event,
+            );
+
+        await refreshPackListFromTables(false);
+        _refreshCounters(forceRefresh: true);
+
+        // setState(() {
+        //   _isLoading = false;
+        // });
+
+        // if (eventAggregate.extensions.appAccess.canManageRuns) {
+        //   if (adHocData.isNotEmpty) {
+        //     final String hem =
+        //         adHocData[0]['hasherEventMapId'].toString().toLowerCase();
+        //     scrollIndex = filteredList.indexWhere(
+        //       (CheckInPackModel k) =>
+        //           k.hemId.toString().toLowerCase() == hem,
+        //     );
+        //     if ((scrollIndex ?? -1) >= 0) {
+        //       //final CheckInPackModel hasher = _packList[scrollIndex!];
+        //       //if (hasher != null) {
+        //       if (scrollIndex != null) {
+        //         final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(
+        //           navigatorKey.currentContext!,
+        //           _scaffoldKey.currentState!,
+        //           scrollIndex!,
+        //         );
+
+        //         ScaffoldMessenger.of(
+        //           navigatorKey.currentContext!,
+        //         ).removeCurrentSnackBar(
+        //           reason: SnackBarClosedReason.hide,
+        //         );
+        //         ScaffoldMessenger.of(navigatorKey.currentContext!)
+        //             .showSnackBar(snackBar)
+        //             .closed
+        //             .then((SnackBarClosedReason reason) {
+        //               setState(() {
+        //                 if ((scrollIndex ?? -1) >= 0) {
+        //                   if (_scrollController.hasClients) {
+        //                     _scrollController.animateTo(
+        //                       scrollIndex! * LIST_ITEM_HEIGHT,
+        //                       duration: const Duration(seconds: 1),
+        //                       curve: Curves.ease,
+        //                     );
+        //                   }
+        //                 }
+        //               });
+        //             });
+        //       }
+        //     }
+        //   }
+        // }
+      }
+    }
+    return;
+
+    // dlg.whenComplete(action)
+  }
+
+  void copyRsvpsFromLastRun(BuildContext parentContext) async {
+    var result = await QueryRuns.queryPreviousRun(
+      eventAggregate.kennel.kennelId,
+      eventAggregate.event.eventStartDatetime,
+    );
+
+    String lastRunName = result[0]['eventName'].toString();
+    String fromEventId = result[0]['eventId'].toString();
+
+    bool doCopyRsvps =
+        await Utilities.showAlert(
+          'Copy RSVPs',
+          'Are you sure you want to copy all RSVPs from\r\n\r\n$lastRunName\r\n\r\nto this run?',
+          'Yes',
+          showCancelButton: true,
+          cancelButtonText: 'No',
+        ) ??
+        false;
+
+    if (doCopyRsvps) {
+      final List<dynamic> adHocData = await G0<TableModel>()
+          .hasherEventMapService
+          .copyEventRsvps(fromEventId, eventAggregate.event.eventId);
+
+      final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+
+      if (serverMessage.isNotEmpty) {
+        await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
+      }
+
+      await refreshPackListFromTables(false);
+      await _refreshCounters(forceRefresh: true);
+    }
+  }
+
+  void filterOptionsPopup(BuildContext context) {
+    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'title': 'Hashers not here yet',
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const Icon(FontAwesome.check_circle, color: Colors.green),
+        ],
+        'returnValue': FilterOptions.hashersNotHereYet,
+      },
+      <String, dynamic>{
+        'title': 'Hashers still on trail',
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Image.asset(
+            'images/icons/runner_icon.png',
+            height: 25,
+            width: 25,
+            color: Colors.orange,
+          ),
+        ],
+        'returnValue': FilterOptions.hashersStillOnTrail,
+      },
+      <String, dynamic>{
+        'title': 'Hashers who have not paid',
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Image.asset(
+            'images/icons/dollar_sign_icon.png',
+            height: 25,
+            width: 25,
+            color: hc_red,
+          ),
+        ],
+        'returnValue': FilterOptions.hashersNotPaid,
+      },
+      <String, dynamic>{
+        'title': 'Visitors',
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const Positioned(
+            bottom: 0,
+            child: Icon(
+              MaterialCommunityIcons.alpha_v_circle,
+              size: 31,
+              color: Colors.purple,
+            ),
+          ),
+        ],
+        'returnValue': FilterOptions.visitors,
+      },
+      <String, dynamic>{
+        'title': 'Virgins',
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            child: Icon(
+              MaterialCommunityIcons.alpha_v_circle,
+              size: 31,
+              color: Colors.pink[300],
+            ),
+          ),
+        ],
+        'returnValue': FilterOptions.virgins,
+      },
+      <String, dynamic>{
+        'title': 'Clear all filters',
+        'icon': <Widget>[
+          Container(
+            height: 30,
+            width: 30,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Icon(FontAwesome.times_circle, color: hc_red),
+
+          // Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          // const Positioned(bottom: 0, child: Icon(Ionicons.md_remove_circle, size: 30, color: Colors.teal))
+        ],
+        'returnValue': FilterOptions.clearAllFilters,
+      },
+    ];
+
+    final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
+      key: const Key('6919321235'),
+      title: 'Common filter options',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
+    );
+
+    showDialog<dynamic>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return popup;
+      },
+    ).then((dynamic retVal) {
+      switch (retVal) {
+        case FilterOptions.hashersNotHereYet:
+          filterValues = <RxInt>[
+            0.obs,
+            1.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+          ];
+          searchText.value = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.hashersNotPaid:
+          filterValues = <RxInt>[
+            0.obs,
+            0.obs,
+            1.obs,
+            (-1).obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+          ];
+          searchText.value = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.hashersStillOnTrail:
+          filterValues = <RxInt>[
+            0.obs,
+            0.obs,
+            1.obs,
+            0.obs,
+            (-1).obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+          ];
+          searchText.value = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.clearAllFilters:
+          filterValues = <RxInt>[
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+          ];
+          searchText.value = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.visitors:
+          filterValues = <RxInt>[
+            0.obs,
+            0.obs,
+            1.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+          ];
+          searchText.value = '(visitor)';
+          searchController.text = '(visitor)';
+          break;
+        case FilterOptions.virgins:
+          filterValues = <RxInt>[
+            0.obs,
+            0.obs,
+            1.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+          ];
+          searchText.value = '(virgin)';
+          searchController.text = '(virgin)';
+          break;
+        case FilterOptions.cancel:
+          break;
+        default:
+          filterValues = <RxInt>[
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+            0.obs,
+          ];
+          searchText.value = '';
+          searchController.text = '';
+          break;
+      }
+
+      if (retVal != FilterOptions.cancel) {
+        if (!showFilter.value) {
+          showFilter.value = true;
+
+          animationController.forward();
+        }
+        refreshPackListFromTables(true);
+      }
+    });
+  }
+
+  Future<void> findHasher(BuildContext context) async {
+    final Map<String, dynamic>? result =
+        await Navigator.push<Map<String, dynamic>>(
+          context,
+          MaterialPageRoute<Map<String, dynamic>>(
+            settings: const RouteSettings(),
+            builder: (BuildContext context) {
+              return FindHasherPage(
+                FindHasherPageType.addHasherToRun,
+                kennelId: eventAggregate.event.kennelId,
+                eventId: eventAggregate.event.eventId,
+              );
+            },
+          ),
+        );
+
+    if ((result != null) && (result['hasher']?.hasherId != null)) {
+      // NOTE:this method returns adHoc data that we are ignoring
+      await G0<TableModel>().hasherEventMapService.setEventAttendence(
+        eventAggregate.event.eventId,
+        result['hasher'].hasherId,
+        AppDomainType.event,
+        attendenceAtHash.value,
+      );
+
+      await refreshPackListFromTables(true);
+      await _refreshCounters(forceRefresh: true);
+    }
   }
 }

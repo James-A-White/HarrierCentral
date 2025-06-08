@@ -39,6 +39,165 @@ class CheckInPackPage extends StatelessWidget {
       builder: (scaffoldController) {
         return Scaffold(
           key: scaffoldController.scaffoldKey,
+          floatingActionButton: SpeedDial(
+            // both default to 16
+            // marginEnd: 18,
+            // marginBottom: 30,
+            animatedIcon: AnimatedIcons.menu_close,
+            animatedIconTheme: const IconThemeData(size: 22.0),
+            // this is ignored if animatedIcon is non null
+            // child:const  Icon(Icons.add),
+            visible: true,
+            curve: Curves.bounceIn,
+            overlayColor: Colors.black,
+            overlayOpacity: 0.5,
+            onOpen: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              scaffoldController.searchFocusNode.unfocus();
+            },
+            //onClose: () => //print('DIAL CLOSED'),
+            tooltip: 'Speed Dial',
+            heroTag: 'speed-dial-hero-tag-62345',
+            backgroundColor: hc_red,
+            foregroundColor: Colors.white,
+            elevation: 8.0,
+            shape: const CircleBorder(),
+            children: <SpeedDialChild>[
+              SpeedDialChild(
+                child: const Icon(Icons.filter_list),
+                backgroundColor: Colors.green,
+                label: 'Preset Filters',
+                labelStyle: TextStyle(
+                  fontSize:
+                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                ),
+                onTap: () {
+                  scaffoldController.filterOptionsPopup(context);
+                },
+              ),
+              // SpeedDialChild(
+              //     child: const Icon(Icons.person_add),
+              //     backgroundColor: hc_blue,
+              //     label: 'Add Hasher to Harrier Central',
+              //     labelStyle: const TextStyle(fontSize: 18.0),
+              //     onTap: () {
+              //       Navigator.push<HashersModel>(
+              //         context,
+              //         MaterialPageRoute<HashersModel>(
+              //           builder: (BuildContext context) => HasherProfilePage(
+              //             dataContext: EnumDataContext.event,
+              //             pageType: EnumMyProfilePageType.newHasherProfile,
+              //             eventId: widget.eventAggregate.event.eventId,
+              //             kennelId: widget.eventAggregate.event.kennelId,
+              //             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+              //           ),
+              //         ),
+              //       ).then((HashersModel result) {
+              //         _refreshPackListFromTables(true);
+              //       });
+              //     }),
+              SpeedDialChild(
+                child: const Icon(FontAwesome.heart, color: Colors.white),
+                backgroundColor: hc_blue,
+                label: 'Add Virgin / Visitor',
+                labelStyle: TextStyle(
+                  fontSize:
+                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                ),
+                //onTap: () => scaffoldController.showVirginVisitorPopup(context),
+                onTap: () => {},
+              ),
+              SpeedDialChild(
+                child: const Icon(
+                  MaterialCommunityIcons.account_search,
+                  color: Colors.white,
+                ),
+                backgroundColor: hc_blue,
+                label: 'Find Hasher and add',
+                labelStyle: TextStyle(
+                  fontSize:
+                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                ),
+                //onTap: () async => {},
+                onTap: () async => await scaffoldController.findHasher(context),
+              ),
+              SpeedDialChild(
+                child: const Icon(
+                  MaterialCommunityIcons.transfer_right,
+                  color: Colors.white,
+                ),
+                backgroundColor: hc_blue,
+                label: 'Copy RSVPs from Previous run',
+                labelStyle: TextStyle(
+                  fontSize:
+                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                ),
+                onTap: () => scaffoldController.copyRsvpsFromLastRun(context),
+                //onTap: () => {},
+              ),
+              SpeedDialChild(
+                child: const Icon(
+                  MaterialCommunityIcons.gesture_tap_button,
+                  color: Colors.white,
+                ),
+                backgroundColor: Colors.deepOrange,
+                label: 'Enable multi-selection',
+                labelStyle: TextStyle(
+                  fontSize:
+                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                ),
+                //onTap: () => _copyRsvpsFromLastRun(context),
+                onTap: () => {},
+              ),
+              // SpeedDialChild(
+              //     child: const Icon(MaterialCommunityIcons.message_video),
+              //     backgroundColor: Colors.deepOrange,
+              //     label: 'View video tutorial',
+              //     labelStyle: TextStyle(
+              //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+              //     ),
+              //     onTap: () => Navigator.push<dynamic>(
+              //           context,
+              //           MaterialPageRoute<dynamic>(
+              //               builder: (BuildContext context) => const VideoTutorialPage(
+              //                     title: 'How to use Check In Page',
+              //                     videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
+              //                   )),
+              //         )),
+              // if ((widget.eventAggregate.kennel.bankScheme != null) &&
+              //     (widget.eventAggregate.kennel.bankScheme !=
+              //         '')) ...<SpeedDialChild>[
+              //   SpeedDialChild(
+              //     child: const Icon(MaterialCommunityIcons.bank),
+              //     backgroundColor: Colors.purple,
+              //     label: 'Bank Transfer\r\n(Member)',
+              //     labelStyle: TextStyle(
+              //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+              //     ),
+              //     onTap:
+              //         () => BankTransferQr.showBankTransferQrCode(
+              //           context,
+              //           widget.eventAggregate,
+              //           true,
+              //         ),
+              //   ),
+              //   SpeedDialChild(
+              //     child: const Icon(MaterialCommunityIcons.bank),
+              //     backgroundColor: Colors.purple,
+              //     label: 'Bank Transfer\r\n(Non-Member)',
+              //     labelStyle: TextStyle(
+              //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+              //     ),
+              //     onTap:
+              //         () => BankTransferQr.showBankTransferQrCode(
+              //           context,
+              //           widget.eventAggregate,
+              //           false,
+              //         ),
+              //   ),
+              // ],
+            ],
+          ),
           appBar: AppBar(
             centerTitle: true,
             backgroundColor: themeAppBarBackground,
@@ -647,7 +806,7 @@ class CheckInPackPage extends StatelessWidget {
             // Name
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN + 2.0,
-              top: 10,
+              top: 3,
               child: Text(
                 hasher.nameForDisplay,
                 style: TextStyle(
@@ -660,6 +819,23 @@ class CheckInPackPage extends StatelessWidget {
                 ),
               ),
             ),
+
+            Positioned(
+              left: LIST_ITEM_LEFT_MARGIN + 3.0,
+              top: 27,
+              child: Text(
+                '${hasher.firstName} ${hasher.lastName}',
+                style: TextStyle(
+                  fontFamily:
+                      hasher.isMember != 0
+                          ? 'AvenirNextCondensedDemiBold'
+                          : 'AvenirNextCondensedMedium',
+                  fontSize: 18.0,
+                  height: 1.0,
+                ),
+              ),
+            ),
+
             // RSVP Icon
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN,

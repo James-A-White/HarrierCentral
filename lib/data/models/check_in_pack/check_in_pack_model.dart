@@ -13,6 +13,8 @@ abstract class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     int? isPaid,
     @Default('') String nameForDisplay,
     @Default('') String nameForSort,
+    @Default('') String firstName,
+    @Default('') String lastName,
     @Default(0) int paymentType,
     @Default(0.0) double creditAmount,
     @Default('') String photo,
