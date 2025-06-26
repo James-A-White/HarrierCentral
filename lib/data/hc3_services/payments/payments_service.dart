@@ -133,6 +133,92 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
 }
 
 class PaymentsService {
+  Future<List<dynamic>> bulkPayForEvent(
+    String eventId,
+    String? hasherIds,
+    int paymentType,
+  ) async {
+    List<dynamic> results = <dynamic>[];
+
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+      return results;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final String accessToken = Utilities.generateToken(
+      userId,
+      'hcapp_processBulkPayment',
+      paramString: deviceSecret,
+    );
+
+    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(
+            AppDomainType.event,
+          ),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final DateTime hasherEventMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+
+    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+            AppDomainType.event,
+          ),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
+    final DateTime hasherKennelMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
+
+    final int paymentsLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().paymentsTableHelper,
+          G0<TableModel>().paymentsTableHelper.getTableName(
+            AppDomainType.event,
+          ),
+          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+        );
+    final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      paymentsLastUpdated + 1,
+    );
+
+    final Map<String, String?> bodyMap = <String, String?>{
+      'queryType': 'processBulkPayment',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'userIdsWhoPaid': hasherIds,
+      'eventId': eventId,
+      'paymentType': paymentType.toString(),
+      'productType': productTypeEvent.value.toString(),
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
+      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+      'transactionTimestamp': DateTime.now().toString(),
+    };
+
+    final String body = jsonEncode(bodyMap);
+
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      results = await G0<TableModel>().syncEventAdminService
+          .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+    }
+    return results;
+  }
+
   Future<List<dynamic>> payForEvent(
     String eventId,
     String? hasherId,

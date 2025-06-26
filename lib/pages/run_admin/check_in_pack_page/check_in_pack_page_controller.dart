@@ -589,16 +589,25 @@ class CheckInPackController extends GetxController
             context,
           ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           paymentIndexUpdating.value = index;
-          await payForEvent(
-            context,
-            scaffoldKey.currentState!,
-            paymentType,
-            index,
-            userInput?.totalAmount,
-            specialRunPrice: userInput?.specialPriceAmount,
-            specialRunPriceReason: userInput?.specialPriceReason,
-            useSpecialPriceAsDefault: userInput?.useSpecialPriceAsDefault,
-          );
+
+          if (showMultiSelect.value) {
+            await bulkPayForEvent(
+              context,
+              scaffoldKey.currentState!,
+              paymentType,
+            );
+          } else {
+            await payForEvent(
+              context,
+              scaffoldKey.currentState!,
+              paymentType,
+              index,
+              userInput?.totalAmount,
+              specialRunPrice: userInput?.specialPriceAmount,
+              specialRunPriceReason: userInput?.specialPriceReason,
+              useSpecialPriceAsDefault: userInput?.useSpecialPriceAsDefault,
+            );
+          }
 
           // await refreshPackListFromTables(false);
           // await _refreshCounters(forceRefresh: true);
@@ -607,6 +616,24 @@ class CheckInPackController extends GetxController
 
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
+  }
+
+  Future<void> bulkPayForEvent(
+    BuildContext context,
+    ScaffoldState scaffoldState,
+    int paymentType,
+  ) async {
+    ScaffoldMessenger.of(
+      context,
+    ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+
+    await _processBulkPayment(paymentType);
+
+    paymentIndexUpdating.value = null;
+    rsvpIndexUpdating.value = null;
+    attendanceIndexUpdating.value = null;
+    await refreshPackListFromTables(false);
+    await _refreshCounters(forceRefresh: true);
   }
 
   Future<void> payForEvent(
@@ -708,6 +735,22 @@ class CheckInPackController extends GetxController
     attendanceIndexUpdating.value = null;
     await refreshPackListFromTables(false);
     await _refreshCounters(forceRefresh: true);
+  }
+
+  Future<List<dynamic>?> _processBulkPayment(int paymentType) async {
+    final String selectedHasherIds = multiSelectValues.entries
+        .where((entry) => entry.value.value)
+        .map((entry) => entry.key)
+        .join(',');
+
+    final PaymentsService paySrv = PaymentsService();
+    final List<dynamic> result = await paySrv.bulkPayForEvent(
+      eventAggregate.event.eventId,
+      selectedHasherIds,
+      paymentType,
+    );
+
+    return result;
   }
 
   Future<List<dynamic>?> _processPayment(
