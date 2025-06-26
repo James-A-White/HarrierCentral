@@ -146,8 +146,11 @@ class CheckInPackPage extends StatelessWidget {
                   fontSize:
                       18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
                 ),
-                //onTap: () => _copyRsvpsFromLastRun(context),
-                onTap: () => {},
+                onTap:
+                    () =>
+                        scaffoldController.showMultiSelect.value =
+                            !scaffoldController.showMultiSelect.value,
+                //onTap: () => {},
               ),
               // SpeedDialChild(
               //     child: const Icon(MaterialCommunityIcons.message_video),
@@ -620,10 +623,12 @@ class CheckInPackPage extends StatelessWidget {
 
                                       child: Container(
                                         color: Colors.white,
-                                        child: _listItem(
-                                          context,
-                                          index,
-                                          scaffoldController,
+                                        child: Obx(
+                                          () => _listItem(
+                                            context,
+                                            index,
+                                            scaffoldController,
+                                          ),
                                         ),
                                       ),
                                     );
@@ -774,135 +779,155 @@ class CheckInPackPage extends StatelessWidget {
     CheckInPackController controller,
   ) {
     final hasher = controller.filteredList[index];
-    return GestureDetector(
-      onTap: () => controller.onHasherTapped(context, index),
-      child: Container(
-        color:
-            controller.shouldHighlightHasher(hasher)
-                ? Colors.amber.shade100
-                : Colors.white,
-        width: MediaQuery.of(context).size.width,
 
-        child: Stack(
-          children: [
-            // Avatar photo
-            Container(
-              width: LIST_ITEM_HEIGHT,
-              height: LIST_ITEM_HEIGHT,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image:
-                      hasher.photo.startsWith('https://')
-                          ? NetworkImage(hasher.photo)
-                          : AssetImage(
-                                'images/avatars/${hasher.photo.replaceAll('bundle://', '')}.jpg',
-                              )
-                              as ImageProvider,
-                ),
-              ),
-            ),
-            // Name
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 2.0,
-              top: 3,
-              child: Text(
-                hasher.nameForDisplay,
-                style: TextStyle(
-                  fontFamily:
-                      hasher.isMember != 0
-                          ? 'AvenirNextCondensedDemiBold'
-                          : 'AvenirNextCondensedMedium',
-                  fontSize: 25.0,
-                  height: 1.0,
-                ),
-              ),
-            ),
+    double multselectMargin = controller.showMultiSelect.value ? 40.0 : 0.0;
 
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 3.0,
-              top: 27,
-              child: Text(
-                '${hasher.firstName} ${hasher.lastName}',
-                style: TextStyle(
-                  fontFamily:
-                      hasher.isMember != 0
-                          ? 'AvenirNextCondensedDemiBold'
-                          : 'AvenirNextCondensedMedium',
-                  fontSize: 18.0,
-                  height: 1.0,
-                ),
-              ),
+    return Row(
+      children: [
+        SizedBox(
+          width: multselectMargin,
+          child: Obx(
+            () => Checkbox(
+              value: controller.multiSelectValues[hasher.hasherId!]!.value,
+              onChanged: (bool? value) {
+                if (value != null) {
+                  controller.multiSelectValues[hasher.hasherId!]!.value = value;
+                }
+              },
             ),
-
-            // RSVP Icon
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN,
-              bottom: 5,
-              child: controller.buildRsvpIcon(
-                index,
-                hasher.rsvpState,
-                hasher.isHare,
-                hasher,
-              ),
-            ),
-            // Attendance Icon
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 35.0,
-              bottom: 5,
-              child: controller.buildAttendanceIcon(
-                index,
-                hasher.rsvpState,
-                hasher.attendenceState,
-                hasher,
-              ),
-            ),
-            // Payment Icon
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 70.0,
-              bottom: 5,
-              child: controller.buildPaymentIcon(
-                index,
-                hasher.attendenceState,
-                hasher.isPaid,
-                hasher.paymentType,
-
-                hasher,
-              ),
-            ),
-            // Special Run Icon
-            if (controller.shouldShowDrinkIcon(hasher))
-              Positioned(
-                top: 8,
-                right: 8,
-                width: 35,
-                height: 35,
-                child: Image.asset('images/icons/beer_mug.png'),
-              ),
-            // Haring count label
-            if (hasher.totalHaringThisKennel > 0)
-              Positioned(
-                right: 4,
-                bottom: 17,
-                child: Text(
-                  'Hared = ${hasher.totalHaringThisKennel + hasher.historicalHaringCount}',
-                  style: controller.getHaringLabelStyle(hasher),
-                ),
-              ),
-            // Run count label
-            if (hasher.totalRunsThisKennel > 0)
-              Positioned(
-                right: 4,
-                bottom: 1,
-                child: Text(
-                  'Total Runs = ${hasher.totalRunsThisKennel + hasher.historicalTotalRunCount}',
-                  style: controller.getRunLabelStyle(hasher),
-                ),
-              ),
-          ],
+          ),
         ),
-      ),
+        GestureDetector(
+          onTap: () => controller.onHasherTapped(context, index),
+          child: Container(
+            color:
+                controller.shouldHighlightHasher(hasher)
+                    ? Colors.amber.shade100
+                    : Colors.white,
+            width: MediaQuery.of(context).size.width - multselectMargin,
+
+            child: Stack(
+              children: [
+                // Avatar photo
+                Container(
+                  width: LIST_ITEM_HEIGHT,
+                  height: LIST_ITEM_HEIGHT,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image:
+                          hasher.photo.startsWith('https://')
+                              ? NetworkImage(hasher.photo)
+                              : AssetImage(
+                                    'images/avatars/${hasher.photo.replaceAll('bundle://', '')}.jpg',
+                                  )
+                                  as ImageProvider,
+                    ),
+                  ),
+                ),
+                // Name
+                Positioned(
+                  left: LIST_ITEM_LEFT_MARGIN + 2.0,
+                  top: 3,
+                  child: Text(
+                    hasher.nameForDisplay,
+                    style: TextStyle(
+                      fontFamily:
+                          hasher.isMember != 0
+                              ? 'AvenirNextCondensedDemiBold'
+                              : 'AvenirNextCondensedMedium',
+                      fontSize: 25.0,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  left: LIST_ITEM_LEFT_MARGIN + 3.0,
+                  top: 27,
+                  child: Text(
+                    '${hasher.firstName} ${hasher.lastName}',
+                    style: TextStyle(
+                      fontFamily:
+                          hasher.isMember != 0
+                              ? 'AvenirNextCondensedDemiBold'
+                              : 'AvenirNextCondensedMedium',
+                      fontSize: 18.0,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+
+                // RSVP Icon
+                Positioned(
+                  left: LIST_ITEM_LEFT_MARGIN,
+                  bottom: 5,
+                  child: controller.buildRsvpIcon(
+                    index,
+                    hasher.rsvpState,
+                    hasher.isHare,
+                    hasher,
+                  ),
+                ),
+                // Attendance Icon
+                Positioned(
+                  left: LIST_ITEM_LEFT_MARGIN + 35.0,
+                  bottom: 5,
+                  child: controller.buildAttendanceIcon(
+                    index,
+                    hasher.rsvpState,
+                    hasher.attendenceState,
+                    hasher,
+                  ),
+                ),
+                // Payment Icon
+                Positioned(
+                  left: LIST_ITEM_LEFT_MARGIN + 70.0,
+                  bottom: 5,
+                  child: controller.buildPaymentIcon(
+                    index,
+                    hasher.attendenceState,
+                    hasher.isPaid,
+                    hasher.paymentType,
+
+                    hasher,
+                  ),
+                ),
+                // Special Run Icon
+                if (controller.shouldShowDrinkIcon(hasher))
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    width: 35,
+                    height: 35,
+                    child: Image.asset('images/icons/beer_mug.png'),
+                  ),
+                // Haring count label
+                if (hasher.totalHaringThisKennel > 0)
+                  Positioned(
+                    right: 4,
+                    bottom: 17,
+                    child: Text(
+                      'Hared = ${hasher.totalHaringThisKennel + hasher.historicalHaringCount}',
+                      style: controller.getHaringLabelStyle(hasher),
+                    ),
+                  ),
+                // Run count label
+                if (hasher.totalRunsThisKennel > 0)
+                  Positioned(
+                    right: 4,
+                    bottom: 1,
+                    child: Text(
+                      'Total Runs = ${hasher.totalRunsThisKennel + hasher.historicalTotalRunCount}',
+                      style: controller.getRunLabelStyle(hasher),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

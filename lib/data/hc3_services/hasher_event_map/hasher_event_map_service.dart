@@ -358,6 +358,74 @@ class HasherEventMapService {
     return adHocData;
   }
 
+  Future<List<dynamic>> setBulkEventAttendence(
+    String eventId,
+    String hasherIds,
+    int attendenceState,
+  ) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+      return <dynamic>[];
+    }
+
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final String accessToken = Utilities.generateToken(
+      userId,
+      'hcapp_setBulkEventAttendence',
+      paramString: deviceSecret,
+    );
+
+    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(
+            AppDomainType.event,
+          ),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+        .getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+            AppDomainType.event,
+          ),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
+
+    final DateTime hasherEventMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
+
+    final Map<String, Object?> bodyMap = <String, Object?>{
+      'queryType': 'setBulkEventAttendence',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'eventId': eventId,
+      'hasherIds': hasherIds,
+      'attendenceState': attendenceState,
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
+    };
+
+    final String body = jsonEncode(bodyMap);
+
+    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+
+    List<dynamic> adHocData = <dynamic>[];
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      adHocData = await G0<TableModel>().syncEventAdminService
+          .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+    }
+
+    return adHocData;
+  }
+
   Future<List<dynamic>> setEventAttendence(
     String eventId,
     String? hasherId,

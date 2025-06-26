@@ -52,6 +52,9 @@ class CheckInPackController extends GetxController
   final RxString searchTypeText = ''.obs;
   final RxBool showFilter = false.obs;
   final RxBool highlightSearchType = false.obs;
+  final RxBool showMultiSelect = false.obs;
+
+  final Map<String, RxBool> multiSelectValues = {};
 
   static const String searchKennel = 'Searching Kennel members and RSVPs';
   static const String searchAllHashers = 'Searching all Hashers';
@@ -413,12 +416,14 @@ class CheckInPackController extends GetxController
 
       if (results.isNotEmpty) {
         packList.clear();
+        multiSelectValues.clear();
         for (final row in results) {
           final hasher = CheckInPackModel.fromMap(row);
           if (!hasher.nameForDisplay.toLowerCase().startsWith(
             'placeholder user',
           )) {
             packList.add(hasher);
+            multiSelectValues[hasher.hasherId!] = false.obs;
           }
         }
       }
@@ -552,6 +557,7 @@ class CheckInPackController extends GetxController
         eventAggregate: eventAggregate,
         packMember: hasher,
         amountOwed: amountOwed,
+        multiSelectEnabled: showMultiSelect.value,
         onRsvpCallback: (
           updated, {
           rsvpState = -1,
@@ -780,13 +786,26 @@ class CheckInPackController extends GetxController
     int attendenceState,
     int isHare,
   ) async {
-    await G0<TableModel>().hasherEventMapService.setEventAttendence(
-      eventAggregate.event.eventId,
-      packMember.hasherId,
-      AppDomainType.event,
-      attendenceState,
-      hemId: packMember.hemId,
-    );
+    if (showMultiSelect.value) {
+      final String selectedHasherIds = multiSelectValues.entries
+          .where((entry) => entry.value.value)
+          .map((entry) => entry.key)
+          .join(',');
+
+      await G0<TableModel>().hasherEventMapService.setBulkEventAttendence(
+        eventAggregate.event.eventId,
+        selectedHasherIds,
+        attendenceState,
+      );
+    } else {
+      await G0<TableModel>().hasherEventMapService.setEventAttendence(
+        eventAggregate.event.eventId,
+        packMember.hasherId,
+        AppDomainType.event,
+        attendenceState,
+        hemId: packMember.hemId,
+      );
+    }
 
     await refreshPackListFromTables(false);
     await _refreshCounters(forceRefresh: true);
