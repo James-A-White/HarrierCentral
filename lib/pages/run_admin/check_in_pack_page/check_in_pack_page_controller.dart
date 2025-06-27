@@ -1046,10 +1046,8 @@ class CheckInPackController extends GetxController
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
             backgroundColor:
-                //(
-                (paymentIndexUpdating.value == index)
-                    // ||
-                    //         (attendanceIndexUpdating.value == index))
+                ((paymentIndexUpdating.value == index) ||
+                        (attendanceIndexUpdating.value == index))
                     ? Colors.white
                     : ((isPaid == null))
                     ? Colors.grey[350]
