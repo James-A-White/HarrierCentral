@@ -3,15 +3,14 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class UserQrCodePage extends StatefulWidget {
-  const UserQrCodePage({
-    super.key,
-  });
+  const UserQrCodePage({super.key});
 
   @override
   UserQrCodePageState createState() => UserQrCodePageState();
 }
 
-class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProviderStateMixin {
+class UserQrCodePageState extends State<UserQrCodePage>
+    with SingleTickerProviderStateMixin {
   final List<Tab> _tabs = <Tab>[];
 
   //PageController _pageController;
@@ -27,16 +26,14 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
     _appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       actions: <IconButton>[
         IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              _displayInstructions(context);
-            }),
+          icon: const Icon(Icons.info_outline),
+          onPressed: () {
+            _displayInstructions(context);
+          },
+        ),
       ],
       title: Text('Run check in page', style: ts_appBarTitle),
     );
@@ -47,7 +44,10 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        SizedBox(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+        ),
         Positioned(
           top: 0,
           left: 0,
@@ -69,7 +69,9 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                       height: 45.0,
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColorLight,
-                        borderRadius: const BorderRadius.all(Radius.circular(35.0)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(35.0),
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.only(left: 1.0, right: 1.0),
@@ -79,7 +81,11 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                           isScrollable: false,
                           unselectedLabelColor: Colors.black,
                           labelColor: Colors.white,
-                          labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                          labelPadding: const EdgeInsets.only(
+                            top: 5,
+                            left: 20,
+                            right: 20,
+                          ),
                           indicatorSize: TabBarIndicatorSize.tab,
                           indicator: BubbleTabIndicator(
                             indicatorHeight: 35.0,
@@ -94,15 +100,16 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                     ),
                   ),
                   Positioned(
-                      top: 80,
-                      bottom: 0,
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        child: TabBarView(
-                          controller: _tabController,
-                          children: const <Widget>[QrScannerTab(), QrCodeTab()],
-                        ),
-                      )),
+                    top: 80,
+                    bottom: 0,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: const <Widget>[QrScannerTab(), QrCodeTab()],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -125,10 +132,7 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            'Your QR Code',
-            style: ts_alertDialogTitle,
-          ),
+          title: Text('Your QR Code', style: ts_alertDialogTitle),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -141,17 +145,14 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
                   //'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
                   style: ts_alertDialogBody,
-                )
+                ),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
               style: text_button_style,
-              child: Text(
-                'OK, Got it!',
-                style: ts_button,
-              ),
+              child: Text('OK, Got it!', style: ts_button),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -229,15 +230,14 @@ class UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvide
 }
 
 class QrCodeTab extends StatefulWidget {
-  const QrCodeTab({
-    super.key,
-  });
+  const QrCodeTab({super.key});
 
   @override
   QrCodeTabState createState() => QrCodeTabState();
 }
 
-class QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class QrCodeTabState extends State<QrCodeTab>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -247,81 +247,104 @@ class QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin
     final String userName = getStringPref(StringPrefsEnum.displayName) ?? '';
     final String userQrCode = getStringPref(StringPrefsEnum.qrCode) ?? '';
 
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
-      //print('Height = ${constraints.maxHeight}');
-      //print('Width = ${constraints.maxWidth}');
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            SizedBox(
-              width: 10,
-              height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
-            ),
-            Container(
-              padding: const EdgeInsets.only(top: 0, bottom: 30, right: 25, left: 25),
-              child: Text(
-                'This code can be scanned by mismanagement to check you in at the beginning and end of runs.',
-                textAlign: TextAlign.justify,
-                style: ts_titleMedium.copyWith(fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        //print('Height = ${constraints.maxHeight}');
+        //print('Width = ${constraints.maxWidth}');
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              SizedBox(
+                width: 10,
+                height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
               ),
-            ),
+              Container(
+                padding: const EdgeInsets.only(
+                  top: 0,
+                  bottom: 30,
+                  right: 25,
+                  left: 25,
+                ),
+                child: Text(
+                  'This code can be scanned by mismanagement to check you in at the beginning and end of runs.',
+                  textAlign: TextAlign.justify,
+                  style: ts_titleMedium.copyWith(
+                    fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                  ),
+                ),
+              ),
 
-            AutoSizeText(
-              'QR for: $userName',
-              //'QR Code for xxx',
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              style: ts_titleMedium.copyWith(fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
-            ),
+              AutoSizeText(
+                'QR for: $userName',
+                //'QR Code for xxx',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: ts_titleMedium.copyWith(
+                  fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                ),
+              ),
 
-            // Positioned(
-            //   top: 127,
+              // Positioned(
+              //   top: 127,
 
-            //   child: Container(
-            //                       color: Colors.white,
-            //     height: MediaQuery.of(context).size.width * 0.8,
-            //     width: MediaQuery.of(context).size.width * 0.8,
-            //   ),
-            // ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 10, left: 30, right: 30),
-                child: Stack(
+              //   child: Container(
+              //                       color: Colors.white,
+              //     height: MediaQuery.of(context).size.width * 0.8,
+              //     width: MediaQuery.of(context).size.width * 0.8,
+              //   ),
+              // ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 20,
+                    bottom: 10,
+                    left: 30,
+                    right: 30,
+                  ),
+                  child: Stack(
                     alignment: AlignmentDirectional.center,
                     //height: min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                     children: <Widget>[
                       QrImageView(
-                          backgroundColor: Colors.white,
-                          padding: const EdgeInsets.all(10.0),
-                          data: BASE_HCWEB_MOBILE_URL + userQrCode,
-                          //data: 'testing123',
-                          version: 5,
-                          //size: 200.0,
-                          errorCorrectionLevel: QrErrorCorrectLevel.M),
-                    ]),
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.all(10.0),
+                        data: BASE_HCWEB_MOBILE_URL + userQrCode,
+                        //data: 'testing123',
+                        version: 5,
+                        //size: 200.0,
+                        errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
 class QrScannerTab extends StatefulWidget {
-  const QrScannerTab({
-    super.key,
-  });
+  const QrScannerTab({super.key});
 
   @override
   QrScannerTabState createState() => QrScannerTabState();
 }
 
-enum EQrScannerState { waitingForScan, scanning, isProcessing, qrNotRecognized, dataRecorded }
+enum EQrScannerState {
+  waitingForScan,
+  scanning,
+  isProcessing,
+  qrNotRecognized,
+  dataRecorded,
+}
 
-class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class QrScannerTabState extends State<QrScannerTab>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   String _onScreenMessage = 'Scanning paused';
 
   QRViewController? _controller;
@@ -401,9 +424,9 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
   // }
 
   Future<void> _onCodeRead(String scanResult) async {
-    final AudioPlayer audioPlayer = AudioPlayer();
-    // ignore: unawaited_futures
-    audioPlayer.play(AssetSource('assets/sounds/camera.mp3'));
+    // final AudioPlayer audioPlayer = AudioPlayer();
+    // // ignore: unawaited_futures
+    // audioPlayer.play(AssetSource('assets/sounds/camera.mp3'));
 
     setState(() {
       _onScreenMessage = 'Processing QR Scan';
@@ -413,29 +436,39 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
 
     //final Map<String,String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user | Utilities.qrScanTypeFlag_kennelRunEnd| Utilities.qrScanTypeFlag_kennelRunStart| Utilities.qrScanTypeFlag_runStart| Utilities.qrScanTypeFlag_runEnd);
     final Map<String, String> result = Utilities.validateScan(
-        scanResult,
-        //Utilities.qrScanTypeFlag_user |
-        Utilities.qrScanTypeFlag_runStart |
-            Utilities.qrScanTypeFlag_runEnd |
-            Utilities.qrScanTypeFlag_kennelRunEnd |
-            Utilities.qrScanTypeFlag_kennelRunStart |
-            Utilities.qrScanTypeFlag_authenticateWebPortal);
+      scanResult,
+      //Utilities.qrScanTypeFlag_user |
+      Utilities.qrScanTypeFlag_runStart |
+          Utilities.qrScanTypeFlag_runEnd |
+          Utilities.qrScanTypeFlag_kennelRunEnd |
+          Utilities.qrScanTypeFlag_kennelRunStart |
+          Utilities.qrScanTypeFlag_authenticateWebPortal,
+    );
 
     if (result['validScan'] == 'false') {
       setState(() {
         _state = EQrScannerState.qrNotRecognized;
-        _onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
+        _onScreenMessage =
+            result['validHcQr'] == 'true'
+                ? 'This QR code is not valid here'
+                : 'QR code not recignized';
       });
     } else {
       final String prefix = result['prefix'] ?? '';
       final String scanData = result['content'] ?? '';
 
-      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
-        final int attendenceState = (prefix == QR_PREFIX_SPECIFIC_RUN_START) ? attendenceAtHash.value : attendenceOnIn.value;
+      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) ||
+          (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
+        final int attendenceState =
+            (prefix == QR_PREFIX_SPECIFIC_RUN_START)
+                ? attendenceAtHash.value
+                : attendenceOnIn.value;
 
         final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-        final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
+        final List<dynamic> adHocData = await G0<TableModel>()
+            .hasherEventMapService
+            .setEventAttendence(
               scanData,
               userId,
               AppDomainType.user,
@@ -451,21 +484,31 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
             _onScreenMessage = 'Processing Complete';
           }
         });
-      } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
-        final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
+      } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) ||
+          (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
+        final int attendenceState =
+            prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START
+                ? attendenceAtHash.value
+                : attendenceOnIn.value;
 
         // the eventId variable can either have the number of hours
         // to the closest event or an actual eventId for one event
-        final String queryResult = await CommonQueries.getClosestEventInTime(scanData);
+        final String queryResult = await CommonQueries.getClosestEventInTime(
+          scanData,
+        );
         if (double.tryParse(queryResult) != null) {
-          final double? hoursUntilNextEvent = double.tryParse(queryResult.replaceAll(',', '.'));
+          final double? hoursUntilNextEvent = double.tryParse(
+            queryResult.replaceAll(',', '.'),
+          );
           if (hoursUntilNextEvent != null) {
             setState(() {
               if (hoursUntilNextEvent > 24) {
-                _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
+                _onScreenMessage =
+                    'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
               } else {
                 if (hoursUntilNextEvent >= 2) {
-                  _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
+                  _onScreenMessage =
+                      'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
                 } else {
                   _onScreenMessage =
                       'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute${NumberFormat('###').format(hoursUntilNextEvent * 60)}' !=
@@ -479,12 +522,15 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
         } else {
           if (queryResult == EMPTY_RESULT) {
             setState(() {
-              _onScreenMessage = 'There is no event for this Kennel at this time';
+              _onScreenMessage =
+                  'There is no event for this Kennel at this time';
             });
           } else {
             final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-            final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.setEventAttendence(
+            final List<dynamic> adHocData = await G0<TableModel>()
+                .hasherEventMapService
+                .setEventAttendence(
                   scanData,
                   userId,
                   AppDomainType.user,
@@ -503,10 +549,14 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
         }
       } else if (prefix == QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN) {
         final AuthenticateWebPortalService svc = AuthenticateWebPortalService();
-        final SingleResultModel? returnValue = await svc.authenticateWebPortal(scanData);
+        final SingleResultModel? returnValue = await svc.authenticateWebPortal(
+          scanData,
+        );
 
         setState(() {
-          if ((returnValue != null) && (returnValue.result != null) && (returnValue.result!.isNotEmpty)) {
+          if ((returnValue != null) &&
+              (returnValue.result != null) &&
+              (returnValue.result!.isNotEmpty)) {
             _onScreenMessage = returnValue.result!;
           } else {
             _onScreenMessage = 'Processing Complete';
@@ -622,46 +672,47 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
             //'Use this scanner to scan the QR codes at theor end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
             textAlign: TextAlign.justify,
             maxLines: 4,
-            style: ts_titleMedium.copyWith(fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor),
+            style: ts_titleMedium.copyWith(
+              fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+            ),
           ),
         ),
 
         //_cameraPreviewWidget(),
         Expanded(
           child: Container(
-            padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
+            padding: EdgeInsets.all(
+              10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5),
+            ),
             child: Stack(
               alignment: AlignmentDirectional.center,
               children: <Widget>[
-                Image.asset(
-                  'images/other/qr_scanner.png',
-                ),
+                Image.asset('images/other/qr_scanner.png'),
                 Container(
                   padding: const EdgeInsets.all(11.0),
                   child: AspectRatio(
                     aspectRatio: 1.0,
-                    child: QRView(key: _qrKey, onQRViewCreated: _onQRViewCreated),
+                    child: QRView(
+                      key: _qrKey,
+                      onQRViewCreated: _onQRViewCreated,
+                    ),
                   ),
                 ),
-                if ((!_isScanning) && (_state == EQrScannerState.waitingForScan)) ...<Widget>[
-                  Image.asset(
-                    'images/other/qr_scanner.png',
-                  ),
+                if ((!_isScanning) &&
+                    (_state == EQrScannerState.waitingForScan)) ...<Widget>[
+                  Image.asset('images/other/qr_scanner.png'),
                 ],
-                if ((!_isScanning) && (_state == EQrScannerState.isProcessing)) ...<Widget>[
-                  Image.asset(
-                    'images/other/uploading_to_cloud.png',
-                  ),
+                if ((!_isScanning) &&
+                    (_state == EQrScannerState.isProcessing)) ...<Widget>[
+                  Image.asset('images/other/uploading_to_cloud.png'),
                 ],
-                if ((!_isScanning) && (_state == EQrScannerState.dataRecorded)) ...<Widget>[
-                  Image.asset(
-                    'images/other/run_info_recorded.png',
-                  ),
+                if ((!_isScanning) &&
+                    (_state == EQrScannerState.dataRecorded)) ...<Widget>[
+                  Image.asset('images/other/run_info_recorded.png'),
                 ],
-                if ((!_isScanning) && (_state == EQrScannerState.qrNotRecognized)) ...<Widget>[
-                  Image.asset(
-                    'images/other/qr_not_recognized.png',
-                  ),
+                if ((!_isScanning) &&
+                    (_state == EQrScannerState.qrNotRecognized)) ...<Widget>[
+                  Image.asset('images/other/qr_not_recognized.png'),
                 ],
               ],
             ),
@@ -677,23 +728,31 @@ class QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClien
             child: Connection2.styleForConnected(
               G0<AppModel>().connectionStatus,
               ElevatedButton(
-                  child: Text(
-                    _isScanning ? 'Stop Scanning' : 'Start Scanning',
-                    style: ts_title,
-                  ),
-                  onPressed: () async {
-                    if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
-                      await _toggleScanning();
-                    }
-                  }),
+                child: Text(
+                  _isScanning ? 'Stop Scanning' : 'Start Scanning',
+                  style: ts_title,
+                ),
+                onPressed: () async {
+                  if (Connection2.checkForConnection(
+                    G0<AppModel>().connectionStatus,
+                  )) {
+                    await _toggleScanning();
+                  }
+                },
+              ),
             ),
-          )
+          ),
         ],
 
         Container(
           //color:Colors.yellow,
           //height: 80,
-          padding: const EdgeInsets.only(top: 20, bottom: 30, left: 20, right: 20),
+          padding: const EdgeInsets.only(
+            top: 20,
+            bottom: 30,
+            left: 20,
+            right: 20,
+          ),
           child: Center(
             child: AutoSizeText(
               _onScreenMessage,

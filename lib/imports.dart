@@ -6,7 +6,7 @@ export 'dart:math';
 export 'dart:typed_data';
 
 // export 'package:fancy_bottom_navigation_plus/fancy_bottom_navigation_plus.dart';
-export 'package:audioplayers/audioplayers.dart';
+//export 'package:audioplayers/audioplayers.dart';
 export 'package:auto_size_text/auto_size_text.dart';
 export 'package:avoid_keyboard/avoid_keyboard.dart';
 export 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
