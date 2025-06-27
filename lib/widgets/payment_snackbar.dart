@@ -548,45 +548,46 @@ class PaymentSnackBar extends SnackBar {
                           ],
                         ),
                       ),
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Image.asset(
-                                'images/icons/payment_type_1.png',
-                                height: 30.0,
-                                width: 30.0,
-                                color:
-                                    ((packMember.isPaid == 0) ||
-                                            (packMember.paymentType ==
-                                                paymentNotPaid.value))
-                                        ? Colors.yellow
-                                        : Colors.white,
-                              ),
+                      if (!multiSelectEnabled)
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              IconButton(
+                                icon: Image.asset(
+                                  'images/icons/payment_type_1.png',
+                                  height: 30.0,
+                                  width: 30.0,
+                                  color:
+                                      ((packMember.isPaid == 0) ||
+                                              (packMember.paymentType ==
+                                                  paymentNotPaid.value))
+                                          ? Colors.yellow
+                                          : Colors.white,
+                                ),
 
-                              //tooltip: 'Select to follow a Kennel',
-                              iconSize: 30.0,
-                              alignment: Alignment.topCenter,
-                              splashColor: Colors.greenAccent,
-                              onPressed: () async {
-                                await onPaidCallback(
-                                  packMember,
-                                  paymentNotPaid.value,
-                                );
-                              },
-                            ),
-                            Text(
-                              'Not paid',
-                              textAlign: TextAlign.center,
-                              style: ts_titleSmallCondensedBold.copyWith(
-                                height: 0.9,
+                                //tooltip: 'Select to follow a Kennel',
+                                iconSize: 30.0,
+                                alignment: Alignment.topCenter,
+                                splashColor: Colors.greenAccent,
+                                onPressed: () async {
+                                  await onPaidCallback(
+                                    packMember,
+                                    paymentNotPaid.value,
+                                  );
+                                },
                               ),
-                            ),
-                          ],
+                              Text(
+                                'Not paid',
+                                textAlign: TextAlign.center,
+                                style: ts_titleSmallCondensedBold.copyWith(
+                                  height: 0.9,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                       (packMember.isMember == 0)
                           ? Container()
                           : Expanded(

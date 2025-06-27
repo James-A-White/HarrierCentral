@@ -609,6 +609,8 @@ class CheckInPackController extends GetxController
             );
           }
 
+          paymentIndexUpdating.value = null;
+
           // await refreshPackListFromTables(false);
           // await _refreshCounters(forceRefresh: true);
         },
@@ -1044,15 +1046,17 @@ class CheckInPackController extends GetxController
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
             backgroundColor:
-                ((paymentIndexUpdating.value == index) ||
-                        (attendanceIndexUpdating.value == index))
+                //(
+                (paymentIndexUpdating.value == index)
+                    // ||
+                    //         (attendanceIndexUpdating.value == index))
                     ? Colors.white
                     : ((isPaid == null))
                     ? Colors.grey[350]
                     : Colors.white,
             radius: 14.0,
           ),
-          index == attendanceIndexUpdating.value
+          index == paymentIndexUpdating.value
               ? Icon(delayIcon, color: hc_blue)
               : (isPaid == null)
               ? Container()

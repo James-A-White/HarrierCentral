@@ -1,11 +1,11 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 2.0.0+963
+version: 2.0.0+964
 publish_to: none
 
 environment:
   sdk: '>=3.7.2 <4.0.0'
-  flutter: ^3.32.1
+  flutter: ^3.32.5
 
 # curved_labeled_navigation_bar 2.0.6
 
