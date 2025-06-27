@@ -25,35 +25,48 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () {
-            Navigator.of(context).push<dynamic>(
-              MaterialPageRoute<dynamic>(
-                builder: (BuildContext context) {
-                  return UserCountryHistoryListPage(
-                    appDomain: AppDomainType.user,
-                    countryId: countryId,
-                    countryName: countryName,
-                  );
+            Navigator.of(context)
+                .push<dynamic>(
+                  MaterialPageRoute<dynamic>(
+                    builder: (BuildContext context) {
+                      return UserCountryHistoryListPage(
+                        appDomain: AppDomainType.user,
+                        countryId: countryId,
+                        countryName: countryName,
+                      );
 
-                  // refreshKennelInfo: () {
-                  //  // return refreshCounters(kennelInfo.kennelId);
-                  // });
-                },
-              ),
-            ).then((void _) {
-              // refreshCounters(kennelInfo.kennelId);
-            });
+                      // refreshKennelInfo: () {
+                      //  // return refreshCounters(kennelInfo.kennelId);
+                      // });
+                    },
+                  ),
+                )
+                .then((void _) {
+                  // refreshCounters(kennelInfo.kennelId);
+                });
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Padding(
-                  padding: const EdgeInsets.only(left: 20.0),
-                  child: Image.asset(
-                    'images/flags/$flagFile',
-                    height: 80,
-                    width: 80,
-                  )),
+                padding: const EdgeInsets.only(left: 20.0),
+                child: Image.asset(
+                  'images/flags/$flagFile',
+                  height: 80,
+                  width: 80,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 2.0),
+                child: Text(
+                  ' = ',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: ts_titleCondensedVeryLargeBlack,
+                  textAlign: TextAlign.left,
+                ),
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,18 +75,15 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
                     //   height: 28,
                     //   width: 20,
                     // ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 48),
-                      child: Text(
-                        countryName,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: ts_titleCondensedBlack,
-                        textAlign: TextAlign.left,
-                      ),
+                    Text(
+                      countryName,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: ts_titleCondensedBlack,
+                      textAlign: TextAlign.left,
                     ),
                     Text(
-                      '  =  $runCount',
+                      runCount.toString(),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: ts_titleCondensedVeryLargeBlack,
@@ -81,18 +91,18 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
                     ),
                     hareCount <= 0
                         ? const SizedBox(height: 20)
-                        : Container(
-                            height: 20.0,
-                            padding: const EdgeInsets.only(left: 48.0),
-                            child: Text(
-                              '($hareCount times hared)',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: ts_titleMediumCondensedBlack.copyWith(
-                                  fontSize: 18.0),
-                              textAlign: TextAlign.left,
+                        : SizedBox(
+                          height: 20.0,
+                          child: Text(
+                            '($hareCount times hared)',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: ts_titleMediumCondensedBlack.copyWith(
+                              fontSize: 18.0,
                             ),
+                            textAlign: TextAlign.left,
                           ),
+                        ),
                   ],
                 ),
               ),
