@@ -22,6 +22,7 @@ _HashersModel _$HashersModelFromJson(Map<String, dynamic> json) =>
           json['updatedAt'] == null
               ? null
               : DateTime.parse(json['updatedAt'] as String),
+      homeKennelId: json['homeKennelId'] as String?,
     );
 
 Map<String, dynamic> _$HashersModelToJson(_HashersModel instance) =>
@@ -36,4 +37,5 @@ Map<String, dynamic> _$HashersModelToJson(_HashersModel instance) =>
       'includeInGlobalHashDirectory': instance.includeInGlobalHashDirectory,
       'removed': instance.removed,
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'homeKennelId': instance.homeKennelId,
     };

@@ -36,6 +36,7 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
   final String colDispPref = 'dispPref';
   final String colResetCode = 'resetCode';
   final String colQrCode = 'qrCode';
+  final String colHomeKennelId = 'homeKennelId';
   final String colIncludeInGlobalHashDirectory = 'includeInGlobalHashDirectory';
   final String colPreferences = 'preferences';
 
@@ -55,6 +56,7 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
             $colDispName TEXT NOT NULL,
             $colHashName TEXT,
             $colPhoto TEXT,
+            $colHomeKennelId TEXT,
             $colDispPref INT NOT NULL,
             $colIncludeInGlobalHashDirectory INT NOT NULL,
             $colRemoved INT NOT NULL,

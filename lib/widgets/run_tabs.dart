@@ -54,11 +54,13 @@ class PackListAggregate {
     required this.hem,
     required this.hasher,
     required this.displayName,
+    this.homeKennelName,
   });
 
   final HasherEventMapModel hem;
   final HashersModel hasher;
   final String displayName;
+  final String? homeKennelName;
 }
 
 class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
@@ -125,9 +127,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     final String query = '''
         SELECT  
           hem.*,
-          h.*
-          FROM hasherEventMapForRunAdmin hem
-          LEFT OUTER JOIN hashers h on h.${G0<TableModel>().hashersTableHelper.colHasherId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}
+          h.*,
+          ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as kennelName
+          FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+          LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.${G0<TableModel>().hashersTableHelper.colHasherId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}
+          LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
           WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = "${widget.futureRun.event.eventId}"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
@@ -153,6 +157,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             hem: packItem,
             hasher: hasherItem,
             displayName: displayName,
+            homeKennelName: results[i]['kennelName'] as String?,
           ),
         );
         //}
@@ -189,7 +194,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,
           count(case when hem.rsvpState = 1 then 1 else null end) as rsvpNoCount,
           count(case when hem.isHare = 1 then 1 else null end) as isHareCount
-          FROM hasherEventMapForRunAdmin hem
+          FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
           WHERE hem.eventId = "${widget.futureRun.event.eventId}"
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
@@ -1060,13 +1065,39 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                             child: Container(
                                                               padding:
                                                                   const EdgeInsets.only(
-                                                                    top: 7.0,
+                                                                    top: 1.0,
                                                                   ),
-                                                              child: Text(
-                                                                e.hem.hemKennelHashName ??
-                                                                    e.displayName,
-                                                                style:
-                                                                    ts_condensedLarge,
+                                                              child: Column(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    e.hem.hemKennelHashName ??
+                                                                        e.displayName,
+                                                                    style:
+                                                                        ts_condensedLarge,
+                                                                  ),
+                                                                  if (e.homeKennelName !=
+                                                                      null)
+                                                                    Padding(
+                                                                      padding:
+                                                                          const EdgeInsets.only(
+                                                                            top:
+                                                                                4.0,
+                                                                          ),
+                                                                      child: Text(
+                                                                        e.homeKennelName!,
+                                                                        overflow:
+                                                                            TextOverflow.ellipsis,
+                                                                        style:
+                                                                            ts_bodySmall,
+                                                                      ),
+                                                                    ),
+                                                                ],
                                                               ),
                                                             ),
                                                           ),

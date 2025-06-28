@@ -16,17 +16,20 @@ abstract class HashersModel with _$HashersModel implements BaseModel {
     required int includeInGlobalHashDirectory,
     int? removed,
     DateTime? updatedAt,
+    String? homeKennelId,
   }) = _HashersModel;
 
   factory HashersModel.fromJson(Map<String, dynamic> json) =>
       _$HashersModelFromJson(json);
 
-  factory HashersModel.empty() => _$HashersModelFromJson(json.decode('''{
+  factory HashersModel.empty() => _$HashersModelFromJson(
+    json.decode('''{
         "hasherId": "$GUID_EMPTY",
         "dispName": "<new hasher>",
         "dispPref": 0,
         "includeInGlobalHashDirectory" : 0,
         "removed": 0,
         "updatedAt": "2000-01-01"}
-        '''));
+        '''),
+  );
 }

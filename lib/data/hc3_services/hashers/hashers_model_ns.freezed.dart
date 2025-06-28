@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HashersModel implements DiagnosticableTreeMixin {
 
- String get hasherId; String? get firstName; String? get lastName; String get dispName; String? get hashName; String? get photo; int get dispPref; int get includeInGlobalHashDirectory; int? get removed; DateTime? get updatedAt;
+ String get hasherId; String? get firstName; String? get lastName; String get dispName; String? get hashName; String? get photo; int get dispPref; int get includeInGlobalHashDirectory; int? get removed; DateTime? get updatedAt; String? get homeKennelId;
 /// Create a copy of HashersModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,21 +30,21 @@ $HashersModelCopyWith<HashersModel> get copyWith => _$HashersModelCopyWithImpl<H
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'HashersModel'))
-    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt));
+    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt))..add(DiagnosticsProperty('homeKennelId', homeKennelId));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.homeKennelId, homeKennelId) || other.homeKennelId == homeKennelId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,removed,updatedAt);
+int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,removed,updatedAt,homeKennelId);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt)';
+  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt, homeKennelId: $homeKennelId)';
 }
 
 
@@ -55,7 +55,7 @@ abstract mixin class $HashersModelCopyWith<$Res>  {
   factory $HashersModelCopyWith(HashersModel value, $Res Function(HashersModel) _then) = _$HashersModelCopyWithImpl;
 @useResult
 $Res call({
- String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? removed, DateTime? updatedAt
+ String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? removed, DateTime? updatedAt, String? homeKennelId
 });
 
 
@@ -72,7 +72,7 @@ class _$HashersModelCopyWithImpl<$Res>
 
 /// Create a copy of HashersModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? removed = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? removed = freezed,Object? updatedAt = freezed,Object? homeKennelId = freezed,}) {
   return _then(_self.copyWith(
 hasherId: null == hasherId ? _self.hasherId : hasherId // ignore: cast_nullable_to_non_nullable
 as String,firstName: freezed == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -84,7 +84,8 @@ as String?,dispPref: null == dispPref ? _self.dispPref : dispPref // ignore: cas
 as int,includeInGlobalHashDirectory: null == includeInGlobalHashDirectory ? _self.includeInGlobalHashDirectory : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
 as int,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,homeKennelId: freezed == homeKennelId ? _self.homeKennelId : homeKennelId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -95,7 +96,7 @@ as DateTime?,
 @JsonSerializable()
 
 class _HashersModel with DiagnosticableTreeMixin implements HashersModel {
-   _HashersModel({required this.hasherId, this.firstName, this.lastName, required this.dispName, this.hashName, this.photo, required this.dispPref, required this.includeInGlobalHashDirectory, this.removed, this.updatedAt});
+   _HashersModel({required this.hasherId, this.firstName, this.lastName, required this.dispName, this.hashName, this.photo, required this.dispPref, required this.includeInGlobalHashDirectory, this.removed, this.updatedAt, this.homeKennelId});
   factory _HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);
 
 @override final  String hasherId;
@@ -108,6 +109,7 @@ class _HashersModel with DiagnosticableTreeMixin implements HashersModel {
 @override final  int includeInGlobalHashDirectory;
 @override final  int? removed;
 @override final  DateTime? updatedAt;
+@override final  String? homeKennelId;
 
 /// Create a copy of HashersModel
 /// with the given fields replaced by the non-null parameter values.
@@ -123,21 +125,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'HashersModel'))
-    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt));
+    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt))..add(DiagnosticsProperty('homeKennelId', homeKennelId));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.homeKennelId, homeKennelId) || other.homeKennelId == homeKennelId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,removed,updatedAt);
+int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,removed,updatedAt,homeKennelId);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt)';
+  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt, homeKennelId: $homeKennelId)';
 }
 
 
@@ -148,7 +150,7 @@ abstract mixin class _$HashersModelCopyWith<$Res> implements $HashersModelCopyWi
   factory _$HashersModelCopyWith(_HashersModel value, $Res Function(_HashersModel) _then) = __$HashersModelCopyWithImpl;
 @override @useResult
 $Res call({
- String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? removed, DateTime? updatedAt
+ String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? removed, DateTime? updatedAt, String? homeKennelId
 });
 
 
@@ -165,7 +167,7 @@ class __$HashersModelCopyWithImpl<$Res>
 
 /// Create a copy of HashersModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? removed = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? removed = freezed,Object? updatedAt = freezed,Object? homeKennelId = freezed,}) {
   return _then(_HashersModel(
 hasherId: null == hasherId ? _self.hasherId : hasherId // ignore: cast_nullable_to_non_nullable
 as String,firstName: freezed == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -177,7 +179,8 @@ as String?,dispPref: null == dispPref ? _self.dispPref : dispPref // ignore: cas
 as int,includeInGlobalHashDirectory: null == includeInGlobalHashDirectory ? _self.includeInGlobalHashDirectory : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
 as int,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,homeKennelId: freezed == homeKennelId ? _self.homeKennelId : homeKennelId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
