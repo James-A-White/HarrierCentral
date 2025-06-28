@@ -126,10 +126,12 @@ class CheckInPackController extends GetxController
         null as payUpdatedAt,
         coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) as discountAmount,
         coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) as discountPercent,
-        0 as credit
+        0 as credit,
+        ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
       FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
       LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
         ON hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
+      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
       WHERE h.${G0<TableModel>().hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
       ORDER BY nameForSort;
     ''';
@@ -275,11 +277,13 @@ class CheckInPackController extends GetxController
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} AS hcHaringCount,
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} AS historicalTotalRunCount,
           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} AS historicalHaringCount,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate,
+          ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
       FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
       INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hkm.userId
       LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
       LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
       WHERE hkm.kennelId = "${eventAggregate.event.kennelId}" 
         AND COALESCE(hem.virginVisitorType, 0) = 0
         AND (
@@ -336,10 +340,12 @@ class CheckInPackController extends GetxController
           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          ken2.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
       FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2
       INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h2 ON h2.hasherId = hem2.userId
       LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
+      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken2 on h2.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken2.${G0<TableModel>().kennelsTableHelper.colKennelId}
       WHERE hem2.eventId = "${eventAggregate.event.eventId}" 
         AND hem2.virginVisitorType != 0
 
@@ -383,12 +389,14 @@ class CheckInPackController extends GetxController
           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          ken3.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
       FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
       INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
       LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
       LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', 'localtime')
       LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${eventAggregate.event.kennelId}" 
+      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken3 on h3.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken3.${G0<TableModel>().kennelsTableHelper.colKennelId}
       WHERE hem3.eventId = "${eventAggregate.event.eventId}" 
         AND hem3.virginVisitorType = 0 
         AND (
@@ -947,13 +955,20 @@ class CheckInPackController extends GetxController
     //   '${hasher.nameForDisplay} - ${hasher.totalRunsThisKennel + hasher.historicalTotalRunCount} + ${hasher.totalHaringThisKennel + hasher.historicalHaringCount}',
     // );
 
+    print(
+      hasher.nameForDisplay +
+          ' - ' +
+          (hasher.totalRunsThisKennel + hasher.historicalTotalRunCount)
+              .toString(),
+    );
+
     if (hasher.attendenceState >= attendenceAtHash.value) {
       showDrinkIcon =
           Utilities.checkSpecialRun(
             hasher.totalRunsThisKennel + hasher.historicalTotalRunCount,
           ) !=
           specialRunNo;
-      if (!showDrinkIcon) {
+      if (!showDrinkIcon && (hasher.isHare == 1)) {
         showDrinkIcon =
             Utilities.checkSpecialHaring(
               hasher.totalHaringThisKennel + hasher.historicalHaringCount,

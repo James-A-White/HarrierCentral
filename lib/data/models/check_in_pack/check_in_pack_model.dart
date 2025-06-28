@@ -34,6 +34,7 @@ abstract class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     String? payUpdatedAt,
     @Default(0.0) double credit,
     @Default(0) int isFollowing,
+    String? homeKennelName,
   }) = _CheckInPackModel;
 
   factory CheckInPackModel.fromJson(Map<String, dynamic> json) =>

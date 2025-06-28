@@ -830,34 +830,48 @@ class CheckInPackPage extends StatelessWidget {
                 Positioned(
                   left: LIST_ITEM_LEFT_MARGIN + 2.0,
                   top: 3,
-                  child: Text(
-                    hasher.nameForDisplay,
-                    style: TextStyle(
-                      fontFamily:
-                          hasher.isMember != 0
-                              ? 'AvenirNextCondensedDemiBold'
-                              : 'AvenirNextCondensedMedium',
-                      fontSize: 25.0,
-                      height: 1.0,
-                    ),
+                  child: Row(
+                    children: [
+                      Text(
+                        hasher.nameForDisplay,
+                        style: TextStyle(
+                          fontFamily:
+                              hasher.isMember != 0
+                                  ? 'AvenirNextCondensedDemiBold'
+                                  : 'AvenirNextCondensedMedium',
+                          fontSize: 25.0,
+                          height: 1.0,
+                        ),
+                      ),
+                      Text(
+                        '  (${hasher.firstName.trim()} ${hasher.lastName.trim()})',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontFamily: 'AvenirNextCondensedMedium',
+                          fontSize: 18.0,
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                Positioned(
-                  left: LIST_ITEM_LEFT_MARGIN + 3.0,
-                  top: 27,
-                  child: Text(
-                    '${hasher.firstName} ${hasher.lastName}',
-                    style: TextStyle(
-                      fontFamily:
-                          hasher.isMember != 0
-                              ? 'AvenirNextCondensedDemiBold'
-                              : 'AvenirNextCondensedMedium',
-                      fontSize: 18.0,
-                      height: 1.0,
+                if (hasher.homeKennelName != null)
+                  Positioned.fill(
+                    left: LIST_ITEM_LEFT_MARGIN + 3.0,
+                    top: 27,
+                    child: Text(
+                      hasher.homeKennelName!,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontSize: 18.0,
+                        height: 1.0,
+                      ),
                     ),
                   ),
-                ),
 
                 // RSVP Icon
                 Positioned(

@@ -39,6 +39,7 @@ _CheckInPackModel _$CheckInPackModelFromJson(
   payUpdatedAt: json['payUpdatedAt'] as String?,
   credit: (json['credit'] as num?)?.toDouble() ?? 0.0,
   isFollowing: (json['isFollowing'] as num?)?.toInt() ?? 0,
+  homeKennelName: json['homeKennelName'] as String?,
 );
 
 Map<String, dynamic> _$CheckInPackModelToJson(_CheckInPackModel instance) =>
@@ -71,4 +72,5 @@ Map<String, dynamic> _$CheckInPackModelToJson(_CheckInPackModel instance) =>
       'payUpdatedAt': instance.payUpdatedAt,
       'credit': instance.credit,
       'isFollowing': instance.isFollowing,
+      'homeKennelName': instance.homeKennelName,
     };
