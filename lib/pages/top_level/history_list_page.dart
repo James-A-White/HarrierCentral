@@ -79,6 +79,7 @@ class HistoryListPageState extends State<HistoryListPage>
           WHERE evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0 
           AND evt.${G0<TableModel>().eventsTableHelper.colIsCountedRun} != 0
           AND evt.${G0<TableModel>().eventsTableHelper.colIsVisible} != 0
+          AND evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now') 
           GROUP BY countries.${G0<TableModel>().countriesTableHelper.colCountryName}, countries.${G0<TableModel>().countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';
@@ -110,18 +111,20 @@ class HistoryListPageState extends State<HistoryListPage>
 
     _runCountsListByCountry = <String, CountryStats>{};
     try {
-      final List<Map<String, dynamic>> hcResults =
-          await G0<Database>().rawQuery(hcRunsQuery);
+      final List<Map<String, dynamic>> hcResults = await G0<Database>()
+          .rawQuery(hcRunsQuery);
 
-      final List<Map<String, dynamic>> historicResults =
-          await G0<Database>().rawQuery(historicalRunsQuery);
+      final List<Map<String, dynamic>> historicResults = await G0<Database>()
+          .rawQuery(historicalRunsQuery);
 
       for (int i = 0; i < historicResults.length; i++) {
-        final CountryStats historicItem =
-            CountryStats.fromMap(historicResults[i]);
+        final CountryStats historicItem = CountryStats.fromMap(
+          historicResults[i],
+        );
         if (historicItem.runCount > 0) {
           print(
-              'Historic - Country = ${historicItem.countryName} / Count = ${historicItem.runCount} / Hare = ${historicItem.hareCount}');
+            'Historic - Country = ${historicItem.countryName} / Count = ${historicItem.runCount} / Hare = ${historicItem.hareCount}',
+          );
 
           _runCountsListByCountry[historicItem.countryName] = (historicItem);
         }
@@ -132,7 +135,8 @@ class HistoryListPageState extends State<HistoryListPage>
 
         if (hcItem.runCount > 0) {
           print(
-              'HC - Country = ${hcItem.countryName} / Count = ${hcItem.runCount} / Hare = ${hcItem.hareCount}');
+            'HC - Country = ${hcItem.countryName} / Count = ${hcItem.runCount} / Hare = ${hcItem.hareCount}',
+          );
 
           if (_runCountsListByCountry[hcItem.countryName] != null) {
             _runCountsListByCountry[hcItem.countryName]!.hareCount +=
@@ -184,8 +188,9 @@ class HistoryListPageState extends State<HistoryListPage>
 
     _runCountsListByKennel = <RunHistoryModel>[];
     try {
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+        query,
+      );
 
       _totalHaring = 0;
       _totalRuns = 0;
@@ -230,8 +235,9 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Widget _buildCountryStatsList() {
-    final sortedEntries = _runCountsListByCountry.entries.toList()
-      ..sort((b, a) => a.value.runCount.compareTo(b.value.runCount));
+    final sortedEntries =
+        _runCountsListByCountry.entries.toList()
+          ..sort((b, a) => a.value.runCount.compareTo(b.value.runCount));
 
     return Expanded(
       child: ListView.builder(
@@ -300,13 +306,13 @@ class HistoryListPageState extends State<HistoryListPage>
     });
 
     await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagHasherEventMapTable |
-              SyncUserDataService.flagHasherKennelMapTable |
-              SyncUserDataService.flagNarrowEventsTable |
-              SyncUserDataService.flagKennelsTable,
-          true,
-          debugText: 'history_list_page: HEM,HKM,Events,Kennels',
-        );
+      SyncUserDataService.flagHasherEventMapTable |
+          SyncUserDataService.flagHasherKennelMapTable |
+          SyncUserDataService.flagNarrowEventsTable |
+          SyncUserDataService.flagKennelsTable,
+      true,
+      debugText: 'history_list_page: HEM,HKM,Events,Kennels',
+    );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Hasher data synchronized $resultStr');
     await refreshRunHistoryFromTable(true);
@@ -324,137 +330,149 @@ class HistoryListPageState extends State<HistoryListPage>
           margin: const EdgeInsets.only(top: 100),
           decoration: Backgrounds.defaultHcBackgroundLight(),
           padding: const EdgeInsets.only(top: 0.0),
-          child: _runCountsListByKennel.isEmpty
-              ? Center(
-                  child: Text(
-                  'No runs logged yet.',
-                  style: ts_title,
-                ))
-              : RefreshIndicator(
-                  onRefresh: _handleRefresh,
-                  displacement: 40.0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Container(
-                        //color: Colors.red,
-                        width: 200,
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          top: 10.0,
-                        ),
-                        child: DefaultTabController(
-                          length: 2,
-                          child: TabBar(
-                            onTap: (void _) {
-                              setState(() {});
-                            },
-                            labelStyle: ts_tabSelected,
-                            unselectedLabelStyle: ts_tabUnselected,
-                            isScrollable: false,
-                            unselectedLabelColor: Colors.white,
-                            labelColor: Colors.white,
-                            //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                            indicatorSize: TabBarIndicatorSize.label,
-                            indicator: BubbleTabIndicator(
+          child:
+              _runCountsListByKennel.isEmpty
+                  ? Center(child: Text('No runs logged yet.', style: ts_title))
+                  : RefreshIndicator(
+                    onRefresh: _handleRefresh,
+                    displacement: 40.0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Container(
+                          //color: Colors.red,
+                          width: 200,
+                          padding: const EdgeInsets.only(
+                            left: 30,
+                            right: 30,
+                            top: 10.0,
+                          ),
+                          child: DefaultTabController(
+                            length: 2,
+                            child: TabBar(
+                              onTap: (void _) {
+                                setState(() {});
+                              },
+                              labelStyle: ts_tabSelected,
+                              unselectedLabelStyle: ts_tabUnselected,
+                              isScrollable: false,
+                              unselectedLabelColor: Colors.white,
+                              labelColor: Colors.white,
+                              //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
+                              indicatorSize: TabBarIndicatorSize.label,
+                              indicator: BubbleTabIndicator(
                                 indicatorHeight: 30.0,
                                 indicatorColor: hc_red,
                                 tabBarIndicatorSize: TabBarIndicatorSize.label,
                                 indicatorRadius: 15.0,
-                                padding: EdgeInsets.only(top: 5)),
-                            tabs: <Tab>[
-                              Tab(
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  width: 140,
-                                  child: Text(
-                                    'By Kennel',
-                                    style: ts_numberStyle.copyWith(
-                                        color: _tabController.index == 0
-                                            ? Colors.white
-                                            : Colors.black),
+                                padding: EdgeInsets.only(top: 5),
+                              ),
+                              tabs: <Tab>[
+                                Tab(
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    width: 140,
+                                    child: Text(
+                                      'By Kennel',
+                                      style: ts_numberStyle.copyWith(
+                                        color:
+                                            _tabController.index == 0
+                                                ? Colors.white
+                                                : Colors.black,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Tab(
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  width: 140,
-                                  child: Text(
-                                    'By Country',
-                                    style: ts_numberStyle.copyWith(
-                                        color: _tabController.index == 1
-                                            ? Colors.white
-                                            : Colors.black),
+                                Tab(
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    width: 140,
+                                    child: Text(
+                                      'By Country',
+                                      style: ts_numberStyle.copyWith(
+                                        color:
+                                            _tabController.index == 1
+                                                ? Colors.white
+                                                : Colors.black,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                            controller: _tabController,
+                              ],
+                              controller: _tabController,
+                            ),
                           ),
                         ),
-                      ),
-                      _tabController.index == 0
-                          ? _buildKennelStatsList()
-                          : _buildCountryStatsList(),
-                    ],
+                        _tabController.index == 0
+                            ? _buildKennelStatsList()
+                            : _buildCountryStatsList(),
+                      ],
+                    ),
                   ),
-                ),
         ),
         Positioned(
-            top: 0,
-            left: 0,
-            child: Container(
-                decoration: const BoxDecoration(
-                  // border: new Border.all(width: 1.0, color: Colors.black),
-                  //shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: Color.fromARGB(70, 0, 0, 0),
-                      offset: Offset(0.0, 6.0),
-                      blurRadius: 10.0,
-                    ),
-                  ],
+          top: 0,
+          left: 0,
+          child: Container(
+            decoration: const BoxDecoration(
+              // border: new Border.all(width: 1.0, color: Colors.black),
+              //shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: Color.fromARGB(70, 0, 0, 0),
+                  offset: Offset(0.0, 6.0),
+                  blurRadius: 10.0,
                 ),
-                height: 100,
-                width: MediaQuery.of(context).size.width,
-                child: Row(
-                  children: <Widget>[
-                    ProfilePhoto(
-                        leftPadding: 20.0,
-                        photoHeight: 80.0,
-                        profilePhotoUrl: photo),
-                    const SizedBox(width: 20),
-                    _runCountsListByKennel.isEmpty
-                        ? Container()
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                                Text(
-                                  'My total run counts',
-                                  style: ts_titleMediumBold.copyWith(
-                                      height: 1.2, color: Colors.black87),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  'Total runs: $_totalRuns',
-                                  style: ts_titleMedium.copyWith(
-                                      height: 1.2, color: Colors.black87),
-                                  textAlign: TextAlign.left,
-                                ),
-                                Text(
-                                  'Total times hared: $_totalHaring',
-                                  style: ts_titleMedium.copyWith(
-                                      height: 1.2, color: Colors.black87),
-                                  textAlign: TextAlign.left,
-                                ),
-                              ])
-                  ],
-                ))),
+              ],
+            ),
+            height: 100,
+            width: MediaQuery.of(context).size.width,
+            child: Row(
+              children: <Widget>[
+                ProfilePhoto(
+                  leftPadding: 20.0,
+                  photoHeight: 80.0,
+                  profilePhotoUrl: photo,
+                ),
+                const SizedBox(width: 20),
+                _runCountsListByKennel.isEmpty
+                    ? Container()
+                    : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'My total run counts',
+                          style: ts_titleMediumBold.copyWith(
+                            height: 1.2,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          'Total runs: $_totalRuns',
+                          style: ts_titleMedium.copyWith(
+                            height: 1.2,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                        Text(
+                          'Total times hared: $_totalHaring',
+                          style: ts_titleMedium.copyWith(
+                            height: 1.2,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
+                    ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -462,7 +480,7 @@ class HistoryListPageState extends State<HistoryListPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body:
-            _isLoading ? _buildCircularProgressIndicator() : _buildListView());
+      body: _isLoading ? _buildCircularProgressIndicator() : _buildListView(),
+    );
   }
 }

@@ -141,7 +141,7 @@ class CheckInPackPage extends StatelessWidget {
                   color: Colors.white,
                 ),
                 backgroundColor: Colors.deepOrange,
-                label: 'Enable multi-selection',
+                label: 'Toggle multi-selection',
                 labelStyle: TextStyle(
                   fontSize:
                       18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
