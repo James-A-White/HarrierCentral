@@ -885,14 +885,36 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           time,
                                         );
 
+                                        String? oneLineLocForDesc =
+                                            widget
+                                                .futureRun
+                                                .event
+                                                .locationOneLineDesc;
+
+                                        String? oneLineLocForTitle;
+
+                                        if ((oneLineLocForDesc != null) &&
+                                            (oneLineLocForDesc.isNotEmpty)) {
+                                          oneLineLocForTitle =
+                                              ' @ $oneLineLocForDesc';
+                                          oneLineLocForDesc =
+                                              'Location: $oneLineLocForDesc\r\n\r\n';
+                                        } else {
+                                          oneLineLocForDesc = '';
+                                          oneLineLocForTitle = '';
+                                        }
+
                                         Event event = Event(
                                           title:
-                                              widget.futureRun.event.eventName,
+                                              widget.futureRun.event.eventName +
+                                              oneLineLocForTitle,
                                           description:
-                                              widget
-                                                  .futureRun
-                                                  .event
-                                                  .eventDescription,
+                                              oneLineLocForDesc +
+                                              (widget
+                                                      .futureRun
+                                                      .event
+                                                      .eventDescription ??
+                                                  ''),
                                           location:
                                               widget
                                                   .futureRun
