@@ -431,7 +431,9 @@ class CheckInPackController extends GetxController
             'placeholder user',
           )) {
             packList.add(hasher);
-            multiSelectValues[hasher.hasherId!] = false.obs;
+            if (hasher.hasherId != null) {
+              multiSelectValues[hasher.hasherId!] = false.obs;
+            }
           }
         }
       }

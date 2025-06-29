@@ -104,8 +104,8 @@ class CheckInPackPage extends StatelessWidget {
                   fontSize:
                       18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
                 ),
-                //onTap: () => scaffoldController.showVirginVisitorPopup(context),
-                onTap: () => {},
+                onTap: () => scaffoldController.showVirginVisitorPopup(context),
+                //onTap: () => {},
               ),
               SpeedDialChild(
                 child: const Icon(
@@ -786,16 +786,22 @@ class CheckInPackPage extends StatelessWidget {
       children: [
         SizedBox(
           width: multselectMargin,
-          child: Obx(
-            () => Checkbox(
-              value: controller.multiSelectValues[hasher.hasherId!]!.value,
-              onChanged: (bool? value) {
-                if (value != null) {
-                  controller.multiSelectValues[hasher.hasherId!]!.value = value;
-                }
-              },
-            ),
-          ),
+          child:
+              hasher.hasherId == null
+                  ? SizedBox()
+                  : Obx(
+                    () => Checkbox(
+                      value:
+                          controller.multiSelectValues[hasher.hasherId!]!.value,
+                      onChanged: (bool? value) {
+                        if (value != null) {
+                          controller
+                              .multiSelectValues[hasher.hasherId!]!
+                              .value = value;
+                        }
+                      },
+                    ),
+                  ),
         ),
         GestureDetector(
           onTap: () => controller.onHasherTapped(context, index),
@@ -843,16 +849,17 @@ class CheckInPackPage extends StatelessWidget {
                           height: 1.0,
                         ),
                       ),
-                      Text(
-                        '  (${hasher.firstName.trim()} ${hasher.lastName.trim()})',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: TextStyle(
-                          fontFamily: 'AvenirNextCondensedMedium',
-                          fontSize: 18.0,
-                          height: 1.0,
+                      if (hasher.virginVisitorType == 0)
+                        Text(
+                          '  (${hasher.firstName.trim()} ${hasher.lastName.trim()})',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontFamily: 'AvenirNextCondensedMedium',
+                            fontSize: 18.0,
+                            height: 1.0,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
