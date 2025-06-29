@@ -671,9 +671,10 @@ class CheckInPackController extends GetxController
             (paymentType == paymentBankTransferOtherAmount.value)) &&
         ((eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
       final double runOnlyPrice =
-          filteredList[index].isMember != 0
+          specialRunPrice ??
+          (filteredList[index].isMember != 0
               ? eventAggregate.extensions.memberPrice
-              : eventAggregate.extensions.nonMemberPrice;
+              : eventAggregate.extensions.nonMemberPrice);
       final double runPlusExtrasPrice =
           runOnlyPrice + (eventAggregate.event.eventPriceForExtras!);
 

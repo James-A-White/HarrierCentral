@@ -151,6 +151,7 @@ SELECT
 
   List<Map<String, dynamic>> _paymentTotals = <Map<String, dynamic>>[];
   double _totalCollected = 0;
+  double _extrasPaid = 0;
   int _transactionCount = 0;
 
   Future<void> refreshTotals() async {
@@ -160,10 +161,16 @@ SELECT
       final String sql = '''
 
           -- start with the 'not paid' case
-          select 0 as paymentType, (SELECT COUNT(*) from ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
-          WHERE  hem.attendenceState >= 20
-          AND hem.hemId not in (SELECT hemId from ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) ) as count, 0.0 as totalCollected,
-          0.0 as totalDebited
+          select 0 as paymentType, 
+          (
+            SELECT COUNT(*) 
+            FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
+            WHERE  hem.attendenceState >= 20
+            AND hem.hemId not in (SELECT hemId from ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) 
+          ) as count, 
+          0.0 as totalCollected,
+          0.0 as totalDebited,
+          0.0 as extrasPaid
             
           UNION
           select paymentType, 
@@ -185,7 +192,13 @@ SELECT
                 FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
                 INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
-            ) as totalDebited
+            ) as totalDebited,
+            (
+                SELECT SUM(pay2.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras})
+                FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
+                INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+            ) as extrasPaid
           FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
 
 
@@ -197,12 +210,14 @@ SELECT
       setState(() {
         _paymentTotals = results;
         _totalCollected = 0;
+        _extrasPaid = 0;
         _transactionCount = 0;
         for (Map<String, dynamic> n in _paymentTotals) {
           if (n.containsKey('paymentType') && (n['paymentType'] > 1)) {
             if ((n.containsKey('totalCollected')) &&
                 (n['totalCollected'] != null)) {
               _totalCollected += n['totalCollected'];
+              _extrasPaid += n['extrasPaid'];
             }
             if ((n.containsKey('count')) && (n['count'] != null)) {
               _transactionCount += n['count'] as int;
@@ -840,7 +855,15 @@ SELECT
                           style: ts_titleBlack,
                         ),
                         Text(
-                          'Total collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                          'Run fees collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                          style: ts_titleBlack,
+                        ),
+                        Text(
+                          '${widget.eventAggregate.event.extrasDescription} paid: ${_extrasPaid.toInt()} for ${IveCoreUtilities.getFormattedMoney((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                          style: ts_titleBlack,
+                        ),
+                        Text(
+                          'Total collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected + (widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
                           style: ts_titleBlack,
                         ),
                       ],

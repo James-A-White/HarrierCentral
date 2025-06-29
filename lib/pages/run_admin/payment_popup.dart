@@ -53,82 +53,92 @@ class PaymentPopupState extends State<PaymentPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        'Select payment method',
-        style: ts_alertDialogTitle,
-      ),
+      title: Text('Select payment', style: ts_alertDialogTitle),
       content: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                Row(children: <Widget>[
-                  Radio<int>(
-                    value: 1,
-                    groupValue: _selectedValue,
-                    onChanged: _handleRadioValueChange1,
-                  ),
-                  Text(
-                    'Not paid',
-                    style: ts_alertDialogBodyMedium,
-                  ),
-                ]),
-                Row(children: <Widget>[
-                  Radio<int>(
-                    value: 2,
-                    groupValue: _selectedValue,
-                    onChanged: _handleRadioValueChange1,
-                  ),
-                  Text(
-                    'Free run',
-                    style: ts_alertDialogBodyMedium,
-                  ),
-                ]),
-                Row(children: <Widget>[
-                  Radio<int>(
-                    value: 3,
-                    groupValue: _selectedValue,
-                    onChanged: _handleRadioValueChange1,
-                  ),
-                  Text(
-                    'Cash (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                    style: ts_alertDialogBodyMedium,
-                  ),
-                ]),
-                Row(children: <Widget>[
-                  Radio<int>(
-                    value: 4,
-                    groupValue: _selectedValue,
-                    onChanged: _handleRadioValueChange1,
-                  ),
-                  Text(
-                    'Bank transfer (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                    style: ts_alertDialogBodyMedium,
-                  ),
-                ]),
-                if (widget.creditAllowed == 0) ...<Widget>[_otherAmountRow()],
-                if (widget.creditAllowed != 0) ...<Widget>[
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                Row(
+                  children: <Widget>[
                     Radio<int>(
-                      value: 6,
+                      value: 1,
                       groupValue: _selectedValue,
                       onChanged: _handleRadioValueChange1,
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})', style: ts_alertDialogBodyMedium),
-                        Text(
-                          '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
-                          style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : hc_red),
-                        ),
-                      ],
+                    Text('Not paid', style: ts_alertDialogBodyMedium),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Radio<int>(
+                      value: 2,
+                      groupValue: _selectedValue,
+                      onChanged: _handleRadioValueChange1,
                     ),
-                  ])
+                    Text('Free run', style: ts_alertDialogBodyMedium),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Radio<int>(
+                      value: 3,
+                      groupValue: _selectedValue,
+                      onChanged: _handleRadioValueChange1,
+                    ),
+                    Text(
+                      'Cash (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                      style: ts_alertDialogBodyMedium,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Radio<int>(
+                      value: 4,
+                      groupValue: _selectedValue,
+                      onChanged: _handleRadioValueChange1,
+                    ),
+                    Text(
+                      'Bank transfer (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                      style: ts_alertDialogBodyMedium,
+                    ),
+                  ],
+                ),
+                if (widget.creditAllowed == 0) ...<Widget>[_otherAmountRow()],
+                if (widget.creditAllowed != 0) ...<Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Radio<int>(
+                        value: 6,
+                        groupValue: _selectedValue,
+                        onChanged: _handleRadioValueChange1,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                            style: ts_alertDialogBodyMedium,
+                          ),
+                          Text(
+                            '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
+                            style: ts_alertDialogBodyMedium.copyWith(
+                              color:
+                                  (widget.creditRemaining >= 0)
+                                      ? Colors.green[800]
+                                      : hc_red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
-                _otherAmountRow()
+                _otherAmountRow(),
                 // Row(
                 //     //crossAxisAlignment: CrossAxisAlignment.start,
                 //     children: <Widget>[
@@ -174,36 +184,44 @@ class PaymentPopupState extends State<PaymentPopup> {
       ),
       actions: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(right: 60.0),
+          padding: const EdgeInsets.only(right: 1.0),
           child: SizedBox(
-            width: 100.0,
+            //width: 100.0,
+            height: 41.0,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: hc_red),
-              child: Text('Cancel', style: ts_button),
+              child: Text('Cancel', style: ts_button.copyWith(fontSize: 18)),
               onPressed: () {
-                final PaymentPopupResult popupResult = PaymentPopupResult(transactionType: -1, transactionValue: 0);
+                final PaymentPopupResult popupResult = PaymentPopupResult(
+                  transactionType: -1,
+                  transactionValue: 0,
+                );
                 Navigator.of(context).pop(popupResult);
               },
             ),
           ),
         ),
         SizedBox(
-          width: 100.0,
+          //width: 100.0,
+          height: 41.0,
           child: ElevatedButton(
-            child: Text(
-              'Process',
-              style: ts_button,
+            style: TextButton.styleFrom(
+              shape: button_shape,
+              backgroundColor: hc_blue,
             ),
+            child: Text('Process', style: ts_button.copyWith(fontSize: 18)),
             onPressed: () {
               if (_selectedValue != PaymentPopup.otherAmountRowId) {
                 _otherPaymentResult = null;
               }
 
-              final double resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
+              final double resultAmount =
+                  _otherPaymentResult?.totalAmount ?? widget.amount;
               final int resultTransType = _selectedValue;
 
               final PaymentPopupResult result = PaymentPopupResult(
-                transactionType: _otherPaymentResult?.transType ?? resultTransType,
+                transactionType:
+                    _otherPaymentResult?.transType ?? resultTransType,
                 transactionValue: resultAmount,
                 otherPayment: _otherPaymentResult,
               );
@@ -222,29 +240,34 @@ class PaymentPopupState extends State<PaymentPopup> {
           _handleRadioValueChange1(PaymentPopup.otherAmountRowId);
         }
       },
-      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-        Radio<int>(
-          value: PaymentPopup.otherAmountRowId,
-          groupValue: _selectedValue,
-          onChanged: _handleRadioValueChange1,
-        ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Other Amount',
-              style: ts_alertDialogBodyMedium,
-            ),
-            _otherPaymentResult == null
-                ? const SizedBox(height: 1, width: 1)
-                : Text(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Radio<int>(
+            value: PaymentPopup.otherAmountRowId,
+            groupValue: _selectedValue,
+            onChanged: _handleRadioValueChange1,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('Other Amount', style: ts_alertDialogBodyMedium),
+              _otherPaymentResult == null
+                  ? const SizedBox(height: 1, width: 1)
+                  : Text(
                     '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult!.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult!.transType == 5) ? ' cash' : ' bank transfer'}',
-                    style: ts_alertDialogBodyMedium.copyWith(color: (widget.creditRemaining >= 0) ? Colors.green[800] : hc_red),
+                    style: ts_alertDialogBodyMedium.copyWith(
+                      color:
+                          (widget.creditRemaining >= 0)
+                              ? Colors.green[800]
+                              : hc_red,
+                    ),
                   ),
-          ],
-        ),
-      ]),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -263,12 +286,14 @@ class PaymentPopupState extends State<PaymentPopup> {
           widget.allowDefaultPricing,
         );
 
-        final OtherPaymentPopupResult? result = await showDialog<OtherPaymentPopupResult>(
-            context: context,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return otherPaymentPopup;
-            });
+        final OtherPaymentPopupResult? result =
+            await showDialog<OtherPaymentPopupResult>(
+              context: context,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return otherPaymentPopup;
+              },
+            );
 
         if ((result != null) && (result.action != 'cancel')) {
           setState(() {
@@ -279,11 +304,13 @@ class PaymentPopupState extends State<PaymentPopup> {
               _otherPaymentResult = null;
             }
 
-            final double resultAmount = _otherPaymentResult?.totalAmount ?? widget.amount;
+            final double resultAmount =
+                _otherPaymentResult?.totalAmount ?? widget.amount;
             final int resultTransType = _selectedValue;
 
             final PaymentPopupResult ppResult = PaymentPopupResult(
-              transactionType: _otherPaymentResult?.transType ?? resultTransType,
+              transactionType:
+                  _otherPaymentResult?.transType ?? resultTransType,
               transactionValue: resultAmount,
               otherPayment: _otherPaymentResult,
             );

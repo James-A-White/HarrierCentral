@@ -17,7 +17,17 @@ class PaymentReportListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String amountPaid = IveCoreUtilities.getFormattedMoney(
-        paymentReportItem.extensions.isHashCredit ? -(paymentReportItem.payment?.debitAmount ?? 0) : paymentReportItem.payment?.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+      paymentReportItem.extensions.isHashCredit
+          ? -(paymentReportItem.payment?.debitAmount ?? 0)
+          : paymentReportItem.payment?.creditAmount ?? 0,
+      digitsAfterDecimal,
+      currencySymbol,
+    );
+
+    String? extrasPaid;
+    if ((paymentReportItem.payment?.doPayForExtras ?? 0) != 0) {
+      extrasPaid = '£3.00';
+    }
 
     return InkWell(
       onTap: () {
@@ -38,40 +48,103 @@ class PaymentReportListItem extends StatelessWidget {
                     maxLines: 3,
                     //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
                     style: TextStyle(
-                        fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
-                        color: ((((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransfer.value) ||
-                                    ((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransferOtherAmount.value)) &&
-                                (paymentReportItem.payment?.confirmedBy == null))
-                            ? hc_red
-                            : Colors.black,
-                        fontStyle: FontStyle.normal,
-                        fontSize: 22.0,
-                        height: 1.0),
+                      fontFamily:
+                          (paymentReportItem.extensions.isMember != 0)
+                              ? 'AvenirNextCondensedDemiBold'
+                              : 'AvenirNextCondensedMedium',
+                      color:
+                          ((((paymentReportItem.payment?.paymentType ??
+                                              paymentTypeUnknown.value) ==
+                                          paymentBankTransfer.value) ||
+                                      ((paymentReportItem
+                                                  .payment
+                                                  ?.paymentType ??
+                                              paymentTypeUnknown.value) ==
+                                          paymentBankTransferOtherAmount
+                                              .value)) &&
+                                  (paymentReportItem.payment?.confirmedBy ==
+                                      null))
+                              ? hc_red
+                              : Colors.black,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 22.0,
+                      height: 1.0,
+                    ),
                     textAlign: TextAlign.left,
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  amountPaid,
-                  style: TextStyle(
-                      color: ((((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransfer.value) ||
-                                  ((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) == paymentBankTransferOtherAmount.value)) &&
-                              (paymentReportItem.payment?.confirmedBy == null))
-                          ? hc_red
-                          : Colors.black,
-                      fontFamily: 'AvenirNextCondensedDemiBold',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 22.0,
-                      height: 1.0),
-                  textAlign: TextAlign.right,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      amountPaid,
+                      style: TextStyle(
+                        color:
+                            ((((paymentReportItem.payment?.paymentType ??
+                                                paymentTypeUnknown.value) ==
+                                            paymentBankTransfer.value) ||
+                                        ((paymentReportItem
+                                                    .payment
+                                                    ?.paymentType ??
+                                                paymentTypeUnknown.value) ==
+                                            paymentBankTransferOtherAmount
+                                                .value)) &&
+                                    (paymentReportItem.payment?.confirmedBy ==
+                                        null))
+                                ? hc_red
+                                : Colors.black,
+                        fontFamily: 'AvenirNextCondensedDemiBold',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 22.0,
+                        height: 1.0,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                    if (extrasPaid != null)
+                      Text(
+                        '+ $extrasPaid for ${paymentReportItem.extensions.extrasDescription}',
+                        style: TextStyle(
+                          color:
+                              ((((paymentReportItem.payment?.paymentType ??
+                                                  paymentTypeUnknown.value) ==
+                                              paymentBankTransfer.value) ||
+                                          ((paymentReportItem
+                                                      .payment
+                                                      ?.paymentType ??
+                                                  paymentTypeUnknown.value) ==
+                                              paymentBankTransferOtherAmount
+                                                  .value)) &&
+                                      (paymentReportItem.payment?.confirmedBy ==
+                                          null))
+                                  ? hc_red
+                                  : Colors.black,
+                          fontFamily: 'AvenirNextCondensedDemiBold',
+                          fontStyle: FontStyle.normal,
+                          fontSize: 16.0,
+                          height: 1.0,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 10),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 5.0),
-                  child: paymentReportItem.isLoading
-                      ? Icon(delayIcon, color: hc_blue, size: 37.0)
-                      : Image.asset('images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
-                          height: 30.0, width: 30.0, color: (paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) <= paymentNotPaid.value ? hc_red : Colors.green[700]),
+                  child:
+                      paymentReportItem.isLoading
+                          ? Icon(delayIcon, color: hc_blue, size: 37.0)
+                          : Image.asset(
+                            'images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
+                            height: 30.0,
+                            width: 30.0,
+                            color:
+                                (paymentReportItem.payment?.paymentType ??
+                                            paymentTypeUnknown.value) <=
+                                        paymentNotPaid.value
+                                    ? hc_red
+                                    : Colors.green[700],
+                          ),
                 ),
                 const SizedBox(width: 10),
               ],
@@ -106,7 +179,14 @@ class PaymentTotalsCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String total = creditAmount == 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount, digitsAfterDecimal, currencySymbol);
+    final String total =
+        creditAmount == 0
+            ? ''
+            : IveCoreUtilities.getFormattedMoney(
+              creditAmount,
+              digitsAfterDecimal,
+              currencySymbol,
+            );
 
     return SizedBox(
       width: 40,
@@ -114,17 +194,19 @@ class PaymentTotalsCell extends StatelessWidget {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.only(bottom: 0.0),
-            child: Text(
-              counter.toString(),
-              style: ts_titleLargeCondensedBlack,
-            ),
+            child: Text(counter.toString(), style: ts_titleLargeCondensedBlack),
           ),
           IconButton(
             padding: const EdgeInsets.all(0),
             onPressed: () {
               onTap();
             },
-            icon: Image.asset('images/icons/payment_type_${paymentRecordType.value}.png', height: 35.0, width: 35.0, color: color),
+            icon: Image.asset(
+              'images/icons/payment_type_${paymentRecordType.value}.png',
+              height: 35.0,
+              width: 35.0,
+              color: color,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 1.0),
