@@ -6,6 +6,33 @@ class ServiceCommon {
   // the variable below is there to suppress a warning about defining classes with only static members
   int? unusedVariableToSuppressWarning;
 
+  static Future<void> recordError(
+    String httpBody,
+    String error, {
+    String? extraData,
+  }) async {
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+
+    final String body = jsonEncode(<String, String>{
+      'queryType': 'logAppError',
+      'deviceId': deviceId,
+      'accessToken': '<not required>',
+      'httpBody': httpBody,
+      'errorText': error,
+      'extraData': extraData ?? '',
+    });
+
+    await post(
+      Uri.parse(BASE_AF_API_URL),
+      headers: <String, String>{'content-type': 'application/json'},
+      body: body,
+    ).catchError((dynamic error) {
+      return Future<Response>.value(Response('', 500)); // CHECK
+    });
+
+    return;
+  }
+
   static Future<String> sendHttpPostV2(
     String requestBody, {
     Function? errorCallback,
@@ -26,6 +53,7 @@ class ServiceCommon {
         headers: <String, String>{'content-type': 'application/json'},
         body: requestBody,
       ).catchError((dynamic error) {
+        recordError(requestBody, error.toString());
         return Future<Response>.value(Response('', 500)); // CHECK
       });
     } else {
@@ -36,12 +64,14 @@ class ServiceCommon {
             body: requestBody,
           )
           .catchError((dynamic error) {
+            recordError(requestBody, error.toString());
             return Future<Response>.value(Response('', 500)); // CHECK
           });
     }
 
     String returnValue = await checkHttpPostResponse(
       response,
+      requestBody,
       errorCallback: errorCallback,
     );
 
@@ -91,7 +121,8 @@ class ServiceCommon {
   // }
 
   static Future<String> checkHttpPostResponse(
-    Response response, {
+    Response response,
+    String requestBody, {
     Function? errorCallback,
   }) async {
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
@@ -103,20 +134,35 @@ class ServiceCommon {
           'The Harrier Central server is temporarily offline for maintenance.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
           'Use Offline',
         );
+        recordError(
+          requestBody,
+          response.reasonPhrase ?? '<null reason>',
+          extraData: response.body,
+        );
         G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
       } else {
+        recordError(
+          requestBody,
+          response.reasonPhrase ?? '<null reason>',
+          extraData: response.body,
+        );
         await Utilities.showAlert(
           'Unknown Server Error',
           response.reasonPhrase ?? ' - ${response.body}',
-          'Use Offline',
+          'Continue',
         );
         // await Utilities.showAlert(
         //     'Unknown Server Error',
         //     'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at connect@harriercentral.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',
         //     'Use Offline');
-        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+        // G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
       }
     } else if (response.body.contains('"errorId"')) {
+      recordError(
+        requestBody,
+        response.reasonPhrase ?? '<null reason>',
+        extraData: response.body,
+      );
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
       final DbErrorModel errorResult = DbErrorModel.fromJson(
         json.decode(response.body)[0][0],
