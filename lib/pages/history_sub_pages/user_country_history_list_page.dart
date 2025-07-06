@@ -45,12 +45,12 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
       // This means the user tapped a new tab, but the animation hasn't finished yet.
-      print('Tab is changing to index: ${_tabController.index}');
+      //print('Tab is changing to index: ${_tabController.index}');
       _refreshRunHistoryFromTable(true);
       //setState(() {});
     } else if (_tabController.index != _tabController.previousIndex) {
       // This is triggered after the tab has finished changing.
-      print('Tab changed to index: ${_tabController.index}');
+      //print('Tab changed to index: ${_tabController.index}');
       _refreshRunHistoryFromTable(true);
       //setState(() {});
     }

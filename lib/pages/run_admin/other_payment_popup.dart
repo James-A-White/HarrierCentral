@@ -667,7 +667,7 @@ class OtherPaymentPopup extends StatelessWidget {
               if ((controller.specialPriceEnabled.value ||
                       controller.topUpCreditEnabled.value) &&
                   (!controller.paySpecialPriceWithCredit.value)) ...<Widget>[
-                Container(
+                SizedBox(
                   //padding: EdgeInsets.all(8.0),
                   height: 41.0,
                   child: TextButton(
@@ -711,7 +711,7 @@ class OtherPaymentPopup extends StatelessWidget {
                     },
                   ),
                 ),
-                Container(
+                SizedBox(
                   //padding: EdgeInsets.all(2.0),
                   height: 41.0,
                   child: TextButton(

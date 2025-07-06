@@ -37,7 +37,7 @@ class AppLifecycleController extends SuperController<void> {
   void _cancelGeoStream(String source) {
     G0<AppModel>().geoLocationStream?.cancel();
     G0<AppModel>().geoLocationStream = null;
-    print('GeoLocation Stream cancelled ($source)');
+    // print('GeoLocation Stream cancelled ($source)');
   }
 }
 

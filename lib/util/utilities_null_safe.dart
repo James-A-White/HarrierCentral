@@ -438,7 +438,7 @@ class Utilities {
     deviceInfo.deviceLat = lat;
     deviceInfo.deviceLon = lon;
 
-    print('lat = $lat, lon = $lon');
+    //print('lat = $lat, lon = $lon');
 
     setNumPref(NumPrefsEnum.currentDeviceLat, lat);
     setNumPref(NumPrefsEnum.currentDeviceLon, lon);

@@ -134,7 +134,7 @@ class ChatPageController extends GetxController {
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    print('Get Event Messages called at ${DateTime.now().toIso8601String()}');
+    //print('Get Event Messages called at ${DateTime.now().toIso8601String()}');
 
     final accessToken = Utilities.generateToken(
       userId,
@@ -177,7 +177,7 @@ class ChatPageController extends GetxController {
 
     if (visibility > .1) {
       final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-      print('Add message chat message length = ${messages.length}');
+      //print('Add message chat message length = ${messages.length}');
 
       chatsCounts[publicEventId] = messages.length;
 
@@ -390,7 +390,7 @@ class ChatPageController extends GetxController {
 
     // if (visibility > .1) {
     final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-    print('Load messages chat message length = ${updatedMsgs.length}');
+    //print('Load messages chat message length = ${updatedMsgs.length}');
 
     chatsCounts[publicEventId] = updatedMsgs.length;
 

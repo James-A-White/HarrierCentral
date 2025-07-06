@@ -184,7 +184,7 @@ class CommonQueries {
               queryResults[i]['lon'] + 0.0,
             );
 
-            print('${queryResults[i]['eventName']} - $dist');
+            //print('${queryResults[i]['eventName']} - $dist');
 
             if (dist.abs() >
                 GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {

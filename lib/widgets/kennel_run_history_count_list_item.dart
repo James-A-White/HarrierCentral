@@ -84,7 +84,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                     ),
                     kennelInfo.totalHaringThisKennel <= 0
                         ? const SizedBox(height: 20)
-                        : Container(
+                        : SizedBox(
                           height: 20.0,
                           //padding: const EdgeInsets.only(left: 45.0),
                           child: Text(

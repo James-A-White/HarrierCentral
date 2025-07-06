@@ -122,9 +122,9 @@ class HistoryListPageState extends State<HistoryListPage>
           historicResults[i],
         );
         if (historicItem.runCount > 0) {
-          print(
-            'Historic - Country = ${historicItem.countryName} / Count = ${historicItem.runCount} / Hare = ${historicItem.hareCount}',
-          );
+          // print(
+          //   'Historic - Country = ${historicItem.countryName} / Count = ${historicItem.runCount} / Hare = ${historicItem.hareCount}',
+          // );
 
           _runCountsListByCountry[historicItem.countryName] = (historicItem);
         }
@@ -134,9 +134,9 @@ class HistoryListPageState extends State<HistoryListPage>
         final CountryStats hcItem = CountryStats.fromMap(hcResults[i]);
 
         if (hcItem.runCount > 0) {
-          print(
-            'HC - Country = ${hcItem.countryName} / Count = ${hcItem.runCount} / Hare = ${hcItem.hareCount}',
-          );
+          // print(
+          //   'HC - Country = ${hcItem.countryName} / Count = ${hcItem.runCount} / Hare = ${hcItem.hareCount}',
+          // );
 
           if (_runCountsListByCountry[hcItem.countryName] != null) {
             _runCountsListByCountry[hcItem.countryName]!.hareCount +=
@@ -217,12 +217,12 @@ class HistoryListPageState extends State<HistoryListPage>
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
       // This means the user tapped a new tab, but the animation hasn't finished yet.
-      print('Tab is changing to index: ${_tabController.index}');
+      //print('Tab is changing to index: ${_tabController.index}');
       //_refreshRunHistoryFromTable(true);
       setState(() {});
     } else if (_tabController.index != _tabController.previousIndex) {
       // This is triggered after the tab has finished changing.
-      print('Tab changed to index: ${_tabController.index}');
+      //print('Tab changed to index: ${_tabController.index}');
       //_refreshRunHistoryFromTable(true);
       setState(() {});
     }

@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import '../check_in_pack_page/check_in_pack_page_controller.dart';
 
 // class CheckInBindings extends Bindings {
 //   @override
@@ -257,11 +256,21 @@ class CheckInPackPage extends StatelessWidget {
                                       (scaffoldController
                                           .filteredList
                                           .length)) {
-                                    //return Container();
-                                    return _getAddHasherBlock(
-                                      scaffoldController,
-                                      context,
-                                    );
+                                    return Obx(() {
+                                      if (scaffoldController
+                                          .forceShowAllHashers
+                                          .value) {
+                                        return _getAddHasherBlock(
+                                          scaffoldController,
+                                          context,
+                                        );
+                                      } else {
+                                        return _getSearchAllHashersBlock(
+                                          scaffoldController,
+                                          context,
+                                        );
+                                      }
+                                    });
                                   } else if (index ==
                                       (scaffoldController.filteredList.length) +
                                           1) {
@@ -732,14 +741,16 @@ class CheckInPackPage extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    Text(
-                                      scaffoldController.searchTypeText.value,
-                                      style:
-                                          scaffoldController
-                                                  .highlightSearchType
-                                                  .value
-                                              ? ts_footnoteSmallRed
-                                              : ts_footnoteSmall,
+                                    Obx(
+                                      () => Text(
+                                        scaffoldController.searchTypeText.value,
+                                        style:
+                                            scaffoldController
+                                                    .highlightSearchType
+                                                    .value
+                                                ? ts_footnoteSmallRed
+                                                : ts_footnoteSmall,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -787,17 +798,33 @@ class CheckInPackPage extends StatelessWidget {
         SizedBox(
           width: multselectMargin,
           child:
-              hasher.hasherId == null
-                  ? SizedBox()
+              ((hasher.hasherId) == null ||
+                      (controller.showMultiSelect.value == false))
+                  ? null
                   : Obx(
                     () => Checkbox(
                       value:
-                          controller.multiSelectValues[hasher.hasherId!]!.value,
+                          controller
+                              .multiSelectValues[hasher.hasherId!]
+                              ?.value ??
+                          (controller.multiSelectValues[hasher.hasherId!] =
+                                  false.obs)
+                              .value,
+
                       onChanged: (bool? value) {
                         if (value != null) {
-                          controller
-                              .multiSelectValues[hasher.hasherId!]!
-                              .value = value;
+                          if (hasher.hasherId != null) {
+                            if (controller.multiSelectValues.containsKey(
+                              hasher.hasherId,
+                            )) {
+                              controller
+                                  .multiSelectValues[hasher.hasherId]!
+                                  .value = value;
+                            } else {
+                              controller.multiSelectValues[hasher
+                                  .hasherId!] = RxBool(value);
+                            }
+                          }
                         }
                       },
                     ),
@@ -1062,6 +1089,7 @@ class CheckInPackPage extends StatelessWidget {
                 ),
           ),
         ).then((HashersModel? result) {
+          controller.forceShowAllHashers.value = false;
           if (result != null) {
             controller.refreshPackListFromTables(true);
             // NULLSAFETEST
@@ -1083,7 +1111,7 @@ class CheckInPackPage extends StatelessWidget {
         margin: const EdgeInsets.only(left: 10),
         child: Row(
           children: <Widget>[
-            Icon(SimpleLineIcons.question, size: 35.0, color: hc_red),
+            Icon(SimpleLineIcons.magnifier_add, size: 35.0, color: hc_red),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 14.0, right: 10.0),
@@ -1093,7 +1121,48 @@ class CheckInPackPage extends StatelessWidget {
                   children: <Widget>[
                     Text('Can\'t find a Hasher?', style: ts_contentStyle),
                     AutoSizeText(
-                      'Click here to add \'${_capitalizeFirstLetter(controller.searchController.text)}\'',
+                      controller.searchController.text.isNotEmpty
+                          ? 'Click here to add \'${_capitalizeFirstLetter(controller.searchController.text)}\''
+                          : 'Click here to add a new Hasher',
+                      style: ts_contentStyle,
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _getSearchAllHashersBlock(
+    CheckInPackController controller,
+    BuildContext context,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        controller.forceShowAllHashers.value =
+            !controller.forceShowAllHashers.value;
+        controller.filterPackListResults();
+      },
+      child: Container(
+        height: 80,
+        margin: const EdgeInsets.only(left: 10),
+        child: Row(
+          children: <Widget>[
+            Icon(SimpleLineIcons.magnifier, size: 35.0, color: hc_blue),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 14.0, right: 10.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('Can\'t find a Hasher?', style: ts_contentStyle),
+                    AutoSizeText(
+                      'Click here to search all Hashers',
                       style: ts_contentStyle,
                       maxLines: 1,
                     ),

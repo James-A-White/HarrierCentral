@@ -53,6 +53,7 @@ class CheckInPackController extends GetxController
   final RxBool showFilter = false.obs;
   final RxBool highlightSearchType = false.obs;
   final RxBool showMultiSelect = false.obs;
+  final RxBool forceShowAllHashers = false.obs;
 
   final Map<String, RxBool> multiSelectValues = {};
 
@@ -94,47 +95,60 @@ class CheckInPackController extends GetxController
     try {
       final String sql = '''
       SELECT 
-        h.hasherId,
-        null as hemId,
-        coalesce(
+          h.${G0<TableModel>().hashersTableHelper.colHasherId} AS hasherId,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AS hemId,
           CASE 
-            WHEN (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) THEN 1 
-            ELSE 0 
-          END, 0) as isMember,
-        coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing}, 0) as isFollowing,
-        0 as isHare,
-        0 as isPaid, 
-        coalesce(
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
-          coalesce(h.dispName, h.hashName, coalesce(h.firstName, '') || ' ' || coalesce(h.lastName, ''))
-        ) as nameForDisplay,
-        coalesce(h.firstName,'') as firstName,
-        coalesce(h.lastName,'') as lastName,
-        lower(
-          coalesce(
-            ' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ',
-            ' ' || coalesce(h.hashName, '') || ' ' || coalesce(h.dispName, '') || ' ' || coalesce(h.firstName, '') || ' ' || coalesce(h.lastName, '')
-          )
-        ) as nameForSort,
-        0 as paymentType,
-        0 as creditAmount,
-        h.photo,
-        0 as virginVisitorType,
-        0 as rsvpState,
-        0 as attendanceState,
-        null as hemUpdatedAt,
-        null as payUpdatedAt,
-        coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) as discountAmount,
-        coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) as discountPercent,
-        0 as credit,
-        ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
-      LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
-        ON hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
+              WHEN (julianday(COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},'1/1/2020')) >= julianday('now', 'localtime')) 
+              THEN 1 
+              ELSE 0 
+          END AS isMember,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) AS isFollowing,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
+          CASE 
+              WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL 
+              THEN NULL
+              ELSE 1 
+          END AS isPaid, 
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+          COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, 
+                  h.${G0<TableModel>().hashersTableHelper.colHashName}, 
+                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
+                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
+         COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') as firstName,
+         COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, '') as lastName,
+         
+          LOWER(COALESCE(' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ', 
+              ' ' || COALESCE(h.${G0<TableModel>().hashersTableHelper.colHashName}, '') || ' ' || 
+              COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, '') || ' ' || 
+              COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
+              COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForSort,
+          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colPaymentType}, 0) AS paymentType,
+          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h.${G0<TableModel>().hashersTableHelper.colPhoto}) AS photo,
+          0 AS virginVisitorType,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
+          pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) AS credit,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount}, 0) AS hcTotalRunCount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}, 0) AS hcHaringCount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount}, 0) AS historicalTotalRunCount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount}, 0) AS historicalHaringCount,
+          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}, 0) AS historicalCountIsEstimate,
+          ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
+      FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h 
+      LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON h.hasherId = hkm.userId
+      LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
+      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
       LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
       WHERE h.${G0<TableModel>().hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
-      ORDER BY nameForSort;
-    ''';
+      ORDER BY nameForDisplay;
+      ''';
 
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
         sql,
@@ -444,6 +458,10 @@ class CheckInPackController extends GetxController
       }
 
       filterPackListResults();
+
+      if (forceShowAllHashers.value) {
+        await _getAllHashers();
+      }
     } catch (e) {
       debugPrint('Error refreshing pack list: $e');
     }
@@ -497,13 +515,13 @@ class CheckInPackController extends GetxController
           }).toList();
     }
 
-    if (hasSearch) {
+    if (hasSearch || forceShowAllHashers.value) {
       final List<CheckInPackModel> filteredByName =
           results
               .where((a) => a.nameForSort.toLowerCase().contains(query))
               .toList();
 
-      if (filteredByName.isNotEmpty) {
+      if ((filteredByName.isNotEmpty) && (!forceShowAllHashers.value)) {
         filteredList.assignAll(filteredByName);
         searchTypeText.value = searchKennel;
       } else {
@@ -540,6 +558,7 @@ class CheckInPackController extends GetxController
   void clearSearch() {
     searchController.clear();
     searchText.value = '';
+    forceShowAllHashers.value = false;
     refreshPackListFromTables(true);
   }
 
@@ -895,6 +914,7 @@ class CheckInPackController extends GetxController
     }
 
     await refreshPackListFromTables(false);
+
     await _refreshCounters(forceRefresh: true);
   }
 
@@ -958,12 +978,12 @@ class CheckInPackController extends GetxController
     //   '${hasher.nameForDisplay} - ${hasher.totalRunsThisKennel + hasher.historicalTotalRunCount} + ${hasher.totalHaringThisKennel + hasher.historicalHaringCount}',
     // );
 
-    print(
-      hasher.nameForDisplay +
-          ' - ' +
-          (hasher.totalRunsThisKennel + hasher.historicalTotalRunCount)
-              .toString(),
-    );
+    // print(
+    //   hasher.nameForDisplay +
+    //       ' - ' +
+    //       (hasher.totalRunsThisKennel + hasher.historicalTotalRunCount)
+    //           .toString(),
+    // );
 
     if (hasher.attendenceState >= attendenceAtHash.value) {
       showDrinkIcon =
@@ -1056,6 +1076,8 @@ class CheckInPackController extends GetxController
       // go ahead and change the indicator value to show
       // they are not paid.
       isPaid ??= 0;
+    } else {
+      isPaid = null;
     }
     return Obx(
       () => Stack(
@@ -1064,8 +1086,7 @@ class CheckInPackController extends GetxController
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
             backgroundColor:
-                ((paymentIndexUpdating.value == index) ||
-                        (attendanceIndexUpdating.value == index))
+                paymentIndexUpdating.value == index
                     ? Colors.white
                     : ((isPaid == null))
                     ? Colors.grey[350]
