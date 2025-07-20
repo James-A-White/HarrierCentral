@@ -107,7 +107,7 @@ class PaymentReportListItem extends StatelessWidget {
                     ),
                     if (extrasPaid != null)
                       Text(
-                        '+ $extrasPaid for ${paymentReportItem.extensions.extrasDescription}',
+                        'includes $extrasPaid for ${paymentReportItem.extensions.extrasDescription}',
                         style: TextStyle(
                           color:
                               ((((paymentReportItem.payment?.paymentType ??

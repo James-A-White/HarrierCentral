@@ -855,7 +855,7 @@ SELECT
                           style: ts_titleBlack,
                         ),
                         Text(
-                          'Run fees collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                          'Run fees collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected - ((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid), widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
                           style: ts_titleBlack,
                         ),
                         Text(
@@ -863,7 +863,7 @@ SELECT
                           style: ts_titleBlack,
                         ),
                         Text(
-                          'Total collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected + (widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                          'Total collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
                           style: ts_titleBlack,
                         ),
                       ],
