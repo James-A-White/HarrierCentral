@@ -26,7 +26,11 @@ class PaymentReportListItem extends StatelessWidget {
 
     String? extrasPaid;
     if ((paymentReportItem.payment?.doPayForExtras ?? 0) != 0) {
-      extrasPaid = '£3.00';
+      extrasPaid = IveCoreUtilities.getFormattedMoney(
+        paymentReportItem.extensions.extrasPrice,
+        digitsAfterDecimal,
+        currencySymbol,
+      );
     }
 
     return InkWell(

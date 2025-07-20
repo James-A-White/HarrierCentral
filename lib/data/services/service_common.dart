@@ -37,9 +37,20 @@ class ServiceCommon {
     String requestBody, {
     Function? errorCallback,
     Client? client,
+    bool bypassConnectionCheck = false,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
-      return ERROR_NO_CONNECTION;
+    // if the connection check is bypassed, it is because we are doing an initial
+    // connection check
+    if ((!bypassConnectionCheck) &&
+        G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+      // if we were previously not connected, let's check the connection
+      // and update the connection status
+      await Utilities.checkForInternetConnection(false);
+      // if we are still not connected, return an error
+      if (G0<AppModel>().connectionStatus ==
+          EnumConnectionStatus2.notConnected) {
+        return ERROR_NO_CONNECTION;
+      }
     }
 
     // print('>>> http post $httpCounter $requestBody');
