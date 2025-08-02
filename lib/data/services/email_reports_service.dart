@@ -29,7 +29,7 @@ class EmailReportsService {
       });
 
       final Response response = await post(
-        Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL),
+        Uri.parse(BASE_KENNEL_STATS_REPORT_URL),
         headers: <String, String>{'content-type': 'application/json'},
         body: body,
       ).catchError((dynamic error) {

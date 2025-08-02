@@ -807,7 +807,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                           navigatorKey
                                                               .currentContext!,
                                                           _scaffoldKey,
-                                                          'Run stats being processed...',
+                                                          'Invite codes being sent...',
                                                           durationInSeconds: 10,
                                                         );
 
