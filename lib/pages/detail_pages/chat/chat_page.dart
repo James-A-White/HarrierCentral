@@ -1,5 +1,4 @@
 import 'package:harrier_central/imports.dart';
-import 'package:get/get.dart';
 
 class ChatPage extends StatelessWidget {
   ChatPage({required this.eventId, required this.publicEventId, super.key});

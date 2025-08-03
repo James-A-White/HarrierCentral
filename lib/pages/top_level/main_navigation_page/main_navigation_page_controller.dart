@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 
 enum MainPageContent { initial, loading, splashSequence, appContent, help }
@@ -289,8 +288,10 @@ class MainNavigationController extends GetxController
     appBarText.value = tabTitles[index];
     // Refresh runs on first tab
     if (index == 0) {
-      final ctrl = Get.find<FutureRunListPageController>();
-      ctrl.refreshFromTable(true);
+      if (Get.isRegistered<FutureRunListPageController>()) {
+        final ctrl = Get.find<FutureRunListPageController>();
+        ctrl.refreshFromTable(true);
+      }
     }
     // Delay setState for map FAB
     if (!isFlipped.value && index == 2) {

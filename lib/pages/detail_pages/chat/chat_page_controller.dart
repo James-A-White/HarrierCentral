@@ -1,6 +1,5 @@
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:harrier_central/imports.dart';
-import 'package:get/get.dart';
 
 class ChatPageController extends GetxController {
   ChatPageController({required this.eventId, required this.publicEventId}) {
@@ -22,15 +21,6 @@ class ChatPageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    // _fcmSubscription = FirebaseMessaging.onMessage.listen((
-    //   RemoteMessage message,
-    // ) {
-    //   _updateMessages(message);
-    // });
-
-    _ensureFcmListener();
-
-    //final String hasherId = getStringPref(StringPrefsEnum.userId)!;
     final String publicHasherId =
         getStringPref(StringPrefsEnum.publicHasherId)!;
 
@@ -51,7 +41,7 @@ class ChatPageController extends GetxController {
     onAppResumed();
   }
 
-  void _updateMessages(RemoteMessage message) {
+  void notificationReceived(RemoteMessage message) {
     // EventId = eventId,
     // Title = title,
     // UserId = userId,
@@ -96,22 +86,6 @@ class ChatPageController extends GetxController {
     }
   }
 
-  StreamSubscription<RemoteMessage>? _fcmSubscription;
-
-  void _ensureFcmListener() {
-    // Cancel existing listener if it somehow still exists
-    _fcmSubscription?.cancel();
-
-    _fcmSubscription = FirebaseMessaging.onMessage.listen((
-      RemoteMessage message,
-    ) {
-      //print('FCM (foreground) message: ${message.data}');
-      // Handle the message
-
-      _updateMessages(message);
-    });
-  }
-
   Future<void> onAppResumed() async {
     messagesLoading.value = true;
     var result = await _getEventMessages(eventId);
@@ -121,12 +95,6 @@ class ChatPageController extends GetxController {
       messagesLoading.value = false;
       update(['chatMessages']);
     }
-
-    _ensureFcmListener(); // Always safe
-
-    // NOTE: Only do this if we then send the token back to the server
-    // final token = await FirebaseMessaging.instance.getToken();
-    // print('Current FCM token: $token');
   }
 
   Future<String?> _getEventMessages(String eventId) async {
@@ -152,13 +120,6 @@ class ChatPageController extends GetxController {
     final jsonResult = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
 
     return jsonResult;
-  }
-
-  @override
-  void onClose() {
-    _fcmSubscription?.cancel();
-    //print('chat controller closed');
-    super.onClose();
   }
 
   late final types.User user;
@@ -401,72 +362,3 @@ class ChatPageController extends GetxController {
     return updatedMsgs;
   }
 }
-
-//   Future<void> loadMessages(String messageJson) async {
-//     final crap = messageJson
-//         .replaceAll('[[', '[')
-//         .replaceAll(']]', ']');
-
-//     messages.value = (jsonDecode(crap) as List)
-//         .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
-//         .toList();
-//   }
-// }
-
-// Future<void> sendNotification(
-//     String fcmToken, String title, String message) async {
-//   const fcmUrl =
-//       'https://fcm.googleapis.com/v1/projects/harrier-central-mobile/messages:send';
-
-//   final messageBody = {
-//     'message': {
-//       'token': fcmToken,
-//       'notification': {'title': title, 'body': message},
-//       'data': {'customKey1': 'value1', 'customKey2': 'value2'},
-//     },
-//   };
-
-//   final credentials = await getFirebaseCredentials();
-
-//   if (credentials != null) {
-//     final token = credentials.accessToken.data;
-
-//     final response = await http.post(
-//       Uri.parse(fcmUrl),
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'Authorization': 'Bearer $token',
-//       },
-//       body: jsonEncode(messageBody),
-//     );
-
-//     if (response.statusCode == 200) {
-//       print('FCM message sent successfully!');
-//     } else {
-//       print('Error sending FCM message: ${response.body}');
-//     }
-//   }
-// }
-
-// Future<AccessCredentials?> getFirebaseCredentials() async {
-//   try {
-//     final jsonString =
-//         await rootBundle.loadString('firebase_service_account.json');
-//     final jsonMap = jsonDecode(jsonString);
-
-//     final privateKey = ServiceAccountCredentials.fromJson(jsonMap);
-
-//     // ✅ Correct scope for Firebase Cloud Messaging
-//     final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-
-//     final client = http.Client();
-//     final credentials = await obtainAccessCredentialsViaServiceAccount(
-//         privateKey, scopes, client);
-
-//     client.close();
-//     return credentials;
-//   } on Exception catch (e) {
-//     print('Error loading service account: $e');
-//     return null;
-//   }
-// }

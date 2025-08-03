@@ -3,7 +3,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
-import 'package:get/get.dart';
+
 import 'package:crypto/crypto.dart';
 
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -1004,8 +1004,11 @@ class Utilities {
             attendenceAtHash.value,
           );
 
-          final controller = Get.find<FutureRunListPageController>();
-          await controller.refreshFromTable(true);
+          if (Get.isRegistered<FutureRunListPageController>()) {
+            await Get.find<FutureRunListPageController>().refreshFromTable(
+              true,
+            );
+          }
         } else if ((retVal == enumCheckInOption_YesAndPayByCredit) ||
             (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
           final PaymentsService paySrv = PaymentsService();

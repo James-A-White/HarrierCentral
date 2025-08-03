@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
-import 'package:get/get.dart';
 
 class RunDetailsController extends GetxController {
   RunDetailsController({required this.event, required this.kennel}) {

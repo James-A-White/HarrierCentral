@@ -1,7 +1,6 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
-import 'package:get/get.dart';
 
 class RunListItemController extends GetxController {
   RunListItemController(RunDetailsAggregate futureRun, int ccc)

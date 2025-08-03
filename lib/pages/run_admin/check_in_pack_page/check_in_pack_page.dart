@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 

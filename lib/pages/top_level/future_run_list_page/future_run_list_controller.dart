@@ -1,13 +1,10 @@
 import 'package:harrier_central/imports.dart';
-import 'package:get/get.dart';
 
 class FutureRunListPageController extends GetxController {
   FutureRunListPageController();
 
   RxDouble width = 0.0.obs;
   RxDouble height = 0.0.obs;
-
-  StreamSubscription<RemoteMessage>? fcmSubscription;
 
   int pageIndex = 1;
   List<dynamic>? allRuns;
@@ -29,18 +26,6 @@ class FutureRunListPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-    fcmSubscription = FirebaseMessaging.onMessage.listen((
-      RemoteMessage message,
-    ) {
-      final publicEventId = message.data['PublicEventId'] as String?;
-
-      // get the total amount of chats for this event from the message
-      final chatCount =
-          (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
-
-      _updateChatCountBadges(publicEventId, chatCount);
-    });
 
     showOnlyEventsWithMessages.listen((bool value) async {
       showChatBubbleLoading.value = true;
@@ -64,6 +49,16 @@ class FutureRunListPageController extends GetxController {
       _updateTotalNotificationCounter();
       update(['runList', 'main_nav_page']);
     });
+  }
+
+  void notificationReceived(RemoteMessage message) {
+    final publicEventId = message.data['PublicEventId'] as String?;
+
+    // get the total amount of chats for this event from the message
+    final chatCount =
+        (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
+
+    _updateChatCountBadges(publicEventId, chatCount);
   }
 
   void _updateChatCountBadges(String? publicEventId, int chatCount) {
@@ -185,14 +180,6 @@ class FutureRunListPageController extends GetxController {
         }
       }
     }
-  }
-
-  @override
-  void onClose() {
-    //_fcmSubscription?.cancel();
-    //print('chat controller closed');
-    fcmSubscription?.cancel();
-    super.onClose();
   }
 
   Future<void> openRun(RunDetailsAggregate run, {RunTab? openToTab}) async {

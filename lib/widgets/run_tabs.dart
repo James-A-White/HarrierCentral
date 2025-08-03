@@ -7,7 +7,6 @@ import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:add_2_calendar/add_2_calendar.dart';
-import 'package:get/get.dart';
 
 /// Chat tabs with their corresponding integer IDs.
 enum RunTab {
@@ -313,11 +312,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       }
 
       if (_tabController.previousIndex == 4) {
-        final controller = Get.find<FutureRunListPageController>();
-        controller
-            .thisEventUnseenChats[widget.futureRun.event.publicEventId]
-            ?.value = 0;
-        controller.update(['runList', 'chatTab', 'main_nav_page']);
+        if (Get.isRegistered<FutureRunListPageController>()) {
+          final controller = Get.find<FutureRunListPageController>();
+          controller
+              .thisEventUnseenChats[widget.futureRun.event.publicEventId]
+              ?.value = 0;
+          controller.update(['runList', 'chatTab', 'main_nav_page']);
+        }
       }
 
       widget.relayActiveTab(_tabController.index);

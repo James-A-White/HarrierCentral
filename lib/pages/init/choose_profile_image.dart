@@ -1,6 +1,5 @@
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
-import 'package:get/get.dart';
 
 class ChooseProfileImage extends StatefulWidget {
   const ChooseProfileImage({

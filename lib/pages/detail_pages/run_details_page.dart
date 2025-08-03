@@ -1,5 +1,4 @@
 import 'package:harrier_central/imports.dart';
-import 'package:get/get.dart';
 
 class RunDetailsPage extends StatefulWidget {
   const RunDetailsPage({
@@ -45,11 +44,13 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             if (_activeTab == 4) {
-              final controller = Get.find<FutureRunListPageController>();
-              controller
-                  .thisEventUnseenChats[widget.futureRun.event.publicEventId]
-                  ?.value = 0;
-              controller.update(['runList', 'main_nav_page']);
+              if (Get.isRegistered<FutureRunListPageController>()) {
+                final controller = Get.find<FutureRunListPageController>();
+                controller
+                    .thisEventUnseenChats[widget.futureRun.event.publicEventId]
+                    ?.value = 0;
+                controller.update(['runList', 'main_nav_page']);
+              }
             }
             //print('Run details popped');
             Navigator.of(context).pop(); // or Get.back();

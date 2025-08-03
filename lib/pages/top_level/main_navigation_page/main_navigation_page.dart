@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:fancy_bottom_navigation_2/fancy_bottom_navigation.dart';
 import 'package:harrier_central/imports.dart';

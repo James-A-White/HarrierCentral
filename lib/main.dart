@@ -1,5 +1,4 @@
 import 'package:harrier_central/imports.dart';
-import 'package:get/get.dart';
 
 // this prevents exceptions being thrown on iOS when
 // the app is in the background and location services
@@ -41,25 +40,25 @@ class AppLifecycleController extends SuperController<void> {
   }
 }
 
-void setupFirebaseListeners() {
-  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //   print('Got a message while in the foreground!');
-  //   print('Message data: ${message.data}');
-  // });
+// void setupFirebaseListeners() {
+//   // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+//   //   print('Got a message while in the foreground!');
+//   //   print('Message data: ${message.data}');
+//   // });
 
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    _handleNotificationClick(message);
-  });
-}
+//   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+//     _handleNotificationClick(message);
+//   });
+// }
 
-void _handleNotificationClick(RemoteMessage message) async {
-  //await Get.offAll(() => MainNavigationPage());
+// void _handleNotificationClick(RemoteMessage message) async {
+//   //await Get.offAll(() => MainNavigationPage());
 
-  Get.until((route) => route.settings.name == '/main');
+//   Get.until((route) => route.settings.name == '/main');
 
-  final controller = Get.find<FutureRunListPageController>();
-  controller.processNotificationClickOnResume(message);
-}
+//   final controller = Get.find<FutureRunListPageController>();
+//   controller.processNotificationClickOnResume(message);
+// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,7 +73,12 @@ void main() async {
   ]);
 
   await Firebase.initializeApp();
-  setupFirebaseListeners();
+
+  await Get.putAsync(
+    () => NotificationService().init(),
+  ); // Initialize and wait for the notification service
+
+  //setupFirebaseListeners();
 
   runApp(
     GetMaterialApp(

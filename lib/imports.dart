@@ -7,6 +7,7 @@ export 'dart:typed_data';
 
 // export 'package:fancy_bottom_navigation_plus/fancy_bottom_navigation_plus.dart';
 //export 'package:audioplayers/audioplayers.dart';
+export 'package:get/get.dart' hide HeaderValue, IterableExtensions, Response;
 export 'package:auto_size_text/auto_size_text.dart';
 export 'package:avoid_keyboard/avoid_keyboard.dart';
 export 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
@@ -142,6 +143,7 @@ export 'package:harrier_central/pages/top_level/main_navigation_page/main_naviga
 export 'package:harrier_central/pages/top_level/main_navigation_page/main_navigation_page_controller.dart';
 export 'package:harrier_central/pages/top_level/run_locations.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+export 'package:harrier_central/services/notification_service.dart';
 export 'package:harrier_central/types/typedefs.dart';
 export 'package:harrier_central/util/bank_transfer_qr.dart';
 export 'package:harrier_central/util/connection2.dart';
@@ -183,7 +185,7 @@ export 'package:harrier_central/widgets/text_scale_factor_clamper.dart';
 export 'package:harrier_central/widgets/user_details_ui.dart';
 export 'package:harrier_central/widgets/user_event_list_item.dart';
 export 'package:harrier_central/widgets/zoomable_image.dart';
-export 'package:http/http.dart';
+export 'package:http/http.dart' hide MultipartFile;
 export 'package:image_cropper/image_cropper.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';

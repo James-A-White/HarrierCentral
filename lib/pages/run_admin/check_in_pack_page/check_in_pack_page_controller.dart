@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:harrier_central/imports.dart';
 
 enum CheckInFilter { member, coming, atHash, paid, onIn, drink }
