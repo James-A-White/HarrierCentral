@@ -3,10 +3,7 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class HashRunArtGalleryPage extends StatelessWidget {
-  const HashRunArtGalleryPage({
-    super.key,
-    required this.items,
-  });
+  const HashRunArtGalleryPage({super.key, required this.items});
 
   final List<Map<String, dynamic>> items;
 
@@ -15,10 +12,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text('Run Artwork', style: ts_appBarTitle),
     );
 
@@ -39,12 +33,16 @@ class HashRunArtGalleryPage extends StatelessWidget {
           //shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
             final Map<String, dynamic> item = items[index];
-            if (item[G0<TableModel>().eventsTableHelper.colEventImage] == null) {
+            if (item[G0<TableModel>().eventsTableHelper.colEventImage] ==
+                null) {
               return const SizedBox();
             }
             return Card(
               elevation: 4.0,
-              margin: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+              margin: const EdgeInsets.symmetric(
+                horizontal: 30.0,
+                vertical: 10.0,
+              ),
               color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -52,12 +50,20 @@ class HashRunArtGalleryPage extends StatelessWidget {
                   children: <Widget>[
                     GestureDetector(
                       onTap: () async {
-                        final RunDetailsAggregate? run = await G0<TableModel>().eventsService.getSingleRun(item[G0<TableModel>().eventsTableHelper.colEventId]);
+                        final RunDetailsAggregate? run = await G0<TableModel>()
+                            .eventsService
+                            .getSingleRun(
+                              item[G0<TableModel>()
+                                  .eventsTableHelper
+                                  .colEventId],
+                            );
                         if (run != null) {
                           await Navigator.push<dynamic>(
                             navigatorKey.currentContext!,
                             MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) => RunDetailsPage(futureRun: run),
+                              builder:
+                                  (BuildContext context) =>
+                                      RunDetailsPage(futureRun: run),
                             ),
                           );
                         }
@@ -66,19 +72,27 @@ class HashRunArtGalleryPage extends StatelessWidget {
                         Navigator.push<void>(
                           context,
                           MaterialPageRoute<void>(
-                            builder: (BuildContext context) => ZoomableImagePage2(
-                              key: const Key('50201112'),
-                              pageTitle: 'Zoomable Event Image',
-                              imageUrl: item[G0<TableModel>().eventsTableHelper.colEventImage],
-                              appBarBackgroundColor: themeAppBarBackground,
-                              background: Backgrounds.defaultHcBackground(),
-                            ),
+                            builder:
+                                (BuildContext context) => ZoomableImagePage2(
+                                  key: const Key('50201112'),
+                                  pageTitle: 'Zoomable Event Image',
+                                  imageUrl:
+                                      item[G0<TableModel>()
+                                          .eventsTableHelper
+                                          .colEventImage],
+                                  appBarBackgroundColor: themeAppBarBackground,
+                                  background: Backgrounds.defaultHcBackground(),
+                                ),
                           ),
                         );
                       },
                       child: Image.network(
                         item[G0<TableModel>().eventsTableHelper.colEventImage],
-                        errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                        errorBuilder: (
+                          BuildContext context,
+                          Object error,
+                          StackTrace? stackTrace,
+                        ) {
                           return Container();
                         },
                       ),
@@ -86,20 +100,33 @@ class HashRunArtGalleryPage extends StatelessWidget {
                     const SizedBox(height: 10.0),
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(item[G0<TableModel>().eventsTableHelper.colEventName] ?? '', style: ts_titleLarge.copyWith(color: Colors.black), textAlign: TextAlign.center),
+                      child: Text(
+                        item[G0<TableModel>().eventsTableHelper.colEventName] ??
+                            '',
+                        style: ts_titleLarge.copyWith(color: Colors.black),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                    item[G0<TableModel>().eventsTableHelper.colEventStartDatetime] != null
+                    item[G0<TableModel>()
+                                .eventsTableHelper
+                                .colEventStartDatetime] !=
+                            null
                         ? Padding(
-                            padding: const EdgeInsets.only(top: 15.0),
-                            child: Text(
-                                DateFormat("E, MMM d, yyyy 'at' h:mm a").format(
-                                  DateTime.parse(
-                                    item[G0<TableModel>().eventsTableHelper.colEventStartDatetime],
-                                  ),
-                                ),
-                                style: ts_title.copyWith(color: Colors.grey.shade500),
-                                textAlign: TextAlign.center),
-                          )
+                          padding: const EdgeInsets.only(top: 15.0),
+                          child: Text(
+                            DateFormat("E, MMM d, yyyy 'at' h:mm a").format(
+                              DateTime.parse(
+                                item[G0<TableModel>()
+                                    .eventsTableHelper
+                                    .colEventStartDatetime],
+                              ),
+                            ),
+                            style: ts_title.copyWith(
+                              color: Colors.grey.shade500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
                         : Container(),
                   ],
                 ),
@@ -111,6 +138,5 @@ class HashRunArtGalleryPage extends StatelessWidget {
     );
   }
 }
-
 
 // ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}'

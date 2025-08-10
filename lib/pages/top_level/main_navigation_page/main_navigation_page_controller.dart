@@ -227,7 +227,7 @@ class MainNavigationController extends GetxController
             '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_background.avif';
       }
 
-      final provider = NetworkImage(url);
+      final provider = NetworkAvifImage(url);
       final config = const ImageConfiguration(); // no context needed
       final stream = provider.resolve(config);
 

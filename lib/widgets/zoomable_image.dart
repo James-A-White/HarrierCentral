@@ -61,7 +61,10 @@ class ZoomableImagePage2 extends StatelessWidget {
                         )
                         : imageUrl != null
                         ? PhotoView(
-                          imageProvider: CachedNetworkImageProvider(imageUrl!),
+                          imageProvider:
+                              imageUrl!.toLowerCase().endsWith('.avif')
+                                  ? CachedNetworkAvifImageProvider(imageUrl!)
+                                  : CachedNetworkImageProvider(imageUrl!),
 
                           // NetworkImage(
                           //   imageUrl,

@@ -18,6 +18,7 @@ export 'package:device_info_plus/device_info_plus.dart';
 export 'package:diacritic/diacritic.dart';
 export 'package:firebase_core/firebase_core.dart';
 export 'package:firebase_messaging/firebase_messaging.dart';
+export 'package:flutter_avif/flutter_avif.dart';
 export 'package:flutter_cache_manager/flutter_cache_manager.dart';
 export 'package:flutter_chat_ui/flutter_chat_ui.dart';
 export 'package:flutter_image_compress/flutter_image_compress.dart';

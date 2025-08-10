@@ -30,7 +30,7 @@ class Backgrounds {
   static BoxDecoration defaultHcBackground() {
     return const BoxDecoration(
       image: DecorationImage(
-        image: ExactAssetImage('images/backgrounds/hash_foot_background.avif'),
+        image: AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
         fit: BoxFit.cover,
       ),
     );

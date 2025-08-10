@@ -1,10 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class EmailEditorPage extends StatefulWidget {
-  const EmailEditorPage({
-    super.key,
-    required this.eventId,
-  });
+  const EmailEditorPage({super.key, required this.eventId});
 
   final String eventId;
 
@@ -60,10 +57,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text('Email Editor', style: ts_appBarTitle),
     );
     return PopScope(
@@ -78,11 +72,10 @@ class EmailEditorPageState extends State<EmailEditorPage> {
         resizeToAvoidBottomInset: false,
         appBar: appBar,
         body:
-            //  _isLoading
-            //     ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
-            //     :
-
-            Container(
+        //  _isLoading
+        //     ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+        //     :
+        Container(
           decoration: Backgrounds.defaultHcBackground(),
           height: MediaQuery.of(context).size.height,
           child: AvoidKeyboard(
@@ -98,7 +91,11 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                   child: Text('Quick Send Email', style: ts_button),
                 ),
                 const SizedBox(height: 10),
-                const FancyDivider(key: Key('155030392'), innerColor: Colors.white, useTextOr: true),
+                const FancyDivider(
+                  key: Key('155030392'),
+                  innerColor: Colors.white,
+                  useTextOr: true,
+                ),
                 const SizedBox(height: 20),
                 Text(
                   'Compose custom email',
@@ -107,7 +104,12 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 ),
                 Container(
                   padding: const EdgeInsets.all(10.0),
-                  margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20, top: 20),
+                  margin: const EdgeInsets.only(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    top: 20,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.yellow[100],
                     borderRadius: BorderRadius.circular(5.0),
@@ -118,7 +120,9 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     child: TextField(
                       autocorrect: false,
                       //initialValue: _shortDescription,
-                      decoration: const InputDecoration.collapsed(hintText: 'Email body'),
+                      decoration: const InputDecoration.collapsed(
+                        hintText: 'Email body',
+                      ),
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                       minLines: 10,
@@ -145,7 +149,9 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         onPressed: () {
                           insertText('{my name}');
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade300,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
@@ -159,7 +165,9 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     SizedBox(
                       width: 155,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade300,
+                        ),
                         onPressed: () {
                           insertText('{receipient name}');
                         },
@@ -185,7 +193,9 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         onPressed: () {
                           insertText('{run details}');
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade300,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
@@ -202,7 +212,9 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                         onPressed: () {
                           insertText('{run description}');
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade300),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade300,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
@@ -218,7 +230,10 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
+                    setStringPref(
+                      StringPrefsEnum.customEmailBody,
+                      bodyController.text,
+                    );
                     sendEmail(context, bodyController.text);
                   },
                   child: Text('Send Email', style: ts_button),
@@ -266,7 +281,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 //     Navigator.push<void>(
                 //       context,
                 //       MaterialPageRoute<void>(
-                //         builder: (BuildContext context) => ZoomableImagePage2(
+                //         builder: (BuildContext context) => ZoomableImagePage22(
                 //           image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache,
                 //           pageTitle: 'Zoomable Receipt',
                 //         ),
@@ -307,27 +322,45 @@ class EmailEditorPageState extends State<EmailEditorPage> {
     );
 
     if (doEmail ?? false) {
-      final Map<String, String> result = await G0<TableModel>().eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody);
+      final Map<String, String> result = await G0<TableModel>().eventsService
+          .sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody);
 
       if (!mounted) return;
       ScaffoldMessenger.of(navigatorKey.currentContext!).hideCurrentSnackBar();
       if (result['result'] != null) {
         if (result['result']!.toLowerCase().startsWith('success')) {
-          await Utilities.showAlert('E-mails successfully sent', result['result']!, 'OK');
+          await Utilities.showAlert(
+            'E-mails successfully sent',
+            result['result']!,
+            'OK',
+          );
         } else {
           await Utilities.showAlert(
-              'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+            'Error sending emails',
+            'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com',
+            'OK',
+          );
         }
 
-        IveCoreUtilities.showInSnackBar(navigatorKey.currentContext!, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
+        IveCoreUtilities.showInSnackBar(
+          navigatorKey.currentContext!,
+          _scaffoldKey,
+          'Run detail emails being sent ..',
+          durationInSeconds: 10,
+        );
       }
     }
   }
 
   void insertText(String textToInsert) {
     final int bo = bodyController.selection.baseOffset + textToInsert.length;
-    final String textBefore = bodyController.text.substring(0, bodyController.selection.baseOffset);
-    final String textAfter = bodyController.text.substring(bodyController.selection.baseOffset);
+    final String textBefore = bodyController.text.substring(
+      0,
+      bodyController.selection.baseOffset,
+    );
+    final String textAfter = bodyController.text.substring(
+      bodyController.selection.baseOffset,
+    );
     bodyController.text = textBefore + textToInsert + textAfter;
     bodyController.selection = TextSelection.collapsed(offset: bo);
   }

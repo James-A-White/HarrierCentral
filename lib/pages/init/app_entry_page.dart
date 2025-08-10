@@ -392,7 +392,7 @@ class AppEntryPageState extends State<AppEntryPage>
     // on the first load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       precacheImage(
-        const AssetImage('images/backgrounds/hash_foot_background.avif'),
+        const AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
         navigatorKey.currentState!.context,
       );
     });
