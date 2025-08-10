@@ -38,7 +38,7 @@ dependencies:
   # flutter_localization: ^0.3.2
   flutter_map: ^8.2.1
   flutter_map_marker_cluster_plus: ^1.4.2
-  flutter_native_splash: ^2.4.5
+  flutter_native_splash: ^2.4.6
   #flutter_phoenix: ^1.0.0  
   flutter_slidable: ^4.0.0 
   flutter_speed_dial: ^7.0.0 
@@ -113,12 +113,12 @@ dev_dependencies:
   # flutter_test:
   #   sdk: flutter
   build_runner: ^2.4.15
-  flutter_launcher_icons: ^0.14.3 
+  flutter_launcher_icons: ^0.14.4
   # intl_translation: ^0.17.10+1 
   flutter_lints: ^6.0.0
   json_serializable: ^6.9.5
 
-flutter_icons:
+flutter_launcher_icons:
   android: true 
   ios: true
   image_path_ios_dark_transparent: 'assets/icon/hc_dark_mode_icon.png'
@@ -126,11 +126,13 @@ flutter_icons:
   image_path: 'assets/icon/hc_standard_icon.png'
   adaptive_icon_background: '#FFE02000'
   adaptive_icon_foreground: 'assets/icon/hc_app_icon_adaptive_foot.png'
+  remove_alpha_ios: true
+
 
   # hc_app_icon_adaptive_foot
 
-#flutter pub pub run flutter_launcher_icons:main
-#flutter pub run flutter_native_splash:create
+#dart run flutter_launcher_icons
+#dart run flutter_native_splash:create
 
 
 # For information on the generic Dart part of this file, see the
@@ -317,7 +319,7 @@ flutter_native_splash:
     # 768 pixels in diameter.  To fit a 1152x1152 image within a circle with a 768 diameter, simply 
     # ensure that the most important design elements of your image are placed within a circular area
     # with a 768 diameter at the center of the 1152x1152 canvas.
-    #image: assets/android12splash.png
+    # image: images/init/launcher_background.png
 
     # Splash screen background color.
     #color: "#42a5f5"

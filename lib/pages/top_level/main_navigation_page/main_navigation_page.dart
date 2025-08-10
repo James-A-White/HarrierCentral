@@ -386,7 +386,7 @@ class MainNavigationPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Image.asset('images/init/on_on_in_a_sec.png', height: 140),
+            AvifImage.asset('images/init/on_on_in_a_sec.avif', height: 140),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Text(
