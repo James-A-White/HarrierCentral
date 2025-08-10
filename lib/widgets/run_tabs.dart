@@ -6,7 +6,7 @@ import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
-import 'package:add_2_calendar/add_2_calendar.dart';
+// import 'package:manage_calendar_events/manage_calendar_events.dart' as calendar;
 
 /// Chat tabs with their corresponding integer IDs.
 enum RunTab {
@@ -905,37 +905,84 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           oneLineLocForTitle = '';
                                         }
 
-                                        Event event = Event(
-                                          title:
-                                              widget.futureRun.event.eventName +
-                                              oneLineLocForTitle,
-                                          description:
-                                              oneLineLocForDesc +
-                                              (widget
-                                                      .futureRun
-                                                      .event
-                                                      .eventDescription ??
-                                                  ''),
-                                          location:
-                                              widget
-                                                  .futureRun
-                                                  .extensions
-                                                  .userFriendlyLocation,
-                                          startDate: localTime,
-                                          endDate: localTime.add(
-                                            const Duration(hours: 4),
-                                          ),
-                                          iosParams: IOSParams(
-                                            reminder: const Duration(
-                                              hours: 4,
-                                            ), // on iOS, you can set alarm notification after your event.
-                                            url:
-                                                'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
-                                          ),
-                                          // androidParams: AndroidParams(
-                                          //   emailInvites: [], // on Android, you can add invite emails to your event.
-                                          // ),
-                                        );
+                                        // calendar.CalendarEvent
+                                        // newEvent = calendar.CalendarEvent(
+                                        //   title:
+                                        //       widget.futureRun.event.eventName +
+                                        //       oneLineLocForTitle,
+                                        //   description:
+                                        //       oneLineLocForDesc +
+                                        //       (widget
+                                        //               .futureRun
+                                        //               .event
+                                        //               .eventDescription ??
+                                        //           ''),
+                                        //   startDate: localTime,
+                                        //   endDate: localTime.add(
+                                        //     const Duration(hours: 4),
+                                        //   ),
+                                        //   location:
+                                        //       widget
+                                        //           .futureRun
+                                        //           .extensions
+                                        //           .userFriendlyLocation,
+                                        //   url:
+                                        //       'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light',
+                                        // );
+
+                                        // final calendar.CalendarPlugin
+                                        // calendarPlugIn =
+                                        //     calendar.CalendarPlugin();
+                                        // var calendars =
+                                        //     await calendarPlugIn.getCalendars();
+
+                                        // if ((calendars?.isNotEmpty ?? false) &&
+                                        //     (calendars![0].id != null)) {
+                                        //   calendarPlugIn
+                                        //       .createEvent(
+                                        //         calendarId: calendars[0].id!,
+                                        //         event: newEvent,
+                                        //       )
+                                        //       .then((evenId) {
+                                        //         setState(() {
+                                        //           debugPrint(
+                                        //             'Event Id is: $evenId',
+                                        //           );
+                                        //         });
+                                        //       });
+                                        // }
+
+                                        // Event event = Event(
+                                        //   title:
+                                        //       widget.futureRun.event.eventName +
+                                        //       oneLineLocForTitle,
+                                        //   description:
+                                        //       oneLineLocForDesc +
+                                        //       (widget
+                                        //               .futureRun
+                                        //               .event
+                                        //               .eventDescription ??
+                                        //           ''),
+                                        //   location:
+                                        //       widget
+                                        //           .futureRun
+                                        //           .extensions
+                                        //           .userFriendlyLocation,
+                                        //   startDate: localTime,
+                                        //   endDate: localTime.add(
+                                        //     const Duration(hours: 4),
+                                        //   ),
+                                        //   iosParams: IOSParams(
+                                        //     reminder: const Duration(
+                                        //       hours: 4,
+                                        //     ), // on iOS, you can set alarm notification after your event.
+                                        //     url:
+                                        //         'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
+                                        //   ),
+                                        //   // androidParams: AndroidParams(
+                                        //   //   emailInvites: [], // on Android, you can add invite emails to your event.
+                                        //   // ),
+                                        // );
 
                                         // PermissionStatus ps;
 
@@ -946,7 +993,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         //   }
                                         // }
 
-                                        await Add2Calendar.addEvent2Cal(event);
+                                        // await Add2Calendar.addEvent2Cal(event);
 
                                         // bool success = await Add2Calendar.addEvent2Cal(event);
 

@@ -86,17 +86,24 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   DateTime? _lastScan;
 
-  final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR123');
+  //final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR123');
 
   // EQrScannerState _state = EQrScannerState.waitingForScan;
 
-  QRViewController? _controller;
+  MobileScannerController? _scannerController;
   // EQrScannerState _state = EQrScannerState.waitingForScan;
   // bool _isScanning = true;
 
   @override
   void initState() {
     super.initState();
+
+    _scannerController = MobileScannerController(
+      facing: CameraFacing.back,
+      torchEnabled: false,
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      formats: [BarcodeFormat.qrCode],
+    );
 
     _inviteCodeTextController = TextEditingController();
     _inviteCodeDecoration = InputDecoration(
@@ -111,32 +118,55 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   @override
   void dispose() {
-    if (_controller != null) {
-      _controller!.pauseCamera();
-      _controller!.dispose();
+    if (_scannerController != null) {
+      Future.microtask(() async {
+        await _scannerController!.stop();
+        _scannerController!.dispose();
+      });
     }
-
     super.dispose();
   }
 
   @override
   void reassemble() {
     super.reassemble();
-    if (_controller != null) {
+    final c = _scannerController;
+    if (c == null) return;
+
+    // Only meaningful during hot-reload (debug)
+    assert(() {
       if (Platform.isAndroid) {
-        _controller!.pauseCamera().then((void _) {
-          // _isScanning = false;
-          // _onScreenMessage = 'Scanning paused';
-          // _state = EQrScannerState.waitingForScan;
-        });
+        // Use pause()/resume() if available; otherwise swap to stop()/start()
+        c
+            .pause()
+            .then((_) {
+              if (!mounted) return;
+              setState(() {
+                _isScanning = false;
+                // _onScreenMessage = 'Scanning paused';
+                // _state = EQrScannerState.waitingForScan;
+              });
+            })
+            .catchError((e, st) {
+              // Optional: log pause error
+            });
       } else if (Platform.isIOS) {
-        _controller!.resumeCamera().then((void _) {
-          // _isScanning = true;
-          // _onScreenMessage = 'Looking for QR Code';
-          // _state = EQrScannerState.scanning;
-        });
+        c
+            .start()
+            .then((_) {
+              if (!mounted) return;
+              setState(() {
+                _isScanning = true;
+                // _onScreenMessage = 'Looking for QR Code';
+                // _state = EQrScannerState.scanning;
+              });
+            })
+            .catchError((e, st) {
+              // Optional: log start error
+            });
       }
-    }
+      return true;
+    }());
   }
 
   @override
@@ -237,12 +267,12 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                             onPressed: () async {
                               setState(() {
                                 _showQrScanner = !_showQrScanner;
-                                if (_controller != null) {
+                                if (_scannerController != null) {
                                   if (_showQrScanner) {
                                     _lastQrCode = '';
-                                    _controller!.resumeCamera();
+                                    _scannerController!.start();
                                   } else {
-                                    _controller!.pauseCamera();
+                                    _scannerController!.pause();
                                   }
                                 }
                               });
@@ -261,9 +291,29 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           padding: const EdgeInsets.all(11.0),
                           child: AspectRatio(
                             aspectRatio: 1.0,
-                            child: QRView(
-                              key: _qrKey,
-                              onQRViewCreated: _onQRViewCreated,
+                            child:
+                            // QRView(
+                            //   key: _qrKey,
+                            //   onQRViewCreated: _onQRViewCreated,
+                            // ),
+                            MobileScanner(
+                              controller: _scannerController,
+                              onDetect: (result) async {
+                                _result = result.barcodes.first.rawValue;
+
+                                if ((_lastScan == null) ||
+                                    (_lastScan!
+                                            .difference(DateTime.now())
+                                            .inSeconds
+                                            .abs() >
+                                        5)) {
+                                  _lastScan = DateTime.now();
+                                  await _toggleScanning();
+                                  if (_result != null) {
+                                    await _onCodeRead(_result!);
+                                  }
+                                }
+                              },
                             ),
                           ),
                         ),
@@ -440,17 +490,17 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     );
   }
 
-  Future<void> _onCodeRead(String? scanResult) async {
-    if (((scanResult ?? '').isNotEmpty) &&
+  Future<void> _onCodeRead(String scanResult) async {
+    if ((scanResult.isNotEmpty) &&
         _showQrScanner &&
         (_lastQrCode != scanResult)) {
-      _lastQrCode = scanResult!;
+      _lastQrCode = scanResult;
       final Map<String, String> result = Utilities.validateScan(
         scanResult,
         Utilities.qrScanTypeFlag_resetCode +
             Utilities.qrScanTypeFlag_userSecretCode,
       );
-      await _controller!.pauseCamera();
+      await _scannerController!.pause();
       setState(() {
         _showQrScanner = false;
       });
@@ -473,14 +523,14 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   }
 
   Future<void> _toggleScanning({bool? doScanning}) async {
-    if (_controller != null) {
+    if (_scannerController != null) {
       if (_isScanning && ((doScanning == null) || !doScanning)) {
-        await _controller!.pauseCamera();
+        await _scannerController!.pause();
         _isScanning = false;
         //_state = EQrScannerState.waitingForScan;
       } else {
         if ((doScanning == null) || doScanning) {
-          await _controller!.resumeCamera();
+          await _scannerController!.start();
           _isScanning = true;
           // _state = EQrScannerState.scanning;
         }
@@ -488,27 +538,27 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     }
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    _controller = controller;
-    setState(() {
-      // _isScanning = true;
-      // _onScreenMessage = 'Looking for QR Code';
-      // _state = EQrScannerState.scanning;
-      //_toggleScanning();
-    });
+  // void _onQRViewCreated(QRViewController controller) {
+  //   _scannerController = controller;
+  //   setState(() {
+  //     // _isScanning = true;
+  //     // _onScreenMessage = 'Looking for QR Code';
+  //     // _state = EQrScannerState.scanning;
+  //     //_toggleScanning();
+  //   });
 
-    if (_controller != null) {
-      _controller!.scannedDataStream.listen((Barcode scanData) async {
-        _result = scanData.code;
-        // "debounce" the listener to discard multiple scans
-        // that happen within a 5 second window.
-        if ((_lastScan == null) ||
-            (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
-          _lastScan = DateTime.now();
-          await _toggleScanning();
-          await _onCodeRead(_result);
-        }
-      });
-    }
-  }
+  //   if (_scannerController != null) {
+  //     _scannerController!.scannedDataStream.listen((Barcode scanData) async {
+  //       _result = scanData.code;
+  //       // "debounce" the listener to discard multiple scans
+  //       // that happen within a 5 second window.
+  //       if ((_lastScan == null) ||
+  //           (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
+  //         _lastScan = DateTime.now();
+  //         await _toggleScanning();
+  //         await _onCodeRead(_result);
+  //       }
+  //     });
+  //   }
+  // }
 }

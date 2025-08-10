@@ -9,12 +9,35 @@ class CheckInScannerPage extends StatefulWidget {
   CheckInScannerPageState createState() => CheckInScannerPageState();
 }
 
-final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
+//final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
 bool _isScanningAtRunStart = true;
 
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class CheckInScannerPageState extends State<CheckInScannerPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    _scannerController = MobileScannerController(
+      facing: CameraFacing.back,
+      torchEnabled: false,
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      formats: [BarcodeFormat.qrCode],
+    );
+  }
+
+  @override
+  void dispose() {
+    if (_scannerController != null) {
+      Future.microtask(() async {
+        await _scannerController!.stop();
+        _scannerController!.dispose();
+      });
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,9 +122,24 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                             padding: const EdgeInsets.all(11.0),
                             child: AspectRatio(
                               aspectRatio: 1.0,
-                              child: QRView(
-                                key: _qrKey,
-                                onQRViewCreated: _onQRViewCreated,
+                              child: MobileScanner(
+                                controller: _scannerController,
+                                onDetect: (result) async {
+                                  _result = result.barcodes.first.rawValue;
+
+                                  if ((_lastScan == null) ||
+                                      (_lastScan!
+                                              .difference(DateTime.now())
+                                              .inSeconds
+                                              .abs() >
+                                          5)) {
+                                    _lastScan = DateTime.now();
+                                    await _toggleScanning();
+                                    if (_result != null) {
+                                      await _onCodeRead(_result!);
+                                    }
+                                  }
+                                },
                               ),
                             ),
                           ),
@@ -196,57 +234,81 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
   String? _result;
   bool _isScanning = false;
 
-  QRViewController? _controller;
+  MobileScannerController? _scannerController;
   EQrScannerState _state = EQrScannerState.waitingForScan;
 
-  void _onQRViewCreated(QRViewController controller) {
-    _controller = controller;
-    setState(() {
-      // _isScanning = true;
-      // _onScreenMessage = 'Looking for QR Code';
-      // _state = EQrScannerState.scanning;
-      //_toggleScanning();
-    });
+  // void _onQRViewCreated(QRViewController controller) {
+  //   _controller = controller;
+  //   setState(() {
+  //     // _isScanning = true;
+  //     // _onScreenMessage = 'Looking for QR Code';
+  //     // _state = EQrScannerState.scanning;
+  //     //_toggleScanning();
+  //   });
 
-    if (_controller != null) {
-      _controller!.scannedDataStream.listen((Barcode scanData) async {
-        _result = scanData.code;
-        // "debounce" the listener to discard multiple scans
-        // that happen within a 5 second window.
-        if ((_lastScan == null) ||
-            (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
-          _lastScan = DateTime.now();
-          await _toggleScanning();
-          await _onCodeRead(_result);
-        }
-      });
-    }
-  }
+  //   if (_controller != null) {
+  //     _controller!.scannedDataStream.listen((Barcode scanData) async {
+  //       _result = scanData.code;
+  //       // "debounce" the listener to discard multiple scans
+  //       // that happen within a 5 second window.
+  //       if ((_lastScan == null) ||
+  //           (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
+  //         _lastScan = DateTime.now();
+  //         await _toggleScanning();
+  //         await _onCodeRead(_result);
+  //       }
+  //     });
+  //   }
+  // }
 
   DateTime? _lastScan;
 
   @override
   void reassemble() {
     super.reassemble();
-    if (_controller != null) {
+    final c = _scannerController;
+    if (c == null) return;
+
+    // Only meaningful during hot-reload (debug)
+    assert(() {
       if (Platform.isAndroid) {
-        _controller!.pauseCamera();
-        _isScanning = false;
-        _onScreenMessage = 'Scanning paused';
-        _state = EQrScannerState.waitingForScan;
+        // Use pause()/resume() if available; otherwise swap to stop()/start()
+        c
+            .pause()
+            .then((_) {
+              if (!mounted) return;
+              setState(() {
+                _isScanning = false;
+                _onScreenMessage = 'Scanning paused';
+                _state = EQrScannerState.waitingForScan;
+              });
+            })
+            .catchError((e, st) {
+              // Optional: log pause error
+            });
       } else if (Platform.isIOS) {
-        _controller!.resumeCamera();
-        _isScanning = true;
-        _onScreenMessage = 'Looking for QR Code';
-        _state = EQrScannerState.scanning;
+        c
+            .start()
+            .then((_) {
+              if (!mounted) return;
+              setState(() {
+                _isScanning = true;
+                _onScreenMessage = 'Looking for QR Code';
+                _state = EQrScannerState.scanning;
+              });
+            })
+            .catchError((e, st) {
+              // Optional: log start error
+            });
       }
-    }
+      return true;
+    }());
   }
 
   Future<void> _toggleScanning({bool? doScanning}) async {
-    if (_controller != null) {
+    if (_scannerController != null) {
       if (_isScanning && ((doScanning == null) || !doScanning)) {
-        await _controller!.pauseCamera();
+        await _scannerController!.pause();
         _isScanning = false;
         setState(() {
           _onScreenMessage = 'Scanning paused';
@@ -254,7 +316,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
         _state = EQrScannerState.waitingForScan;
       } else {
         if ((doScanning == null) || doScanning) {
-          await _controller!.resumeCamera();
+          await _scannerController!.start();
           _isScanning = true;
           setState(() {
             _onScreenMessage = 'Looking for QR Code';
@@ -265,7 +327,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
     }
   }
 
-  Future<void> _onCodeRead(dynamic scanResult) async {
+  Future<void> _onCodeRead(String scanResult) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     // final AudioPlayer audioPlayer = AudioPlayer();
     // //NOTE: Unawaited future is OK

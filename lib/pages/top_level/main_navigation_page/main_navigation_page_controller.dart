@@ -111,9 +111,9 @@ class MainNavigationController extends GetxController
     final stopwatch = Stopwatch()..start();
 
     // Status bar color
-    FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((_) {
-      FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
-    });
+    // FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((_) {
+    //   FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
+    // });
 
     hcCurrentVersion = _trimToMinorVersionString(
       getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',

@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'firebase_options.dart';
 
 // this prevents exceptions being thrown on iOS when
 // the app is in the background and location services
@@ -72,7 +73,7 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await Get.putAsync(
     () => NotificationService().init(),
