@@ -491,7 +491,6 @@ class QueryRuns {
             AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
             ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
-            LIMIT 10
           ''';
 
     final String whereClauseForSingleRun =

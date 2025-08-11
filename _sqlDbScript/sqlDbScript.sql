@@ -13419,7 +13419,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -13436,7 +13436,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,'Null or empty eventId' as errorTitle
 -- 	--	,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
 -- 	--END
@@ -13454,7 +13454,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -13879,7 +13879,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -13896,7 +13896,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,'Null or empty eventId' as errorTitle
 -- 	--	,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
 -- 	--END
@@ -13914,7 +13914,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14319,7 +14319,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14336,7 +14336,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14353,7 +14353,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14514,7 +14514,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14531,7 +14531,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14548,7 +14548,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14725,7 +14725,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -14744,7 +14744,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -15108,7 +15108,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -15127,7 +15127,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -15489,7 +15489,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -15505,7 +15505,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -15699,7 +15699,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -15746,7 +15746,7 @@
 -- 		@errorId as errorId,
 -- 		cast (5 as int) as errorType 
 -- 		,'This user has been removed' as errorTitle
--- 		,'The user account for "'+@userName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at connect@harriercentral.com for assistance.' as errorUserMessage
+-- 		,'The user account for "'+@userName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at harriercentral@gmail.com for assistance.' as errorUserMessage
 -- 		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -15763,7 +15763,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
@@ -16123,7 +16123,7 @@
 -- 			@errorId as errorId,
 -- 			cast (5 as int) as errorType 
 -- 			,'This user has been removed' as errorTitle
--- 			,'The user account associated with ('+REPLACE(@scanText,'URC:','')+') for "'+@hasherName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at connect@harriercentral.com for assistance.' as errorUserMessage
+-- 			,'The user account associated with ('+REPLACE(@scanText,'URC:','')+') for "'+@hasherName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at harriercentral@gmail.com for assistance.' as errorUserMessage
 -- 			,'This is a standard error that is anticipated and does not require debugging' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
@@ -16275,7 +16275,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -16292,7 +16292,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -17627,7 +17627,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -17643,7 +17643,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -17776,7 +17776,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -17792,7 +17792,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -18268,7 +18268,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -18285,7 +18285,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty kennelId' as errorTitle
 -- 		,'A null or empty value was passed as the kennelId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -18304,7 +18304,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -18382,7 +18382,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty publicHasherId' as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -18476,7 +18476,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty publicHasherId' as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -18497,7 +18497,7 @@
 -- 		--cast (3 as int) as errorType 
 -- 		--,'Invalid access token' as errorTitle
 -- 		--,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		--,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		--,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		--,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -18615,7 +18615,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -18632,7 +18632,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -18649,7 +18649,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19176,7 +19176,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19193,7 +19193,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19210,7 +19210,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19730,7 +19730,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19747,7 +19747,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19764,7 +19764,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19927,7 +19927,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19944,7 +19944,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -19961,7 +19961,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -20139,7 +20139,7 @@
 --  		cast (2 as int) as errorType 
 --  		,'Null or empty userId' as errorTitle
 --  		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -20156,7 +20156,7 @@
 --  		cast (2 as int) as errorType 
 --  		,'Null or empty kennelId' as errorTitle
 --  		,'A null or empty value was passed as the kennelId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -20173,7 +20173,7 @@
 --  		cast (3 as int) as errorType 
 --  		,'Invalid access token' as errorTitle
 --  		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -20403,7 +20403,7 @@
 --  		cast (2 as int) as errorType 
 --  		,'Null or empty userId' as errorTitle
 --  		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -20420,7 +20420,7 @@
 --  		cast (2 as int) as errorType 
 --  		,'Null or empty kennelId' as errorTitle
 --  		,'A null or empty value was passed as the kennelId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -20437,7 +20437,7 @@
 --  		cast (3 as int) as errorType 
 --  		,'Invalid access token' as errorTitle
 --  		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -20991,7 +20991,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -21008,7 +21008,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -21025,7 +21025,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,'Null or empty userIdWhoPaid' as errorTitle
 -- 	--	,'A null or empty value was passed as the userIdWhoPaid to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
 -- 	--END
@@ -21044,7 +21044,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or negative payment amount' as errorTitle
 -- 		,'A null or negative value was passed as the payment amount to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -21061,7 +21061,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -21489,7 +21489,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -21506,7 +21506,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -21523,7 +21523,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,'Null or empty userIdWhoPaid' as errorTitle
 -- 	--	,'A null or empty value was passed as the userIdWhoPaid to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
 -- 	--END
@@ -21542,7 +21542,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or negative payment amount' as errorTitle
 -- 		,'A null or negative value was passed as the payment amount to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -21559,7 +21559,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22231,7 +22231,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22247,7 +22247,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -22304,7 +22304,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22320,7 +22320,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -22632,7 +22632,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22649,7 +22649,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22705,7 +22705,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22722,7 +22722,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22739,7 +22739,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22834,7 +22834,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 -- 	DECLARE @newHareState smallint
@@ -22934,7 +22934,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22951,7 +22951,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -22968,7 +22968,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23063,7 +23063,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 -- 	DECLARE @newHareState smallint
@@ -23157,7 +23157,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23178,7 +23178,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty kennel and eventId' as errorTitle
 -- 		,'A null or empty values were passed for both the KennelId and EventId parameters in '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23195,7 +23195,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23379,7 +23379,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23400,7 +23400,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty kennel and eventId' as errorTitle
 -- 		,'A null or empty values were passed for both the KennelId and EventId parameters in '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23417,7 +23417,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23608,7 +23608,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23639,7 +23639,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,'Mismatched eventIds' as errorTitle
 -- 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
 -- 		END
@@ -23657,7 +23657,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23675,7 +23675,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Invalid attendence state' as errorTitle
 -- 		,'An invalid attendence state was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23692,7 +23692,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23757,7 +23757,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Unknown user' as errorTitle
 -- 		,'An unknown user was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -23884,7 +23884,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 
@@ -24050,7 +24050,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24081,7 +24081,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,'Mismatched eventIds' as errorTitle
 -- 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
 -- 		END
@@ -24099,7 +24099,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24117,7 +24117,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Invalid attendence state' as errorTitle
 -- 		,'An invalid attendence state was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24134,7 +24134,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24199,7 +24199,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Unknown user' as errorTitle
 -- 		,'An unknown user was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24326,7 +24326,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 
@@ -24494,7 +24494,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24525,7 +24525,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,'Mismatched eventIds' as errorTitle
 -- 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
 -- 		END
@@ -24543,7 +24543,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24560,7 +24560,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24681,7 +24681,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 -- 	DECLARE @newHareState smallint
@@ -24788,7 +24788,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24819,7 +24819,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,'Mismatched eventIds' as errorTitle
 -- 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
 -- 		END
@@ -24837,7 +24837,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24854,7 +24854,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -24975,7 +24975,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 -- 	DECLARE @newHareState smallint
@@ -25084,7 +25084,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -25115,7 +25115,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,'Mismatched eventIds' as errorTitle
 -- 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
 -- 		END
@@ -25133,7 +25133,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -25150,7 +25150,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -25271,7 +25271,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 -- 	DECLARE @newHareState smallint
@@ -25823,7 +25823,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -25839,7 +25839,7 @@
 -- 	--	@errorId as errorId,
 -- 	--	cast (1 as int) as errorType 
 -- 	--	,'Invalid access token' as errorTitle
--- 	--	,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 	--	,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 	--	,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
@@ -25902,7 +25902,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -25919,7 +25919,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -25936,7 +25936,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -26335,7 +26335,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -26352,7 +26352,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -26369,7 +26369,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -26750,7 +26750,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -26767,7 +26767,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -26784,7 +26784,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27155,7 +27155,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27172,7 +27172,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27189,7 +27189,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27461,7 +27461,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27478,7 +27478,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27495,7 +27495,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27710,7 +27710,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27727,7 +27727,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27744,7 +27744,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27962,7 +27962,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -27979,7 +27979,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -28832,7 +28832,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -28849,7 +28849,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -29373,7 +29373,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -29390,7 +29390,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -29961,7 +29961,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -29978,7 +29978,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -30556,7 +30556,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -30573,7 +30573,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -31834,7 +31834,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -31851,7 +31851,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -32393,7 +32393,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -32410,7 +32410,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,'Null or empty eventId' as errorTitle
 -- 	--	,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
 -- 	--END
@@ -32428,7 +32428,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -32841,7 +32841,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -32858,7 +32858,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -32875,7 +32875,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -33068,7 +33068,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -33087,7 +33087,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -33486,7 +33486,7 @@
 -- 		@errorId as errorId,
 -- 		cast (5 as int) as errorType 
 -- 		,'This user has been removed' as errorTitle
--- 		,'The user account for "'+@userName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at connect@harriercentral.com for assistance.' as errorUserMessage
+-- 		,'The user account for "'+@userName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at harriercentral@gmail.com for assistance.' as errorUserMessage
 -- 		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -33502,7 +33502,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
@@ -33935,7 +33935,7 @@
 -- 			@errorId as errorId,
 -- 			cast (5 as int) as errorType 
 -- 			,'This user has been removed' as errorTitle
--- 			,'The user account associated with ('+REPLACE(@scanText,'URC:','')+') for "'+@hasherName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at connect@harriercentral.com for assistance.' as errorUserMessage
+-- 			,'The user account associated with ('+REPLACE(@scanText,'URC:','')+') for "'+@hasherName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at harriercentral@gmail.com for assistance.' as errorUserMessage
 -- 			,'This is a standard error that is anticipated and does not require debugging' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
@@ -34099,7 +34099,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the deviceId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -34122,7 +34122,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@hasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -34138,7 +34138,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -34231,7 +34231,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the deviceId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -34254,7 +34254,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -34271,7 +34271,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@hasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -34287,7 +34287,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -34448,7 +34448,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -34464,7 +34464,7 @@
 -- 		@errorId as errorId,
 -- 		cast (1 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
--- 		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
@@ -34646,7 +34646,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -34663,7 +34663,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -34680,7 +34680,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -34868,7 +34868,7 @@
 --  		cast (2 as int) as errorType 
 --  		,'Null or empty userId' as errorTitle
 --  		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -34885,7 +34885,7 @@
 --  		cast (2 as int) as errorType 
 --  		,'Null or empty kennelId' as errorTitle
 --  		,'A null or empty value was passed as the kennelId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -34902,7 +34902,7 @@
 --  		cast (3 as int) as errorType 
 --  		,'Invalid access token' as errorTitle
 --  		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
---  		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+--  		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 --  		,OBJECT_NAME(@@PROCID) as errorProc
 --  		RETURN
 --  	END
@@ -35172,7 +35172,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -35189,7 +35189,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -35206,7 +35206,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,'Null or empty userIdWhoPaid' as errorTitle
 -- 	--	,'A null or empty value was passed as the userIdWhoPaid to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
 -- 	--END
@@ -35225,7 +35225,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or negative payment amount' as errorTitle
 -- 		,'A null or negative value was passed as the payment amount to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -35242,7 +35242,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -35941,7 +35941,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the deviceId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -35968,7 +35968,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the messageId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -35984,7 +35984,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@hasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -36003,7 +36003,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -36044,7 +36044,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'Null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -36061,7 +36061,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36094,7 +36094,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Empty or missing fields sent to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36272,7 +36272,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36293,7 +36293,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty kennel and eventId' as errorTitle
 -- 		,'A null or empty values were passed for both the KennelId and EventId parameters in '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36310,7 +36310,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36511,7 +36511,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36542,7 +36542,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,'Mismatched eventIds' as errorTitle
 -- 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
 -- 		END
@@ -36560,7 +36560,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36578,7 +36578,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Invalid attendence state' as errorTitle
 -- 		,'An invalid attendence state was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36595,7 +36595,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36660,7 +36660,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Unknown user' as errorTitle
 -- 		,'An unknown user was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36787,7 +36787,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 
@@ -36966,7 +36966,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -36997,7 +36997,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,'Mismatched eventIds' as errorTitle
 -- 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 			RETURN
 -- 		END
@@ -37015,7 +37015,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37032,7 +37032,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37153,7 +37153,7 @@
 -- 		END
 -- 	ELSE 
 -- 		BEGIN
--- 			SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+-- 			SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 -- 		END
 
 -- 	DECLARE @newHareState smallint
@@ -37257,7 +37257,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37273,7 +37273,7 @@
 -- 	--	@errorId as errorId,
 -- 	--	cast (1 as int) as errorType 
 -- 	--	,'Invalid access token' as errorTitle
--- 	--	,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+-- 	--	,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 -- 	--	,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	RETURN
@@ -37352,7 +37352,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37369,7 +37369,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37386,7 +37386,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37785,7 +37785,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37802,7 +37802,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty eventId' as errorTitle
 -- 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -37819,7 +37819,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -38140,7 +38140,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,'Null or empty userId' as errorTitle
 -- 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -38157,7 +38157,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'Invalid access token' as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -38708,7 +38708,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -38878,7 +38878,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -39191,7 +39191,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -39494,7 +39494,7 @@
 -- 	--	cast (3 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 	--	,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	--RETURN
 -- 	--END
@@ -39565,7 +39565,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -39784,7 +39784,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -39804,7 +39804,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -39821,7 +39821,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -39838,7 +39838,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicEventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -39858,7 +39858,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicEventId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -39884,7 +39884,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicKennelId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -39903,7 +39903,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		, @errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -40322,7 +40322,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40341,7 +40341,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40360,7 +40360,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40379,7 +40379,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicKennelId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40398,7 +40398,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid new Hasher data).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40415,7 +40415,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -40657,7 +40657,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40673,7 +40673,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40689,7 +40689,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or invalid value was passed as the QR scan data to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40707,7 +40707,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40844,7 +40844,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40863,7 +40863,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40880,7 +40880,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicEventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -40897,7 +40897,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -41076,7 +41076,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -41136,7 +41136,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,@errorTitle as errorTitle
 -- 			,@kennelUniqueShortName + ' already exists in Harrier Central. ' + @validName as errorUserMessage
--- 			,'Please try another value or contact us at connect@harriercentral.com for help.' as debugMessage
+-- 			,'Please try another value or contact us at harriercentral@gmail.com for help.' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 		END
 		
@@ -41157,7 +41157,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -41174,7 +41174,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -41195,7 +41195,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicKennelId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -41214,7 +41214,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		, @errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -41361,7 +41361,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -41380,7 +41380,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -41396,7 +41396,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null value was passed as the categoryId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -41412,7 +41412,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -41766,7 +41766,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
   
@@ -41782,7 +41782,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -41855,7 +41855,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -41876,7 +41876,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,@errorTitle as errorTitle
 -- 			,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 		END
 -- 	END
@@ -41892,7 +41892,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'Null or empty value was passed as the publicEventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--	SET @isError = 1
 -- 	--END
@@ -41956,7 +41956,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicEventId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -41973,7 +41973,7 @@
 -- 	--	cast (3 as int) as errorType 
 -- 	--	, @errorTitle as errorTitle
 -- 	--	,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	--END
@@ -42242,7 +42242,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -42259,7 +42259,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicEventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -42278,7 +42278,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -42294,7 +42294,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -42417,7 +42417,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -42438,7 +42438,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,@errorTitle as errorTitle
 -- 			,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 		END
 -- 	END
@@ -42457,7 +42457,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -42495,8 +42495,8 @@
 -- 		@errorId as errorId,
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
--- 		,'An attempt to generate a Hash run page was made but no Kennels or geographic regions were supplied. Please modify your URL to include filter constraints.\r\n\r\nPlease contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'An attempt to generate a Hash run page was made but no Kennels or geographic regions were supplied. Please modify your URL to include filter constraints.\r\n\r\nPlease contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as errorUserMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -42939,7 +42939,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -42961,7 +42961,7 @@
 -- 			cast (2 as int) as errorType 
 -- 			,@errorTitle as errorTitle
 -- 			,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 			,OBJECT_NAME(@@PROCID) as errorProc
 -- 		END
 -- 	END
@@ -42980,7 +42980,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -43000,7 +43000,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicKennelId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -43019,7 +43019,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -43196,7 +43196,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -43215,7 +43215,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -43233,7 +43233,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -43253,7 +43253,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicKennelId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -43270,7 +43270,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -43316,7 +43316,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'User not authorized' as errorTitle
 -- 		,'You are not authorized to access Hasher information for ' + @kennelName  as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -43486,7 +43486,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -43505,7 +43505,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -43522,7 +43522,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -43648,7 +43648,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -43667,7 +43667,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -43684,7 +43684,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -44086,7 +44086,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44105,7 +44105,7 @@
 -- 	--	cast (2 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -44123,7 +44123,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -44143,7 +44143,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicKennelId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -44163,7 +44163,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid public API key was provided to'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'To reset your API key, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'To reset your API key, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -44180,7 +44180,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -44226,7 +44226,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,'User not authorized' as errorTitle
 -- 		,'You are not authorized to access Hasher information for ' + @kennelName  as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -44305,7 +44305,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44322,7 +44322,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicEventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44339,7 +44339,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the messageId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44358,7 +44358,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44374,7 +44374,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -44448,7 +44448,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Empty or missing fields sent to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		RETURN
 -- 	END
@@ -44691,7 +44691,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44707,7 +44707,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44724,7 +44724,7 @@
 -- 	--	cast (3 as int) as errorType 
 -- 	--	,@errorTitle as errorTitle
 -- 	--	,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 	--	,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 	--	,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 	--	,OBJECT_NAME(@@PROCID) as errorProc
 -- 	--END
 
@@ -44817,7 +44817,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the publicHasherId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44836,7 +44836,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicHasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44856,7 +44856,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'Null or empty value was passed as the hasherBeingEditedId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 		
 -- 	END
@@ -44876,7 +44876,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@hasherBeingEditedId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44893,7 +44893,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -44913,7 +44913,7 @@
 -- 		cast (2 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'@publicKennelId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -44933,7 +44933,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+-- 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 	END
 
@@ -45189,7 +45189,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -45209,7 +45209,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -45232,7 +45232,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId / publicEventId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -45443,7 +45443,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -45462,7 +45462,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END
@@ -45884,7 +45884,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An internal error was encountered in our web page (null or invalid publicKennelId).' as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to learn more about how to generate web pages from our system. We are happy to help!' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		SET @isError = 1
 -- 	END
@@ -45906,7 +45906,7 @@
 -- 		cast (3 as int) as errorType 
 -- 		,@errorTitle as errorTitle
 -- 		,'An invalid API key was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
--- 		,'Please contact us at connect@harriercentral.com to fix this error' as debugMessage
+-- 		,'Please contact us at harriercentral@gmail.com to fix this error' as debugMessage
 -- 		,OBJECT_NAME(@@PROCID) as errorProc
 -- 		--RETURN
 -- 	END

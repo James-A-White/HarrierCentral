@@ -1,10 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class EmailPopup extends StatefulWidget {
-  const EmailPopup({
-    super.key,
-    this.initialEmailAddress,
-  });
+  const EmailPopup({super.key, this.initialEmailAddress});
 
   final String? initialEmailAddress;
 
@@ -25,10 +22,7 @@ class EmailPopupState extends State<EmailPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        'Enter email address',
-        style: ts_alertDialogTitle,
-      ),
+      title: Text('Enter email address', style: ts_alertDialogTitle),
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
@@ -37,35 +31,41 @@ class EmailPopupState extends State<EmailPopup> {
         style: ts_alertDialogBody,
         decoration: InputDecoration(
           border: InputBorder.none,
-          icon: const Icon(
-            FontAwesome.envelope,
-            color: Colors.white,
-          ),
+          // icon: const Icon(
+          //   FontAwesome.envelope,
+          //   color: Colors.white,
+          // ),
           hintText: 'E-mail address',
           hintStyle: ts_hint,
         ),
       ),
       actions: <Widget>[
         TextButton(
-          style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
-          child: Text(
-            'Cancel',
-            style: ts_button,
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_red,
           ),
+          child: Text('Cancel', style: ts_button),
           onPressed: () {
-            Navigator.of(context).pop(<String, String>{'type': 'cancel', 'email': ''});
+            Navigator.of(
+              context,
+            ).pop(<String, String>{'type': 'cancel', 'email': ''});
           },
         ),
 
         TextButton(
-            style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
-            child: Text(
-              'OK',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': paymentCashOtherAmount.value.toString(), 'email': emailTextController.text});
-            }),
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_blue,
+          ),
+          child: Text('OK', style: ts_button),
+          onPressed: () {
+            Navigator.of(context).pop(<String, String>{
+              'type': paymentCashOtherAmount.value.toString(),
+              'email': emailTextController.text,
+            });
+          },
+        ),
 
         // ),
       ],

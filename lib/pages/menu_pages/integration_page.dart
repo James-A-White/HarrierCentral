@@ -248,7 +248,7 @@
 //       await Utilities.showAlert(
 //           context,
 //           'Problem saving Facebook data',
-//           'There was a problem saving your Facebook infomration to Harrier Central.\r\n\r\nPlease try again later or let us know by contacting us at connect@harriercentral.com. Sorry for the inconvenience!',
+//           'There was a problem saving your Facebook infomration to Harrier Central.\r\n\r\nPlease try again later or let us know by contacting us at harriercentral@gmail.com. Sorry for the inconvenience!',
 //           'OK');
 //     }
 //   }

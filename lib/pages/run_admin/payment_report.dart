@@ -364,7 +364,7 @@ SELECT
                 } else {
                   await Utilities.showAlert(
                     'Error sending report',
-                    'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com',
+                    'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at harriercentral@gmail.com',
                     'OK',
                   );
                 }

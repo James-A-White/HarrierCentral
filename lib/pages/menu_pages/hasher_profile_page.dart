@@ -2102,7 +2102,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             } else {
                                                               await Utilities.showAlert(
                                                                 'Contact us',
-                                                                'For some reason, we were unable to delete your account. Please contact us at connect@harriercentral.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
+                                                                'For some reason, we were unable to delete your account. Please contact us at harriercentral@gmail.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
                                                                 'OK',
                                                               );
                                                             }

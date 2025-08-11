@@ -241,7 +241,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               decoration: _inviteCodeDecoration,
                               validator: (String? val) {
                                 if (val == null) {
-                                  return 'Application error 1802. Please contact us at connect@harriercentral.com';
+                                  return 'Application error 1802. Please contact us at harriercentral@gmail.com';
                                 } else if (val.length != 6) {
                                   return 'Invite codes are six characters';
                                 } else {

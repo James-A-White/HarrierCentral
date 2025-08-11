@@ -31,17 +31,16 @@ class LoginPageState extends State<ThirdPartyLogin> {
     super.initState();
 
     if (!widget.isNewUser) {
-      _hashNameTextController.value =
-          TextEditingValue(text: getStringPref(StringPrefsEnum.hashName) ?? '');
-      _emailTextController.value =
-          TextEditingValue(text: getStringPref(StringPrefsEnum.email) ?? '');
+      _hashNameTextController.value = TextEditingValue(
+        text: getStringPref(StringPrefsEnum.hashName) ?? '',
+      );
+      _emailTextController.value = TextEditingValue(
+        text: getStringPref(StringPrefsEnum.email) ?? '',
+      );
     }
   }
 
-  void _onLoginStatusChanged(
-    bool loggedIn, {
-    ThirdPartyLoginData? loginData,
-  }) {
+  void _onLoginStatusChanged(bool loggedIn, {ThirdPartyLoginData? loginData}) {
     setState(() {
       _isLoggedIn = loggedIn;
       _profileData = loginData;
@@ -53,14 +52,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 28.0,
-        ),
-        title: Text(
-          '3rd Party Login',
-          style: ts_appBarTitle,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+        title: Text('3rd Party Login', style: ts_appBarTitle),
         // actions: <Widget>[
         //   IconButton(
         //     icon: const Icon(
@@ -75,84 +68,90 @@ class LoginPageState extends State<ThirdPartyLogin> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
-        child: _isLoading
-            ? const Center(
-                child: HcCircularProgressIndicator(key: Key('532270149')),
-              )
-            : _isLoggedIn
+        child:
+            _isLoading
+                ? const Center(
+                  child: HcCircularProgressIndicator(key: Key('532270149')),
+                )
+                : _isLoggedIn
                 ? _displayUserData(_profileData)
                 : Center(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        // GestureDetector(
-                        //   onTap: () {
-                        //     //_facebookLogin();
-                        //   },
-                        //   child: const Padding(
-                        //     padding: EdgeInsets.symmetric(
-                        //         horizontal: 0.0, vertical: 20.0),
-                        //     child: Image(
-                        //       height: 60,
-                        //       fit: BoxFit.fitWidth,
-                        //       image:
-                        //           AssetImage('images/init/facebook_login.png'),
-                        //     ),
-                        //   ),
-                        // ),
-                        // only show Apple login on iOS devices
-
-                        if (!Platform.isIOS) ...<Widget>[
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 0.0, vertical: 20.0),
-                            child: Center(
-                                child: Text(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     //_facebookLogin();
+                      //   },
+                      //   child: const Padding(
+                      //     padding: EdgeInsets.symmetric(
+                      //         horizontal: 0.0, vertical: 20.0),
+                      //     child: Image(
+                      //       height: 60,
+                      //       fit: BoxFit.fitWidth,
+                      //       image:
+                      //           AssetImage('images/init/facebook_login.png'),
+                      //     ),
+                      //   ),
+                      // ),
+                      // only show Apple login on iOS devices
+                      if (!Platform.isIOS) ...<Widget>[
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 0.0,
+                            vertical: 20.0,
+                          ),
+                          child: Center(
+                            child: Text(
                               'No third party logins are available on Android devices.',
                               style: ts_headingVeryLarge,
                               textAlign: TextAlign.center,
-                            )),
+                            ),
                           ),
-                        ],
+                        ),
+                      ],
 
-                        if (Platform.isIOS) ...<Widget>[
-                          GestureDetector(
-                            onTap: () {
-                              _appleLogin();
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 0.0, vertical: 20.0),
-                              child: Image(
-                                height: 60,
-                                fit: BoxFit.fitWidth,
-                                image: AssetImage(
-                                    'images/init/sign_in_with_apple.png'),
+                      if (Platform.isIOS) ...<Widget>[
+                        GestureDetector(
+                          onTap: () {
+                            _appleLogin();
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 0.0,
+                              vertical: 20.0,
+                            ),
+                            child: Image(
+                              height: 60,
+                              fit: BoxFit.fitWidth,
+                              image: AssetImage(
+                                'images/init/sign_in_with_apple.png',
                               ),
                             ),
                           ),
-                        ],
-                        // Padding(
-                        //   padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
-                        //   child: SignInWithAppleButton(
-                        //       height: 60,
-                        //       style: SignInWithAppleButtonStyle.whiteOutlined,
-                        //       onPressed: () {
-                        //         _appleLogin();
-                        //       }),
-                        // ),
+                        ),
                       ],
-                    ),
+                      // Padding(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
+                      //   child: SignInWithAppleButton(
+                      //       height: 60,
+                      //       style: SignInWithAppleButtonStyle.whiteOutlined,
+                      //       onPressed: () {
+                      //         _appleLogin();
+                      //       }),
+                      // ),
+                    ],
                   ),
+                ),
       ),
     );
   }
 
   Future<void> _appleLogin() async {
     try {
-      final AuthorizationCredentialAppleID appleCredential =
-          await SignInWithApple.getAppleIDCredential(
+      final AuthorizationCredentialAppleID
+      appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: <AppleIDAuthorizationScopes>[
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
@@ -167,19 +166,31 @@ class LoginPageState extends State<ThirdPartyLogin> {
         state: 'Test',
       );
 
-      await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode,
-          appleCredential.authorizationCode);
       await setStringPref(
-          StringPrefsEnum.thirdPartyAccessToken, appleCredential.identityToken);
+        StringPrefsEnum.thirdPartyAuthorizationCode,
+        appleCredential.authorizationCode,
+      );
       await setStringPref(
-          StringPrefsEnum.thirdPartyUserId, appleCredential.userIdentifier);
+        StringPrefsEnum.thirdPartyAccessToken,
+        appleCredential.identityToken,
+      );
       await setStringPref(
-          StringPrefsEnum.thirdPartyLoginType, ThirdPartyLoginType.apple.name);
+        StringPrefsEnum.thirdPartyUserId,
+        appleCredential.userIdentifier,
+      );
       await setStringPref(
-          StringPrefsEnum.thirdPartyEmail, appleCredential.email);
+        StringPrefsEnum.thirdPartyLoginType,
+        ThirdPartyLoginType.apple.name,
+      );
+      await setStringPref(
+        StringPrefsEnum.thirdPartyEmail,
+        appleCredential.email,
+      );
 
       await setDatePref(
-          DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
+        DatePrefsEnum.thirdPartyTokenLastUpdated,
+        DateTime.now(),
+      );
 
       final ThirdPartyLoginData d = ThirdPartyLoginData(
         ThirdPartyLoginType.apple.name,
@@ -192,8 +203,9 @@ class LoginPageState extends State<ThirdPartyLogin> {
       );
 
       if (widget.isNewUser) {
-        _emailTextController.value =
-            TextEditingValue(text: appleCredential.email ?? '');
+        _emailTextController.value = TextEditingValue(
+          text: appleCredential.email ?? '',
+        );
       }
 
       _onLoginStatusChanged(true, loginData: d);
@@ -298,16 +310,20 @@ class LoginPageState extends State<ThirdPartyLogin> {
           //const SizedBox(height: 28.0),
           Padding(
             padding: const EdgeInsets.only(top: 25.0, bottom: 15.0),
-            child: Text('Logged in as:',
-                textAlign: TextAlign.center, style: ts_title),
+            child: Text(
+              'Logged in as:',
+              textAlign: TextAlign.center,
+              style: ts_title,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 15.0),
             child: Text(
-                profileData.name ??
-                    ('${profileData.firstName} ${profileData.lastName}'),
-                textAlign: TextAlign.center,
-                style: ts_headingVeryLarge),
+              profileData.name ??
+                  ('${profileData.firstName} ${profileData.lastName}'),
+              textAlign: TextAlign.center,
+              style: ts_headingVeryLarge,
+            ),
           ),
           if ((profileData.photoUrl?.length ?? 0) > 5) ...<Widget>[
             Padding(
@@ -319,13 +335,12 @@ class LoginPageState extends State<ThirdPartyLogin> {
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(10.0)),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10.0),
+                      ),
                       image: DecorationImage(
                         //fit: BoxFit.fitWidth,
-                        image: NetworkImage(
-                          profileData.photoUrl!,
-                        ),
+                        image: NetworkImage(profileData.photoUrl!),
                       ),
                     ),
                   ),
@@ -346,7 +361,11 @@ class LoginPageState extends State<ThirdPartyLogin> {
               child: Container(
                 margin: const EdgeInsets.only(left: 15, right: 15),
                 padding: const EdgeInsets.only(
-                    left: 15, right: 15, top: 15, bottom: 5),
+                  left: 15,
+                  right: 15,
+                  top: 15,
+                  bottom: 5,
+                ),
 
                 decoration: BoxDecoration(
                   shape: BoxShape.rectangle,
@@ -459,8 +478,10 @@ class LoginPageState extends State<ThirdPartyLogin> {
             padding: const EdgeInsets.only(top: 25.0),
             child: TextButton(
               style: text_button_style,
-              child: Text(widget.isNewUser ? 'Get started!' : 'Save Login Info',
-                  style: ts_button),
+              child: Text(
+                widget.isNewUser ? 'Get started!' : 'Save Login Info',
+                style: ts_button,
+              ),
               onPressed: () async {
                 if (!widget.isNewUser ||
                     ((_formKey.currentState != null) &&
@@ -480,85 +501,125 @@ class LoginPageState extends State<ThirdPartyLogin> {
 
                   if (result != null) {
                     await setStringPref(
-                        StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
+                      StringPrefsEnum.profilePhotoUrl,
+                      result[0]['photo'],
+                    );
                     await setStringPref(
-                        StringPrefsEnum.displayName, result[0]['displayName']);
+                      StringPrefsEnum.displayName,
+                      result[0]['displayName'],
+                    );
                     // if the email has not already been set, populate it with the email address received by the third party identity provider
                     if ((getStringPref(StringPrefsEnum.email) ?? '')
                         .trim()
                         .isEmpty) {
                       await setStringPref(
-                          StringPrefsEnum.email, result[0]['email']);
+                        StringPrefsEnum.email,
+                        result[0]['email'],
+                      );
                     }
-                    await setStringPref(StringPrefsEnum.thirdPartyLoginEmail,
-                        result[0]['thirdPartyEmail']);
+                    await setStringPref(
+                      StringPrefsEnum.thirdPartyLoginEmail,
+                      result[0]['thirdPartyEmail'],
+                    );
 
                     final String thirdPartyLoginType =
                         result[0]['thirdPartyLoginType'] ?? 'none';
-                    await setStringPref(StringPrefsEnum.thirdPartyLoginType,
-                        thirdPartyLoginType);
+                    await setStringPref(
+                      StringPrefsEnum.thirdPartyLoginType,
+                      thirdPartyLoginType,
+                    );
 
                     // await setStringPref(StringPrefsEnum.facebookId, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyUserId'] : '');
                     // await setStringPref(StringPrefsEnum.facebookAccessToken, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyAccessToken'] : '');
                     await setStringPref(
-                        StringPrefsEnum.facebookProfilePhoto,
-                        thirdPartyLoginType == ThirdPartyLoginType.facebook.name
-                            ? result[0]['photo']
-                            : '');
+                      StringPrefsEnum.facebookProfilePhoto,
+                      thirdPartyLoginType == ThirdPartyLoginType.facebook.name
+                          ? result[0]['photo']
+                          : '',
+                    );
 
                     await setStringPref(
-                        StringPrefsEnum.thirdPartyAuthorizationCode,
-                        result[0]['thirdPartyAuthorizationCode']);
-                    await setStringPref(StringPrefsEnum.thirdPartyAccessToken,
-                        result[0]['thirdPartyAccessToken']);
-                    await setStringPref(StringPrefsEnum.thirdPartyUserId,
-                        result[0]['thirdPartyUserId']);
+                      StringPrefsEnum.thirdPartyAuthorizationCode,
+                      result[0]['thirdPartyAuthorizationCode'],
+                    );
+                    await setStringPref(
+                      StringPrefsEnum.thirdPartyAccessToken,
+                      result[0]['thirdPartyAccessToken'],
+                    );
+                    await setStringPref(
+                      StringPrefsEnum.thirdPartyUserId,
+                      result[0]['thirdPartyUserId'],
+                    );
 
                     if (result[0]['thirdPartyTokenLastUpdated'] != null) {
                       await setDatePref(
-                          DatePrefsEnum.thirdPartyTokenLastUpdated,
-                          DateTime.tryParse(
-                              result[0]['thirdPartyTokenLastUpdated']));
+                        DatePrefsEnum.thirdPartyTokenLastUpdated,
+                        DateTime.tryParse(
+                          result[0]['thirdPartyTokenLastUpdated'],
+                        ),
+                      );
                     } else {
                       await removePref(
-                          DatePrefsEnum.thirdPartyTokenLastUpdated);
+                        DatePrefsEnum.thirdPartyTokenLastUpdated,
+                      );
                     }
 
                     if (result[0]['thirdPartyAccessTokenExpires'] != null) {
                       await setDatePref(
-                          DatePrefsEnum.thirdPartyTokenExpires,
-                          DateTime.tryParse(
-                              result[0]['thirdPartyAccessTokenExpires']));
+                        DatePrefsEnum.thirdPartyTokenExpires,
+                        DateTime.tryParse(
+                          result[0]['thirdPartyAccessTokenExpires'],
+                        ),
+                      );
                     } else {
                       await removePref(DatePrefsEnum.thirdPartyTokenExpires);
                     }
 
                     await setStringPref(
-                        StringPrefsEnum.firstName, result[0]['firstName']);
+                      StringPrefsEnum.firstName,
+                      result[0]['firstName'],
+                    );
                     await setStringPref(
-                        StringPrefsEnum.hashName, result[0]['hashName']);
+                      StringPrefsEnum.hashName,
+                      result[0]['hashName'],
+                    );
                     await setStringPref(
-                        StringPrefsEnum.lastName, result[0]['lastName']);
+                      StringPrefsEnum.lastName,
+                      result[0]['lastName'],
+                    );
                     await setStringPref(
-                        StringPrefsEnum.qrCode, result[0]['qrCode']);
+                      StringPrefsEnum.qrCode,
+                      result[0]['qrCode'],
+                    );
                     await setStringPref(
-                        StringPrefsEnum.supportCode, result[0]['supportCode']);
+                      StringPrefsEnum.supportCode,
+                      result[0]['supportCode'],
+                    );
                     await setStringPref(
-                        StringPrefsEnum.resetCode, result[0]['resetCode']);
-                    await setStringPref(StringPrefsEnum.qrSecretCode,
-                        result[0]['qrSecretCode']);
+                      StringPrefsEnum.resetCode,
+                      result[0]['resetCode'],
+                    );
                     await setStringPref(
-                        StringPrefsEnum.userId, result[0]['hasherId']);
-                    final int preferences = int.tryParse(
-                            result[0]['preferences'].toString()) ??
+                      StringPrefsEnum.qrSecretCode,
+                      result[0]['qrSecretCode'],
+                    );
+                    await setStringPref(
+                      StringPrefsEnum.userId,
+                      result[0]['hasherId'],
+                    );
+                    final int preferences =
+                        int.tryParse(result[0]['preferences'].toString()) ??
                         0; // we turn the result into a string and then back into an int to allow the DB to return either int or string without causing an error
                     await setIntPref(
-                        IntPrefsEnum.hasherPreferences, preferences);
+                      IntPrefsEnum.hasherPreferences,
+                      preferences,
+                    );
                   } else {
                     await Utilities.showAlert(
-                        'Account not created',
-                        'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
-                        'OK');
+                      'Account not created',
+                      'There was a problem creating your account. Please delete the app and try again later or contact us at harriercentral@gmail.com.\r\n\r\nSorry for the inconvenience!',
+                      'OK',
+                    );
                     return;
                   }
 
@@ -570,22 +631,24 @@ class LoginPageState extends State<ThirdPartyLogin> {
 
                     if (!mounted) return;
                     await Navigator.pushReplacement<dynamic, dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => ChooseProfileImage(
-                            isForThisDevice: true,
-                            fileNamePrefix: fileNamePrefix,
-                            currentProfileImage: null,
-                            popToCaller: false,
-                          ),
-                        ));
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder:
+                            (BuildContext context) => ChooseProfileImage(
+                              isForThisDevice: true,
+                              fileNamePrefix: fileNamePrefix,
+                              currentProfileImage: null,
+                              popToCaller: false,
+                            ),
+                      ),
+                    );
                   } else {
                     // not a new user, pop back to the User profile page.
                     await Utilities.showAlert(
-                            'Login Successful',
-                            'Your login was successful and your access has been upated.',
-                            'OK')
-                        .then((_) {
+                      'Login Successful',
+                      'Your login was successful and your access has been upated.',
+                      'OK',
+                    ).then((_) {
                       Navigator.of(navigatorKey.currentContext!).pop();
                     });
                   }

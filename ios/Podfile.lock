@@ -36,6 +36,8 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 8.1)
     - nanopb (~> 3.30910.0)
   - Flutter (1.0.0)
+  - flutter_avif_ios (0.0.1):
+    - Flutter
   - flutter_image_compress_common (1.0.0):
     - Flutter
     - Mantle
@@ -139,6 +141,7 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
+  - flutter_avif_ios (from `.symlinks/plugins/flutter_avif_ios/ios`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
@@ -184,6 +187,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
+  flutter_avif_ios:
+    :path: ".symlinks/plugins/flutter_avif_ios/ios"
   flutter_image_compress_common:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
   flutter_native_splash:
@@ -228,6 +233,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: d4c7c958f99c8860d7fcece786314ae790e2f988
   FirebaseMessaging: af49f8d7c0a3d2a017d9302c80946f45a7777dde
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_avif_ios: 1db95ee8dba72351a589e4945b94bfbca8d382d1
   flutter_image_compress_common: ec1d45c362c9d30a3f6a0426c297f47c52007e3e
   flutter_native_splash: df59bb2e1421aa0282cb2e95618af4dcb0c56c29
   geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd

@@ -337,7 +337,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
         } else {
           await Utilities.showAlert(
             'Error sending emails',
-            'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com',
+            'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at harriercentral@gmail.com',
             'OK',
           );
         }

@@ -164,7 +164,7 @@ class ServiceCommon {
         );
         // await Utilities.showAlert(
         //     'Unknown Server Error',
-        //     'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at connect@harriercentral.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',
+        //     'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at harriercentral@gmail.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',
         //     'Use Offline');
         // G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
       }

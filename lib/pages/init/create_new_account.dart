@@ -378,7 +378,7 @@ class CreateNewAccountPageContentState
                         if (!isSuccessfulLoad) {
                           await Utilities.showAlert(
                             'Account not created',
-                            'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
+                            'There was a problem creating your account. Please delete the app and try again later or contact us at harriercentral@gmail.com.\r\n\r\nSorry for the inconvenience!',
                             'OK',
                           );
                         }

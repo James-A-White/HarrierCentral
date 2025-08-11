@@ -64,8 +64,15 @@ const String BASE_AF_URL = 'harriercentralpublicapi.azurewebsites.net';
 const String BASE_AF_API_URL = 'https://$BASE_AF_URL/api/AppApi';
 const String BASE_AF_CONNECTION_TEST_URL = 'https://$BASE_AF_URL/api/TestApi';
 
+// new APIs below
+
 const String BASE_KENNEL_STATS_REPORT_URL =
     "https://$BASE_AF_URL/api/SendKennelRunStatsReport";
+
+const String EMAIL_INVITE_CODE_API_URL =
+    'https://$BASE_AF_URL/api/EmailInviteCode';
+
+// old APIs below
 
 const String BASE_KENNEL_LOGOS_URL =
     'https://harriercentral.blob.core.windows.net/harrier/';
@@ -88,8 +95,8 @@ const String EMAIL_KENNEL_RUN_STATS_API_URL =
     'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
 const String EMAIL_KENNEL_INVITE_CODES_API_URL =
     'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
-const String EMAIL_INVITE_CODE_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
+// const String EMAIL_INVITE_CODE_API_URL =
+//     'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 
