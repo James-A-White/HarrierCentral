@@ -205,6 +205,19 @@ class MainNavigationController extends GetxController
     update(['scaffold']);
 
     mainScreenReady.value = true;
+
+    // don't configure notifications until here because
+    // when a notification is clicked and the app launches,
+    // we need to have the MainNavigationController initialized
+    bool? notificationsConfigured = getBoolPref(
+      BoolPrefsEnum.notificationPreferencesRequested,
+    );
+
+    if (notificationsConfigured != null && notificationsConfigured) {
+      await Get.putAsync(
+        () => NotificationService().init(),
+      ); // Initialize and wait for the notification service
+    }
   }
 
   String _trimToMinorVersionString(String version) {

@@ -48,9 +48,7 @@ import 'package:harrier_central/imports.dart';
 // end
 
 class PermissionSliderPage extends StatefulWidget {
-  const PermissionSliderPage({
-    super.key,
-  });
+  const PermissionSliderPage({super.key});
 
   @override
   PermissionSliderPageState createState() => PermissionSliderPageState();
@@ -72,17 +70,20 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     super.initState();
 
     descriptionStyle = TextStyle(
-        color: Colors.black,
-        fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextRegular');
+      color: Colors.black,
+      fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      fontFamily: 'AvenirNextRegular',
+    );
     titleStyle = TextStyle(
-        color: Colors.black,
-        fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextRegular');
+      color: Colors.black,
+      fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      fontFamily: 'AvenirNextRegular',
+    );
     navStyle = TextStyle(
-        color: themeAppBarBackground,
-        fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextDemiBold');
+      color: themeAppBarBackground,
+      fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      fontFamily: 'AvenirNextDemiBold',
+    );
 
     slides.add(
       ContentConfig(
@@ -153,8 +154,9 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
   }
 
   void _onDonePress() {
-    Navigator.of(context)
-        .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+    Navigator.of(
+      context,
+    ).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
   }
 
   bool permission1requested = false;
@@ -179,10 +181,11 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
   Widget _renderNextBtn() {
     return GestureDetector(
-        child: Text('Allow', style: navStyle),
-        onTap: () async {
-          await _requestPermissions();
-        });
+      child: Text('Allow', style: navStyle),
+      onTap: () async {
+        await _requestPermissions();
+      },
+    );
   }
 
   bool _permissionRequestInProgress = false;
@@ -216,7 +219,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         // // ignore: unawaited_futures
         // await notifications.configureNotifications(false);
 
-        await requestNotificationPermission();
+        await _requestNotificationPermission();
 
         activeTab = 3;
         _goToTab(3);
@@ -225,14 +228,18 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
   }
 
-  Future<void> requestNotificationPermission() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
+  Future<void> _requestNotificationPermission() async {
+    // FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    // await messaging.requestPermission(
+    //   alert: true,
+    //   badge: true,
+    //   sound: true,
+    // );
+
+    await Get.putAsync(
+      () => NotificationService().init(),
+    ); // Initialize and wait for the notification service
 
     // NotificationSettings settings = await messaging.requestPermission(
     //   alert: true,
@@ -258,12 +265,12 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
   void _onSkipPress() {
     if (activeTab == 0) {
       Utilities.showAlert(
-              'Location Preference',
-              'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.',
-              'Allow',
-              showCancelButton: true,
-              cancelButtonText: 'Disallow')
-          .then((bool? allow) async {
+        'Location Preference',
+        'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.',
+        'Allow',
+        showCancelButton: true,
+        cancelButtonText: 'Disallow',
+      ).then((bool? allow) async {
         if (allow ?? false) {
           if (await Permission.locationWhenInUse.request().isGranted) {
             await Utilities.subscribeToGeoLocationStream();
@@ -277,12 +284,12 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
     if (activeTab == 1) {
       Utilities.showAlert(
-              'Camera Preference',
-              'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.',
-              'Allow',
-              showCancelButton: true,
-              cancelButtonText: 'Disallow')
-          .then((bool? allow) async {
+        'Camera Preference',
+        'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.',
+        'Allow',
+        showCancelButton: true,
+        cancelButtonText: 'Disallow',
+      ).then((bool? allow) async {
         if (allow ?? false) {
           if (await Permission.camera.request().isGranted) {
             if (await Permission.photos.request().isGranted) {
@@ -297,12 +304,12 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
     if (activeTab == 2) {
       Utilities.showAlert(
-              'Notification Preference',
-              'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change',
-              'Allow',
-              showCancelButton: true,
-              cancelButtonText: 'Disallow')
-          .then((bool? allow) async {
+        'Notification Preference',
+        'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change',
+        'Allow',
+        showCancelButton: true,
+        cancelButtonText: 'Disallow',
+      ).then((bool? allow) async {
         if (allow ?? false) {
           // final NotificationSupport notifications = NotificationSupport();
           // await notifications.configureNotifications(false);
@@ -322,24 +329,24 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
       renderSkipBtn: _renderSkipBtn(),
 
       skipButtonStyle: ButtonStyle(
-        foregroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.pressed)) {
-              return const Color(0xff000000);
-            }
-            return const Color(0xffffffff);
-          },
-        ),
-        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            return const Color(0x00000000);
-          },
-        ),
+        foregroundColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.pressed)) {
+            return const Color(0xff000000);
+          }
+          return const Color(0xffffffff);
+        }),
+        backgroundColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
+        ) {
+          return const Color(0x00000000);
+        }),
       ),
 
       onSkipPress: _onSkipPress,
-      //showSkipBtn: true,
 
+      //showSkipBtn: true,
       onTabChangeCompleted: _onTabChangeCompleted,
 
       // // Dot indicator
@@ -358,15 +365,17 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              color: themeAppBarBackground40),
+            borderRadius: BorderRadius.circular(4),
+            color: themeAppBarBackground40,
+          ),
         ),
         activeIndicatorWidget: Container(
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              color: themeAppBarBackground),
+            borderRadius: BorderRadius.circular(4),
+            color: themeAppBarBackground,
+          ),
         ),
         spaceBetweenIndicator: 10,
         typeIndicatorAnimation: TypeIndicatorAnimation.sliding,
@@ -375,38 +384,38 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
       // Next button
       renderNextBtn: _renderNextBtn(),
       nextButtonStyle: ButtonStyle(
-        foregroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.pressed)) {
-              return const Color(0xff000000);
-            }
-            return const Color(0xffffffff);
-          },
-        ),
-        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            return const Color(0x00000000);
-          },
-        ),
+        foregroundColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.pressed)) {
+            return const Color(0xff000000);
+          }
+          return const Color(0xffffffff);
+        }),
+        backgroundColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
+        ) {
+          return const Color(0x00000000);
+        }),
       ),
 
       // Done button
       renderDoneBtn: _renderDoneBtn(),
       onDonePress: _onDonePress,
       doneButtonStyle: ButtonStyle(
-        foregroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.pressed)) {
-              return const Color(0xff000000);
-            }
-            return const Color(0xffffffff);
-          },
-        ),
-        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            return const Color(0x00000000);
-          },
-        ),
+        foregroundColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.pressed)) {
+            return const Color(0xff000000);
+          }
+          return const Color(0xffffffff);
+        }),
+        backgroundColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
+        ) {
+          return const Color(0x00000000);
+        }),
       ),
 
       refFuncGoToTab: (dynamic refFunc) {

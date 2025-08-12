@@ -80,8 +80,13 @@ Future<void> setBoolPref(BoolPrefsEnum key, bool? value) async {
   return await _box.write(key.toString(), value == true ? 1 : 0);
 }
 
-bool getBoolPref(BoolPrefsEnum key) {
-  return _box.read(key.toString()) == 1;
+bool? getBoolPref(BoolPrefsEnum key) {
+  final int? val = _box.read(key.toString());
+  if (val == null) {
+    return null;
+  }
+
+  return val == 1 ? true : false;
 }
 
 // Map<String,int>

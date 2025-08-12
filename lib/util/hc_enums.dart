@@ -61,7 +61,7 @@ enum NumPrefsEnum {
   homeKennelLon,
 }
 
-enum BoolPrefsEnum { showEnvironmentWarning }
+enum BoolPrefsEnum { notificationPreferencesRequested }
 
 enum IntPrefsEnum {
   databaseVersion,

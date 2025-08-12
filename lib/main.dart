@@ -62,8 +62,10 @@ class AppLifecycleController extends SuperController<void> {
 // }
 
 void main() async {
+  //await Future.delayed(const Duration(seconds: 8));
+  print('Starting Harrier Central Mobile...');
+
   WidgetsFlutterBinding.ensureInitialized();
-  //debugPaintSizeEnabled=true;
 
   await initPrefs();
 
@@ -74,12 +76,9 @@ void main() async {
   ]);
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  await Get.putAsync(
-    () => NotificationService().init(),
-  ); // Initialize and wait for the notification service
-
-  //setupFirebaseListeners();
+  // we will wait to initialize the GetIt Service to handle notifications until
+  // after the main page is initialized. This way when the app launches because
+  // someone tapped on a notification, the app will be able to handle it.
 
   runApp(
     GetMaterialApp(

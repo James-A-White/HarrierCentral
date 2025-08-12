@@ -43,6 +43,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       sound: true,
     );
 
+    setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);
+
     print('Notification permission status: ${settings.authorizationStatus}');
   }
 
@@ -50,12 +52,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     RemoteMessage? initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
       _handleNotificationClick(initialMessage);
+      print('Initial message received: ${initialMessage.data}');
     }
   }
 
   void _setupFirebaseListeners() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleNotificationClick(message);
+      print('Initial message received: ${message.data}');
     });
   }
 
@@ -65,6 +69,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void _handleNotificationClick(RemoteMessage message) {
+    //pop all the way back to the main page
     Get.until((route) => route.settings.name == '/main');
 
     if (Get.isRegistered<FutureRunListPageController>()) {

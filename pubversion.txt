@@ -1,3 +1,12 @@
+2.0.0+976
+    fixed notification issues by moving the initialization of the 
+    notification service until after the main page is rendered.
+
+
+
+
+======
+
 Build 63: Added cool swipe to pay feature on the PaymentReport screen, added this file to the project.
 Build 64: Only one LINT error left. Added cloud icon to PaymentReport screen to show when info is being sent to server
 Build 66: Added User Run History top page and details page that allows users to choose which Hash events they were at

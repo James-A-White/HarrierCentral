@@ -13,8 +13,11 @@ class AppEntryPageState extends State<AppEntryPage>
   late CurvedAnimation _iconAnimation;
 
   Future<void> _handleStartup(BuildContext context) async {
+    print('App startup called...');
     await G0.allReady();
+    print('GetX registered...');
     G0.registerSingleton<AppModel>(AppModel());
+    print('AppModel registered...');
 
     String? userId = getStringPref(StringPrefsEnum.userId);
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
@@ -52,7 +55,7 @@ class AppEntryPageState extends State<AppEntryPage>
 
       // stop it from falling through and continuing to run.
       // this shouldn't be needed, but I'll put it in for now for testing
-      await Future.delayed(const Duration(seconds: 5));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       // if (result.isNotEmpty) {
       //   await Utilities.showAlert(
@@ -219,9 +222,25 @@ class AppEntryPageState extends State<AppEntryPage>
                 navigatorKey.currentContext!,
               ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
+              // it is not normal for this condition to happen
+              // but if for some reason, notification permissions
+              // have not been requested at this point,
+              // go ahead and ask for them. This could happen
+              // on a profile reload
+              bool? notificationsConfigured = getBoolPref(
+                BoolPrefsEnum.notificationPreferencesRequested,
+              );
+
+              if (notificationsConfigured == null || !notificationsConfigured) {
+                await Get.putAsync(
+                  () => NotificationService().init(),
+                ); // Initialize and wait for the notification service
+              }
+
               // app has been run before... let's check the DB version.
               final int installedDbVersion =
                   getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
+
               if ((installedDbVersion != DB_VERSION) &&
                   ((installedDbVersion + 9) < DB_VERSION)) {
                 // the installed DB version is not up to date

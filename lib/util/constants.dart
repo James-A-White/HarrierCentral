@@ -66,13 +66,33 @@ const String BASE_AF_CONNECTION_TEST_URL = 'https://$BASE_AF_URL/api/TestApi';
 
 // new APIs below
 
-const String BASE_KENNEL_STATS_REPORT_URL =
+const String EMAIL_KENNEL_RUN_STATS_API_URL =
     "https://$BASE_AF_URL/api/SendKennelRunStatsReport";
 
 const String EMAIL_INVITE_CODE_API_URL =
     'https://$BASE_AF_URL/api/EmailInviteCode';
 
 // old APIs below
+
+const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
+
+const String EMAIL_PAYMENT_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
+
+const String EMAIL_RUN_REPORT_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
+
+const String EMAIL_KENNEL_INVITE_CODES_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
+
+// const String EMAIL_KENNEL_RUN_STATS_API_URL =
+//     'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
+
+// const String EMAIL_INVITE_CODE_API_URL =
+//     'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
+
+// Storage locations
 
 const String BASE_KENNEL_LOGOS_URL =
     'https://harriercentral.blob.core.windows.net/harrier/';
@@ -84,19 +104,6 @@ const String BASE_RECEIPTS_URL =
     'https://harriercentral.blob.core.windows.net/receipts/';
 const String BASE_NEW_VERSION_IMAGES_URL =
     'https://harriercentral.blob.core.windows.net/splash-sequences/';
-
-const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
-const String EMAIL_PAYMENT_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
-const String EMAIL_RUN_REPORT_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
-const String EMAIL_KENNEL_RUN_STATS_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
-const String EMAIL_KENNEL_INVITE_CODES_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
-// const String EMAIL_INVITE_CODE_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 
