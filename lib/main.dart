@@ -113,6 +113,7 @@ void main() async {
         GetPage(name: '/main', page: () => MainNavigationPage()),
         // Other routes...
       ],
+      initialBinding: InitialBindings(),
       routes: routes,
       theme: ThemeData(
         appBarTheme: AppBarTheme(

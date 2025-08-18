@@ -4,58 +4,74 @@ import 'package:intl/intl.dart';
 class OfflineModeRibbon extends StatelessWidget {
   const OfflineModeRibbon({
     super.key,
-    required this.showRibbon,
     this.lastSync,
-    required this.refreshFunction,
     this.ribbonImage = 'images/icons/offline_mode.png',
+    required this.refreshFunction, // called after we successfully reconnect
   });
 
-  final bool showRibbon;
   final DateTime? lastSync;
   final String ribbonImage;
-  final Function refreshFunction;
+  final VoidCallback refreshFunction;
 
   @override
   Widget build(BuildContext context) {
-    return !showRibbon
-        ? const SizedBox.shrink()
-        : Positioned(
-            right: 0,
-            top: 0,
-            child: GestureDetector(
-              onTap: () async {
-                bool tryReconnect = false;
+    final network = Get.find<NetworkService>();
 
-                if (lastSync != null) {
-                  tryReconnect = !(await Utilities.showAlert2('Offline Mode',
-                          'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d 'at' h:mm a").format(lastSync!)}', 'OK',
-                          showCancelButton: true, cancelButtonText: 'Try reconnect') ??
-                      false);
-                } else {
-                  tryReconnect = !(await Utilities.showAlert2('Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK',
-                          showCancelButton: true, cancelButtonText: 'Try reconnect') ??
-                      false);
-                }
+    return Obx(() {
+      // Only show when we are OFFLINE
+      final isOffline = !network.isOnline;
+      if (!isOffline) return const SizedBox.shrink();
 
-                if (tryReconnect) {
-                  await Utilities.checkForInternetConnection(true);
+      final lastSyncText =
+          lastSync != null
+              ? DateFormat("E, MMM d 'at' h:mm a").format(lastSync!)
+              : null;
 
-                  if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
-                    await Utilities.showAlert2(
-                      'Connected',
-                      'You are now connected to the Internet',
+      return Positioned(
+        right: 0,
+        top: 0,
+        child: GestureDetector(
+          onTap: () async {
+            // Ask the user if they want to try reconnecting
+            final tryReconnect =
+                !(await Utilities.showAlert2(
+                      'Offline Mode',
+                      lastSyncText != null
+                          ? 'The data displayed in this app might be out of date. '
+                              'The last time the app connected to the server was $lastSyncText.'
+                          : 'The data displayed in this app might be out of date. '
+                              'There is no record indicating when the last sync occurred.',
                       'OK',
-                    );
-                    refreshFunction();
-                  }
-                }
-              },
-              child: Image.asset(
-                'images/icons/offline_mode.png',
-                height: 100,
-                width: 100,
-              ),
-            ),
-          );
+                      showCancelButton: true,
+                      cancelButtonText: 'Try reconnect',
+                    ) ??
+                    false);
+
+            if (!tryReconnect) return;
+
+            // Optional: keep your existing utility check if needed
+            await Utilities.checkForInternetConnection(true);
+
+            // Then force a recheck via the service (updates Rx state)
+            final reconnected = await network.forceRecheck();
+
+            if (reconnected) {
+              await Utilities.showAlert2(
+                'Connected',
+                'You are now connected to the Internet',
+                'OK',
+              );
+              // Trigger your reload/refresh
+              refreshFunction();
+            }
+          },
+          child: Image.asset(
+            ribbonImage, // <-- now uses the provided image path
+            height: 100,
+            width: 100,
+          ),
+        ),
+      );
+    });
   }
 }

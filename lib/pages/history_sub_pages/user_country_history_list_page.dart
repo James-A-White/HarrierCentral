@@ -309,9 +309,6 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           ),
         ),
         OfflineModeRibbon(
-          showRibbon:
-              G0<AppModel>().connectionStatus ==
-              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {

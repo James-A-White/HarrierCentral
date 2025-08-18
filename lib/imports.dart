@@ -39,6 +39,7 @@ export 'package:flutter/services.dart';
 export 'package:freezed_annotation/freezed_annotation.dart';
 export 'package:get_it/get_it.dart';
 export 'package:get_storage/get_storage.dart';
+export 'package:harrier_central/bindings/initial_bindings.dart';
 export 'package:harrier_central/data/hc3_services/cities/cities_model_ns.dart';
 export 'package:harrier_central/data/hc3_services/cities/cities_service.dart';
 export 'package:harrier_central/data/hc3_services/countries/countries_model_ns.dart';
@@ -144,6 +145,7 @@ export 'package:harrier_central/pages/top_level/main_navigation_page/main_naviga
 export 'package:harrier_central/pages/top_level/main_navigation_page/main_navigation_page_controller.dart';
 export 'package:harrier_central/pages/top_level/run_locations.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+export 'package:harrier_central/services/connectivity_service.dart';
 export 'package:harrier_central/services/notification_service.dart';
 export 'package:harrier_central/types/typedefs.dart';
 export 'package:harrier_central/util/bank_transfer_qr.dart';

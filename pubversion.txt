@@ -1,6 +1,13 @@
 2.0.0+976
-    fixed notification issues by moving the initialization of the 
+    Fixed notification issues by moving the initialization of the 
     notification service until after the main page is rendered.
+
+2.0.0+977
+    Added Internet connection service to constantly monitor for 
+    Internet connection and set UI / functions accordingly. Still need
+    to work on this to confirm that proper error messages are being
+    raised when there is no connection, but wanted to push Intermediate
+    version to TestFlight.
 
 
 

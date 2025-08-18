@@ -4,9 +4,7 @@ import 'package:pdfx/pdfx.dart';
 class PrivacyPolicyPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const PrivacyPolicyPage({
-    super.key,
-  });
+  const PrivacyPolicyPage({super.key});
 
   @override
   PrivacyPolicyPageState createState() => PrivacyPolicyPageState();
@@ -39,8 +37,9 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     return Stack(
       children: <Widget>[
         SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+        ),
         Positioned(
           top: 0,
           left: 0,
@@ -48,15 +47,9 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
             appBar: AppBar(
-              title: Text(
-                'Privacy Policy',
-                style: ts_appBarTitle,
-              ),
+              title: Text('Privacy Policy', style: ts_appBarTitle),
               backgroundColor: themeAppBarBackground,
-              iconTheme: const IconThemeData(
-                color: Colors.white,
-                size: 28.0,
-              ),
+              iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
             ),
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
@@ -65,21 +58,26 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     ElevatedButton(
-                      child:
-                          Text('Open Privacy Policy', style: ts_headingLarge),
-                      onPressed: () => Navigator.push<dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) =>
-                                PDFScreen(pathPDF)),
+                      child: Text(
+                        'Open Privacy Policy',
+                        style: ts_headingLarge,
                       ),
+                      onPressed:
+                          () => Navigator.push<dynamic>(
+                            context,
+                            MaterialPageRoute<dynamic>(
+                              builder:
+                                  (BuildContext context) => PDFScreen(pathPDF),
+                            ),
+                          ),
                     ),
                     Container(
                       margin: const EdgeInsets.all(30),
                       child: Text(
-                          'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
-                          textAlign: TextAlign.center,
-                          style: ts_medium),
+                        'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
+                        textAlign: TextAlign.center,
+                        style: ts_medium,
+                      ),
                     ),
                   ],
                 ),
@@ -88,8 +86,6 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus ==
-              EnumConnectionStatus2.notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
@@ -102,10 +98,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 }
 
 class PDFScreen extends StatelessWidget {
-  PDFScreen(
-    this.pathPDF, {
-    super.key,
-  });
+  PDFScreen(this.pathPDF, {super.key});
 
   final String pathPDF;
 
@@ -117,16 +110,12 @@ class PDFScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     //return Container();
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Privacy Policy', style: ts_appBarTitle),
-          backgroundColor: themeAppBarBackground,
-          iconTheme: const IconThemeData(
-            color: Colors.white,
-            size: 28.0,
-          ),
-        ),
-        body: PdfViewPinch(
-          controller: pdfPinchController,
-        ));
+      appBar: AppBar(
+        title: Text('Privacy Policy', style: ts_appBarTitle),
+        backgroundColor: themeAppBarBackground,
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+      ),
+      body: PdfViewPinch(controller: pdfPinchController),
+    );
   }
 }

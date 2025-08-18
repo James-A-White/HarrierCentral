@@ -361,9 +361,6 @@ class MainNavigationPage extends StatelessWidget {
               drawer: DrawerMenu(key: Key('4312134')),
             ),
             OfflineModeRibbon(
-              showRibbon:
-                  G0<AppModel>().connectionStatus ==
-                  EnumConnectionStatus2.notConnected,
               lastSync: getDatePref(
                 DatePrefsEnum.lastSuccessfulUserDataSyncAsDate,
               ),
